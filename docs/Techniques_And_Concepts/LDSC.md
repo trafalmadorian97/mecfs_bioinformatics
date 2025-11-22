@@ -1,7 +1,8 @@
 # Linkage Disequilibrium Score Regression
-Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC)  is a technique for estimating  [Heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends strongly on the validity certain modeling assumptions. To use LDSC correctly it is necessary to understand these assumptions.
+Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC)  is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends strongly on the validity certain modeling assumptions. This pages includes a detailed derivation of LDSC, together with a discussion of its modeling assumptions.
 
-## Model
+## Derivation of Method
+### Data-generating model
 
 LDSC assumes the following data generating equation:
 
@@ -12,19 +13,19 @@ $$
 where:
 
 
-- There are $M$ genotypes.  We assume that $M$ is large.
-- There are $N$ individuals.  We assume that $N$ is large.
-- $\phi\in\mathbb{R}^N$ is the vector of phenotypes
-- $X\in\mathbb{R}^{N\times M}$ is the matrix of SNPs, normalized to have columns with sample mean 0 and sample variance 1.
-- $\beta$ is the vector of true SNP effect sizes.
-- $X\beta$ is thus the vector of genetic effects.
-- $\epsilon\in\mathbb{R}^N$ is the vector non-genetic effects.
+- There are $M  \gg 0$ genotypes.  
+- There are $N  \gg 0$ individuals.  
+- $\phi\in\mathbb{R}^N$ is the vector of phenotypes.
+- $X\in\mathbb{R}^{N\times M}$ is the genotype matrix, normalized to have columns with sample mean 0 and sample variance 1.
+- $\beta\in\mathbb{R}^M$ is the vector of true SNP effect sizes.
+- $X\beta \in\mathbb{R}^N$ is thus the vector of total genetic effects for each individual.
+- $\epsilon\in\mathbb{R}^N$ is the vector non-genetic effects for each individual.
 
-Furthermore, we model all three of these objects as random variables with the following properties:
+Furthermore, we model $X,\beta,\epsilon$ as random variables with the following properties:
 
 $$
 \begin{align}
-\mathrm{Var}(\epsilon)&= (1-h^2)  & \text{For some $h>0$} \\
+\mathrm{Var}(\epsilon)&= (1-h^2)I  & \text{For some $h>0$} \\
 \mathrm{Var}(\beta)&=\frac{h^2}{M}I \label{betavar} \\
 \mathbb{E}(\epsilon)&=0\\
 \mathbb{E}(\beta)&=0 \\
@@ -34,19 +35,18 @@ $$
 
 - The rows of $X$ are independent and identically distributed.
 - The distributions of columns of $X$ are "not too similar".
-- The SNP $X_{i,j}$ may be highly correlated with a few other SNPs $X_{i,k}$, but is uncorrelated with most SNPs.
+- The SNP $X_{i,j}$ may be highly correlated with a few other SNPs, but is uncorrelated with most SNPs.
 - $\beta,\epsilon,X$ are all mutually independent.
 
 
 Furthermore, define the following quantities related to Linkage Disequilibrium (LD).
 
-- The LD between SNP $j$ and SNP $k$ is denoted by $r_{j,}:=\mathbb{E}X_{i,j}X_{i,k}$, (which does not depend on the individual $i$ by our assumption that the rows of $X$ are iid).
+- The LD between SNP $j$ and SNP $k$ is denoted by $r_{jk}:=\mathbb{E}X_{i,j}X_{i,k}$, (which does not depend on the individual $i$ by our assumption that the rows of $X$ are iid).
 - The empirical LD between $j$ and $k$ is defined to be $\tilde{r}_{jk}:=\frac{1}{N}X_{:,j}^T X_{:,k}$.
 - The LD score for a SNP $j$ is defined to be $l_j:= \sum_k r_{jk}^2$.
 
 
 
-## Derivation of Method
 ### Properties of $\hat{\beta}_j$ and $\chi^2_j$
 We begin by computing the variance matrix of the genetic effects $X\beta$:
 
@@ -64,19 +64,19 @@ $$
 We can also compute the variance matrix of the phenotypes:
 
 $$
-\begin{eqnarray}
+\begin{align}
 &\mathrm{Var}(\phi)\\
 &= \mathrm{Var}(X\beta) + \mathrm{Var}(\epsilon) & \text{ By independence}\\
 &=h^2I + (1-h^2)I\\
 &= I.
-\end{eqnarray}
+\end{align}
 $$
 
 Note that the [heritability](Heritability.md) of the phenotype for an arbitrary individual $i$ is:
 
 $$
 \begin{align}
-\frac{\mathrm{Var}(X\beta)_{i,i} }{\mathrm{Var}(\phi)_{i,i}}&= h^2/1=h^2
+\frac{\mathrm{Var}(X\beta)_{i,i} }{\mathrm{Var}(\phi)_{i,i}}&= h^2
 \end{align}
 $$
 
@@ -93,7 +93,7 @@ $$
 $$
 
 
-In a GWAS, it is typical to run a separate single-variant regression for each variant. Denote by $\hat{\beta}_j$ the single-variant regression coefficient for SNP $J$.  This is given by:
+In a GWAS, it is typical to run a separate single-variant regression for each variant. Denote by $\hat{\beta}_j$ the single-variant regression coefficient for SNP $j$.  This is given by:
 
 $$
 \begin{align}
@@ -109,19 +109,19 @@ The squared regression errors of the $j$th GWAS regression are given by
 
 $$
 \begin{align}
- \lVert\phi- \hat{\beta}_jX_{:,j} \rVert^2 = \lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2
+ \lVert\phi- \hat{\beta}_jX_{:,j} \rVert^2 = \lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2.
 \end{align}
 $$ 
 
 
-We have assumed that $M$ is large, that columns of $X$ are not too similar, and that the components of $\beta$ are iid. Thus, GWAS regression $j$ will not explain any significant proportion of the variance of the phenotype.  So  
+We have assumed that $M$ is large, that columns of $X$ are not too similar, and that the components of $\beta$ are iid. Thus, GWAS regression on SNP $j$ will not explain any significant proportion of the variance of the phenotype.  So  
 
 
 $$
 \begin{align}
 &\lVert\phi- \frac{1}{N}\phi^T X_{:,j} X_{:,j} \rVert^2\\
 &\approx \lVert\phi\rVert^2    \\
-&\approx \mathrm{trace}( \mathrm{Var} \phi. )\\
+&\approx \mathrm{trace}\left( \mathrm{Var} (\phi) \right)\\
 &= N  \label{residuals}
 \end{align}
 $$
@@ -192,7 +192,7 @@ $$
 \end{align}
 $$
 
-At this stage we introduce another approximation.  We have assumed that SNP $j$ has high correlation with only a small number of SNPs.  Thus the first $O(1/N)$ term can be expected to be significantly smaller than the second.  We therefor neglect this term, resulting in:
+At this stage we introduce another approximation.  We have assumed that SNP $j$ has high correlation with only a small number of other SNPs.  Thus the first $O(1/N)$ term can will be much smaller than the second.  We therefor neglect this term, yielding:
 
 $$
 \mathbb{E}\sum_k \tilde{r}_{jk}^2 \approx l_j + \frac{1}{N}(M-l_j)
@@ -214,7 +214,7 @@ $$
 &= N \mathbb{E}(   \frac{1}{N}( X_{:,j}^T X \mathbb{E}(\beta \beta^T|X)  X^T X_{:,j}   + X_{:,j}^T \mathbb{E}(\epsilon\epsilon^T)X_{:,j}   )     )    \\
 &= N \mathbb{E} ( \frac{h^2}{MN^2} X_{:,j}^T X X^T X_{:,j}+ \frac{1}{N}  (1-h^2) )\\
 &= N \mathbb{E} ( \frac{h^2}{M}\sum_k \tilde{r}^2_{jk} + \frac{1}{N}  (1-h^2) ) &\text{def of }\tilde{r}^2_{jk} \label{hstep}\\
-&= \frac{h^2}{M}(Nl_j + M-j_j) + 1 - h^2\\
+&= \frac{h^2}{M}(Nl_j + M-l_j) + 1 - h^2\\
 &= \frac{h^2}{M}l_j(N-1)+1\\
 &\approx \frac{h^2}{M}l_jN+1\\
 \end{align}
@@ -223,16 +223,23 @@ $$
 This is the main Linkage Disequilibrium Score Regression equation.
 
 ## Intuition about derivation
-The key steps in the LDSC derivation above are between equations ($\ref{varphi}$) and ($\ref{hstep}$).  These steps relate the GWAS regression coefficients to measures of linkage disequilibrium between SNPs.  These steps are only possible because of our distributional assumptions on $\beta$ and $\epsilon$.
+The key steps in the LDSC derivation above are between equations ($\ref{varphi}$) and ($\ref{hstep}$).  These steps relate the GWAS regression coefficients to a measure of linkage disequilibrium between SNPs.  These steps are only possible because of our distributional assumptions on $\beta$ and $\epsilon$.
 
 
 
 ## Critique of assumptions
 
-Numerous authors have criticised the plausibility of the assumptions underlying LDSC.  For instance ...
+[//]: # (Numerous authors have criticised the plausibility of the assumptions underlying LDSC.  For instance ...)
 
 
-We saw above that the most important of LDSC's assumptions is that  $\mathbb{Var}\beta=h^2 I$.  This assumption can be understood as an **isotropic pleiotropy prior**.  It amounts to the assumption that the heritability of a trait is distributed evenly across the genome, without correlation between SNPs.
+We saw above that the most important of LDSC's assumptions is that  $\mathbb{Var}\beta=h^2 I$.  This assumption can be understood as an **isotropic pleiotropy prior**, and it amounts to the assumption that the heritability of a trait is distributed evenly across the genome, without correlation between SNPs.
+
+How plausible is this assumption?
+
+- On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  So, in a rough sense, assuming that the heritability of a trait in distributed across the genome is not unreasonable
+- On the other hand, the assumption of perfectly uniform pleiotropy strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around the HLA region.
+
+So it would be fair to say that while LDSC's key assumption is valid in a rough sense, it is not accurate in a granular sense.
 
 [//]: # (To discuss: Plietotopy an important fact from GWAS.  But not all variants equally likely.  e.g. HLA-> autoimmune disease)
 
