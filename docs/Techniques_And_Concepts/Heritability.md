@@ -16,8 +16,7 @@ h^2:= \frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}.
 $$
 
 
-Note that in the uncorrelated-additive model above, $h^2$ is equal to:
-- The [coefficient of determination](https://en.wikipedia.org/wiki/Coefficient_of_determination) in the linear regression of $Y$ on $G$.
+Note that in the uncorrelated-additive model above, $h^2$ is equal to the [coefficient of determination](https://en.wikipedia.org/wiki/Coefficient_of_determination) in the linear regression of $Y$ on $G$.
 
 
 
@@ -25,10 +24,13 @@ $h^2$ thus expresses the proportion of phenotypic variation attributable to gene
 
 ## Note on assumption
 The assumption that $G$ and $E$ are uncorrelated may be unrealistic in some contexts.  This is problematic for two reasons:
+
+
 1.  If $\mathrm{Cov}(G,E)\ne 0$, then $h^2$ loses much of its interpretive value.  For instance, it is no longer the coefficient of determination of a regression.
 2. According to Visscher et al., if $\mathrm{cov}(G,E)\ne 0$, then  statistical methods for estimating $h^2$ will tend to produce inflated estimates.
 
-As I understand it, practitioners typically take steps to argue that any correlation between $G$ and $E$ is not too strong, so that the above two effects are not too severe.
+
+As I understand it, practitioners typically argue that any correlation between $G$ and $E$ is not too strong, so that the above effects are not too severe, and heritability remains a useful concept.
 
 
 
