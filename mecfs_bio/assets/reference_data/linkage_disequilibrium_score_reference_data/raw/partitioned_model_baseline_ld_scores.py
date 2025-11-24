@@ -32,14 +32,18 @@ and Kellis.31
 • FANTOM5 enhancers were obtained from Andersson et al.22
 • For each of these 24 categories, we added a 500bp window around the category as an additional
 category to keep our heritability estimates from being inflated by heritability in flanking regions.
-
+• For each of DHS, H3K4me1, H3K4me3, and H3K9ac, we added a 100bp window around the ChIPseq peak as an additional category.
+• We added an additional category containing all SNPs
 
 
 Since this dataset is hosted in a requester-pays Google Cloud bucket, I have mirrored it in my dropbox.
 """
+
 from pathlib import PurePath
 
-from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import ReferenceFileMeta
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 THOUSAND_GENOME_BASE_MODEL_PARTITIONED_LD_SCORES = DownloadFileTask(
