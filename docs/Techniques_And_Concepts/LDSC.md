@@ -25,8 +25,8 @@ Furthermore, we model $X,\beta,\epsilon$ as random variables with the following 
 
 $$
 \begin{align}
-\mathrm{Var}(\epsilon)&= (1-h^2)I  & \text{For some $h>0$} \\
-\mathrm{Var}(\beta)&=\frac{h^2}{M}I \label{betavar} \\
+\mathbb{Var}(\epsilon)&= (1-h^2)I  & \text{For some $h>0$} \\
+\mathbb{Var}(\beta)&=\frac{h^2}{M}I \label{betavar} \\
 \mathbb{E}(\epsilon)&=0\\
 \mathbb{E}(\beta)&=0 \\
 \mathbb{E} X &=0 \\ 
@@ -53,7 +53,7 @@ We begin by computing the variance matrix of the genetic effects $X\beta$:
 
 $$
 \begin{align}
-&\mathrm{Var}(X\beta)\\
+&\mathbb{Var}(X\beta)\\
 &=\mathbb{E} X \beta \beta^T X^T\\
 &= \mathbb{E} (X \mathbb{E} ( \beta \beta^T |X ) X^T)  & \text{Tower law of expectation} \\
 &=\frac{h^2}{M} \mathbb{E} X X^T & \text{by (\ref{betavar})} \\
@@ -65,8 +65,8 @@ We can also compute the variance matrix of the phenotypes:
 
 $$
 \begin{align}
-&\mathrm{Var}(\phi)\\
-&= \mathrm{Var}(X\beta) + \mathrm{Var}(\epsilon) & \text{ By independence}\\
+&\mathbb{Var}(\phi)\\
+&= \mathbb{Var}(X\beta) + \mathbb{Var}(\epsilon) & \text{ By independence}\\
 &=h^2I + (1-h^2)I\\
 &= I.
 \end{align}
@@ -76,7 +76,7 @@ Note that the [heritability](Heritability.md) of the phenotype for an arbitrary 
 
 $$
 \begin{align}
-\frac{\mathrm{Var}(X\beta)_{i,i} }{\mathrm{Var}(\phi)_{i,i}}&= h^2
+\frac{\mathbb{Var}(X\beta)_{i,i} }{\mathbb{Var}(\phi)_{i,i}}&= h^2
 \end{align}
 $$
 
@@ -121,7 +121,7 @@ $$
 \begin{align}
 &\lVert\phi- \frac{1}{N}\phi^T X_{:,j} X_{:,j} \rVert^2\\
 &\approx \lVert\phi\rVert^2    \\
-&\approx \mathrm{trace}\left( \mathrm{Var} (\phi) \right)\\
+&\approx \mathrm{trace}\left( \mathbb{Var} (\phi) \right)\\
 &= N  \label{residuals}
 \end{align}
 $$
@@ -205,12 +205,12 @@ With the preliminaries out of the way, now compute the expectation of the chi sq
 $$
 \begin{align}
 &\mathbb{E} (\chi^2_j)\\
-&=N \mathrm{Var}(\hat{\beta_j)} & \text{by (\ref{wald})}\\
-&=N \mathbb{E} \mathrm{Var}(\hat{\beta}_j | X) + \underbrace{\mathrm{Var}\mathbb{E}( \hat{\beta}_j | X  )}_{=0}   & \text{Law of Total Variance}\\
-&= N \mathbb{E}(  \mathrm{Var}(  \frac{1}{N} \phi^T X_{:,j} |X)    )  \label{varphi}   \\
-&= N \mathbb{E}(  \mathrm{Var}(  \frac{1}{N} (X\beta + \epsilon)^T X_{:,j} |X)    )    \\
-&= N \mathbb{E}(  \mathrm{Var}(  \frac{1}{N}( (X\beta)^TX_{:,j} + \epsilon^T X_{:,j}) |X)    )    \\
-&= N \mathbb{E}(  \mathrm{Var}(  \frac{1}{N}( X_{:,j}^T (X\beta)+ X_{:,j}^T\epsilon   ) |X)    )    \\
+&=N \mathbb{Var}(\hat{\beta_j)} & \text{by (\ref{wald})}\\
+&=N \mathbb{E} \mathbb{Var}(\hat{\beta}_j | X) + \underbrace{\mathbb{Var}\mathbb{E}( \hat{\beta}_j | X  )}_{=0}   & \text{Law of Total Variance}\\
+&= N \mathbb{E}(  \mathbb{Var}(  \frac{1}{N} \phi^T X_{:,j} |X)    )  \label{varphi}   \\
+&= N \mathbb{E}(  \mathbb{Var}(  \frac{1}{N} (X\beta + \epsilon)^T X_{:,j} |X)    )    \\
+&= N \mathbb{E}(  \mathbb{Var}(  \frac{1}{N}( (X\beta)^TX_{:,j} + \epsilon^T X_{:,j}) |X)    )    \\
+&= N \mathbb{E}(  \mathbb{Var}(  \frac{1}{N}( X_{:,j}^T (X\beta)+ X_{:,j}^T\epsilon   ) |X)    )    \\
 &= N \mathbb{E}(   \frac{1}{N}( X_{:,j}^T X \mathbb{E}(\beta \beta^T|X)  X^T X_{:,j}   + X_{:,j}^T \mathbb{E}(\epsilon\epsilon^T)X_{:,j}   )     )    \\
 &= N \mathbb{E} ( \frac{h^2}{MN^2} X_{:,j}^T X X^T X_{:,j}+ \frac{1}{N}  (1-h^2) )\\
 &= N \mathbb{E} ( \frac{h^2}{M}\sum_k \tilde{r}^2_{jk} + \frac{1}{N}  (1-h^2) ) &\text{def of }\tilde{r}^2_{jk} \label{hstep}\\
@@ -236,10 +236,13 @@ We saw above that the most important of LDSC's assumptions is that  $\mathbb{Var
 
 How plausible is this assumption?
 
-- On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  So, in a rough sense, assuming that the heritability of a trait in distributed across the genome is not unreasonable
-- On the other hand, the assumption of perfectly uniform pleiotropy strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around the HLA region.
+- On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  So, in a rough sense, assuming that the heritability of a trait is distributed across the genome is not unreasonable.
+- On the other hand, the assumption of perfectly uniform pleiotropy strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region.
 
-So it would be fair to say that while LDSC's key assumption is valid in a rough sense, it is not accurate in a granular sense.
+The issue of the implausibility of the isotropic pleiotropy prior is partially resolved by stratified linkage disequilibrium score regression[@finucane2015partitioning] (S-LDSC), an extension proposed by the same authors who devised LDSC.  S-LDSC allows the use of a pre-specified functional partitioning of the genome. While heritability is still assumed to be evenly distributed within a given partition, S-LDSC allows it to differ across partitions.
+
+
+[//]: # (So it would be fair to say that while LDSC's key assumption is valid in a rough sense, it is not accurate in a granular sense.)
 
 [//]: # (To discuss: Plietotopy an important fact from GWAS.  But not all variants equally likely.  e.g. HLA-> autoimmune disease)
 

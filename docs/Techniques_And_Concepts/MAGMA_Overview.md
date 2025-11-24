@@ -38,7 +38,7 @@ for all $i$, where $\beta_i$ is the regression coefficient of $Y$ on $X_i$, and 
 Let $G$ be the set of SNPs associated with a gene of interest.  We wish to measure the strength of the evidence that $\beta_i\ne 0$ for some $i\in G$. That is, we wish to judge how likely it is that the gene affects the phenotype.
 
 
-To evaluate the evidence, [MAGMA uses as its test statistic](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true) $\sum_{i\in G}Z_i^2$, where $Z_i$ is the Z-statistic of the ith GWAS regression. 
+To evaluate the evidence, [MAGMA uses as its test statistic](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true)[@MagmaSNPWiseNote;@de2015magma] $\sum_{i\in G}Z_i^2$, where $Z_i$ is the Z-statistic of the ith GWAS regression. 
 
 This test statistic has a [generalized chi-squared distribution](https://en.wikipedia.org/wiki/Generalized_chi-squared_distribution) under the null hypothesis.  The details of its distribution depend on the correlations between the individual $Z$-statistics, which in turn depends on the linkage disequilibrium structure of the SNPs under study.  This is why MAGMA gene analysis requires linkage disequilibrium reference data.
 
@@ -71,6 +71,7 @@ The null hypothesis $\beta_{i,j}= 0$ is then tested.
 Rejecting this null would indicate that the degree to which the gene $i$ participates in the biological system $j$ is predictive of the extent of association of the gene with the phenotype, $Z_i$.  This would suggest that the biological system is related the phenotype.
 
 
+\bibliography
 
 ## References
 The above discussion is based on:
