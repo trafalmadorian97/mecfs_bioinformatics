@@ -8,6 +8,7 @@ I applied MAGMA's SNP-wise mean model to the summary statistics from DecodeME's 
 
 
 In this step:
+
 - Data from the 1000 genomes projects from the [MAGMA website](https://cncr.nl/research/magma/) was used for a linkage disequilibrium reference.
 - Data from the [SNP151 database](https://hgw2.soe.ucsc.edu/cgi-bin/hgTables?hgsid=2912494930_cRufLdpdc1ynRc2sCM3g1WGAWAgH&hgta_doSchemaDb=hg19&hgta_doSchemaTable=snp151Flagged
   ) was used to assign RSIDs to SNPs.
