@@ -12,3 +12,8 @@ As before, I ran the gene analysis set, followed by the gene-set analysis step. 
 
 
 The significant tissues identified by MAGMA lie exclusively in the brain, consistent with leading theories of the biology of the genetic component of educational attainment.
+
+
+# Reproducing
+
+To reproduce this analysis run the [Educational Attainment GWAS Analysis Script][mecfs_bio.analysis.lee_educational_attainment_analysis]
