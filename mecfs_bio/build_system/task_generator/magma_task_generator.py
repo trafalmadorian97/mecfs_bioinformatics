@@ -136,7 +136,8 @@ class MagmaTaskGeneratorFromRaw:
         tissue_expression_gene_set_task: Task,
         base_name: str,
         sample_size: int,
-        pipe: DataProcessingPipe = IdentityPipe(),
+        pre_pipe: DataProcessingPipe = IdentityPipe(),
+        post_pipe: DataProcessingPipe = IdentityPipe(),
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
     ):
@@ -147,12 +148,13 @@ class MagmaTaskGeneratorFromRaw:
             genome_build=genome_build,
             liftover_to="19",
             fmt=fmt,
+            pre_pipe=pre_pipe,
         )
         parquet_file_task = GwasLabSumstatsToTableTask.create_from_source_task(
             source_tsk=sumstats_task,
             asset_id=base_name + "_parquet_table_from_sumstats",
             sub_dir="processed",
-            pipe=pipe,
+            pipe=post_pipe,
         )
         return cls(
             sumstats_task=sumstats_task,

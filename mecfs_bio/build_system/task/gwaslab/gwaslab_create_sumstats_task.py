@@ -203,6 +203,7 @@ class GWASLabCreateSumstatsTask(Task):
             fmt=self.fmt,
         )
         sumstats = transform_gwaslab_sumstats(sumstats, spec=transform_spec)
+        import pdb; pdb.set_trace()
         out_path = scratch_dir / "pickled_sumstats.pickle"
         gl.dump_pickle(sumstats, path=out_path)
         return FileAsset(out_path)

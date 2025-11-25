@@ -4,6 +4,7 @@ Pull raw gwas summary data from:
 Files are hosted at: https://zenodo.org/records/1251813
 """
 from pathlib import PurePath
+import polars as pl
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
@@ -16,7 +17,12 @@ PULLIT_ET_AL_2018_RAW = DownloadFileTask(
         trait="body_fat_distribution",
         project="pullt_et_al_2018",
         sub_dir="raw",
-        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=" ")),
+        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=" ",
+                                                               null_values=["NA"],
+                                                               schema_overrides={
+                                                                   "N":pl.Float64()
+                                                               }
+                                                               )),
         project_path=PurePath("whradjbmi.giant-ukbb.meta-analysis.combined.23May2018.txt.gz"),
     ),
     url="https://zenodo.org/records/1251813/files/whradjbmi.giant-ukbb.meta-analysis.combined.23May2018.txt.gz?download=1",

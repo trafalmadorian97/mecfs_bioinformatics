@@ -23,6 +23,9 @@ from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_express
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
 )
+from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.drop_null_pipe import DropNullsPipe
+from mecfs_bio.build_system.task.pipes.split_col import SplitColPipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
     MagmaTaskGeneratorFromRaw,
 )
@@ -48,5 +51,17 @@ PULLIT_ET_AL_2018_COMBINED_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
         OR=None,
         se="SE",
         info="INFO",
+        rsid="RSID",
     ),
+    pre_pipe=
+    CompositePipe(
+    [
+    DropNullsPipe(subset=["CHR","POS"]),
+    SplitColPipe(
+        col_to_split="SNP",
+        split_by=":",
+        new_col_names=("RSID","al1","al2")
+    )
+    ]
+    )
 )
