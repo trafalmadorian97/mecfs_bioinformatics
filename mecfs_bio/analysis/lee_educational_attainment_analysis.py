@@ -8,6 +8,13 @@ from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_
 
 
 def run_initial_analysis():
+    """
+    Function to run initial analysis on the Lee et al. Educational Attainment GWAS
+    Includes:
+    Calculating heritability by LDSC
+    Plotting key tissues as determined by MAGMA Gene Level Analysis
+
+    """
     DEFAULT_RUNNER.run(
         [
             LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.inner.bar_plot_task,
