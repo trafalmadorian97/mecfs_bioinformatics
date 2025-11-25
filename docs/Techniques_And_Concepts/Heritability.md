@@ -30,7 +30,7 @@ The assumption that $G$ and $E$ are uncorrelated may be unrealistic in some cont
 2. According to Visscher et al., if $\mathrm{cov}(G,E)\ne 0$, then  statistical methods for estimating $h^2$ will tend to produce inflated estimates.
 
 
-As I understand it, practitioners typically argue that any correlation between $G$ and $E$ is not too strong, so that the above effects are not too severe, and heritability remains a useful concept.
+As I understand it, practitioners typically argue that any correlation between $G$ and $E$ is not too strong, so that the above effects are not too severe, and the heritability concept remains a useful.
 
 
 

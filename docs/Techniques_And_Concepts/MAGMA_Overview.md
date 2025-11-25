@@ -11,7 +11,7 @@
 
 ## Gene Analysis
 ### Purpose
-GWAS summary statistics consist of SNP-level regression coefficients and standard errors. The purpose of the MAGMA gene-analysis step is to convert these SNP-level statistics to gene-level statistics, so we can judge which genes are likely to affect the phenotype.
+GWAS summary statistics consist of [SNP](https://en.wikipedia.org/wiki/Single-nucleotide_polymorphism)-level regression coefficients and standard errors. The purpose of the MAGMA gene-analysis step is to convert these SNP-level statistics to gene-level statistics, so we can judge which genes are likely to affect the phenotype.
 
 ### Requirements
 Gene analysis requires:
@@ -45,20 +45,24 @@ This test statistic has a [generalized chi-squared distribution](https://en.wiki
 MAGMA converts the test-statistic to a p-value via a[ numerical-integration procedure](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true). A small p value indicates strong evidence that the gene affects the phenotype.
 
 ## Gene Property Analysis
+
 ### Purpose
+
 While knowing which genes are associated with the phenotype is of independent interest, understanding a phenotype requires knowing the biological systems that underlie it. To aid in this, MAGMA provides a gene property module, which aims to answer the question: "are genes 
-associated with the phenotype also associated with particular biological systems?"
+associated with the phenotype over-represented in particular biological systems?"
+
 ## Requirements
 The gene property analysis module requires:
+
 1. The output of the gene analysis step, associating p-values with genes.
-2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, RNAseq data from different tissues could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
+2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
 
 ## Mathematical Overview
 - Let $Z_i$ be the $z$-score of the association of the gene with the phenotype.
 - Let $E_{i,j}$ be the measure of the participation of gene $i$ in biological system $j$.
 - Let $m$ be a vector of control covariates. 
 
-Magma fits the regression
+For each biological system $j$, MAGMA fits the regression
 
 $$
 Z_i = \beta_0 + \beta_{i,j} E_{i,j} + (\beta^m_{i,j})^T m + \epsilon_{i,j},
@@ -70,8 +74,14 @@ The null hypothesis $\beta_{i,j}= 0$ is then tested.
 
 Rejecting this null would indicate that the degree to which the gene $i$ participates in the biological system $j$ is predictive of the extent of association of the gene with the phenotype, $Z_i$.  This would suggest that the biological system is related the phenotype.
 
+## Limitations
 
-\bibliography
+While MAGMA is a very useful approach for detecting the key biological systems involved in a disease or trait, it has a number of limitations.  These include:
+
+1.  It is fundamentally limited by the availability and accuracy of data associating genes with biological systems.  For instance, if tissue-specific RNA-seq data is used, but RNAseq has not been performed on the key tissue involved in the disease, MAGMA will not produce useful results.
+2. Since MAGMA in its original form mostly uses proximity to associate genes with SNPs, it cannot incorporate long-distance regulatory effects.  If such effects are important to a disease, MAGMA could give misleading results
+
+
 
 ## References
 The above discussion is based on:
@@ -85,3 +95,8 @@ The above discussion is based on:
 [MAGMA Site](https://cncr.nl/research/magma/)
 
 [Note on Magma SNP-wise model](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true)
+
+[Paper Critiquing the original MAGMA SNP-wise model](https://www.biorxiv.org/content/10.1101/2020.08.20.260224v1.abstract) (MAGMA was updated in response to this critique.)
+
+
+\bibliography
