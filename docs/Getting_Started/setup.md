@@ -1,6 +1,6 @@
 # Initial Setup
 
-We use Pixi are our package manager.  Setup Pixi as described [here](https://pixi.sh/dev/installation/),
+We use Pixi are our package manager.  Setup [Pixi](https://pixi.sh/dev/) as described [here](https://pixi.sh/dev/installation/),
 or using the bash command
 
 ```bash
