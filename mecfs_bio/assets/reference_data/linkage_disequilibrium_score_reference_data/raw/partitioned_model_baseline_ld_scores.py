@@ -37,6 +37,10 @@ category to keep our heritability estimates from being inflated by heritability 
 
 
 Since this dataset is hosted in a requester-pays Google Cloud bucket, I have mirrored it in my dropbox.
+
+
+
+Data is officially located at : https://console.cloud.google.com/storage/browser/broad-alkesgroup-public-requester-pays
 """
 
 from pathlib import PurePath
