@@ -6,10 +6,8 @@ Body fat distribution GWAS
 from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
     MAGMA_1_1_BINARY_EXTRACTED,
 )
-from mecfs_bio.assets.gwas.body_fat_distribution.pullit_et_al_2018.raw_gwas_data.pullit_et_al_raw_gwas_data import \
-    PULLIT_ET_AL_2018_RAW
-from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.raw_gwas_data.lee_et_al_catalog_harmonized import (
-    LEE_ET_AL_2018_CATALOG_HARMONIZED_RAW,
+from mecfs_bio.assets.gwas.body_fat_distribution.pullit_et_al_2018.raw_gwas_data.pullit_et_al_raw_gwas_data import (
+    PULLIT_ET_AL_2018_RAW,
 )
 from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import (
     MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
@@ -37,7 +35,7 @@ PULLIT_ET_AL_2018_COMBINED_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
     magma_ld_ref_task=MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
     tissue_expression_gene_set_task=GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
     base_name="pullit_et_al_2018",
-    sample_size=484_564,  #source: data file
+    sample_size=484_564,  # source: data file
     fmt=GWASLabColumnSpecifiers(
         # rsid="SNP",
         chrom="CHR",
@@ -53,15 +51,12 @@ PULLIT_ET_AL_2018_COMBINED_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
         info="INFO",
         rsid="RSID",
     ),
-    pre_pipe=
-    CompositePipe(
-    [
-    DropNullsPipe(subset=["CHR","POS"]),
-    SplitColPipe(
-        col_to_split="SNP",
-        split_by=":",
-        new_col_names=("RSID","al1","al2")
-    )
-    ]
-    )
+    pre_pipe=CompositePipe(
+        [
+            DropNullsPipe(subset=["CHR", "POS"]),
+            SplitColPipe(
+                col_to_split="SNP", split_by=":", new_col_names=("RSID", "al1", "al2")
+            ),
+        ]
+    ),
 )

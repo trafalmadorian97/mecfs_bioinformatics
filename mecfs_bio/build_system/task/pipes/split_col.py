@@ -16,7 +16,10 @@ class SplitColPipe(DataProcessingPipe):
             x.collect()
             .to_polars()
             .with_columns(
-                pl.col(self.col_to_split).str.split_exact(self.split_by, n= len(self.new_col_names) -1).struct.rename_fields(self.new_col_names).alias("fields")
+                pl.col(self.col_to_split)
+                .str.split_exact(self.split_by, n=len(self.new_col_names) - 1)
+                .struct.rename_fields(self.new_col_names)
+                .alias("fields")
             )
             .unnest("fields")
         )

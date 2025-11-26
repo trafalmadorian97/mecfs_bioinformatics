@@ -1,4 +1,4 @@
-# Linkage Disequilibrium Score Regression for Heritability
+# Linkage Disequilibrium Score Regression 
 Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC)  is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends strongly on the validity certain modeling assumptions. This pages includes a detailed derivation of LDSC, together with a discussion of its modeling assumptions.
 
 ## Derivation of Method
