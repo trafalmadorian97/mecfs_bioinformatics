@@ -11,6 +11,10 @@ Finucane, Hilary K., et al. "Partitioning heritability by functional annotation 
 
 https://github.com/bulik/ldsc/wiki/Partitioned-Heritability
 
+
+
+
+Data is officially located at : https://console.cloud.google.com/storage/browser/broad-alkesgroup-public-requester-pays
 """
 
 from pathlib import PurePath

@@ -7,9 +7,9 @@ $$
 Y=E+G.
 $$
 
-Assume also that $E$ and $G$ are uncorrelated.
+Assume also that the random variables $E$ and $G$ are uncorrelated.
 
-Under this assumption, define heritabiity as
+Under this assumption, define heritability as
 
 $$
 h^2:= \frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}.
@@ -30,8 +30,18 @@ The assumption that $G$ and $E$ are uncorrelated may be unrealistic in some cont
 2. According to Visscher et al., if $\mathrm{cov}(G,E)\ne 0$, then  statistical methods for estimating $h^2$ will tend to produce inflated estimates.
 
 
-As I understand it, practitioners typically argue that any correlation between $G$ and $E$ is not too strong, so that the above effects are not too severe, and the heritability concept remains a useful.
+As I understand it, practitioners typically argue that any correlation between $G$ and $E$ is not strong, so that the above effects are not severe, and the heritability concept remains a useful.
+ 
 
+## Heritability Depends on the Population Context
+
+The heritability of a trait is highly dependent on the studied population.
+
+For instance, suppose we study a trait in two genetically identical populations $A$ and $B$, but population $B$ lives in a much more variable environment than population $A$, and that this variability affects the trait under study.  Then $\mathrm{Var}(Y_B)>\mathrm{Var}(Y_A)$ .  Consequently, $h^2_A> h^2_B$, despite the genetics of the two populations being the same. 
+
+As a more specific example, note that (a) many recent GWAS have shown that obesity is highly heritable, and that (b) there has been a large increase in obesity rates in recent history, indicating a strong environmental influence.  These two facts do not contradict one another.  The obesity GWASes have studied cross-sectional populations drawn from a single snapshot in time, and have shown that a large portion of the variability in obesity in such cross-sectional populations is attributable to genetics.  On the other hand, if the GWAS samples had included individuals from a range of historical periods, environmental influence would have been proportionately larger, and calculated heritability would have been smaller.
+
+For a popular science book that discusses subtle issues in the definition of heredity, see Harden 2021[@harden2021genetic].
 
 
 

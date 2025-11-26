@@ -4,6 +4,9 @@ See: https://github.com/bulik/ldsc/wiki/Partitioned-Heritability
 and
 Finucane, Hilary K., et al. "Partitioning heritability by functional annotation using genome-wide association summary statistics." Nature genetics 47.11 (2015): 1228-1235.
 
+
+Data is officially located at : https://console.cloud.google.com/storage/browser/broad-alkesgroup-public-requester-pays
+
 """
 
 from pathlib import PurePath

@@ -14,7 +14,7 @@
 Inflammatory bowel diseases (IBDs) are chronic disorders of the gastrointestinal tract with the following two subtypes: Crohn’s disease (CD) and ulcerative colitis (UC). To date, most IBD genetic associations were derived from individuals of European (EUR) ancestries. Here we report the largest IBD study of individuals of East Asian (EAS) ancestries, including 14,393 cases and 15,456 controls. We found 80 IBD loci in EAS alone and 320 when meta-analyzed with ~370,000 EUR individuals (~30,000 cases), among which 81 are new. EAS-enriched coding variants implicate many new IBD genes, including ADAP1 and GIT2. Although IBD genetic effects are generally consistent across ancestries, genetics underlying CD appears more ancestry dependent than UC, driven by allele frequency (NOD2) and effect (TNFSF15). We extended the IBD polygenic risk score (PRS) by incorporating both ancestries, greatly improving its accuracy and highlighting the importance of diversity for the equitable deployment of PRS.
 
 
-**Link:** https://www.nature.com/articles/s41588-023-01384-0
+**Paper Link:** [https://www.nature.com/articles/s41588-023-01384-0](https://www.nature.com/articles/s41588-023-01384-0)
 
 
 **Asset Link**: [Here][mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023]
