@@ -1,3 +1,5 @@
+from typing import Literal
+
 import structlog
 
 logger = structlog.get_logger()
@@ -21,17 +23,20 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
+ReadMode = Literal["r", "r:gz"]
+
 
 @frozen
 class ExtractTarGzipTask(Task):
     """
-    Task to extract the contents of a gzipped tar file to a target directory
+    Task to extract the contents of a (possibly gzipped) tar file to a target directory
     Set subdir_name to extract only the contents of one subfolder within the tar file
     """
 
     _meta: Meta
     _source_file_task: Task
     _subdir_name: str | None
+    _read_mode: ReadMode = "r:gz"
 
     @property
     def meta(self) -> Meta:
@@ -51,7 +56,7 @@ class ExtractTarGzipTask(Task):
         src_path = source_asset.path
 
         logger.debug(f"Extracting from tar/gzip file : {self._source_asset_id}...")
-        with tarfile.open(src_path, "r:gz") as tar_object:
+        with tarfile.open(src_path, self._read_mode) as tar_object:
             if self._subdir_name is None:
                 tar_object.extractall(scratch_dir)
             else:
@@ -71,6 +76,7 @@ class ExtractTarGzipTask(Task):
         source_task: Task,
         sub_folder: PurePath = PurePath("extracted"),
         sub_folder_name_inside_tar: str | None = None,
+        read_mode: ReadMode = "r:gz",
     ) -> "ExtractTarGzipTask":
         source_meta = source_task.meta
         assert isinstance(source_meta, ReferenceFileMeta)
@@ -83,4 +89,5 @@ class ExtractTarGzipTask(Task):
             ),
             source_file_task=source_task,
             subdir_name=sub_folder_name_inside_tar,
+            read_mode=read_mode,
         )
