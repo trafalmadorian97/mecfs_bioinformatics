@@ -6,6 +6,8 @@ Functional categories
 
 See: Finucane, Hilary K., et al. "Partitioning heritability by functional annotation using genome-wide association summary statistics." Nature genetics 47.11 (2015): 1228-1235.
 
+Excerpt:
+
 Functional category annotations were largely derived from  ROADMAP and ENCODE
 
 In detail (from the paper):
@@ -57,7 +59,7 @@ THOUSAND_GENOME_BASE_MODEL_PARTITIONED_LD_SCORES = DownloadFileTask(
         sub_group="LDSCORE_1000G_Phase3_baseline",
         sub_folder=PurePath("raw"),
         filename="LDSCORE_1000G_Phase3_baseline_v1.2_ldscores",
-        extension="tar",
+        extension=".tar",
     ),
     url="https://www.dropbox.com/scl/fi/w0syfa29pnhd3heq3slmq/LDSCORE_1000G_Phase3_baseline_v1.2_ldscores.tar?rlkey=vizywdwx79s7d0xg0t5yh2man&dl=1",
     md5_hash="4a8faf1ec665d9cbfb67ea18139d98bf",

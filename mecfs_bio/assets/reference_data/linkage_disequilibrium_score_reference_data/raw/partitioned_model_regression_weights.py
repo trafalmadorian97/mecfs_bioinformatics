@@ -31,7 +31,7 @@ HM3_LD_SCORE_REGRESSION_WEIGHTS = DownloadFileTask(
         sub_group="LDSCORE_1000G_Phase",
         sub_folder=PurePath("raw"),
         filename="LDSCORE_1000G_Phase3_weights_hm3_no_MHC",
-        extension="tar",
+        extension=".tar",
     ),
     url="https://www.dropbox.com/scl/fi/wycm3egtm4if69wcs65pb/LDSCORE_1000G_Phase3_weights_hm3_no_MHC.tar?rlkey=e11bcg1rpkh4d7subfwjixfpj&dl=1",
     md5_hash="a98ac0f089ee285177544a3e6e721ca3",

@@ -40,6 +40,7 @@ MILLION_VETERANS_EUR_LDL_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
         ea="effect_allele",
         nea="other_allele",
         eaf="effect_allele_frequency",
+        beta="beta",
         p="p_value",
         n="n",
         info="r2",
