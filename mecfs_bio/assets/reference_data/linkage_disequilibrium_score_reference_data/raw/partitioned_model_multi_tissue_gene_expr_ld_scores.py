@@ -22,7 +22,7 @@ THOUSAND_GENOME_PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_RAW: Download
         sub_group="LDSCORE_LDSC_SEG",
         sub_folder=PurePath("raw"),
         filename="LDSCORE_LDSC_SEG_ldscores_Multi_tissue_gene_expr_1000Gv3_ldscores",
-        extension="tar",
+        extension=".tar",
     ),
     url="https://www.dropbox.com/scl/fi/uabu3197gchjtuamn0691/LDSCORE_LDSC_SEG_ldscores_Multi_tissue_gene_expr_1000Gv3_ldscores.tar?rlkey=8lanxtrs146nsxrkhyqeiczmu&dl=1",
     md5_hash="fa2750675688474d8fceeab675a14f90",
