@@ -4,11 +4,18 @@ from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_g
 )
 
 
-def run_initial_analysis():
+def run_ibd_analysis():
+    """
+    This script runs a basic analysis of the IBD GWAS from Liu et al.
+    It includes:
+
+
+    - Using MAGMA to combine the IBD GWAS summary statistics with tissue-specific expression data from GTEx to identify key tissues involved in control of LDL levels.
+    """
     DEFAULT_RUNNER.run(
         [LIU_ET_AL_IBD_EUR_37_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT], incremental_save=True
     )
 
 
 if __name__ == "__main__":
-    run_initial_analysis()
+    run_ibd_analysis()

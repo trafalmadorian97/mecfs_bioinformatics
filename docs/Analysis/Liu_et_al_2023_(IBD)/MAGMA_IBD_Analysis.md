@@ -16,5 +16,7 @@ Of note, the associations with colon and intestinal tissue make sense. These fin
 
 The association with whole blood may be a consequence of genes expressed in leukocytes, and may reflect the autoimmune nature of IBD. Ficucane et al.[@finucane2018heritability] hypothesized that the lungs of post-mortem donors from which the GTEx is derived may have contained a significant quantity of blood.  If this hypothesis is correct, it would also explain the significant association of IBD with lung tissue observed here.
 
+# Reproducing
+To reproduce the above, run the [IBD GWAS Analysis Script][mecfs_bio.analysis.ibd_analysis].
 
 [//]: # (On the other hand, the association with  lung and whole blood is less obvious. These associations could be spurious, reflecting a limitation of the MAGMA method.  On the other hand, they could be real, albeit surprising, insights into IBD pathology.)
