@@ -52,6 +52,12 @@ biostatistics = { path = ".", editable = true }
 install-parquet-cli = { cmd = "bash -lc 'cargo install parquet@57.0.0 --features=cli --locked --root ${CONDA_PREFIX}'" }
 parquet-fromcsv = { cmd = "parquet-fromcsv" }
 
+[tool.setuptools]
+packages = ["mecfs_bio"]
+
+[tool.pixi.pypi-options.dependency-overrides]
+numpy = ">=2.0.0"
+
 [tool.pixi.dependencies]
 pysam = ">=0.23.3,<0.24"
 pixi-pycharm = ">=0.0.9,<0.0.10"
@@ -64,3 +70,4 @@ mkdocs-material = ">=9.6.23,<10"
 mkdocs-literate-nav = "*"
 mkdocstrings = ">=0.30.1,<0.31"
 pandoc = ">=3.8.2.1,<4"
+statsmodels = ">=0.14.5,<0.15"
