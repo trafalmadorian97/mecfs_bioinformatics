@@ -10,7 +10,7 @@ def run_ibd_analysis():
     It includes:
 
 
-    - Using MAGMA to combine the IBD GWAS summary statistics with tissue-specific expression data from GTEx to identify key tissues involved in control of LDL levels.
+    - Using MAGMA to combine the IBD GWAS summary statistics with tissue-specific expression data from GTEx to identify possible tissues involved in the IBD disease process.
     """
     DEFAULT_RUNNER.run(
         [LIU_ET_AL_IBD_EUR_37_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT], incremental_save=True
