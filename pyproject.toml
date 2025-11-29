@@ -16,7 +16,8 @@ dependencies = [
     "mypy>=1.18.2",
     "narwhals>=2.6.0",
     "networkx>=3.5",
-    "numpy>=1.21.2",
+    "numpy>=2",
+    "numpy>=2.0.0",
     "osfclient>=0.0.5",
     "pandas>=2.3.3",
     "pandasgwas>=1.2.2",
@@ -38,6 +39,10 @@ dependencies = [
     "xxhash>=3.6.0", "ibis-framework[duckdb,examples]>=11.0.0,<12", "scikit-learn>=1.7.2,<2", "mkdocs-plotly-plugin>=0.1.3,<0.2", "gdown>=5.2.0,<6", "mkdocs-gen-files>=0.5.0,<0.6", "mkdocs-literate-nav", "mkdocs-api-autonav>=0.4.0,<0.5", "mkdocstrings[python]", "tabulate>=0.9.0,<0.10", "mkdocs-bibtex>=4.4.0,<5",
 ]
 
+# pyproject.toml
+[tool.pixi.pypi-options.dependency-overrides]
+numpy = ">=2.0.0"
+
 [tool.pixi.workspace]
 channels = [
     "conda-forge",
@@ -51,6 +56,8 @@ biostatistics = { path = ".", editable = true }
 [tool.pixi.tasks]
 install-parquet-cli = { cmd = "bash -lc 'cargo install parquet@57.0.0 --features=cli --locked --root ${CONDA_PREFIX}'" }
 parquet-fromcsv = { cmd = "parquet-fromcsv" }
+[tool.setuptools]
+packages = ["mecfs_bio"]
 
 [tool.pixi.dependencies]
 pysam = ">=0.23.3,<0.24"
@@ -64,3 +71,4 @@ mkdocs-material = ">=9.6.23,<10"
 mkdocs-literate-nav = "*"
 mkdocstrings = ">=0.30.1,<0.31"
 pandoc = ">=3.8.2.1,<4"
+statsmodels = ">=0.14.5,<0.15"
