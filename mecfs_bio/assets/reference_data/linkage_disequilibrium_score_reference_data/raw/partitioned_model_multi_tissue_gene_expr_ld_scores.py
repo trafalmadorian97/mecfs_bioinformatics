@@ -1,7 +1,12 @@
 """
 Tissue-specific LD scores for use with S-LDSC
 
-Derived from the GTEx and Franke Lab gene expression datasets as described in Finucane, Hilary K., et al. "Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types." Nature genetics 50.4 (2018): 621-629.
+Derived from the GTEx and Franke Lab gene expression datasets as described in Finucane, Hilary K., et al.
+ "Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types." Nature genetics 50.4 (2018): 621-629.
+
+ The Franke Lab dataset is described as:
+
+ *an aggregation of publicly available microarray gene expression data sets comprising 37,427 samples in human, mouse, and rat*
 
 See instructions here: https://github.com/bulik/ldsc/wiki/Cell-type-specific-analyses
 
