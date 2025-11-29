@@ -17,6 +17,9 @@ class ReferenceFileMeta(FileMeta):
     extension: str = ".zip"
     _read_spec: ReadSpec | None = None
 
+    def __attrs_post_init__(self):
+        assert self.extension.startswith(".")
+
     def read_spec(self) -> ReadSpec | None:
         return self._read_spec
 
