@@ -19,3 +19,7 @@ The results are shown below:
 
 
 indicating that genes that increase LDL tend to be expressed in the liver. This is consistent with known biology: the liver plays a major role in clearing excess LDL from the bloodstream.
+
+## Reproducing Analysis
+
+To reproduce this analysis, run the [LDL GWAS Analysis Script][mecfs_bio.analysis.ldl_analysis].
