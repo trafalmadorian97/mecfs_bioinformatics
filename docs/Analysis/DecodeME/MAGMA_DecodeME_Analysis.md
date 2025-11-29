@@ -9,10 +9,10 @@ I applied MAGMA's SNP-wise mean model to the summary statistics from DecodeME's 
 
 In this step:
 
-- Data from the 1000 genomes projects from the [MAGMA website](https://cncr.nl/research/magma/) was used for a linkage disequilibrium reference.
+- Data from the 1000 genomes projects was downloaded from the [MAGMA website](https://cncr.nl/research/magma/) and used as a linkage disequilibrium reference.
 - Data from the [SNP151 database](https://hgw2.soe.ucsc.edu/cgi-bin/hgTables?hgsid=2912494930_cRufLdpdc1ynRc2sCM3g1WGAWAgH&hgta_doSchemaDb=hg19&hgta_doSchemaTable=snp151Flagged
   ) was used to assign RSIDs to SNPs.
-- Magma's default proximity based rules were used to assign SNPs to Genes.
+- Magma's default proximity-based rules were used to assign SNPs to fenes.
 
 MAGMA produces a table of genes, effect sizes, and p values of the form:
 ```
@@ -36,16 +36,16 @@ ENSG00000237330    1    1006346    1009687      6       2  275488     -0.77358  
 
 To reproduce this analysis use the build system to materialize the asset declared in [this file](https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/processed_gwas_data/magma/decode_me_gwas_1_build_37_magma_ensembl_gene_analysis.py).
 
-## MAGMA Gene Set Analysis
+## MAGMA Gene Property Analysis
 
-I next applied [MAGMA's](../../Techniques_And_Concepts/MAGMA_Overview.md) gene set analysis module to [DecodeME](../../Data_Sources/MECFS/DecodeME.md).  This step combined  to the gene analysis results above, together with tissue-specific RNA expression values from the [GTEx project](../../Data_Sources/GTEx_project/GTEx_RNAseq_Data.md).  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
+I next applied [MAGMA's](../../Techniques_And_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../Data_Sources/MECFS/DecodeME.md).  This step combined the gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../Data_Sources/GTEx_project/GTEx_RNAseq_Data.md).  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
 
 ![bar_plot_decodeme_tissues](https://github.com/user-attachments/assets/519629d4-c60a-434b-9ceb-809c2878cbe5)
 In this plot, the y axis corresponds to negative log p values, the x axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p-value meets Bonferroni-corrected significance threshold,
 
 
 
-These results unambiguously point to the brain as a major site of ME/CFS gene activity.
+These results unambiguously point to the nervous system as a major site of ME/CFS gene activity.
 
 To reproduce this analysis, use the build system to materialize the asset in [this file](https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/analysis_results/magma/magma_specific_tissue_bar_plot.py).
 
