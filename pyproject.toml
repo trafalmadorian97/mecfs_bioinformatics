@@ -1,7 +1,6 @@
 [project]
 name = "biostatistics"
 version = "0.1.0"
-description = "A project apply biostatistical techniques to publicly available data on ME/CFS."
 readme = "README.md"
 requires-python = "==3.12"
 dependencies = [
@@ -16,7 +15,7 @@ dependencies = [
     "mypy>=1.18.2",
     "narwhals>=2.6.0",
     "networkx>=3.5",
-    "numpy>=2.0.0",
+    "numpy",
     "osfclient>=0.0.5",
     "pandas>=2.3.3",
     "pandasgwas>=1.2.2",
@@ -35,12 +34,20 @@ dependencies = [
     "types-tqdm>=4.67.0.20250809",
     "universal-pathlib>=0.3.4",
     "xarray>=2025.9.1",
-    "xxhash>=3.6.0", "ibis-framework[duckdb,examples]>=11.0.0,<12", "scikit-learn>=1.7.2,<2", "mkdocs-plotly-plugin>=0.1.3,<0.2", "gdown>=5.2.0,<6", "mkdocs-gen-files>=0.5.0,<0.6", "mkdocs-literate-nav", "mkdocs-api-autonav>=0.4.0,<0.5", "mkdocstrings[python]", "tabulate>=0.9.0,<0.10", "mkdocs-bibtex>=4.4.0,<5",
+    "xxhash>=3.6.0", "ibis-framework[duckdb,examples]>=11.0.0,<12",
+    "scikit-learn>=1.7.2,<2",
+    "gdown>=5.2.0,<6",
+    "mkdocs-gen-files>=0.5.0,<0.6",
+    "mkdocs-literate-nav",
+    "mkdocs-api-autonav>=0.4.0,<0.5",
+    "tabulate>=0.9.0,<0.10",
+    "mkdocs-bibtex>=4.4.0,<5",
+    "statsmodels>=0.14.5"
 ]
 
-# pyproject.toml
-[tool.pixi.pypi-options.dependency-overrides]
-numpy = ">=2.0.0"
+## pyproject.toml
+#[tool.pixi.pypi-options.dependency-overrides]
+#numpy = ">=2.0.0"
 
 [tool.pixi.workspace]
 channels = [
@@ -70,4 +77,3 @@ mkdocs-material = ">=9.6.23,<10"
 mkdocs-literate-nav = "*"
 mkdocstrings = ">=0.30.1,<0.31"
 pandoc = ">=3.8.2.1,<4"
-statsmodels = ">=0.14.5,<0.15"
