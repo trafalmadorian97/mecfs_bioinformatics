@@ -1,7 +1,7 @@
 # Heritability
 ## Definition
-Heritability is defined in the context of an additive genetic model.  Let $Y$ denote the phenotype of interest.  Let $G$ denote the genetic component of the phenotype, and let $E$ denote the environmental component.
-We assume the contributions of genetic and environmental effects are additively separable, so that:
+Heritability is defined in the context of an additive genetic model.  Let $Y$ denote the phenotype of interest.  Let $G$ denote the genetic component of the phenotype and $E$ the environmental component.
+Assume the components are additively separable, so that:
 
 $$
 Y=E+G.

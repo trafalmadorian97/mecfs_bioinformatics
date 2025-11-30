@@ -1,5 +1,5 @@
 ## MAGMA DecodeME Analysis
-As an initial step, I applied [MAGMA](../../Techniques_And_Concepts/MAGMA_Overview.md) to [DecodeME](../../Data_Sources/MECFS/DecodeME.md), partially reproducing analysis from the DecodeME preprint.  
+As an initial step, I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to [DecodeME](../../Data_Sources/MECFS/DecodeME.md), partially reproducing analysis from the DecodeME preprint.  
 
 
 ## MAGMA Gene Analysis
@@ -38,7 +38,7 @@ To reproduce this analysis use the build system to materialize the asset declare
 
 ## MAGMA Gene Property Analysis
 
-I next applied [MAGMA's](../../Techniques_And_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../Data_Sources/MECFS/DecodeME.md).  This step combined the gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../Data_Sources/GTEx_project/GTEx_RNAseq_Data.md).  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
+I next applied [MAGMA's](../../Bioinformatics_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../Data_Sources/MECFS/DecodeME.md).  This step combined the gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../Data_Sources/GTEx_project/GTEx_RNAseq_Data.md).  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
 
 ![bar_plot_decodeme_tissues](https://github.com/user-attachments/assets/519629d4-c60a-434b-9ceb-809c2878cbe5)
 In this plot, the y axis corresponds to negative log p values, the x axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p-value meets Bonferroni-corrected significance threshold,

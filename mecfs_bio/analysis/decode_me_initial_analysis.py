@@ -14,10 +14,15 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan_
 )
 
 
-def run_initial_analysis():
+def run_initial_decode_me_analysis():
     """
-    Function to run initial analysis on DecodeME data.  Includes generation of manhattan plot,
-    as well as extraction of lead variants.
+    Function to run initial analysis on DecodeME data.
+
+    Includes:
+
+    - Generation of manhattan plot.
+    - Extraction of lead variants.
+    - Application of MAGMA to GTEx data to identify possible key tissues.
     """
     DEFAULT_RUNNER.run(
         [
@@ -29,4 +34,4 @@ def run_initial_analysis():
 
 
 if __name__ == "__main__":
-    run_initial_analysis()
+    run_initial_decode_me_analysis()
