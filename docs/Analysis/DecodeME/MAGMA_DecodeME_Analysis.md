@@ -14,27 +14,34 @@ In this step:
   ) was used to assign RSIDs to SNPs.
 - Magma's default proximity-based rules were used to assign SNPs to fenes.
 
-MAGMA produces a table of genes, effect sizes, and p values of the form:
-```
-GENE             CHR      START       STOP  NSNPS  NPARAM       N        ZSTAT            P
-ENSG00000269831    1     738532     739137      1       1  275488      0.53146      0.29755
-ENSG00000187634    1     860260     879955     63      15  275488      0.93486      0.17493
-ENSG00000268179    1     861264     866445     24       7  275488       1.5318     0.062784
-ENSG00000188976    1     879584     894689     44       7  275488      0.47458      0.31754
-ENSG00000187961    1     895967     901095     16       4  275488      0.13407      0.44667
-ENSG00000187583    1     901877     911245     33      14  275488       1.0717      0.14193
-ENSG00000187642    1     910579     917497     22       5  275488       1.1909      0.11685
-ENSG00000188290    1     934342     935552      5       2  275488        1.243      0.10693
-ENSG00000187608    1     948803     949920      5       1  275488    -0.057976      0.52312
-ENSG00000188157    1     955503     991496     94      12  275488      -2.1128      0.98269
-ENSG00000237330    1    1006346    1009687      6       2  275488     -0.77358      0.78041
-...
-```
+MAGMA produces a table of genes, effect sizes, and p values.  Filtering these genes via the Benjamini-Hochberg procedure[@benjamini1995controlling] at a false discovery rate of 0.01 produces:
 
+ | GENE            |   CHR |     START |      STOP |   NSNPS |   NPARAM |      N |   ZSTAT |          P |   _Corrected P Value_ |
+|:----------------|------:|----------:|----------:|--------:|---------:|-------:|--------:|-----------:|----------------------:|
+| ENSG00000033122 |     1 |  70034081 |  70617628 |    1609 |       68 | 275488 |  5.9087 | 1.724e-09  |           3.22647e-05 |
+| ENSG00000124214 |    20 |  47729878 |  47804904 |     152 |       16 | 275488 |  5.6715 | 7.0767e-09 |           6.62202e-05 |
+| ENSG00000124207 |    20 |  47662849 |  47713489 |     116 |       11 | 275488 |  5.4047 | 3.2463e-08 |           0.000202515 |
+| ENSG00000135090 |    12 | 118587606 | 118810750 |     445 |       24 | 275488 |  5.0416 | 2.3082e-07 |           0.00104115  |
+| ENSG00000124198 |    20 |  47538427 |  47653230 |     262 |       17 | 275488 |  4.9822 | 3.1435e-07 |           0.00104115  |
+| ENSG00000117593 |     1 | 173793641 | 173827684 |      37 |        7 | 275488 |  4.9706 | 3.3379e-07 |           0.00104115  |
+| ENSG00000185278 |     1 | 173837220 | 173872687 |     105 |       13 | 275488 |  4.9122 | 4.503e-07  |           0.00120391  |
+| ENSG00000250091 |    12 | 124410971 | 124419531 |      14 |        3 | 275488 |  4.8395 | 6.5098e-07 |           0.00152289  |
+| ENSG00000179195 |    12 | 124456392 | 124499986 |      77 |        9 | 275488 |  4.7302 | 1.1217e-06 |           0.00219969  |
+| ENSG00000119242 |    12 | 124403207 | 124457378 |     116 |        9 | 275488 |  4.7152 | 1.2073e-06 |           0.00219969  |
+| ENSG00000197935 |     6 |  28962562 |  28973093 |      30 |        8 | 275488 |  4.7013 | 1.2929e-06 |           0.00219969  |
+| ENSG00000158406 |     6 |  26281283 |  26285762 |      13 |        4 | 275488 |  4.6324 | 1.8071e-06 |           0.00281832  |
+| ENSG00000198216 |     1 | 181382238 | 181777219 |    1030 |       79 | 275488 |  4.591  | 2.2062e-06 |           0.00299373  |
+| ENSG00000187323 |    18 |  49866542 |  51057784 |    4538 |      112 | 275488 |  4.5878 | 2.2395e-06 |           0.00299373  |
+| ENSG00000111707 |    12 | 118814185 | 118855840 |     114 |       11 | 275488 |  4.5649 | 2.4987e-06 |           0.00311754  |
+| ENSG00000197653 |    12 | 124247042 | 124420753 |     458 |       42 | 275488 |  4.4981 | 3.4281e-06 |           0.00400981  |
+| ENSG00000089220 |    12 | 118573663 | 118583389 |      29 |        8 | 275488 |  4.4695 | 3.9196e-06 |           0.00431502  |
+| ENSG00000188730 |     7 |  49813257 |  49961546 |     320 |       34 | 275488 |  4.3858 | 5.7778e-06 |           0.00600731  |
+| ENSG00000028116 |     2 |  58134786 |  58387055 |     503 |       26 | 275488 |  4.33   | 7.4569e-06 |           0.00734505  |
+| ENSG00000117601 |     1 | 173872947 | 173886516 |      26 |        5 | 275488 |  4.2942 | 8.7656e-06 |           0.00820241  |
 
+Note that the genomic coordinates in the table above refer to genome build 37.
 
-
-To reproduce this analysis use the build system to materialize the asset declared in [this file](https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/processed_gwas_data/magma/decode_me_gwas_1_build_37_magma_ensembl_gene_analysis.py).
+[//]: # (To reproduce this analysis use the build system to materialize the asset declared in [this file]&#40;https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/processed_gwas_data/magma/decode_me_gwas_1_build_37_magma_ensembl_gene_analysis.py&#41;.)
 
 ## MAGMA Gene Property Analysis
 
@@ -47,8 +54,11 @@ In this plot, the y axis corresponds to negative log p values, the x axis corres
 
 These results unambiguously point to the nervous system as a major site of ME/CFS gene activity.
 
-To reproduce this analysis, use the build system to materialize the asset in [this file](https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/analysis_results/magma/magma_specific_tissue_bar_plot.py).
+[//]: # (To reproduce this analysis, use the build system to materialize the asset in [this file]&#40;https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/analysis_results/magma/magma_specific_tissue_bar_plot.py&#41;.)
 
+
+## Reproducing
+To reproduce this analysis, run the [DecodeME Initial Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
 
 ## Follow-Up Questions
 1. Do other approaches to identify significant tissues from GWAS-summary statistics produce concordant or discordant results?

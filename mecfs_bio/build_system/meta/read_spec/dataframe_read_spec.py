@@ -21,7 +21,14 @@ class DataFrameParquetFormat:
     pass
 
 
-DataFrameFormat = DataFrameTextFormat | DataFrameParquetFormat
+@frozen
+class DataFrameWhiteSpaceSepTextFormat:
+    comment_code: str
+
+
+DataFrameFormat = (
+    DataFrameTextFormat | DataFrameParquetFormat | DataFrameWhiteSpaceSepTextFormat
+)
 
 
 @frozen

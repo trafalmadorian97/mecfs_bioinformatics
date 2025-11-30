@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Literal
 
 import narwhals as nw
+import pandas as pd
 import polars as pl
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -12,13 +13,14 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
     DataFrameTextFormat,
+    DataFrameWhiteSpaceSepTextFormat,
 )
 
 ValidBackend = Literal["ibis", "polars"]
 
 
 def scan_dataframe(
-    path: Path, spec: DataFrameReadSpec, parquet_backend: ValidBackend
+    path: Path, spec: DataFrameReadSpec, parquet_backend: ValidBackend = "polars"
 ) -> nw.LazyFrame:
     if isinstance(spec.format, DataFrameParquetFormat):
         return nw.scan_parquet(path, backend=parquet_backend)
@@ -40,6 +42,10 @@ def scan_dataframe(
             )
             return nw.from_native(polars_scan)
         raise ValueError("Only polars backend can be used to read text files")
+    if isinstance(spec.format, DataFrameWhiteSpaceSepTextFormat):
+        return nw.from_native(
+            pd.read_csv(path, sep="\s+", comment=spec.format.comment_code)
+        ).lazy()
 
     raise ValueError("Unknown format")
 
