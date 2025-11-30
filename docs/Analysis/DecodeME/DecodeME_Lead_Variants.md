@@ -15,6 +15,8 @@ Here is the table of lead variants produces by GWASLab:
 |   | 17:52183006:C:T  |    17 |  52183006 | T    | C     | 0.329679 |  0.0805953 | 0.0134577 | 35.8658 |   8.67492 | 275488 | CA10    |
 |   | 20:48914387:T:TA |    20 |  48914387 | TA   | T     | 0.633808 |  0.0909054 | 0.0133414 | 46.4275 |  11.0219  | 275488 | ARFGEF2 |
 
+Note that the genomic coordinates in the table above refer to genome build 38.
+
 ## Comparison with lead variants reported in DecodeME
 The lead variants reported above by GWASLAB all agree with the variants reported by the DecodeME preprint.  However, in some cases, GWASLAB assigns these lead variants to different genes than GWASLAB.
 
