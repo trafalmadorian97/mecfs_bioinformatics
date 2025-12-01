@@ -17,6 +17,7 @@ from mecfs_bio.build_system.meta.procesed_gwas_data_directory_meta import (
 )
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
+    DataFrameTextFormat,
     DataFrameWhiteSpaceSepTextFormat,
 )
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
@@ -142,6 +143,7 @@ class FilterMultipleTestingTableTask(Task):
             trait=source_meta.trait,
             project=source_meta.project,
             extension=".csv",
+            read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
         )
         return cls(
             meta=meta,

@@ -18,6 +18,7 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
@@ -110,6 +111,14 @@ class PipeDataFrameTask(Task):
                 trait=source_meta.trait,
                 project=source_meta.project,
                 sub_dir=PurePath("processed"),
+                read_spec=read_spec,
+            )
+        elif isinstance(source_meta, ResultTableMeta):
+            meta = ResultTableMeta(
+                asset_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
                 read_spec=read_spec,
             )
         else:

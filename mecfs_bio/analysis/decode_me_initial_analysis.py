@@ -15,6 +15,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan_
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_filtered_gene_list import (
     DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_filtered_gene_list_with_gene_metadata_drop_cols import (
+    DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA_DROP_COLS,
+)
 
 
 def run_initial_decode_me_analysis():
@@ -33,8 +36,10 @@ def run_initial_decode_me_analysis():
             DECODE_ME_GWAS_1_MANHATTAN_PLOT,
             DECODE_ME_GWAS_1_LEAD_VARIANTS,
             DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST,
+            # DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA,
+            DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA_DROP_COLS,
         ],
-        must_rebuild_transitive=[DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST],
+        # must_rebuild_transitive=[DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST],
     )
 
 
