@@ -17,17 +17,21 @@ The core insight of LDSC is that
 
 This follows because in a GWAS, a SNP can be associated with the phenotype either
 
-a) by being causal, or
-b) by being in linkage disequilibrium with a causal SNP.
+-  by being causal, or
+-  by being in linkage disequilibrium with a causal SNP.
 
-Given that we have assumed heritability is evenly distributed, it follows that the SNP in strong LD has a higher chance of being in LD with the causal SNP.
+Because that we have assumed heritability is evenly distributed, a SNP in strong LD has a higher chance of being in LD with the causal SNP than a SNP in weak LD.
 
-
-### How it works
-
-The relationship between strength of LD and significance of association is determined by the heritability of the trait.  To see this intuitively, note that if the trait is not heritable, all SNPs will have negligible association with the phenotype.  In contrast, if the trait is highly heritable, the gap in strength of association between SNPs in strong LD and SNPs in weak LD will be large, since SNPs in strong LD will be likely to be in LD with many causal SNPs.  LDSC uses this principle of the relationship between LD and significance to go backward from the pattern of SNP significance in a GWAS to the heritability of the trait.
+LDSC uses this core insight to estimate heritability.
 
 
+[//]: # (### How it works)
+
+[//]: # ()
+[//]: # (The relationship between strength of LD and significance of association is determined by the heritability of the trait.  To see this intuitively, note that if the trait is not heritable, all SNPs will have negligible association with the phenotype.  In contrast, if the trait is highly heritable, the gap in strength of association between SNPs in strong LD and SNPs in weak LD will be large, since SNPs in strong LD will be likely to be in LD with many causal SNPs.  LDSC uses this principle of the relationship between LD and significance to go backward from the pattern of SNP significance in a GWAS to the heritability of the trait.)
+
+[//]: # ()
+[//]: # ()
 
 
 
