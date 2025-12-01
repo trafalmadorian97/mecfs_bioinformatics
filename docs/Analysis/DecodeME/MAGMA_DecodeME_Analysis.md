@@ -14,34 +14,31 @@ In this step:
   ) was used to assign RSIDs to SNPs.
 - Magma's default proximity-based rules were used to assign SNPs to fenes.
 
-MAGMA produces a table of genes, effect sizes, and p values.  Filtering these genes via the Benjamini-Hochberg procedure[@benjamini1995controlling] at a false discovery rate of 0.01 produces:
+MAGMA produces a table of genes, effect sizes, and p values.  Filtering these genes via the Benjamini-Hochberg procedure[@benjamini1995controlling] at a false discovery rate of 0.01, and joining with a database of gene descriptions from [Ensembl Biomart](https://useast.ensembl.org/info/data/biomart/index.html) produces the following table:
 
- | GENE            |   CHR |     START |      STOP |   NSNPS |   NPARAM |      N |   ZSTAT |          P |   _Corrected P Value_ |
-|:----------------|------:|----------:|----------:|--------:|---------:|-------:|--------:|-----------:|----------------------:|
-| ENSG00000033122 |     1 |  70034081 |  70617628 |    1609 |       68 | 275488 |  5.9087 | 1.724e-09  |           3.22647e-05 |
-| ENSG00000124214 |    20 |  47729878 |  47804904 |     152 |       16 | 275488 |  5.6715 | 7.0767e-09 |           6.62202e-05 |
-| ENSG00000124207 |    20 |  47662849 |  47713489 |     116 |       11 | 275488 |  5.4047 | 3.2463e-08 |           0.000202515 |
-| ENSG00000135090 |    12 | 118587606 | 118810750 |     445 |       24 | 275488 |  5.0416 | 2.3082e-07 |           0.00104115  |
-| ENSG00000124198 |    20 |  47538427 |  47653230 |     262 |       17 | 275488 |  4.9822 | 3.1435e-07 |           0.00104115  |
-| ENSG00000117593 |     1 | 173793641 | 173827684 |      37 |        7 | 275488 |  4.9706 | 3.3379e-07 |           0.00104115  |
-| ENSG00000185278 |     1 | 173837220 | 173872687 |     105 |       13 | 275488 |  4.9122 | 4.503e-07  |           0.00120391  |
-| ENSG00000250091 |    12 | 124410971 | 124419531 |      14 |        3 | 275488 |  4.8395 | 6.5098e-07 |           0.00152289  |
-| ENSG00000179195 |    12 | 124456392 | 124499986 |      77 |        9 | 275488 |  4.7302 | 1.1217e-06 |           0.00219969  |
-| ENSG00000119242 |    12 | 124403207 | 124457378 |     116 |        9 | 275488 |  4.7152 | 1.2073e-06 |           0.00219969  |
-| ENSG00000197935 |     6 |  28962562 |  28973093 |      30 |        8 | 275488 |  4.7013 | 1.2929e-06 |           0.00219969  |
-| ENSG00000158406 |     6 |  26281283 |  26285762 |      13 |        4 | 275488 |  4.6324 | 1.8071e-06 |           0.00281832  |
-| ENSG00000198216 |     1 | 181382238 | 181777219 |    1030 |       79 | 275488 |  4.591  | 2.2062e-06 |           0.00299373  |
-| ENSG00000187323 |    18 |  49866542 |  51057784 |    4538 |      112 | 275488 |  4.5878 | 2.2395e-06 |           0.00299373  |
-| ENSG00000111707 |    12 | 118814185 | 118855840 |     114 |       11 | 275488 |  4.5649 | 2.4987e-06 |           0.00311754  |
-| ENSG00000197653 |    12 | 124247042 | 124420753 |     458 |       42 | 275488 |  4.4981 | 3.4281e-06 |           0.00400981  |
-| ENSG00000089220 |    12 | 118573663 | 118583389 |      29 |        8 | 275488 |  4.4695 | 3.9196e-06 |           0.00431502  |
-| ENSG00000188730 |     7 |  49813257 |  49961546 |     320 |       34 | 275488 |  4.3858 | 5.7778e-06 |           0.00600731  |
-| ENSG00000028116 |     2 |  58134786 |  58387055 |     503 |       26 | 275488 |  4.33   | 7.4569e-06 |           0.00734505  |
-| ENSG00000117601 |     1 | 173872947 | 173886516 |      26 |        5 | 275488 |  4.2942 | 8.7656e-06 |           0.00820241  |
+| GENE            | Gene name   |   CHR |          P | Gene description                                                                      |
+|:----------------|:------------|------:|-----------:|:--------------------------------------------------------------------------------------|
+| ENSG00000033122 | LRRC7       |     1 | 1.724e-09  | leucine rich repeat containing 7 [Source:HGNC Symbol;Acc:HGNC:18531]                  |
+| ENSG00000124214 | STAU1       |    20 | 7.0767e-09 | staufen double-stranded RNA binding protein 1 [Source:HGNC Symbol;Acc:HGNC:11370]     |
+| ENSG00000124207 | CSE1L       |    20 | 3.2463e-08 | chromosome segregation 1 like [Source:HGNC Symbol;Acc:HGNC:2431]                      |
+| ENSG00000135090 | TAOK3       |    12 | 2.3082e-07 | TAO kinase 3 [Source:HGNC Symbol;Acc:HGNC:18133]                                      |
+| ENSG00000124198 | ARFGEF2     |    20 | 3.1435e-07 | ARF guanine nucleotide exchange factor 2 [Source:HGNC Symbol;Acc:HGNC:15853]          |
+| ENSG00000117593 | DARS2       |     1 | 3.3379e-07 | aspartyl-tRNA synthetase 2, mitochondrial [Source:HGNC Symbol;Acc:HGNC:25538]         |
+| ENSG00000185278 | ZBTB37      |     1 | 4.503e-07  | zinc finger and BTB domain containing 37 [Source:HGNC Symbol;Acc:HGNC:28365]          |
+| ENSG00000250091 | DNAH10OS    |    12 | 6.5098e-07 | dynein axonemal heavy chain 10 opposite strand [Source:HGNC Symbol;Acc:HGNC:37121]    |
+| ENSG00000179195 | ZNF664      |    12 | 1.1217e-06 | zinc finger protein 664 [Source:HGNC Symbol;Acc:HGNC:25406]                           |
+| ENSG00000119242 | CCDC92      |    12 | 1.2073e-06 | coiled-coil domain containing 92 [Source:HGNC Symbol;Acc:HGNC:29563]                  |
+| ENSG00000197935 | ZNF311      |     6 | 1.2929e-06 | zinc finger protein 311 [Source:HGNC Symbol;Acc:HGNC:13847]                           |
+| ENSG00000158406 | H4C8        |     6 | 1.8071e-06 | H4 clustered histone 8 [Source:HGNC Symbol;Acc:HGNC:4788]                             |
+| ENSG00000198216 | CACNA1E     |     1 | 2.2062e-06 | calcium voltage-gated channel subunit alpha1 E [Source:HGNC Symbol;Acc:HGNC:1392]     |
+| ENSG00000187323 | DCC         |    18 | 2.2395e-06 | DCC netrin 1 receptor [Source:HGNC Symbol;Acc:HGNC:2701]                              |
+| ENSG00000111707 | SUDS3       |    12 | 2.4987e-06 | SDS3 homolog, SIN3A corepressor complex component [Source:HGNC Symbol;Acc:HGNC:29545] |
+| ENSG00000197653 | DNAH10      |    12 | 3.4281e-06 | dynein axonemal heavy chain 10 [Source:HGNC Symbol;Acc:HGNC:2941]                     |
+| ENSG00000089220 | PEBP1       |    12 | 3.9196e-06 | phosphatidylethanolamine binding protein 1 [Source:HGNC Symbol;Acc:HGNC:8630]         |
+| ENSG00000188730 | VWC2        |     7 | 5.7778e-06 | von Willebrand factor C domain containing 2 [Source:HGNC Symbol;Acc:HGNC:30200]       |
+| ENSG00000028116 | VRK2        |     2 | 7.4569e-06 | VRK serine/threonine kinase 2 [Source:HGNC Symbol;Acc:HGNC:12719]                     |
+| ENSG00000117601 | SERPINC1    |     1 | 8.7656e-06 | serpin family C member 1 [Source:HGNC Symbol;Acc:HGNC:775]                            |
 
-Note that the genomic coordinates in the table above refer to genome build 37.
-
-[//]: # (To reproduce this analysis use the build system to materialize the asset declared in [this file]&#40;https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/processed_gwas_data/magma/decode_me_gwas_1_build_37_magma_ensembl_gene_analysis.py&#41;.)
 
 ## MAGMA Gene Property Analysis
 

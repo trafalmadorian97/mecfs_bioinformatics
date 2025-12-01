@@ -20,7 +20,7 @@ This follows because in a GWAS, a SNP can be associated with the phenotype eithe
 -  by being causal, or
 -  by being in linkage disequilibrium with a causal SNP.
 
-Because that we have assumed heritability is evenly distributed, a SNP in strong LD has a higher chance of being in LD with the causal SNP than a SNP in weak LD.
+Because we have assumed heritability is evenly distributed, a SNP in strong LD has a higher chance of being in LD with the causal SNP than a SNP in weak LD.
 
 LDSC uses this core insight to estimate heritability.
 
