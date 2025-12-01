@@ -1,7 +1,41 @@
 # Linkage Disequilibrium Score Regression 
-Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC)  is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends strongly on the validity certain modeling assumptions. This pages includes a detailed derivation of LDSC, together with a discussion of its modeling assumptions.
+Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends strongly on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
 
-## Derivation of Method
+## High-level summary
+### Core Assumption
+Roughly speaking, the core assumption of LDSC is that:
+
+*Heritability is evenly distributed across the genome*
+
+The accuracy of LDSC will depend on how close this assumption is to being satisfied
+
+### Core Insight
+
+The core insight of LDSC is that
+
+*A SNP in strong linkage disequilibrium with other SNPs is more likely to be significantly associated with the phenotype than a SNP in weak linkage disequilibrium*
+
+This follows because in a GWAS, a SNP can be associated with the phenotype either
+
+a) by being causal, or
+b) by being in linkage disequilibrium with a causal SNP.
+
+Given that we have assumed heritability is evenly distributed, it follows that the SNP in strong LD has a higher chance of being in LD with the causal SNP.
+
+
+### How it works
+
+The relationship between strength of LD and significance of association is determined by the heritability of the trait.  To see this intuitively, note that if the trait is not heritable, all SNPs will have negligible association with the phenotype.  In contrast, if the trait is highly heritable, the gap in strength of association between SNPs in strong LD and SNPs in weak LD will be large, since SNPs in strong LD will be likely to be in LD with many causal SNPs.  LDSC uses this principle of the relationship between LD and significance to go backward from the pattern of SNP significance in a GWAS to the heritability of the trait.
+
+
+
+
+
+
+
+
+
+## Detailed Derivation of Method
 ### Data-generating model
 
 LDSC assumes the following data generating equation:
