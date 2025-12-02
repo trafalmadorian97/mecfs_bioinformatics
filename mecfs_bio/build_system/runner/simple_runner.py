@@ -2,6 +2,10 @@ from pathlib import Path
 from typing import Mapping, Sequence
 
 import structlog
+from rich.pretty import pprint
+
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
+from mecfs_bio.build_system.asset.file_asset import FileAsset
 
 logger = structlog.get_logger()
 import attrs
@@ -91,4 +95,17 @@ class SimpleRunner:
             incremental_save_path=incremental_save_path,
         )
         info.serialize(self.info_store)
+        _print_target_locs(store, targets=targets)
         return store
+
+
+def _print_target_locs(store: Mapping[AssetId, Asset], targets: list[Task]):
+    logger.info("Locations of materialized targets:\n")
+    target_locs: dict = {}
+    for item in targets:
+        asset = store[item.asset_id]
+        if isinstance(asset, (FileAsset, DirectoryAsset)):
+            target_locs[item.asset_id] = str(asset.path)
+        else:
+            target_locs[item.asset_id] = asset
+    pprint(target_locs)

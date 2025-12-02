@@ -4,6 +4,9 @@ from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
 from mecfs_bio.assets.gwas.ldl.million_veterans.raw_gwas_data.raw_ldl_data import (
     MILLION_VETERAN_LDL_EUR_DATA_RAW,
 )
+from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
+    GENE_THESAURUS,
+)
 from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import (
     MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
 )
@@ -47,4 +50,5 @@ MILLION_VETERANS_EUR_LDL_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
         snpid=None,
     ),
     pre_pipe=FilterRowsByInfoScorePipe(min_score=0.8, info_col="r2"),
+    gene_thesaurus_task=GENE_THESAURUS,
 )

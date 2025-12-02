@@ -18,6 +18,7 @@ def run_ldl_analysis():
     DEFAULT_RUNNER.run(
         [
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.bar_plot_task,
+            MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.labeled_filtered_gene_analysis_task,
             MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC,
         ],
         incremental_save=True,

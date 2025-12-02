@@ -13,6 +13,9 @@ from mecfs_bio.build_system.task.assign_rsids_via_snp151_task import (
     AssignRSIDSToSNPsViaSNP151Task,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
+    FilterMultipleTestingTableTask,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GwaslabKnownFormat
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GenomeBuildMode,
@@ -22,6 +25,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
 )
+from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.magma.magma_annotate_task import MagmaAnnotateTask
 from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
     MagmaGeneAnalysisTask,
@@ -50,6 +54,8 @@ class StandardMagmaTaskGenerator:
     gene_analysis_task: Task
     gene_set_analysis_task: Task
     bar_plot_task: Task
+    filtered_gene_analysis_task: Task
+    labeled_filtered_gene_analysis_task: Task | None = None
 
     @classmethod
     def create(
@@ -62,6 +68,7 @@ class StandardMagmaTaskGenerator:
         base_name: str,
         sample_size: int,
         ld_ref_file_stem: str = "g1000_eur",
+        gene_thesaurus_task: Task | None = None,
     ):
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
@@ -104,6 +111,26 @@ class StandardMagmaTaskGenerator:
             asset_id=base_name + "_magma_bar_plot",
         )
 
+        filtered_gene_task = (
+            FilterMultipleTestingTableTask.create_from_magma_gene_analysis_task(
+                asset_id=base_name + "_magma_gene_analysis_filtered",
+                alpha=0.01,
+                method="fdr_bh",
+                source_task=gene_analysis_task,
+            )
+        )
+        if gene_thesaurus_task is not None:
+            labeled_filtered_gene_task = JoinDataFramesTask.create_from_result_df(
+                asset_id=base_name + "_magma_gene_analysis_filtered_labeled",
+                result_df_task=filtered_gene_task,
+                reference_df_task=gene_thesaurus_task,
+                how="left",
+                left_on=["GENE"],
+                right_on=["Gene stable ID"],
+            )
+        else:
+            labeled_filtered_gene_task = None
+
         return cls(
             p_value_task=p_value_task,
             snp_loc_task=snp_loc_task,
@@ -111,6 +138,8 @@ class StandardMagmaTaskGenerator:
             gene_analysis_task=gene_analysis_task,
             gene_set_analysis_task=tissue_gene_set_analysis,
             bar_plot_task=bar_plot_task,
+            filtered_gene_analysis_task=filtered_gene_task,
+            labeled_filtered_gene_analysis_task=labeled_filtered_gene_task,
         )
 
 
@@ -140,6 +169,7 @@ class MagmaTaskGeneratorFromRaw:
         post_pipe: DataProcessingPipe = IdentityPipe(),
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
+        gene_thesaurus_task: Task | None = None,
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
@@ -168,6 +198,7 @@ class MagmaTaskGeneratorFromRaw:
                 base_name=base_name,
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
+                gene_thesaurus_task=gene_thesaurus_task,
             ),
         )
 

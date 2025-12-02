@@ -79,7 +79,7 @@ class JoinDataFramesTask(Task):
             df_2, how=self.how, left_on=list(self.left_on), right_on=list(self.right_on)
         )
         result = joined.collect().to_pandas()
-        logger.debug(f"\nresult of join:\n {result.to_markdown(index=False)}")
+        # logger.debug(f"\nresult of join:\n {result.to_markdown(index=False)}")
         result.to_csv(result_path, index=False)
         return FileAsset(result_path)
 
