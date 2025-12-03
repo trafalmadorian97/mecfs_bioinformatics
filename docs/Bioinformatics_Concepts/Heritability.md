@@ -4,7 +4,9 @@ Heritability is typically defined in the context of an additive genetic model.  
 Assume the components are additively separable, so that:
 
 $$
+\begin{align}
 Y=E+G. \label{model}
+\end{align}
 $$
 
 Assume also that the random variables $E$ and $G$ are uncorrelated.
@@ -23,7 +25,7 @@ To see this, note that if we run a simple linear regression of $Y$ on $G$, then 
 $$
 \begin{align}
 \mathrm{cor}(G,Y)^2&=\frac{\mathrm{cov}(Y,G)^2}{\mathrm{Var}(G) \mathrm{Var{Y}}}\\
-\mathrm{cor}(G,Y)^2&=\frac{\mathrm{cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var{Y}}}& \text{ by (\ref{model})}\\
+\mathrm{cor}(G,Y)^2&=\frac{\mathrm{cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var{Y}}}& \text{ by }(\ref{model})\\
 &=\frac{\mathrm{Var}(G)^2}{\mathrm{Var}(G) \mathrm{Var{Y}}} & \text{$G$ and  $E$ uncorrelated}\\
 &=\frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}\\
 &=:h^2
