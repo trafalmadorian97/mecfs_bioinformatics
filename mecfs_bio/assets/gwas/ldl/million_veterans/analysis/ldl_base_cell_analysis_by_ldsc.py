@@ -1,3 +1,8 @@
+"""
+Apply stratified linkage disequilibrium score regression to
+LDL gwas summary statistics from the million veterans program
+"""
+
 from mecfs_bio.assets.gwas.ldl.million_veterans.processed_gwas_data.million_veterans_ldl_eur_magma_task_generator import (
     MILLION_VETERANS_EUR_LDL_MAGMA_TASKS,
 )

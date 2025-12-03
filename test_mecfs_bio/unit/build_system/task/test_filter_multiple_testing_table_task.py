@@ -13,8 +13,8 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
-    FilterMultipleTestingTableTask,
     Method,
+    MultipleTestingTableTask,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
 
@@ -29,7 +29,7 @@ def test_multiple_testing(tmp_path: Path, procedure: Method, expected_passed: in
     scratch_dir.mkdir(exist_ok=True, parents=True)
     input_path = tmp_path / "input.csv"
     _dummy_df.to_csv(input_path, index=False)
-    tsk = FilterMultipleTestingTableTask(
+    tsk = MultipleTestingTableTask(
         meta=SimpleFileMeta(
             AssetId("my_filtered_df"),
             read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=",")),

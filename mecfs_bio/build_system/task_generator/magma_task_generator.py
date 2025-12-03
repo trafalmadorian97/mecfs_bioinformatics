@@ -14,7 +14,7 @@ from mecfs_bio.build_system.task.assign_rsids_via_snp151_task import (
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
-    FilterMultipleTestingTableTask,
+    MultipleTestingTableTask,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GwaslabKnownFormat
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
@@ -112,7 +112,7 @@ class StandardMagmaTaskGenerator:
         )
 
         filtered_gene_task = (
-            FilterMultipleTestingTableTask.create_from_magma_gene_analysis_task(
+            MultipleTestingTableTask.create_from_magma_gene_analysis_task(
                 asset_id=base_name + "_magma_gene_analysis_filtered",
                 alpha=0.01,
                 method="fdr_bh",

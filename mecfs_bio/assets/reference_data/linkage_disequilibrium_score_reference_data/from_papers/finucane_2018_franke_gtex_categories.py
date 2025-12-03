@@ -1,3 +1,12 @@
+"""
+Categories for tissue and cell types from the GTEx and Franke lab datasets
+
+source:
+Supplementary material to
+Finucane, Hilary K., et al. "Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types." Nature genetics 50.4 (2018): 621-629.
+
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (

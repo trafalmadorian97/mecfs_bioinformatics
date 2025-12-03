@@ -22,6 +22,15 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 @frozen
 class SLDSCScatterPlotTask(Task):
+    """
+    Generate a plot from the resulting of applying S-LDSC to GWAS summary statistics
+    using GTEx and Franke lab reference data.
+
+    Intended to mimic the appearance of the plots in
+    Finucane, Hilary K., et al. "Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types."
+    Nature genetics 50.4 (2018): 621-629.
+    """
+
     _meta: Meta
     df_source_task: Task
 

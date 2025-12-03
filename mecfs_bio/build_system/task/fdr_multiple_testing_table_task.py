@@ -40,10 +40,10 @@ REJECT_NULL_LABEL = "Reject Null"
 
 
 @frozen
-class FilterMultipleTestingTableTask(Task):
+class MultipleTestingTableTask(Task):
     """
     Task to read a table of statistical test results with p values,
-    filter it according to some multiple-test-correction procedure, and then write the  filtered table.
+    filter it according to some multiple-test-correction procedure, and then write the filtered table.
 
     table_in_dir_filename/ table_in_dir_readspec:
     - set these when the source task provides a directory, and we need to find a results table within that directory
