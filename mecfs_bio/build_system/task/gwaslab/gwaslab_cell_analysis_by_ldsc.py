@@ -25,6 +25,10 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
     GWASLabSumStatsMeta,
 )
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
 from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
@@ -163,6 +167,7 @@ class CellAnalysisByLDSCTask(Task):
             project=sumstats_meta.project,
             sub_dir=PurePath("analysis"),
             extension=".csv",
+            read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
         )
         return cls(
             meta=meta,

@@ -2,6 +2,12 @@ from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_base_cell_analysis_by_ldsc import (
     MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC,
 )
+from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_base_cell_analysis_ldsc_filter_fdr import (
+    MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC_FDR_FILTERED,
+)
+from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_base_cell_analysis_plot import (
+    LDL_BASE_CELL_PLOT,
+)
 from mecfs_bio.assets.gwas.ldl.million_veterans.processed_gwas_data.million_veterans_ldl_eur_magma_task_generator import (
     MILLION_VETERANS_EUR_LDL_MAGMA_TASKS,
 )
@@ -20,8 +26,13 @@ def run_ldl_analysis():
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.bar_plot_task,
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.labeled_filtered_gene_analysis_task,
             MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC,
+            MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC_FDR_FILTERED,
+            LDL_BASE_CELL_PLOT,
         ],
         incremental_save=True,
+        must_rebuild_transitive=[
+            MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC_FDR_FILTERED,
+        ],
         # must_rebuild_transitive=[
         #     MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.sumstats_task
         # ]

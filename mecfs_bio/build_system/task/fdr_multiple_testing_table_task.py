@@ -36,6 +36,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 Method = Literal["fdr_bh", "fdr_by", "bonferroni"]
+REJECT_NULL_LABEL = "Reject Null"
 
 
 @frozen
@@ -55,6 +56,7 @@ class FilterMultipleTestingTableTask(Task):
     p_value_column: str
     alpha: float  # uncorrected error rate
     method: Method
+    apply_filter: bool = True
     table_in_dir_filename: str | None = None
     table_in_dir_readspec: DataFrameReadSpec | None = None
 
@@ -114,16 +116,12 @@ class FilterMultipleTestingTableTask(Task):
         )
         # logger.debug(f"Corrected p values {corrected}")
         frame[CORRECTED_COL_LABEL] = corrected
-        frame = frame.loc[reject]
-        frame: pd.DataFrame = frame.sort_values(by=[self.p_value_column])
-        assert (frame[CORRECTED_COL_LABEL] <= self.alpha).all()
-        if len(frame) > 0:
-            logger.debug(
-                f"Dataframe after filtering:\n\n {frame.to_markdown(index=False)}"
-            )
+        if self.apply_filter:
+            frame = frame.loc[reject]
+            assert (frame[CORRECTED_COL_LABEL] <= self.alpha).all()
         else:
-            logger.debug("No null hypothesis rejected.")
-
+            frame[REJECT_NULL_LABEL] = reject
+        frame: pd.DataFrame = frame.sort_values(by=[self.p_value_column])
         out_path = scratch_dir / "filtered_frame.csv"
         frame.to_csv(out_path, index=False)
         return FileAsset(out_path)
@@ -155,6 +153,34 @@ class FilterMultipleTestingTableTask(Task):
             table_in_dir_readspec=DataFrameReadSpec(
                 DataFrameWhiteSpaceSepTextFormat(comment_code="#")
             ),
+        )
+
+    @classmethod
+    def create_from_result_table_task(
+        cls,
+        alpha: float,
+        method: Method,
+        asset_id: str,
+        p_value_column: str,
+        source_task: Task,
+        apply_filter: bool = True,
+    ):
+        source_meta = source_task.meta
+        assert isinstance(source_meta, ResultTableMeta)
+        meta = ResultTableMeta(
+            asset_id=asset_id,
+            trait=source_meta.trait,
+            project=source_meta.project,
+            extension=".csv",
+            read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
+        )
+        return cls(
+            meta=meta,
+            table_source_task=source_task,
+            p_value_column=p_value_column,
+            alpha=alpha,
+            method=method,
+            apply_filter=apply_filter,
         )
 
 
