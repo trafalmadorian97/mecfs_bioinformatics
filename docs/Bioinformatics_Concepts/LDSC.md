@@ -288,7 +288,7 @@ The issue of the implausibility of isotropic pleiotropy  is partially resolved b
 ## Usage
 LDSC in its original form has two main usages
 
-1. Estimation of the parameter $h$, the [heritability](Heritability.md) of phenotype of interest
+1. Estimation of the parameter $h^2$, the [heritability](Heritability.md) of phenotype of interest.  An estimate of this parameter can be directly read from the LDSC regression.
 2. Detection of population stratification.
 
 

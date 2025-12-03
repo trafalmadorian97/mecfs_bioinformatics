@@ -1,10 +1,10 @@
 # Heritability
-## Definition
-Heritability is defined in the context of an additive genetic model.  Let $Y$ denote the phenotype of interest.  Let $G$ denote the genetic component of the phenotype and $E$ the environmental component.
+## Standard Definition
+Heritability is typically defined in the context of an additive genetic model.  Let $Y$ denote the phenotype of interest.  Let $G$ denote the genetic component of the phenotype and $E$ the environmental component.
 Assume the components are additively separable, so that:
 
 $$
-Y=E+G.
+Y=E+G. \label{model}
 $$
 
 Assume also that the random variables $E$ and $G$ are uncorrelated.
@@ -18,6 +18,17 @@ $$
 
 Note that in the uncorrelated-additive model above, $h^2$ is equal to the [coefficient of determination](https://en.wikipedia.org/wiki/Coefficient_of_determination) in the linear regression of $Y$ on $G$.
 
+To see this, note that if we run a simple linear regression of $Y$ on $G$, then the coefficient of determination is given by the [formula](https://en.wikipedia.org/wiki/Coefficient_of_determination#As_squared_correlation_coefficient):
+
+$$
+\begin{align}
+\mathrm{cor}(G,Y)^2&=\frac{\mathrm{cov}(Y,G)^2}{\mathrm{Var}(G) \mathrm{Var{Y}}}\\
+\mathrm{cor}(G,Y)^2&=\frac{\mathrm{cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var{Y}}}& \text{ by (\ref{model})}\\
+&=\frac{\mathrm{Var}(G)^2}{\mathrm{Var}(G) \mathrm{Var{Y}}} & \text{$G$ and  $E$ uncorrelated}\\
+&=\frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}\\
+&=:h^2
+\end{align}
+$$
 
 
 $h^2$ thus expresses the proportion of phenotypic variation attributable to genetics.
