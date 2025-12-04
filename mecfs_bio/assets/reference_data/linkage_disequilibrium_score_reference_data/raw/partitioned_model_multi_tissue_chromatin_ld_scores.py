@@ -22,4 +22,29 @@ We again computed a P-value to test whether the regression coefficient was posit
 
 Roughly speaking the underlying logic of this dataset is as follows: In certain tissue or cell types, certain regions of the genome are known to be marked by special histone marks in certain
 . These marks indicate that a nearby gene is being transcribed in those tissues or cell types.
+
+
+Data is officially located at : https://console.cloud.google.com/storage/browser/broad-alkesgroup-public-requester-pays
+
+I re-hosted on dropbox.
 """
+
+from pathlib import PurePath
+
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
+from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
+
+PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask(
+    meta=ReferenceFileMeta(
+        asset_id="multi_tissue_chromatin_partitioned_ld_scores",
+        group="linkage_disequilibrium_scores",
+        sub_group="LDSCORE_LDSC_SEG",
+        sub_folder=PurePath("raw"),
+        filename="LDSCORE_LDSC_SEG_ldscores_Multi_tissue_chromatin_1000Gv3_ldscores",
+        extension=".tar",
+    ),
+    url="https://www.dropbox.com/scl/fi/8gdia1hhbjg65l4lvvpnt/LDSCORE_LDSC_SEG_ldscores_Multi_tissue_chromatin_1000Gv3_ldscores.tar?rlkey=94v5r1mjawbd1ha2gzmrg3bur&dl=1",
+    md5_hash="8aa379558c9ff8986965b4337b5ce6d2",
+)
