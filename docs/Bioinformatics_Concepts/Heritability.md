@@ -81,7 +81,7 @@ $$
 \end{align}
 $$
 
-where the last line follows from the projection theorem (pg 345 in Grimmet and Stirzaker[@grimmett2020probabilit]).  Where before we needed to assume $\mathbb{Cov}(E,G)=0$, here this property is automatic.
+where the last line follows from the projection theorem (pg 345 in Grimmet and Stirzaker[@grimmett2020probability]).  Where before we needed to assume $\mathbb{Cov}(E,G)=0$, here this property is automatic.
 
 
  - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this definition is applicable to any phenotype representable by a random variable in $L_2$.
