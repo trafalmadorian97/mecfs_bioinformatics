@@ -56,12 +56,44 @@ As a more specific example, note that (a) many recent GWAS have shown that obesi
 
 For a popular science book that discusses subtle issues in the definition of heredity, see Harden 2021[@harden2021genetic].
 
+# Alternative definitions of Heritability
+
+## Definition via conditional expectation
+
+If the definition [above](Heritability.md#heritability), we first specified our modeling assumptions, and then defined heritability in the context of those assumptions. It is possible to reverse this order.  One approach is as follows
+
+As before, let the random variable $Y$ denote the phenotypic trait of interest. Let $g$ denote genotype.  Define:
+
+$$
+\begin{align}
+G&:=\mathbb{E} (Y|g)\\
+E&=Y-G\\
+h^2&= \frac{\mathbb{Var}(G) }{\mathbb{Var}(Y)}
+\end{align}
+$$
+
+With this approach, we have
+
+$$
+\begin{align}
+\mathbb{Cov}(G,E)&=\mathbb{E}(  \mathbb{E}(Y|g) -\mathbb{E}Y   )(  Y- \mathbb{E}(Y|g) )\\
+&=0,
+\end{align}
+$$
+
+where the last line follows from the projection theorem (pg 345 in Grimmet and Stirzaker[@grimmett2020probabilit]).  Where before we needed to assume $\mathbb{Cov}(E,G)=0$, here this property is automatic.
+
+
+ - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this definition is applicable to any phenotype representable by a random variable in $L_2$.
+ - On the other hand, the conditional expectation definition of heritability has the **disadvantage** of reduced interpretability.  In particular, $G$ now incorporates to everything that can be predicted from the genotype, including artifacts of population stratification.
+
+## Counterfactual heritability
 
 
 
 
 
-## References
+# References
 
 - Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019. (Chapter 15)
 - Visscher, Peter M., William G. Hill, and Naomi R. Wray. "Heritability in the genomics era—concepts and misconceptions." Nature reviews genetics 9.4 (2008): 255-266.
