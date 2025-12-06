@@ -141,7 +141,7 @@ class CellAnalysisByLDSCTask(Task):
                 w_ld_chr=str(w_ld_chr_full_pattern),
             )
             ldsc_h2_cts: pd.DataFrame = sumstats.ldsc_h2_cts
-            logger.debug(f"cell type specific s-LDSC results: \n \n {ldsc_h2_cts}")
+            logger.debug(f"cell type specific s-LDSC results: \n \n {ldsc_h2_cts}\n")
 
             out_path = scratch_dir / "ldsc_h2_cts.csv"
             ldsc_h2_cts.to_csv(out_path, index=False)

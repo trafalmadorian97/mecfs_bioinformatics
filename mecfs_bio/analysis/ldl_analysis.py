@@ -8,8 +8,21 @@ from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_base_cell_analysis_
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_base_cell_analysis_plot import (
     LDL_BASE_CELL_PLOT,
 )
+from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_standard_sldsc import LDL_STANDARD_SLDSC_TASK_GROUP
 from mecfs_bio.assets.gwas.ldl.million_veterans.processed_gwas_data.million_veterans_ldl_eur_magma_task_generator import (
     MILLION_VETERANS_EUR_LDL_MAGMA_TASKS,
+)
+from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_cahoy_ld_scores_extracted import (
+    PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED,
+)
+from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_gtex_brain_ld_scores_extracted import (
+    PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_EXTRACTED,
+)
+from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_immgen_ld_scores_extracted import (
+    PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED,
+)
+from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_multi_tissue_chromatin_ld_scores_extracted import (
+    PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED,
 )
 
 
@@ -25,17 +38,15 @@ def run_ldl_analysis():
         [
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.bar_plot_task,
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.labeled_filtered_gene_analysis_task,
-            MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC,
-            MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC_FDR_FILTERED,
-            LDL_BASE_CELL_PLOT,
-        ],
+            # MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC,
+            # MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC_FDR_FILTERED,
+            # LDL_BASE_CELL_PLOT,
+            # PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED,
+            # PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_EXTRACTED,
+            # PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED,
+            # PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED,
+        ]+ LDL_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks(),
         incremental_save=True,
-        must_rebuild_transitive=[
-            MILLION_VETERAN_LDL_BASE_CELL_ANALYSIS_BY_LDSC_FDR_FILTERED,
-        ],
-        # must_rebuild_transitive=[
-        #     MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.sumstats_task
-        # ]
     )
 
 

@@ -134,7 +134,7 @@ def topological[
     frontier = _get_initial_frontier(G)
     while len(G) > 0:
         logger.info(_get_progress_list(todo=todo, done=done))
-        node = frontier[-1]
+        node = frontier[0]
         task = tasks[node]
         maybe_asset = get_asset_if_exists(
             meta=task.meta,
