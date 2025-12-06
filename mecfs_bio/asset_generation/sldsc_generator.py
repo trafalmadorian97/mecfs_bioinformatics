@@ -32,6 +32,15 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
 def standard_sldsc_task_generator(
     sumstats_task: Task, base_name: str
 ) -> SLDSCTaskGenerator:
+    """
+    Standardized task generator for applying S-LSDC to GWAS summary statistics
+
+    as described in
+    "Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types." Nature genetics 50.4 (2018): 621-629.
+
+    using the standard partitioning datasets provided by the authors of that paper
+
+    """
     result = SLDSCTaskGenerator.create(
         base_name=base_name,
         source_sumstats_task=sumstats_task,
