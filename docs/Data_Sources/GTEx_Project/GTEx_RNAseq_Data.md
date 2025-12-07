@@ -3,7 +3,7 @@
 
 The Genotype Tissue Expression (GTEx) project generates useful datasets via the genetic analysis of diverse tissues from post-mortem human donors.
 
-One important class of such datasets consists of measured levels of RNA expression across a wide range of genes, tissues, and donors.  These GTEx RNAseq datasets can be used to improve our understanding of the tissues in which particular gene plays a particularly important role.  For instance, if we find that the RNA transcripts of a gene are over-expressed in the colon relative to other tissues, is reasonable to assume that the gene plays its most important role in the colon.
+One important class of such dataset records levels of RNA expression across a wide range of genes, tissues, and donors.  These GTEx RNAseq datasets can help us discover the tissues in which a particular gene plays an important role.  For instance, if we find that the RNA transcripts of a gene are over-expressed in the colon relative to other tissues, is reasonable to assume that the gene plays its most important role in the colon.
 
 GTEx bulk tissue RNA-seq datasets are used by the gene set analysis step of [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to construct hypothesis about which tissues are most involved in a trait or disease.  Continuing the above example, MAGMA works on the principle that if most of the genes strongly associated with a disease are over-expressed in the colon according to GTEx RNAseq data, it is likely that the colon is central to the disease process.
 
