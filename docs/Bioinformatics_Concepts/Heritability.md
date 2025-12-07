@@ -58,6 +58,14 @@ For a popular science book that discusses subtle issues in the definition of her
 
 # Alternative definitions of Heritability
 
+The standard definition of heritability stated [above](Heritability.md#heritability) has certain unsatisfactory aspects:
+
+1.  Heritability relies on $G$ and $E$, the genetic and environmental contributions to the phenotype.  These random variables are not precisely defined.
+2. Even if we $G$ and $E$ were precisely defined, heritability also assumes the additive model $Y=G+E$.  Given the incredible complexity of biology, this is implausible.  It might, however, be reasonable to argue that the additive model reflects a first order Taylor expansion of the true phenotype-determining function.
+3. Even if we accept an additive model, the lack of correlation between $G$ and $E$ is also problematic.  Different individuals with different genes inhabit different environments.
+
+The above unsatisfactory aspects make heritability a somewhat fuzzy concept, and motivate the development of alternative ways of defining heritability.
+
 ## Definition via conditional expectation
 
 If the definition [above](Heritability.md#heritability), we first specified our modeling assumptions, and then defined heritability in the context of those assumptions. It is possible to reverse this order.  One approach is as follows
@@ -84,11 +92,12 @@ $$
 where the last line follows from the projection theorem (pg 345 in Grimmet and Stirzaker[@grimmett2020probability]).  Where before we needed to assume $\mathbb{Cov}(E,G)=0$, here this property is automatic.
 
 
- - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this definition is applicable to any phenotype representable by a random variable in $L_2$.
+ - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this definition is applicable to any phenotype representable by a random variable in $L_2$.  Mathematically, it is now crystal clear what we mean when we speak of $G$ and $E$
  - On the other hand, the conditional expectation definition of heritability has the **disadvantage** of reduced interpretability.  In particular, $G$ now incorporates to everything that can be predicted from the genotype, including artifacts of population stratification.
 
 ## Counterfactual heritability
 
+Todo
 
 
 

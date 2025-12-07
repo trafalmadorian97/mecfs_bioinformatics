@@ -11,4 +11,4 @@ The MVP investigators have run a large number of GWAS using genetic and phenotyp
 
 ## Other Relevant Links
 
-[Interview with Dr. Mike Gaziano, on of the Principal Investigators leading the Million Veterans Program](https://sanogenetics.com/resources/blog/podcast-recap-exploring-the-million-veterans-program-with-dr.-mike-gaziano)
+[Interview with Dr. Mike Gaziano, one of the Principal Investigators leading the Million Veterans Program](https://sanogenetics.com/resources/blog/podcast-recap-exploring-the-million-veterans-program-with-dr.-mike-gaziano)

@@ -11,7 +11,7 @@ High levels of LDL in the blood can cause atherosclerosis, which in turn increas
 
 ## MAGMA Results
 
-I applied the MAGMA pipeline to summary statistics from a GWAS of LDL from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program/Million_Veterans_Program.md).  In the gene set analysis step, I incorporated [tissue-specific RNAseq data from GTEx](../../Data_Sources/GTEx_project/GTEx_RNAseq_Data.md) to try to link genes associated with LDL to specific tissues.
+I applied the MAGMA pipeline to summary statistics from a GWAS of LDL from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program/Million_Veterans_Program.md).  In the gene set analysis step, I incorporated [tissue-specific RNAseq data from GTEx](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md) to try to link genes associated with LDL to specific tissues.
 
 The results are shown below:
 
