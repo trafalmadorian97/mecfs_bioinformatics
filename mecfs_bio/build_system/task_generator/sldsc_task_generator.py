@@ -96,7 +96,7 @@ class SLDSCTaskGenerator:
                     asset_id=base_name
                     + "_"
                     + entry.entry_name
-                    + "_multiple_testing_correction",
+                    + "_s_ldsc_multiple_testing_correction",
                     alpha=multiple_testing_alpha,
                     p_value_column="Coefficient_P_value",
                     source_task=cell_task,
@@ -110,7 +110,7 @@ class SLDSCTaskGenerator:
                     asset_id=base_name
                     + "_"
                     + entry.entry_name
-                    + "_cell_analysis_md_table",
+                    + "s_ldsc_cell_analysis_md_table",
                     pipe=DropColPipe(["_Corrected P Value_", "Coefficient_std_error"]),
                 )
             )
@@ -127,7 +127,7 @@ class SLDSCTaskGenerator:
                     asset_id=base_name
                     + "_"
                     + entry.entry_name
-                    + "_cell_analysis_sldsc_plot",
+                    + "_cell_analysis_s_ldsc_plot",
                     source_task=add_labels_task,
                 )
             else:
