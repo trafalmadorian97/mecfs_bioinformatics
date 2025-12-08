@@ -1,34 +1,19 @@
 # The Roadmap Epigenetics Project
 
-## Introduction
+## Overview
 
-Neglecting somatic mutations, all non-gamete cells in a person's body contain the same DNA.  Despite this, the cells in a multicellular organism are incredibly diverse in their structure and function: adipocytes differ from neurons, which differ from macrophages, which differ from B cells, which differ from cardiomyocytes.
+The Roadmap Epigenetics Project[@bernstein2010nih] was an NIH-funded data-collection initiative whose aim was to gather [epigenic data](../../Bioinformatics_Concepts/Epigenetics.md) such as:
 
-What explains this diversity? Chiefly, the answer is gene expression.  While all genes are present in in the DNA of all cells, different genes are switched on or off in different cell types.  
+- DNA methylation data
+- [Histone modification data](../../Bioinformatics_Concepts/Epigenetics.md#example-histone-marks)
+- Chromatin accessibility data (via the DNase 1 chromatin accesbility assay),
 
+from a wide variety of human tissue.
 
-How is gene expression controlled?  There are numerous redundant regulatory systems, but one key system involves histone marks.
-
-## Histone marks
-
-Eukaryotic DNA is tightly wound around spool-like complexes of proteins called histones.  The resulting DNA-histone units are collectively called nucleosomes.
-
-![histone_image_from_wikipedia](https://github.com/user-attachments/assets/077abc51-5dfa-4891-8fa1-e83db80976eb)
-
-[Image Source: Wikipedia](https://en.wikipedia.org/wiki/Nucleosome#/media/File:Basic_units_of_chromatin_structure.svg).
+A key feature of the Roadmap Project was its adherence to the principle of *In Vivo Veritas*.  Whereas previous epigenetics studies had focused on immortalized cell lines that may not faithfully recapitulate normal biology, the Roadmap Project focused on normal cells retrieved from donors.  
 
 
-Histones can be covalently bonded to a very wide variety of molecules.  These covalent bonds are called "histone marks".  Histone marks can strongly affect the three-dimensional structure of chromatin.  For example, certain histone marks cause DNA to be tightly wound, so that the genes its contains cannot be transcribed, while histone marks cause DNA to open up, causing genes to be readily transcribed(Alberts et al. pg 220[@alberts2022molecular]).
+## Utility
 
-
-Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.
-
-## Epigenetics
-
-Epigenetics is the study structural and chemical modifications of DNA, that do not change the core base-sequence, but can affect gene expression.  It includes histone marks, and also other kinds of modifications like DNA methylation.
-
-
-
-## The Roadmap Project
-
+Roadmap datasets tell which regions of the genome are under what kind of epigenetic control in which tissues.  They can thus be combined with GWAS results via tools like [S-LDSC](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) and [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md). Essentially, if we find a GWAS hit in a particular region of the genome, we can use Roadmap to try to ask: "In which tissues is that region of the genome epigenetically up-regulated?"
 
