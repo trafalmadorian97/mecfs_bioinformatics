@@ -30,7 +30,7 @@ $$
 Where:
 
 
-- The $\{C_k\}_{k}$ are subsets of the SNPs.  The $C_k$ can describe functional chromosomal regions, like promoters, enhancers, or other regulatory regions.  They can also reflect gene-tissue expression.  For instance, a $C_k$ could mark SNPs that are near genes that have been observed to be over-expressed in the liver according to a [GTEx RNAseq dataset.](../Data_Sources/GTEx_project).
+- The $\{C_k\}_{k}$ are subsets of the SNPs.  The $C_k$ can describe functional chromosomal regions, like promoters, enhancers, or other regulatory regions.  They can also reflect gene-tissue expression.  For instance, a $C_k$ could mark SNPs that are near genes that have been observed to be over-expressed in the liver according to a [GTEx RNAseq dataset.](../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md).
 - The $\{\tau_k\}$ are weights, where $\tau_k$ measures the effect on the GWAS signal of category $C_k$.
 
 ## Procedure
