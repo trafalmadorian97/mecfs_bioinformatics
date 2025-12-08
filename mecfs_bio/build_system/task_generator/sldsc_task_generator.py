@@ -3,15 +3,21 @@ from typing import Mapping, Sequence
 from attrs import frozen
 
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
+    ConvertDataFrameToMarkdownTask,
+)
 from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
     Method,
     MultipleTestingTableTask,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_ldsc import (
+from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_sldsc import (
     CellAnalysisByLDSCTask,
 )
+from mecfs_bio.build_system.task.gwaslab.sldsc_scatter_plot_task import (
+    SLDSCScatterPlotTask,
+)
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
-from mecfs_bio.build_system.task.sldsc_scatter_plot_task import SLDSCScatterPlotTask
+from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 
 
 @frozen
@@ -26,15 +32,15 @@ class PartitionedLDScoresRecord:
 class CellAnalysisTaskGroup:
     cell_analysis_task: CellAnalysisByLDSCTask
     multiple_testing_task: Task
+    multiple_testing_task_markdown: Task
     add_categories_task: Task | None
     plot_task: Task | None
 
-    def terminal_task(self) -> Task:
+    def terminal_tasks(self) -> list[Task]:
+        result = [self.multiple_testing_task_markdown]
         if self.plot_task is not None:
-            return self.plot_task
-        if self.add_categories_task is not None:
-            return self.add_categories_task
-        return self.multiple_testing_task
+            result.append(self.plot_task)
+        return result
 
 
 @frozen
@@ -52,7 +58,10 @@ class SLDSCTaskGenerator:
     partitioned_tasks: Mapping[str, CellAnalysisTaskGroup]
 
     def get_terminal_tasks(self) -> Sequence[Task]:
-        return [item.terminal_task() for item in self.partitioned_tasks.values()]
+        result = []
+        for item in self.partitioned_tasks.values():
+            result.extend(item.terminal_tasks())
+        return result
 
     @classmethod
     def create(
@@ -95,6 +104,16 @@ class SLDSCTaskGenerator:
                     method=multiple_testing_method,
                 )
             )
+            multiple_testing_markdown = (
+                ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+                    source_task=multiple_testing_task,
+                    asset_id=base_name
+                    + "_"
+                    + entry.entry_name
+                    + "_cell_analysis_md_table",
+                    pipe=DropColPipe(["_Corrected P Value_", "Coefficient_std_error"]),
+                )
+            )
             if entry.cell_or_tissue_labels_task is not None:
                 add_labels_task = JoinDataFramesTask.create_from_result_df(
                     asset_id=base_name + "_" + entry.entry_name + "_add_labels",
@@ -105,7 +124,10 @@ class SLDSCTaskGenerator:
                     right_on=["Tissue_Or_Cell"],
                 )
                 plot_task = SLDSCScatterPlotTask.create(
-                    asset_id=base_name + "_" + entry.entry_name + "_sldsc_plot",
+                    asset_id=base_name
+                    + "_"
+                    + entry.entry_name
+                    + "_cell_analysis_sldsc_plot",
                     source_task=add_labels_task,
                 )
             else:
@@ -116,5 +138,6 @@ class SLDSCTaskGenerator:
                 multiple_testing_task=multiple_testing_task,
                 add_categories_task=add_labels_task,
                 plot_task=plot_task,
+                multiple_testing_task_markdown=multiple_testing_markdown,
             )
         return cls(cell_analysis_task_groups)

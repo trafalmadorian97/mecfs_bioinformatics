@@ -1,4 +1,4 @@
-from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_ldsc import (
+from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_sldsc import (
     ldcts_processed_to_raw,
     ldcts_raw_to_processed,
 )
