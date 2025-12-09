@@ -17,10 +17,16 @@ from mecfs_bio.build_system.task.gwaslab.sldsc_scatter_plot_task import (
     SLDSCScatterPlotTask,
 )
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
-from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
-from mecfs_bio.build_system.task.pipes.str_lowercase_pipe import StrLowercasePipe
-from mecfs_bio.build_system.task.pipes.str_replace_pipe import StrReplacePipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+
+
+@frozen
+class CellOrTissueLabelRecord:
+    cell_or_tissue_label_task: Task
+    pipe_left: DataProcessingPipe = IdentityPipe()
+    pipe_right: DataProcessingPipe = IdentityPipe()
 
 
 @frozen
@@ -28,7 +34,7 @@ class PartitionedLDScoresRecord:
     entry_name: str
     ref_ld_chr_cts_task: Task
     ref_ld_chr_cts_filename: str
-    cell_or_tissue_labels_task: Task | None
+    cell_or_tissue_labels_task: CellOrTissueLabelRecord | None
 
 
 @frozen
@@ -121,25 +127,12 @@ class SLDSCTaskGenerator:
                 add_labels_task = JoinDataFramesTask.create_from_result_df(
                     asset_id=base_name + "_" + entry.entry_name + "_add_labels",
                     result_df_task=multiple_testing_task,
-                    reference_df_task=entry.cell_or_tissue_labels_task,
+                    reference_df_task=entry.cell_or_tissue_labels_task.cell_or_tissue_label_task,
                     how="left",
                     left_on=["Name"],
                     right_on=["Tissue_Or_Cell"],
-                    df_1_pipe=CompositePipe(
-                        [
-                            StrLowercasePipe(target_column="Name", new_column_name="Name"),
-                            StrReplacePipe(target_column="Name", new_column_name="Name", replace_what=" ", replace_with="_"),
-                        ]
-                    ),
-
-                    df_2_pipe=CompositePipe(
-                        [
-                            StrLowercasePipe(target_column="Tissue_Or_Cell", new_column_name="Tissue_Or_Cell"),
-                            StrReplacePipe(target_column="Tissue_Or_Cell", new_column_name="Tissue_Or_Cell", replace_what=" ",
-                                           replace_with="_"),
-                        ]
-                    ),
-
+                    df_1_pipe=entry.cell_or_tissue_labels_task.pipe_left,
+                    df_2_pipe=entry.cell_or_tissue_labels_task.pipe_right,
                 )
                 plot_task = SLDSCScatterPlotTask.create(
                     asset_id=base_name

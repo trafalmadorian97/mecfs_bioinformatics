@@ -23,7 +23,11 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     FICUANE_2018_FRANKE_GTEX_CATEGORIES,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.str_lowercase_pipe import StrLowercasePipe
+from mecfs_bio.build_system.task.pipes.str_replace_pipe import StrReplacePipe
 from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
+    CellOrTissueLabelRecord,
     PartitionedLDScoresRecord,
     SLDSCTaskGenerator,
 )
@@ -76,7 +80,36 @@ def standard_sldsc_task_generator(
             PartitionedLDScoresRecord(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_EXTRACTED,
                 ref_ld_chr_cts_filename="Multi_tissue_gene_expr.ldcts",
-                cell_or_tissue_labels_task=FICUANE_2018_FRANKE_GTEX_CATEGORIES,
+                cell_or_tissue_labels_task=CellOrTissueLabelRecord(
+                    FICUANE_2018_FRANKE_GTEX_CATEGORIES,
+                    pipe_left=CompositePipe(
+                        [
+                            StrLowercasePipe(
+                                target_column="Name", new_column_name="Name"
+                            ),
+                            StrReplacePipe(
+                                target_column="Name",
+                                new_column_name="Name",
+                                replace_what=" ",
+                                replace_with="_",
+                            ),
+                        ]
+                    ),
+                    pipe_right=CompositePipe(
+                        [
+                            StrLowercasePipe(
+                                target_column="Tissue_Or_Cell",
+                                new_column_name="Tissue_Or_Cell",
+                            ),
+                            StrReplacePipe(
+                                target_column="Tissue_Or_Cell",
+                                new_column_name="Tissue_Or_Cell",
+                                replace_what=" ",
+                                replace_with="_",
+                            ),
+                        ]
+                    ),
+                ),
                 entry_name="multi_tissue_gene_expression",
             ),
         ],

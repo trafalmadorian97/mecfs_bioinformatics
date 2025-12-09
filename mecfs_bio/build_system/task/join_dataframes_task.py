@@ -40,8 +40,8 @@ class JoinDataFramesTask(Task):
     left_on: Sequence[str]
     right_on: Sequence[str]
     _meta: Meta
-    df_1_pipe: DataProcessingPipe= IdentityPipe()
-    df_2_pipe: DataProcessingPipe= IdentityPipe()
+    df_1_pipe: DataProcessingPipe = IdentityPipe()
+    df_2_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def _df_1_id(self) -> AssetId:
@@ -98,8 +98,8 @@ class JoinDataFramesTask(Task):
         how: JoinStrategy,
         left_on: Sequence[str],
         right_on: Sequence[str],
-            df_1_pipe: DataProcessingPipe= IdentityPipe(),
-        df_2_pipe: DataProcessingPipe= IdentityPipe()
+        df_1_pipe: DataProcessingPipe = IdentityPipe(),
+        df_2_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         """
         Join a result dataframe to a reference dataframe.

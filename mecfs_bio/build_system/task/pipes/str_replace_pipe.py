@@ -9,7 +9,11 @@ class StrReplacePipe(DataProcessingPipe):
     target_column: str
     new_column_name: str
     replace_what: str
-    replace_with:str
+    replace_with: str
+
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
-        return x.with_columns(narwhals.col(self.target_column).
-                              str.replace_all(self.replace_what, self.replace_with).alias(self.new_column_name))
+        return x.with_columns(
+            narwhals.col(self.target_column)
+            .str.replace_all(self.replace_what, self.replace_with)
+            .alias(self.new_column_name)
+        )
