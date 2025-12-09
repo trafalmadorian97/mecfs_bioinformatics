@@ -23,6 +23,11 @@ def run_ldl_analysis():
         ]
         + LDL_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks(),
         incremental_save=True,
+        must_rebuild_transitive=[
+            LDL_STANDARD_SLDSC_TASK_GROUP.partitioned_tasks[
+                "multi_tissue_gene_expression"
+            ].add_categories_task
+        ],
     )
 
 

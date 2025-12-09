@@ -19,6 +19,8 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.get_logger()
@@ -38,6 +40,8 @@ class JoinDataFramesTask(Task):
     left_on: Sequence[str]
     right_on: Sequence[str]
     _meta: Meta
+    df_1_pipe: DataProcessingPipe = IdentityPipe()
+    df_2_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def _df_1_id(self) -> AssetId:
@@ -70,11 +74,13 @@ class JoinDataFramesTask(Task):
             asset_1,
             meta=self._df_1_meta,
         )
+        df_1 = self.df_1_pipe.process(df_1)
         asset_2 = fetch(self._df_12_id)
         df_2 = scan_dataframe_asset(
             asset_2,
             meta=self._df_2_meta,
         )
+        df_2 = self.df_2_pipe.process(df_2)
         joined = df_1.join(
             df_2, how=self.how, left_on=list(self.left_on), right_on=list(self.right_on)
         )
@@ -92,6 +98,8 @@ class JoinDataFramesTask(Task):
         how: JoinStrategy,
         left_on: Sequence[str],
         right_on: Sequence[str],
+        df_1_pipe: DataProcessingPipe = IdentityPipe(),
+        df_2_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         """
         Join a result dataframe to a reference dataframe.
@@ -113,4 +121,6 @@ class JoinDataFramesTask(Task):
             left_on=left_on,
             right_on=right_on,
             meta=meta,
+            df_1_pipe=df_1_pipe,
+            df_2_pipe=df_2_pipe,
         )

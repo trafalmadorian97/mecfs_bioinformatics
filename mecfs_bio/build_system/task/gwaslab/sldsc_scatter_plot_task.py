@@ -58,6 +58,8 @@ class SLDSCScatterPlotTask(Task):
         df = df.sort_values(by=["Category", "Name"])
         df["mlog10p"] = -np.log10(df["Coefficient_P_value"])
         df["tissue_or_cell"] = np.arange(len(df))
+        df["Category"] = df["Category"].str.title()
+        df["Category"] = df["Category"].str.replace("Cns", "CNS")
         df["marker_size"] = 4.5 * df[REJECT_NULL_LABEL] + 0.5
         fig = px.scatter(
             df,
