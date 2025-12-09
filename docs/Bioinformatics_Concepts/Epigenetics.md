@@ -21,12 +21,14 @@ Histones can be covalently bonded to a very wide variety of molecules.  These co
 Here are some examples of histone marks with known effects:
 
 
-| Histone Mark | Effect on Chromatin |
-|:-------------|:--------------------|
-| H4K4me3      | Open, accesible chromatin|
-| H3K9ac       |Open, accesible chromatin|
-| H3K9me3      | Closed, inaccesible chromatin|
-| H3K27me3     | Closed, inaccesible chromatin|  
+| Histone Mark | Effect on Chromatin                                    |
+|:-------------|:-------------------------------------------------------|
+| H3K4me1      | [Associated with enhanced transcription](https://en.wikipedia.org/wiki/H3K4me1)|
+| H4K4me3      | Open, accesible chromatin[@alberts2022molecular]                              |
+| H3K9ac       | Open, accesible chromatin[@alberts2022molecular]                              |
+| H3K9me3      | Closed, inaccesible chromatin[@alberts2022molecular]                          |
+| [H3K27ac]      | [Associated with higher activation of transcription]((https://en.wikipedia.org/wiki/H3K27ac) |
+| H3K27me3     | Closed, inaccesible chromatin[@alberts2022molecular]                          |  
 
 
 Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.
