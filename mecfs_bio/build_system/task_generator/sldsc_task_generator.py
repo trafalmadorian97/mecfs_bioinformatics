@@ -17,7 +17,10 @@ from mecfs_bio.build_system.task.gwaslab.sldsc_scatter_plot_task import (
     SLDSCScatterPlotTask,
 )
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
+from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
+from mecfs_bio.build_system.task.pipes.str_lowercase_pipe import StrLowercasePipe
+from mecfs_bio.build_system.task.pipes.str_replace_pipe import StrReplacePipe
 
 
 @frozen
@@ -122,6 +125,21 @@ class SLDSCTaskGenerator:
                     how="left",
                     left_on=["Name"],
                     right_on=["Tissue_Or_Cell"],
+                    df_1_pipe=CompositePipe(
+                        [
+                            StrLowercasePipe(target_column="Name", new_column_name="Name"),
+                            StrReplacePipe(target_column="Name", new_column_name="Name", replace_what=" ", replace_with="_"),
+                        ]
+                    ),
+
+                    df_2_pipe=CompositePipe(
+                        [
+                            StrLowercasePipe(target_column="Tissue_Or_Cell", new_column_name="Tissue_Or_Cell"),
+                            StrReplacePipe(target_column="Tissue_Or_Cell", new_column_name="Tissue_Or_Cell", replace_what=" ",
+                                           replace_with="_"),
+                        ]
+                    ),
+
                 )
                 plot_task = SLDSCScatterPlotTask.create(
                     asset_id=base_name
