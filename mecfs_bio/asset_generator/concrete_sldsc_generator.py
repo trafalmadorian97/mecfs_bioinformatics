@@ -1,3 +1,6 @@
+from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.custom.roadmap_cell_type_categorization import (
+    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC,
+)
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_cahoy_ld_scores_extracted import (
     PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED,
 )
@@ -26,6 +29,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.str_lowercase_pipe import StrLowercasePipe
 from mecfs_bio.build_system.task.pipes.str_replace_pipe import StrReplacePipe
+from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
 from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     CellOrTissueLabelRecord,
     PartitionedLDScoresRecord,
@@ -74,8 +78,38 @@ def standard_sldsc_task_generator(
             PartitionedLDScoresRecord(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED,
                 ref_ld_chr_cts_filename="Multi_tissue_chromatin.ldcts",
-                cell_or_tissue_labels_task=None,
                 entry_name="multi_tissue_chromatin",
+                cell_or_tissue_labels_task=CellOrTissueLabelRecord(
+                    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC,
+                    pipe_left=CompositePipe(
+                        [
+                            SplitColPipe(
+                                col_to_split="Name",
+                                split_by="__",
+                                new_col_names=("Cell", "Epigenetic_Assay"),
+                            ),
+                            StrReplacePipe(
+                                target_column="Cell",
+                                new_column_name="Cell",
+                                replace_what="_ENTEX",
+                                replace_with="",
+                            ),
+                            StrLowercasePipe(
+                                target_column="Cell",
+                                new_column_name="Cell",
+                            ),
+                        ],
+                    ),
+                    pipe_right=CompositePipe(
+                        [
+                            StrLowercasePipe(
+                                target_column="Cell type", new_column_name="Cell type"
+                            )
+                        ]
+                    ),
+                    left_join_on="Cell",
+                    right_join_on="Cell type",
+                ),
             ),
             PartitionedLDScoresRecord(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_EXTRACTED,
