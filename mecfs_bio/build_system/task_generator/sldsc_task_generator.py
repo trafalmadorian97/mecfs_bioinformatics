@@ -27,6 +27,8 @@ class CellOrTissueLabelRecord:
     cell_or_tissue_label_task: Task
     pipe_left: DataProcessingPipe = IdentityPipe()
     pipe_right: DataProcessingPipe = IdentityPipe()
+    left_join_on: str = "Name"
+    right_join_on: str = "Tissue_Or_Cell"
 
 
 @frozen
@@ -129,8 +131,8 @@ class SLDSCTaskGenerator:
                     result_df_task=multiple_testing_task,
                     reference_df_task=entry.cell_or_tissue_labels_task.cell_or_tissue_label_task,
                     how="left",
-                    left_on=["Name"],
-                    right_on=["Tissue_Or_Cell"],
+                    left_on=[entry.cell_or_tissue_labels_task.left_join_on],
+                    right_on=[entry.cell_or_tissue_labels_task.right_join_on],
                     df_1_pipe=entry.cell_or_tissue_labels_task.pipe_left,
                     df_2_pipe=entry.cell_or_tissue_labels_task.pipe_right,
                 )

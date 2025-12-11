@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_null_pipe import DropNullsPipe
-from mecfs_bio.build_system.task.pipes.split_col import SplitColPipe
+from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
     MagmaTaskGeneratorFromRaw,
 )

@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_min import FilterRowsByMin
 from mecfs_bio.build_system.task.pipes.move_col_to_front_pipe import MoveColToFrontPipe
 from mecfs_bio.build_system.task.pipes.shifted_log_pipe import ShiftedLogPipe
-from mecfs_bio.build_system.task.pipes.split_col import SplitColPipe
+from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
 from mecfs_bio.build_system.task.pipes.winsorize_all import WinsorizeAllPipe
 
 GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA = PipeDataFrameTask.create(
