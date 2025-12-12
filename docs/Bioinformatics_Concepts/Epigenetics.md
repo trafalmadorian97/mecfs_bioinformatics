@@ -2,12 +2,15 @@
 
 Neglecting somatic mutations, all non-gamete cells in a person's body contain the same DNA.  Despite this, the cells in a multicellular organism are incredibly diverse in their structure and function: adipocytes differ from neurons, which differ from macrophages, which differ from B cells, which differ from cardiomyocytes.
 
-What explains this diversity? Chiefly, the answer is gene expression.  While all genes are present in in the DNA of all cells, different genes are switched on or off in different cell types.
+What explains this diversity? Chiefly, the answer is gene expression.  While all genes are present in the DNA of all cells, different genes are switched on or off in different cell types.
 
 
-How is gene expression controlled?  There are numerous redundant regulatory systems, but one key system involves histone marks.
+How is gene expression controlled? The answer, at least in part, is via epigenetic processes. 
+"Epigenetics" refers to the structural and chemical modifications of DNA that do not change the sequence of nucleotides, but do affect gene expression.  
 
-## Example: Histone marks
+## Histone marks
+
+One of the key epigenetic regulatory systems involves histone marks.
 
 Eukaryotic DNA is tightly wound around spool-like complexes of proteins called histones.  The resulting DNA-histone units are collectively called nucleosomes.
 
@@ -34,8 +37,10 @@ Here are some examples of histone marks with known effects:
 Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.
 
 
+Assays that report histone marks are a key method for understanding epigenetic regulation.
 
 
-## Epigenetics
+## ATAC-seq
 
-Epigenetics is the study structural and chemical modifications of DNA, that do not change the core base-sequence, but can affect gene expression.  It includes histone marks as well also other kinds of modifications like DNA methylation.
+Besides assays that report histone marks, assays that directly measure chromatin accessibility are also informative about epigenetic regulation. ATAC-seq is an important example of such an accessibility assay.
+
