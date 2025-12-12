@@ -78,3 +78,46 @@ Note that the all the histone modifications in the table above are associated wi
 
 Consistent with our findings above, these results point to the liver are a key cite of LDL physiology.  Unlike the GTEx results above, they also implicate adipose tissue as a cite of important physiology.
 
+
+## Immgen data
+
+The next step is to use the SLDSC reference data derived from the Immgen project.  This results in no significant tissue-type hits.  The top non-significant hits are:
+
+| Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
+|:--------------------------------|--------------:|----------------------:|:--------------|
+| T.4SP69+.Th                     |   2.09672e-08 |            0.00229273 | False         |
+| T.4Nve.Sp                       |   1.61296e-08 |            0.0091171  | False         |
+| Mo.6C-IIint.Bl                  |   1.24572e-08 |            0.0098925  | False         |
+| T.4Nve.LN                       |   1.37083e-08 |            0.0120702  | False         |
+| T.4.LN.BDC                      |   1.47838e-08 |            0.012287   | False         |
+| LN.TR.14w.B6                    |   1.06239e-08 |            0.0138859  | False         |
+| MF.480int.LV.Naive              |   8.75148e-09 |            0.014214   | False         |
+| MF.480hi.LV.Naive               |   9.3381e-09  |            0.0170341  | False         |
+
+This is perhaps to be expected, as LDL levels are at least primarily not the consequence of an autoimmune process.
+
+
+## Cahoy and GTEx-Brain data
+
+The next two reference datasets pertain to the central nervous system.  Again, there are no significant hits.  The top non-significant hits are:
+
+| Name            |   Coefficient |   Coefficient_P_value | Reject Null   |
+|:----------------|--------------:|----------------------:|:--------------|
+| Astrocyte       |   1.97982e-09 |              0.291024 | False         |
+| Neuron          |   2.33232e-10 |              0.466565 | False         |
+| Oligodendrocyte |  -5.54881e-09 |              0.936155 | False         |⏎   
+
+and 
+
+| Name                                    |   Coefficient |   Coefficient_P_value | Reject Null   |
+|:----------------------------------------|--------------:|----------------------:|:--------------|
+| Brain_Nucleus_accumbens_(basal_ganglia) |   6.56949e-09 |             0.0297949 | False         |
+| Brain_Caudate_(basal_ganglia)           |   4.43273e-09 |             0.0727096 | False         |
+| Brain_Putamen_(basal_ganglia)           |   3.45177e-09 |             0.0808186 | False         |
+| Brain_Anterior_cingulate_cortex_(BA24)  |   1.83247e-09 |             0.249405  | False         |
+| Brain_Cortex                            |   1.85239e-09 |             0.282159  | False         |
+| Brain_Cerebellar_Hemisphere             |   1.55714e-09 |             0.334468  | False         |
+| Brain_Substantia_nigra                  |   8.98458e-10 |             0.387369  | False         |
+| Brain_Cerebellum                        |  -9.68139e-10 |             0.584834  | False         |
+
+This is perhaps to be expected, given the lack of significant hits on any CNS-related categories in the coarse-grained chromatin and gene expression datasets.

@@ -25,6 +25,9 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.from_papers.finucane_2018_franke_gtex_categories import (
     FICUANE_2018_FRANKE_GTEX_CATEGORIES,
 )
+from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.from_papers.finucane_2018_immgen_categories import (
+    FICUANE_2018_IMMGEN_CATEGORIES,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.str_lowercase_pipe import StrLowercasePipe
@@ -72,7 +75,27 @@ def standard_sldsc_task_generator(
             PartitionedLDScoresRecord(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED,
                 ref_ld_chr_cts_filename="ImmGen.ldcts",
-                cell_or_tissue_labels_task=None,
+                cell_or_tissue_labels_task=CellOrTissueLabelRecord(
+                    FICUANE_2018_IMMGEN_CATEGORIES,
+                    pipe_left=CompositePipe(
+                        [
+                            StrLowercasePipe(
+                                target_column="Name",
+                                new_column_name="lower case name",
+                            ),
+                        ],
+                    ),
+                    pipe_right=CompositePipe(
+                        [
+                            StrLowercasePipe(
+                                target_column="Cell Type",
+                                new_column_name="lower case name",
+                            )
+                        ]
+                    ),
+                    left_join_on="lower case name",
+                    right_join_on="lower case name",
+                ),
                 entry_name="immgen",
             ),
             PartitionedLDScoresRecord(
