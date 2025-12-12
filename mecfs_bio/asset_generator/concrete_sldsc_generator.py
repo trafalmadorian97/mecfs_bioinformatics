@@ -4,6 +4,9 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_cahoy_ld_scores_extracted import (
     PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED,
 )
+from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_corces_atac_ld_scores_extracted import (
+    PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_EXTRACTED,
+)
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_gtex_brain_ld_scores_extracted import (
     PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_EXTRACTED,
 )
@@ -97,6 +100,12 @@ def standard_sldsc_task_generator(
                     right_join_on="lower case name",
                 ),
                 entry_name="immgen",
+            ),
+            PartitionedLDScoresRecord(
+                ref_ld_chr_cts_task=PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_EXTRACTED,
+                ref_ld_chr_cts_filename="Corces_ATAC.ldcts",
+                cell_or_tissue_labels_task=None,
+                entry_name="corces_atac",
             ),
             PartitionedLDScoresRecord(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED,
