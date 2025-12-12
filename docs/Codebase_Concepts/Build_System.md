@@ -30,7 +30,7 @@ A task is an operation that constructs a particular asset.
 
 Here is the source code for the `Task` base class:
 
-```python title="Task Class definition"
+```python title="Task Class Definition"
 --8<-- "mecfs_bio/build_system/task/base_task.py"
 ```
 
@@ -43,3 +43,15 @@ Here is the source code for the `Task` base class:
 Concrete Task subclass classes are defined [here][mecfs_bio.build_system.task].
 
 
+### Rebuilder
+
+Given a `Task` that generates an `Asset`, together with a data storage object called `Info` the job of a Rebuilder is to decide whether the current version of the `Asset` is up-to-date.  If so, that `Asset` can be directly returned without executing the `Task`.  If not, the rebuilder uses the `Task` to materialize an up-to-date version of the asset.
+
+Here is source code for the `Rebuilder` base class:
+
+```python
+--8<-- "mecfs_bio/build_system/rebuilder/base_rebuilder.py"
+```
+
+
+Currently, there is one concrete implementation of `Rebuilder`, called the [VerifyingTraceRebuilder][mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core].  It works by using file hashes to decide whether an `Asset` is up-to-date.
