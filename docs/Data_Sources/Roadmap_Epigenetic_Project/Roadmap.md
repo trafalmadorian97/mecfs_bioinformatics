@@ -5,7 +5,7 @@
 The Roadmap Epigenetics Project[@bernstein2010nih] was an NIH-funded data-collection initiative whose aim was to gather [epigenic data](../../Bioinformatics_Concepts/Epigenetics.md) such as:
 
 - DNA methylation data
-- [Histone modification data](../../Bioinformatics_Concepts/Epigenetics.md#example-histone-marks)
+- [Histone modification data](../../Bioinformatics_Concepts/Epigenetics.md#histone-marks)
 - Chromatin accessibility data (via the DNase 1 chromatin accesbility assay),
 
 from a wide variety of human tissue.
