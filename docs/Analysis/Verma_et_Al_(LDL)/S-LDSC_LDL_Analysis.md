@@ -97,6 +97,22 @@ The next step is to use the SLDSC reference data derived from the Immgen project
 This is perhaps to be expected, as LDL levels are at least primarily not the consequence of an autoimmune process.
 
 
+# Corces ATAC-seq data
+
+We can use another immunological reference dataset: the Corces ATAC-seq dataset.  In this case, there are also no significant hits.  The top non-significant hits are:
+
+| Name    |   Coefficient |   Coefficient_P_value | Reject Null   |
+|:--------|--------------:|----------------------:|:--------------|
+| Mono    |   3.39149e-08 |              0.236073 | False         |
+| MEP     |  -8.09368e-09 |              0.588996 | False         |
+| Erythro |  -3.47455e-08 |              0.694423 | False         |
+| NK      |  -3.37224e-08 |              0.753868 | False         |
+| HSC     |  -2.53803e-08 |              0.772651 | False         |
+| CMP     |  -2.52663e-08 |              0.777761 | False         |
+| CD4     |  -4.49983e-08 |              0.783817 | False         |
+| CLP     |  -7.29466e-08 |              0.886496 | False         |
+
+
 ## Cahoy and GTEx-Brain data
 
 The next two reference datasets pertain to the central nervous system.  Again, there are no significant hits.  The top non-significant hits are:

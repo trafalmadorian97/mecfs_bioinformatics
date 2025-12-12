@@ -121,7 +121,7 @@ class SLDSCTaskGenerator:
                     asset_id=base_name
                     + "_"
                     + entry.entry_name
-                    + "s_ldsc_cell_analysis_md_table",
+                    + "_s_ldsc_cell_analysis_md_table",
                     pipe=DropColPipe(["_Corrected P Value_", "Coefficient_std_error"]),
                 )
             )
