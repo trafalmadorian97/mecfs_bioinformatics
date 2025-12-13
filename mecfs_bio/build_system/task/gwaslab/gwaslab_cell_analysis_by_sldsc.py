@@ -13,6 +13,7 @@ import shutil
 from pathlib import Path, PurePath
 from tempfile import TemporaryDirectory
 
+import narwhals
 import pandas as pd
 import structlog
 from attrs import frozen
@@ -33,6 +34,8 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.get_logger()
@@ -65,6 +68,7 @@ class CellAnalysisByLDSCTask(Task):
     ref_ld_chr_inner_pattern: str
     w_ld_chr_task: Task
     w_ld_chr_inner_pattern: str
+    pre_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def meta(self) -> Meta:
@@ -99,6 +103,11 @@ class CellAnalysisByLDSCTask(Task):
         sumstats_asset = fetch(self._source_sumstats_id)
         sumstats = read_sumstats(sumstats_asset)
 
+        sumstats.data = (
+            self.pre_pipe.process(narwhals.from_native(sumstats.data).lazy())
+            .collect()
+            .to_pandas()
+        )
         ref_ld_chr_cts_asset = fetch(self._ref_ld_chr_cts_id)
         assert isinstance(ref_ld_chr_cts_asset, DirectoryAsset)
         ref_ld_chr_cts_index_path = (
@@ -158,6 +167,7 @@ class CellAnalysisByLDSCTask(Task):
         ref_ld_chr_inner_dirname: str,
         w_ld_chr_task: Task,
         w_ld_chr_inner_dirname: str,
+        pre_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
@@ -178,6 +188,7 @@ class CellAnalysisByLDSCTask(Task):
             ref_ld_chr_inner_pattern=ref_ld_chr_inner_dirname,
             w_ld_chr_task=w_ld_chr_task,
             w_ld_chr_inner_pattern=w_ld_chr_inner_dirname,
+            pre_pipe=pre_pipe,
         )
 
 

@@ -33,6 +33,8 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.str_lowercase_pipe import StrLowercasePipe
 from mecfs_bio.build_system.task.pipes.str_replace_pipe import StrReplacePipe
 from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
@@ -44,7 +46,9 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
 
 
 def standard_sldsc_task_generator(
-    sumstats_task: Task, base_name: str
+    sumstats_task: Task,
+    base_name: str,
+    pre_pipe: DataProcessingPipe = IdentityPipe(),
 ) -> SLDSCTaskGenerator:
     """
     Standardized task generator for applying S-LSDC to GWAS summary statistics
@@ -179,7 +183,8 @@ def standard_sldsc_task_generator(
                 entry_name="multi_tissue_gene_expression",
             ),
         ],
-        multiple_testing_alpha=0.05,
+        multiple_testing_alpha=0.01,
         multiple_testing_method="fdr_bh",
+        pre_pipe=pre_pipe,
     )
     return result
