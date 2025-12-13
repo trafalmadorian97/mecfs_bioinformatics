@@ -1,3 +1,7 @@
+"""
+Script to analyze inflammatory bowl disease GWAS from Liu et al.
+"""
+
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.analysis.magma.liu_et_al_2023_eur_37_specific_tissue_bar_plot import (
     LIU_ET_AL_IBD_EUR_37_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
