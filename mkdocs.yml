@@ -28,7 +28,7 @@ plugins:
           show_signature_annotations: true
           show_symbol_type_heading: true
           show_symbol_type_toc: true
-          show_if_no_docstring: false
+          show_if_no_docstring: true
           summary: true
 - api-autonav:
     modules: ['mecfs_bio']
