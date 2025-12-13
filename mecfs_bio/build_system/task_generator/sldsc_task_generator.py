@@ -86,6 +86,7 @@ class SLDSCTaskGenerator:
         partitioned_entries: list[PartitionedLDScoresRecord],
         multiple_testing_alpha: float,
         multiple_testing_method: Method,
+        pre_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         cell_analysis_task_groups = {}
         for entry in partitioned_entries:
@@ -101,6 +102,7 @@ class SLDSCTaskGenerator:
                 ref_ld_chr_inner_dirname=ref_ld_chr_inner_dirname,
                 w_ld_chr_task=w_ld_chr_task,
                 w_ld_chr_inner_dirname=w_ld_chr_inner_dirname,
+                pre_pipe=pre_pipe,
             )
             multiple_testing_task = (
                 MultipleTestingTableTask.create_from_result_table_task(
