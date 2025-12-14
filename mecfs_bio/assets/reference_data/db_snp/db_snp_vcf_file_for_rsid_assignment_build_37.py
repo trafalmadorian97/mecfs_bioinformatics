@@ -1,9 +1,9 @@
 from pathlib import PurePath
 
-from src_new.build_system.meta.reference_meta.reference_file_meta import (
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
-from src_new.build_system.task.reference.download_file_task import DownloadFileTask
+from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 """
 # see: https://cloufield.github.io/gwaslab/AssignrsID/

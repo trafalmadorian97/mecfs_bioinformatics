@@ -1,3 +1,6 @@
+"""
+Assign RSIDs to variants via joining a database file.  Only works for single-nucleotide variations.
+"""
 from pathlib import Path
 from typing import Mapping
 
