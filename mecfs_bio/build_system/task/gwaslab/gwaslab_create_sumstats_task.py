@@ -39,6 +39,7 @@ GenomeBuild = Literal["19", "38"]
 class GWASLabVCFRef:
     name: str
     ref_alt_freq: str
+    extra_downloads: Sequence[str] = tuple()
 
 
 @frozen
@@ -60,6 +61,8 @@ def _do_harmonization(
     if options.check_ref_files:
         gwaslab.download_ref(name=options.ref_infer.name, overwrite=False)
         gwaslab.download_ref(name=options.ref_seq, overwrite=False)
+        for extra in options.ref_infer.extra_downloads:
+            gwaslab.download_ref(name=extra, overwrite=False)
     sumstats.harmonize(
         basic_check=basic_check,
         n_cores=options.cores,
@@ -200,7 +203,6 @@ class GWASLabCreateSumstatsTask(Task):
             exclude_sexchr=self.exclude_sexchr,
             harmonize_options=self.harmonize_options,
             liftover_to=self.liftover_to,
-            fmt=self.fmt,
         )
         sumstats = transform_gwaslab_sumstats(sumstats, spec=transform_spec)
         out_path = scratch_dir / "pickled_sumstats.pickle"
@@ -227,15 +229,14 @@ class GwasLabTransformSpec:
     exclude_sexchr: bool = False
     harmonize_options: HarmonizationOptions | None = None
     liftover_to: GenomeBuild | None = None
-    fmt: GwaslabKnownFormat | GWASLabColumnSpecifiers = "regenie"
 
 
 def transform_gwaslab_sumstats(
     sumstats: gl.Sumstats,
     spec: GwasLabTransformSpec,
-    fetch: Fetch | None = None,
 ) -> gl.Sumstats:
     logger.debug("Running gwas summary statistics through gwaslab pipelines...")
+    logger.debug(f"Initial sumstats has shape {sumstats.data.shape}")
     if spec.basic_check:
         sumstats.basic_check()
     if spec.genome_build == "infer":
