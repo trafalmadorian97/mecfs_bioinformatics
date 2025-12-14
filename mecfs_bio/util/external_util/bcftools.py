@@ -1,5 +1,5 @@
 """
-Functions for using the bcftools utiltiies.
+Functions for using the bcftools utilities.
 """
 
 from pathlib import Path
