@@ -1,3 +1,7 @@
+"""
+Generate the tasks required to apply MAGMA to the red blood cell volume GWAS
+"""
+
 from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
     MAGMA_1_1_BINARY_EXTRACTED,
 )

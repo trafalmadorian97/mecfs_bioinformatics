@@ -1,3 +1,7 @@
+"""
+Analyze red blood cell volume GWAS
+"""
+
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.red_blood_cell_volume.million_veterans.analysis.rbc_volume_magma_task_generator import (
     MILLION_VETERANS_EUR_RBC_VOLUME_MAGMA_TASKS,
