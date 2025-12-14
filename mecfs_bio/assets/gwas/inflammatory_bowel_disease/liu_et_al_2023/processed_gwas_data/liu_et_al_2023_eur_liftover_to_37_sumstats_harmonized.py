@@ -1,3 +1,10 @@
+"""
+Harmonize the  Liu et Al IBD Sumstats against the 1k genome and usc genome references
+Key steps:
+- Flip variants so they reflect the "canonical strand" according to the reference
+- For ambiguous variants, resolve using allele frequency data
+"""
+
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_liftover_to_37_sumstats import (
     LIU_ET_AL_2023_IBD_EUR_LIFTOVER_37_SUMSTATS,
 )

@@ -1,3 +1,7 @@
+"""
+Contains a task for transforming gwaslab Sumstats objefts.
+"""
+
 from pathlib import Path
 
 import gwaslab as gl
@@ -22,6 +26,10 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class GWASLabTransformSumstatsTask(Task):
+    """
+    Task to read a pickled GWASlab sumstats object, apply transformations to it, write it out as a new GWASLab sumstats object.
+    """
+
     _meta: Meta
     source_sumstats_task: Task
     transform_spec: GwasLabTransformSpec
