@@ -1,3 +1,7 @@
+"""
+Task to download one or more files into a directory, then run command line programs on them,
+"""
+
 from pathlib import Path
 from typing import Callable, Sequence
 

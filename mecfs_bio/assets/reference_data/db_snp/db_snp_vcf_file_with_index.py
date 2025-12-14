@@ -1,6 +1,6 @@
 """
-Task that downloads a vcf file describing a reference database of SNPs into a directory,
-then indexes it using bcftools
+Task that downloads a vcf file containing the genome build 37 dbSNP reference database into a directory,
+then indexes it using bcftools.
 
 """
 
