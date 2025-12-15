@@ -76,7 +76,9 @@ class CompressedCSVToParquetTask(Task):
         	        HEADER={format.has_header}, 
         	        NAMES = {name_list_str}, 
         	        delim = '{delim}', 
-        	        compression={self.source_compression} ))
+        	        """
+
+        sql_command+=	        """compression={self.source_compression} ))
                     TO '{out_path}' (FORMAT 'PARQUET', CODEC '{self.target_compression}');
                     """
 
