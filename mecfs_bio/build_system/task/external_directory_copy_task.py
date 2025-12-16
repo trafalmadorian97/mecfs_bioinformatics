@@ -7,7 +7,6 @@ shutil
 from pathlib import Path
 
 from attrs import frozen
-from pathlib_abc import WritablePath
 
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
@@ -35,9 +34,7 @@ class ExternalDirectoryCopyTask(GeneratingTask):
     def deps(self) -> list[Task]:
         return []
 
-    def execute(
-        self, scratch_dir: WritablePath, fetch: Fetch, wf: WF
-    ) -> DirectoryAsset:
+    def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:
         target_path = scratch_dir / "target"
         shutil.copy(str(self.external_path), str(target_path))
         return DirectoryAsset(target_path)

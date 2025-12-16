@@ -3,13 +3,16 @@ from pathlib import Path
 from invoke import task
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
+SRC_PATH = Path("mecfs_bio")
 
 
 # dev tasks
 @task
 def test(c):
     print("Running unit and integration tests with pytest")
-    c.run(f"pixi r python  -m pytest  {NEW_UNIT_TEST_PATH}", pty=True)
+    cmd = f"pixi r python   -m pytest --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    print(cmd)
+    c.run(cmd, pty=True)
 
 
 @task

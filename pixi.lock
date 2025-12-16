@@ -727,7 +727,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 66fde6b9468c03263a2a132bc0799c62ee77d51d9150ee6d5eb60a14c99c3a90
+  sha256: e14237f646926d0e8dcb902eb75fe59a22afc28508accea056bd3de49e532cad
   requires_dist:
   - attrs>=25.3.0
   - cattrs>=25.2.0
@@ -753,7 +753,7 @@ packages:
   - ruff>=0.13.2
   - structlog>=25.4.0
   - tqdm>=4.67.1
-  - typeguard>=4.4.4
+  - typeguard>=4.4.4,<5
   - types-networkx>=3.5.0.20251001
   - types-requests>=2.32.4.20250913
   - types-tqdm>=4.67.0.20250809

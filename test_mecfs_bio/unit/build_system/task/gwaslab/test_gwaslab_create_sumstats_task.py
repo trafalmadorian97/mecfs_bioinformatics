@@ -62,5 +62,5 @@ def test_gwaslab_sumstats(
     task_2 = GwasLabSumstatsToTableTask.create_from_source_task(
         source_tsk=task, asset_id="table_task", sub_dir="processed"
     )
-    asset_2 = task_2.execute(scratch_dir=scratch_loc_2, wf=task_2, fetch=fetch_2)
+    asset_2 = task_2.execute(scratch_dir=scratch_loc_2, wf=SimpleWF(), fetch=fetch_2)
     scan_dataframe_asset(asset=asset_2, meta=task_2.meta)
