@@ -1,3 +1,9 @@
+"""
+unnest dbsnp in parquet form.
+In the original dbnsp file, there are rows with multiple alleles
+This operation breaks these into multiple rows, each with one allele.
+"""
+
 from mecfs_bio.assets.reference_data.db_snp.db_snp_build_37_as_parquet import (
     PARQUET_DBSNP_37,
 )
@@ -11,7 +17,7 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
 )
 from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
 from mecfs_bio.build_system.task.pipes.join_with_memory_table_pipe import (
-    JointWithMemTablePipe,
+    JoinWithMemTablePipe,
 )
 from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
 from mecfs_bio.build_system.task.pipes.unnest_pipe import UNNestPipe
@@ -27,7 +33,7 @@ PARQUET_DBSNP_37_UNNESTED = PipeDataFrameTask.create(
             target_column="CHROM",
             valid_values=list(NC_CHROM_MAPPING.keys()),
         ),
-        JointWithMemTablePipe(
+        JoinWithMemTablePipe(
             mem_table=NC_CHROM_TABLE,
             keys_left=["CHROM"],
             keys_right=["nc_chrom"],

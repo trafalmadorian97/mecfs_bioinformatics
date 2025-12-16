@@ -8,7 +8,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 
 
 @frozen
-class JointWithMemTablePipe(DataProcessingPipe):
+class JoinWithMemTablePipe(DataProcessingPipe):
     mem_table: pd.DataFrame
     keys_left: list[str]
     keys_right: list[str]
