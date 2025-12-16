@@ -2,7 +2,6 @@ import shutil
 from pathlib import Path
 
 from attrs import frozen
-from pathlib_abc import WritablePath
 
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
@@ -32,7 +31,7 @@ class ExternalFileCopyTask(GeneratingTask):
     def deps(self) -> list[Task]:
         return []
 
-    def execute(self, scratch_dir: WritablePath, fetch: Fetch, wf: WF) -> FileAsset:
+    def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         target_path = scratch_dir / "target"
         shutil.copy(str(self.external_path), str(target_path))
         return FileAsset(target_path)
