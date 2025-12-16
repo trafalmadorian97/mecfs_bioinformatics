@@ -17,12 +17,16 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 )
 
 ValidBackend = Literal["ibis", "polars"]
+import structlog
+
+logger = structlog.get_logger()
 
 
 def scan_dataframe(
     path: Path, spec: DataFrameReadSpec, parquet_backend: ValidBackend = "polars"
 ) -> nw.LazyFrame:
     if isinstance(spec.format, DataFrameParquetFormat):
+        logger.debug(f"Scanning with backend {parquet_backend}")
         return nw.scan_parquet(path, backend=parquet_backend)
     if isinstance(spec.format, DataFrameTextFormat):
         if spec.format.column_names is not None:

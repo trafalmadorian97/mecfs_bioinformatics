@@ -36,6 +36,7 @@ class CompressedCSVToParquetTask(Task):
     csv_task: Task
     source_compression: str = "gzip"
     target_compression: str = "zstd"
+    select_list: list[str] | None = None
 
     @property
     def _source_meta(self) -> FileMeta:
@@ -69,16 +70,20 @@ class CompressedCSVToParquetTask(Task):
         for nm in col_names:
             name_list_str += f"'{nm}',"
         name_list_str += "]"
+        select_list = "*" if self.select_list is None else ",".join(self.select_list)
         sql_command = f"""
-                    COPY (SELECT *
+                    COPY (SELECT {select_list}
         	        FROM read_csv('{source_path}',
         	        AUTO_DETECT=TRUE, 
         	        HEADER={format.has_header}, 
         	        NAMES = {name_list_str}, 
         	        delim = '{delim}', 
         	        """
+        if format.comment_char is not None:
+            sql_command += f"""comment = '{format.comment_char}',
+            """
 
-        sql_command+=	        """compression={self.source_compression} ))
+        sql_command += f"""compression={self.source_compression} ))
                     TO '{out_path}' (FORMAT 'PARQUET', CODEC '{self.target_compression}');
                     """
 
@@ -93,6 +98,7 @@ class CompressedCSVToParquetTask(Task):
         asset_id: str,
         target_compression: str = "zstd",
         source_compression: str = "gzip",
+        select_list: list[str] | None = None,
     ) -> "CompressedCSVToParquetTask":
         source_meta = csv_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
@@ -109,6 +115,7 @@ class CompressedCSVToParquetTask(Task):
                 csv_task=csv_task,
                 target_compression=target_compression,
                 source_compression=source_compression,
+                select_list=select_list,
             )
         raise ValueError("Unknown Meta")
 

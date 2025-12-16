@@ -1,7 +1,12 @@
 from pathlib import PurePath
 
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameTextFormat
-from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import ReferenceFileMeta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 """
@@ -18,9 +23,20 @@ DB_SNP_VCF_FILE_BUILD_37 = DownloadFileTask(
         read_spec=DataFrameReadSpec(
             DataFrameTextFormat(
                 separator="\t",
-
+                comment_char="#",
+                has_header=False,
+                column_names=[
+                    "CHROM",
+                    "POS",
+                    "ID",
+                    "REF",
+                    "ALT",
+                    "QUAL",
+                    "FILTER",
+                    "INFO",
+                ],
             )
-        )
+        ),
     ),
     url="https://ftp.ncbi.nih.gov/snp/latest_release/VCF/GCF_000001405.25.gz",
     md5_hash="35db22bcd166f904e4775dbbc29f5965",

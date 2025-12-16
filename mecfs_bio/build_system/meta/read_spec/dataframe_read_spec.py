@@ -14,6 +14,7 @@ class DataFrameTextFormat:
     column_names: list[str] | None = None
     has_header: bool = True
     skip_rows: int = 0
+    comment_char: str | None = None
 
 
 @frozen

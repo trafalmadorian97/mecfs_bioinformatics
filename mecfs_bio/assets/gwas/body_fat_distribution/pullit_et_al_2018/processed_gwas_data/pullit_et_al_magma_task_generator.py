@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_null_pipe import DropNullsPipe
-from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
+from mecfs_bio.build_system.task.pipes.str_split_exact_col import SplitExactColPipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
     MagmaTaskGeneratorFromRaw,
 )
@@ -54,7 +54,7 @@ PULLIT_ET_AL_2018_COMBINED_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
     pre_pipe=CompositePipe(
         [
             DropNullsPipe(subset=["CHR", "POS"]),
-            SplitColPipe(
+            SplitExactColPipe(
                 col_to_split="SNP", split_by=":", new_col_names=("RSID", "al1", "al2")
             ),
         ]
