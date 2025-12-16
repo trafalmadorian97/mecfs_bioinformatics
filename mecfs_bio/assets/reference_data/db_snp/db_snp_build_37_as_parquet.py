@@ -1,3 +1,7 @@
+"""
+Task to convert dbsnp to parquet form, to make subsequent steps more efficient.
+"""
+
 from mecfs_bio.assets.reference_data.db_snp.db_snp_vcf_file_for_rsid_assignment_build_37 import (
     DB_SNP_VCF_FILE_BUILD_37,
 )

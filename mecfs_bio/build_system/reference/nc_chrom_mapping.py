@@ -1,6 +1,8 @@
 """
 Mapping from chromosome names found in dbsnp vcf file to standard chromosome names
 
+List of chroosome names in dbsnp vcf file::
+
 ##contig=<ID=NC_000001.10>
 ##contig=<ID=NC_000002.11>
 ##contig=<ID=NC_000003.11>
