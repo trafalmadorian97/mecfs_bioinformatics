@@ -14,7 +14,10 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameTextFormat,
 )
-from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
+    ValidBackend,
+    scan_dataframe_asset,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -44,6 +47,7 @@ class PipeDataFrameTask(Task):
     pipes: Sequence[DataProcessingPipe]
     _meta: Meta
     out_format: OutFormat
+    backend: ValidBackend = "ibis"
 
     @property
     def meta(self) -> Meta:
@@ -63,7 +67,9 @@ class PipeDataFrameTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         asset = fetch(self._source_id)
-        df = scan_dataframe_asset(asset=asset, meta=self._source_meta)
+        df = scan_dataframe_asset(
+            asset=asset, meta=self._source_meta, parquet_backend=self.backend
+        )
         out_path = scratch_dir / "out_dataframe"
         for pipe in self.pipes:
             df = pipe.process(df)
@@ -82,6 +88,7 @@ class PipeDataFrameTask(Task):
         asset_id: str,
         out_format: OutFormat,
         pipes: Sequence[DataProcessingPipe],
+        backend: ValidBackend = "ibis",
     ) -> "PipeDataFrameTask":
         source_meta = source_task.meta
         if isinstance(out_format, CSVOutFormat):
@@ -129,4 +136,5 @@ class PipeDataFrameTask(Task):
             pipes=list(pipes),
             meta=meta,
             out_format=out_format,
+            backend=backend,
         )

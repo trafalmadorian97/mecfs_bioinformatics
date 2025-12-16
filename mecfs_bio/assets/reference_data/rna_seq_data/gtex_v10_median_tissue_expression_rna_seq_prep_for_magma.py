@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_min import FilterRowsByMin
 from mecfs_bio.build_system.task.pipes.move_col_to_front_pipe import MoveColToFrontPipe
 from mecfs_bio.build_system.task.pipes.shifted_log_pipe import ShiftedLogPipe
-from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
+from mecfs_bio.build_system.task.pipes.str_split_exact_col import SplitExactColPipe
 from mecfs_bio.build_system.task.pipes.winsorize_all import WinsorizeAllPipe
 
 GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA = PipeDataFrameTask.create(
@@ -21,7 +21,7 @@ GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA = PipeDataFrameTask.cre
         DropColPipe(cols_to_drop=["Description"]),
         FilterRowsByMin(min_value=1, exclude_columns=["Name"]),
         WinsorizeAllPipe(max_value=50, cols_to_exclude=["Name"]),
-        SplitColPipe(
+        SplitExactColPipe(
             col_to_split="Name", split_by=".", new_col_names=("Gene", "Version")
         ),
         DropColPipe(cols_to_drop=["Version", "Name"]),

@@ -37,7 +37,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.str_lowercase_pipe import StrLowercasePipe
 from mecfs_bio.build_system.task.pipes.str_replace_pipe import StrReplacePipe
-from mecfs_bio.build_system.task.pipes.str_split_col import SplitColPipe
+from mecfs_bio.build_system.task.pipes.str_split_exact_col import SplitExactColPipe
 from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     CellOrTissueLabelRecord,
     PartitionedLDScoresRecord,
@@ -119,7 +119,7 @@ def standard_sldsc_task_generator(
                     ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC,
                     pipe_left=CompositePipe(
                         [
-                            SplitColPipe(
+                            SplitExactColPipe(
                                 col_to_split="Name",
                                 split_by="__",
                                 new_col_names=("Cell", "Epigenetic_Assay"),
