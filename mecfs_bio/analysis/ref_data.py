@@ -3,8 +3,8 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.db_snp.db_snp_build_37_as_parquet_unnest_ref import (
-    PARQUET_DBSNP_37_UNNESTED,
+from mecfs_bio.assets.reference_data.db_snp.db_snp_build_37_as_parquet_unnest_ref_sorted import (
+    PARQUET_DBSNP_37_UNNESTED_SORTED,
 )
 
 
@@ -17,10 +17,11 @@ def run_initial_analysis():
             # LIU_ET_AL_2023_IBD_EUR_HARMONIZE
             # DB_SNP_VCF_FILE_BUILD_37        ,
             # PARQUET_DBSNP_37,
-            PARQUET_DBSNP_37_UNNESTED
+            # PARQUET_DBSNP_37_UNNESTED,
+            PARQUET_DBSNP_37_UNNESTED_SORTED
         ],
         incremental_save=True,
-        must_rebuild_transitive=[PARQUET_DBSNP_37_UNNESTED],
+        # must_rebuild_transitive=[PARQUET_DBSNP_37_UNNESTED],
     )
 
 
