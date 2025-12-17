@@ -63,7 +63,7 @@ class GwasLabSumstatsToTableTask(Task):
         df = self.pipe.process(n_df).collect().to_pandas()
         logger.debug(f"Post pipe df has shape {df.shape}")
         out_loc = scratch_dir / "data.parquet"
-        df.to_parquet(out_loc)
+        df.to_parquet(out_loc, index=False)
         return FileAsset(path=out_loc)
 
     @classmethod
