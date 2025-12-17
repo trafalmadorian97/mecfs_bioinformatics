@@ -2,27 +2,48 @@
 Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends strongly on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
 
 ## High-level summary
-### Core Assumption
-Roughly speaking, the core assumption of LDSC is that:
 
-*Heritability is evenly distributed across the genome*
+The core idea of LDSC is illustrated in the figure below:
 
-The accuracy of LDSC will depend on how close this assumption is to being satisfied
+![ldsc-schematic](https://github.com/user-attachments/assets/44c46b82-e4df-4850-9fed-67ade0acdee8)
 
-### Core Insight
+For each SNP, the authors of LDSC compute a quantity called Linkage-Disequilibrium Score, or LD score, which measures the strength of the correlation between this SNP and other SNPs in a given population.  Then they argue that
 
-The core insight of LDSC is that
+- Subject to certain assumptions, SNPs with higher LD scores will tend to be more significantly associated with the GWAS phenotype.  Thus they will have higher $\chi^2$ statistics.  This follows because even if a SNP is not itself causal, it can be associated with the GWAS phenotype if it is correlated with the causal SNP.  A SNP with a higher LD score has a higher chance of being correlated with the causal SNP.
+- Moreover, the strength of the association between LD score and association depends on heritability.  A more heritable trait (left panel) with exhibit a stronger association than a less heritable trait (right panel).  
 
-*A SNP in strong linkage disequilibrium with other SNPs is more likely to be significantly associated with the phenotype than a SNP in weak linkage disequilibrium*
+[//]: # (### Core Assumption)
 
-This follows because in a GWAS, a SNP can be associated with the phenotype either
+[//]: # (Roughly speaking, the core assumption of LDSC is that:)
 
--  by being causal, or
--  by being in linkage disequilibrium with a causal SNP.
+[//]: # ()
+[//]: # (*Heritability is evenly distributed across the genome*)
 
-Because we have assumed heritability is evenly distributed, a SNP in strong LD has a higher chance of being in LD with the causal SNP than a SNP in weak LD.
+[//]: # ()
+[//]: # (The accuracy of LDSC will depend on how close this assumption is to being satisfied)
 
-LDSC uses this core insight to estimate heritability.
+[//]: # ()
+[//]: # (### Core Insight)
+
+[//]: # ()
+[//]: # (The core insight of LDSC is that)
+
+[//]: # ()
+[//]: # (*A SNP in strong linkage disequilibrium with other SNPs is more likely to be significantly associated with the phenotype than a SNP in weak linkage disequilibrium*)
+
+[//]: # ()
+[//]: # (This follows because in a GWAS, a SNP can be associated with the phenotype either)
+
+[//]: # ()
+[//]: # (-  by being causal, or)
+
+[//]: # (-  by being in linkage disequilibrium with a causal SNP.)
+
+[//]: # ()
+[//]: # (Because we have assumed heritability is evenly distributed, a SNP in strong LD has a higher chance of being in LD with the causal SNP than a SNP in weak LD.)
+
+[//]: # ()
+[//]: # (LDSC uses this core insight to estimate heritability.)
 
 
 [//]: # (### How it works)
