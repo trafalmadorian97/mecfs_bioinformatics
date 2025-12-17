@@ -3,7 +3,7 @@ Script to run initial analysis on Lee et al. Educational Attainment GWAS
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.analysis.lee_et_al_standard_ldsc import (
+from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.analysis.lee_et_al_standard_s_ldsc import (
     LEE_ET_AL_EDU_STANDARD_SLDSC_TASK_GROUP,
 )
 from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
