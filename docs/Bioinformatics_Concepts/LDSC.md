@@ -1,16 +1,16 @@
 # Linkage Disequilibrium Score Regression 
-Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends strongly on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
+Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
 
 ## High-level summary
 
-The core idea of LDSC is illustrated in the figure below:
+The core idea of LDSC is illustrated below:
 
-![ldsc-schematic](https://github.com/user-attachments/assets/44c46b82-e4df-4850-9fed-67ade0acdee8)
+![ldsc-schematic](https://github.com/user-attachments/assets/7a642f44-2fb9-4647-888a-23c1a344d12d)
 
-For each SNP, the authors of LDSC compute a quantity called Linkage-Disequilibrium Score, or LD score, which measures the strength of the correlation between this SNP and other SNPs in a given population.  Then they argue that
+For each SNP, we compute a quantity called Linkage-Disequilibrium Score, or LD score, which measures the strength of the correlation between this SNP and other SNPs.  We then argue that:
 
-- Subject to certain assumptions, SNPs with higher LD scores will tend to be more significantly associated with the GWAS phenotype.  Thus they will have higher $\chi^2$ statistics.  This follows because even if a SNP is not itself causal, it can be associated with the GWAS phenotype if it is correlated with the causal SNP.  A SNP with a higher LD score has a higher chance of being correlated with the causal SNP.
-- Moreover, the strength of the association between LD score and association depends on heritability.  A more heritable trait (left panel) with exhibit a stronger association than a less heritable trait (right panel).  
+- SNPs with higher LD scores will tend to be more strongly associated with the GWAS phenotype, and thus will have higher [Wald test statistics](https://en.wikipedia.org/wiki/Wald_test).  This follows because if a SNP is not itself causal, it can be associated with the GWAS phenotype through correlation with a causal SNP.  A SNP with a higher LD score has a higher chance of being correlated with a causal SNP than a SNP with a lower LD score.
+- The strength of the relationship between LD score and the Wald test statistic depends on heritability.  A more heritable trait (right panel) will exhibit a stronger relationship than a less heritable trait (left panel).  This follows because for a more heritable trait, SNPs have a greater influence over the phenotype, so that increasing the extent to which a SNP is in LD with other SNPs will on average increase its association with the phenotype by a larger amount
 
 [//]: # (### Core Assumption)
 

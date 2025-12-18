@@ -44,7 +44,7 @@ def draw_schematic_ldsc_on_ax(ax: Axes, slope: float,seed:int, title:str|None=No
     ax.set_ylim(0.5,2)
     ax.tick_params(labelbottom=False, labelleft=False)
     ax.set_xlabel("LD Score")
-    ax.set_ylabel("$\chi^2$ Statistic")
+    ax.set_ylabel("Wald Test Statistic")
     if title is not None:
         ax.set_title(title)
 
