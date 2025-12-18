@@ -3,8 +3,8 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.db_snp.db_snp_build_37_as_parquet_unnest_ref_sorted import (
-    PARQUET_DBSNP_37_UNNESTED_SORTED,
+from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
+    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE,
 )
 
 
@@ -18,10 +18,15 @@ def run_initial_analysis():
             # DB_SNP_VCF_FILE_BUILD_37        ,
             # PARQUET_DBSNP_37,
             # PARQUET_DBSNP_37_UNNESTED,
-            PARQUET_DBSNP_37_UNNESTED_SORTED
+            # PARQUET_DBSNP_37_UNNESTED_SORTED
+            # DB_SNP150_ANNOVAR_PROC,
+            # PARQUET_DBSNP150_37_ANNOVAR_PROC,
+            # PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME
+            PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE
         ],
         incremental_save=True,
         # must_rebuild_transitive=[PARQUET_DBSNP_37_UNNESTED],
+        # must_rebuild_transitive=[DB_SNP150_ANNOVAR_PROC]
     )
 
 

@@ -11,6 +11,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
+    ValidBackend,
     scan_dataframe_asset,
 )
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
@@ -47,6 +48,8 @@ class JoinDataFramesTask(Task):
     out_format: OutFormat = CSVOutFormat(sep=",")
     df_1_pipe: DataProcessingPipe = IdentityPipe()
     df_2_pipe: DataProcessingPipe = IdentityPipe()
+    out_pipe: DataProcessingPipe = IdentityPipe()
+    backend: ValidBackend = "polars"
 
     @property
     def _df_1_id(self) -> AssetId:
@@ -76,19 +79,18 @@ class JoinDataFramesTask(Task):
         result_path = scratch_dir / "result.csv"
         asset_1 = fetch(self._df_1_id)
         df_1 = scan_dataframe_asset(
-            asset_1,
-            meta=self._df_1_meta,
+            asset_1, meta=self._df_1_meta, parquet_backend=self.backend
         )
         df_1 = self.df_1_pipe.process(df_1)
         asset_2 = fetch(self._df_12_id)
         df_2 = scan_dataframe_asset(
-            asset_2,
-            meta=self._df_2_meta,
+            asset_2, meta=self._df_2_meta, parquet_backend=self.backend
         )
         df_2 = self.df_2_pipe.process(df_2)
         joined = df_1.join(
             df_2, how=self.how, left_on=list(self.left_on), right_on=list(self.right_on)
         )
+        joined = self.out_pipe.process(joined)
         if isinstance(self.out_format, CSVOutFormat):
             result = joined.collect().to_pandas()
             result.to_csv(result_path, index=False, sep=self.out_format.sep)
@@ -108,6 +110,8 @@ class JoinDataFramesTask(Task):
         out_format: OutFormat = CSVOutFormat(sep=","),
         df_1_pipe: DataProcessingPipe = IdentityPipe(),
         df_2_pipe: DataProcessingPipe = IdentityPipe(),
+        out_pipe: DataProcessingPipe = IdentityPipe(),
+        backend: ValidBackend = "polars",
     ):
         """
         Join a result dataframe to a reference dataframe.
@@ -145,4 +149,6 @@ class JoinDataFramesTask(Task):
             df_1_pipe=df_1_pipe,
             df_2_pipe=df_2_pipe,
             out_format=out_format,
+            backend=backend,
+            out_pipe=out_pipe,
         )

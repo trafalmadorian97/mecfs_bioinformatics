@@ -1,3 +1,4 @@
+import ibis
 import narwhals
 import pandas as pd
 import polars as pl
@@ -21,6 +22,9 @@ class JoinWithMemTablePipe(DataProcessingPipe):
                     self.mem_table,
                 )
             )
+        elif self.backend == "ibis":
+            mem_table = narwhals.from_native(ibis.memtable(self.mem_table))
+
         else:
             raise ValueError("bad backend")
 

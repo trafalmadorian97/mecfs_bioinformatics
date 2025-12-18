@@ -43,12 +43,13 @@ def scan_dataframe(
                 with_column_names=col_func,
                 has_header=spec.format.has_header,
                 skip_rows=spec.format.skip_rows,
+                comment_prefix=spec.format.comment_char,
             )
             return nw.from_native(polars_scan)
         raise ValueError("Only polars backend can be used to read text files")
     if isinstance(spec.format, DataFrameWhiteSpaceSepTextFormat):
         return nw.from_native(
-            pd.read_csv(path, sep="\s+", comment=spec.format.comment_code)
+            pd.read_csv(path, sep=r"\s+", comment=spec.format.comment_code)
         ).lazy()
 
     raise ValueError("Unknown format")
