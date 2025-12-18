@@ -1,3 +1,8 @@
+"""
+Task to rename the chromosomes in the annovar version of dbsnp 150 to match
+those used by gwaslab
+"""
+
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet import (
     PARQUET_DBSNP150_37_ANNOVAR_PROC,
 )

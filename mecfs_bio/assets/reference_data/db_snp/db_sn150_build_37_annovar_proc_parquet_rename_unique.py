@@ -1,3 +1,7 @@
+"""
+Task to deduplicate variants in the annovar version of dbsp150
+"""
+
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename import (
     PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME,
 )

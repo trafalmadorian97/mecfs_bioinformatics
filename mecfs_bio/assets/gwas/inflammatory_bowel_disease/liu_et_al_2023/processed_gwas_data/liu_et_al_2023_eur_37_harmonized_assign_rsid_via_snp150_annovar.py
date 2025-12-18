@@ -1,3 +1,9 @@
+"""
+Task to use the version of DBSNP 150 downloaded from Annovar to assign rsids to variants from te Liu et al study
+Because the Annovar version of dbsnp is left normalized, is is more likely to contain matches
+for the genetic variants in the Liu et al stuy
+"""
+
 import narwhals.dtypes
 
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_37_harmonized_dump_to_parquet import (

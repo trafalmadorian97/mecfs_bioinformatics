@@ -10,7 +10,14 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 """
+
+
 See: https://annovar.openbioinformatics.org/en/latest/user-guide/download/#additional-databases
+
+Download DBSNP150 as preprocessed by annovar
+Crucially, preprocessing includes left normalization, putting genetic variants in standard form
+This makes them more likely to match with the genetic variants found in GWAS
+
 """
 DB_SNP150_ANNOVAR_PROC = DownloadFileTask(
     meta=ReferenceFileMeta(

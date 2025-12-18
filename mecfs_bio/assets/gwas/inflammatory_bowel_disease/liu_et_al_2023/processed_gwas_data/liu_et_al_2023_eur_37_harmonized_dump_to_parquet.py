@@ -1,3 +1,5 @@
+"Task to dump harmonized liu et al sumstats to parquet"
+
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_liftover_to_37_sumstats_harmonized import (
     LIU_ET_AL_2023_IBD_EUR_HARMONIZE,
 )
