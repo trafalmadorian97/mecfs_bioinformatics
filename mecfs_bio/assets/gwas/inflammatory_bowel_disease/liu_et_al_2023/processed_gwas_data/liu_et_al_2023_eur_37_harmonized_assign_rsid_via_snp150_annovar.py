@@ -3,20 +3,19 @@ import narwhals.dtypes
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_37_harmonized_dump_to_parquet import (
     LIU_ET_AL_2023_IBD_EUR_HARMONIZE_PARQUET,
 )
-from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename import (
-    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME,
+from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
+    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE,
 )
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
-from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 
 LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR = (
     JoinDataFramesTask.create_from_result_df(
         asset_id="liu_et_al_2023_ibd_eur_harmonize_assign_rsids_via_snp150_annovar",
         result_df_task=LIU_ET_AL_2023_IBD_EUR_HARMONIZE_PARQUET,
-        reference_df_task=PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME,
+        reference_df_task=PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE,
         left_on=["CHR", "POS", "EA", "NEA"],
         right_on=["int_chrom", "POS", "ALT", "REF"],
         out_format=ParquetOutFormat(),
@@ -35,7 +34,7 @@ LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR = (
                 ),
             ]
         ),
-        out_pipe=CompositePipe([UniquePipe(["int_chrom", "POS", "ALT", "REF"])]),
+        # out_pipe=CompositePipe([UniquePipe(["int_chrom", "POS", "ALT", "REF"])]),
         backend="ibis",
     )
 )

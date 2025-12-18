@@ -16,7 +16,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameWhiteSpaceSepTextFormat,
 )
 
-ValidBackend = Literal["ibis", "polars"]
+ValidBackend = Literal["ibis", "polars", "duckdb"]
 import structlog
 
 logger = structlog.get_logger()
