@@ -17,7 +17,7 @@ git clone git@github.com:trafalmadorian97/mecfs_bioinformatics.git
 The next step is to create a new branch to store your changes.  You can acomplish this with the [checkout](https://git-scm.com/docs/git-checkout) command
 
 ```bash
-git checkout -b my_branch
+git checkout -b <branchname>
 ```
 
 ## Make changes
@@ -41,7 +41,7 @@ pixi r invoke green
 
 Commit your changes and push them
 ```
-git add mecfs_bio test_mecfs_bio; git commit -m '<your message>'; git push
+git add mecfs_bio test_mecfs_bio; git commit -m '<your message>';git push --set-upstream origin <branchname>
 ```
 Finally, use the github interface to create a PR from your changes, and ask for a review.
 
