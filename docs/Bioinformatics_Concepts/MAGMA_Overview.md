@@ -55,17 +55,17 @@ associated with the phenotype over-represented in particular biological systems?
 The gene property analysis module requires:
 
 1. The output of the gene analysis step, associating p-values with genes.
-2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
-
+2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data like [GTEx](../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md) could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
+ 
 ## Mathematical Overview
-- Let $Z_i$ be the $z$-score of the association of the gene with the phenotype.
+- Let $Z_i$ be the $z$-score of the association of gene $i$ with the phenotype.
 - Let $E_{i,j}$ be the measure of the participation of gene $i$ in biological system $j$.
 - Let $m$ be a vector of control covariates. 
 
 For each biological system $j$, MAGMA fits the regression
 
 $$
-Z_i = \beta_0 + \beta_{i,j} E_{i,j} + (\beta^m_{i,j})^T m + \epsilon_{i,j},
+Z_i = \beta_0 + \beta_{j} E_{i,j} + (\beta^m_{j})^T m + \epsilon_{i,j},
 $$
 
 where the $\beta$ are regression coefficients and $\epsilon_{i,j}$ is the regression error.
@@ -79,7 +79,8 @@ Rejecting this null would indicate that the degree to which the gene $i$ partici
 While MAGMA is a very useful approach for detecting the key biological systems involved in a disease or trait, it has a number of limitations.  These include:
 
 1.  It is fundamentally limited by the availability and accuracy of data associating genes with biological systems.  For instance, if tissue-specific RNA-seq data is used, but RNAseq has not been performed on the key tissue involved in the disease, MAGMA will not produce useful results.
-2. Since MAGMA in its original form mostly uses proximity to associate genes with SNPs, it cannot incorporate long-distance regulatory effects.  If such effects are important to a disease, MAGMA could give misleading results
+2. It is unknown how to optimally translate raw reference data, derived from RNAseq or from another method, into $E_{i,j}$ values to optimize the resulting MAGMA signal.  This question is its own research topic [@li2025benchmarking].
+3. Since MAGMA in its original form mostly uses proximity to associate genes with SNPs, it cannot incorporate long-distance regulatory effects.  If such effects are important to a disease, MAGMA could give misleading results
 
 
 
