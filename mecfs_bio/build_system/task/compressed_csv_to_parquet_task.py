@@ -1,3 +1,5 @@
+from typing import Mapping
+
 import structlog
 
 from mecfs_bio.build_system.meta.base_meta import FileMeta
@@ -34,9 +36,10 @@ class CompressedCSVToParquetTask(Task):
 
     _meta: Meta
     csv_task: Task
-    source_compression: str = "gzip"
+    source_compression: str | None = "gzip"
     target_compression: str = "zstd"
     select_list: list[str] | None = None
+    type_dict: Mapping[str, str] | None = None
 
     @property
     def _source_meta(self) -> FileMeta:
@@ -77,13 +80,19 @@ class CompressedCSVToParquetTask(Task):
         	        AUTO_DETECT=TRUE, 
         	        HEADER={format.has_header}, 
         	        NAMES = {name_list_str}, 
-        	        delim = '{delim}', 
-        	        """
+        	        delim = '{delim}'"""
         if format.comment_char is not None:
-            sql_command += f"""comment = '{format.comment_char}',
-            """
+            sql_command += f""",
+                            comment = '{format.comment_char}'"""
+        if self.source_compression is not None:
+            sql_command += f""",
+                          compression={self.source_compression} """
+        if self.type_dict is not None:
+            sql_command += f""",
+            types={self.type_dict}"""
 
-        sql_command += f"""compression={self.source_compression} ))
+        sql_command += "))"
+        sql_command += f"""
                     TO '{out_path}' (FORMAT 'PARQUET', CODEC '{self.target_compression}');
                     """
 
@@ -97,8 +106,9 @@ class CompressedCSVToParquetTask(Task):
         csv_task: Task,
         asset_id: str,
         target_compression: str = "zstd",
-        source_compression: str = "gzip",
+        source_compression: str | None = "gzip",
         select_list: list[str] | None = None,
+        type_dict: Mapping[str, str] | None = None,
     ) -> "CompressedCSVToParquetTask":
         source_meta = csv_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
@@ -116,6 +126,7 @@ class CompressedCSVToParquetTask(Task):
                 target_compression=target_compression,
                 source_compression=source_compression,
                 select_list=select_list,
+                type_dict=type_dict,
             )
         raise ValueError("Unknown Meta")
 

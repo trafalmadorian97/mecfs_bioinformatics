@@ -8,17 +8,21 @@ from narwhals.typing import JoinStrategy
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
-    DataFrameReadSpec,
-    DataFrameTextFormat,
-)
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
+    ValidBackend,
     scan_dataframe_asset,
 )
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
+    CSVOutFormat,
+    OutFormat,
+    ParquetOutFormat,
+    get_extension_and_read_spec_from_format,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -40,8 +44,12 @@ class JoinDataFramesTask(Task):
     left_on: Sequence[str]
     right_on: Sequence[str]
     _meta: Meta
+
+    out_format: OutFormat = CSVOutFormat(sep=",")
     df_1_pipe: DataProcessingPipe = IdentityPipe()
     df_2_pipe: DataProcessingPipe = IdentityPipe()
+    out_pipe: DataProcessingPipe = IdentityPipe()
+    backend: ValidBackend = "polars"
 
     @property
     def _df_1_id(self) -> AssetId:
@@ -71,22 +79,23 @@ class JoinDataFramesTask(Task):
         result_path = scratch_dir / "result.csv"
         asset_1 = fetch(self._df_1_id)
         df_1 = scan_dataframe_asset(
-            asset_1,
-            meta=self._df_1_meta,
+            asset_1, meta=self._df_1_meta, parquet_backend=self.backend
         )
         df_1 = self.df_1_pipe.process(df_1)
         asset_2 = fetch(self._df_12_id)
         df_2 = scan_dataframe_asset(
-            asset_2,
-            meta=self._df_2_meta,
+            asset_2, meta=self._df_2_meta, parquet_backend=self.backend
         )
         df_2 = self.df_2_pipe.process(df_2)
         joined = df_1.join(
             df_2, how=self.how, left_on=list(self.left_on), right_on=list(self.right_on)
         )
-        result = joined.collect().to_pandas()
-        # logger.debug(f"\nresult of join:\n {result.to_markdown(index=False)}")
-        result.to_csv(result_path, index=False)
+        joined = self.out_pipe.process(joined)
+        if isinstance(self.out_format, CSVOutFormat):
+            result = joined.collect().to_pandas()
+            result.to_csv(result_path, index=False, sep=self.out_format.sep)
+        elif isinstance(self.out_format, ParquetOutFormat):
+            joined.sink_parquet(result_path)
         return FileAsset(result_path)
 
     @classmethod
@@ -98,22 +107,38 @@ class JoinDataFramesTask(Task):
         how: JoinStrategy,
         left_on: Sequence[str],
         right_on: Sequence[str],
+        out_format: OutFormat = CSVOutFormat(sep=","),
         df_1_pipe: DataProcessingPipe = IdentityPipe(),
         df_2_pipe: DataProcessingPipe = IdentityPipe(),
+        out_pipe: DataProcessingPipe = IdentityPipe(),
+        backend: ValidBackend = "polars",
     ):
         """
         Join a result dataframe to a reference dataframe.
         """
-
-        source_meta = result_df_task.meta
-        assert isinstance(source_meta, ResultTableMeta)
-        meta = ResultTableMeta(
-            asset_id=AssetId(asset_id),
-            trait=source_meta.trait,
-            project=source_meta.project,
-            extension=".csv",
-            read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
+        extension, read_spec = get_extension_and_read_spec_from_format(
+            out_format=out_format
         )
+        source_meta = result_df_task.meta
+        meta: Meta
+        if isinstance(source_meta, ResultTableMeta):
+            meta = ResultTableMeta(
+                asset_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
+                read_spec=read_spec,
+                # read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
+            )
+        elif isinstance(source_meta, FilteredGWASDataMeta):
+            meta = FilteredGWASDataMeta(
+                short_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
+                read_spec=read_spec,
+                sub_dir=source_meta.sub_dir,
+            )
         return cls(
             df_1_task=result_df_task,
             df_2_task=reference_df_task,
@@ -123,4 +148,7 @@ class JoinDataFramesTask(Task):
             meta=meta,
             df_1_pipe=df_1_pipe,
             df_2_pipe=df_2_pipe,
+            out_format=out_format,
+            backend=backend,
+            out_pipe=out_pipe,
         )

@@ -91,17 +91,9 @@ class PipeDataFrameTask(Task):
         backend: ValidBackend = "ibis",
     ) -> "PipeDataFrameTask":
         source_meta = source_task.meta
-        if isinstance(out_format, CSVOutFormat):
-            read_spec = DataFrameReadSpec(DataFrameTextFormat(separator=out_format.sep))
-            if out_format.sep == "\t":
-                extension = ".tsv"
-            elif out_format.sep == ",":
-                extension = ".csv"
-            else:
-                raise ValueError("Unknown sep")
-        elif isinstance(out_format, ParquetOutFormat):
-            read_spec = DataFrameReadSpec(DataFrameParquetFormat())
-            extension = ".parquet"
+        extension, read_spec = get_extension_and_read_spec_from_format(
+            out_format=out_format
+        )
         meta: Meta
         if isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(
@@ -138,3 +130,22 @@ class PipeDataFrameTask(Task):
             out_format=out_format,
             backend=backend,
         )
+
+
+def get_extension_and_read_spec_from_format(
+    out_format: OutFormat,
+) -> tuple[str, DataFrameReadSpec]:
+    if isinstance(out_format, CSVOutFormat):
+        read_spec = DataFrameReadSpec(DataFrameTextFormat(separator=out_format.sep))
+        if out_format.sep == "\t":
+            extension = ".tsv"
+        elif out_format.sep == ",":
+            extension = ".csv"
+        else:
+            raise ValueError("Unknown sep")
+    elif isinstance(out_format, ParquetOutFormat):
+        read_spec = DataFrameReadSpec(DataFrameParquetFormat())
+        extension = ".parquet"
+    else:
+        raise ValueError(f"Unknown format {out_format}")
+    return extension, read_spec
