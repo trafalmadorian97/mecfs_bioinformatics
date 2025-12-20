@@ -1,5 +1,5 @@
 """
-Task generator to apply S-LDSC IBD study of Liu et al, using
+Task generator to apply S-LDSC to the European results from the Inflammatory Bowel Disease study of Liu et al, using
 rsids assigned via SNP150
 """
 

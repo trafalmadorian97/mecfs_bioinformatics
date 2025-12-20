@@ -1,7 +1,8 @@
 """
-Task to use the version of DBSNP 150 downloaded from Annovar to assign rsids to variants from te Liu et al study
-Because the Annovar version of dbsnp is left normalized, is is more likely to contain matches
-for the genetic variants in the Liu et al stuy
+Task to use the version of dbSNP 150 downloaded from annovar to assign rsids to variants from the Liu et al. study.
+
+Because the Annovar version of dbSNP is left normalized, it is more likely to contain matches
+for the genetic variants in the Liu et al. study
 """
 
 import narwhals.dtypes
@@ -40,7 +41,6 @@ LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR = (
                 ),
             ]
         ),
-        # out_pipe=CompositePipe([UniquePipe(["int_chrom", "POS", "ALT", "REF"])]),
         backend="ibis",
     )
 )

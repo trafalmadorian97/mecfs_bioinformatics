@@ -1,11 +1,12 @@
 """
-Task to deduplicate variants in the annovar version of dbsp150
-This is necessary because dbsnp can contain multiple rsids that refer to the same genetic variant.
+Task to deduplicate variants in the annovar version of dbSNP150
+This is necessary because dbSNP can contain multiple rsids that refer to the same genetic variant.
 
 The current deduplication strategy is just to take the largest rsid in the string ordering sense
-This may not be optimal.
+This is not optimal.
+
 The optimal choice is to select the rsid that will match what is expected by the downstream task.
-For example, if we are going to perform S-LDSC, we should choose the rsid that matches the one in
+For example, if we are going to perform S-LDSC, for each variant we should choose the rsid that matches the one in
 the S-LDSC reference data.
 
 """

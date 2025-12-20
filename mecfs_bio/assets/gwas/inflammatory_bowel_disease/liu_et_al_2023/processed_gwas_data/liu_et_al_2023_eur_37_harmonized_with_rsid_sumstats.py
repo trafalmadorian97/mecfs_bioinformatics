@@ -1,3 +1,7 @@
+"""
+Task to create a Gwaslab Sumstats objects from the Liu et al inflammatory bowel disease GWAS data with rsids assigned via the annovar version of dbSNP150
+"""
+
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_37_harmonized_assign_rsid_via_snp150_annovar import (
     LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR,
 )
