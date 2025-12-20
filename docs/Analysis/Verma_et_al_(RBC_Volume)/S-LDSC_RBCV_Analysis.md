@@ -2,7 +2,7 @@
 
 I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from a GWAS of Red Blood Cell Volume from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program/Million_Veterans_Program.md)  
 
-I used the standard reference data sources to genome regions to cell or tissue types.
+I used the standard reference data sources to associate chromatin regions with cell or tissue types. There reference data sources were:
 
 - [The GTEx Project](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
@@ -193,3 +193,5 @@ Note of the neurological cell types in these datasets are significant, consisten
 ## Reproducing
 
 To reproduce, run the RBC Vol analysis script [here][mecfs_bio.analysis.red_blood_cell_volume]
+
+

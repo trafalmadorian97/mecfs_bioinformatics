@@ -23,14 +23,9 @@ def run_ibd_analysis():
     DEFAULT_RUNNER.run(
         [
             LIU_ET_AL_IBD_EUR_37_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
-            # LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR,
-            # LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR_WITH_DUPS
         ]
         + LIU_ET_AL_S_LSDC_FROM_SNP_150.get_terminal_tasks(),
         incremental_save=True,
-        # must_rebuild_transitive=[LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR,
-        #                          PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE
-        #                          ],
     )
 
 
