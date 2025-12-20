@@ -1,3 +1,12 @@
+"""
+Filter out columns referring to non-Finish Europeans
+
+
+In the raw GWAS data, the NFE columns refer to non-Finish Europeans.
+We extract these columns to get summary statistics for Non-Finish Europeans, and
+drop any variants with null values in these columns, indicating they were not measured in the NFE population
+"""
+
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.raw_gwas_data.liu_et_al_2023_meta import (
     LIU_ET_AL_2023_IBD_META,
 )
