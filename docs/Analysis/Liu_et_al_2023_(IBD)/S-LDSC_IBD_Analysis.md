@@ -237,4 +237,4 @@ As expected, there are no significant cell types in these datasets, consistent w
 
 ## Reproducing
 
-To reproduce, run the IBD  analysis script [here][mecfs_bio.analysis.bd_analysis]
+To reproduce, run the IBD  analysis script [here][mecfs_bio.analysis.ibd_analysis]
