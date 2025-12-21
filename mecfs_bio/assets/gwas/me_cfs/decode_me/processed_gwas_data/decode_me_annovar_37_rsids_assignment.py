@@ -1,3 +1,7 @@
+"""
+Generate a chain of tasks to assign rsids to the decodeME genetic variants using dbSNP 150 reference data as pre-processed by annovar
+"""
+
 from mecfs_bio.asset_generator.annovar_37_basic_rsid_assignment import (
     annovar_37_basic_rsid_assignment,
 )

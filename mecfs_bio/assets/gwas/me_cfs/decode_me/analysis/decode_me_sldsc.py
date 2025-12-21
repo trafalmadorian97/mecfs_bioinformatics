@@ -1,3 +1,7 @@
+"""
+Generate a chain of tasks to apply S-LDSC to DecodeME GWAS 1
+"""
+
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
 )
