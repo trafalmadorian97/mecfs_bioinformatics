@@ -167,7 +167,7 @@ The next step is to use the SLDSC reference data derived from the Immgen project
 | NK.Sp                           |   5.82532e-09 |            0.0122281  | False         |
 
 
-# Corces et al. ATAC-seq data
+## Corces et al. ATAC-seq data
 
 The next step is to use the Corces et al. dataset from ATAC-seq applied to blood cells.
 

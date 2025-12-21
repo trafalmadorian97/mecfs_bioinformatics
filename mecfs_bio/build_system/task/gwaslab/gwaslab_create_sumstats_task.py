@@ -89,7 +89,7 @@ class GWASLabColumnSpecifiers:
     nea: str
     OR: str | None
     se: str | None
-    p: str
+    p: str | None
     info: str | None
     eaf: str | None = None
     neaf: str | None = None
@@ -100,6 +100,8 @@ class GWASLabColumnSpecifiers:
     n: str | None = None
     or_95l: str | None = None
     or_95u: str | None = None
+    chi_sq: str | None = None
+    mlog10p: str | None = None
 
 
 def _get_sumstats(
@@ -131,6 +133,8 @@ def _get_sumstats(
             n=fmt.n,
             OR_95L=fmt.or_95l,
             OR_95U=fmt.or_95u,
+            chisq=fmt.chi_sq,
+            mlog10p=fmt.mlog10p,
         )
 
     return gl.Sumstats(

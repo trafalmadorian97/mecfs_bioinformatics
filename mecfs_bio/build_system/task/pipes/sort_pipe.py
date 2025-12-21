@@ -12,7 +12,7 @@ class SortPipe(DataProcessingPipe):
     desc: Sequence[bool] | bool = False
 
     def __attrs_post_init__(self):
-        if self.desc is not None:
+        if not isinstance(self.desc, bool):
             assert len(self.by) == len(self.desc)
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
