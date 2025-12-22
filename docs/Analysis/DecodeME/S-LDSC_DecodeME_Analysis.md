@@ -19,7 +19,7 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 ### GTEx and Franke lab tissue expression data
 The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets.
 
-![s-ldsc-decodme-gene-expression](ttps://github.com/user-attachments/assets/77dfefc0-2717-4e45-9b1d-4f09d67b7dc)
+![s-ldsc-decodme-gene-expression](https://github.com/user-attachments/assets/77dfefc0-2717-4e45-9b1d-4f09d67b7dc5)
 
 | Name                                                           |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:---------------------------------------------------------------|--------------:|----------------------:|:--------------|
