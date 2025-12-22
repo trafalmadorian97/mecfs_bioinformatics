@@ -1,10 +1,10 @@
 # Build System
 
 ## Motivation
-In data science, the final product of an analysis is often the result of long pipeline of many steps.  These steps can be a mixture of pure data cleaning operations with more complex analysis and modeling.  Moreover, when the data size is nontrivial, the steps and therefore the whole pipeline can be quite slow.  This scenario creates two challenges:
+In data science, the final product of an analysis is often the result of long pipeline of many steps.  These steps can be a mixture of pure data cleaning operations and more complex analysis and modeling.  Moreover, when the data size is nontrivial, the steps and therefore the whole pipeline can be quite slow.  This scenario creates two challenges:
 
-- **Iteration**: It is rare to run a pipeline once, produce an analysis, and be done with it. Usually, it is necessary to repeatedly tweak the steps, re-run the pipeline, and examine the result.  To avoid wasting time, it is therefore desirable that after each change, only the steps impacted by the change should be rerun.
-- **Lineage**:  Given the complexity of many data science workflows, there is considerable room of error.  It is therefore desirable to be able to interrogate the final product of a workflow to trace its "lineage": the precise series of steps that produced it.
+- **Iteration**: It is rare to run a pipeline once, produce an analysis, and be done with it. Usually, it is necessary to repeatedly tweak the steps, re-run the pipeline, and reexamine the result.  To avoid wasting time, it is therefore desirable that after each change, only the steps impacted by the change should be rerun.
+- **Lineage**:  Given the complexity of many data science workflows, there is considerable room for error.  It is therefore desirable to be able to interrogate the final product of a workflow to trace its "lineage": the precise sequence of steps that produced it.
 
 These challenges motivate the development of a data science build system.
 
@@ -14,14 +14,17 @@ The build system used in this project is heavily based on the framework describe
 
 ## Key Concepts
 
+The build system uses certain key concepts, which I describe below.
+
 ### Asset
 
-An asset is any file or directory relevant to the build.  Examples of assets include:
+An asset is any file or directory consumed or produced by the build.  In the context of this project, examples of assets include:
 
 
-- GWAS summary statistics
-- Reference RNAseq data from the GTEx project
-- Plots illustrating the results of applying MAGMA to GWAS summary statistics.
+- GWAS summary statistics.
+- Reference RNAseq data from the [GTEx project.](../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md)
+- Plots illustrating the results of applying [MAGMA](../Bioinformatics_Concepts/MAGMA_Overview.md) to GWAS summary statistics.
+- Tables of category heritability weights $\{\tau_k\}$ and their associated p-values produced by [Stratified Linkage Disequilibrium Score Regression](../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md).
 
 
 ### Task
@@ -54,4 +57,13 @@ Here is source code for the `Rebuilder` base class:
 ```
 
 
-Currently, there is one concrete implementation of `Rebuilder`, called the [VerifyingTraceRebuilder][mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core].  It works by using file hashes to decide whether an `Asset` is up-to-date.
+Currently, there is one concrete implementation of `Rebuilder`, called the [VerifyingTraceRebuilder][mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core].  It uses file hashes to decide whether an `Asset` is up-to-date.
+
+
+### Scheduler
+
+Given on ore more target assets requests by the user, it is the job of the scheduler to determine which tasks need to be run in what order to produce those assets.  The scheduler delegates the actual running of these tasks to the Rebuilder.
+
+Currently, there is one concrete scheduler: the [topological scheduler][mecfs_bio.build_system.scheduler.topological_scheduler].  The topological scheduler constructs a directed acyclic graph of the dependencies of the requested assets, then traverses this graph in [topological order](https://en.wikipedia.org/wiki/Topological_sorting).
+
+
