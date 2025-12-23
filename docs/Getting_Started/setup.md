@@ -19,7 +19,7 @@ To verify everything is work correctly, you can start by running the linters and
 pixi r invoke green
 ```
 
-A natural next step is to run the basic analysis of the Decode ME data using the script [here][mecfs_bio.analysis.decode_me_initial_analysis] 
+A natural next step is to run the basic analysis of the Decode ME data using the script [here][mecfs_bio.analysis.decode_me_initial_analysis] .
 
 You can use the pixi environment to run this or another script via the command:
 

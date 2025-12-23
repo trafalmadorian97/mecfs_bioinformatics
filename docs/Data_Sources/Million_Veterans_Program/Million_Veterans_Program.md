@@ -9,6 +9,6 @@ MVP participants are significantly more ethnically diverse than participants in 
 The MVP investigators have run a large number of GWAS using genetic and phenotypic data collected from participants, and have publicly released summary statistics from these studies.
 
 
-## Other Relevant Links
+##  Relevant Links
 
 [Interview with Dr. Mike Gaziano, one of the Principal Investigators leading the Million Veterans Program](https://sanogenetics.com/resources/blog/podcast-recap-exploring-the-million-veterans-program-with-dr.-mike-gaziano)
