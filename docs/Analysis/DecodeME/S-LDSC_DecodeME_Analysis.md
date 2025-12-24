@@ -1,3 +1,8 @@
+---
+hide:
+- navigation
+- toc
+---
 # S-LDSC Analysis of DecodeME
 
 [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS 1 of [DecodeME](../../Data_Sources/MECFS/DecodeME.md).
@@ -63,38 +68,6 @@ I next applied S-LDSC using the reference dataset derived from the Roadmap epige
 ![s-ldsc-roadmap-chromatin](https://github.com/user-attachments/assets/79ffff5d-1693-41f5-b3b1-a54df7bd6294)
 
 
-| Name                                                                     |   Coefficient |   Coefficient_P_value | Reject Null   |
-|:-------------------------------------------------------------------------|--------------:|----------------------:|:--------------|
-| Fetal_Brain_Female__DNase                                                |   1.02689e-07 |           4.68419e-10 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K27ac                            |   5.08217e-08 |           1.23002e-09 | True          |
-| Fetal_Brain_Male__DNase                                                  |   9.55596e-08 |           2.73287e-09 | True          |
-| Fetal_Brain_Male__H3K4me1                                                |   3.78077e-08 |           5.22621e-09 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K4me3                            |   1.70485e-07 |           5.98839e-09 | True          |
-| Fetal_Brain_Female__H3K4me1                                              |   6.20252e-08 |           1.37543e-08 | True          |
-| Brain_Anterior_Caudate__H3K27ac                                          |   3.86611e-08 |           3.06201e-08 | True          |
-| Brain_Inferior_Temporal_Lobe__H3K27ac                                    |   3.30624e-08 |           2.87328e-07 | True          |
-| Brain_Cingulate_Gyrus__H3K9ac                                            |   8.70527e-08 |           3.38485e-07 | True          |
-| Brain_Angular_Gyrus__H3K9ac                                              |   8.39789e-08 |           9.75539e-07 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K4me1                            |   5.21768e-08 |           1.72804e-06 | True          |
-| Brain_Germinal_Matrix__H3K4me3                                           |   1.26424e-07 |           1.85932e-06 | True          |
-| Brain_Inferior_Temporal_Lobe__H3K4me3                                    |   1.03363e-07 |           3.9248e-06  | True          |
-| Brain_Anterior_Caudate__H3K4me3                                          |   1.02781e-07 |           4.68e-06    | True          |
-| Fetal_Brain_Female__H3K4me3                                              |   1.26751e-07 |           5.12867e-06 | True          |
-| Brain_Angular_Gyrus__H3K4me3                                             |   1.29751e-07 |           9.79109e-06 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K9ac                             |   9.32505e-08 |           9.83818e-06 | True          |
-| Brain_Cingulate_Gyrus__H3K4me3                                           |   1.06995e-07 |           1.02402e-05 | True          |
-| Brain_Angular_Gyrus__H3K4me1                                             |   4.08889e-08 |           1.39444e-05 | True          |
-| Brain_Angular_Gyrus__H3K27ac                                             |   3.26885e-08 |           1.89114e-05 | True          |
-| Brain_Anterior_Caudate__H3K4me1                                          |   3.54259e-08 |           3.15633e-05 | True          |
-| Brain_Anterior_Caudate__H3K9ac                                           |   6.35599e-08 |           3.21619e-05 | True          |
-| Brain_Cingulate_Gyrus__H3K27ac                                           |   2.92786e-08 |           3.245e-05   | True          |
-| Brain_Cingulate_Gyrus__H3K4me1                                           |   3.2249e-08  |           4.08821e-05 | True          |
-| Cortex_derived_primary_cultured_neurospheres__H3K4me3                    |   1.30409e-07 |           5.87376e-05 | True          |
-| Ganglion_Eminence_derived_primary_cultured_neurospheres__H3K4me3         |   9.46707e-08 |           8.30653e-05 | True          |
-| Brain_Inferior_Temporal_Lobe__H3K9ac                                     |   5.55865e-08 |           8.69272e-05 | True          |
-| Brain_Hippocampus_Middle__H3K4me3                                        |   6.50022e-08 |           0.000226226 | True          |
-paiforsyth@PeterPowerDell ~/s/t/biostatistics (main)> head -n 40 assets/base_asset_store/gwas/ME_CFS/DecodeME/analysis/decode_me_gwas_1_multi_ti
-ssue_chromatin_s_ldsc_cell_analysis_md_table.md
 | Name                                                                     |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:-------------------------------------------------------------------------|--------------:|----------------------:|:--------------|
 | Fetal_Brain_Female__DNase                                                |   1.02689e-07 |           4.68419e-10 | True          |

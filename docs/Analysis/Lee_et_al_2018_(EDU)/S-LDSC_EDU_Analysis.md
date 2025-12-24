@@ -1,3 +1,8 @@
+---
+hide:
+- navigation
+- toc
+---
 # S-LDSC EDU Analysis
 I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from a GWAS of Educational Attainment by Lee et al.[@lee2018gene]. The goal was to identify possible key tissue and cell types affecting Educational attainment levels, and in so doing learn about the strengths and weaknesses of the S-LDSC method.
 

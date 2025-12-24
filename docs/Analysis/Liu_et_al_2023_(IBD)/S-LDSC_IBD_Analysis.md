@@ -1,4 +1,8 @@
-
+---
+hide:
+- navigation
+- toc
+---
 
 
 # S-LDSC Analysis of IBD
