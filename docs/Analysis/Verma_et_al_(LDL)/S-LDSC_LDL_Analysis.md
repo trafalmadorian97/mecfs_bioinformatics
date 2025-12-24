@@ -1,3 +1,8 @@
+---
+hide:
+- navigation
+- toc
+---
 # S-LDSC LDL Analysis
 
 I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from a GWAS of LDL from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program/Million_Veterans_Program.md) to identify possible key tissue and cell types affecting LDL levels.
