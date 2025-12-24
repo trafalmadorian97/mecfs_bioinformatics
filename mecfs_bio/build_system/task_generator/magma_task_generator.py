@@ -13,9 +13,13 @@ from mecfs_bio.build_system.task.assign_rsids_via_snp151_task import (
     AssignRSIDSToSNPsViaSNP151Task,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
+    ConvertDataFrameToMarkdownTask,
+)
 from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
     MultipleTestingTableTask,
 )
+from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GwaslabKnownFormat
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GenomeBuildMode,
@@ -40,6 +44,12 @@ from mecfs_bio.build_system.task.magma.magma_plot_gene_set_result import (
 from mecfs_bio.build_system.task.magma.magma_snp_location_task import MagmaSNPFileTask
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
+
+
+@frozen
+class GGetSettings:
+    limit_genes: int | None = None
 
 
 @frozen
@@ -55,7 +65,15 @@ class StandardMagmaTaskGenerator:
     gene_set_analysis_task: Task
     bar_plot_task: Task
     filtered_gene_analysis_task: Task
-    labeled_filtered_gene_analysis_task: Task | None = None
+    thesaurus_labeled_filtered_gene_analysis_task: Task | None = None
+    gget_labeled_filtered_gene_analysis_task: Task | None = None
+    markdown_gget_labeled_filtered_gene_analysis_task: Task | None = None
+
+    def terminal_tasks(self) -> list[Task]:
+        result = [self.bar_plot_task, self.gene_analysis_task]
+        if self.markdown_gget_labeled_filtered_gene_analysis_task is not None:
+            result.append(self.markdown_gget_labeled_filtered_gene_analysis_task)
+        return result
 
     @classmethod
     def create(
@@ -69,6 +87,7 @@ class StandardMagmaTaskGenerator:
         sample_size: int,
         ld_ref_file_stem: str = "g1000_eur",
         gene_thesaurus_task: Task | None = None,
+        gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
     ):
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
@@ -131,6 +150,35 @@ class StandardMagmaTaskGenerator:
         else:
             labeled_filtered_gene_task = None
 
+        if gget_settings is not None:
+            gget_labeled_gene_task = FetchGGetInfoTask.create(
+                source_df_task=filtered_gene_task,
+                ensembl_id_col="GENE",
+                asset_id=base_name + "_magma_gene_analysis_with_gget_info",
+                genes_to_use=gget_settings.limit_genes,
+            )
+            markdown_gget_labeled_task = (
+                ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+                    source_task=gget_labeled_gene_task,
+                    asset_id=base_name
+                    + "_magma_gene_analysis_with_gget_info_markdown_table",
+                    pipe=SelectColPipe(
+                        [
+                            "GENE",
+                            "CHR",
+                            "P",
+                            "subcellular_localisation",
+                            "ncbi_description",
+                            "uniprot_description",
+                            "ensembl_description",
+                        ]
+                    ),
+                )
+            )
+        else:
+            gget_labeled_gene_task = None
+            markdown_gget_labeled_task = None
+
         return cls(
             p_value_task=p_value_task,
             snp_loc_task=snp_loc_task,
@@ -139,7 +187,9 @@ class StandardMagmaTaskGenerator:
             gene_set_analysis_task=tissue_gene_set_analysis,
             bar_plot_task=bar_plot_task,
             filtered_gene_analysis_task=filtered_gene_task,
-            labeled_filtered_gene_analysis_task=labeled_filtered_gene_task,
+            thesaurus_labeled_filtered_gene_analysis_task=labeled_filtered_gene_task,
+            gget_labeled_filtered_gene_analysis_task=gget_labeled_gene_task,
+            markdown_gget_labeled_filtered_gene_analysis_task=markdown_gget_labeled_task,
         )
 
 
