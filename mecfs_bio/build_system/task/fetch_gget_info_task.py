@@ -36,6 +36,15 @@ _dummy_gget_result = pd.DataFrame(
 
 @frozen
 class FetchGGetInfoTask(Task):
+    """
+    Task to use gget (https://github.com/pachterlab/gget) to retrieve database information about a list of genes from a dataframe
+    Useful for analyzing GWAS results.
+
+    Listen to an interview with the primary developer of gget here:
+    https://podcasts.apple.com/nz/podcast/99-laura-luebbert-gget-hunting-viruses-and/id1534473511?i=1000664104787
+
+    """
+
     source_df_task: Task
     ensembl_id_col: str
     _meta: Meta
