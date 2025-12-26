@@ -43,9 +43,11 @@ def run_initial_decode_me_analysis():
             MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
             # # DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA,
             # DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA_DROP_COLS,
-        ]
-        + DECODE_ME_S_LDSC.get_terminal_tasks(),
+        ],
+        # + DECODE_ME_S_LDSC.get_terminal_tasks(),
         incremental_save=True,
+        must_rebuild_transitive=[DECODE_ME_GWAS_1_MANHATTAN_PLOT,
+                                 DECODE_ME_GWAS_1_MANHATTAN_AND_QQ_PLOT]
     )
 
 
