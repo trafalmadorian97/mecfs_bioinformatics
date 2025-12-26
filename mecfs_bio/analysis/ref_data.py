@@ -3,9 +3,6 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
-    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE,
-)
 
 
 def run_initial_analysis():
@@ -22,7 +19,7 @@ def run_initial_analysis():
             # DB_SNP150_ANNOVAR_PROC,
             # PARQUET_DBSNP150_37_ANNOVAR_PROC,
             # PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME
-            PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE
+            # PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE
         ],
         incremental_save=True,
         # must_rebuild_transitive=[PARQUET_DBSNP_37_UNNESTED],

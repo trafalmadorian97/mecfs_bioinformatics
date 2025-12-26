@@ -1,3 +1,6 @@
+"""
+Script to run basic analysis of LDL GWAS from the Million Veterans Program.
+"""
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_standard_sldsc import (
     LDL_STANDARD_SLDSC_TASK_GROUP,

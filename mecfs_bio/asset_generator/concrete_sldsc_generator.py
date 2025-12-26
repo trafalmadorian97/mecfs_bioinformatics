@@ -1,3 +1,6 @@
+"""
+Asset generator for applying S-LDSC using standard reference datasets.
+"""
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.custom.roadmap_cell_type_categorization import (
     ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC,
 )

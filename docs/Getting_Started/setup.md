@@ -13,15 +13,15 @@ After setup, source your `bashrc` to make sure `pixi` is on your path:
 source ~/.bashrc
 ```
 
-To verify everything is work correctly, you can start by running the linters and unit tests:
+To verify everything is working correctly, start by running the linters and unit tests:
 
 ```bash
 pixi r invoke green
 ```
 
-A natural next step is to run the basic analysis of the Decode ME data using the script [here][mecfs_bio.analysis.decode_me_initial_analysis] .
+A natural next step is to run the basic analysis of the Decode ME data using the script [here][mecfs_bio.analysis.decode_me_initial_analysis].
 
-You can use the pixi environment to run this or another script via the command:
+You can use pixi to run this or another script via the command:
 
 ```bash
 pixi r python [PATH_TO_SCRIPT]

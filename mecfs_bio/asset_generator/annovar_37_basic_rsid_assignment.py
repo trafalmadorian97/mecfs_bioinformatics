@@ -1,3 +1,6 @@
+"""
+Asset generator for assigning RSIDS to genome build-37 GWS datasets.
+"""
 import narwhals
 
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
@@ -26,8 +29,7 @@ def annovar_37_basic_rsid_assignment(
     base_name: str,
 ) -> Task:
     """
-    Asset generator that creates a chain of tasks to assign rsids to existing
-    build 37 sumstats data using the annovar dbSNP reference data
+    Asset generator that creates a chain of tasks to assign rsids to existing build 37 sumstats datasets using the annovar dbSNP reference data
     """
     harmonized_task = GWASLabTransformSumstatsTask.create_from_source_task(
         sumstats_task,
