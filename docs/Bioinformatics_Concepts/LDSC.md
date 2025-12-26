@@ -80,7 +80,7 @@ $$
 where:
 
 
-- There are $M  \gg 0$ genotypes.  
+- There are $M  \gg 0$ genetic variants.  
 - There are $N  \gg 0$ individuals.  
 - $\phi\in\mathbb{R}^N$ is the vector of phenotypes.
 - $X\in\mathbb{R}^{N\times M}$ is the genotype matrix, normalized to have columns with sample mean 0 and sample variance 1.
