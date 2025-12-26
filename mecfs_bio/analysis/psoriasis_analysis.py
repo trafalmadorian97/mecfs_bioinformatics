@@ -1,6 +1,7 @@
 """
 Script to analyze psoriasis data from the Million Veterans Program
 """
+
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.psoriasis.million_veterans.processed_gwas_data.million_veterans_psoriasis_eur_magma_task_generator import (
     MILLION_VETERANS_EUR_PSORIASIS_COMBINED_MAGMA_TASKS,

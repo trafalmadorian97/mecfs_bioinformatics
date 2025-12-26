@@ -1,6 +1,7 @@
 """
 Asset generator for assigning RSIDS to genome build-37 GWS datasets.
 """
+
 import narwhals
 
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (

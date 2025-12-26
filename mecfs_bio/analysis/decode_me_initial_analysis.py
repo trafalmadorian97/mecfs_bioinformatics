@@ -18,8 +18,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_filtered_gene_list import (
     DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot import \
-    MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot import (
+    MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
+)
 
 
 def run_initial_decode_me_analysis():
