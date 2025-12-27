@@ -1,5 +1,5 @@
 site_name: ME/CFS Biostatistics Home
-site_url: https://sitename.example
+repo_url: https://github.com/trafalmadorian97/mecfs_bioinformatics
 theme:
   name: material
   features:
