@@ -1,3 +1,7 @@
+"""
+Task to combine gene lists from multiple sources
+"""
+
 from pathlib import Path
 from typing import Sequence
 
@@ -29,6 +33,9 @@ class SrcGeneList:
 class CombineGeneListsTask(Task):
     """
     Task to aggregate gene lists from multiple sources
+
+    Example use case: I have one gene list from MAGMA and another from Gwaslab, and I want to combine them
+    to create master gene list for the trait of interest.
     """
 
     _meta: Meta
