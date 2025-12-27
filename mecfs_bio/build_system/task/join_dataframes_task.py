@@ -9,6 +9,9 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_lead_variants_meta import (
+    GWASLabLeadVariantsMeta,
+)
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
     ValidBackend,
@@ -139,6 +142,17 @@ class JoinDataFramesTask(Task):
                 read_spec=read_spec,
                 sub_dir=source_meta.sub_dir,
             )
+        elif isinstance(source_meta, GWASLabLeadVariantsMeta):
+            meta = ResultTableMeta(
+                asset_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
+                read_spec=read_spec,
+                sub_dir=source_meta.sub_dir,
+            )
+        else:
+            raise ValueError(f"Source meta has unknown type: {source_meta}")
         return cls(
             df_1_task=result_df_task,
             df_2_task=reference_df_task,
