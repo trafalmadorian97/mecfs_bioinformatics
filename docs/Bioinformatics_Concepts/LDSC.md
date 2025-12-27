@@ -294,7 +294,7 @@ The key steps in the LDSC derivation above are between equations ($\ref{varphi}$
 
 
 
-## Critique of assumptions
+## Critique of assumption
 
 [//]: # (Numerous authors have criticised the plausibility of the assumptions underlying LDSC.  For instance ...)
 
@@ -303,10 +303,28 @@ We saw above that the most important of LDSC's assumptions is that  $\mathbb{Var
 
 How plausible is this assumption?
 
-- On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  So, in a rough sense, assuming that the heritability of a trait is distributed across the genome is not unreasonable.
-- On the other hand, the assumption of perfectly uniform pleiotropy strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region.
+### Arguments that assumption is plausible
 
-The issue of the implausibility of isotropic pleiotropy  is partially resolved by stratified linkage disequilibrium score regression[@finucane2015partitioning] (S-LDSC), an extension proposed by the same authors who devised LDSC.  S-LDSC allows the use of a pre-specified functional partitioning of the genome. While heritability is still assumed to be evenly distributed within a given partition, S-LDSC allows it to differ across partitions.
+On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  
+
+See this talk by Jonathan Pritchard, which proposes that most traits are "omnigenic", in the sense that they are controlled vast numbers of small contributions spread across the genome:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/d_6MJgrD5ww?si=_xwDgdAQjWStYfKr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+
+So, in a rough sense, assuming that the heritability of a trait is distributed across the genome is not unreasonable.
+
+
+
+### Arguments that assumption is implausible
+
+On the other hand, the assumption of perfectly uniform pleiotropy strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region.
+
+
+### Extensions to make assumption more plausible
+
+The issue of the implausibility of isotropic pleiotropy is partially resolved by [Stratified Linkage Disequilibrium Score Segression](S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2015partitioning] (S-LDSC), an extension proposed by the same authors who devised LDSC.  S-LDSC allows the use of a pre-specified functional partitioning of the genome. While heritability is still assumed to be evenly distributed within a given partition, S-LDSC allows it to differ across partitions.
 
 
 [//]: # (So it would be fair to say that while LDSC's key assumption is valid in a rough sense, it is not accurate in a granular sense.)
