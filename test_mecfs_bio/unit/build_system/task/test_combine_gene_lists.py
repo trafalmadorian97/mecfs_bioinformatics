@@ -64,12 +64,3 @@ def test_combine_gene_lists(tmp_path: Path):
     assert isinstance(result, FileAsset)
     result_df = pd.read_csv(result.path)
     assert len(result_df) == 4
-    # import pdb; pdb.set_trace()
-    # print("yo")
-    # expected = pd.DataFrame(
-    #     {
-    #         ENSEMBL_ID_LABEL:["A","B","C","D"],
-    #         sources:[["df1"],["df1","df2"],["df1","df2"],["df2"]]
-    #     }
-    # )
-    # pd.testing.assert_frame_equal(result_df, expected)
