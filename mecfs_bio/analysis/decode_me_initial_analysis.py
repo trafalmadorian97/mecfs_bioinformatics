@@ -45,8 +45,8 @@ def run_initial_decode_me_analysis():
             DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
             # # DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA,
             # DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA_DROP_COLS,
-        ],
-        # + DECODE_ME_S_LDSC.get_terminal_tasks(),
+        ]
+        + DECODE_ME_S_LDSC.get_terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
             DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
