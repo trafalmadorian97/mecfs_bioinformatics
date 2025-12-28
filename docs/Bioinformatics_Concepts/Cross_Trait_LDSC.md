@@ -9,7 +9,7 @@ Recall that LDSC assumes a linear data-generating model for the trait of interes
 
 $$
 \begin{align}
-y_1&= Y\beta + \delta
+y_1&= Y\beta + \delta\\
 y_2&= Z\gamma + \epsilon
 \end{align}
 $$
@@ -19,8 +19,34 @@ where:
 
 - There are $M  \gg 0$ genetic variants.  
 - There are $N_1 \gg 0$ individuals in the GWAS of trait 1 and $N_2 \gg 0$ individuals in the GWAS of trait 2.
+- There are $N_s$ individuals included in both GWAS.  These $N_s$ individuals are listed first in the list of participants in both studies.
 - $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for trait 1 and trait 2 respectively.
 - $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalizd to have columns with mean 0 and variance 1.
 - $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true genetic effect sizes for each genetic variant for the two traits. 
 - $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of true genetic effects for all individual in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1} and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects for all individuals in the two GWAS.
+
+Furthermore, we model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties
+
+
+$$
+\begin{align}
+\mathbb{Var(\delta)} &= (1-h_1^2)I\\
+\mathbb{Var(\epsilon)} &= (1-h_2^2)I\\
+\mathbb{Cov}(\delta_j,\epsilon_k) &= \begin{cases}
+\rho_e &\text{ if } j=k \le N_s \\
+0 & \text{ else }
+\end{cases}\\
+\mathbb{Var}(\beta) &= \frac{1}{M} h_1^2 I\\
+\mathbb{Var}(\gamma) &= \frac{1}{M} h_2^2 I\\
+\mathbb{Cov}(\beta, \gamma)&= \frac{1}{M}\rho_gI\\
+\mathbb{E}(\delta)&=0\\
+\mathbb{E}(\beta)&=0 \\
+\mathbb{E} Y &=0 \\ 
+\mathbb{E}(\epsilon)&=0\\
+\mathbb{E}(\gamma)&=0 \\
+\mathbb{E} (Z) &=0 \\ 
+\end{align}
+$$
+
+
