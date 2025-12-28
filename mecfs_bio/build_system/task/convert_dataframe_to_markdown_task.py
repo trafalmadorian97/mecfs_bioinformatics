@@ -77,12 +77,9 @@ class ConvertDataFrameToMarkdownTask(Task):
         )
         return cls(meta=meta, df_task=source_task, pipe=pipe)
 
-def _array_to_list( df: pd.DataFrame) -> pd.DataFrame:
+
+def _array_to_list(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     for col in df.columns:
-        df[col] = df[col].apply(
-            lambda x: list(x) if isinstance(x, np.ndarray) else x
-        )
+        df[col] = df[col].apply(lambda x: list(x) if isinstance(x, np.ndarray) else x)
     return df
-
-

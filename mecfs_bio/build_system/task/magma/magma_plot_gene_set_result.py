@@ -51,7 +51,7 @@ class MAGMAPlotGeneSetResult(Task):
         result_path = gene_set_dir_asset.path / str(
             GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"
         )
-        df = pd.read_csv(result_path, comment="#", sep="\s+")
+        df = pd.read_csv(result_path, comment="#", sep=r"\s+")
         num_tests = len(df)
         df[GWASLAB_MLOG10P_COL] = -np.log10(df["P"])
         logger.debug(f"Found {num_tests} tests")

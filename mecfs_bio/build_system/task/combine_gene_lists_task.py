@@ -16,8 +16,12 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipe_dataframe_task import OutFormat, CSVOutFormat, ParquetOutFormat, \
-    get_extension_and_read_spec_from_format
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
+    CSVOutFormat,
+    OutFormat,
+    ParquetOutFormat,
+    get_extension_and_read_spec_from_format,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -44,7 +48,7 @@ class CombineGeneListsTask(Task):
 
     _meta: Meta
     src_gene_lists: Sequence[SrcGeneList]
-    out_format: OutFormat= CSVOutFormat
+    out_format: OutFormat = CSVOutFormat(sep=",")
 
     def __attrs_post_init__(self):
         assert len(self.src_gene_lists) > 0
@@ -90,11 +94,9 @@ class CombineGeneListsTask(Task):
         return FileAsset(out_path)
 
     @classmethod
-    def create(cls,
-               asset_id:str,
-               src_gene_lists: Sequence[SrcGeneList],
-               out_format: OutFormat
-               ):
+    def create(
+        cls, asset_id: str, src_gene_lists: Sequence[SrcGeneList], out_format: OutFormat
+    ):
         assert len(src_gene_lists) > 0
         first_gene_list = src_gene_lists[0]
         src_meta = first_gene_list.task.meta
@@ -112,7 +114,6 @@ class CombineGeneListsTask(Task):
             meta=meta,
             out_format=out_format,
         )
-
 
 
 def _get_gene_dict_from_df(

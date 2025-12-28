@@ -12,10 +12,6 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
-    DataFrameReadSpec,
-    DataFrameTextFormat,
-)
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
@@ -23,8 +19,12 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipe_dataframe_task import OutFormat, CSVOutFormat, \
-    get_extension_and_read_spec_from_format, ParquetOutFormat
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
+    CSVOutFormat,
+    OutFormat,
+    ParquetOutFormat,
+    get_extension_and_read_spec_from_format,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -44,6 +44,7 @@ UNIPROT_ID_COL = "uniprot_id"
 UNIPROT_DESCRIPTION = "uniprot_description"
 PROTEIN_NAMES_COL = "protein_names"
 
+
 @frozen
 class FetchGGetInfoTask(Task):
     """
@@ -59,7 +60,7 @@ class FetchGGetInfoTask(Task):
     ensembl_id_col: str
     _meta: Meta
     genes_to_use: int | None = None
-    out_format: OutFormat=CSVOutFormat(",")
+    out_format: OutFormat = CSVOutFormat(",")
     post_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
@@ -99,14 +100,20 @@ class FetchGGetInfoTask(Task):
             df, gene_info, left_on=self.ensembl_id_col, right_index=True, how="left"
         )
         out_path = scratch_dir / f"{self.source_id}.csv"
-        result_df = self.post_pipe.process(narwhals.from_native(result_df).lazy()).collect().to_pandas()
+        result_df = (
+            self.post_pipe.process(narwhals.from_native(result_df).lazy())
+            .collect()
+            .to_pandas()
+        )
         result_df = _preprocess_columns(result_df)
         if isinstance(self.out_format, CSVOutFormat):
             result_df.to_csv(out_path, index=False, sep=self.out_format.sep)
         elif isinstance(self.out_format, ParquetOutFormat):
-            result_df.to_parquet(out_path,)
+            result_df.to_parquet(
+                out_path,
+            )
         else:
-            raise  ValueError(f"Unsupported output format: {self.out_format}")
+            raise ValueError(f"Unsupported output format: {self.out_format}")
         return FileAsset(out_path)
 
     @classmethod
@@ -116,8 +123,8 @@ class FetchGGetInfoTask(Task):
         source_df_task: Task,
         ensembl_id_col: str,
         genes_to_use: int | None = None,
-            post_pipe: DataProcessingPipe = IdentityPipe(),
-            out_format: OutFormat=CSVOutFormat(","),
+        post_pipe: DataProcessingPipe = IdentityPipe(),
+        out_format: OutFormat = CSVOutFormat(","),
     ):
         source_meta = source_df_task.meta
         meta: Meta
@@ -152,7 +159,6 @@ class FetchGGetInfoTask(Task):
         )
 
 
-
 def _preprocess_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     if UNIPROT_ID_COL in df.columns:
@@ -162,39 +168,44 @@ def _preprocess_columns(df: pd.DataFrame) -> pd.DataFrame:
     if UNIPROT_DESCRIPTION in df.columns:
         df[UNIPROT_DESCRIPTION] = _wrap_col_in_list(df[UNIPROT_DESCRIPTION])
     for col in df.columns:
-        df[col]=_array_to_list(df[col])
+        df[col] = _array_to_list(df[col])
         df[col] = _unnest_list(df[col])
-        df[col]=_clear_lists(df[col])
+        df[col] = _clear_lists(df[col])
 
     return df
 
-def _wrap_col_in_list(ser: pd.Series)-> pd.Series:
+
+def _wrap_col_in_list(ser: pd.Series) -> pd.Series:
     return ser.apply(
         lambda x: [x] if ((not isinstance(x, list)) and (x is not None)) else x
     )
 
-def _array_to_list(ser: pd.Series)-> pd.Series:
-    return ser.apply(
-        lambda x: list(x) if isinstance(x, np.ndarray) else x
-    )
 
-def _clear_lists(ser: pd.Series)-> pd.Series:
-    def _clean(r:list )->list:
-        return [
-            item for item in r if (item !="" and  not _is_all_nan(item) )
-        ]
-    return ser.apply(
-        lambda x: _clean(x) if isinstance(x, list) else x
-    )
+def _array_to_list(ser: pd.Series) -> pd.Series:
+    return ser.apply(lambda x: list(x) if isinstance(x, np.ndarray) else x)
 
-def _is_all_nan(l )->bool:
+
+def _clear_lists(ser: pd.Series) -> pd.Series:
+    def _clean(r: list) -> list:
+        return [item for item in r if (item != "" and not _is_all_nan(item))]
+
+    return ser.apply(lambda x: _clean(x) if isinstance(x, list) else x)
+
+
+def _is_all_nan(l) -> bool:
     if not isinstance(l, list):
         return False
     return all(math.isnan(x) for x in l)
 
-def _unnest_list(s: pd.Series)->pd.Series:
+
+def _unnest_list(s: pd.Series) -> pd.Series:
     def _unest(x):
-        if isinstance(x, list) and len(x) == 1 and (isinstance(x[0], list ) or isinstance(x[0], np.ndarray)):
+        if (
+            isinstance(x, list)
+            and len(x) == 1
+            and (isinstance(x[0], list) or isinstance(x[0], np.ndarray))
+        ):
             return list(x[0])
         return x
+
     return s.apply(_unest)
