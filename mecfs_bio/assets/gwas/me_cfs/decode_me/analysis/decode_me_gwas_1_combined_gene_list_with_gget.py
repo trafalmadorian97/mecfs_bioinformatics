@@ -1,3 +1,7 @@
+"""
+Task to use gget to annotate master genes list with annotations from genetics databases.
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_gene_lists import (
     DECODE_ME_GWAS_1_COMBINED_GENE_LISTS,
 )

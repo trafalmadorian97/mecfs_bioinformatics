@@ -1,3 +1,7 @@
+"""
+Task to take combined list of candidate genes generated from MAGMA and GWASLAB and write out to a markdown file
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_gene_list_with_gget import (
     DECODE_ME_MASTER_GENE_LIST_WITH_GGET,
 )

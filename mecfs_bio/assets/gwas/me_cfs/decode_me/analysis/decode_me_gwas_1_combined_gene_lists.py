@@ -1,3 +1,7 @@
+"""
+Task to combine lists of candidate genes generated from MAGMA and GWASLAB
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_variants_gene_labeled import (
     DECODE_ME_GWAS_1_GWASLAB_FILTERED_GENE_LIST_WITH_GENE_METADATA,
 )
