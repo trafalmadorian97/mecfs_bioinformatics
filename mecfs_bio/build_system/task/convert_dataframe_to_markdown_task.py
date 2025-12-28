@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -53,6 +55,7 @@ class ConvertDataFrameToMarkdownTask(Task):
         )
 
         df = nw_df.collect().to_pandas()
+        df = _array_to_list(df)
         out_path = scratch_dir / "output.md"
         markdown_str = df.to_markdown(index=False)
         with open(out_path, "w") as f:
@@ -73,3 +76,13 @@ class ConvertDataFrameToMarkdownTask(Task):
             extension=".md",
         )
         return cls(meta=meta, df_task=source_task, pipe=pipe)
+
+def _array_to_list( df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    for col in df.columns:
+        df[col] = df[col].apply(
+            lambda x: list(x) if isinstance(x, np.ndarray) else x
+        )
+    return df
+
+

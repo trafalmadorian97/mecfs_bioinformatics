@@ -10,10 +10,14 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.pipe_dataframe_task import OutFormat, CSVOutFormat, ParquetOutFormat, \
+    get_extension_and_read_spec_from_format
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -40,6 +44,7 @@ class CombineGeneListsTask(Task):
 
     _meta: Meta
     src_gene_lists: Sequence[SrcGeneList]
+    out_format: OutFormat= CSVOutFormat
 
     def __attrs_post_init__(self):
         assert len(self.src_gene_lists) > 0
@@ -76,8 +81,38 @@ class CombineGeneListsTask(Task):
             {ENSEMBL_ID_LABEL: gene_dict.keys(), "sources": gene_dict.values()}
         )
         out_path = scratch_dir / (self._meta.asset_id + ".csv")
-        result_df.to_csv(out_path, index=False)
+        if isinstance(self.out_format, CSVOutFormat):
+            result_df.to_csv(out_path, index=False, sep=self.out_format.sep)
+        elif isinstance(self.out_format, ParquetOutFormat):
+            result_df.to_parquet(out_path)
+        else:
+            raise ValueError(f"Unsupported output format: {self.out_format}")
         return FileAsset(out_path)
+
+    @classmethod
+    def create(cls,
+               asset_id:str,
+               src_gene_lists: Sequence[SrcGeneList],
+               out_format: OutFormat
+               ):
+        assert len(src_gene_lists) > 0
+        first_gene_list = src_gene_lists[0]
+        src_meta = first_gene_list.task.meta
+        extension, read_spec = get_extension_and_read_spec_from_format(out_format)
+        assert isinstance(src_meta, ResultTableMeta)
+        meta = ResultTableMeta(
+            asset_id=AssetId(asset_id),
+            trait=src_meta.trait,
+            project=src_meta.project,
+            extension=extension,
+            read_spec=read_spec,
+        )
+        return cls(
+            src_gene_lists=src_gene_lists,
+            meta=meta,
+            out_format=out_format,
+        )
+
 
 
 def _get_gene_dict_from_df(
