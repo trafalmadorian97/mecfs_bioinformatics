@@ -1,3 +1,4 @@
+import polars as pl
 from mecfs_bio.assets.gwas.imaging_derived_heart_phenotypes.pirruccello_et_al_2022.raw.raw_right_heart_data import \
     PIRRUCCELLO_RAW_RIGHT_HEART_DATA
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameTextFormat
@@ -9,6 +10,9 @@ PIRRUCCELLO_RAW_RIGHT_HEART_DATA,
     file_to_extract="invnorm_RVEF.tsv.gz",
     sub_dir="extracted",
     read_spec=DataFrameReadSpec(
-        DataFrameTextFormat("\t")
+        DataFrameTextFormat("\t",
+                            schema_overrides={
+                                "GENPOS":pl.String()
+                            })
     )
 )
