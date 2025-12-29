@@ -7,7 +7,6 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.executable.executable_meta import ExecutableMeta
-from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec
@@ -54,8 +53,7 @@ class ExtractFromZipTask(Task):
 
     @classmethod
     def create_from_zipped_reference_file(
-        cls,
-            source_task: Task, asset_id: str, file_to_extract: str
+        cls, source_task: Task, asset_id: str, file_to_extract: str
     ) -> Task:
         src_meta = source_task.meta
         assert isinstance(src_meta, ReferenceFileMeta)
@@ -73,11 +71,14 @@ class ExtractFromZipTask(Task):
         )
 
     @classmethod
-    def create_from_zipped_gwas_data(cls,
-                                     source_task: Task, asset_id: str, file_to_extract: str,
-                                     sub_dir:str, read_spec: DataFrameReadSpec,
-                                     ):
-
+    def create_from_zipped_gwas_data(
+        cls,
+        source_task: Task,
+        asset_id: str,
+        file_to_extract: str,
+        sub_dir: str,
+        read_spec: DataFrameReadSpec,
+    ):
         src_meta = source_task.meta
         assert isinstance(src_meta, GWASSummaryDataFileMeta)
         return cls(

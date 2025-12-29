@@ -103,7 +103,8 @@ class GWASLabColumnSpecifiers:
     chi_sq: str | None = None
     mlog10p: str | None = None
 
-ValidGwaslabFormat = GwaslabKnownFormat| GWASLabColumnSpecifiers
+
+ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
 
 
 def _get_sumstats(

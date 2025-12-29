@@ -24,20 +24,20 @@ from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 
 
 @frozen
 class RSIDAssignmentTaskGroup:
-    harmonize: Task
-    dump_parquet: Task
+    harmonize_task: Task
+    dump_parquet_task: Task
     join_task: Task
 
+
 def annovar_37_basic_rsid_assignment(
-    sumstats_task: Task,
-    base_name: str,
-    use_gwaslab_rsids_convention:bool=False
+    sumstats_task: Task, base_name: str, use_gwaslab_rsids_convention: bool = False
 ) -> RSIDAssignmentTaskGroup:
     """
     Asset generator that creates a chain of tasks to assign rsids to existing build 37 sumstats datasets using the annovar dbSNP reference data
@@ -60,11 +60,9 @@ def annovar_37_basic_rsid_assignment(
         asset_id=base_name + "_harmonized_dump_to_parquet",
         sub_dir="processed",
     )
+    out_pipe: DataProcessingPipe
     if use_gwaslab_rsids_convention:
-        out_pipe = RenameColPipe(
-            old_name="rsid",
-            new_name="rsID"
-        )
+        out_pipe = RenameColPipe(old_name="rsid", new_name="rsID")
     else:
         out_pipe = IdentityPipe()
     join_with_rsid_task = JoinDataFramesTask.create_from_result_df(
@@ -90,12 +88,11 @@ def annovar_37_basic_rsid_assignment(
             ]
         ),
         backend="ibis",
-        out_pipe=out_pipe
-
+        out_pipe=out_pipe,
     )
-    group =RSIDAssignmentTaskGroup(
-        harmonize=harmonized_task,
-        dump_parquet=dump_parquet_task,
+    group = RSIDAssignmentTaskGroup(
+        harmonize_task=harmonized_task,
+        dump_parquet_task=dump_parquet_task,
         join_task=join_with_rsid_task,
     )
     return group
