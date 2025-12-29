@@ -219,7 +219,7 @@ $$
 \begin{align}
 &\chi_j^2\\
 &= \frac{\hat{\beta_j}^2}{\mathrm{SE}(\hat{\beta_j})^2}\\
-&\approx N \hat{\beta_j} & \text{by (\ref{sebeta})} \label{wald}
+&\approx N \hat{\beta_j^2} & \text{by (\ref{sebeta})} \label{wald}
 \end{align}
 $$
 

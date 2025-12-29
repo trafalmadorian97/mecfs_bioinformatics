@@ -85,11 +85,38 @@ $$
 &=\sum_{j,k}\mathbb{E} (X_jX_k) \mathbb{E}(\beta_j \gamma_k) & \text{independence}\\
 &=\sum_{j}\mathbb{E} (X_j^2) \mathbb{E}(\beta_j \gamma_j) & \text{by (\ref{cov_beta_gamma})}\\
 &=\sum_j \mathbb{E} (\beta_j \gamma_j) & \text{ by (\ref{y_z_var})}\\
-&=\rho_j & \text{by (\ref{cov_beta_gamma})}
+&=\rho_g & \text{by (\ref{cov_beta_gamma})}
 \end{align}
 $$
 
 ### Genetic Correlation
 
-Note that this model includes the model used in the derivation of [LDSC](LDSC.md).  Thus by the logic of that derivation, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $$
+Note that this model includes the model used in the derivation of [LDSC](LDSC.md).  Thus by the logic of that derivation, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
+
+The genetic correlation of the two traits is
+
+$$
+\frac{\rho_g}{h_1h_2}
+$$
+
+### Regression equation
+
+Using the same logic as in [derivation of LDSC](LDSC.md), we can derive approximations for the Wald $\chi^2$ statistics for the GWAS regressions of traits 1 and 2 on variant $j$: 
+
+$$
+\begin{align}
+\chi_{j,1}^2 &\approx N \hat{\beta_{j,1}^2}=\frac{(y_1^T Y_{j})^2}{N}\\
+\chi_{j,2}^2 &\approx N \hat{\beta_{j21}^2}=\frac{(y_1^T Z_{j})^2}{N}.
+\end{align}
+$$
+
+From this, it follows that the z statistics for the GWAS regressions on variant $j$ are approximately
+
+$$
+\begin{align}
+\z_{j,1} &\approx \frac{(y_1^T Y_{j})}{\sqrt{N}}\\
+\z_{j,2}^2 &\approx \frac{y_1^T Z_{j}}{\sqrt{N}}.
+\end{align}
+$$
+
 
