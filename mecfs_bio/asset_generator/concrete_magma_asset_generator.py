@@ -1,3 +1,7 @@
+"""
+Generates MAGMA tasks using standard reference data
+"""
+
 from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
     MAGMA_1_1_BINARY_EXTRACTED,
 )
@@ -31,6 +35,9 @@ def concrete_magma_assets_generate(
     sample_size: int,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
 ) -> MagmaTaskGeneratorFromRaw:
+    """
+    Function to generate tasks that apply MAGMA to a GWAS summary statistics dataset using standard reference data.
+    """
     return MagmaTaskGeneratorFromRaw.create(
         raw_gwas_data_task=raw_gwas_data_task,
         base_name=base_name,

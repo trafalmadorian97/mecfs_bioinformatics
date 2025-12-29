@@ -1,3 +1,7 @@
+"""
+Task generators that apply a collection of standard analysis techniques to GWAS summary statistics using standard reference ata
+"""
+
 from attrs import frozen
 
 from mecfs_bio.asset_generator.annovar_37_basic_rsid_assignment import (
@@ -33,6 +37,10 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
 
 @frozen
 class StandardAnalysisTaskGroup:
+    """
+    Collection of standard analysis tasks for GWAS summary statistics.
+    """
+
     sldsc_tasks: SLDSCTaskGenerator
     magma_tasks: MagmaTaskGeneratorFromRaw
 
@@ -54,7 +62,7 @@ def concrete_standard_analysis_generator_assumme_already_has_rsid(
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
-    assuming that gwas data already contains rsids
+    assuming that GWAS data already contains rsids
     """
     magma_tasks = concrete_magma_assets_generate(
         base_name=base_name,
@@ -88,6 +96,10 @@ def concrete_standard_analysis_generator_assumme_already_has_rsid(
 
 @frozen
 class StandardAnalysisTaskGroupAddRSIDS:
+    """
+    Collection to tasks to assign rsids to GWAS data, then apply standard analysis techniques.
+    """
+
     tasks: StandardAnalysisTaskGroup
     initial_sumstats_task: Task
     assign_rsids_task_group: RSIDAssignmentTaskGroup
@@ -105,6 +117,12 @@ def concrete_standard_analysis_generator_no_rsid(
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
 ) -> StandardAnalysisTaskGroupAddRSIDS:
+    """
+
+    Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
+    Assume that the GWAS data does not contain rsids,and so these need to be assigned.
+
+    """
     sumstats_37_task = GWASLabCreateSumstatsTask(
         df_source_task=raw_gwas_data_task,
         asset_id=AssetId(base_name + "_initial_sumstats_37"),

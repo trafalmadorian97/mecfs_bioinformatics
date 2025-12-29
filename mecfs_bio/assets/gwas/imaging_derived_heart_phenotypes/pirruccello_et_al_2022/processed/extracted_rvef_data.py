@@ -1,3 +1,7 @@
+"""
+Extract the Right Ventricular Ejection Fraction GWAS summary statistics from the zip file of Pirrucuello et al.
+"""
+
 import polars as pl
 
 from mecfs_bio.assets.gwas.imaging_derived_heart_phenotypes.pirruccello_et_al_2022.raw.raw_right_heart_data import (

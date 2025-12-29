@@ -31,6 +31,10 @@ from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 
 @frozen
 class RSIDAssignmentTaskGroup:
+    """
+    Collection of tasks used to assign RSIDS by joining with an existing dataframe of SNPs
+    """
+
     harmonize_task: Task
     dump_parquet_task: Task
     join_task: Task
