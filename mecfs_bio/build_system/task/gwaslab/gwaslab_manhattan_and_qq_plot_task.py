@@ -59,10 +59,10 @@ class GWASLabManhattanAndQQPlotTask(Task):
         sumstats_asset = fetch(self._input_asset_id)
         sumstats: gl.Sumstats = read_sumstats(sumstats_asset)
         if self.plot_setting == "mqq":
-            fig, (ax1, ax2) = plt.subplots(figsize=(24, 16), ncols=2, nrows=1)
+            fig, (ax1, ax2) = plt.subplots(figsize=(12, 14), ncols=2, nrows=1)
             figax = [fig, ax1, ax2]
         else:
-            fig, ax1 = plt.subplots(figsize=(24, 16), ncols=1, nrows=1)
+            fig, ax1 = plt.subplots(figsize=(12, 14), ncols=1, nrows=1)
             figax = [
                 fig,
                 ax1,

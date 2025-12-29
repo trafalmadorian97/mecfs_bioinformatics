@@ -7,7 +7,9 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.executable.executable_meta import ExecutableMeta
+from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -63,6 +65,30 @@ class ExtractFromZipTask(Task):
                 filename=file_to_extract,
                 sub_group=src_meta.sub_group,
                 extension="",
+            ),
+            source_file_task=source_task,
+            file_to_extract=file_to_extract,
+        )
+
+    @classmethod
+    def create_from_zipped_gwas_data(
+        cls,
+        source_task: Task,
+        asset_id: str,
+        file_to_extract: str,
+        sub_dir: str,
+        read_spec: DataFrameReadSpec,
+    ):
+        src_meta = source_task.meta
+        assert isinstance(src_meta, GWASSummaryDataFileMeta)
+        return cls(
+            meta=GWASSummaryDataFileMeta(
+                short_id=AssetId(asset_id),
+                trait=src_meta.trait,
+                project=src_meta.project,
+                sub_dir=sub_dir,
+                read_spec=read_spec,
+                project_path=PurePath(file_to_extract),
             ),
             source_file_task=source_task,
             file_to_extract=file_to_extract,

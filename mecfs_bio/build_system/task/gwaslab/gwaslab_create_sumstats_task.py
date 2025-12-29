@@ -104,9 +104,12 @@ class GWASLabColumnSpecifiers:
     mlog10p: str | None = None
 
 
+ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
+
+
 def _get_sumstats(
     x: narwhals.LazyFrame,
-    fmt: GwaslabKnownFormat | GWASLabColumnSpecifiers,
+    fmt: ValidGwaslabFormat,
     drop_cols: Sequence[str],
 ) -> gl.Sumstats:
     x = x.drop(drop_cols)

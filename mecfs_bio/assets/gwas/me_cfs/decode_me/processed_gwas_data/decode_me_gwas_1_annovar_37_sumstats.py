@@ -9,7 +9,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 )
 
 DECODE_ME_GWAS_1_37_ANNOVAR_RSIDS_SUMSTATS = GWASLabCreateSumstatsTask(
-    df_source_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
+    df_source_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
     asset_id=AssetId("decode_me_gwas_1_37_sumstats_rsids_from_annovar"),
     basic_check=True,
     genome_build="infer",
