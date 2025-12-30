@@ -47,6 +47,7 @@ _dummy_gget_result = pd.DataFrame(
 UNIPROT_ID_COL = "uniprot_id"
 UNIPROT_DESCRIPTION = "uniprot_description"
 PROTEIN_NAMES_COL = "protein_names"
+PRIMARY_GENE_NAME = "primary_gene_name"
 
 
 @frozen
@@ -94,7 +95,7 @@ class FetchGGetInfoTask(Task):
             .collect()
             .to_pandas()
         )
-        genes = df[self.ensembl_id_col].tolist()
+        genes = [item for item in df[self.ensembl_id_col].tolist() if item is not None]
         if self.genes_to_use is not None:
             genes = genes[: self.genes_to_use]
         logger.debug(f"Using gget to retrieve info on {len(genes)} genes")
@@ -175,6 +176,8 @@ def _preprocess_columns(df: pd.DataFrame) -> pd.DataFrame:
         df[PROTEIN_NAMES_COL] = _wrap_col_in_list(df[PROTEIN_NAMES_COL])
     if UNIPROT_DESCRIPTION in df.columns:
         df[UNIPROT_DESCRIPTION] = _wrap_col_in_list(df[UNIPROT_DESCRIPTION])
+    if PRIMARY_GENE_NAME in df.columns:
+        df[PRIMARY_GENE_NAME] = _wrap_col_in_list(df[PRIMARY_GENE_NAME])
     for col in df.columns:
         df[col] = _array_to_list(df[col])
         df[col] = _unnest_list(df[col])

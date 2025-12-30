@@ -220,6 +220,7 @@ class MagmaTaskGeneratorFromRaw:
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
         gene_thesaurus_task: Task | None = None,
+        gget_settings: GGetSettings | None = GGetSettings(50),
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
@@ -249,6 +250,7 @@ class MagmaTaskGeneratorFromRaw:
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
                 gene_thesaurus_task=gene_thesaurus_task,
+                gget_settings=gget_settings,
             ),
         )
 
@@ -281,6 +283,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
+        gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
@@ -317,6 +320,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
                 base_name=base_name,
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
+                gget_settings=gget_settings,
             ),
             assign_rsids_task=assign_rsids_37_task,
         )

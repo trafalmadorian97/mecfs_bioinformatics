@@ -5,6 +5,7 @@ Task to combine gene lists from multiple sources
 from pathlib import Path
 from typing import Sequence
 
+import narwhals
 import pandas as pd
 from attrs import frozen
 
@@ -49,6 +50,7 @@ class CombineGeneListsTask(Task):
     _meta: Meta
     src_gene_lists: Sequence[SrcGeneList]
     out_format: OutFormat = CSVOutFormat(sep=",")
+    out_pipe: DataProcessingPipe = IdentityPipe()
 
     def __attrs_post_init__(self):
         assert len(self.src_gene_lists) > 0
@@ -84,6 +86,11 @@ class CombineGeneListsTask(Task):
         result_df = pd.DataFrame(
             {ENSEMBL_ID_LABEL: gene_dict.keys(), "sources": gene_dict.values()}
         )
+        result_df = (
+            self.out_pipe.process(narwhals.from_native(result_df).lazy())
+            .collect()
+            .to_pandas()
+        )
         out_path = scratch_dir / (self._meta.asset_id + ".csv")
         if isinstance(self.out_format, CSVOutFormat):
             result_df.to_csv(out_path, index=False, sep=self.out_format.sep)
@@ -95,7 +102,11 @@ class CombineGeneListsTask(Task):
 
     @classmethod
     def create(
-        cls, asset_id: str, src_gene_lists: Sequence[SrcGeneList], out_format: OutFormat
+        cls,
+        asset_id: str,
+        src_gene_lists: Sequence[SrcGeneList],
+        out_format: OutFormat,
+        out_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         assert len(src_gene_lists) > 0
         first_gene_list = src_gene_lists[0]
@@ -113,6 +124,7 @@ class CombineGeneListsTask(Task):
             src_gene_lists=src_gene_lists,
             meta=meta,
             out_format=out_format,
+            out_pipe=out_pipe,
         )
 
 

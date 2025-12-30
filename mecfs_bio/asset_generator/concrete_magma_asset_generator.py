@@ -24,6 +24,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
+    GGetSettings,
     MagmaTaskGeneratorFromRaw,
 )
 
@@ -34,6 +35,7 @@ def concrete_magma_assets_generate(
     fmt: ValidGwaslabFormat,
     sample_size: int,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
+    gget_settings: GGetSettings | None = GGetSettings(50),
 ) -> MagmaTaskGeneratorFromRaw:
     """
     Function to generate tasks that apply MAGMA to a GWAS summary statistics dataset using standard reference data.
@@ -49,4 +51,5 @@ def concrete_magma_assets_generate(
         fmt=fmt,
         pre_pipe=pre_pipe,
         gene_thesaurus_task=GENE_THESAURUS,
+        gget_settings=gget_settings,
     )

@@ -14,8 +14,13 @@ from mecfs_bio.asset_generator.concrete_magma_asset_generator import (
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
 )
+from mecfs_bio.asset_generator.labeled_lead_variants_asset_generator import (
+    LabelLeadVariantsTasks,
+    generate_tasks_labeled_lead_variants,
+)
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.combine_gene_lists_task import SrcGeneList
 from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
@@ -30,6 +35,10 @@ from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
     MagmaTaskGeneratorFromRaw,
 )
+from mecfs_bio.build_system.task_generator.master_gene_list_task_generator import (
+    MasterGeneListTasks,
+    generate_master_gene_list_tasks,
+)
 from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     SLDSCTaskGenerator,
 )
@@ -43,11 +52,14 @@ class StandardAnalysisTaskGroup:
 
     sldsc_tasks: SLDSCTaskGenerator
     magma_tasks: MagmaTaskGeneratorFromRaw
+    labeled_lead_variant_tasks: LabelLeadVariantsTasks
+    master_gene_list_tasks: MasterGeneListTasks
 
     def get_terminal_tasks(self) -> list[Task]:
         return (
             list(self.sldsc_tasks.get_terminal_tasks())
             + self.magma_tasks.inner.terminal_tasks()
+            + self.master_gene_list_tasks.terminal_tasks()
         )
 
 
@@ -64,6 +76,13 @@ def concrete_standard_analysis_generator_assumme_already_has_rsid(
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
     assuming that GWAS data already contains rsids
     """
+
+    labeled_lead_variant_task_group = generate_tasks_labeled_lead_variants(
+        base_name=base_name,
+        raw_gwas_data_task=raw_gwas_data_task,
+        fmt=fmt,
+        pre_pipe=pre_pipe,
+    )
     magma_tasks = concrete_magma_assets_generate(
         base_name=base_name,
         raw_gwas_data_task=raw_gwas_data_task,
@@ -88,9 +107,26 @@ def concrete_standard_analysis_generator_assumme_already_has_rsid(
         base_name=base_name,
         pre_pipe=pre_sldsc_pipe,
     )
+    master_gene_list_tasks = generate_master_gene_list_tasks(
+        base_name=base_name,
+        gene_sources=[
+            SrcGeneList(
+                task=magma_tasks.inner.filtered_gene_analysis_task,
+                name="MAGMA",
+                ensemble_id_column="GENE",
+            ),
+            SrcGeneList(
+                task=labeled_lead_variant_task_group.labeled_lead_variants_task,
+                name="GWASLAB",
+                ensemble_id_column="Gene stable ID",
+            ),
+        ],
+    )
     return StandardAnalysisTaskGroup(
         sldsc_tasks=sldsc_tasks,
         magma_tasks=magma_tasks,
+        labeled_lead_variant_tasks=labeled_lead_variant_task_group,
+        master_gene_list_tasks=master_gene_list_tasks,
     )
 
 
