@@ -1,3 +1,8 @@
+---
+hide:
+- navigation
+- toc
+---
 # Cross Trait Linkage Disequilibrium Score Regression
 Cross Trait Linkage Disequilibrium Score Regression (CT-LDSC)[@bulik2015atlas] is an [extension of Linkage Disequilibrium Score Regression](LDSC.md) (LDSC) that allows the estimation of [genetic correlation](Genetic_Correlation.md).
 
@@ -9,8 +14,8 @@ Recall that LDSC assumes a linear data-generating model for the trait of interes
 
 $$
 \begin{align}
-y_1&= Y\beta + \delta\\
-y_2&= Z\gamma + \epsilon
+y_1&= Y\beta + \delta \label{dg1}\\
+y_2&= Z\gamma + \epsilon \label{dg2}
 \end{align}
 $$
 
@@ -36,7 +41,7 @@ $$
 \mathbb{Cov}(\delta_j,\epsilon_k) &= \begin{cases}
 \rho_e &\text{ if } j=k \le N_s \\
 0 & \text{ else }
-\end{cases}\\
+\end{cases} \label{cov_delta_epsilon}\\
 \mathbb{Var}(\beta) &= \frac{1}{M} h_1^2 I\\
 \mathbb{Var}(\gamma) &= \frac{1}{M} h_2^2 I\\
 \mathbb{Cov}(\beta, \gamma)&= \frac{1}{M}\rho_gI \label{cov_beta_gamma}\\
@@ -105,18 +110,93 @@ Using the same logic as in [derivation of LDSC](LDSC.md), we can derive approxim
 
 $$
 \begin{align}
-\chi_{j,1}^2 &\approx N \hat{\beta_{j,1}^2}=\frac{(y_1^T Y_{j})^2}{N}\\
-\chi_{j,2}^2 &\approx N \hat{\beta_{j21}^2}=\frac{(y_1^T Z_{j})^2}{N}.
+\chi_{j,1}^2 &\approx N \hat{\beta_{j,1}^2}=\frac{(y_1^T Y_{j})^2}{N_1}\\
+\chi_{j,2}^2 &\approx N \hat{\beta_{j21}^2}=\frac{(y_1^T Z_{j})^2}{N_2}.
 \end{align}
 $$
 
-From this, it follows that the z statistics for the GWAS regressions on variant $j$ are approximately
+It follows that the corresponding z-statistics are: 
 
 $$
 \begin{align}
-\z_{j,1} &\approx \frac{(y_1^T Y_{j})}{\sqrt{N}}\\
-\z_{j,2}^2 &\approx \frac{y_1^T Z_{j}}{\sqrt{N}}.
+z_{j,1} &\approx \frac{(y_1^T Y_{j})}{\sqrt{N_1}} \label{d1}\\
+z_{j,2} &\approx \frac{y_1^T Z_{j}}{\sqrt{N_2}} \label{d2}.
 \end{align}
 $$
 
 
+Recall that in [LDSC](LDSC.md), the regression equation used the Wald $\chi^2$ statistic as its dependent variable.  In cross-trait LD-score regression, the dependent variable is the product of the $z$-statistics.  Let's compute the conditional expectation of this product
+
+$$
+\begin{align}
+&\mathbb{E}(z_{j,1}z_{j,2}|Z,Y)\\
+&=\frac{1}{\sqrt{N_1N_2}} \mathbb{E}(Y_j^T y_1 y_1^T Z_j ) & \text{ by (\ref{d1}, \ref{d2})}\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \mathbb{E}( (Y\beta+\delta)(Z\gamma+\epsilon)^T  )Z_j & \text{ by (\ref{dg1},\ref{dg2})}\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \left(Y \mathbb{E}(\beta \gamma^T)Z^T +  \mathbb{E}(\delta \gamma^T) Z^T + Y \mathbb{E}(\beta \epsilon^T) + \mathbb{E}(\epsilon \delta^T) \right)Z_j\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j(\frac{\rho_g}{M}YZ^T + \rho_e I)Z_j & \text{ by (\ref{cov_beta_gamma},\ref{cov_delta_epsilon})}\\
+&=\frac{1}{\sqrt{N_1N_2}}(\frac{\rho_g}{M}Y_j^TYZ^TZ_j + \rho_e Y_j^TZ_j) \label{cond_exp}
+\end{align}
+$$
+
+Our goal is to derive an expression for the unconditional expectation of $z_{j,1}z_{j,2}$.  To achieve this, we take the expectation of both terms in $(\ref{cond_exp})$.  First, we have
+
+$$
+\begin{align}
+&\mathbb{E}(Y_j^TYZ^TZ_j)\\
+&=\mathbb{E} \sum_{i=1}^{N_1}\sum_{q=1}^{N_2}\sum_{k=1}^M\left( Y_{i,j}Y_{i,k} Z_{q,j} Z_{q,k}  \right) & \text{ def of matrix product}
+\end{align}
+$$
+
+There are $N_1N_2$ possible pairs of the indexes $i$ and $q$.  For each such pair, there are two cases:
+
+- Case 1: $i$ and $q$ refer to the same individual.  There are $N_s$ such index pairs. In this case we have
+ 
+$$
+\begin{align}
+\sum_{k=1}^M \mathbb{E}(Y_{i,j}^2 Y_{i,k}^2)\\
+&\approx  \sum_{k=1}^M (1 + 2r_{j,k}^2)  \label{isserlis_approx_line}\\
+&=M + 2\sum_{k=1}^M r_{j,k}^2\\
+&= M + 2l_j
+\end{align}
+$$
+
+Where we have approximated the random variables as having a normal distribution, and used 
+[ Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem).  Recall that we also used Isserlis's theorem at a similar point in the original derivation of [LDSC](LDSC.md#expectation-of-empirical-ld-scores)
+
+
+- Case 2: $i$ and $q$ refer to different individuals.  There are $N_1N_2-N_2$ such pairs.
+
+$$
+\begin{align}
+&\sum_{k=1}^M \mathbb{E}(Y_{i,j} Y_{i,k} Z_{q,j} Z_{q,k} )\\
+&=\sum_{k=1}^M \mathbb{E}(Y_{i,j} Y_{i,k}) \mathbb{E}(Z_{q,j} Z_{q,k} ) & &\text{ independence}  \\
+&=\sum_{k=1}^M r_{jk}^2\\
+&= l_{j}
+\end{align}
+$$
+
+Combining the two cases yields
+
+$$
+\begin{align}
+&\mathbb{E}(Y_j^TYZ^TZ_j)\\
+&=N_s(M+2l_j) + (N_1N_2-N_s)l_j\\
+&=MN_s + (N_1N_2+N_s)l_j\\
+&\approx MN_s + N_1N_2 l_j
+\end{align}
+$$
+
+
+Returning to the second term in $(\ref{cond_exp})$, we have that $\mathbb{E}(Y_j^TZ_j)=N_s$ by the assumption of independence of the genotypes of distinct individuals.
+
+Combining both terms yields:
+
+$$
+\begin{align}
+&\mathbb{E}(z_{j,1}z_{j,2})\\
+&\approx \frac{1}{\sqrt{N_1N_2}}\left( \frac{\rho_g}{M}  (MN_s + N_1N_2 l_j) +\rho_e N_s \right)\\
+&= \frac{\rho_g\sqrt{N_1N_2}}{M}l_j + \frac{N_s}{\sqrt{N_1N_2}    } (\rho_g + \rho_e   )\label{ct_ldsc_eqn}
+\end{align}
+$$
+
+$(\ref{ct_ldsc_eqn})$ is the key regression equation in CT-LDSC.
