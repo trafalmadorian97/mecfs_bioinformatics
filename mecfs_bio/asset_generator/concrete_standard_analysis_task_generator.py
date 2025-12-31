@@ -53,17 +53,19 @@ class StandardAnalysisTaskGroup:
     sldsc_tasks: SLDSCTaskGenerator
     magma_tasks: MagmaTaskGeneratorFromRaw
     labeled_lead_variant_tasks: LabelLeadVariantsTasks
-    master_gene_list_tasks: MasterGeneListTasks
+    master_gene_list_tasks: MasterGeneListTasks| None
 
     def get_terminal_tasks(self) -> list[Task]:
-        return (
+        result= (
             list(self.sldsc_tasks.get_terminal_tasks())
             + self.magma_tasks.inner.terminal_tasks()
-            + self.master_gene_list_tasks.terminal_tasks()
         )
+        if self.master_gene_list_tasks is not None:
+            result = result+self.master_gene_list_tasks.terminal_tasks()
+        return result
 
 
-def concrete_standard_analysis_generator_assumme_already_has_rsid(
+def concrete_standard_analysis_generator_assume_already_has_rsid(
     base_name: str,
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
@@ -71,6 +73,7 @@ def concrete_standard_analysis_generator_assumme_already_has_rsid(
     sample_size_for_sldsc: int | None = None,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
+        include_master_gene_lists: bool = True,
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -107,21 +110,24 @@ def concrete_standard_analysis_generator_assumme_already_has_rsid(
         base_name=base_name,
         pre_pipe=pre_sldsc_pipe,
     )
-    master_gene_list_tasks = generate_master_gene_list_tasks(
-        base_name=base_name,
-        gene_sources=[
-            SrcGeneList(
-                task=magma_tasks.inner.filtered_gene_analysis_task,
-                name="MAGMA",
-                ensemble_id_column="GENE",
-            ),
-            SrcGeneList(
-                task=labeled_lead_variant_task_group.labeled_lead_variants_task,
-                name="GWASLAB",
-                ensemble_id_column="Gene stable ID",
-            ),
-        ],
-    )
+    if include_master_gene_lists:
+        master_gene_list_tasks = generate_master_gene_list_tasks(
+            base_name=base_name,
+            gene_sources=[
+                SrcGeneList(
+                    task=magma_tasks.inner.filtered_gene_analysis_task,
+                    name="MAGMA",
+                    ensemble_id_column="GENE",
+                ),
+                SrcGeneList(
+                    task=labeled_lead_variant_task_group.labeled_lead_variants_task,
+                    name="GWASLAB",
+                    ensemble_id_column="Gene stable ID",
+                ),
+            ],
+        )
+    else:
+        master_gene_list_tasks = None
     return StandardAnalysisTaskGroup(
         sldsc_tasks=sldsc_tasks,
         magma_tasks=magma_tasks,
@@ -152,6 +158,7 @@ def concrete_standard_analysis_generator_no_rsid(
     sample_size_for_sldsc: int | None = None,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
+        include_master_gene_lists: bool = True,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
@@ -173,7 +180,7 @@ def concrete_standard_analysis_generator_no_rsid(
         base_name=base_name,
         use_gwaslab_rsids_convention=True,
     )
-    standard_tasks = concrete_standard_analysis_generator_assumme_already_has_rsid(
+    standard_tasks = concrete_standard_analysis_generator_assume_already_has_rsid(
         base_name=base_name,
         raw_gwas_data_task=rsids_assigned_task_group.join_task,
         fmt="gwaslab",
@@ -181,9 +188,11 @@ def concrete_standard_analysis_generator_no_rsid(
         pre_pipe=pre_pipe,
         pre_sldsc_pipe=pre_sldsc_pipe,
         sample_size_for_sldsc=sample_size_for_sldsc,
+        include_master_gene_lists=include_master_gene_lists,
     )
     return StandardAnalysisTaskGroupAddRSIDS(
         tasks=standard_tasks,
         initial_sumstats_task=sumstats_37_task,
         assign_rsids_task_group=rsids_assigned_task_group,
+
     )
