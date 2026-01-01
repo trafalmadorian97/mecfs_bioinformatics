@@ -42,10 +42,13 @@ The cell types with the lowest p values are given below:
 | A03.556.124.684.Intestine..Small                               |   7.02051e-09 |           0.0076707   | False         |
 
 
-The failure to find a significant cell type given the very large size of the Keaton et al. meta-GWAS may indicate a weakness in this particular reference dataset, or in the Keaton et al. GWAS data, or in the S-LDSC method itself.
+The failure to find a significant cell type despite the very large size of the Keaton et al. meta-GWAS is surprising.  I discuss this more [below](S-LDSC-DBP_Analysis.md#comment-on-contrast-between-gtexfranke-lab-dataset-and-roadmap-dataset-results).
 
 
-Looking at the top non-significant cell types, the presence of arterial and heart-related cell types as contributors to blood pressure is unsurprising.  What is more surprising is the presence of reproductive tissue at low p-values: myometrium and uterus.  Potentially, this could reflect an effect of sex hormones on blood pressure.
+Looking at the top non-significant cell types, the presence of arterial and heart-related cell types as contributors to blood pressure is unsurprising.  What is more surprising is the presence of reproductive tissue at low p-values: myometrium and uterus.  Two potential explanations for this are:
+
+1. Siricilla et al.[@siricilla2019comparative] state that "RNA sequencing also revealed that the myometrial and vascular SMCs were more than 90% similar in their transcriptome".  Thus, one plausible explanation is that S-LDSC is picking up on associations of blood pressure with transcriptional programs that are active in vascular smooth muscle.  This is biologically plausible: the importance of vascular smooth muscle to blood pressure is well known.  The appearance of "myometrium" then just reflects the similarity between myometrial and vascular smooth muscle.
+2. S-LDSC may be picking up on a sex hormone effect on blood pressure.  Blood pressure, after all, is well known to be sexually dimorphic. 
 
 
 
@@ -112,7 +115,7 @@ The following graph and table show the results:
 
 The contrast with the [previous section](S-LDSC-DBP_Analysis.md#gtex-and-franke-lab-tissue-expression-data) is striking.  Whereas using gene expression reference data produced no significant cell types, using epigenetic reference data produces a wide range of significant cell types across multiple categories.
 
-The most signifiant cell types are heart or kidney related, which is biologically plausible.
+The most significant cell types are heart or kidney related, which is biologically plausible.
 
 
 
@@ -188,3 +191,25 @@ There were no significant neurological cell types.  One might expect to find a s
 | Brain_Cortex                            |  -2.1191e-09  |              0.876525 | False         |
 | Brain_Hypothalamus                      |  -2.26791e-09 |              0.904322 | False         |
 | Brain_Spinal_cord_(cervical_c-1)        |  -5.35052e-09 |              0.994565 | False         |⏎
+
+
+## Comment on contrast between GTEx/Franke Lab dataset and Roadmap dataset results
+
+As noted above, it is striking that using the GTEx/Franke lab dataset produces no S-LDSC hits for diastolic blood pressure, while using the Roadmap epigenetics dataset produces many hits.
+
+This contrast implies that 
+- A) the diastolic blood pressure GWAS identified signal in regions of the genome that are epigenetically differentially regulated in the heart, blood-vessels, kidney, etc. 
+- B) These regions of the genome do not generally lie close to genes that strongly are differentially expressed in different cell types.
+
+What does this mean?  I see two, possibly interrelated, interpretations:
+
+-  The genetic regulation of blood pressure is sufficiently complex that the genetic variants involved in BP control cannot identified by simply taking a 100-kb window around key genes.  The use of epigenetics allows a much more precise identification of the key regulatory regions. 
+- Bulk RNAsew is too crude a tool to identify the key cell types involved in blood pressure regulation.  The differences in gene expression levels in these key cell types may be too small or too variable for S-LDSC to pick up.  It would be interesting to test this interpretation by using a single-cell RNAseq dataset with S-LDSC. 
+
+## Reproducing
+
+Use [this script][mecfs_bio.analysis.dbp_analysis] to reproduce the above.
+
+
+
+
