@@ -53,15 +53,15 @@ class StandardAnalysisTaskGroup:
     sldsc_tasks: SLDSCTaskGenerator
     magma_tasks: MagmaTaskGeneratorFromRaw
     labeled_lead_variant_tasks: LabelLeadVariantsTasks
-    master_gene_list_tasks: MasterGeneListTasks| None
+    master_gene_list_tasks: MasterGeneListTasks | None
 
     def get_terminal_tasks(self) -> list[Task]:
-        result= (
+        result = (
             list(self.sldsc_tasks.get_terminal_tasks())
             + self.magma_tasks.inner.terminal_tasks()
         )
         if self.master_gene_list_tasks is not None:
-            result = result+self.master_gene_list_tasks.terminal_tasks()
+            result = result + self.master_gene_list_tasks.terminal_tasks()
         return result
 
 
@@ -73,7 +73,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     sample_size_for_sldsc: int | None = None,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
-        include_master_gene_lists: bool = True,
+    include_master_gene_lists: bool = True,
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -158,7 +158,7 @@ def concrete_standard_analysis_generator_no_rsid(
     sample_size_for_sldsc: int | None = None,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
-        include_master_gene_lists: bool = True,
+    include_master_gene_lists: bool = True,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
@@ -194,5 +194,4 @@ def concrete_standard_analysis_generator_no_rsid(
         tasks=standard_tasks,
         initial_sumstats_task=sumstats_37_task,
         assign_rsids_task_group=rsids_assigned_task_group,
-
     )
