@@ -36,15 +36,15 @@ Furthermore, we model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables wi
 
 $$
 \begin{align}
-\mathbb{Var(\delta)} &= (1-h_1^2)I\\
-\mathbb{Var(\epsilon)} &= (1-h_2^2)I\\
+\mathbb{Var(\delta)} &= (1-h_1^2)I & \text{ for some }h_1>0\\
+\mathbb{Var(\epsilon)} &= (1-h_2^2)I& \text{ for some }h_2>0\\
 \mathbb{Cov}(\delta_j,\epsilon_k) &= \begin{cases}
 \rho_e &\text{ if } j=k \le N_s \\
 0 & \text{ else }
-\end{cases} \label{cov_delta_epsilon}\\
+\end{cases} & \text{ for some }\rho_e>0 \label{cov_delta_epsilon}\\
 \mathbb{Var}(\beta) &= \frac{1}{M} h_1^2 I\\
 \mathbb{Var}(\gamma) &= \frac{1}{M} h_2^2 I\\
-\mathbb{Cov}(\beta, \gamma)&= \frac{1}{M}\rho_gI \label{cov_beta_gamma}\\
+\mathbb{Cov}(\beta, \gamma)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{cov_beta_gamma}\\
 \mathbb{E}(\delta)&=0\\
 \mathbb{E}(\beta)&=0 \\
 \mathbb{E} Y &=0 \\ 
@@ -126,11 +126,14 @@ z_{j,2} &\approx \frac{y_1^T Z_{j}}{\sqrt{N_2}} \label{d2}.
 $$
 
 
-Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics.  To generate a regression equation, we must estimate $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation[@grimmett2020probability], 
+Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics.  To generate a regression equation, we must estimate $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation (see Grimmett and Stirzaker[@grimmett2020probability]), 
 
 $$
-\mathbb{E}(z_{j,1}z_{j,2})= \mathbb{E}\left( \mathbb{E}(z_{j,1}z_{j,2})|Z,Y \right) 
-$$.  
+\begin{align}
+\mathbb{E}(z_{j,1}z_{j,2})= \mathbb{E}\left( \mathbb{E}(z_{j,1}z_{j,2}|Z,Y) \right). \\
+\end{align}
+$$  
+
 
 Evaluating the inner expectation,
 
