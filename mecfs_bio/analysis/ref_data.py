@@ -3,8 +3,8 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
-    GENE_THESAURUS,
+from mecfs_bio.assets.reference_data.pqtls.processed.sun_et_al_2023_pqtls_discovery_extracted import (
+    SUN_ET_AL_2023_DICOVERY_PQTLS_EXTRACTED,
 )
 
 
@@ -23,7 +23,9 @@ def run_initial_analysis():
             # PARQUET_DBSNP150_37_ANNOVAR_PROC,
             # PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME
             # PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE
-            GENE_THESAURUS
+            # GENE_THESAURUS,
+            # SUN_ET_AL_2023_PQTL,
+            SUN_ET_AL_2023_DICOVERY_PQTLS_EXTRACTED
         ],
         incremental_save=True,
         # must_rebuild_transitive=[PARQUET_DBSNP_37_UNNESTED],
