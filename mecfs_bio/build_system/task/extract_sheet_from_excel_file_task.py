@@ -1,3 +1,7 @@
+"""
+Task to extract sheet from excel file.
+"""
+
 from pathlib import Path, PurePath
 from typing import Mapping
 
@@ -24,6 +28,11 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class ExtractSheetFromExelFileTask(Task):
+    """
+    Task for extracting a sheet from an excel file
+    Useful for working with supplementary material to research papers, which is often in excel format
+    """
+
     _meta: Meta
     excel_file_task: Task
     sheet_name: str

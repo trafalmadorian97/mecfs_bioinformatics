@@ -1,3 +1,7 @@
+"""
+Task to extract supplementary table 9 from the Sun et al paper.  This contains the discovery pQTLS
+"""
+
 from mecfs_bio.assets.reference_data.pqtls.raw.sun_et_al_2023_pqtls import (
     SUN_ET_AL_2023_PQTL_SUPPLEMENTARY_RAW,
 )
