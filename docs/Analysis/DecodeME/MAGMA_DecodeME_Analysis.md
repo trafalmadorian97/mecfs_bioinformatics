@@ -12,7 +12,7 @@ In this step:
 - Data from the 1000 genomes projects was downloaded from the [MAGMA website](https://cncr.nl/research/magma/) and used as a linkage disequilibrium reference.
 - Data from the [SNP151 database](https://hgw2.soe.ucsc.edu/cgi-bin/hgTables?hgsid=2912494930_cRufLdpdc1ynRc2sCM3g1WGAWAgH&hgta_doSchemaDb=hg19&hgta_doSchemaTable=snp151Flagged
   ) was used to assign RSIDs to SNPs.
-- Magma's default proximity-based rules were used to assign SNPs to fenes.
+- Magma's default proximity-based rules were used to assign SNPs to genes.
 
 MAGMA produces a table of genes, effect sizes, and p values.  Filtering these genes via the Benjamini-Hochberg procedure[@benjamini1995controlling] at a false discovery rate of 0.01, and joining with a database of gene descriptions from [Ensembl Biomart](https://useast.ensembl.org/info/data/biomart/index.html) produces the following table:
 
