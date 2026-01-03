@@ -1,4 +1,14 @@
-# https://figshare.com/ndownloader/files/34517828
+"""
+Download raw data from the 2022 Schizophrenia GWAS
+
+
+Citation:
+Trubetskoy, Vassily, et al. "Mapping genomic loci implicates genes and synaptic biology in schizophrenia." Nature 604.7906 (2022): 502-508.
+
+
+Download home: https://figshare.com/articles/dataset/scz2022/19426775
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

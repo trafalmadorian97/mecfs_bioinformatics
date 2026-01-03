@@ -1,3 +1,9 @@
+"""
+Analyze GWAS data from the 2022 PGC Schizophrenia GWAS.
+Citation:
+Trubetskoy, Vassily, et al. "Mapping genomic loci implicates genes and synaptic biology in schizophrenia." Nature 604.7906 (2022): 502-508.
+"""
+
 from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import (
     concrete_standard_analysis_generator_assume_already_has_rsid,
 )
