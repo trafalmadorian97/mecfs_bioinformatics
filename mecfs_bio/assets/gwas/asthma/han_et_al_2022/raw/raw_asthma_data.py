@@ -1,3 +1,9 @@
+"""
+Task to download raw summary statistics of Han et al's asthma GWAS as hosted on the GWAS catalog
+
+Paper: Han, Yi, et al. "Genome-wide analysis highlights contribution of immune system pathways to the genetic architecture of asthma." Nature communications 11.1 (2020): 1776.
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

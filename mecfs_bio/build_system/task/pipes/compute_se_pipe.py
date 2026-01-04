@@ -1,3 +1,7 @@
+"""
+Compute standard error in GWAS summary statistics.
+"""
+
 import narwhals
 import scipy.stats
 
@@ -10,6 +14,10 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 
 
 class ComputeSEPipe(DataProcessingPipe):
+    """
+    Pipe to compute standard error in GWAS summary statistics using p-value and beta
+    """
+
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         cols = x.collect_schema().keys()
         assert GWASLAB_SE_COL not in cols
