@@ -61,7 +61,9 @@ def spellcheck_docs(c):
     check docs for spelling errors
     Edit _typos.toml to add exceptions
     """
-    print("Checking documentation spelling using typos...")
+    print(
+        "Checking documentation spelling using typos (Add exceptions to _typos.toml)."
+    )
     c.run(f"pixi r  typos {DOCS_PATH}", pty=True)
 
 

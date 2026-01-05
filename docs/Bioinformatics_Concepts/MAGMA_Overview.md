@@ -65,7 +65,9 @@ The gene property analysis module requires:
 For each biological system $j$, MAGMA fits the regression
 
 $$
-Z_i = \beta_0 + \beta_{j} E_{i,j} + (\beta^m_{j})^T m + \epsilon_{i,j},
+\begin{align}
+Z_i = \beta_0 + \beta_{j} E_{i,j} + (\beta^m_{j})^T m + \epsilon_{i,j}, \label{magma_gene_prop}
+\end{align}
 $$
 
 where the $\beta$ are regression coefficients and $\epsilon_{i,j}$ is the regression error.
@@ -79,9 +81,9 @@ Rejecting this null would indicate that the degree to which the gene $i$ partici
 While MAGMA is a very useful approach for detecting the key biological systems involved in a disease or trait, it has a number of limitations.  These include:
 
 1.  It is fundamentally limited by the availability and accuracy of data associating genes with biological systems.  For instance, if tissue-specific RNA-seq data is used, but RNAseq has not been performed on the key tissue involved in the disease, MAGMA will not produce useful results.
-2. It is unknown how to optimally translate raw reference data, derived from RNAseq or from another method, into $E_{i,j}$ values to optimize the resulting MAGMA signal.  This question is its own research topic [@li2025benchmarking].
-3. Since MAGMA in its original form mostly uses proximity to associate genes with SNPs, it cannot incorporate long-distance regulatory effects.  If such effects are important to a disease, MAGMA could give misleading results
-
+2. It is unknown how to optimally translate raw reference data, derived from RNAseq or from another method, into $E_{i,j}$ values to optimize the resulting MAGMA signal.  This question is its own research topid[@li2025benchmarking].
+3. Relatedly, MAGMA relies on the assumption that if a biological system is important to a phenotype, the degree of participation of a gene in that biological system should be linearly related to the association of the gene with the phenotype.  While this is intuitively reasonable, it does not necessarily hold: biology is inherently nonlinear.
+4. Since MAGMA in its original form mostly uses proximity to associate genes with SNPs, it cannot incorporate long-distance regulatory effects.  If such effects are important to a disease, MAGMA could give misleading results
 
 
 ## References
