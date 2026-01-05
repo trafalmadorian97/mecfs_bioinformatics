@@ -6,9 +6,12 @@ Duncan, Laramie E., et al. "Mapping the Cellular Etiology of Schizophrenia and D
 
 source github repo: https://github.com/Integrative-Mental-Health-Lab/linking_cell_types_to_brain_phenotypes?tab=readme-ov-file
 """
+
 from pathlib import PurePath
 
-from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import ReferenceFileMeta
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN = DownloadFileTask(

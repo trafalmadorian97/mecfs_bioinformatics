@@ -53,7 +53,7 @@ class ExtractFromZipTask(Task):
 
     @classmethod
     def create_from_zipped_reference_file(
-        cls, source_task: Task, asset_id: str, file_to_extract: str
+        cls, source_task: Task, asset_id: str, file_to_extract: str, extension: str
     ) -> Task:
         src_meta = source_task.meta
         assert isinstance(src_meta, ReferenceFileMeta)
@@ -64,7 +64,7 @@ class ExtractFromZipTask(Task):
                 asset_id=AssetId(asset_id),
                 filename=file_to_extract,
                 sub_group=src_meta.sub_group,
-                extension="",
+                extension=extension,
             ),
             source_file_task=source_task,
             file_to_extract=file_to_extract,

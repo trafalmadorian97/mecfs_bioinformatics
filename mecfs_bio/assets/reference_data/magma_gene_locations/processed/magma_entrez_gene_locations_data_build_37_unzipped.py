@@ -10,5 +10,6 @@ MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_37_EXTRACTED = (
         source_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
         asset_id="magma_gene_location_reference_data_build_37_extracted",
         file_to_extract="NCBI37.3.gene.loc",
+        extension=".loc",
     )
 )
