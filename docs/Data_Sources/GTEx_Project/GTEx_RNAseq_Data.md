@@ -1,7 +1,7 @@
 
 # GTEx Bulk Tissue RNA-seq Data
 
-The Genotype Tissue Expression (GTEx) project generates useful datasets via the analysis of diverse tissues from post-mortem human donors.
+The Genotype Tissue Expression (GTEx) project[@gtex2020gtex] generates useful datasets via the analysis of diverse tissues from post-mortem human donors.
 
 One important class of GTEx dataset records levels of RNA expression across a wide range of tissues.  These GTEx RNAseq datasets can help us discover the tissues in which a particular gene plays an important role.  For instance, if we find that across many donors, the RNA transcripts of a gene are over-expressed in the colon relative to other tissues, is reasonable to assume that the gene plays its most important role in the colon.
 
