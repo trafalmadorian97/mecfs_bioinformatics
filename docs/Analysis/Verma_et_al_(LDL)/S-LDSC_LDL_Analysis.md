@@ -32,7 +32,7 @@ Of note: the main 3 statistically significant cell types are all liver cell type
 
 There is also one significant kidney cell type (on the right side of the graph).  It is unclear to me whether this reflects real biology, or is an artifact.
 
-It is also of interest that several adipose-related cell types are just below the threshold of signifiance, suggesting that a larger study might implicate adipose tissue in the LDL disease process. This is consistent with the known association of high BMI with LDL levels.
+It is also of interest that several adipose-related cell types are just below the threshold of significance, suggesting that a larger study might implicate adipose tissue in the LDL disease process. This is consistent with the known association of high BMI with LDL levels.
 
 
 Here are the top associations in tabular form:

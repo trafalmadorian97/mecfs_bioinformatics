@@ -26,11 +26,11 @@ Here are some examples of histone marks with known effects:
 | Histone Mark | Effect on Chromatin                                    |
 |:-------------|:-------------------------------------------------------|
 | H3K4me1      | [Associated with enhanced transcription](https://en.wikipedia.org/wiki/H3K4me1)|
-| H4K4me3      | Open, accesible chromatin[@alberts2022molecular]                              |
-| H3K9ac       | Open, accesible chromatin[@alberts2022molecular]                              |
-| H3K9me3      | Closed, inaccesible chromatin[@alberts2022molecular]                          |
+| H4K4me3      | Open, accessible chromatin[@alberts2022molecular]                              |
+| H3K9ac       | Open, accessible chromatin[@alberts2022molecular]                              |
+| H3K9me3      | Closed, inaccessible chromatin[@alberts2022molecular]                          |
 | [H3K27ac]      | [Associated with higher activation of transcription]((https://en.wikipedia.org/wiki/H3K27ac) |
-| H3K27me3     | Closed, inaccesible chromatin[@alberts2022molecular]                          |  
+| H3K27me3     | Closed, inaccessible chromatin[@alberts2022molecular]                          |  
 
 
 Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.
@@ -43,4 +43,4 @@ Assays that report histone marks are a key method for understanding epigenetic r
 
 Besides assays that report histone marks, assays that directly measure chromatin accessibility are also informative about epigenetic regulation. ATAC-seq is an important example of such an accessibility assay.
 
-ATAC-seq  repurposes [transposase](https://en.wikipedia.org/wiki/Transposase), the enzyme responsible for the movement of transposons, or "jumping genes".  It works on the principle that transposase can interact with open chromatin, but not closed chromatin.  This explains the name: Assay for Transposase Accesible Chromatin (ATAC).
+ATAC-seq  repurposes [transposase](https://en.wikipedia.org/wiki/Transposase), the enzyme responsible for the movement of transposons, or "jumping genes".  It works on the principle that transposase can interact with open chromatin, but not closed chromatin.  This explains the name: Assay for Transposase Accessible Chromatin (ATAC).

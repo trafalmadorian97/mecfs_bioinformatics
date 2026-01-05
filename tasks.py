@@ -4,6 +4,7 @@ from invoke import task
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
+DOCS_PATH = "docs"
 
 
 # dev tasks
@@ -54,7 +55,25 @@ def typecheck(c):
     c.run("pixi r  mypy .", pty=True)
 
 
-@task(pre=[lintfix, format, typecheck, test])
+@task
+def spellcheck_docs(c):
+    """
+    check docs for spelling errors
+    Edit _typos.toml to add exceptions
+    """
+    print("Checking documentation spelling using typos...")
+    c.run(f"pixi r  typos {DOCS_PATH}", pty=True)
+
+
+@task(
+    pre=[
+        lintfix,
+        format,
+        spellcheck_docs,
+        typecheck,
+        test,
+    ]
+)
 def green(c):
     pass
 

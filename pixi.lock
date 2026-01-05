@@ -121,6 +121,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/snappy-1.2.2-h03e3b7b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/sysroot_linux-64-2.28-h4ee821c_8.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_hd72426e_102.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.41.0-hdab8a38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xz-5.8.1-hbcc6ac9_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xz-gpl-tools-5.8.1-hbcc6ac9_2.conda
@@ -764,7 +765,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: ab322670b98428411be2b2412eaf1604021ec07294e28f196acfd484ba1a400a
+  sha256: 39dfaff03b9e714aaf61751f0c44d61d8c0e7549d4407146881db0539e65ddee
   requires_dist:
   - attrs>=25.3.0
   - cattrs>=25.2.0
@@ -4493,6 +4494,19 @@ packages:
   version: 4.15.0
   sha256: f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548
   requires_python: '>=3.9'
+- conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.41.0-hdab8a38_0.conda
+  sha256: f10cf3058ef09f68fb04652a50db3977493aff8e7a6e7bffffef0e6217a24685
+  md5: 916993451af8124da954919882e6e0ff
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
+  constrains:
+  - __glibc >=2.17
+  license: MIT
+  license_family: MIT
+  purls: []
+  size: 3344452
+  timestamp: 1767238507683
 - pypi: https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl
   name: tzdata
   version: '2025.2'

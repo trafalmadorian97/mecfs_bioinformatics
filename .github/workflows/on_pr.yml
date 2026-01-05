@@ -51,6 +51,9 @@ jobs:
       - name: Lint using ruff
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke lintcheck
+      - name: Check spelling using typos
+        if: steps.changes.outputs.nonmark == 'true'
+        run: pixi r invoke spellcheck-docs
       - name: Check types with mypy
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke typecheck

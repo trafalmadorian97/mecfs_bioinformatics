@@ -150,7 +150,7 @@ The following graph and table show the results:
 | Nerve-Tibial_ENTEX__H3K4me3                                              |   1.51766e-07 |           0.026091    | False         |
 | Brain_Hippocampus_Middle__H3K36me3                                       |   5.12254e-08 |           0.0268535   | False         |
 
-Consistent with the GTEX/Franke results, here many regions of the brain are deemed significant.  Because the Roadmap epigenetics dataset is entirely separate from the GTEx gene expression dataset, these results can be seen as an independent piece of evidence for the signifiance of the brain to educational attainment.
+Consistent with the GTEX/Franke results, here many regions of the brain are deemed significant.  Because the Roadmap epigenetics dataset is entirely separate from the GTEx gene expression dataset, these results can be seen as an independent piece of evidence for the significance of the brain to educational attainment.
 
 Similarly to the GTEx/Franke case, the non-specificity of the brain results may also be a consequence of the lack of brain controls in the regressions used to define cell-type-specific regions.
 

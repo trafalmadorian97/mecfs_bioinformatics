@@ -149,7 +149,7 @@ The results are shown in the graph and table below
 | skeletal_muscle_ENTEX__H3K4me1                                           |   1.2165e-07  |           0.00232854  | False         |
 
 
-As we saw with the gene expression data, signal is highly concentrated in central nervous system tissues.  Unlike with the gene expression data, with the roadmap data we also seem some immune-related tissues and cell types reaching signifiance, consistent with the purposed role of the immune system in schizophrenia pathogenesis[@kandel2021principles].
+As we saw with the gene expression data, signal is highly concentrated in central nervous system tissues.  Unlike with the gene expression data, with the roadmap data we also seem some immune-related tissues and cell types reaching significance, consistent with the purposed role of the immune system in schizophrenia pathogenesis[@kandel2021principles].
 
 
 ### Immgen Data
