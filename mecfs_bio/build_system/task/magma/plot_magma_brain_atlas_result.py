@@ -122,16 +122,10 @@ class PlotMagmaBrainAtlasResultTask(Task):
                 size=20,
                 color=colormap[top_cluster["Supercluster"]],
             ),
-            # xshift=30,
-            # yshift=-30,
-            # zorder=-5,
-            # showarrow=True,  # Display an arrow pointing to the point
             arrowhead=2,  # Style of the arrowhead
             arrowsize=1,  # Size of the arrowhead
             arrowwidth=2,  # Width of the arrow line
             arrowcolor=colormap[top_cluster["Supercluster"]],
-            # arrowcolor="red",  # Color of the arrow
-            # ax=30,  # X-component of the arrow tail offset (pixels from head)
             ay=-60,  # Y-component of the arrow tail offset (pixels from head)
         )
         plots = {BRAIN_ATLAS_PLOT_NAME: plot}

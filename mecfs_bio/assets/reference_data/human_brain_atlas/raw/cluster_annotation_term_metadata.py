@@ -1,3 +1,7 @@
+"""
+Task to fetch some metadata from the human brain atlas.
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
