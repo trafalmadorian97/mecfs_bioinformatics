@@ -15,7 +15,7 @@ I used the standard reference data sources to associate chromatin regions with c
 - [The GTEx Project](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
 - [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap_Epigenetic_Project/Roadmap.md)
-- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_Et_Al_Blood_Cell_Epigenetics/Corces_et_al.md).
+- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_at_al_Blood_Cell_Epigenetics/Corces_et_al.md).
 - The [ImmGen](../../Data_Sources/Immgen_Project/Immgen_Project.md) Project
 - The Cahoy Mouse Central Nervous System Dataset
 

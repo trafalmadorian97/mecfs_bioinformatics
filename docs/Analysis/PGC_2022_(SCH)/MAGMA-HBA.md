@@ -1,6 +1,6 @@
 # MAGMA HBA
 
-I applied MAGMA to the PGC 2022 GWAS of schizophrenia using single-cell RNAseq read-counts from the Human Brain Atlas[@siletti2023transcriptomic] as reference data. This was an attempt to verify that I could reproduce the results of Duncan et al.[@duncan2025mapping].
+I applied MAGMA to the PGC 2022 GWAS of schizophrenia using single-cell RNAseq read-counts from the [Human Brain Atlas](../../Data_Sources/Human_Brain_Atlas/HBA_scRNAseq.md)[@siletti2023transcriptomic] as reference data. This was an attempt to verify that I could reproduce the results of Duncan et al.[@duncan2025mapping].
 
 
 ## Results
