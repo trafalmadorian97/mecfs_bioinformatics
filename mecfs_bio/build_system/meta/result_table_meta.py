@@ -1,3 +1,7 @@
+"""
+Metadata describing tabular data from the analysis of GWAS.
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen

@@ -1,6 +1,6 @@
 from pathlib import PurePath
 
-from mecfs_bio.build_system.meta.executable.executable_meta import ExecutableMeta
+from mecfs_bio.build_system.meta.executable_meta import ExecutableMeta
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 MAGMA_1_1_BINARY_ZIPPED = DownloadFileTask(

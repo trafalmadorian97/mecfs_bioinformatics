@@ -5,7 +5,7 @@ Neglecting somatic mutations, all non-gamete cells in the body contain the same 
 What explains this diversity? Chiefly, the answer is gene expression.  While all genes are present in the DNA of all cells, different genes are switched on or off in different cell types.
 
 
-Gene expression is controlled, at least in part, via structural and chemical modifications of DNA that do not change the sequence of nucleotides, but do affect transcription.  These structural and chemical modifications are referred to collectively as "Epigenetics".
+Gene expression is partly controlled via structural and chemical modifications of DNA that do not change the sequence of nucleotides, but do affect transcription.  These structural and chemical modifications are referred to collectively as "Epigenetics".
 
 ## Histone marks
 
@@ -15,10 +15,10 @@ Eukaryotic DNA is tightly wound around spool-like complexes of proteins called h
 
 ![histone_image_from_wikipedia](https://github.com/user-attachments/assets/077abc51-5dfa-4891-8fa1-e83db80976eb)
 
-[Image Source: Wikipedia](https://en.wikipedia.org/wiki/Nucleosome#/media/File:Basic_units_of_chromatin_structure.svg).
+[Image Source: David O Morgan](https://en.wikipedia.org/wiki/Nucleosome#/media/File:Basic_units_of_chromatin_structure.svg).
 
 
-Histones can be covalently bonded to a very wide variety of molecules.  These covalent bonds are called "histone marks".  Histone marks can strongly affect the three-dimensional structure of chromatin.  For example, certain histone marks cause DNA to be tightly wound, so that the genes its contains cannot be transcribed, while other histone marks cause DNA to open up, causing genes to be readily transcribed (Alberts et al. pg 220[@alberts2022molecular]).
+Histones can be covalently bonded to a very wide variety of molecules.  These covalent bonds are called "histone marks".  Histone marks can strongly affect the three-dimensional structure of chromatin.  For example, certain histone marks cause DNA to be tightly wound, so that the genes its contains cannot be transcribed, while other histone marks cause DNA to open up, causing genes to be readily transcribed (see Alberts et al. pg 220[@alberts2022molecular]).
 
 Here are some examples of histone marks with known effects:
 
@@ -29,11 +29,11 @@ Here are some examples of histone marks with known effects:
 | H4K4me3      | Open, accessible chromatin[@alberts2022molecular]                              |
 | H3K9ac       | Open, accessible chromatin[@alberts2022molecular]                              |
 | H3K9me3      | Closed, inaccessible chromatin[@alberts2022molecular]                          |
-| [H3K27ac]      | [Associated with higher activation of transcription]((https://en.wikipedia.org/wiki/H3K27ac) |
+| [H3K27ac]      | [Associated with higher activation of transcription](https://en.wikipedia.org/wiki/H3K27ac) |
 | H3K27me3     | Closed, inaccessible chromatin[@alberts2022molecular]                          |  
 
 
-Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.
+[//]: # (Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.)
 
 
 Assays that report histone marks are a key method for understanding epigenetic regulation.

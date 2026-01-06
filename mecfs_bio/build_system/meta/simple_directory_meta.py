@@ -1,9 +1,11 @@
+"""
+Metadata describing a miscellaneous directory.
+"""
+
 from attrs import field, frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import DirMeta
-
-# from mecfs_bio.build_system.meta.file_meta import FileMeta
 
 
 @frozen

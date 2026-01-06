@@ -1,10 +1,12 @@
+"""
+Metadata describing a miscellaneous file.
+"""
+
 from attrs import field, frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
-
-# from mecfs_bio.build_system.meta.file_meta import FileMeta
 
 
 @frozen

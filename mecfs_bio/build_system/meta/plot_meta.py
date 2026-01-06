@@ -1,3 +1,7 @@
+"""
+Metadata describing a plot resulting from the analysis of GWAS data.
+"""
+
 from pathlib import PurePath
 
 from attrs import field, frozen

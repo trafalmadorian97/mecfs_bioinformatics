@@ -1,20 +1,19 @@
 # Build System
 
 ## Motivation
-In data science, the final product of an analysis is often the result of long pipeline of many steps.  These steps can be a mixture of pure data cleaning operations and more complex analysis and modeling.  Moreover, when the data size is nontrivial, the steps and therefore the whole pipeline can be quite slow.  This scenario creates two challenges:
+In data science, analysis pipelines often consist of many steps.  These steps can be a mixture of pure data-cleaning operations and more complex statistical modeling.  When the data set under study is nontrivial in size, the steps and therefore the whole pipeline can be quite slow.  This creates two challenges:
 
-- **Iteration**: It is rare to run a pipeline once, produce an analysis, and be done with it. Usually, it is necessary to repeatedly tweak the steps, re-run the pipeline, and reexamine the result.  To avoid wasting time, it is therefore desirable that after each change, only the steps impacted by the change should be rerun.
+- **Iteration**: It is rare to run a pipeline once, produce an analysis, and be done. Usually, it is necessary to repeatedly tweak the steps, re-run the pipeline, and reexamine the result.  To avoid wasting time, it is therefore desirable that after each change, only the impacted steps should be rerun.
 - **Lineage**:  Given the complexity of many data science workflows, there is considerable room for error.  It is therefore desirable to be able to interrogate the final product of a workflow to trace its "lineage": the precise sequence of steps that produced it.
 
 These challenges motivate the development of a data science build system.
 
 ## Framework 
 
-The build system used in this project is heavily based on the framework described by Mokhov et al. in their prize-winning papers[@mokhov2018build] [@mokhov2020build].  
+The build system used in this project is heavily based on the framework described by Mokhov et al. in their prize-winning papers[@mokhov2018build;@mokhov2020build].  I outline this framework below.
 
 ## Key Concepts
 
-The build system uses certain key concepts, which I describe below.
 
 ### Asset
 
@@ -48,7 +47,7 @@ Concrete Task subclass classes are defined [here][mecfs_bio.build_system.task].
 
 ### Rebuilder
 
-Given a `Task` that generates an `Asset`, together with a data storage object called `Info` the job of a Rebuilder is to decide whether the current version of the `Asset` is up-to-date.  If so, that `Asset` can be directly returned without executing the `Task`.  If not, the rebuilder uses the `Task` to materialize an up-to-date version of the asset.
+Given a `Task` that generates an `Asset`, together with a data storage object called `Info`, the job of a Rebuilder is to decide whether the current version of the `Asset` is up-to-date.  If so, that `Asset` can be directly returned without executing the `Task`.  If not, the rebuilder uses the `Task` to materialize an up-to-date version of the asset.
 
 Here is source code for the `Rebuilder` base class:
 
@@ -62,7 +61,7 @@ Currently, there is one concrete implementation of `Rebuilder`, called the [Veri
 
 ### Scheduler
 
-Given on ore more target assets requests by the user, it is the job of the scheduler to determine which tasks need to be run in what order to produce those assets.  The scheduler delegates the actual running of these tasks to the Rebuilder.
+Given on or more target assets requests by the user, it is the job of the scheduler to determine which tasks need to be run in what order to produce those assets.  The scheduler delegates the actual running of these tasks to the Rebuilder.
 
 Currently, there is one concrete scheduler: the [topological scheduler][mecfs_bio.build_system.scheduler.topological_scheduler].  The topological scheduler constructs a directed acyclic graph of the dependencies of the requested assets, then traverses this graph in [topological order](https://en.wikipedia.org/wiki/Topological_sorting).
 

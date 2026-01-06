@@ -1,3 +1,7 @@
+"""
+Metadata describing a directory containing plots from the analysis of GWAS data.
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen
