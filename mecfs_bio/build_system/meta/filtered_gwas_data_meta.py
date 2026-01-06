@@ -1,3 +1,7 @@
+"""
+Metadata describing an asset resulting from the processing of GWAS data.
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen

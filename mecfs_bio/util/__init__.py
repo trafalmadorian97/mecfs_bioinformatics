@@ -1,3 +1,3 @@
 """
-Miscellaneous utilities related to plotting an the execution of shell subprocesses.
+Miscellaneous utilities related to plotting and the execution of shell subprocesses.
 """

@@ -1,3 +1,7 @@
+"""
+Metadata describing an executable file
+"""
+
 from pathlib import PurePath
 
 from attrs import field, frozen

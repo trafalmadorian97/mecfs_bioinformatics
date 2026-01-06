@@ -2,7 +2,7 @@
 Meta objects are uniquely identifying metadata describing either an asset that currently exists, or an asset that can be created by a build system.
 """
 
-from mecfs_bio.build_system.meta.executable.executable_meta import ExecutableMeta
+from mecfs_bio.build_system.meta.executable_meta import ExecutableMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_lead_variants_meta import (

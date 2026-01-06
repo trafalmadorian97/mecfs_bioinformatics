@@ -1,3 +1,7 @@
+"""
+The Asset Abstract Base Class.
+"""
+
 from abc import ABC
 
 

@@ -22,7 +22,7 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets.
+The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets. In the plot, the x axis corresponds to cell type, while the y axis corresponds to $-\log_{10}(p)$.  Points are colored according to broad tissue category.
 
 ![s-ldsc-decodme-gene-expression](https://github.com/user-attachments/assets/77dfefc0-2717-4e45-9b1d-4f09d67b7dc5)
 
@@ -183,5 +183,5 @@ When we apply the S-LDSC using the GTEx brain dataset, we find the the cortex ti
 
 # Reproducing Analysis
 
-To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis]
+To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
 
