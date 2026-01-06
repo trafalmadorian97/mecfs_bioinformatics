@@ -1,5 +1,5 @@
 """
-An Asset representing a directory,
+An Asset representing a directory.
 """
 
 from pathlib import Path

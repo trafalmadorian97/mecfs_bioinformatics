@@ -1,5 +1,5 @@
 """
-Metadata describing tabular data form the analysis of GWAS.
+Metadata describing tabular data from the analysis of GWAS.
 """
 
 from pathlib import PurePath

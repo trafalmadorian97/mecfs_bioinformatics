@@ -1,5 +1,5 @@
 """
-Base classes for the two base types of metadata: FileMeta and DirMeta.
+Base classes for the two types of metadata: FileMeta and DirMeta.
 """
 
 from abc import ABC, abstractmethod
