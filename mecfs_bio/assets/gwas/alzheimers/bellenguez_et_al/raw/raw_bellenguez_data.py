@@ -22,7 +22,15 @@ BELLENGUEZ_ET_AL_ALZHIEMERS_RAW = DownloadFileTask(
         project="bellenguez_et_al",
         sub_dir="raw",
         project_path=PurePath("35379992-GCST90027158-MONDO_0004975.h.tsv.gz"),
-        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
+        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t",
+null_values=["NaN","NA"]
+
+
+                                                               ),
+
+
+
+                                    ),
     ),
     url="http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90027001-GCST90028000/GCST90027158/harmonised/35379992-GCST90027158-MONDO_0004975.h.tsv.gz",
     md5_hash="e2c8be73b5aa7698c5e8878ae607fe85",

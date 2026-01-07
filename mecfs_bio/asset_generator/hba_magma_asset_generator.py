@@ -1,17 +1,30 @@
+from pathlib import PurePath
+
 from attrs import frozen
 
 from mecfs_bio.assets.executable.extracted.magma_binary_extracted import MAGMA_1_1_BINARY_EXTRACTED
+from mecfs_bio.assets.reference_data.human_brain_atlas.raw.cluster_annotation_term_metadata import \
+    CLUSTER_ANNOTATION_TERM_METADATA
 from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez_gene_locations_data_build_37_unzipped import \
     MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_37_EXTRACTED
+from mecfs_bio.assets.reference_data.magma_ld_reference.magma_eur_build_37_1k_genomes_ref_extracted import \
+    MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED
+from mecfs_bio.assets.reference_data.magma_specificity_matricies.raw.magma_specificity_matrix_from_hbca_rna_duncan import \
+    MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN
+from mecfs_bio.assets.reference_data.research_paper_supplementary_material.duncan_et_al_2025.processed.duncan_et_al_2025_st1_label_columns import \
+    DUNCAN_ET_AL_2025_ST1_LABEL_COLS
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, \
+    DataFrameWhiteSpaceSepTextFormat
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.copy_file_from_directory_task import CopyFileFromDirectoryTask
 from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import MultipleTestingTableTask
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.magma.magma_annotate_task import MagmaAnnotateTask
 from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import MagmaGeneAnalysisTask
-from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import MagmaGeneSetAnalysisTask
+from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import MagmaGeneSetAnalysisTask, ModelParams, \
+    GENE_SET_ANALYSIS_OUTPUT_STEM_NAME
 from mecfs_bio.build_system.task.magma.magma_snp_location_task import MagmaSNPFileTask
-from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotMagmaBrainAtlasResultTask
+from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotMagmaBrainAtlasResultTask, PlotSettings
 
 
 @frozen
@@ -25,43 +38,104 @@ class HBAMagmaTasks:
     magma_hba_multiple_testing_task:MultipleTestingTableTask
     magma_hba_result_plot_task:PlotMagmaBrainAtlasResultTask
 
+    def terminal_tasks(self)-> list[Task]:
+        return [self.magma_hba_result_plot_task]
+
 
 def generate_human_brain_atlas_magma_tasks(
         base_name:str,
-gwas_parquet_with_rsids_task:Task
-):
+        gwas_parquet_with_rsids_task:Task,
+        sample_size: int,
+        plot_settings: PlotSettings,
+) ->HBAMagmaTasks:
 
     magma_binary_task=MAGMA_1_1_BINARY_EXTRACTED
-    snp_loc_task = MagmaSNPFileTask.create_for_magma_snp_pos_file(
-        gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
-        asset_id=base_name + "hba_magma_snp_locs",
-    )
     gene_loc_file_task = MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_37_EXTRACTED
 
     p_value_task = (
         MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
             gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
-            asset_id=base_name + "_magma_snp_p_values",
+            asset_id=base_name + "_hba_magma_snp_p_values",
         )
     )
     snp_loc_task = MagmaSNPFileTask.create_for_magma_snp_pos_file(
         gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
-        asset_id=base_name + "_magma_snp_locs",
+        asset_id=base_name + "_hba_magma_snp_locs",
     )
     annotations_task = MagmaAnnotateTask.create(
-        asset_id=base_name + "_magma_annotations",
+        asset_id=base_name + "_hba_magma_annotations",
         magma_binary_task=magma_binary_task,
         snp_loc_file_task=snp_loc_task,
         gene_loc_file_task=gene_loc_file_task,
-        window=(35, 10),
+        window=(35, 10), # This choice comes from the Duncan paper
     )
     gene_analysis_task = MagmaGeneAnalysisTask.create(
-        asset_id=base_name + "_magma_gene_analysis",
+        asset_id=base_name + "_hba_magma_gene_analysis",
         magma_annotation_task=annotations_task,
         magma_p_value_task=p_value_task,
         magma_binary_task=magma_binary_task,
-        magma_ld_ref_task=magma_ld_ref_task,
-        ld_ref_file_stem=ld_ref_file_stem,
+        magma_ld_ref_task=MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
+        ld_ref_file_stem="g1000_eur",
         sample_size=sample_size,
     )
+
+    cell_analysis_task = MagmaGeneSetAnalysisTask.create(
+        asset_id=base_name+"_hba_gene_covar",
+        magma_gene_analysis_task=gene_analysis_task,
+        magma_binary_task=MAGMA_1_1_BINARY_EXTRACTED,
+        gene_set_task=MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN,
+        set_or_covar="covar",
+        model_params=ModelParams(direction_covar="greater", condition_hide=[]),
+    )
+
+    result_extract_task = (
+        CopyFileFromDirectoryTask.create_result_table(
+            base_name+"_hba_gene_covar_results_extracted",
+            source_directory_task=cell_analysis_task,
+            path_inside_directory=PurePath(
+                str(GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out")
+            ),
+            extension=".txt",
+            read_spec=DataFrameReadSpec(DataFrameWhiteSpaceSepTextFormat(comment_code="#")),
+        )
+    )
+    result_annotated_task= (
+    JoinDataFramesTask.create_from_result_df(
+        asset_id=base_name+"_hba_gene_covar_results_labeled",
+        result_df_task=result_extract_task,
+        reference_df_task=DUNCAN_ET_AL_2025_ST1_LABEL_COLS,
+        how="left",
+        left_on=["VARIABLE"],
+        right_on=["VARIABLE"],
+    )
+    )
+    multiple_testing_task = (
+    MultipleTestingTableTask.create_from_result_table_task(
+        alpha=0.01,
+        source_task=result_annotated_task,
+        method="bonferroni",
+        asset_id=base_name+"_hba_gene_covar_results_multiple_testing",
+        p_value_column="P",
+        apply_filter=False,
+    )
+    )
+    plot_task = PlotMagmaBrainAtlasResultTask.create(
+    result_table_task=multiple_testing_task,
+    cluster_annotation_task=CLUSTER_ANNOTATION_TERM_METADATA,
+    asset_id=base_name+"_hba_atlas_magma_plot",
+    plot_settings=plot_settings
+
+)
+    return HBAMagmaTasks(
+        snp_loc_task=snp_loc_task,
+        magma_annotation_task=annotations_task,
+        magma_gene_analysis_task=gene_analysis_task,
+        magma_hba_gene_set_task=cell_analysis_task,
+        magma_hba_gene_set_result_extract_task=result_extract_task,
+        magma_hba_result_annotated_task=result_annotated_task,
+        magma_hba_multiple_testing_task=multiple_testing_task,
+        magma_hba_result_plot_task=plot_task
+    )
+
+
 

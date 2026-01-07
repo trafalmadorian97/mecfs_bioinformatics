@@ -1,9 +1,11 @@
+import attrs
 import structlog
 from loguru import logger
 
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 
 logger = structlog.get_logger()
 from pathlib import Path
@@ -103,6 +105,15 @@ class GWASLabColumnSpecifiers:
     chi_sq: str | None = None
     mlog10p: str | None = None
 
+    def get_selection_pipe(self)-> SelectColPipe:
+        fields = attrs.asdict(self)
+        cols = []
+        for v in fields.values():
+            if v is not None:
+                cols.append(v)
+        return SelectColPipe(cols)
+
+
 
 ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
 
@@ -112,6 +123,8 @@ def _get_sumstats(
     fmt: ValidGwaslabFormat,
     drop_cols: Sequence[str],
 ) -> gl.Sumstats:
+    if isinstance(fmt, GWASLabColumnSpecifiers):
+        x= fmt.get_selection_pipe().process(x)
     x = x.drop(drop_cols)
     collected_df = x.collect().to_pandas()
     if isinstance(fmt, GWASLabColumnSpecifiers):
