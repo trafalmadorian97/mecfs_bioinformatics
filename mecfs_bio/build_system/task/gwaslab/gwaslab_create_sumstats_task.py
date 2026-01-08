@@ -1,3 +1,7 @@
+"""
+Task to read in a dataframe from disk and process it using the GWASLAB pipeline.
+"""
+
 import attrs
 import structlog
 from loguru import logger

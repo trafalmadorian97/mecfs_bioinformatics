@@ -1,5 +1,5 @@
 """
-Run GWAS of Alzhiemer's phenotype
+This file contains a basic driver script to analyze GWAS of the Alzheimer's phenotype.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER

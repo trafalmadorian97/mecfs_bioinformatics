@@ -1,3 +1,7 @@
+"""
+Task to extract a file from a gzip.
+"""
+
 import gzip
 import shutil
 from pathlib import Path, PurePath

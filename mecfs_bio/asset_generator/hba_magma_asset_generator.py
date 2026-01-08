@@ -1,3 +1,7 @@
+"""
+Asset generator for applying MAGMA gene property analysis using the Human Brain Atlas scRNAseq data as a reference.
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen

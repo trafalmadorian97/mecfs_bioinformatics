@@ -1,3 +1,9 @@
+"""
+Task to  plot the results of applying MAGMA using the human brain atlas as a reference.
+Attempts to match the style of the graphs from
+    Duncan, Laramie E., et al. "Mapping the cellular etiology of schizophrenia and complex brain phenotypes." Nature Neuroscience 28.2 (2025): 248-258.
+"""
+
 import math
 from pathlib import Path, PurePath
 from typing import Literal

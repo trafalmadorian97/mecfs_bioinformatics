@@ -1,5 +1,5 @@
 """
-Task generators that apply a collection of standard analysis techniques to GWAS summary statistics using standard reference ata
+Task generators that apply a collection of standard analysis techniques to GWAS summary statistics using standard reference data.
 """
 
 from attrs import frozen

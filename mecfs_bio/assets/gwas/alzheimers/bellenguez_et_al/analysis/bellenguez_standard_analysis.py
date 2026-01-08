@@ -1,3 +1,7 @@
+"""
+Apply standard MAGMA and S-LDSC analysis to Bellenguez et al.'s meta-GWAS of Alzheimer's
+"""
+
 from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import (
     concrete_standard_analysis_generator_assume_already_has_rsid,
 )
