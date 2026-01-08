@@ -4,13 +4,13 @@ hide:
 - toc
 ---
 # Cross Trait Linkage Disequilibrium Score Regression
-Cross Trait Linkage Disequilibrium Score Regression (CT-LDSC)[@bulik2015atlas] is an [extension of Linkage Disequilibrium Score Regression](LDSC.md) (LDSC) that estimates [genetic correlation](Genetic_Correlation.md).
+Cross Trait Linkage Disequilibrium Score Regression (CT-LDSC)[@bulik2015atlas] is an extension of [Linkage Disequilibrium Score Regression](LDSC.md) (LDSC) that estimates [genetic correlation](Genetic_Correlation.md).
 
 ## Derivation
 
 ### Data Generating Model
 
-Recall that LDSC assumes a linear data-generating model for the trait of interest. CT-LDSC assumes two linear data-generating models, one for each of two traits:
+Recall that LDSC assumes a linear data-generating model. CT-LDSC assumes two linear data-generating models, one for each of two traits:
 
 $$
 \begin{align}
@@ -24,8 +24,8 @@ where:
 
 - There are $M  \gg 0$ genetic variants.  
 - There are $N_1 \gg 0$ individuals in the GWAS of trait 1 and $N_2 \gg 0$ individuals in the GWAS of trait 2.
-- There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the list of participants in both studies.
-- $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for trait 1 and trait 2 respectively.
+- There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
+- $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for study 1 and study 2 respectively.
 - $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.
 - $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true genetic effect sizes of each genetic variant on the two traits. 
 - $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of genetic effects on all individual in the two GWAS.
