@@ -24,6 +24,7 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 BRAIN_ATLAS_PLOT_NAME = "human_brain_atlas_plot"
 PlotMode = Literal["plotly_white", "plotly_dark"]
 
+
 @frozen
 class PlotSettings:
     plot_mode: PlotMode = "plotly_dark"
@@ -142,7 +143,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
         result_table_task: Task,
         cluster_annotation_task: Task,
         asset_id: str,
-        plot_settings: PlotSettings=PlotSettings(),
+        plot_settings: PlotSettings = PlotSettings(),
     ):
         source_meta = result_table_task.meta
         assert isinstance(source_meta, ResultTableMeta)

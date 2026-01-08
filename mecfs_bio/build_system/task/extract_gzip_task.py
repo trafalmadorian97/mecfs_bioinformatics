@@ -61,11 +61,16 @@ class ExtractGzipTextFileTask(Task):
         )
 
     @classmethod
-    def create_for_gwas_file(cls, source_file_task: Task, asset_id: str, readspec: DataFrameReadSpec|None=None):
+    def create_for_gwas_file(
+        cls,
+        source_file_task: Task,
+        asset_id: str,
+        readspec: DataFrameReadSpec | None = None,
+    ):
         src_meta = source_file_task.meta
         assert isinstance(src_meta, GWASSummaryDataFileMeta)
         if readspec is None:
-            readspec=src_meta.read_spec()
+            readspec = src_meta.read_spec()
         meta = GWASSummaryDataFileMeta(
             short_id=AssetId(asset_id),
             trait=src_meta.trait,

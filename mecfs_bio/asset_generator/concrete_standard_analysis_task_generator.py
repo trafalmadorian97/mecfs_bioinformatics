@@ -14,7 +14,10 @@ from mecfs_bio.asset_generator.concrete_magma_asset_generator import (
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
 )
-from mecfs_bio.asset_generator.hba_magma_asset_generator import HBAMagmaTasks, generate_human_brain_atlas_magma_tasks
+from mecfs_bio.asset_generator.hba_magma_asset_generator import (
+    HBAMagmaTasks,
+    generate_human_brain_atlas_magma_tasks,
+)
 from mecfs_bio.asset_generator.labeled_lead_variants_asset_generator import (
     LabelLeadVariantsTasks,
     generate_tasks_labeled_lead_variants,
@@ -56,7 +59,7 @@ class StandardAnalysisTaskGroup:
     magma_tasks: MagmaTaskGeneratorFromRaw
     labeled_lead_variant_tasks: LabelLeadVariantsTasks
     master_gene_list_tasks: MasterGeneListTasks | None
-    hba_magma_tasks: HBAMagmaTasks| None=None
+    hba_magma_tasks: HBAMagmaTasks | None = None
 
     def get_terminal_tasks(self) -> list[Task]:
         result = (
@@ -79,8 +82,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
-    include_hba_magma_tasks:bool=False,
-    hba_plot_settings: PlotSettings = PlotSettings()
+    include_hba_magma_tasks: bool = False,
+    hba_plot_settings: PlotSettings = PlotSettings(),
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -136,11 +139,11 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     else:
         master_gene_list_tasks = None
     if include_hba_magma_tasks:
-       hba_magma= generate_human_brain_atlas_magma_tasks(
+        hba_magma = generate_human_brain_atlas_magma_tasks(
             base_name=base_name,
             gwas_parquet_with_rsids_task=magma_tasks.parquet_file_task,
             sample_size=sample_size,
-           plot_settings=hba_plot_settings
+            plot_settings=hba_plot_settings,
         )
     else:
         hba_magma = None

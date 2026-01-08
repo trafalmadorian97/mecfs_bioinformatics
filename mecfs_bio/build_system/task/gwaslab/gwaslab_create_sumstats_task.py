@@ -105,14 +105,13 @@ class GWASLabColumnSpecifiers:
     chi_sq: str | None = None
     mlog10p: str | None = None
 
-    def get_selection_pipe(self)-> SelectColPipe:
+    def get_selection_pipe(self) -> SelectColPipe:
         fields = attrs.asdict(self)
         cols = []
         for v in fields.values():
             if v is not None:
                 cols.append(v)
         return SelectColPipe(cols)
-
 
 
 ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
@@ -124,7 +123,7 @@ def _get_sumstats(
     drop_cols: Sequence[str],
 ) -> gl.Sumstats:
     if isinstance(fmt, GWASLabColumnSpecifiers):
-        x= fmt.get_selection_pipe().process(x)
+        x = fmt.get_selection_pipe().process(x)
     x = x.drop(drop_cols)
     collected_df = x.collect().to_pandas()
     if isinstance(fmt, GWASLabColumnSpecifiers):
