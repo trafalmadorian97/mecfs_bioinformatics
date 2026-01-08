@@ -23,7 +23,7 @@ I used the standard reference datasets recommended and preprocessed by the autho
 
 ### GTEx and Franke lab tissue expression data
 
-Surprisingly, no cell or tissue types were significant at a FDR of 0.01 using this reference dataset.
+Surprisingly, no cell or tissue types were significant at a FDR of 0.01 using GTEx/Franke lab reference dataset.
 
 Here are the cell/tissue types with the lowest p values:
 
@@ -40,7 +40,7 @@ Here are the cell/tissue types with the lowest p values:
 | Brain_Hippocampus                                              |   2.46114e-09 |           0.0054518   | False         |
 
 
-The non-significant cell types with the lowest p values are immune related, consistent with theories that immune related processes drive Alzheimer's disease (see pg. 1205 of Kandel et al.,[@kandel2021principles]).
+The non-significant cell types with the lowest p values are immune related, consistent with theories that immune processes drive Alzheimer's disease (see pg. 1205 of Kandel et al.,[@kandel2021principles]).
 
 
 
@@ -105,7 +105,7 @@ Application of S-LDSC using the Corces ATAC-seq dataset produces one significant
 | CMP     |   1.52784e-08 |           0.259065    | False         |
 | CLP     |   2.07019e-08 |           0.282973    | False         |
 
-It is interesting that the significant hit is the "monocyte" cell type.  Microglia in the brain are believed to be key drivers of Alzheimer disease, and microglia are related to monocytes.  So it may be that S-LDSC with the Corces dataset has picked up this similarity.
+It is interesting that the significant hit is the "monocyte" cell type.  Microglia in the brain are believed to be key drivers of Alzheimer disease, and microglia are related to monocytes.  So it may be that S-LDSC with the Corces dataset has picked up on similarity of microglia to monocytes.
 
 
 
@@ -132,7 +132,7 @@ The cell classes with the lowest p values from the Cahoy and GTEx brain datasets
 | Brain_Putamen_(basal_ganglia)           |   1.23503e-09 |            0.215505   | False         |
 
 
-The lack of significant hits would be surprising if one had a naive view of Alzheimer's as a straightforward neurological disease. However, these results make sense in the context of theories of Alzheimer's as immune- or microglia- driven.
+The lack of significant hits are surprising if one views Alzheimer's as a straightforwardly neurological disease. However, these results make sense given theories of Alzheimer's as immune- or microglia- driven.
 
 
 
@@ -141,4 +141,4 @@ The lack of significant hits would be surprising if one had a naive view of Alzh
 
 ## Comment
 
-It is interesting to contrast the above results with those produced when S-LDSC is applied to [inflammatory bowl disease](../Liu_et_al_2023_(IBD)/S-LDSC_IBD_Analysis.md).  Both conditions are "immune" in a broad sense, but their S-LDSC results are quite different.  Alzheimer's produces small number of cell-type hits at a moderate level of significance, whereas IBD produces a large number of highly significant cell-type hits.  The explanation may be that the immune aspect of Alzheimer's is focused on microglia, and there are no microglia cell types in any of the dataset considered above.  Thus, cells are significant for Alzheimer's only to the extent that they resemble microglia.
+It is interesting to contrast the above results with those produced when S-LDSC is applied to [inflammatory bowl disease](../Liu_et_al_2023_(IBD)/S-LDSC_IBD_Analysis.md).  Both conditions are "immune" in a broad sense, but their S-LDSC results are quite different.  Alzheimer's produces small number of cell-type hits at a moderate level of significance, whereas IBD produces a large number of highly significant cell-type hits.  The explanation may be that the immune aspect of Alzheimer's is focused on microglia, and there are no microglia cell types in any of the dataset considered above.  Thus, cell types are significant for Alzheimer's only to the extent that they resemble microglia.

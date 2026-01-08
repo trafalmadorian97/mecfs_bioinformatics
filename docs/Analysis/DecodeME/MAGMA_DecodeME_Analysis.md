@@ -1,16 +1,21 @@
+---
+hide:
+- navigation
+- toc
+---
 ## MAGMA DecodeME Analysis
-As an initial step, I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to [DecodeME](../../Data_Sources/MECFS/DecodeME.md), partially reproducing analysis from the DecodeME preprint.  
+As an initial step, I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to [DecodeME](../../Data_Sources/MECFS/DecodeME.md), partially reproducing analysis from the DecodeME preprint[@genetics2025initial].  
 
 
 ## MAGMA Gene Analysis
 
-I applied MAGMA's SNP-wise mean model to the summary statistics from DecodeME's GWAS 1. 
+I applied MAGMA's SNP-wise-mean model to the summary statistics from DecodeME's GWAS 1. 
 
 
 In this step:
 
 - Data from the 1000 genomes projects was downloaded from the [MAGMA website](https://cncr.nl/research/magma/) and used as a linkage disequilibrium reference.
-- Data from the [SNP151 database](https://hgw2.soe.ucsc.edu/cgi-bin/hgTables?hgsid=2912494930_cRufLdpdc1ynRc2sCM3g1WGAWAgH&hgta_doSchemaDb=hg19&hgta_doSchemaTable=snp151Flagged
+- [Build 151 of dbSNP](https://hgw2.soe.ucsc.edu/cgi-bin/hgTables?hgsid=2912494930_cRufLdpdc1ynRc2sCM3g1WGAWAgH&hgta_doSchemaDb=hg19&hgta_doSchemaTable=snp151Flagged
   ) was used to assign RSIDs to SNPs.
 - Magma's default proximity-based rules were used to assign SNPs to genes.
 
@@ -45,7 +50,7 @@ MAGMA produces a table of genes, effect sizes, and p values.  Filtering these ge
 I next applied [MAGMA's](../../Bioinformatics_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../Data_Sources/MECFS/DecodeME.md).  This step combined the gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md).  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
 
 ![bar_plot_decodeme_tissues](https://github.com/user-attachments/assets/519629d4-c60a-434b-9ceb-809c2878cbe5)
-In this plot, the y axis corresponds to $-\log_{10}(p)$ values, the x axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p-value meets Bonferroni-corrected significance threshold,
+In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p-value meets Bonferroni-corrected significance threshold,
 
 
 
@@ -59,4 +64,4 @@ To reproduce this analysis, run the [DecodeME Initial Analysis Script][mecfs_bio
 
 ## Follow-Up Questions
 1. Do other approaches to identify significant tissues from GWAS-summary statistics produce concordant or discordant results?
-2. How reliable is the MAGMA gene-set-analysis approach to identifying significant tissues?  In other words: for diseases with well-understood pathological processes, does it produce results consistent with these processes?
+2. How reliable is the GTEx-based MAGMA gene-set-analysis approach to identifying significant tissues?  In other words: for diseases with well-understood pathological processes, does it produce results consistent with these processes?
