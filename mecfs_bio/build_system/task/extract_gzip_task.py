@@ -1,3 +1,7 @@
+"""
+Task to extract a file from a gzip.
+"""
+
 import gzip
 import shutil
 from pathlib import Path, PurePath
@@ -7,7 +11,9 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec
 from mecfs_bio.build_system.meta.read_spec.read_path import read_file_asset_path
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
@@ -53,6 +59,31 @@ class ExtractGzipTextFileTask(Task):
             filename=src_meta.filename,
             extension="",
         )
+        return cls(
+            meta=meta,
+            source_file_task=source_file_task,
+        )
+
+    @classmethod
+    def create_for_gwas_file(
+        cls,
+        source_file_task: Task,
+        asset_id: str,
+        readspec: DataFrameReadSpec | None = None,
+    ):
+        src_meta = source_file_task.meta
+        assert isinstance(src_meta, GWASSummaryDataFileMeta)
+        if readspec is None:
+            readspec = src_meta.read_spec()
+        meta = GWASSummaryDataFileMeta(
+            short_id=AssetId(asset_id),
+            trait=src_meta.trait,
+            project=src_meta.project,
+            sub_dir=src_meta.sub_dir,
+            project_path=None,
+            read_spec=readspec,
+        )
+
         return cls(
             meta=meta,
             source_file_task=source_file_task,

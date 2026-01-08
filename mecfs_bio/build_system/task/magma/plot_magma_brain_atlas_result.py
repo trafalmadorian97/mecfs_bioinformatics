@@ -1,3 +1,9 @@
+"""
+Task to  plot the results of applying MAGMA using the human brain atlas as a reference.
+Attempts to match the style of the graphs from
+    Duncan, Laramie E., et al. "Mapping the cellular etiology of schizophrenia and complex brain phenotypes." Nature Neuroscience 28.2 (2025): 248-258.
+"""
+
 import math
 from pathlib import Path, PurePath
 from typing import Literal
@@ -23,6 +29,11 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 BRAIN_ATLAS_PLOT_NAME = "human_brain_atlas_plot"
 PlotMode = Literal["plotly_white", "plotly_dark"]
+
+
+@frozen
+class PlotSettings:
+    plot_mode: PlotMode = "plotly_dark"
 
 
 @frozen
@@ -138,6 +149,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
         result_table_task: Task,
         cluster_annotation_task: Task,
         asset_id: str,
+        plot_settings: PlotSettings = PlotSettings(),
     ):
         source_meta = result_table_task.meta
         assert isinstance(source_meta, ResultTableMeta)
@@ -151,6 +163,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
             meta=meta,
             result_table_task=result_table_task,
             cluster_annotation_task=cluster_annotation_task,
+            plot_mode=plot_settings.plot_mode,
         )
 
 

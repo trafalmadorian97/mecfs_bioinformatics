@@ -1,5 +1,5 @@
 """
-Task generators that apply a collection of standard analysis techniques to GWAS summary statistics using standard reference ata
+Task generators that apply a collection of standard analysis techniques to GWAS summary statistics using standard reference data.
 """
 
 from attrs import frozen
@@ -13,6 +13,10 @@ from mecfs_bio.asset_generator.concrete_magma_asset_generator import (
 )
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
+)
+from mecfs_bio.asset_generator.hba_magma_asset_generator import (
+    HBAMagmaTasks,
+    generate_human_brain_atlas_magma_tasks,
 )
 from mecfs_bio.asset_generator.labeled_lead_variants_asset_generator import (
     LabelLeadVariantsTasks,
@@ -28,6 +32,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
     ValidGwaslabFormat,
 )
+from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
@@ -54,6 +59,7 @@ class StandardAnalysisTaskGroup:
     magma_tasks: MagmaTaskGeneratorFromRaw
     labeled_lead_variant_tasks: LabelLeadVariantsTasks
     master_gene_list_tasks: MasterGeneListTasks | None
+    hba_magma_tasks: HBAMagmaTasks | None = None
 
     def get_terminal_tasks(self) -> list[Task]:
         result = (
@@ -62,6 +68,8 @@ class StandardAnalysisTaskGroup:
         )
         if self.master_gene_list_tasks is not None:
             result = result + self.master_gene_list_tasks.terminal_tasks()
+        if self.hba_magma_tasks is not None:
+            result.extend(self.hba_magma_tasks.terminal_tasks())
         return result
 
 
@@ -74,6 +82,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
+    include_hba_magma_tasks: bool = False,
+    hba_plot_settings: PlotSettings = PlotSettings(),
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -128,11 +138,22 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         )
     else:
         master_gene_list_tasks = None
+    if include_hba_magma_tasks:
+        hba_magma = generate_human_brain_atlas_magma_tasks(
+            base_name=base_name,
+            gwas_parquet_with_rsids_task=magma_tasks.parquet_file_task,
+            sample_size=sample_size,
+            plot_settings=hba_plot_settings,
+        )
+    else:
+        hba_magma = None
+
     return StandardAnalysisTaskGroup(
         sldsc_tasks=sldsc_tasks,
         magma_tasks=magma_tasks,
         labeled_lead_variant_tasks=labeled_lead_variant_task_group,
         master_gene_list_tasks=master_gene_list_tasks,
+        hba_magma_tasks=hba_magma,
     )
 
 
