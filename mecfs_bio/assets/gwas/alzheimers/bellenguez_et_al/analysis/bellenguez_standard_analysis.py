@@ -38,5 +38,6 @@ BELLENGUEZ_STANDARD_ANALYSIS = (
         ),
         pre_pipe=DropNullsPipe(),
         hba_plot_settings=PlotSettings("plotly_white"),
+        include_independent_cluster_plot_in_hba=True,
     )
 )

@@ -238,6 +238,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/20/12/38679034af332785aac8774540895e234f4d07f7545804097de4b666afd8/packaging-25.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/90/96/04b8e52da071d28f5e21a805b19cb9390aa17a47462ac87f5e2696b9566d/paginate-0.5.7-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e5/63/cd7d615331b328e287d8233ba9fdf191a9c2d11b6af0c7a59cfcec23de68/pandas-2.3.3-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/64/20/69f2a39792a653fd64d916cd563ed79ec6e5dcfa6408c4674021d810afcf/pandas_stubs-2.3.3.251219-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6c/ef/54a6f66afb54016cb7310684731f295f56809fa2121f03c253c680d5ef17/pandasgwas-1.2.2.tar.gz
       - pypi: https://files.pythonhosted.org/packages/16/32/f8e3c85d1d5250232a5d3477a2a28cc291968ff175caeadaf3cc19ce0e4a/parso-0.8.5-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/77/fc/8cb9073bb1bee54eb49a1ae501a36402d01763812962ac811cdc1c81a9d7/parsy-2.2-py3-none-any.whl
@@ -300,6 +301,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/66/de/dc6bf2f6e8c8eb4c5815560ebdbdf2d69a767bc0f65fde34bc086cf5b36d/statsmodels-0.14.5-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/a8/45/a132b9074aa18e799b891b91ad72133c98d8042c70f6240e4c5f9dabee2f/structlog-25.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/22/8a/16c628d516eaf5ca9f61bcb7d8b56f529f9b8fcaa52f068d868722d0d318/textalloc-1.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/87/75d3fbe15aabd45d9b70702241787cf1f7f30dd9fabcd9bc89d828c7661d/tinytimer-0.0.0.tar.gz
       - pypi: https://files.pythonhosted.org/packages/bd/75/8539d011f6be8e29f339c42e633aae3cb73bffa95dd0f9adec09b9c58e85/tomlkit-0.13.3-py3-none-any.whl
@@ -309,7 +311,9 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/62/21/15129201c1f52f6af1e7809e96dce46da4b406c2c07fe9425e92f51edc5c/typechecks-0.1.0.tar.gz
       - pypi: https://files.pythonhosted.org/packages/1b/a9/e3aee762739c1d7528da1c3e06d518503f8b6c439c35549b53735ba52ead/typeguard-4.4.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9a/41/cdd9498383b30290cce9de6dbed75fa75d6dc06fe4b47d6da6de4b156aa0/types_networkx-3.5.0.20251001-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/e7/c1/56ef16bf5dcd255155cc736d276efa6ae0a5c26fd685e28f0412a4013c01/types_pytz-2025.2.0.20251108-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2a/20/9a227ea57c1285986c4cf78400d0a91615d25b24e257fd9e2969606bdfae/types_requests-2.32.4.20250913-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/f7/72/3cf7f8c123ae813dad6ccbe496bc9cc3571229355c6c86da232e010cbbee/types_seaborn-0.13.2.20251221-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3f/13/3ff0781445d7c12730befce0fddbbc7a76e56eb0e7029446f2853238360a/types_tqdm-4.67.0.20250809-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5c/23/c7abc0ca0a1526a0774eca151daeb8de62ec457e77262b66b359c3c7679e/tzdata-2025.2-py2.py3-none-any.whl
@@ -765,7 +769,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 39dfaff03b9e714aaf61751f0c44d61d8c0e7549d4407146881db0539e65ddee
+  sha256: ffabfcf4416cbadef467b511b516da1729a6a3a304c64958eacd33445dada645
   requires_dist:
   - attrs>=25.3.0
   - cattrs>=25.2.0
@@ -812,6 +816,10 @@ packages:
   - gget>=0.29.3,<0.30
   - openpyxl>=3.1.5,<4
   - scipy-stubs>=1.17.0.0,<2
+  - adjusttext>=0.8,<0.9
+  - seaborn>=0.13.2,<0.14
+  - textalloc>=1.2.1,<2
+  - types-seaborn>=0.13.2.20251221,<0.14
   requires_python: ==3.12
   editable: true
 - conda: https://conda.anaconda.org/conda-forge/linux-64/bzip2-1.0.8-hda65f42_8.conda
@@ -3272,6 +3280,14 @@ packages:
   - xlsxwriter>=3.0.5 ; extra == 'all'
   - zstandard>=0.19.0 ; extra == 'all'
   requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/64/20/69f2a39792a653fd64d916cd563ed79ec6e5dcfa6408c4674021d810afcf/pandas_stubs-2.3.3.251219-py3-none-any.whl
+  name: pandas-stubs
+  version: 2.3.3.251219
+  sha256: ccc6337febb51d6d8a08e4c96b479478a0da0ef704b5e08bd212423fe1cb549c
+  requires_dist:
+  - numpy>=1.23.5,<=2.3.5
+  - types-pytz>=2022.1.1
+  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/6c/ef/54a6f66afb54016cb7310684731f295f56809fa2121f03c253c680d5ef17/pandasgwas-1.2.2.tar.gz
   name: pandasgwas
   version: 1.2.2
@@ -4394,6 +4410,16 @@ packages:
   requires_dist:
   - wcwidth ; extra == 'widechars'
   requires_python: '>=3.7'
+- pypi: https://files.pythonhosted.org/packages/22/8a/16c628d516eaf5ca9f61bcb7d8b56f529f9b8fcaa52f068d868722d0d318/textalloc-1.2.1-py3-none-any.whl
+  name: textalloc
+  version: 1.2.1
+  sha256: 8dda88a151ded1531fde0660051254647a3df2a764ffc7e7bafbd44425e49f55
+  requires_dist:
+  - tqdm ; python_full_version >= '3.7'
+  - numpy
+  - matplotlib
+  - packaging
+  requires_python: '>=3.6'
 - pypi: https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl
   name: threadpoolctl
   version: 3.6.0
@@ -4475,12 +4501,26 @@ packages:
   requires_dist:
   - numpy>=1.20
   requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/e7/c1/56ef16bf5dcd255155cc736d276efa6ae0a5c26fd685e28f0412a4013c01/types_pytz-2025.2.0.20251108-py3-none-any.whl
+  name: types-pytz
+  version: 2025.2.0.20251108
+  sha256: 0f1c9792cab4eb0e46c52f8845c8f77cf1e313cb3d68bf826aa867fe4717d91c
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/2a/20/9a227ea57c1285986c4cf78400d0a91615d25b24e257fd9e2969606bdfae/types_requests-2.32.4.20250913-py3-none-any.whl
   name: types-requests
   version: 2.32.4.20250913
   sha256: 78c9c1fffebbe0fa487a418e0fa5252017e9c60d1a2da394077f1780f655d7e1
   requires_dist:
   - urllib3>=2
+  requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/f7/72/3cf7f8c123ae813dad6ccbe496bc9cc3571229355c6c86da232e010cbbee/types_seaborn-0.13.2.20251221-py3-none-any.whl
+  name: types-seaborn
+  version: 0.13.2.20251221
+  sha256: c060ceab93174c2625bdd3734e2e35a4e10f7d2c041b17b92a2ee26efa8bf30e
+  requires_dist:
+  - matplotlib>=3.8
+  - numpy>=1.20
+  - pandas-stubs
   requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/3f/13/3ff0781445d7c12730befce0fddbbc7a76e56eb0e7029446f2853238360a/types_tqdm-4.67.0.20250809-py3-none-any.whl
   name: types-tqdm

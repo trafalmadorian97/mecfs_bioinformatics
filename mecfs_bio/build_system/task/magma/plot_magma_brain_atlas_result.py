@@ -95,8 +95,11 @@ class PlotMagmaBrainAtlasResultTask(Task):
         table = table.sort_values(by="CLUSTER")
         sorted_table = table.sort_values(by="P")
         top_cluster = sorted_table.iloc[0]
-        top_cluster_label = _get_condensed_cluster_label(top_cluster)
-        colormap = {key.replace(".", " "): val for key, val in COLORMAP.items()}
+        top_cluster_label = get_condensed_hba_cluster_label(top_cluster)
+        colormap = {
+            key.replace(".", " "): val
+            for key, val in DUNCAN_ET_AL_2025_COLORMAP.items()
+        }
         plot = px.scatter(
             table,
             x="CLUSTER",
@@ -181,7 +184,7 @@ def add_cluster_column_to_metadata_df(metadata_df: pd.DataFrame) -> pd.DataFrame
 """
 Colormap from Duncan et al. paper.
 """
-COLORMAP = {
+DUNCAN_ET_AL_2025_COLORMAP = {
     # Non-neuronal / glial
     "Miscellaneous": "#8D4517",
     "Microglia": "#333333",
@@ -220,13 +223,13 @@ COLORMAP = {
 }
 
 
-def _get_condensed_cluster_label(cluster_info: pd.Series) -> str:
+def get_condensed_hba_cluster_label(cluster_info: pd.Series) -> str:
     """
     Get a short label for a cluster than can be used to annotate points on the plot
     """
     result = str(cluster_info["Supercluster"])
     extra_info = []
-    if cluster_info["Class auto-annotation"] != "0":
+    if cluster_info["Class auto-annotation"] not in ["0", "NEUR"]:
         extra_info.append(cluster_info["Class auto-annotation"])
     if cluster_info["Subtype auto-annotation"] != "0":
         extra_info.append(cluster_info["Subtype auto-annotation"])

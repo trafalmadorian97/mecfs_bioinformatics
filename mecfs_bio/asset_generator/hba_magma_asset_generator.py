@@ -37,6 +37,9 @@ from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
 )
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.magma.magma_annotate_task import MagmaAnnotateTask
+from mecfs_bio.build_system.task.magma.magma_forward_stepwise_select_task import (
+    MagmaForwardStepwiseSelectTask,
+)
 from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
     MagmaGeneAnalysisTask,
 )
@@ -45,7 +48,13 @@ from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
     MagmaGeneSetAnalysisTask,
     ModelParams,
 )
+from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import (
+    MAGMAPlotBrainAtlasResultWithStepwiseLabels,
+)
 from mecfs_bio.build_system.task.magma.magma_snp_location_task import MagmaSNPFileTask
+from mecfs_bio.build_system.task.magma.magma_subset_specificity_matrix_using_top_labels import (
+    MagmaSubsetSpecificityMatrixWithTopLabels,
+)
 from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import (
     PlotMagmaBrainAtlasResultTask,
     PlotSettings,
@@ -62,9 +71,20 @@ class HBAMagmaTasks:
     magma_hba_result_annotated_task: JoinDataFramesTask
     magma_hba_multiple_testing_task: MultipleTestingTableTask
     magma_hba_result_plot_task: PlotMagmaBrainAtlasResultTask
+    magma_hba_filtered_spec_matrix: MagmaSubsetSpecificityMatrixWithTopLabels | None = (
+        None
+    )
+    magma_hba_conditional_analysis: MagmaGeneSetAnalysisTask | None = None
+    magma_hba_forward_select: MagmaForwardStepwiseSelectTask | None = None
+    magma_independent_cluster_plot: (
+        MAGMAPlotBrainAtlasResultWithStepwiseLabels | None
+    ) = None
 
     def terminal_tasks(self) -> list[Task]:
-        return [self.magma_hba_result_plot_task]
+        result: list = [self.magma_hba_result_plot_task]
+        if self.magma_independent_cluster_plot is not None:
+            result += [self.magma_independent_cluster_plot]
+        return result
 
 
 def generate_human_brain_atlas_magma_tasks(
@@ -72,6 +92,7 @@ def generate_human_brain_atlas_magma_tasks(
     gwas_parquet_with_rsids_task: Task,
     sample_size: int,
     plot_settings: PlotSettings,
+    include_independent_cluster_plot: bool = False,
 ) -> HBAMagmaTasks:
     magma_binary_task = MAGMA_1_1_BINARY_EXTRACTED
     gene_loc_file_task = MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_37_EXTRACTED
@@ -141,6 +162,44 @@ def generate_human_brain_atlas_magma_tasks(
         asset_id=base_name + "_hba_atlas_magma_plot",
         plot_settings=plot_settings,
     )
+    if include_independent_cluster_plot:
+        magma_hba_filtered_spec_matrix = (
+            MagmaSubsetSpecificityMatrixWithTopLabels.create(
+                asset_id=base_name + "_hba_magma_filtered_spec_matrix",
+                specificity_matrix_task=MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN,
+                magma_gene_covar_analysis_task=cell_analysis_task,
+                nominal_sig_level=0.01,
+            )
+        )
+        magma_hba_conditional_analysis = MagmaGeneSetAnalysisTask.create(
+            asset_id=base_name + "_hba_magma_conditional_analysis",
+            magma_gene_analysis_task=gene_analysis_task,
+            magma_binary_task=MAGMA_1_1_BINARY_EXTRACTED,
+            gene_set_task=magma_hba_filtered_spec_matrix,
+            set_or_covar="covar",
+            model_params=ModelParams(
+                direction_covar="greater", condition_hide=[], joint_pairs=True
+            ),
+        )
+        magma_hba_forward_select = MagmaForwardStepwiseSelectTask.create(
+            asset_id=base_name + "_hba_magma_forward_stepwise",
+            magma_marginal_output_task=cell_analysis_task,
+            magma_conditional_output_task=magma_hba_conditional_analysis,
+            significance_threshold=0.01,
+        )
+        magma_independent_cluster_plot = (
+            MAGMAPlotBrainAtlasResultWithStepwiseLabels.create(
+                result_table_task=multiple_testing_task,
+                asset_id=base_name + "_hba_magma_independent_cluster_plot",
+                stepwise_cluster_list_task=magma_hba_forward_select,
+            )
+        )
+    else:
+        magma_hba_filtered_spec_matrix = None
+        magma_hba_conditional_analysis = None
+        magma_hba_forward_select = None
+        magma_independent_cluster_plot = None
+
     return HBAMagmaTasks(
         snp_loc_task=snp_loc_task,
         magma_annotation_task=annotations_task,
@@ -150,4 +209,8 @@ def generate_human_brain_atlas_magma_tasks(
         magma_hba_result_annotated_task=result_annotated_task,
         magma_hba_multiple_testing_task=multiple_testing_task,
         magma_hba_result_plot_task=plot_task,
+        magma_hba_filtered_spec_matrix=magma_hba_filtered_spec_matrix,
+        magma_hba_conditional_analysis=magma_hba_conditional_analysis,
+        magma_hba_forward_select=magma_hba_forward_select,
+        magma_independent_cluster_plot=magma_independent_cluster_plot,
     )

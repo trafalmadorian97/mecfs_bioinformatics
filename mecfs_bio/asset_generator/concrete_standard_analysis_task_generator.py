@@ -83,6 +83,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
     include_hba_magma_tasks: bool = False,
+    include_independent_cluster_plot_in_hba: bool = False,
     hba_plot_settings: PlotSettings = PlotSettings(),
 ) -> StandardAnalysisTaskGroup:
     """
@@ -144,6 +145,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             gwas_parquet_with_rsids_task=magma_tasks.parquet_file_task,
             sample_size=sample_size,
             plot_settings=hba_plot_settings,
+            include_independent_cluster_plot=include_independent_cluster_plot_in_hba,
         )
     else:
         hba_magma = None

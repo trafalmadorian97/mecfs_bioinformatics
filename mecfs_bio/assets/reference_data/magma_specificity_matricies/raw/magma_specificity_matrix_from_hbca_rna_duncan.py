@@ -9,6 +9,10 @@ source github repo: https://github.com/Integrative-Mental-Health-Lab/linking_cel
 
 from pathlib import PurePath
 
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -22,6 +26,7 @@ MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN = DownloadFileTask(
         asset_id="magma_specificity_matrix_entrez_hbca_rna_duncan",
         extension=".txt",
         filename="conti_specificity_matrix",
+        read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
     ),
     url="https://www.dropbox.com/scl/fi/3p5qoyfw5c3q8yf38s0di/conti_specificity_matrix.txt?rlkey=1aoza02mqxn9il5aj3bjn6shq&e=1&dl=1",
     md5_hash="6a422064ef5ac68d3d4beccec8ab230a",

@@ -38,16 +38,20 @@ SetOrCovar = Literal["set", "covar"]
 class ModelParams:
     direction_covar: str | None
     condition_hide: Sequence[str]
+    joint_pairs: bool = False
 
     def __attrs_post_init__(self):
         assert not isinstance(self.condition_hide, str)
 
     def prep_command(self) -> list[str]:
         result = ["--model"]
+        if self.joint_pairs:
+            result += ["joint-pairs"]
         if self.direction_covar:
             result += [f"direction-covar={self.direction_covar}"]
         if len(self.condition_hide) > 0:
             result += ["condition-hide=" + ",".join(self.condition_hide)]
+
         return result
 
 

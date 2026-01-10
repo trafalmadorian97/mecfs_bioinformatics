@@ -1,6 +1,6 @@
 from pathlib import PurePath
 
-from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.analysis.magma.pgc2022_sch_magma_human_brain_atlas import (
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.magma.pgc2022_sch_magma_human_brain_atlas import (
     MAGMA_PGC2022_SCH_HUMAN_BRAIN_ATLAS_GENE_COVAR,
 )
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (

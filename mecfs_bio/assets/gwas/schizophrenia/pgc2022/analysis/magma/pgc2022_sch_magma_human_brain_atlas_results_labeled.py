@@ -1,4 +1,4 @@
-from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.analysis.magma.pgc2022_sch_magma_human_brain_atlas_results_extract import (
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.magma.pgc2022_sch_magma_human_brain_atlas_results_extract import (
     MAGMA_PGC2022_SCH_HUMAN_BRAIN_ATLAS_GENE_COVAR_EXTRACTED,
 )
 from mecfs_bio.assets.reference_data.research_paper_supplementary_material.duncan_et_al_2025.processed.duncan_et_al_2025_st1_label_columns import (

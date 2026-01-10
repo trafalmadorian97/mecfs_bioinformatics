@@ -1,4 +1,4 @@
-from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.analysis.magma.pgc2022_sch_magma_human_brain_atlas_results_multiple_testing import (
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.magma.pgc2022_sch_magma_human_brain_atlas_results_multiple_testing import (
     MAGMA_PGC2022_SCH_HUMAN_BRAIN_ATLAS_GENE_COVAR_MULTIPLE_TESTING,
 )
 from mecfs_bio.assets.reference_data.human_brain_atlas.raw.cluster_annotation_term_metadata import (
