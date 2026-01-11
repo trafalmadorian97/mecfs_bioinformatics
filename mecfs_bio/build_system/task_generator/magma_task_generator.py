@@ -88,6 +88,7 @@ class StandardMagmaTaskGenerator:
         ld_ref_file_stem: str = "g1000_eur",
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
+        number_of_bars: int = 20,
     ):
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
@@ -128,6 +129,7 @@ class StandardMagmaTaskGenerator:
         bar_plot_task = MAGMAPlotGeneSetResult.create(
             gene_set_analysis_task=tissue_gene_set_analysis,
             asset_id=base_name + "_magma_bar_plot",
+            number_of_bars=number_of_bars,
         )
 
         filtered_gene_task = (
@@ -221,6 +223,7 @@ class MagmaTaskGeneratorFromRaw:
         genome_build: GenomeBuildMode = "infer",
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(50),
+        number_of_bars: int = 20,
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
@@ -251,6 +254,7 @@ class MagmaTaskGeneratorFromRaw:
                 ld_ref_file_stem=ld_ref_file_stem,
                 gene_thesaurus_task=gene_thesaurus_task,
                 gget_settings=gget_settings,
+                number_of_bars=number_of_bars,
             ),
         )
 
@@ -284,6 +288,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
+        number_of_bars: int = 20,
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
@@ -321,6 +326,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
                 gget_settings=gget_settings,
+                number_of_bars=number_of_bars,
             ),
             assign_rsids_task=assign_rsids_37_task,
         )

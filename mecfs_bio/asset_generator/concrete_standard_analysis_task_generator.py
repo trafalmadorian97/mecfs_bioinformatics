@@ -85,6 +85,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     include_hba_magma_tasks: bool = False,
     include_independent_cluster_plot_in_hba: bool = False,
     hba_plot_settings: PlotSettings = PlotSettings(),
+    gtex_magma_number_of_bars: int = 20,
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -103,6 +104,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         fmt=fmt,
         sample_size=sample_size,
         pre_pipe=pre_pipe,
+        number_of_bars=gtex_magma_number_of_bars,
     )
     sldsc_ss = (
         sample_size_for_sldsc if sample_size_for_sldsc is not None else sample_size

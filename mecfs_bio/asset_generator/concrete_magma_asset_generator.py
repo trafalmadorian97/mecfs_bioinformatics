@@ -36,6 +36,7 @@ def concrete_magma_assets_generate(
     sample_size: int,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     gget_settings: GGetSettings | None = GGetSettings(50),
+    number_of_bars: int = 20,
 ) -> MagmaTaskGeneratorFromRaw:
     """
     Function to generate tasks that apply MAGMA to a GWAS summary statistics dataset using standard reference data.
@@ -52,4 +53,5 @@ def concrete_magma_assets_generate(
         pre_pipe=pre_pipe,
         gene_thesaurus_task=GENE_THESAURUS,
         gget_settings=gget_settings,
+        number_of_bars=number_of_bars,
     )

@@ -36,5 +36,7 @@ KEATON_DBP_STANDARD_ANALYSIS = (
         ),
         sample_size=729882,  # from summary statistics file
         include_master_gene_lists=False,
+        gtex_magma_number_of_bars=40,
+        include_hba_magma_tasks=True,
     )
 )

@@ -19,6 +19,7 @@ def run_dbp_analysis():
     DEFAULT_RUNNER.run(
         [KEATON_ET_AL_DBP_RAW] + KEATON_DBP_STANDARD_ANALYSIS.get_terminal_tasks(),
         incremental_save=True,
+        # must_rebuild_transitive=[KEATON_DBP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task]
     )
 
 

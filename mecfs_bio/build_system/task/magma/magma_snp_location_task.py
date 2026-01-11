@@ -69,8 +69,13 @@ class MagmaSNPFileTask(Task):
 
     @classmethod
     def create_for_magma_snp_pos_file(
-        cls, gwas_parquet_with_rsids_task: Task, asset_id: str
+        cls,
+        gwas_parquet_with_rsids_task: Task,
+        asset_id: str,
+        pipes: list[DataProcessingPipe] | None = None,
     ):
+        if pipes is None:
+            pipes = []
         extra_cols = [GWASLAB_CHROM_COL, GWASLAB_POS_COL]
         source_meta = gwas_parquet_with_rsids_task.meta
         meta = create_new_meta(
@@ -87,7 +92,7 @@ class MagmaSNPFileTask(Task):
             meta=meta,
             gwas_parquet_with_rsid_task=gwas_parquet_with_rsids_task,
             extra_columns_to_output=extra_cols,
-            pipes=[],
+            pipes=pipes,
         )
 
     @classmethod
@@ -95,7 +100,11 @@ class MagmaSNPFileTask(Task):
         cls,
         gwas_parquet_with_rsids_task: Task,
         asset_id: str,
+        pipes: list[DataProcessingPipe] | None = None,
     ):
+        if pipes is None:
+            pipes = []
+        pipes.append(ComputePPipe())
         extra_cols = [GWASLAB_P_COL]
         source_meta = gwas_parquet_with_rsids_task.meta
         meta = create_new_meta(
@@ -112,7 +121,7 @@ class MagmaSNPFileTask(Task):
             meta=meta,
             gwas_parquet_with_rsid_task=gwas_parquet_with_rsids_task,
             extra_columns_to_output=extra_cols,
-            pipes=[ComputePPipe()],
+            pipes=pipes,
         )
 
     @classmethod
@@ -148,7 +157,11 @@ class MagmaSNPFileTask(Task):
         cls,
         gwas_parquet_with_rsids_task: Task,
         asset_id: str,
+        pipes: list[DataProcessingPipe] | None = None,
     ):
+        if pipes is None:
+            pipes = []
+        pipes.append(ComputePIfNeededPipe())
         extra_cols = [GWASLAB_P_COL]
         source_meta = gwas_parquet_with_rsids_task.meta
         meta = create_new_meta(
@@ -165,5 +178,5 @@ class MagmaSNPFileTask(Task):
             meta=meta,
             gwas_parquet_with_rsid_task=gwas_parquet_with_rsids_task,
             extra_columns_to_output=extra_cols,
-            pipes=[ComputePIfNeededPipe()],
+            pipes=pipes,
         )
