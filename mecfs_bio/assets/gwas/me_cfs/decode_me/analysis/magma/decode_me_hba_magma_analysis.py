@@ -1,3 +1,7 @@
+"""
+Task generator to analyze decodeME GWAS 1 using the human brian atlas reference dataset
+"""
+
 from mecfs_bio.asset_generator.hba_magma_asset_generator import (
     generate_human_brain_atlas_magma_tasks,
 )
