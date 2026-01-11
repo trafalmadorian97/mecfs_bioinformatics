@@ -71,6 +71,7 @@ biostatistics = { path = ".", editable = true }
 [tool.pixi.tasks]
 install-parquet-cli = { cmd = "bash -lc 'cargo install parquet@57.0.0 --features=cli --locked --root ${CONDA_PREFIX}'" }
 parquet-fromcsv = { cmd = "parquet-fromcsv" }
+install-mr = "Rscript -e \"install.packages('TwoSampleMR', repos=c('https://mrcieu.r-universe.dev', 'https://cloud.r-project.org'))\""
 [tool.setuptools]
 packages = ["mecfs_bio"]
 
@@ -87,3 +88,22 @@ bcftools = ">=1.22,<2"
 typos = ">=1.41.0,<2"
 r-base = ">=4.0,<4.6"
 bioconductor-celldex = ">=1.16.0,<2"
+pixi = "*"
+make = ">=4.4.1,<5"
+r-dplyr = ">=1.1.4,<2"
+"r-data.table" = ">=1.17.8,<2"
+r-jsonlite = ">=2.0.0,<3"
+r-httr = ">=1.4.7,<2"
+r-ggplot2 = ">=4.0.1,<5"
+r-cowplot = ">=1.2.0,<2"
+r-knitr = ">=1.51,<2"
+r-markdown = ">=2.0,<3"
+r-plyr = ">=1.8.9,<2"
+r-reshape2 = ">=1.4.5,<2"
+r-stringr = ">=1.6.0,<2"
+r-xml2 = ">=1.5.1,<2"
+r-magrittr = ">=2.0.4,<3"
+r-ieugwasr = ">=1.1.0,<2"
+r-glmnet = ">=4.1_10,<5"
+r-mass = ">=7.3_65,<8"
+r-mendelianrandomization = ">=0.10.0,<0.11"
