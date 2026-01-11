@@ -4,7 +4,7 @@ As an initial analysis step, we apply [GWASLab's procedure for extracting lead v
 
 ## Table of Variants from GWASLAB
 
-Here is the table of lead variants produces by GWASLab:
+Here is the table of lead variants produced by GWASLab:
 
 |    | SNPID            |   CHR |       POS | EA   | NEA   |      EAF |       BETA |        SE |   CHISQ |   MLOG10P |      N | GENE    |
 |---:|:-----------------|------:|----------:|:-----|:------|---------:|-----------:|----------:|--------:|----------:|-------:|:--------|
@@ -18,7 +18,7 @@ Here is the table of lead variants produces by GWASLab:
 Note that the genomic coordinates in the table above refer to genome build 38.
 
 ## Comparison with lead variants reported in DecodeME
-The lead variants reported above by GWASLAB all agree with the variants reported by the DecodeME preprint[@genetics2025initial].  However, in some cases, GWASLAB assigns these lead variants to different genes than GWASLAB.
+The lead variants reported above by GWASLAB all agree with the variants reported by the DecodeME preprint[@genetics2025initial].  However, in some cases, GWASLAB assigns these lead variants to different genes than the DecodeME preprint.
 
 In particular
 

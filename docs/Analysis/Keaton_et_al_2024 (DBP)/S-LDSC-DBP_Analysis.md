@@ -45,7 +45,7 @@ The cell types with the lowest p values are given below:
 The failure to find a significant cell type despite the very large size of the Keaton et al. meta-GWAS is surprising.  I discuss this more [below](S-LDSC-DBP_Analysis.md#comment-on-contrast-between-gtexfranke-lab-dataset-and-roadmap-dataset-results).
 
 
-Looking at the top non-significant cell types, the presence of arterial and heart-related cell types as contributors to blood pressure is unsurprising.  What is more surprising is the presence of reproductive tissue at low p-values: myometrium and uterus.  Two potential explanations for this are:
+Looking at the top non-significant cell types, the presence of arterial and heart-related cell types as contributors to blood pressure is unsurprising.  What is more surprising is the presence of reproductive tissue at low p-values: myometrium and uterus.  There are at least two potential explanations:
 
 1. Siricilla et al.[@siricilla2019comparative] state that "RNA sequencing also revealed that the myometrial and vascular SMCs \[smooth muscle cells\] were more than 90% similar in their transcriptome".  Thus, one plausible explanation is that S-LDSC is picking up on associations of blood pressure with transcriptional programs that are active in vascular smooth muscle, and these transcriptional programs are similar to those of myometrial smooth muscle.  This is biologically plausible: the importance of vascular smooth muscle to blood pressure is well known.  
 2. S-LDSC may be picking up on a sex hormone effect on blood pressure.  Blood pressure is well known to be sexually dimorphic. 
@@ -146,7 +146,7 @@ No cell types were significant from the Immgen data, consistent with diastolic b
 
 ### Corces et al. ATAC-seq data
 
-Again, as expected, there were no significant hematopoietic-related cell types in the Corces ATAC-seq dataset
+Again, as expected, there were no significant hematopoietic-related cell types in the Corces ATAC-seq dataset.
 
 | Name    |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------|--------------:|----------------------:|:--------------|
@@ -197,7 +197,7 @@ There were no significant neurological cell types.  One might expect to find a s
 
 As noted above, it is striking that using the GTEx/Franke lab dataset produces no S-LDSC hits for diastolic blood pressure, while using the Roadmap epigenetics dataset produces many hits.
 
-This contrast implies that 
+This contrast implies that:
 
 - A) The DBP GWAS identified signal in regions of the genome that are epigenetically differentially regulated in the heart, blood-vessels, kidney, etc. 
 - B) These GWAS-signal-enriched regions of the genome do not lie close to genes that  are strongly differentially expressed in the heart, blood-vessels, kidney, etc.
@@ -207,7 +207,7 @@ I see two interpretations:
 -  The genetic regulation of blood pressure is sufficiently complex that the genetic variants involved in BP control cannot identified by simply taking a 100-kb window around key genes (which is how the GTEx/Franke lab dataset is generated).  The use of epigenetics allows a much more precise identification of the key regulatory regions. 
 - Bulk RNAsew is too crude a tool:  the differences in bulk gene expression levels in the key cell types may be too small or too variable for S-LDSC to pick up.  It would be interesting to test this interpretation by using a single-cell RNAseq dataset with S-LDSC. 
 
-## Reproducing
+## How to reproduce
 
 Use [this script][mecfs_bio.analysis.dbp_analysis] to reproduce the above analysis.
 

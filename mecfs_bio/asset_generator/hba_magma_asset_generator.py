@@ -59,6 +59,7 @@ from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import (
     PlotMagmaBrainAtlasResultTask,
     PlotSettings,
 )
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
 @frozen
@@ -93,6 +94,7 @@ def generate_human_brain_atlas_magma_tasks(
     sample_size: int,
     plot_settings: PlotSettings,
     include_independent_cluster_plot: bool = False,
+    pipes: list[DataProcessingPipe] | None = None,
 ) -> HBAMagmaTasks:
     magma_binary_task = MAGMA_1_1_BINARY_EXTRACTED
     gene_loc_file_task = MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_37_EXTRACTED
@@ -100,10 +102,12 @@ def generate_human_brain_atlas_magma_tasks(
     p_value_task = MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
         gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
         asset_id=base_name + "_hba_magma_snp_p_values",
+        pipes=pipes,
     )
     snp_loc_task = MagmaSNPFileTask.create_for_magma_snp_pos_file(
         gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
         asset_id=base_name + "_hba_magma_snp_locs",
+        pipes=pipes,
     )
     annotations_task = MagmaAnnotateTask.create(
         asset_id=base_name + "_hba_magma_annotations",

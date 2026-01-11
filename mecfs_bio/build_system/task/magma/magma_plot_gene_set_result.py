@@ -32,6 +32,7 @@ MAGMA_GENE_SET_PLOT_NAME = "magma_gene_set_plot"
 class MAGMAPlotGeneSetResult(Task):
     _meta: Meta
     gene_set_analysis_task: Task
+    number_of_bars: int = 20
 
     @property
     def meta(self) -> Meta:
@@ -57,7 +58,7 @@ class MAGMAPlotGeneSetResult(Task):
         logger.debug(f"Found {num_tests} tests")
         thresh = 0.05 / num_tests
         logger.debug(f"Bonferroni thresh: {thresh}")
-        trunc_df = df.sort_values(by=["P"], ascending=True).iloc[:20]
+        trunc_df = df.sort_values(by=["P"], ascending=True).iloc[: self.number_of_bars]
         trunc_df["Significance"] = float("nan")
         trunc_df["Significance"] = "Significant"
         trunc_df["Significance"] = trunc_df["Significance"].where(
@@ -72,9 +73,7 @@ class MAGMAPlotGeneSetResult(Task):
 
     @classmethod
     def create(
-        cls,
-        gene_set_analysis_task: Task,
-        asset_id: str,
+        cls, gene_set_analysis_task: Task, asset_id: str, number_of_bars: int = 20
     ):
         source_meta = gene_set_analysis_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
@@ -84,4 +83,8 @@ class MAGMAPlotGeneSetResult(Task):
             short_id=AssetId(asset_id),
             sub_dir=PurePath("analysis/magma_plots"),
         )
-        return cls(meta, gene_set_analysis_task=gene_set_analysis_task)
+        return cls(
+            meta,
+            gene_set_analysis_task=gene_set_analysis_task,
+            number_of_bars=number_of_bars,
+        )
