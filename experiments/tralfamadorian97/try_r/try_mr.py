@@ -1,7 +1,7 @@
 import rpy2.robjects as robjects
 from rpy2.robjects.packages import importr
 
-token = """eyJhbGciOiJSUzI1NiIsImtpZCI6ImFwaS1qd3QiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJhcGkub3Blbmd3YXMuaW8iLCJhdWQiOiJhcGkub3Blbmd3YXMuaW8iLCJzdWIiOiJwZXRlcmZvcjQyQGdtYWlsLmNvbSIsImlhdCI6MTc2ODEwMDQyNiwiZXhwIjoxNzY5MzEwMDI2fQ.shVClwn1m8gwyMJWUbsund2inXa_SfVlv3ToZJKDaJebPNY0aceOpQrLqkNshEMjqoI8QxxvzQdSn2v-BDGig4CqcQtGZYhnagDnpDb72d0JCtZXOF596sk0RlHxlRTSt3UO8WCEdp2AnsSv1FjjXtGy0deT1ogcn5LnM1gFmPrL5viQjRo0oiYGmtGYCDK_AZMte-e6cw9-NvKbDGglhYalHkzT8U_m7pwve0mKr-4sudwkfVvaZdg1GT6LJk2yTloNGad7eRq4h83spBxaeioQrXAdNRFigjgXqD3hjdrEpOyNhKVHMOki-WSOhaDTzXipIAgJgMJbcSLLiFWsnA"""
+token="insert_token"
 def go():
     # 1. Verify R is pointing to the Pixi environment
     # This should print a path inside your .pixi folder
