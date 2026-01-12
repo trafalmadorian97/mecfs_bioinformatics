@@ -1651,7 +1651,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 89caf702ea0eb5b7bccb79caf0797a4feb0df5b5884fbd5f8958e672ce036ed3
+  sha256: 5dd707618a20bba62044c0503a7254e3be1e04723b08b3c71c1bc7f7559da125
   requires_dist:
   - attrs>=25.3.0
   - cattrs>=25.2.0

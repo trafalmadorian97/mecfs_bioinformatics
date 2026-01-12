@@ -71,9 +71,15 @@ biostatistics = { path = ".", editable = true }
 [tool.pixi.tasks]
 install-parquet-cli = { cmd = "bash -lc 'cargo install parquet@57.0.0 --features=cli --locked --root ${CONDA_PREFIX}'" }
 parquet-fromcsv = { cmd = "parquet-fromcsv" }
-install-mr = "Rscript -e \"install.packages('TwoSampleMR', repos=c('https://mrcieu.r-universe.dev', 'https://cloud.r-project.org'))\""
+install-mr = """
+mkdir -p r-libs && \
+Rscript -e "if (!requireNamespace('TwoSampleMR', quietly = TRUE)) install.packages('TwoSampleMR', repos=c('https://mrcieu.r-universe.dev', 'https://cloud.r-project.org'))"
+"""
 [tool.setuptools]
 packages = ["mecfs_bio"]
+
+[tool.pixi.activation]
+env = { R_LIBS_USER = "r-libs" }
 
 [tool.pixi.dependencies]
 pysam = ">=0.23.3,<0.24"
