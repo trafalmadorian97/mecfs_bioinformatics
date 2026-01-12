@@ -28,6 +28,11 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
 @frozen
+class HBAIndepPlotOptions:
+    annotation_text_size: int = 7
+
+
+@frozen
 class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
     """
     Create a plot of the results of applying MAGMA to a GWAS using HBA reference data
@@ -41,6 +46,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
     result_table_task: Task
     stepwise_cluster_list_task: Task
     _meta: Meta
+    plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions()
 
     @property
     def stepwise_clusters_id(
@@ -101,7 +107,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             hue="Supercluster",
             palette=colormap,
             ax=ax,
-            s=120,
+            s=145,
         )
         plt.subplots_adjust(
             left=0.05,
@@ -109,6 +115,8 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         )
         sns.move_legend(ax, "upper left", bbox_to_anchor=(1.0, 1), fontsize="small")
         ax.axhline(y=sig_level, color="black", linestyle="--", linewidth=4, zorder=-100)
+        ax.set_xlabel("CLUSTER", fontsize="x-large")
+        ax.set_ylabel("MLOG10P", fontsize="x-large")
 
         x_coords = []
         y_cords = []
@@ -134,7 +142,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             avoid_crossing_label_lines=True,
             avoid_label_lines_overlap=True,
             linecolor="black",
-            textsize=7,
+            textsize=self.plot_options.annotation_text_size,
         )
 
         figs = {"hba_magma_fig": fig}
@@ -144,7 +152,11 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
 
     @classmethod
     def create(
-        cls, result_table_task: Task, asset_id: str, stepwise_cluster_list_task: Task
+        cls,
+        result_table_task: Task,
+        asset_id: str,
+        stepwise_cluster_list_task: Task,
+        plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
     ):
         source_meta = result_table_task.meta
         assert isinstance(source_meta, ResultTableMeta)
@@ -158,4 +170,5 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             meta=meta,
             result_table_task=result_table_task,
             stepwise_cluster_list_task=stepwise_cluster_list_task,
+            plot_options=plot_options,
         )

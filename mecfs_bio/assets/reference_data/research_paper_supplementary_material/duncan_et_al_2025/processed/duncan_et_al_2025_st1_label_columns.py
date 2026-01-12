@@ -22,6 +22,7 @@ DUNCAN_ET_AL_2025_ST1_LABEL_COLS = PipeDataFrameTask.create(
                 "Subtype auto-annotation",
                 "Transferred MTG Label",
                 "Top three regions",
+                "Top Enriched Genes",
             ]
         )
     ],

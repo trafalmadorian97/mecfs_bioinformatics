@@ -32,6 +32,9 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
     ValidGwaslabFormat,
 )
+from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import (
+    HBAIndepPlotOptions,
+)
 from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
@@ -86,6 +89,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     include_independent_cluster_plot_in_hba: bool = False,
     hba_plot_settings: PlotSettings = PlotSettings(),
     gtex_magma_number_of_bars: int = 20,
+    hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -148,6 +152,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             sample_size=sample_size,
             plot_settings=hba_plot_settings,
             include_independent_cluster_plot=include_independent_cluster_plot_in_hba,
+            hba_indep_plot_options=hba_indep_plot_options,
         )
     else:
         hba_magma = None

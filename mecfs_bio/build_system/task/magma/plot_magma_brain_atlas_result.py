@@ -30,6 +30,17 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 BRAIN_ATLAS_PLOT_NAME = "human_brain_atlas_plot"
 PlotMode = Literal["plotly_white", "plotly_dark"]
 
+KEY_HBA_ANNOTATION_COLUMNS = [
+    "Supercluster",
+    "Class auto-annotation",
+    "Neurotransmitter auto-annotation",
+    "Neuropeptide auto-annotation",
+    "Subtype auto-annotation",
+    "Transferred MTG Label",
+    "Top three regions",
+    "Top Enriched Genes",
+]
+
 
 @frozen
 class PlotSettings:
@@ -115,6 +126,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
                 "Subtype auto-annotation": True,
                 "Transferred MTG Label": True,
                 "Top three regions": True,
+                "Top Enriched Genes": True,
             },
             # size_max=20
         )
@@ -235,6 +247,11 @@ def get_condensed_hba_cluster_label(cluster_info: pd.Series) -> str:
         extra_info.append(cluster_info["Subtype auto-annotation"])
     if cluster_info["Neurotransmitter auto-annotation"] != "0":
         extra_info.append(cluster_info["Neurotransmitter auto-annotation"])
+    if (
+        cluster_info["Neuropeptide auto-annotation"] != "0"
+        and len(cluster_info["Neuropeptide auto-annotation"]) < 6
+    ):
+        extra_info.append(cluster_info["Neuropeptide auto-annotation"])
     if len(extra_info) > 0:
         result += f" ({', '.join(extra_info)})"
     return result
