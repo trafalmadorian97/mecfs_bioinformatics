@@ -7,6 +7,10 @@ from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.raw.raw_dbp_dat
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
 )
+from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import (
+    HBAIndepPlotOptions,
+)
+from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
 
 KEATON_DBP_STANDARD_ANALYSIS = (
     concrete_standard_analysis_generator_assume_already_has_rsid(
@@ -38,5 +42,8 @@ KEATON_DBP_STANDARD_ANALYSIS = (
         include_master_gene_lists=False,
         gtex_magma_number_of_bars=40,
         include_hba_magma_tasks=True,
+        hba_plot_settings=PlotSettings("plotly_white"),
+        include_independent_cluster_plot_in_hba=True,
+        hba_indep_plot_options=HBAIndepPlotOptions(annotation_text_size=16),
     )
 )
