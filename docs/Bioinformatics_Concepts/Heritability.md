@@ -11,7 +11,7 @@ $$
 
 Assume also that the random variables $E$ and $G$ are uncorrelated.
 
-Under this assumption, define heritability as
+Under these assumptions, define heritability:
 
 $$
 h^2:= \frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}.
@@ -38,7 +38,7 @@ The assumption that $G$ and $E$ are uncorrelated is unrealistic in some contexts
 
 
 1.  If $\mathrm{Cov}(G,E)\ne 0$, then $h^2$ loses much of its interpretive value.  It is no longer the coefficient of determination of a regression.
-2. According to Visscher et al.[@visscher2008heritability], if $\mathrm{cov}(G,E)\ne 0$, then  statistical methods for estimating $h^2$ will tend to produce inflated estimates.
+2. According to Visscher et al.[@visscher2008heritability], if $\mathrm{cov}(G,E)\ne 0$, then statistical estimates of $h^2$ will tend to be inflated.
 
 
 As I understand it, practitioners typically argue that any correlation between $G$ and $E$ is not strong, so that the above effects are not severe, and the heritability concept remains a useful.
