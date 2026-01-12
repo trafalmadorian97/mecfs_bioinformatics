@@ -42,6 +42,9 @@ jobs:
         with:
           pixi-version: v0.55.0
           cache: true
+      - name: Install TwoSampleMR
+        if: steps.changes.outputs.nonmark == 'true'
+        run: pixi r install-mr
       - name: Check that we can build docs
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r mkdocs build --strict
