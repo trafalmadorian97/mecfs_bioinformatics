@@ -42,6 +42,13 @@ jobs:
         with:
           pixi-version: v0.55.0
           cache: true
+      - name: Cache R Packages
+        if: steps.changes.outputs.nonmark == 'true'
+        uses: actions/cache@v4
+        id: cache-r
+        with:
+         path: r-libs
+         key: ${{ runner.os }}-r-libs-${{ hashFiles('pixi.lock') }}-v1
       - name: Install TwoSampleMR
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r install-mr
