@@ -27,6 +27,7 @@ def run_ibd_analysis():
         + IBD_HBA_MAGMA_TASKS.terminal_tasks(),
         # + LIU_ET_AL_S_LSDC_FROM_SNP_150.get_terminal_tasks(),
         incremental_save=True,
+        must_rebuild_transitive=[IBD_HBA_MAGMA_TASKS.magma_independent_cluster_plot],
     )
 
 

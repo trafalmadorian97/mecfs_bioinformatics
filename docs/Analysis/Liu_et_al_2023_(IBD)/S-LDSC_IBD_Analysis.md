@@ -141,7 +141,7 @@ The next step is to use the SLDSC reference data derived from the Immgen project
 The results are below
 
 
-![s-ldsc-ibd-imgen](https://github.com/user-attachments/assets/08fb6c6b-aeaf-4368-9a1f-4289251fd57)
+![s-ldsc-ibd-imgen](https://github.com/user-attachments/assets/08fb6c6b-aeaf-4368-9a1f-4289251fd572)
 
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
