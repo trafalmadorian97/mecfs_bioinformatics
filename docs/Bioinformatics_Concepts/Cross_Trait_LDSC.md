@@ -3,7 +3,7 @@ hide:
 - navigation
 - toc
 ---
-# Cross Trait Linkage Disequilibrium Score Regression
+# CT-LDSC
 Cross Trait Linkage Disequilibrium Score Regression (CT-LDSC)[@bulik2015atlas] is an extension of [Linkage Disequilibrium Score Regression](LDSC.md) (LDSC) that estimates [genetic correlation](Genetic_Correlation.md).
 
 ## Derivation

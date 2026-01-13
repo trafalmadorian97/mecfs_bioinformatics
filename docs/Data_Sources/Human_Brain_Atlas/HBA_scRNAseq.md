@@ -10,7 +10,7 @@ The HBA dataset was derived from scRNAseq performed on 106 dissections of the br
 
 ## Clustering
 
-HBA analysts applied hierarchical clustering algorithms to the patterns of cellular RNA expression to create clusters at 3 scales:  subclusters, clusters, and superclusters. Superclusters were labeled via references to the neuroscience literature.
+HBA analysts applied hierarchical clustering algorithms to the RNA expression levels of these ~3 million cells to create clusters at 3 scales:  subclusters, clusters, and superclusters. 
 
 The result is that "brain cell types" in the HBA dataset are defined in a mostly data-driven way.
 

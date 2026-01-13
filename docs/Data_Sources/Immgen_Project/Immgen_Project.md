@@ -4,7 +4,7 @@
 Image source: Aguilar et al.[@aguilar2020immgen]
 
 
-The Immgen project[@aguilar2020immgen] aims to build a public resource describing gene expression and gene regulation in the mouse immune system.  In particular, for each cell type in a highly granular taxonomy of mouse immune cell types, the Immgen project seeks to record:
+The Immgen project[@aguilar2020immgen] aims to build a public resource describing gene expression and gene regulation in the mouse immune system.  For each cell type in a highly granular taxonomy of mouse immune cell types, the Immgen project seeks to record:
 
 - mRNA expression levels
 - [Epigenetic](../../Bioinformatics_Concepts/Epigenetics.md) information describing chromatin regulation.

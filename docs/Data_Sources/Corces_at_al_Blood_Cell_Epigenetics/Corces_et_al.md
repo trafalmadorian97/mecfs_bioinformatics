@@ -1,4 +1,4 @@
-# The Corces et al Blood Cell Epigenetics Dataset
+# The Corces et al. Blood Cell Epigenetics Dataset
 
 
 
@@ -8,9 +8,9 @@
 ![corces_diagram](https://github.com/user-attachments/assets/d35feda9-d700-41e3-a3a1-c542e9e3411f)
 
 
-(Diagram from Corces et al[@corces2016lineage] showing 5 important ATAC-seq regions for each of 13 different blood cell types.)
+(Diagram from Corces et al.[@corces2016lineage] showing 5 important ATAC-seq regions for each of 13 different blood cell types.)
 
 
 In their 2016 paper, Corces et al.[@corces2016lineage] used [ATAC-seq](https://en.wikipedia.org/wiki/ATAC-seq) to record [epigenetic](../../Bioinformatics_Concepts/Epigenetics.md) chromatin accessibility data from 13 blood cell types.
 
-This cell-specific chromatin accessibility data can be combined with GWAS summary statistics to implicate specific blood cell types in driving specific phenotypes.
+Using functional genomics techniques like [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) and [S-LDSC](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md), this cell-specific chromatin accessibility data can be combined with GWAS summary statistics to implicate specific blood cell types in specific phenotypes.

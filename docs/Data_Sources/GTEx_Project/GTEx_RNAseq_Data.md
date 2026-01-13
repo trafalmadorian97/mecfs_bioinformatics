@@ -8,10 +8,11 @@ One important class of GTEx dataset records levels of RNA expression across a wi
 GTEx bulk tissue RNA-seq datasets are used by the gene set analysis step of [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to construct hypothesis about which tissues are most involved in a trait or disease.  Continuing the above example, MAGMA works on the principle that if most of the genes strongly associated with a disease are over-expressed in the colon according to GTEx RNAseq data, it is likely that the colon is central to the disease process.
 
 
-## The RNA-seq Vector Space
+[//]: # (## The RNA-seq Vector Space)
 
-
-Besides allowing us to reason about which tissues are central to which disease processes, the GTEx bulk tissue RNA-seq datasets also generate a notion of similarity between tissues.  Two tissues are similar if, across most donors, their patterns of RNA expression are similar.
+[//]: # ()
+[//]: # ()
+[//]: # (Besides allowing us to reason about which tissues are central to which disease processes, the GTEx bulk tissue RNA-seq datasets also generate a notion of similarity between tissues.  Two tissues are similar if, across most donors, their patterns of RNA expression are similar.)
 
 [//]: # (RNAseq transcript-per-million measurements are distributed roughly according a zero-inflated lognormal distribution.  To compare tissues via standard statistical techniques, it is useful to pre-transform these measurements so that they follow a more conventional distribution. One approach is:)
 

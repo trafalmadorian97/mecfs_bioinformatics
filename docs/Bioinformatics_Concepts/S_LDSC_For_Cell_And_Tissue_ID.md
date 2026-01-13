@@ -1,4 +1,9 @@
-# Stratified Linkage Disequilibrium Score Regression 
+---
+hide:
+- navigation
+- toc
+---
+# S-LDSC
 
 Stratified Linkage Disequilibrium Score Regression (S-LDSC)[@finucane2018heritability;@finucane2015partitioning] is an extension of Linkage Disequilibrium Score Regression [(LDSC)](LDSC.md).  S-LDSC relaxes some of the assumptions of LDSC, making it more broadly applicable. S-LDSC can be used to generate hypotheses  about the key cell-types and tissues underlying a phenotype.
 
