@@ -30,6 +30,7 @@ TSM_OTHER_ALLELE_COL = "other_allele"
 TSM_EAF_COL = "eaf"
 TSM_CHR_COL = "chr"
 TSM_POS_COL = "position"
+TSM_PHENOTYPE = "Phenotype"
 
 
 TWO_SAMPLE_MR_RENAMER = {
@@ -47,6 +48,7 @@ TSM_OUTPUT_NSNP_COL = "nsnp"
 TSM_OUTPUT_B_COL = "b"
 TSM_OUTPUT_SE_COL = "se"
 TSM_OUTPUT_P_COL = "pval"
+TSM_OUTPUT_EXPOSURE_COL = "exposure"
 
 
 @frozen
@@ -120,7 +122,10 @@ def run_two_sample_mr(
     conv = ro.default_converter + pandas2ri.converter
 
     with localconverter(conv):
-        formatted_exposure = tsmr.format_data(exposure_df, type="exposure")
+        formatted_exposure = tsmr.format_data(
+            exposure_df,
+            type="exposure",
+        )
         formatted_outcome = tsmr.format_data(outcome_df, type="outcome")
         if config.clump_exposure_data:
             logger.debug("Clumping exposure data...")
