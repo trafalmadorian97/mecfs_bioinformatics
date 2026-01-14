@@ -3,8 +3,8 @@ hide:
   - navigation
   - toc
 ---
-# MAGMA HBA
-I applied MAGMA to the Liu et al GWAS of inflammatory bowel disease  using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/Human_Brain_Atlas/HBA_scRNAseq.md) as a reference.
+# MAGMA HBA Analysis
+I applied MAGMA to the Liu et al.[@liu2023genetic] GWAS of inflammatory bowel disease  using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/Human_Brain_Atlas/HBA_scRNAseq.md) as a reference.
 
 ## Results
 The results are plotted below:
@@ -23,5 +23,5 @@ The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while 
 | Cluster1            | 3.3757e-10 | Miscellaneous  | TCELL                   |                                  0 | 0                              |                         0 |                         | Midbrain: 15.0%, Basal forebrain: 14.0%, Pons: 13.2% | CD2, IL7R, PTPRC, SLFN12L, IL32, CCL5, GRAP2, RUNX3, CD69, CD3E       |⏎
 
 
-- Cluster2 (T-cells) is unsurprising.  The importance of T-cells to inflammatory bowel disease is well known.
+- Cluster2 (T-cells) is consistent with the known biology of inflammatory bowel disease.  The importance of T-cells to inflammatory bowel disease is well known.
 - Cluster4 (Microglia) is more surprising.  While there are some ("Gut-Brain-Axis") theories the give a role to the CNS in the development of Crohn's disease, it seems to me more likely that the significance of this cluster in MAGMA analysis is an artifact. Probably, IBD is associated with certain myeloid transcriptional programs, and microglia are the best representatives of these transcriptional programs in the human brain atlas dataset. 
