@@ -16,6 +16,9 @@ def run_initial_asthma_analysis():
     DEFAULT_RUNNER.run(
         [HAN_ET_AL_ASTHMA_RAW] + HAN_ASTHMA_STANDARD_ANALYSIS.get_terminal_tasks(),
         incremental_save=True,
+        must_rebuild_transitive=[
+            HAN_ASTHMA_STANDARD_ANALYSIS.labeled_lead_variant_tasks.raw_sumstats_task
+        ]
     )
 
 

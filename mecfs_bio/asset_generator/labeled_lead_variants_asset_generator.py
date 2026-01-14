@@ -23,6 +23,8 @@ class LabelLeadVariantsTasks:
     raw_sumstats_task: Task
     lead_variants_task: Task
     labeled_lead_variants_task: Task
+    def terminal_tasks(self)->list[Task]:
+        return [self.labeled_lead_variants_task]
 
 
 def generate_tasks_labeled_lead_variants(
