@@ -39,5 +39,7 @@ HAN_ASTHMA_STANDARD_ANALYSIS = (
         sample_size=393859,  # from summary statistics file
         include_master_gene_lists=False,
         pre_sldsc_pipe=CompositePipe([ComputeBetaPipe(), ComputeSEPipe()]),
+        include_hba_magma_tasks=True,
+        include_independent_cluster_plot_in_hba=True,
     )
 )

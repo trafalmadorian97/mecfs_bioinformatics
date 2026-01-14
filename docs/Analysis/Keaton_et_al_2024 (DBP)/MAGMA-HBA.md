@@ -3,8 +3,8 @@ hide:
 - navigation
 - toc
 ---
-# MAGMA HBA
-I applied MAGMA to the Diastolic Blood Pressure GWAS of Keaton et al.  using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/Human_Brain_Atlas/HBA_scRNAseq.md) as a reference.
+# MAGMA HBA Analysis
+I applied MAGMA to the Diastolic Blood Pressure GWAS of Keaton et al.[@keaton2024genome]  using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/Human_Brain_Atlas/HBA_scRNAseq.md) as a reference.
 
 ## Results
 The results are plotted below:
@@ -22,6 +22,6 @@ The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while 
 
 
 
-The significance of Cluster20 and Cluster16, which are auto-annotated as vascular smooth muscle cells (VSMC) and endothelial cells (ENDO) is unsurprising: the importance of vascular cell types to blood pressure is well-known.  This finding probably does not reflect brain-specific physiology, but rather the universal connection between vascular cells and blood pressure.
+The significance of Cluster20 and Cluster16, which are auto-annotated as vascular smooth muscle cells (VSMC) and endothelial cells (ENDO) is unsurprising: the importance of vascular cell types to blood pressure is well-known.  This finding probably does not reflect brain-specific physiology, but rather the general causal connection between vascular cells and blood pressure.
 
-In contrast, the significance of the astrocyte cell type does reflect brain-specific physiology.  As seen in the neuropeptide auto-annotation column in the table above, astrocytes are producers of angiotensinogen ([AGT](https://www.genecards.org/cgi-bin/carddisp?AGT)), precursor to [angiotensin](https://en.wikipedia.org/wiki/Angiotensin), which in turn is a key blood-pressure-modulating hormone.  There is a significant body of confirmatory experimental studies demonstrating the role of astrocytes in the control of blood pressure[@stern2016astrocytes;@verma2025emerging].
+In contrast, the significance of the astrocyte cell type does reflect brain-specific physiology.  As seen in the neuropeptide auto-annotation column in the table above, astrocytes are producers of angiotensinogen ([AGT](https://www.genecards.org/cgi-bin/carddisp?AGT)), precursor to [angiotensin](https://en.wikipedia.org/wiki/Angiotensin), which in turn is a key blood-pressure-modulating hormone.  There are numerous confirmatory experimental studies demonstrating the role of astrocytes in the control of blood pressure[@stern2016astrocytes;@verma2025emerging].
