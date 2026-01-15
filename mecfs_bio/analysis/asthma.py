@@ -3,7 +3,7 @@ Script to analyze asthma phenotype.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_two_sample_mr import (
+from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_ppp_two_sample_mr import (
     HAN_2022_ASTHMA_TSMR,
 )
 

@@ -1,3 +1,7 @@
+"""
+Pipe to concatenate multiple string columns
+"""
+
 from typing import Sequence
 
 import narwhals
@@ -8,6 +12,10 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 
 @frozen
 class ConcatStrPipe(DataProcessingPipe):
+    """
+    Pipe to concatenate multiple string columns
+    """
+
     target_cols: Sequence[str]
     sep: str
     new_col_name: str

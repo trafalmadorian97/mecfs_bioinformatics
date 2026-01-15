@@ -1,3 +1,7 @@
+"""
+Task to use pQTLs derived from the Pharma Proteomics Project as exposures in a Mendelian randomization analysis of the Han et al. asthma GWAS.
+"""
+
 import attrs
 
 from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_standard_analysis import (
