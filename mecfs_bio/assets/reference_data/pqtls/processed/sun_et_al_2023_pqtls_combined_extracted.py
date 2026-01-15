@@ -21,13 +21,6 @@ SUN_ET_AL_2023_COMBINED_PQTLS_EXTRACTED = ExtractSheetFromExelFileTask.create(
     post_pipe=SplitExactColPipe(
         col_to_split="Variant ID (CHROM:GENPOS (hg37):A0:A1:imp:v1)",
         split_by=":",
-        new_col_names=(
-            "CHROM_hg37",
-            "GENPOS_hg37",
-            "A0",
-            "A1",
-            "imp",
-            "v1"
-        )
-    )
+        new_col_names=("CHROM_hg37", "GENPOS_hg37", "A0", "A1", "imp", "v1"),
+    ),
 )

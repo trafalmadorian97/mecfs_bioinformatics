@@ -2,6 +2,7 @@
 Metadata describing a directory containing multiple analysis result files
 
 """
+
 from pathlib import PurePath
 
 from attrs import frozen
@@ -20,4 +21,3 @@ class ResultDirectoryMeta(DirMeta):
     @property
     def asset_id(self) -> AssetId:
         return AssetId(self._asset_id)
-
