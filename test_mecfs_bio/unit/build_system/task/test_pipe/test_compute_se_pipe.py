@@ -25,7 +25,9 @@ def test_compute_se_pipe_handles_small_pvalues():
     Verify that our pipe to compute standard errors is able to handle small p values
     """
 
-    dummy_data = pd.DataFrame({GWASLAB_BETA_COL: [0.0388], GWASLAB_P_COL: [6.500000e-18 ]})
+    dummy_data = pd.DataFrame(
+        {GWASLAB_BETA_COL: [0.0388], GWASLAB_P_COL: [6.500000e-18]}
+    )
     nw_data = narwhals.from_native(dummy_data).lazy()
     pipe = ComputeSEPipe()
     result = pipe.process(nw_data).collect().to_pandas()

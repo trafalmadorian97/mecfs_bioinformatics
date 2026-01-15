@@ -4,6 +4,7 @@ Compute standard error in GWAS summary statistics.
 
 import narwhals
 import numpy as np
+import pandas as pd
 import scipy.stats
 
 from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
@@ -24,10 +25,13 @@ class ComputeSEPipe(DataProcessingPipe):
         assert GWASLAB_SE_COL not in cols
         assert GWASLAB_P_COL in cols
         assert GWASLAB_BETA_COL in cols
-        collected = x.collect().to_pandas()
-        z_score = abs(scipy.stats.norm.ppf(1 - collected[GWASLAB_P_COL] / 2))
-        z_score_2 = abs(scipy.stats.norm.ppf(collected[GWASLAB_P_COL] / 2))
-        min_z_score = np.minimum(z_score, z_score_2) # this is to resolve numerical issues when 1-pval is approximately 1
+        collected: pd.DataFrame = x.collect().to_pandas()
+        pvals: np.ndarray = collected[GWASLAB_P_COL].to_numpy()
+        z_score: np.ndarray = abs(scipy.stats.norm.ppf(1 - pvals / 2))
+        z_score_2: np.ndarray = abs(scipy.stats.norm.ppf(pvals / 2))
+        min_z_score = np.minimum(
+            z_score, z_score_2
+        )  # this is to resolve numerical issues when (1-pval) is numerically equal to 1
         se = abs(collected[GWASLAB_BETA_COL] / min_z_score)
         collected[GWASLAB_SE_COL] = se
         return narwhals.from_native(collected).lazy()
