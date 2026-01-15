@@ -1,5 +1,9 @@
+"""
+Task to apply two sample mendelian randomization to GWAS data, together with associated axillary functions.
+"""
+
 import typing
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import pandas as pd
 import rpy2.robjects as ro  # type: ignore
@@ -27,7 +31,10 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_EFFECT_ALLELE_FREQ_COL,
+    GWASLAB_N_CASE_COL,
+    GWASLAB_N_CONTROL_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_P_COL,
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
     GWASLAB_SE_COL,
@@ -47,6 +54,11 @@ TSM_EAF_COL = "eaf"
 TSM_CHR_COL = "chr"
 TSM_POS_COL = "position"
 TSM_PHENOTYPE = "Phenotype"
+TSM_P_VALUE = "pval"
+TSM_N_CASE = "ncase"
+TSM_N_CONTROL = "ncontrol"
+TSM_UNITS_COL = "units"
+TSM_SAMPLE_SIZE_COL = "samplesize"
 
 
 from rpy2.robjects.vectors import DataFrame as RDataFrame  # type: ignore
@@ -65,6 +77,11 @@ class MRInputColSpec:
     phenotype_col: str | None = None
     chrom_col: str | None = None
     pos_col: str | None = None
+    pval_col: str | None = None
+    n_case_col: str | None = None
+    n_control_col: str | None = None
+    sample_size_col: str | None = None
+
     errors: IgnoreOrRaise = "raise"
 
     def make_renamer(self) -> dict[str, str]:
@@ -84,6 +101,14 @@ class MRInputColSpec:
             base[self.pos_col] = TSM_POS_COL
         if self.phenotype_col is not None:
             base[self.phenotype_col] = TSM_PHENOTYPE
+        if self.pval_col is not None:
+            base[self.pval_col] = TSM_P_VALUE
+        if self.n_case_col is not None:
+            base[self.n_case_col] = TSM_N_CASE
+        if self.n_control_col is not None:
+            base[self.n_control_col] = TSM_N_CONTROL
+        if self.sample_size_col is not None:
+            base[self.sample_size_col] = TSM_SAMPLE_SIZE_COL
         return base
 
 
@@ -97,6 +122,9 @@ GWASLAB_MR_INPUT_COL_SPEC = MRInputColSpec(
     phenotype_col=None,
     pos_col=GWASLAB_POS_COL,
     chrom_col=GWASLAB_CHROM_COL,
+    n_case_col=GWASLAB_N_CASE_COL,
+    n_control_col=GWASLAB_N_CONTROL_COL,
+    pval_col=GWASLAB_P_COL,
     errors="ignore",
 )
 
@@ -110,16 +138,10 @@ SUN_ET_AL_MR_INPUT_COL_SPEC_hg37 = MRInputColSpec(
     phenotype_col="protein_exposure_id",
     chrom_col="CHROM_hg37",
     pos_col="GENPOS_hg37",
+    pval_col=GWASLAB_P_COL,
 )
 
 
-# TWO_SAMPLE_MR_RENAMER = {
-#     TSM_RSID_COL: GWASLAB_RSID_COL,
-#     TSM_BETA_COL: GWASLAB_BETA_COL,
-#     TSM_SE_COL: GWASLAB_SE_COL,
-#     TSM_EFFECT_ALLELE_COL: GWASLAB_EFFECT_ALLELE_COL,
-#     TSM_OTHER_ALLELE_COL: GWASLAB_NON_EFFECT_ALLELE_COL,
-# }
 RPackageType = typing.Union[InstalledSTPackage, InstalledPackage]
 
 
@@ -130,9 +152,13 @@ TSM_OUTPUT_SE_COL = "se"
 TSM_OUTPUT_P_COL = "pval"
 TSM_OUTPUT_EXPOSURE_COL = "exposure"
 
+TSM_OUTPUT_STEIGER_DIR_COL = "steiger_dir"
+
 
 MAIN_RESULT_DF_PATH = "mr_result.csv"
-REPORT_SUBDIR_PATH = "reports"
+
+REPORT_SUBDIR_PATH = PurePath("reports")
+STEIGER_RESULT_PATH = PurePath("steiger_result.csv")
 
 
 @frozen
@@ -146,10 +172,16 @@ class MRReportOptions:
 
 
 @frozen
+class SteigerFilteringOptions:
+    drop_failures: bool
+
+
+@frozen
 class TwoSampleMRConfig:
     clump_exposure_data: ClumpOptions | None
     report_options: MRReportOptions | None = None
     pre_filter_outcome_variants: bool = False
+    steiger_filter: SteigerFilteringOptions | None = None
 
 
 # TODO: Finish this two-sample-MR-task
@@ -164,6 +196,11 @@ NEEDED_COLS = [TSM_RSID_COL, TSM_BETA_COL, TSM_SE_COL, TSM_EFFECT_ALLELE_COL]
 
 @frozen
 class TwoSampleMRTask(Task):
+    """
+    Task to run mendelian randomization using the R package TwoSampleMR.
+    This R package is accessed through Python via rpy2.
+    """
+
     _meta: Meta
     outcome_data_task: Task
     exposure_data_task: Task
@@ -241,10 +278,6 @@ class TwoSampleMRTask(Task):
             exposure_df=exposure_df, outcome_df=outcome_df, config=self.config
         )
 
-        merged = exposure_df.merge(
-            outcome_df, on=[TSM_RSID_COL, TSM_EFFECT_ALLELE_COL, TSM_OTHER_ALLELE_COL]
-        )
-
         exposure_rdf, outcome_rdf = convert_outcome_and_exposure_to_r(
             exposure_df=exposure_df, outcome_df=outcome_df
         )
@@ -264,9 +297,22 @@ class TwoSampleMRTask(Task):
             formatted_outcome=f_outcome_rdf,
             tsmr=tsmr,
         )
-        with localconverter(conv):
-            harm_py = ro.conversion.get_conversion().rpy2py(harmonized)
-        import pdb; pdb.set_trace()
+
+        harmonized = steiger_filtering_write_output(
+            harmonized=harmonized,
+            options=self.config.steiger_filter,
+            scratch_dir=scratch_dir,
+            tsmr=tsmr,
+        )
+
+        # with localconverter(conv):
+        #     harm_py = ro.conversion.get_conversion().rpy2py(harmonized)
+        gen_mr_report(
+            harmonized=harmonized,
+            options=self.config.report_options,
+            target_dir=scratch_dir / REPORT_SUBDIR_PATH,
+            tsmr=tsmr,
+        )
 
         result_rdf = run_tsmr_on_harmonized_data_no_conversion(
             harmonized=harmonized,
@@ -276,7 +322,7 @@ class TwoSampleMRTask(Task):
         with localconverter(conv):
             result_df = ro.conversion.get_conversion().rpy2py(result_rdf)
 
-        result_df.to_csv(scratch_dir / MAIN_RESULT_DF_PATH)
+        result_df.to_csv(scratch_dir / MAIN_RESULT_DF_PATH, index=False)
         return DirectoryAsset(scratch_dir)
 
     @classmethod
@@ -308,6 +354,26 @@ class TwoSampleMRTask(Task):
             exposure_col_spec=exposure_col_spec,
             outcome_col_spec=outcome_col_spec,
         )
+
+
+def steiger_filtering_write_output(
+    harmonized: RDataFrame,
+    options: SteigerFilteringOptions | None,
+    scratch_dir: Path,
+    tsmr: RPackageType,
+) -> RDataFrame:
+    if options is None:
+        return harmonized
+    logger.debug("Performing steiger filtering")
+    filtered = tsmr.steiger_filtering(harmonized)
+    conv = ro.default_converter + pandas2ri.converter
+    with localconverter(conv):
+        py_filtered = ro.conversion.get_conversion().rpy2py(filtered)
+        py_filtered.to_csv(scratch_dir / STEIGER_RESULT_PATH, index=False)
+        if options.drop_failures:
+            py_filtered = py_filtered.loc[py_filtered[TSM_OUTPUT_STEIGER_DIR_COL]]
+            harmonized = ro.conversion.get_conversion().py2rpy(py_filtered)
+        return harmonized
 
 
 @frozen
@@ -473,16 +539,14 @@ def run_tsmr_on_harmonized_data_no_conversion(
 
 
 def gen_mr_report(
-    harmonized: pd.DataFrame,
+    harmonized: RDataFrame,
     options: MRReportOptions | None,
     target_dir: Path,
     tsmr: RPackageType,
 ):
-    if harmonized is None:
+    if options is None:
         return
-    conv = ro.default_converter + pandas2ri.converter
-    with localconverter(conv):
-        tsmr.mr_report(harmonized, str(target_dir / REPORT_SUBDIR_PATH))
+    tsmr.mr_report(harmonized, str(target_dir))
 
 
 def pre_filter_outcome_variants(
