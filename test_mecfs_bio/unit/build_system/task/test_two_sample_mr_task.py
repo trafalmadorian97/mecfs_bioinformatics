@@ -1,7 +1,20 @@
+from pathlib import Path
+
 import pandas as pd
 import pytest
 
+from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
+from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
+from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
+from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.two_sample_mr_task import (
+    MAIN_RESULT_DF_PATH,
     TSM_BETA_COL,
     TSM_EFFECT_ALLELE_COL,
     TSM_OTHER_ALLELE_COL,
@@ -11,8 +24,10 @@ from mecfs_bio.build_system.task.two_sample_mr_task import (
     TSM_RSID_COL,
     TSM_SE_COL,
     TwoSampleMRConfig,
+    TwoSampleMRTask,
     run_two_sample_mr,
 )
+from mecfs_bio.build_system.wf.base_wf import SimpleWF
 
 dummy_exposure = pd.DataFrame(
     {
@@ -67,14 +82,14 @@ dummy_outcome_B = pd.DataFrame(
 )
 
 
-def test_two_sample_mr_task():
+def test_two_sample_mr_func():
     """
     Test that we get the correct result in dummy example of performing MR
     """
     tsm_result = run_two_sample_mr(
         exposure_df=dummy_exposure,
         outcome_df=dummy_outcome_A,
-        config=TwoSampleMRConfig(clump_exposure_data=False),
+        config=TwoSampleMRConfig(clump_exposure_data=None),
     )
     assert tsm_result.result[TSM_OUTPUT_B_COL].item() == pytest.approx(2, abs=0.1)
 
@@ -88,6 +103,43 @@ def test_two_sample_mr_with_multiple_exposure():
     tsm_result = run_two_sample_mr(
         exposure_df=combined_exposure,
         outcome_df=combined_outcome,
-        config=TwoSampleMRConfig(clump_exposure_data=False),
+        config=TwoSampleMRConfig(clump_exposure_data=None),
     )
     assert len(tsm_result.result[TSM_OUTPUT_EXPOSURE_COL].unique()) == 2
+
+
+def test_two_sample_mr_task(tmp_path: Path):
+    dummy_exposure_path = tmp_path / "dummy_exposure.csv"
+    dummy_outcome_path = tmp_path / "dummy_outcome.csv"
+    dummy_exposure.to_csv(dummy_exposure_path, index=False)
+    dummy_outcome_A.to_csv(dummy_outcome_path, index=False)
+    scratch_loc = tmp_path / "scratch"
+    scratch_loc.mkdir(exist_ok=True, parents=True)
+    task = TwoSampleMRTask(
+        SimpleFileMeta(AssetId("mr_result")),
+        outcome_data_task=FakeTask(
+            SimpleFileMeta(
+                AssetId("outcome_data"),
+                read_spec=DataFrameReadSpec(DataFrameTextFormat(",")),
+            ),
+        ),
+        exposure_data_task=FakeTask(
+            SimpleFileMeta(
+                AssetId("exposure_data"),
+                read_spec=DataFrameReadSpec(DataFrameTextFormat(",")),
+            ),
+        ),
+        config=TwoSampleMRConfig(clump_exposure_data=None),
+    )
+
+    def fetch(asset_id: AssetId) -> Asset:
+        if asset_id == "outcome_data":
+            return FileAsset(dummy_outcome_path)
+        if asset_id == "exposure_data":
+            return FileAsset(dummy_exposure_path)
+        raise ValueError("unknown asset id")
+
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    assert isinstance(result, DirectoryAsset)
+    loaded_result = pd.read_csv((result.path) / MAIN_RESULT_DF_PATH)
+    assert loaded_result[TSM_OUTPUT_B_COL].item() == pytest.approx(2, abs=0.1)

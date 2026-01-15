@@ -266,6 +266,7 @@ class TwoSampleMRTask(Task):
         )
         with localconverter(conv):
             harm_py = ro.conversion.get_conversion().rpy2py(harmonized)
+        import pdb; pdb.set_trace()
 
         result_rdf = run_tsmr_on_harmonized_data_no_conversion(
             harmonized=harmonized,
