@@ -40,7 +40,7 @@ It is generally advisable to run `invoke green` and fix any detected errors prio
 
 ##  Commit changes, create a PR
 
-Commit your changes and push them
+[Commit](https://git-scm.com/docs/git-commit) your changes and [push](https://git-scm.com/docs/git-push) them
 ```
 git add mecfs_bio test_mecfs_bio; git commit -m '<your message>';git push --set-upstream origin <branchname>
 ```
