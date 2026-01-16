@@ -237,3 +237,8 @@ build_system/*
 # Added by cargo
 
 /target
+
+
+#  R environment variables. Used to store OPENGWAS API Keys for example.
+
+.Renviron

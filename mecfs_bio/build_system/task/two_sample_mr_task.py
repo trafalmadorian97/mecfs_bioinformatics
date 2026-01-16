@@ -199,6 +199,13 @@ class TwoSampleMRTask(Task):
     """
     Task to run mendelian randomization using the R package TwoSampleMR.
     This R package is accessed through Python via rpy2.
+
+    Note that some of the calls to the TSMR library below (like clumping) require access
+    to the OpenGWAS database.  This in turn requires an acess token.
+    You can get a token here: https://api.opengwas.io/
+    Add to your .Renviron file the following line:
+    OPENGWAS_JWT=<token>
+
     """
 
     _meta: Meta
