@@ -1,9 +1,9 @@
 # Build System
 
 ## Motivation
-In data science, analysis pipelines often consist of many steps.  These steps can be a mixture of pure data-cleaning operations and more complex statistical modeling.  When the data set under study is nontrivial in size, the steps and therefore the whole pipeline can be quite slow.  This creates two challenges:
+In data science, analysis pipelines often consist of many steps.  These steps can be a mixture of pure data-cleaning operations and more complex statistical modeling.  When the dataset under study is nontrivial in size, these steps can be quite slow.  This creates two challenges:
 
-- **Iteration**: It is rare to run a pipeline once, produce an analysis, and be done. Usually, it is necessary to repeatedly tweak the steps, re-run the pipeline, and reexamine the result.  To avoid wasting time, it is therefore desirable that after each change, only the impacted steps should be rerun.
+- **Iteration**: It is rare to run a pipeline once, produce an analysis, and be done. Usually, one must repeatedly tweak the steps, re-run the pipeline, and reexamine the result.  To avoid wasting time, it is therefore desirable that after each change, only impacted steps should be rerun.
 - **Lineage**:  Given the complexity of many data science workflows, there is considerable room for error.  It is therefore desirable to be able to interrogate the final product of a workflow to trace its "lineage": the precise sequence of steps that produced it.
 
 These challenges motivate the development of a data science build system.

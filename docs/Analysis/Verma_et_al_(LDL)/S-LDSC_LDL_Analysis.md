@@ -10,6 +10,9 @@ I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformat
 ## Reference Data Sources
 
 I used the reference datasets recommended and preprocessed by the authors of the S-LSDC method.  These reference datasets are ultimately drawn from the following data sources:
+
+
+
 - [The GTEx Project](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
 - [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap_Epigenetic_Project/Roadmap.md)
