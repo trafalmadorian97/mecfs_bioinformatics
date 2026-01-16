@@ -24,6 +24,9 @@ class LabelLeadVariantsTasks:
     lead_variants_task: Task
     labeled_lead_variants_task: Task
 
+    def terminal_tasks(self) -> list[Task]:
+        return [self.labeled_lead_variants_task]
+
 
 def generate_tasks_labeled_lead_variants(
     base_name: str,

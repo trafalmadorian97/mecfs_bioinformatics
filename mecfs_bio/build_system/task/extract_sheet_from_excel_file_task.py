@@ -23,6 +23,8 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
     get_extension_and_read_spec_from_format,
 )
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
@@ -39,6 +41,7 @@ class ExtractSheetFromExelFileTask(Task):
     out_format: OutFormat
     skiprows: int | None = None
     col_type_mapping: Mapping[str, type] | None = None
+    post_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def source_asset_id(self) -> AssetId:
@@ -62,6 +65,8 @@ class ExtractSheetFromExelFileTask(Task):
         if self.col_type_mapping is not None:
             for col in self.col_type_mapping.keys():
                 df[col] = df[col].astype(self.col_type_mapping[col])
+
+        df = self.post_pipe.process_pandas(df)
         if isinstance(self.out_format, CSVOutFormat):
             df.to_csv(out_path, index=False, sep=self.out_format.sep)
         elif isinstance(self.out_format, ParquetOutFormat):
@@ -77,6 +82,7 @@ class ExtractSheetFromExelFileTask(Task):
         out_format: OutFormat,
         skiprows: int | None = None,
         col_type_mapping: Mapping[str, type] | None = None,
+        post_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         extension, read_spec = get_extension_and_read_spec_from_format(
             out_format=out_format
@@ -103,4 +109,5 @@ class ExtractSheetFromExelFileTask(Task):
             out_format=out_format,
             skiprows=skiprows,
             col_type_mapping=col_type_mapping,
+            post_pipe=post_pipe,
         )

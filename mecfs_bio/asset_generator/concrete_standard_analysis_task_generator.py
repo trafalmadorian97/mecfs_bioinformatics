@@ -68,6 +68,7 @@ class StandardAnalysisTaskGroup:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())
             + self.magma_tasks.inner.terminal_tasks()
+            + self.labeled_lead_variant_tasks.terminal_tasks()
         )
         if self.master_gene_list_tasks is not None:
             result = result + self.master_gene_list_tasks.terminal_tasks()
