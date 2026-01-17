@@ -1,3 +1,7 @@
+"""
+Produce a markdown table of significant proteins from MR analysis of Asthma GWAS
+"""
+
 from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.mr.asthma_ppp_cis_mr_label_with_uniprot import (
     ASTHMA_PP_CIS_MR_UNIPROT_LABELED,
 )

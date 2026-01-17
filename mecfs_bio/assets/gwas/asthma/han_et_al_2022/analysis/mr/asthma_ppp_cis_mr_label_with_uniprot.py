@@ -1,3 +1,7 @@
+"""
+Label significant proteins from MR analysis for Asthma GWAS using descriptions from UniProt
+"""
+
 from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.mr.asthma_ppp_cis_mr_multiple_testing import (
     HAN_2022_ASTHMA_CIS_PPP_TSMR_MULTIPLE_TESTING,
 )
