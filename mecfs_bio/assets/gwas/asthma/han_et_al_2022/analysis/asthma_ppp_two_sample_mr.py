@@ -10,10 +10,6 @@ from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_standard_analys
 from mecfs_bio.assets.reference_data.pqtls.processed.sun_et_al_2023_pqtls_combined_extracted import (
     SUN_ET_AL_2023_COMBINED_PQTLS_EXTRACTED,
 )
-from mecfs_bio.build_system.constants.sun_et_al_pqtl_constants import (
-    SUN_CIS_TRANS_COL,
-    SUN_MLOG10_P_COL,
-)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
     GWASLAB_MLOG10P_COL,
     GWASLAB_N_CASE_COL,
@@ -39,6 +35,15 @@ from mecfs_bio.build_system.task.two_sample_mr_task import (
     TwoSampleMRConfig,
     TwoSampleMRTask,
 )
+from mecfs_bio.constants.sun_et_al_pqtl_constants import (
+    SUN_ASSAY_TARGET,
+    SUN_CIS,
+    SUN_CIS_TRANS_COL,
+    SUN_MLOG10_P_COL,
+    SUN_TARGET_UNIPROT,
+)
+
+PROTEIN_EXPOSURE_COL = "protein_exposure_id"
 
 HAN_2022_ASTHMA_TSMR = TwoSampleMRTask.create(
     asset_id="two_sample_mr_asthma_han",
@@ -53,19 +58,19 @@ HAN_2022_ASTHMA_TSMR = TwoSampleMRTask.create(
     exposure_pipe=CompositePipe(
         [
             ConcatStrPipe(
-                ["Assay Target", "Target UniProt"],
+                [SUN_ASSAY_TARGET, SUN_TARGET_UNIPROT],
                 sep="_",
-                new_col_name="protein_exposure_id",
+                new_col_name=PROTEIN_EXPOSURE_COL,
             ),
             # FilterRowsByValue(
             #     target_column="protein_exposure_id", valid_values=["IL1R1_P14778"]
             # ),
             #
-            FilterRowsByValue(
-                target_column="protein_exposure_id",
-                valid_values=["TLR1_Q15399", "IL1R1_P14778"],
-            ),
-            FilterRowsByValue(target_column=SUN_CIS_TRANS_COL, valid_values=["cis"]),
+            # FilterRowsByValue(
+            #     target_column=PROTEIN_EXPOSURE_COL,
+            #     valid_values=["TLR1_Q15399", "IL1R1_P14778"],
+            # ),
+            FilterRowsByValue(target_column=SUN_CIS_TRANS_COL, valid_values=[SUN_CIS]),
             RenameColPipe(SUN_MLOG10_P_COL, GWASLAB_MLOG10P_COL),
             ComputePPipe(),
             SetColToConstantPipe(

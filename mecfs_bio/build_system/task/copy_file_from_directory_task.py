@@ -12,6 +12,7 @@ from mecfs_bio.build_system.meta.procesed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec
+from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -51,6 +52,14 @@ class CopyFileFromDirectoryTask(Task):
     ):
         source_meta = source_directory_task.meta
         if isinstance(source_meta, ProcessedGwasDataDirectoryMeta):
+            meta = ResultTableMeta(
+                asset_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
+                read_spec=read_spec,
+            )
+        elif isinstance(source_meta, ResultDirectoryMeta):
             meta = ResultTableMeta(
                 asset_id=AssetId(asset_id),
                 trait=source_meta.trait,

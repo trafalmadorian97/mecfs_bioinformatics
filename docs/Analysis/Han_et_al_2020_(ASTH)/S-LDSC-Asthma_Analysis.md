@@ -1,3 +1,8 @@
+---
+hide:
+- navigation
+- toc
+---
 # S-LDSC Asthma Analysis
 
 
