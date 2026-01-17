@@ -2,7 +2,7 @@
 
 # Mendelian Randomization
 
-[//]: # (To discuss: Formalism of Causal inferece.  How the three instrumental variables assumptions dont let us do causal inference without a parameteric model.  Wald ratio.  Wald ratio error.  Other methods.)
+[//]: # (To discuss: Formalism of Causal inferece.  How the three instrumental variables assumptions dont let us do causal inference without a `parametric` model.  Wald ratio.  Wald ratio error.  Other methods.)
 ## Categories of Data Science
 Hernan et al.[@hernan2019second] assert that the core activities of the data scientist are, in increasing order of difficulty:
 1. **Description**: The computation of summary statistics, which enables key aspects of large, complex datasets to be easily comprehended. Given the abundance of data in today's world, this activity is fundamental.
