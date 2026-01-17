@@ -14,18 +14,18 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.assign_rsids_via_snp151_task import create_new_meta
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
-    GWASLAB_CHROM_COL,
-    GWASLAB_P_COL,
-    GWASLAB_POS_COL,
-    GWASLAB_RSID_COL,
-)
 from mecfs_bio.build_system.task.pipes.compute_p_pipe import (
     ComputePIfNeededPipe,
     ComputePPipe,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_CHROM_COL,
+    GWASLAB_P_COL,
+    GWASLAB_POS_COL,
+    GWASLAB_RSID_COL,
+)
 
 
 @frozen

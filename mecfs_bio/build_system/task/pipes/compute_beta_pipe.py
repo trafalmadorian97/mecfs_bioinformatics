@@ -1,10 +1,10 @@
 import narwhals
 
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_ODDS_RATIO_COL,
 )
-from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
 class ComputeBetaPipe(DataProcessingPipe):

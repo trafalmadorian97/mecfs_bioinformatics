@@ -2,7 +2,7 @@ import gwaslab as gl
 import pandas as pd
 from attrs import frozen
 
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,

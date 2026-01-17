@@ -16,11 +16,11 @@ from mecfs_bio.build_system.meta.procesed_gwas_data_directory_meta import (
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GWASLAB_MLOG10P_COL
 from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
     GENE_SET_ANALYSIS_OUTPUT_STEM_NAME,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_MLOG10P_COL
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 logger = structlog.get_logger()

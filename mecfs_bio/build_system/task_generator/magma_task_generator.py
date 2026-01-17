@@ -20,7 +20,6 @@ from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
     MultipleTestingTableTask,
 )
 from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GwaslabKnownFormat
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GenomeBuildMode,
     GWASLabColumnSpecifiers,
@@ -45,6 +44,7 @@ from mecfs_bio.build_system.task.magma.magma_snp_location_task import MagmaSNPFi
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
+from mecfs_bio.constants.gwaslab_constants import GwaslabKnownFormat
 
 
 @frozen

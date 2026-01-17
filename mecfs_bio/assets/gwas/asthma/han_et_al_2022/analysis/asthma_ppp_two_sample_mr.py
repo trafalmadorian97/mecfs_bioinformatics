@@ -10,12 +10,6 @@ from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_standard_analys
 from mecfs_bio.assets.reference_data.pqtls.processed.sun_et_al_2023_pqtls_combined_extracted import (
     SUN_ET_AL_2023_COMBINED_PQTLS_EXTRACTED,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
-    GWASLAB_MLOG10P_COL,
-    GWASLAB_N_CASE_COL,
-    GWASLAB_N_CONTROL_COL,
-    GWASLAB_SAMPLE_SIZE_COLUMN,
-)
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.compute_beta_pipe import ComputeBetaPipe
 from mecfs_bio.build_system.task.pipes.compute_p_pipe import (
@@ -34,6 +28,12 @@ from mecfs_bio.build_system.task.two_sample_mr_task import (
     SUN_ET_AL_MR_INPUT_COL_SPEC_hg37,
     TwoSampleMRConfig,
     TwoSampleMRTask,
+)
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_MLOG10P_COL,
+    GWASLAB_N_CASE_COL,
+    GWASLAB_N_CONTROL_COL,
+    GWASLAB_SAMPLE_SIZE_COLUMN,
 )
 from mecfs_bio.constants.sun_et_al_pqtl_constants import (
     SUN_ASSAY_TARGET,

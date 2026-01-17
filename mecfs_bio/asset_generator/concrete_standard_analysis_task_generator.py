@@ -25,9 +25,6 @@ from mecfs_bio.asset_generator.labeled_lead_variants_asset_generator import (
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.combine_gene_lists_task import SrcGeneList
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
-    GWASLAB_SAMPLE_SIZE_COLUMN,
-)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
     ValidGwaslabFormat,
@@ -49,6 +46,9 @@ from mecfs_bio.build_system.task_generator.master_gene_list_task_generator impor
 )
 from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     SLDSCTaskGenerator,
+)
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_SAMPLE_SIZE_COLUMN,
 )
 
 

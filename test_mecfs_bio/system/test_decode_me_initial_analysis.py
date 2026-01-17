@@ -17,7 +17,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash i
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GWASLAB_SNPID_COL
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_SNPID_COL
 
 expected_vars = {
     "1:173846152:T:C",

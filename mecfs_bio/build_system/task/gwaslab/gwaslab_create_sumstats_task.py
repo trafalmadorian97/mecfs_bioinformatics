@@ -31,11 +31,11 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_STATUS_COL,
     GwaslabKnownFormat,
 )
-from mecfs_bio.build_system.wf.base_wf import WF
 
 GenomeBuildMode = Literal["infer", "19", "38"]
 GenomeBuild = Literal["19", "38"]

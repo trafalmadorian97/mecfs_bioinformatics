@@ -8,9 +8,9 @@ from mecfs_bio.asset_generator.hba_magma_asset_generator import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GWASLAB_RSID_COL
 from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 
 DECODE_ME_HBA_MAGMA_TASKS = generate_human_brain_atlas_magma_tasks(
     base_name="decode_me_hba_magma_tasks",

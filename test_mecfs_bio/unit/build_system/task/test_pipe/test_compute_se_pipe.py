@@ -2,12 +2,12 @@ import narwhals
 import numpy as np
 import pandas as pd
 
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_P_COL,
     GWASLAB_SE_COL,
 )
-from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
 
 
 def test_compute_se_pipe():

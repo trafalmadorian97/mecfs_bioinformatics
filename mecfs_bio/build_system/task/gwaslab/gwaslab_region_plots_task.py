@@ -33,9 +33,6 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
-    GWASLabVCFRefFile,
-)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
 )
@@ -48,6 +45,9 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_util import (
     gwaslab_download_ref_if_missing,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLabVCFRefFile,
+)
 
 
 @frozen

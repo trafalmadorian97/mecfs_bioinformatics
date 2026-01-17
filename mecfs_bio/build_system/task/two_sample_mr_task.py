@@ -26,7 +26,10 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -39,9 +42,6 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
     GWASLAB_RSID_COL,
     GWASLAB_SE_COL,
 )
-from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
-from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
-from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.get_logger()
 
