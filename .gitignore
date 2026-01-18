@@ -242,3 +242,7 @@ build_system/*
 #  R environment variables. Used to store OPENGWAS API Keys for example.
 
 .Renviron
+
+
+# install directory for r libraries
+r-libs

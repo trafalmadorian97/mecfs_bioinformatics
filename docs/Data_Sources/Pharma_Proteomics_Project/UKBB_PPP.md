@@ -17,6 +17,11 @@ A plasma pQTL for a protein is a genetic variation that has a statistical associ
 A key use of pQTLs is in [Mendelian randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md).  One runs an MR study with pQTLs for a protein as instruments, the level of the protein as the exposure, and a phenotype of interest as the outcome.  This approach can generate evidence that the level of the protein is causally related to the genesis of the phenotype.  In this kind of MR study, one must decide whether to use exclusively cis-pQTLs, or both trans- and cis- pQTLs.  One the on hand, using only cis-pQTLs reduces the risk of violations of the MR assumptions due to pleiotropy.  On the other hand, for certain proteins inclusion of trans-pQTL can increase statistical power.
 
 
+The figure below from Donoghue et al.[@donoghue2025integration] shows the proportion of variance explained in various asthma-relevant proteins by cis vs trans pQTL.  For certain proteins, it is necessary to use trans pQTLs to explain an adequate proportion of the variance.
+
+![pqtl_cis_vs_trans](https://github.com/user-attachments/assets/0d3e4597-7e60-49e2-be07-bc01442fc3d2)
+
+
 ### GWAS Summary Statistics
 
 In addition to tables of pQTLs, the PPP has also released full GWAS summary statistics for each protein measured, which can be downloaded from [Synapse](https://www.synapse.org/Synapse:syn51365303). These summary statistics can be used for colocalization analysis.  For example, after one finds MR evidence that levels of a protein causally affect a phenotype, one can use a high probability of colocalization between pQTLs for protein levels and GWAS hits of the phenotype to provide additional support for the causal connection[@zuber2022combining].
