@@ -1,3 +1,7 @@
+"""
+Create a effect measure plot illustrating the results of Mendelian randomization with cis-pQTLs applied to the Asthma GWAS
+"""
+
 from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.mr.asthma_ppp_cis_mr_multiple_testing import (
     HAN_2022_ASTHMA_CIS_PPP_TSMR_MULTIPLE_TESTING,
 )

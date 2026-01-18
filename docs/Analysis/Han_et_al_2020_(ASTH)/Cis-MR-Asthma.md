@@ -15,7 +15,7 @@ NOTE: Because  Han et al. and the UKBB PPP make use of overlapping individuals f
 
 ## Results
 
-The plot below summarizes the effect sizes and standard errors of the Bonferroni-significant proteins resulting from MR analysis of cis-pQTLs.  Effect sizes are expresses in asthma liability units per inverse-rank-transformed protein unit.
+The plot below summarizes the effect sizes and standard errors of the Bonferroni-significant proteins resulting from MR analysis with cis-pQTLs.  Effect sizes are expresses in asthma liability units per inverse-rank-transformed protein abundance unit.
 
 ![effect_plot_cis_mr_asthma](https://github.com/user-attachments/assets/708138a3-1f22-452e-b1a7-95fc96e468a7)
 

@@ -1,3 +1,7 @@
+"""
+Create an effect measure plot using zepid
+"""
+
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -35,6 +39,7 @@ class EffectMeasurePlotConfig:
 class PlotMREffectMeasure(Task):
     """
     Task to create an effect measure plot
+    Useful for example to show the results of Mendelian Randomization
 
     See:
     https://zepid.readthedocs.io/en/latest/Reference/Graphics.html?highlight=effectmeasureplot
