@@ -216,6 +216,7 @@ class TwoSampleMRTask(Task):
     outcome_col_spec: MRInputColSpec | None = None
     exposure_pipe: DataProcessingPipe = IdentityPipe()
     outcome_pipe: DataProcessingPipe = IdentityPipe()
+    mr_method_list: list[str] |None= None
 
     @property
     def exposure_id(self) -> AssetId:
@@ -324,6 +325,7 @@ class TwoSampleMRTask(Task):
         result_rdf = run_tsmr_on_harmonized_data_no_conversion(
             harmonized=harmonized,
             tsmr=tsmr,
+            method_list=self.mr_method_list
         )
         logger.info("Converting R dataframe to pandas dataframe...")
         with localconverter(conv):
@@ -343,6 +345,7 @@ class TwoSampleMRTask(Task):
         outcome_pipe: DataProcessingPipe,
         exposure_col_spec: MRInputColSpec,
         outcome_col_spec: MRInputColSpec,
+        method_list: list[str]|None=None,
     ):
         outcome_meta = outcome_data_task.meta
         assert isinstance(outcome_meta, FilteredGWASDataMeta)
@@ -360,6 +363,7 @@ class TwoSampleMRTask(Task):
             outcome_pipe=outcome_pipe,
             exposure_col_spec=exposure_col_spec,
             outcome_col_spec=outcome_col_spec,
+            mr_method_list=method_list,
         )
 
 
@@ -539,9 +543,18 @@ def run_tsmr_on_harmonized_data(
 def run_tsmr_on_harmonized_data_no_conversion(
     harmonized: RDataFrame,
     tsmr: RPackageType,
+    method_list: list[str] | None = None,
 ) -> RDataFrame:
     logger.debug("performing Mendelian randomization...")
-    output = tsmr.mr(harmonized)
+    if method_list is None:
+        method_dict = {
+
+        }
+    else:
+        method_dict = {
+            "method_list":method_list
+        }
+    output = tsmr.mr(harmonized, **method_dict)
     return output
 
 

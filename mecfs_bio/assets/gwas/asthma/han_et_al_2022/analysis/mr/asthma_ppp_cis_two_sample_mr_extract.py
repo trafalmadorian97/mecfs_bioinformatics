@@ -1,6 +1,6 @@
 from pathlib import PurePath
 
-from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_ppp_two_sample_mr import (
+from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_ppp_two_sample_mr_cis import (
     HAN_2022_ASTHMA_TSMR,
 )
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (

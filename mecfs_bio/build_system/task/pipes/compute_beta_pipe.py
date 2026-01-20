@@ -15,3 +15,10 @@ class ComputeBetaPipe(DataProcessingPipe):
             narwhals.col(GWASLAB_ODDS_RATIO_COL).log().alias(GWASLAB_BETA_COL)
         )
         return x
+
+class ComputeBetaIfNeededPipe(DataProcessingPipe):
+    def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
+        schema = x.collect_schema()
+        if GWASLAB_BETA_COL not in schema.keys():
+            x=ComputeBetaPipe().process(x)
+        return x

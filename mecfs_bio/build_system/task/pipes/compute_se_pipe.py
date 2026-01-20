@@ -35,3 +35,10 @@ class ComputeSEPipe(DataProcessingPipe):
         se = abs(collected[GWASLAB_BETA_COL] / min_z_score)
         collected[GWASLAB_SE_COL] = se
         return narwhals.from_native(collected).lazy()
+
+class ComputeSEIfNeededPipe(DataProcessingPipe):
+    def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
+        cols = x.collect_schema().keys()
+        if GWASLAB_SE_COL not in cols:
+            return ComputeSEPipe().process(x)
+        return x

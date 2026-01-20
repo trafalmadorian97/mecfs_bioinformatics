@@ -5,3 +5,4 @@ SUN_TARGET_UNIPROT = "Target UniProt"
 
 
 SUN_CIS = "cis"
+SUN_TRANS = "trans"
