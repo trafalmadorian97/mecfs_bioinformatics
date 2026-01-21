@@ -16,8 +16,8 @@ def run_initial_alzhiemers_analysis():
     - MAGMA analysis (Using both GTEx and HBA reference data)
     """
     DEFAULT_RUNNER.run(
-        # BELLENGUEZ_STANDARD_ANALYSIS.get_terminal_tasks(),
-        [BELLENGUEZ_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot],
+        BELLENGUEZ_STANDARD_ANALYSIS.get_terminal_tasks()
+        + [BELLENGUEZ_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot],
         incremental_save=True,
     )
 
