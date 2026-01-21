@@ -1,7 +1,7 @@
 name: system_test_decodeme
 on:
   schedule:
-    - cron: "15 11 * * *"   #Run at 11:15 am daily
+    - cron: "'0 4 * * 1'"   #Run Monday at 4 UTC
   workflow_dispatch: {}
 
 jobs:
