@@ -25,13 +25,13 @@ where:
 - There are $M  \gg 0$ genetic variants.  
 - There are $N_1 \gg 0$ individuals in the GWAS of trait 1 and $N_2 \gg 0$ individuals in the GWAS of trait 2.
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
-- $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for study 1 and study 2 respectively.
+- $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for the GWAS of trait 1 and the GWAS of trait 2, respectively.
 - $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.
 - $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true genetic effect sizes of each genetic variant on the two traits. 
 - $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of genetic effects on all individual in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects on all individuals in the two GWAS.
 
-Furthermore, we model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties
+Furthermore, we model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties:
 
 
 $$
@@ -70,7 +70,7 @@ $$
 \end{align}
 $$
 
-and similarly, $\mathbb{E}(Z\gamma)=0$
+and similarly, $\mathbb{E}(Z\gamma)=0$.
 
 Furthermore, define the following quantities related to Linkage Disequilibrium (LD):
 
@@ -97,9 +97,9 @@ $$
 
 ### Genetic Correlation
 
-Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By that model's derivation, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
+Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By the derivation of LDSC, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
 
-The genetic correlation of the two traits can thus be computed as the genetic correlation divided by the square root of the product of their heritabilities:
+The genetic correlation of the two traits can thus be computed as their genetic covariance divided by the square root of the product of their heritabilities:
 
 $$
 \frac{\rho_g}{h_1h_2}.
@@ -107,7 +107,7 @@ $$
 
 ### Regression equation
 
-Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the Wald $\chi^2$ statistics of variant $j$ in GWAS 1 and 2: 
+Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the Wald $\chi^2$ statistics of a variant $j$ in GWAS 1 and 2: 
 
 $$
 \begin{align}
@@ -126,7 +126,7 @@ z_{j,2} &\approx \frac{y_1^T Z_{j}}{\sqrt{N_2}} \label{d2}.
 $$
 
 
-Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics.  To generate a regression equation, we must estimate $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation (see Grimmett and Stirzaker[@grimmett2020probability]), 
+Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics.  To derive a regression equation, we must estimate $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation (see Grimmett and Stirzaker[@grimmett2020probability]), 
 
 $$
 \begin{align}
@@ -153,6 +153,7 @@ Our goal is to derive an expression for the unconditional expectation of $z_{j,1
 $$
 \begin{align}
 &\mathbb{E}(Y_j^TYZ^TZ_j)\\
+&= Y_j^T \left( \sum_{k=1}^M Y_{i,k} Z_{q,k} \right)_{(i,q)}  Z_j \\
 &=\mathbb{E} \sum_{i=1}^{N_1}\sum_{q=1}^{N_2}\sum_{k=1}^M\left( Y_{i,j}Y_{i,k} Z_{q,j} Z_{q,k}  \right) & \text{ def of matrix product}
 \end{align}
 $$
@@ -175,7 +176,7 @@ Where we have approximated the random variables as having a normal distribution,
 [ Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem).  Recall that we also used Isserlis's theorem at a similar point in the original derivation of [LDSC](LDSC.md#expectation-of-empirical-ld-scores).
 
 
-- Case 2: $i$ and $q$ refer to different individuals.  There are $N_1N_2-N_2$ such pairs.
+- Case 2: $i$ and $q$ refer to different individuals.  There are $N_1N_2-N_s$ such pairs.
 
 $$
 \begin{align}
@@ -223,4 +224,4 @@ $(\ref{ct_ldsc_eqn})$ is the key regression equation in CT-LDSC.
 
 ### Note on derivation
 
-The derivation in the supplementary material to the original paper[@bulik2015atlas] contains several typos and implicit approximations.  In the version above, I have corrected errors and make approximations explicit.
+The derivation in the supplementary material to the original paper[@bulik2015atlas] contains several typos and implicit approximations.  In the version above, I have corrected typos and make approximations explicit.
