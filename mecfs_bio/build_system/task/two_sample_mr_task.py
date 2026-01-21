@@ -153,6 +153,7 @@ TSM_OUTPUT_P_COL = "pval"
 TSM_OUTPUT_EXPOSURE_COL = "exposure"
 
 TSM_OUTPUT_STEIGER_DIR_COL = "steiger_dir"
+TSM_OUTPUT_STEIGER_P_COL = "steiger_pval"
 
 
 MAIN_RESULT_DF_PATH = "mr_result.csv"
@@ -174,6 +175,7 @@ class MRReportOptions:
 @frozen
 class SteigerFilteringOptions:
     drop_failures: bool
+    p_value_thresh: float | None = None
 
 
 @frozen
@@ -216,6 +218,7 @@ class TwoSampleMRTask(Task):
     outcome_col_spec: MRInputColSpec | None = None
     exposure_pipe: DataProcessingPipe = IdentityPipe()
     outcome_pipe: DataProcessingPipe = IdentityPipe()
+    mr_method_list: list[str] | None = None
 
     @property
     def exposure_id(self) -> AssetId:
@@ -322,8 +325,7 @@ class TwoSampleMRTask(Task):
         )
 
         result_rdf = run_tsmr_on_harmonized_data_no_conversion(
-            harmonized=harmonized,
-            tsmr=tsmr,
+            harmonized=harmonized, tsmr=tsmr, method_list=self.mr_method_list
         )
         logger.info("Converting R dataframe to pandas dataframe...")
         with localconverter(conv):
@@ -343,6 +345,7 @@ class TwoSampleMRTask(Task):
         outcome_pipe: DataProcessingPipe,
         exposure_col_spec: MRInputColSpec,
         outcome_col_spec: MRInputColSpec,
+        method_list: list[str] | None = None,
     ):
         outcome_meta = outcome_data_task.meta
         assert isinstance(outcome_meta, FilteredGWASDataMeta)
@@ -360,6 +363,7 @@ class TwoSampleMRTask(Task):
             outcome_pipe=outcome_pipe,
             exposure_col_spec=exposure_col_spec,
             outcome_col_spec=outcome_col_spec,
+            mr_method_list=method_list,
         )
 
 
@@ -376,10 +380,21 @@ def steiger_filtering_write_output(
     conv = ro.default_converter + pandas2ri.converter
     with localconverter(conv):
         py_filtered = ro.conversion.get_conversion().rpy2py(filtered)
+        assert not py_filtered[TSM_OUTPUT_STEIGER_P_COL].isnull().any()
+        prerows = len(py_filtered)
+        logger.debug(f"Pre steiger filtering df has {prerows} rows")
         py_filtered.to_csv(scratch_dir / STEIGER_RESULT_PATH, index=False)
         if options.drop_failures:
             py_filtered = py_filtered.loc[py_filtered[TSM_OUTPUT_STEIGER_DIR_COL]]
+            if options.p_value_thresh is not None:
+                py_filtered = py_filtered.loc[
+                    py_filtered[TSM_OUTPUT_STEIGER_P_COL] <= options.p_value_thresh
+                ]
             harmonized = ro.conversion.get_conversion().py2rpy(py_filtered)
+
+        logger.debug(
+            f"Post steiger filtering df has {len(py_filtered)} rows, after dropping {prerows - len(py_filtered)}"
+        )
         return harmonized
 
 
@@ -539,9 +554,14 @@ def run_tsmr_on_harmonized_data(
 def run_tsmr_on_harmonized_data_no_conversion(
     harmonized: RDataFrame,
     tsmr: RPackageType,
+    method_list: list[str] | None = None,
 ) -> RDataFrame:
     logger.debug("performing Mendelian randomization...")
-    output = tsmr.mr(harmonized)
+    if method_list is None:
+        method_dict = {}
+    else:
+        method_dict = {"method_list": method_list}
+    output = tsmr.mr(harmonized, **method_dict)
     return output
 
 

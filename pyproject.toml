@@ -75,6 +75,10 @@ install-mr = """
 mkdir -p r-libs && \
 Rscript -e "if (!requireNamespace('TwoSampleMR', quietly = TRUE)) install.packages('TwoSampleMR', repos=c('https://mrcieu.r-universe.dev', 'https://cloud.r-project.org'))"
 """
+install-raps= """
+mkdir -p r-libs && \
+Rscript -e "if (!requireNamespace('mr.raps', quietly = TRUE)) install.packages('mr.raps', repos=c('https://mrcieu.r-universe.dev', 'https://cloud.r-project.org'))"
+"""
 [tool.setuptools]
 packages = ["mecfs_bio"]
 
