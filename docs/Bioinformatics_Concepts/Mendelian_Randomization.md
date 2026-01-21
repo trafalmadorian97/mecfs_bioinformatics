@@ -23,7 +23,7 @@ Unfortunately, there are a large number of causal questions for which RCTs are n
 
 ## Mendelian Randomization
 
-As an illustrative exampl of MR, consider the question of determining the causal effect of [Low Density Lipoprotein (LDL)](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) on heart disease. We might notice from epidemiological studies that people who experience heart disease tend to have higher LDL than those who do not. We recall, however, that correlation is not causation. Thus we apply MR, in hopes of determining whether there is a true causal effect.
+As an illustrative example of MR, consider the question of determining the causal effect of [Low Density Lipoprotein (LDL)](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) on heart disease. We might notice from epidemiological studies that people who experience heart disease tend to have higher LDL than those who do not. We recall, however, that correlation is not causation. Thus we apply MR, in hopes of determining whether there is a true causal effect.
 
 ### The three main MR assumptions
 

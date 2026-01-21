@@ -5,7 +5,7 @@ hide:
 ---
 # MR with cis-pQTLs
 
-I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the asthma GWAS of Han et al.[@han2020genome]. using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/Pharma_Proteomics_Project/UKBB_PPP.md)[@sun2023plasma] as instruments.  The aim was to identify candidate proteins that may be causal in the asthma disease process.
+I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the asthma GWAS of Han et al.[@han2020genome] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/Pharma_Proteomics_Project/UKBB_PPP.md)[@sun2023plasma] as instruments.  The aim was to identify candidate proteins that may be causal in the asthma disease process.
 
 Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio method to estimate the causal effect of the proteins on asthma.
 

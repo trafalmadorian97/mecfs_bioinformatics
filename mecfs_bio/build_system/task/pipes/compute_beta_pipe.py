@@ -16,9 +16,10 @@ class ComputeBetaPipe(DataProcessingPipe):
         )
         return x
 
+
 class ComputeBetaIfNeededPipe(DataProcessingPipe):
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         schema = x.collect_schema()
         if GWASLAB_BETA_COL not in schema.keys():
-            x=ComputeBetaPipe().process(x)
+            x = ComputeBetaPipe().process(x)
         return x

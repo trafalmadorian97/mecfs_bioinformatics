@@ -3,9 +3,6 @@ Script to analyze asthma phenotype.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.mr.asthma_ppp_cis_mr_effect_measure_plot import (
-    HAN_CIS_PPP_MR_PLOT,
-)
 
 
 def run_initial_asthma_analysis():

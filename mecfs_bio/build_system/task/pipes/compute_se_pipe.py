@@ -36,6 +36,7 @@ class ComputeSEPipe(DataProcessingPipe):
         collected[GWASLAB_SE_COL] = se
         return narwhals.from_native(collected).lazy()
 
+
 class ComputeSEIfNeededPipe(DataProcessingPipe):
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         cols = x.collect_schema().keys()
