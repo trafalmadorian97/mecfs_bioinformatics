@@ -14,6 +14,8 @@ LEE_ET_AL_2018_HBA_MAGMA_TASKS_EDU = generate_human_brain_atlas_magma_tasks(
     base_name="lee_et_al_2018_edu",
     gwas_parquet_with_rsids_task=LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.parquet_file_task,
     sample_size=257841,
-    plot_settings=PlotSettings("plotly_white"),
+    plot_settings=PlotSettings(
+        "plotly_white",
+    ),
     include_independent_cluster_plot=True,
 )

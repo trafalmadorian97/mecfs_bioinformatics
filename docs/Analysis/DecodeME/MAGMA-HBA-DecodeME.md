@@ -1,0 +1,25 @@
+---
+hide:
+  - navigation
+  - toc
+---
+# MAGMA HBA Analysis
+I applied MAGMA to the DecodeME GWAS using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/Human_Brain_Atlas/HBA_scRNAseq.md) as a reference.
+
+## Results
+The results are plotted below:
+
+
+![decode-me-hba-magma](https://github.com/user-attachments/assets/c7fd2bcc-59f5-4012-9bc7-4555943a7dd8)
+
+
+The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while the y-axis corresponds to the $-\log_{10}(p)$ value score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.  I used a conditional analysis approach based on the one described in Wanatabe et al.[@watanabe2019genetic] to identify independent clusters.  These 3 independent clusters are labeled in plot.  I have also listed them in the table below, together with some cluster-annotations from Duncan et al.[@duncan2025mapping].
+
+
+
+| Retained_clusters   |          P | Supercluster                  | Class auto-annotation   | Neurotransmitter auto-annotation   | Neuropeptide auto-annotation                                         | Subtype auto-annotation   | Transferred MTG Label   | Top three regions                                           | Top Enriched Genes                                                                                           |
+|:--------------------|-----------:|:------------------------------|:------------------------|:-----------------------------------|:---------------------------------------------------------------------|:--------------------------|:------------------------|:------------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------|
+| Cluster234          | 4.01e-06   | Eccentric medium spiny neuron | NEUR                    | GABA                               | CCK CHGA CHGB NAMPT NUCB PENK SCG UBL VGF proSAAS                    | MSN-D1                    |                         | Amygdala: 75.9%, Cerebral cortex: 14.6%, Thalamus: 5.4%     | NPFFR2, ZNF736P9Y, GABRQ, LMNTD1, EYA2, AC012078.2, AC087516.2, PCDH11Y, LINC00354, NMBR                     |
+| Cluster419          | 8.2057e-06 | Amygdala excitatory           | NEUR                    | VGLUT1 VGLUT2                      | ADCYAP CART CCK CHGA CHGB NAMPT NUCB NXPH SCG UBL VGF proSAAS        | 0                         |                         | Amygdala: 78.9%, Cerebral cortex: 14.0%, Thalamus: 5.1%     | AC025244.1, AC096759.1, SCN5A, FAM9B, GABRQ, LINC01920, VWA5B1, CYP19A1, CARM1P1, LINC02498                  |
+| Cluster136          | 1.2765e-05 | Deep-layer intratelencephalic | NEUR                    | VGLUT1 VGLUT2                      | ADCYAP CBLN CCK CHGA CHGB CRH NAMPT NUCB PYY SCG UBL UCN VGF proSAAS | 0                         |                         | Amygdala: 54.6%, Cerebral cortex: 36.2%, Hypothalamus: 8.6% | AC099517.1, LINC02196, AC079380.1, LINC02465, AL138927.1, AC073578.2, AL450352.1, ARHGAP15, TNNT2, LINC02378 |⏎                      
+
