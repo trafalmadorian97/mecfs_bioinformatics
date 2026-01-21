@@ -1,3 +1,8 @@
+"""
+Asset generator for applying Mendelian Randomization using cis-pQTLs from the UK Biobank
+Pharma Proteomics project
+"""
+
 from pathlib import PurePath
 
 import attrs
@@ -106,6 +111,10 @@ def mr_cis_pqtl_asset_generator(
         True, 0.01
     ),
 ):
+    """
+    Asset generator for applying Mendelian Randomization using cis-pQTLs from the UK Biobank
+    Pharma Proteomics project
+    """
     outcome_pipes: list[DataProcessingPipe] = [
         pre_pipe,
         ComputeBetaIfNeededPipe(),

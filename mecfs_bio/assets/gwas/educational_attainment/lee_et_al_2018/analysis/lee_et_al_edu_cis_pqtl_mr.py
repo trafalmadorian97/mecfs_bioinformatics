@@ -1,4 +1,7 @@
-# LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.parquet_file_task
+"""
+Apply MR using cis-pQTL to the EDU GWAS
+"""
+
 from mecfs_bio.asset_generator.mr_with_cis_pqtl_asset_generator import (
     QuantOutcomeConfig,
     mr_cis_pqtl_asset_generator,

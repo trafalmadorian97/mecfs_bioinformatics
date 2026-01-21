@@ -1,3 +1,7 @@
+"""
+Apply MR using cis-pQTL to the IBD GWAS
+"""
+
 from mecfs_bio.asset_generator.mr_with_cis_pqtl_asset_generator import (
     BinaryOutcomeConfig,
     mr_cis_pqtl_asset_generator,
