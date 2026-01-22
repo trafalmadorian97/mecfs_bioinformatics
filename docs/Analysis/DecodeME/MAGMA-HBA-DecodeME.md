@@ -4,7 +4,7 @@ hide:
   - toc
 ---
 # MAGMA HBA Analysis
-I applied MAGMA to the DecodeME GWAS using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/Human_Brain_Atlas/HBA_scRNAseq.md) as a reference.
+I applied MAGMA to the DecodeME GWAS using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/HBA_scRNAseq.md) as a reference.
 
 ## Results
 The results are plotted below:

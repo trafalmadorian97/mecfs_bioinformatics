@@ -20,4 +20,4 @@ The Figure below is from Silleti et al.[@siletti2023transcriptomic].  The left p
 
 ## Utility 
 
-The HBA dataset can be combined with [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to associate GWAS phenotypes with HBA-defined brain cell types.
+The HBA dataset can be combined with [MAGMA](../Bioinformatics_Concepts/MAGMA_Overview.md) to associate GWAS phenotypes with HBA-defined brain cell types.

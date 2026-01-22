@@ -8,7 +8,7 @@ hide:
 
 # MR with cis-pQTLs
 
-I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the IBD GWAS of Liu et al.[@liu2023genetic] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/Pharma_Proteomics_Project/UKBB_PPP.md)[@sun2023plasma] as instruments.
+I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the IBD GWAS of Liu et al.[@liu2023genetic] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.
 
 Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio method to estimate the causal effect of the proteins on IBD.
 
