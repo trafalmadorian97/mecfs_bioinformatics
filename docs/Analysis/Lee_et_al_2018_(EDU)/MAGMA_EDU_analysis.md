@@ -6,7 +6,7 @@ I used summary statistics from [Lee et al.'s GWAS of Educational attainment](htt
 
 
 ##  Results
-As before, I ran the gene analysis set, followed by the gene-property analysis step.  In the gene property analysis step, I used [tissue-specific RNAseq data from GTEx](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md) to try to link genes associated with IBD to specific tissues.  The results are shown in the bar plot below:
+As before, I ran the gene analysis set, followed by the gene-property analysis step.  In the gene property analysis step, I used [tissue-specific RNAseq data from GTEx](../../Data_Sources/GTEx_RNAseq_Data.md) to try to link genes associated with IBD to specific tissues.  The results are shown in the bar plot below:
 
 ![bar_plot_edu](https://github.com/user-attachments/assets/d8c4cd10-8b3c-43fa-8246-9b541cac2902)
 

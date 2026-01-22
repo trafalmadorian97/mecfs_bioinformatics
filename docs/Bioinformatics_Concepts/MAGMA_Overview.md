@@ -55,7 +55,7 @@ associated with the phenotype over-represented in particular biological systems?
 The gene property analysis module requires:
 
 1. The output of the gene analysis step, associating p-values with genes.
-2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data like [GTEx](../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md) could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
+2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data like [GTEx](../Data_Sources/GTEx_RNAseq_Data.md) could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
  
 ## Mathematical Overview
 - Let $Z_i$ be the $z$-score of the association of gene $i$ with the phenotype.

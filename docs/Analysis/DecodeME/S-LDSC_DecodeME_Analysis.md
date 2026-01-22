@@ -5,17 +5,17 @@ hide:
 ---
 # S-LDSC Analysis of DecodeME
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS 1 of [DecodeME](../../Data_Sources/MECFS/DecodeME.md).
+[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS 1 of [DecodeME](../../Data_Sources/DecodeME.md).
 
 ## Reference Data Sources
 
 I used the standard reference datasets prepared by the authors of the S-LDSC method.
 
-- [The GTEx Project](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md)
+- [The GTEx Project](../../Data_Sources/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
-- [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap_Epigenetic_Project/Roadmap.md)
-- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_at_al_Blood_Cell_Epigenetics/Corces_et_al.md).
-- The [ImmGen](../../Data_Sources/Immgen_Project/Immgen_Project.md) Project
+- [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap.md)
+- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_et_al.md).
+- The [ImmGen](../../Data_Sources/Immgen_Project.md) Project
 - The Cahoy Mouse Central Nervous System Dataset
 
 

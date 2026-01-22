@@ -2,7 +2,7 @@
 # MAGMA-GTEx Analysis
 
 
-I applied MAGMA to Keaton et al.'s[@keaton2024genome] meta-GWAS of diastolic blood pressure, using the [GTEx bulk RNAseq](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md) as a reference.  The significant and top non-significant tissue types are plotted below.
+I applied MAGMA to Keaton et al.'s[@keaton2024genome] meta-GWAS of diastolic blood pressure, using the [GTEx bulk RNAseq](../../Data_Sources/GTEx_RNAseq_Data.md) as a reference.  The significant and top non-significant tissue types are plotted below.
 
 
 
