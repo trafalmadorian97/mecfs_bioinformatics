@@ -224,4 +224,4 @@ $(\ref{ct_ldsc_eqn})$ is the key regression equation in CT-LDSC.
 
 ### Note on derivation
 
-The derivation in the supplementary material to the original paper[@bulik2015atlas] contains several typos and implicit approximations.  In the version above, I have corrected typos and make approximations explicit.
+The derivation in **the supplementary material to the original paper[@bulik2015atlas]** contains several typos and implicit approximations.  In the version above, I have corrected typos and make approximations explicit.

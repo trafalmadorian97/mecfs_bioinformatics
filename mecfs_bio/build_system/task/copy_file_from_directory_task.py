@@ -8,7 +8,7 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
-from mecfs_bio.build_system.meta.procesed_gwas_data_directory_meta import (
+from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec

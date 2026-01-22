@@ -35,7 +35,7 @@ def run_initial_decode_me_analysis():
     - Generation of manhattan plot.
     - Extraction of lead variants.
     - Application of MAGMA to GTEx data to identify possible key tissues.
-    - Use of S-LDSC to investigate key cell and tissue tpyes
+    - Use of S-LDSC to investigate key cell and tissue types
     """
     DEFAULT_RUNNER.run(
         # [
