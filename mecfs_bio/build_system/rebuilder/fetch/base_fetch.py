@@ -7,7 +7,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 
 class Fetch(Protocol):
     """
-    An interface for materializing or retrieving assets, given their id.
+    An interface for materializing or retrieving assets, given their ids.
     """
 
     @abstractmethod
