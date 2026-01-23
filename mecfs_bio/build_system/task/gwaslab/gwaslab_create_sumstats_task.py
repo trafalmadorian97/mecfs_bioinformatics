@@ -238,7 +238,7 @@ def _sumstats_raise_on_error(sumstats: gl.Sumstats):
     if error_status.any():
         raise ValueError("GWASLAB Error")
     if len(sumstats.data) == 0:
-        raise ValueError("No rows survive GWASLAB quality contro!")
+        raise ValueError("No rows survive GWASLAB quality control!")
 
 
 @frozen

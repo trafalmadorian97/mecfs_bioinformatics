@@ -18,7 +18,7 @@ from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 DECODE_ME_HBA_MAGMA_TASKS = generate_human_brain_atlas_magma_tasks(
     base_name="decode_me_hba_magma_tasks",
     gwas_parquet_with_rsids_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
-    sample_size=275488,  # this is the total sample size, which the MAGMA manual seems to imply is correct.  Could also try effective sample siz3
+    sample_size=275488,  # this is the total sample size, which the MAGMA manual seems to imply is correct.  Could also try effective sample size.
     plot_settings=PlotSettings("plotly_white"),
     include_independent_cluster_plot=True,
     pipes=[RenameColPipe(old_name="rsid", new_name=GWASLAB_RSID_COL)],

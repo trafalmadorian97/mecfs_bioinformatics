@@ -88,7 +88,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
         cls,
         sumstats_task: GWASLabCreateSumstatsTask,
         asset_id: str,
-        sig_leve: float = 5e-8,
+        sig_level: float = 5e-8,
         plot_setting: str = "mqq",
     ):
         input_meta = sumstats_task.meta
@@ -101,6 +101,6 @@ class GWASLabManhattanAndQQPlotTask(Task):
         return cls(
             sumstats_task=sumstats_task,
             meta=meta,
-            sig_level=sig_leve,
+            sig_level=sig_level,
             plot_setting=plot_setting,
         )

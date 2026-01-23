@@ -18,7 +18,7 @@ from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez
 from mecfs_bio.assets.reference_data.magma_ld_reference.magma_eur_build_37_1k_genomes_ref_extracted import (
     MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
 )
-from mecfs_bio.assets.reference_data.magma_specificity_matricies.raw.magma_specificity_matrix_from_hbca_rna_duncan import (
+from mecfs_bio.assets.reference_data.magma_specificity_matrices.raw.magma_specificity_matrix_from_hbca_rna_duncan import (
     MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN,
 )
 from mecfs_bio.assets.reference_data.research_paper_supplementary_material.duncan_et_al_2025.processed.duncan_et_al_2025_st1_label_columns import (

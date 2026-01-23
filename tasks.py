@@ -62,9 +62,21 @@ def spellcheck_docs(c):
     Edit _typos.toml to add exceptions
     """
     print(
-        "Checking documentation spelling using typos (Add exceptions to _typos.toml)."
+        f"Checking documentation spelling using typos... (Add exceptions to {DOCS_PATH}/_typos.toml)"
     )
     c.run(f"pixi r  typos {DOCS_PATH}", pty=True)
+
+
+@task
+def spellcheck_src(c):
+    """
+    check code for spelling errors
+    Edit _typos.toml to add exceptions
+    """
+    print(
+        f"Checking source spelling using typos... (Add exceptions to {SRC_PATH}/_typos.toml)"
+    )
+    c.run(f"pixi r  typos {SRC_PATH}", pty=True)
 
 
 @task(
@@ -72,6 +84,7 @@ def spellcheck_docs(c):
         lintfix,
         format,
         spellcheck_docs,
+        spellcheck_src,
         typecheck,
         test,
     ]
