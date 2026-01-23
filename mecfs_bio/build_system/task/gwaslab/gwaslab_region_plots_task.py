@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 plt.rcParams["font.sans-serif"] = (
-    "DejaVu Sans"  # Gwaslab defaults to plotting in Arial font, which is not availible by default on linux
+    "DejaVu Sans"  # Gwaslab defaults to plotting in Arial font, which is not available by default on linux
 )
 plt.rcParams["font.family"] = "sans-serif"
 

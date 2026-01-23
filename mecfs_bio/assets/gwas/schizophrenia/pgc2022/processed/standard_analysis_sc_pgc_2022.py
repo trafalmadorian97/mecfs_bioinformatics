@@ -28,7 +28,7 @@ SCH_PGC_2022_STANDARD_ANALYSIS = concrete_standard_analysis_generator_assume_alr
         beta="BETA",
         se="SE",
         p="PVAL",
-        n="NEFF",  # use effective sample siz
+        n="NEFF",  # use effective sample size
         snpid=None,
         OR=None,
     ),
@@ -37,5 +37,4 @@ SCH_PGC_2022_STANDARD_ANALYSIS = concrete_standard_analysis_generator_assume_alr
     include_hba_magma_tasks=True,
     include_independent_cluster_plot_in_hba=True,
     hba_plot_settings=PlotSettings(),
-    # hba_indep_plot_options=HBAIndepPlotOptions(annotation_text_size=8)
 )

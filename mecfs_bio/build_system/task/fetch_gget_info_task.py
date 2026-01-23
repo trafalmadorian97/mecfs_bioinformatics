@@ -59,7 +59,7 @@ class FetchGGetInfoTask(Task):
     Listen to an interview with the primary developer of gget here:
     https://podcasts.apple.com/nz/podcast/99-laura-luebbert-gget-hunting-viruses-and/id1534473511?i=1000664104787
 
-    Sometimes gget returns dataframes with inconsistent formating.
+    Sometimes gget returns dataframes with inconsistent formatting.
     e.g.: some columns are partly lists, and partly singleton values.
     Thus this file also contains functionality to munge the output of gget into a more consistent format.
 

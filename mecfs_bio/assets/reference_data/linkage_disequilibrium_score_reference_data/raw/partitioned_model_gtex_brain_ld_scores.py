@@ -1,5 +1,5 @@
 """
-Paritioned LD scores associated from brain tissue types.
+Partitioned LD scores associated from brain tissue types.
 
 
 Comes from the paper:

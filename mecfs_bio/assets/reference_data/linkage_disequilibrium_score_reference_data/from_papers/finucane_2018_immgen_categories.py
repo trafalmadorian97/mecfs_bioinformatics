@@ -1,9 +1,8 @@
 """
-Categories for mouse immune cell types from the immgen project
+Categories for mouse immune cell types from the Immgen project
 
 source:
-Suplementary Table 10 in
-Supplementary material to
+Supplementary Table 10 in
 Finucane, Hilary K., et al. "Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types." Nature genetics 50.4 (2018): 621-629.
 
 """

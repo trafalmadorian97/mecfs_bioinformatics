@@ -20,7 +20,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 MILLION_VETERAN_RED_BLOOD_VOLUME_EUR_DATA_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
         short_id=AssetId("million_veterans_red_blood_cell_volume_eur_raw"),
-        trait="red_blood_cell_volumne",
+        trait="red_blood_cell_volume",
         project="million_veterans",
         sub_dir="raw",
         project_path=PurePath("GCST90475466.tsv.gz"),
@@ -33,7 +33,7 @@ MILLION_VETERAN_RED_BLOOD_VOLUME_EUR_DATA_RAW = DownloadFileTask(
 MILLION_VETERAN_RED_BLOOD_VOLUME_EUR_DATA_RAW_HARMONIZED = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
         short_id=AssetId("million_veterans_red_blood_cell_volume_eur_raw_harmonized"),
-        trait="red_blood_cell_volumne",
+        trait="red_blood_cell_volume",
         project="million_veterans",
         sub_dir="raw",
         project_path=PurePath("GCST90475466.h.tsv.gz"),

@@ -4,7 +4,7 @@ from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.magma.pgc2022_sch_magna_entrez_gene_analysis import (
     PGC2022_SCH_MAGMA_ENTREZ_GENE_ANALYSIS,
 )
-from mecfs_bio.assets.reference_data.magma_specificity_matricies.raw.magma_specificity_matrix_from_hbca_rna_duncan import (
+from mecfs_bio.assets.reference_data.magma_specificity_matrices.raw.magma_specificity_matrix_from_hbca_rna_duncan import (
     MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN,
 )
 from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
