@@ -8,8 +8,8 @@ Hernan et al.[@hernan2019second] assert that the core activities of the data sci
 
 
 1. **Description**: Computation of summary statistics, to enable large, complex datasets to be easily comprehended.
-2. **Prediction**: Estimating the distribution of one variable conditional on another. Many applications of machine learning are prediction problems.  An example is the detection of diabetic retinopathy using retinal images.
-3. **Causal Inference**:   Reasoning about counterfactuals.   For example: "If all newly-diagnosed diabetes patients were prescribed metformin, occurrence of diabetic retinopathy would be reduced by $X$ percent".  Causal inference allows us to make statements about the consequences of an intervention. 
+2. **Prediction**: Estimating the distribution of one variable conditional on another. Many applications of machine learning are prediction problems.  An example is the calculation of a person's odds of heart disease, conditional on their demographics, genetics, and [LDL](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) level.
+3. **Causal Inference**:   Reasoning about counterfactuals.   For example: "If all patients with high LDL were put on statins, occurrence of heart disease would be reduced by $X$ percent".  
 
 
 
@@ -17,16 +17,16 @@ Hernan et al.[@hernan2019second] assert that the core activities of the data sci
 
 ## Methods of causal inference
 
-The randomized controlled trial (RCT) is the gold standard causal inference method, because it allows causal inference under minimal assumptions.
+The randomized controlled trial (RCT) is the gold standard causal inference method because it allows causal inference under minimal assumptions.
 
-Unfortunately, RCTs are costly and time-consuming.  This motivates the development of other causal inference techniques, which are cheap and fast, but require additional assumptions.  Mendelian Randomization (MR) is such a technique.
+Unfortunately, RCTs are costly and time-consuming.  This motivates alternative causal inference techniques, which are cheap and fast, but require additional assumptions.  Mendelian Randomization (MR) is such a technique.
 
 [//]: # (Unfortunately, there are a large number of important causal questions for which RCTs are not viable.  To address  these questions, )
 
 
 ## Mendelian Randomization
 
-As an illustrative example, consider the question of how [Low Density Lipoprotein (LDL)](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) affects heart disease. We might notice from epidemiological studies that people who experience heart disease tend to have higher LDL than those who do not. We recall, however, that correlation is not causation. Thus we apply MR, in hopes of determining whether there is a true causal effect.
+As an illustrative example, consider the question of how LDL affects heart disease. We might notice from epidemiological studies that people with heart disease tend to have higher LDL than people without it. We recall, however, that correlation is not causation. Thus we apply MR, in hopes of determining whether there is a true causal effect.
 w
 
 ### The three main MR assumptions
@@ -45,7 +45,7 @@ MR requires three main assumptions:
 
 
 
-Roughly speaking MR works as follows :natural variations in the genetic instrument affect the exposure, which affect the outcome.  By observing individuals with these natural variations, we estimate the effect of the exposure on the outcome.  Thus, natural variation in the instrument plays a role analogous to the random treatment assignment in an RCT.  
+Roughly speaking, in MR, natural variation in the instrument plays a role analogous to the random treatment assignment in an RCT.  
 
 
 
@@ -54,6 +54,8 @@ A key advantage of MR  is that the presence of confounders of the exposure and o
 
 ### The Fourth MR Assumption
 
+IV1, IV2, and IV3 are not sufficient to uniquely determine the causal effect of the exposure on the outcome (See Hernan and Robins Chapter 16[@hernan2010causal]).  Another assumption is required.  There are numerous possible variants forms of this forth assumption, which can largely be grouped into 
 
-
+- Homogeneity assumptions: roughly, the causal effect of the exposure on the outcome is the same for all individuals.
+- Monotonicity assumptions: roughly, the instrument moves the exposure in the same direction for all individuals.
 

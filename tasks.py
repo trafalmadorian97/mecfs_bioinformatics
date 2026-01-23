@@ -4,7 +4,7 @@ from invoke import task
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
-DOCS_PATH = "docs"
+DOCS_PATH = Path("docs")
 
 
 # dev tasks
