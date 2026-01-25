@@ -65,5 +65,4 @@ $$
 Under this linear model, homogeneity holds automatically.
 
 
-###  
 
