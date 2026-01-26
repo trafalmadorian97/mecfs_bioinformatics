@@ -1,6 +1,11 @@
+---
+hide:
+- navigation
+- toc
+---
 # MAGMA GTEx analysis
 
-I applied MAGMA to the PGC 2022 GWAS of Schizophrenia[@trubetskoy2022mapping] using the [GTEx bulk RNAseq dataset as a reference].  The results are plotted below:
+I applied MAGMA to the PGC 2022 GWAS of Schizophrenia[@trubetskoy2022mapping] using the [GTEx bulk RNAseq dataset ](../../Data_Sources/GTEx_RNAseq_Data.md) as a reference.  The results are plotted below:
 
 
 

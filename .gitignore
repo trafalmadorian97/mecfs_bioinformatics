@@ -246,3 +246,6 @@ build_system/*
 
 # install directory for r libraries
 r-libs
+
+#we dont want to commit plots
+*.html
