@@ -3,6 +3,8 @@ from pathlib import PurePath
 from attrs import frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, \
+    DataFrameWhiteSpaceSepTextFormat
 from mecfs_bio.build_system.reference.schemas.chrom_rename_rules import (
     CHROM_RENAME_RULES,
 )
@@ -16,6 +18,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
+from mecfs_bio.build_system.task.copy_file_from_directory_task import CopyFileFromDirectoryTask
 from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
     MultipleTestingTableTask,
 )
@@ -31,7 +34,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.magma.magma_annotate_task import MagmaAnnotateTask
 from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
-    MagmaGeneAnalysisTask,
+    MagmaGeneAnalysisTask, GENE_ANALYSIS_OUTPUT_STEM_NAME,
 )
 from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
     MagmaGeneSetAnalysisTask,
@@ -62,6 +65,7 @@ class StandardMagmaTaskGenerator:
     snp_loc_task: Task
     annotations_task: Task
     gene_analysis_task: Task
+    gene_analysis_extracted_result_task:Task
     gene_set_analysis_task: Task
     bar_plot_task: Task
     filtered_gene_analysis_task: Task
@@ -115,6 +119,20 @@ class StandardMagmaTaskGenerator:
             ld_ref_file_stem=ld_ref_file_stem,
             sample_size=sample_size,
         )
+        extracted_gene_analysis_result_task=CopyFileFromDirectoryTask.create_result_table(
+            asset_id=base_name + "_copy_gene_analysis_result",
+            source_directory_task=gene_analysis_task,
+            path_inside_directory=PurePath(GENE_ANALYSIS_OUTPUT_STEM_NAME + ".genes.out"),
+            extension=".txt",
+            read_spec=DataFrameReadSpec(
+                DataFrameWhiteSpaceSepTextFormat(
+                    comment_code="#"
+                )
+            )
+        )
+
+
+
         tissue_gene_set_analysis = MagmaGeneSetAnalysisTask.create(
             asset_id=base_name + "_magma_tissue_gene_set_analysis",
             magma_gene_analysis_task=gene_analysis_task,
@@ -192,6 +210,7 @@ class StandardMagmaTaskGenerator:
             thesaurus_labeled_filtered_gene_analysis_task=labeled_filtered_gene_task,
             gget_labeled_filtered_gene_analysis_task=gget_labeled_gene_task,
             markdown_gget_labeled_filtered_gene_analysis_task=markdown_gget_labeled_task,
+            gene_analysis_extracted_result_task=extracted_gene_analysis_result_task
         )
 
 
