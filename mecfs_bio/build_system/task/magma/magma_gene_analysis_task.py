@@ -1,6 +1,7 @@
 from pathlib import Path, PurePath
 from typing import Literal
 
+import pandas as pd
 import structlog
 from attrs import frozen
 
@@ -13,6 +14,11 @@ from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameWhiteSpaceSepTextFormat,
+)
+from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -134,3 +140,14 @@ class MagmaGeneAnalysisTask(Task):
             sample_size=sample_size,
             meta=meta,
         )
+
+
+def read_magma_gene_analysis_result(result_dir: Path) -> pd.DataFrame:
+    return (
+        scan_dataframe(
+            result_dir / str(GENE_ANALYSIS_OUTPUT_STEM_NAME + ".genes.out"),
+            spec=DataFrameReadSpec(DataFrameWhiteSpaceSepTextFormat(comment_code="#")),
+        )
+        .collect()
+        .to_pandas()
+    )

@@ -25,10 +25,12 @@ from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
     GENE_SET_ANALYSIS_OUTPUT_STEM_NAME,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.magma_constants import (
+    MAGMA_MODEL_COLUMN,
+    MAGMA_P_COLUMN,
+    MAGMA_VARIABLE_COLUMN,
+)
 
-MAGMA_VARIABLE_COLUMN = "VARIABLE"
-MAGMA_MODEL_COLUMN = "MODEL"
-MAGMA_P_COLUMN = "P"
 VARCODE_COLUMN = "VARCODE"
 P_MARG_COLUMN = "P_MARG"
 P_COND_COLUMN = "P_COND"
