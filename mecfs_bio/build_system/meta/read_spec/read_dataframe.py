@@ -74,5 +74,3 @@ def scan_dataframe_asset(
     assert isinstance(asset, FileAsset)
     assert isinstance(meta, FileMeta)
     return _scan_dataframe_asset(asset, meta, parquet_backend)
-
-

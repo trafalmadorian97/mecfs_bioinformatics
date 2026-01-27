@@ -1,7 +1,4 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.sch_clustermap_plot import SCH_PGC_2022_MAGMA_CLUSTER_MAP
-from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.sch_clustermap_plot_plotly import \
-    SCH_PGC_2022_MAGMA_CLUSTER_MAP_PLOTLY
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.sch_clustermap_plot_v2 import \
     SCH_PGC_2022_MAGMA_CLUSTER_MAP_V2
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_pgc_2022 import (

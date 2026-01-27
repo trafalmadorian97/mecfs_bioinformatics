@@ -3,8 +3,9 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import GENE_THESAURUS
-from mecfs_bio.assets.reference_data.uniprot.uniprot_lookup_table import UNIPROT_LOOKUP
+from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
+    GENE_THESAURUS,
+)
 
 
 def run_initial_analysis():
