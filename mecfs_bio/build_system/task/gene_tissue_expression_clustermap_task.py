@@ -108,6 +108,10 @@ class ExpressionMatrixClusterMapTaskV2(Task):
         gene_thesaurus_source: GeneInfoSource,
         num_genes_to_keep: int = 300,
     ):
+        """
+        Make a heatmap in which genes are selected according to their MAGMA significance.
+        Useful for delving deeper into MAGMA results .
+        """
         source_meta = extracted_magma_gene_results_source.task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(

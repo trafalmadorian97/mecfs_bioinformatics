@@ -1,6 +1,7 @@
 """
 Generate a clustermap showing gene/tissue specificity for the most significant Schizophrenia genes as detected by MAGMA
 """
+
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_pgc_2022 import (
     SCH_PGC_2022_STANDARD_ANALYSIS,
 )
