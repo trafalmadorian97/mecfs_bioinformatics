@@ -110,6 +110,7 @@ def mr_cis_pqtl_asset_generator(
     steiger_config: None | SteigerFilteringOptions = SteigerFilteringOptions(
         True, 0.01
     ),
+    significant_alpha: float = 0.01,
 ):
     """
     Asset generator for applying Mendelian Randomization using cis-pQTLs from the UK Biobank
@@ -188,7 +189,7 @@ def mr_cis_pqtl_asset_generator(
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
     )
     multiple_testing_task = MultipleTestingTableTask.create_from_result_table_task(
-        alpha=0.01,
+        alpha=significant_alpha,
         method="bonferroni",
         asset_id=base_name + "_two_sample_mr_cis_pqtl_multiple_testing",
         p_value_column=TSM_OUTPUT_P_COL,
