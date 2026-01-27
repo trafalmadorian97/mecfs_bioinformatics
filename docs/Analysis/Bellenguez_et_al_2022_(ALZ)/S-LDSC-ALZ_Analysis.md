@@ -6,7 +6,7 @@ hide:
 
 # S-LDSC ALZ Analysis
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from  Bellenguez et al.'s 2022 Meta-GWAS of Alzhiemers' disease
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from  Bellenguez et al.'s 2022 Meta-GWAS of Alzhiemers' disease[@bellenguez2022new].
 
 ## Reference Data Sources
 
@@ -40,7 +40,7 @@ Here are the cell/tissue types with the lowest p values:
 | Brain_Hippocampus                                              |   2.46114e-09 |           0.0054518   | False         |
 
 
-The non-significant cell types with the lowest p values are immune related, consistent with theories that immune processes drive Alzheimer's disease (see pg. 1205 of Kandel et al.,[@kandel2021principles]).
+The non-significant cell types with the lowest p values are immune related, consistent with theories that immune processes drive Alzheimer's disease (see pg. 1205 of Kandel et al.[@kandel2021principles]).
 
 
 
@@ -72,7 +72,7 @@ In this dataset, there is one significant cell type: B-cells from cord blood. Ag
 
 ### Immgen data
 
-The result of applying S-LSDC to the Alzheimer's GWAS with the immgen reference dataset are shown below:
+The result of applying S-LSDC to the Alzheimer's GWAS with the Immgen reference dataset are shown below:
 
 ![alz-immgen-s-lsdc](https://github.com/user-attachments/assets/858a12fd-d311-4ebd-8fca-01a3bb7e38cd)
 

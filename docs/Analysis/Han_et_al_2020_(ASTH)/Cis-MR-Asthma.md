@@ -5,7 +5,7 @@ hide:
 ---
 # MR with cis-pQTLs
 
-I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the asthma GWAS of Han et al.[@han2020genome] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  The aim was to identify candidate proteins that may be causal in the asthma disease process.
+I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the asthma GWAS of Han et al.[@han2020genome] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  I aimed to identify candidate proteins that may be causal in the asthma disease process.
 
 Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio method to estimate the causal effect of the proteins on asthma.
 
@@ -15,7 +15,7 @@ NOTE: Because  Han et al. and the UKBB PPP make use of overlapping individuals f
 
 ## Results
 
-The plot below summarizes the effect sizes and standard errors of the Bonferroni-significant proteins resulting from MR analysis with cis-pQTLs.  Effect sizes are expresses in asthma liability units per inverse-rank-transformed protein abundance unit.
+The plot below summarizes the effect sizes and standard errors of the Bonferroni-significant proteins produced by MR analysis.  Effect sizes are expressed in asthma liability units per inverse-rank-transformed protein abundance unit.
 
 ![effect_plot_cis_mr_asthma](https://github.com/user-attachments/assets/708138a3-1f22-452e-b1a7-95fc96e468a7)
 
@@ -58,3 +58,6 @@ The table below provides descriptions from the UniProt database for these signif
 ## Interpretation of results
 
 The top protein hits in the table above are consistent with the known biology of asthma.  As would be expected for an immunologically-driven phenotype, these hits consist mostly of cytokine receptors, innate immune system pattern receptors, and components of the MHC/HLA molecule.
+
+
+The direction of some of the effects is surprising: for instance, TLR1, an innate-immune system receptor, is associated with lower asthma risk.  This finding may be explained Donoguhe et al.'s[@donoghue2025integration] observation that TLR upregulates il-27, an anti-inflammatory cytokine that protects against asthma

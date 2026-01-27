@@ -123,7 +123,7 @@ It is also interesting to observe that in both the GTEx and Roadmap analysis, T 
 
 ### Immgen data
 
-I next applied S-lDSC to the asthma GWAS using Immgen as a reference.
+I next applied S-LDSC to the asthma GWAS using Immgen data as a reference.
 
 The results are given in the plot and table below:
 
