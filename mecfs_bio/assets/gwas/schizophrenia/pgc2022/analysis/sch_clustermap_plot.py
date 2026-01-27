@@ -1,3 +1,6 @@
+"""
+Generate a clustermap showing gene/tissue specificity for the most significant Schizophrenia genes as detected by MAGMA
+"""
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_pgc_2022 import (
     SCH_PGC_2022_STANDARD_ANALYSIS,
 )
@@ -18,7 +21,7 @@ from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.constants.magma_constants import MAGMA_GENE_COL
 
-SCH_PGC_2022_MAGMA_CLUSTER_MAP_V2 = ExpressionMatrixClusterMapTaskV2.create_standard_gene_magma_heatmap(
+SCH_PGC_2022_MAGMA_CLUSTER_MAP = ExpressionMatrixClusterMapTaskV2.create_standard_gene_magma_heatmap(
     asset_id="sch_pgc_2022_cluster_map_v2",
     gene_specificity_matrix_source=SpecificityMatrixSource(
         GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,

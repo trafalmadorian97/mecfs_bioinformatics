@@ -5,7 +5,7 @@ import xarray as xr
 
 class XRDataPipe(ABC):
     """
-    A transformation of an xarray datast
+    A transformation of an xarray dataset
     """
 
     @abstractmethod
