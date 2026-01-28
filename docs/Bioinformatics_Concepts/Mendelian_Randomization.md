@@ -87,7 +87,7 @@ E ----> D;
 A genetic variant affects the levels of two proteins.  One protein affects the outcome through the exposure, while the other affects the outcome independently of the exposure. If we believe the [Omnigenic Model](Omnigenic_Model.md), we should expect this kind of horizontal pleiotropy to be relatively common.
 
 
-The risk of horizonal pleiotropy is magnified when the connection between the genetic variant and the exposure is complex and indirect.  An example would be aN study in which the genetic instrument affects neurodevelopmental, and the exposure is tobacco use.  The risk is reduced when the connection is straightforward and direct.  An example would be an MR study which the exposure is the plasma level of a a protein, and the genetic instrument is a cis-regulatory variant for that protein (a cis-pQTL).
+The risk of horizontal pleiotropy is magnified when the connection between the genetic variant and the exposure is complex and indirect.  An example would be aN study in which the genetic instrument affects neurodevelopmental, and the exposure is tobacco use.  The risk is reduced when the connection is straightforward and direct.  An example would be an MR study which the exposure is the plasma level of a a protein, and the genetic instrument is a cis-regulatory variant for that protein (a cis-pQTL).
 
 
 ## Methods of Mendelian Randomization
