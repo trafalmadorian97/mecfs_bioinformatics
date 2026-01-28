@@ -29,6 +29,12 @@ logger = structlog.getLogger()
 
 @frozen
 class ConcatFramesInDirTask(Task):
+    """
+    Task to concatenate dataframes in a directory matching a glob pattern
+
+    Example use case: when GWAS summary statistics are split over multiple files.
+    """
+
     _meta: Meta
     source_dir_task: Task
     path_glob: str
