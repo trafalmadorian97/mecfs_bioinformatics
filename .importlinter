@@ -1,0 +1,13 @@
+[importlinter]
+root_packages =
+    mecfs_bio
+    test_mecfs_bio
+    experiments
+
+[importlinter:contract:layers]
+name = Enforce layered architecture: application code cannot import test code or experimental code, and test code cannot import experimental code.
+type = layers
+layers =
+    experiments
+    test_mecfs_bio
+    mecfs_bio
