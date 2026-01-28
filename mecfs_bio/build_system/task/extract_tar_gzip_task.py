@@ -31,6 +31,9 @@ class ExtractTarGzipTask(Task):
     """
     Task to extract the contents of a (possibly gzipped) tar file to a target directory
     Set subdir_name to extract only the contents of one subfolder within the tar file
+
+
+    read_mode: use r to only untar, and not ungzip.
     """
 
     _meta: Meta

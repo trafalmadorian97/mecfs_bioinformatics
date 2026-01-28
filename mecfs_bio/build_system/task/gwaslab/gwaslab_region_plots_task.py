@@ -137,7 +137,7 @@ def get_top_var_df(df: pd.DataFrame, plot_top: int | None) -> pd.DataFrame:
     )
 
 
-def _plot_region_around_variant(
+def plot_region_around_variant(
     sumstats: gl.Sumstats,
     chrom: int,
     pos: int,
@@ -176,7 +176,7 @@ def plot_region_around_variants(
 ) -> None:
     for variant in variants:
         logger.debug(f"Creating region plot around variant {variant.id}")
-        _plot_region_around_variant(
+        plot_region_around_variant(
             sumstats=sumstats,
             chrom=variant.chromosome,
             pos=variant.position,

@@ -32,9 +32,16 @@ initial ME/CFS symptoms."
 
 If we relax the significance threshold to 0.05, one additional potentially causal protein is identified
 
-| Assay Target   |         b |        pval | Function [CC]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-|:---------------|----------:|------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| BTN1A1         |  0.284424 | 2.38381e-05 | FUNCTION: May function in the secretion of milk-fat droplets. May act as a specific membrane-associated receptor for the association of cytoplasmic droplets with the apical plasma membrane (By similarity). Inhibits the proliferation of CD4 and CD8 T-cells activated by anti-CD3 antibodies, T-cell metabolism and IL2 and IFNG secretion (By similarity). {ECO:0000250}.                                                                                                                                                                                                                                                                                                                             |⏎  
+| Assay Target   |         b |        pval | UniProt Function [CC]                                                                                                                                                                                                                                                                                                                                                          |
+|:---------------|----------:|------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| BTN1A1         |  0.284424 | 2.38381e-05 | FUNCTION: May function in the secretion of milk-fat droplets. May act as a specific membrane-associated receptor for the association of cytoplasmic droplets with the apical plasma membrane (By similarity). Inhibits the proliferation of CD4 and CD8 T-cells activated by anti-CD3 antibodies, T-cell metabolism and IL2 and IFNG secretion (By similarity). {ECO:0000250}. |⏎  
 
 
 This protein appears to be anti-inflammatory, and higher levels are associated with a greater risk of ME/CFS.
+
+
+## Follow-up questions
+
+- Does co-localization analysis suggest that the DecodeME causal variant and the cis-pQTL co-localize?
+
+- Do the cis-pQTLs identified above co-localize with trans-pQTLs for other proteins? If so, this could suggest causal protein regulatory chains.

@@ -7,6 +7,9 @@ import structlog
 from loguru import logger
 
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
@@ -193,13 +196,23 @@ class GWASLabCreateSumstatsTask(Task):
         return self._df_source_task.meta.asset_id
 
     @property
-    def _source_meta(self) -> FilteredGWASDataMeta | GWASSummaryDataFileMeta:
+    def _source_meta(
+        self,
+    ) -> FilteredGWASDataMeta | GWASSummaryDataFileMeta | ReferenceFileMeta:
         meta = self._df_source_task.meta
-        assert isinstance(meta, (FilteredGWASDataMeta, GWASSummaryDataFileMeta))
+        assert isinstance(
+            meta, (FilteredGWASDataMeta, GWASSummaryDataFileMeta, ReferenceFileMeta)
+        )
         return meta
 
     @property
     def meta(self) -> Meta:
+        if isinstance(self._source_meta, ReferenceFileMeta):
+            return GWASLabSumStatsMeta(
+                short_id=self._asset_id,
+                trait="reference_data_gwas",
+                project=self._source_meta.group,
+            )
         return GWASLabSumStatsMeta(
             short_id=self._asset_id,
             trait=self._source_meta.trait,

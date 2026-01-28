@@ -13,7 +13,6 @@ def go():
     # walk returns a generator yielding (dirpath, dirnames, filenames)
     project_or_folder_id = "syn51365303"
     walked_path = synapseutils.walk(syn, project_or_folder_id)
-    synapseutils.syncToSynapse()
 
     for dirpath, dirnames, filenames in walked_path:
         for filename in filenames:
@@ -31,7 +30,9 @@ def try_download():
     syn = synapseclient.login()
     files = synapseutils.syncFromSynapse(syn, 'syn52363617', path="dummy")
     import pdb; pdb.set_trace()
+    synapseutils.syncFromSynapse(syn, 'syn52363617', path="dummy")
     print("yo")
 
 if __name__ == "__main__":
-    try_download()
+    go()
+    # try_download()
