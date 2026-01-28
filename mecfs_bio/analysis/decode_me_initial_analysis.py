@@ -24,7 +24,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_hba_magma_a
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot import (
     MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.decode_me_gwas_1_cis_pqtl_mr import (
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_cis_pqtl_mr import (
     DECODE_ME_BASIC_CIS_PQTL_MR,
 )
 
