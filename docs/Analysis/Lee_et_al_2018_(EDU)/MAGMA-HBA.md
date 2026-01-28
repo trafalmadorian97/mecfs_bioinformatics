@@ -12,7 +12,7 @@ I applied MAGMA to the educational attainment GWAS of Lee et al.[@lee2018gene] u
 
 
 
-In the plot below, the x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while the y-axis corresponds to the $-\log_{10}(p)$ value score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.  I used a conditional analysis approach based on the one described in Wanatabe et al.[@watanabe2019genetic] to identify independent clusters.  These independent clusters are labeled in plot.  
+In the plot below, the x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while the y-axis corresponds to the $-\log_{10}(p)$ score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.  I used a conditional analysis approach based on the one described in Wanatabe et al.[@watanabe2019genetic] to identify independent clusters.  These independent clusters are labeled in plot.  
 
 
 ![edu-hba-magma](https://github.com/user-attachments/assets/d265ebd4-b5db-4578-a3b3-2cc02bf5f2e4)
