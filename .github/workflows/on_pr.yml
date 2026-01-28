@@ -51,7 +51,7 @@ jobs:
          key: ${{ runner.os }}-r-libs-${{ hashFiles('pixi.lock') }}-v1
       - name: Install TwoSampleMR
         if: steps.changes.outputs.nonmark == 'true'
-        run: pixi r install-mr
+        run: pixi r invoke install-r-packages
       - name: Check that we can build docs
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r mkdocs build --strict

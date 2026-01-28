@@ -1,7 +1,7 @@
 
 # Synapse
 
-Some datasets must be downloaded from [Synapse](https://www.synapse.org/). An example is the [UK Biobank Pharma Proteomics Project Summary Statistics](../Data_Sources/UKBB_PPP.md)  While the build system can automate these download, each user must provide their own Synapse Personal Access Token.
+Some datasets must be downloaded from [Synapse](https://www.synapse.org/). An example is the [UK Biobank Pharma Proteomics Project Summary Statistics](../Data_Sources/UKBB_PPP.md)  While the build system can automate these downloads, each user must provide their own Synapse Personal Access Token.
 
 ## Steps to Set Up Synapse Access Token
 

@@ -1,5 +1,13 @@
 # Initial Setup
 
+
+If you have not done previously, [clone](https://git-scm.com/docs/git-clone) the repository.
+
+
+```bash
+git clone git@github.com:trafalmadorian97/mecfs_bioinformatics.git
+```
+
 We use [Pixi](https://pixi.sh/dev/) are our package manager.  Setup Pixi as described [here](https://pixi.sh/dev/installation/),
 using the bash command
 
@@ -13,11 +21,14 @@ After setup, source your `bashrc` to make sure `pixi` is on your path:
 source ~/.bashrc
 ```
 
-To verify everything is working correctly, start by running the linters and unit tests:
+To verify everything is working correctly, try: 
 
 ```bash
-pixi r invoke green
+pixi r invoke init
 ```
+
+This will install additional required packages, then run linters and tests.
+
 
 A natural next step is to run the basic analysis of the Decode ME data using the script [here][mecfs_bio.analysis.decode_me_initial_analysis].
 
