@@ -79,12 +79,22 @@ def spellcheck_src(c):
     c.run(f"pixi r  typos {SRC_PATH}", pty=True)
 
 
+@task
+def checkimports(c):
+    """
+    Use import linter to enforce architectural constraints
+    """
+    print("Checking architectural constraints using import-linter")
+    c.run("pixi r lint-imports", pty=True)
+
+
 @task(
     pre=[
         lintfix,
         format,
         spellcheck_docs,
         spellcheck_src,
+        checkimports,
         typecheck,
         test,
     ]

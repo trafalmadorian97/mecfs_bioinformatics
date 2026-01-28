@@ -67,6 +67,9 @@ jobs:
       - name: Check code spelling using typos
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke spellcheck-src
+      - name: Lint imports
+        if: steps.changes.outputs.nonmark == 'true'
+        run: pixi r invoke checkimports
       - name: Check types with mypy
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke typecheck
