@@ -1,3 +1,8 @@
+---
+hide:
+- navigation
+- toc
+---
 # Cis pQTL MR Analysis
 
 
@@ -27,6 +32,17 @@ The mechanism by which RABGAP1L could affect ME/CFS is not immediately clear.  T
 be expected to enhance susceptibility to bacterial and viral infection, which often precedes
 initial ME/CFS symptoms."
 
+
+To further investigate, I generate two region plots.  The first shows the DECODE ME GWAS signal in region of the RABGAP1L gene:
+
+![mecfs_rabgap1l_region_plot](https://github.com/user-attachments/assets/e2a71bbf-e803-4b57-9a7d-a22b4f9fd2f2)
+
+
+The second shows the same region from the UK Biobank Pharma Proteomics Project GWAS of plasma RABGAP1L levels:
+
+![rabgap1l_region_plot](https://github.com/user-attachments/assets/161f1b0e-e309-4c0e-a88a-d312b8dc80ee)
+
+To me, it seems that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  Running a colocalization algorithm may clarify this.
 
 ### BTN1A1
 

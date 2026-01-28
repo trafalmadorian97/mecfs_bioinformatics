@@ -3,10 +3,8 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.analysis.ukbb_rabgap1l_region_plot_37 import \
-    UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37
-from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.processed.ukbb_rabgap1l_sumstats_37 import (
-    UKBBPPP_RABGAP1l_SUMSTATS_37,
+from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.analysis.ukbb_rabgap1l_region_plot_37 import (
+    UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37,
 )
 
 

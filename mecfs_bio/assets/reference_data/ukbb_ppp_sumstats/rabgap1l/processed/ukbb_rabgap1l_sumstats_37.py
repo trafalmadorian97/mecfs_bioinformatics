@@ -4,8 +4,6 @@ from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.processed.stack_
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
-    GWASLabVCFRef,
-    HarmonizationOptions,
 )
 
 UKBBPPP_RABGAP1l_SUMSTATS_37 = GWASLabCreateSumstatsTask(

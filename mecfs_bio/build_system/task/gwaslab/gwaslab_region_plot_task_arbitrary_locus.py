@@ -10,7 +10,6 @@ logger = structlog.get_logger()
 
 from pathlib import Path, PurePath
 
-import gwaslab as gl
 from attrs import frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -25,9 +24,6 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
-)
-from mecfs_bio.build_system.task.gwaslab.gwaslab_util import (
-    gwaslab_download_ref_if_missing,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -104,7 +100,7 @@ class GwasLabRegionPlotTargetLocusTask(Task):
             trait=reference_meta.trait,
             project=reference_meta.project,
             short_id=AssetId(asset_id),
-            sub_dir=PurePath("analysis")/"region_plots"
+            sub_dir=PurePath("analysis") / "region_plots",
         )
         return cls(
             meta=meta,
@@ -114,5 +110,3 @@ class GwasLabRegionPlotTargetLocusTask(Task):
             pos=pos,
             buffer=buffer,
         )
-
-
