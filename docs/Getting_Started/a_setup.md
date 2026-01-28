@@ -13,11 +13,14 @@ After setup, source your `bashrc` to make sure `pixi` is on your path:
 source ~/.bashrc
 ```
 
-To verify everything is working correctly, start by running the linters and unit tests:
+To verify everything is working correctly, try: 
 
 ```bash
-pixi r invoke green
+pixi r invoke init
 ```
+
+This will install additional required packages, then run linters and tests.
+
 
 A natural next step is to run the basic analysis of the Decode ME data using the script [here][mecfs_bio.analysis.decode_me_initial_analysis].
 

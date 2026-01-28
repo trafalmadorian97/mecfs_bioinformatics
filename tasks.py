@@ -93,9 +93,17 @@ def green(c):
     pass
 
 
-## Library setup tasks
-
-
 @task
-def install_tabix_ubuntu(c):
-    c.run("sudo apt-get install tabix")
+def install_r_packages(c):
+    """
+    Install R packages such as TwoSampleMR
+    """
+    c.run("pixi r install-mr", pty=True)
+
+
+@task(pre=[install_r_packages, green])
+def init(c):
+    """
+    Initial repo setup
+    """
+    pass
