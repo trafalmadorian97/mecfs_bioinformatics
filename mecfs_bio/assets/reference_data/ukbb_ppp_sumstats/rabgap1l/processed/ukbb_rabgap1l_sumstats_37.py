@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 
 UKBBPPP_RABGAP1l_SUMSTATS_37_HARMONIZED = GWASLabCreateSumstatsTask(
     df_source_task=STACK_UKBBPPP_RABGAP1L,
-    asset_id=AssetId("sumstats_37_ukbb_rabgap1l"),
+    asset_id=AssetId("sumstats_37_ukbb_rabgap1l_gwaslab"),
     basic_check=True,
     genome_build="infer",
     liftover_to="19",

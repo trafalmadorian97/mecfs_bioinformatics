@@ -8,7 +8,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_region_plots_task import (
 
 logger = structlog.get_logger()
 
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import gwaslab as gl
 from attrs import frozen
@@ -36,7 +36,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 
 @frozen
-class GwasLabRegionPlotsFromLeadVariantsTask(Task):
+class GwasLabRegionPlotTargetLocusTask(Task):
     """
     A task to generate region plots around arbitrary locus in genome.
 
@@ -56,11 +56,6 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
     @property
     def meta(self) -> Meta:
         return self._meta
-        # return GWASLabRegionPlotsMeta(
-        #     trait=self._lead_variants_task_meta.trait,
-        #     project=self._lead_variants_task_meta.project,
-        #     short_id=self.short_id,
-        # )
 
     @property
     def _sumstats_meta(self) -> GWASLabSumStatsMeta:
@@ -109,6 +104,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
             trait=reference_meta.trait,
             project=reference_meta.project,
             short_id=AssetId(asset_id),
+            sub_dir=PurePath("analysis")/"region_plots"
         )
         return cls(
             meta=meta,
@@ -120,31 +116,3 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
         )
 
 
-def _plot_region_around_variant(
-    sumstats: gl.Sumstats,
-    chrom: int,
-    pos: int,
-    buffer: int,
-    output_path: Path,
-    vcf_name_for_ld: GWASLabVCFRefFile | None,
-) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    if vcf_name_for_ld is not None:
-        gwaslab_download_ref_if_missing(vcf_name_for_ld)
-        vcf_path = gl.get_path(vcf_name_for_ld)
-    else:
-        vcf_path = None
-    scaled = "MLOG10P" in sumstats.data.columns
-    sumstats.plot_mqq(
-        mode="r",
-        skip=2,
-        cut=20,
-        scaled=scaled,
-        region_grid=True,
-        region=(chrom, max(pos - buffer, 0), pos + buffer),
-        save=str(
-            output_path,
-        ),
-        save_args={"dpi": 400, "facecolor": "white"},
-        vcf_path=vcf_path,
-    )
