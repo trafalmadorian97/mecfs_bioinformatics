@@ -11,7 +11,7 @@ The results are plotted below:
 
 ![hba_magma_indep_plot](https://github.com/user-attachments/assets/751f2f5e-6d85-4c1b-8604-57d72a1dd931)
 
-The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while the y-axis corresponds to the $-\log_{10}(p)$ value score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.  I used a conditional analysis approach based on the one described in Wanatabe et al.[@watanabe2019genetic] to identify independent clusters.  These 3 independent clusters are labeled in plot.  I have also listed them in the table below, together with some cluster-annotations from Duncan et al.[@duncan2025mapping].
+The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while the y-axis corresponds to the $-\log_{10}(p)$ score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.  I used a conditional analysis approach based on the one described in Wanatabe et al.[@watanabe2019genetic] to identify independent clusters.  These 3 independent clusters are labeled in plot.  I have also listed them in the table below, together with some cluster-annotations from Duncan et al.[@duncan2025mapping].
 
 
 | Retained_clusters   |          P | Supercluster   | Class auto-annotation   |   Neurotransmitter auto-annotation | Neuropeptide auto-annotation | Subtype auto-annotation   | Transferred MTG Label   | Top three regions                                                 | Top Enriched Genes                                                                       |

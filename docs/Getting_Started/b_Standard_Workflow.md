@@ -2,14 +2,6 @@
 
 This page describes the standard workflow for contributing to the mecfs bioinformatics repository.
 
-## Clone repository
-
-If you have not done previously, [clone](https://git-scm.com/docs/git-clone) the repository.
-
-
-```bash
-git clone git@github.com:trafalmadorian97/mecfs_bioinformatics.git
-```
 
 
 ## Create a new branch
