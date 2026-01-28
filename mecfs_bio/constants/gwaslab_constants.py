@@ -22,7 +22,7 @@ GWASLAB_SNPID_COL = "SNPID"
 
 GwaslabKnownFormat = Literal["gwaslab", "regenie", "gwascatalog"]
 
-GWASLabVCFRefFile = Literal["1kg_eur_hg38"]
+GWASLabVCFRefFile = Literal["1kg_eur_hg38", "1kg_eur_hg19"]
 
 GWASLAB_EUR_1K_GENOMES_NAME_38: GWASLabVCFRefFile = "1kg_eur_hg38"
 GWASLAB_HUMAN_GENOME_NAME_38 = "ucsc_genome_hg38"

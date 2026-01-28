@@ -1,3 +1,8 @@
+---
+hide:
+- navigation
+- toc
+---
 # Cis pQTL MR Analysis
 
 
@@ -28,13 +33,31 @@ be expected to enhance susceptibility to bacterial and viral infection, which of
 initial ME/CFS symptoms."
 
 
+To further investigate, I generate two region plots.  The first shows the DECODE ME GWAS signal in region of the RABGAP1L gene:
+
+![mecfs_rabgap1l_region_plot](https://github.com/user-attachments/assets/e2a71bbf-e803-4b57-9a7d-a22b4f9fd2f2)
+
+
+The second shows the same region from the UK Biobank Pharma Proteomics Project GWAS of plasma RABGAP1L levels:
+
+![rabgap1l_region_plot](https://github.com/user-attachments/assets/161f1b0e-e309-4c0e-a88a-d312b8dc80ee)
+
+To me, it seems that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  Running a colocalization algorithm may clarify this.
+
 ### BTN1A1
 
 If we relax the significance threshold to 0.05, one additional potentially causal protein is identified
 
-| Assay Target   |         b |        pval | Function [CC]                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-|:---------------|----------:|------------:|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| BTN1A1         |  0.284424 | 2.38381e-05 | FUNCTION: May function in the secretion of milk-fat droplets. May act as a specific membrane-associated receptor for the association of cytoplasmic droplets with the apical plasma membrane (By similarity). Inhibits the proliferation of CD4 and CD8 T-cells activated by anti-CD3 antibodies, T-cell metabolism and IL2 and IFNG secretion (By similarity). {ECO:0000250}.                                                                                                                                                                                                                                                                                                                             |⏎  
+| Assay Target   |         b |        pval | UniProt Function [CC]                                                                                                                                                                                                                                                                                                                                                          |
+|:---------------|----------:|------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| BTN1A1         |  0.284424 | 2.38381e-05 | FUNCTION: May function in the secretion of milk-fat droplets. May act as a specific membrane-associated receptor for the association of cytoplasmic droplets with the apical plasma membrane (By similarity). Inhibits the proliferation of CD4 and CD8 T-cells activated by anti-CD3 antibodies, T-cell metabolism and IL2 and IFNG secretion (By similarity). {ECO:0000250}. |⏎  
 
 
 This protein appears to be anti-inflammatory, and higher levels are associated with a greater risk of ME/CFS.
+
+
+## Follow-up questions
+
+- Does co-localization analysis suggest that the DecodeME causal variant and the cis-pQTL co-localize?
+
+- Do the cis-pQTLs identified above co-localize with trans-pQTLs for other proteins? If so, this could suggest causal protein regulatory chains.
