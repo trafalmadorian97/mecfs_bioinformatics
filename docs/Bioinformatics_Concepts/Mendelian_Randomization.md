@@ -8,8 +8,8 @@ Hernan et al.[@hernan2019second] assert that the core activities of the data sci
 
 
 1. **Description**: Computing summary statistics, to enable large datasets to be easily comprehended. An example would be producing a chart summarizing the characteristics of heart disease patients.
-2. **Prediction**: Estimating the distribution of one variable conditional on another.  An example would be calculation of a person's odds of heart disease, conditional on their demographics, genetics, and [LDL](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) level.
-3. **Causal Inference**:   Reasoning about counterfactuals.   An example would be evaluating the evidence in support of statements like: "If all patients with high LDL were put on statins, occurrence of heart disease would be reduced by $X$ percent".  
+2. **Prediction**: Estimating the distribution of one variable conditional on other variables.  An example would be calculation of a person's odds of heart disease, conditional on their demographics, genetics, and [LDL](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) level.
+3. **Causal Inference**:   Reasoning about counterfactuals.   An example would be evaluating the evidence in support a statement like: "If all patients with high LDL were put on statins, occurrence of heart disease would be reduced by $X$ percent".  
 
 
 
@@ -32,7 +32,7 @@ The figure below from Hartley et al.[@hartley2022guide] summarizes MR:
 
 ![mr-diagram](https://github.com/user-attachments/assets/afcab2e5-b9d0-423f-a43b-0b4f47b172e4)
 
-We apply MR to estimate the causal effect of an exposure (e.g. LDL) on an outcome (e.g. heart disease).  MR also requires a genetic variant ("Genetic Instrument") associated with the exposure.  
+We apply MR to estimate the causal effect of an exposure (e.g. LDL) on an outcome (e.g. heart disease).  MR requires a genetic variant ("Genetic Instrument") associated with the exposure.  
 
 The validity of MR depends on three main assumptions:
 
@@ -40,7 +40,7 @@ The validity of MR depends on three main assumptions:
 - **IV2**: The instrument cannot share a cause with the exposure or the outcome.
 - **IV3**: The instrument cannot be causally associated with the outcome, except via the exposure.
 
-Roughly speaking, in MR, natural variation in the genetic instrument plays a role analogous to the random treatment assignment in an RCT.  The analogy between MR and an RCT is illustrated in the diagram below, from Zuber et al.[@zuber2022combining] illustrates the principle:
+In MR, natural variation in the genetic instrument plays a role analogous to the random treatment assignment in an RCT.  The analogy between MR and an RCT is illustrated in the diagram below, from Zuber et al.[@zuber2022combining]:
 
 ![mr-analogy](https://github.com/user-attachments/assets/39aac59f-c0c6-4bce-91a9-80fc910b2753)
 
@@ -63,6 +63,39 @@ Y &= \beta_{Y,X}X +\alpha_1 + \epsilon &\text{ where }\epsilon \sim N(0,\sigma_1
 $$
 
 Under this linear model, homogeneity holds automatically.
+
+
+
+
+## Pitfalls in Mendelian Randomization
+
+### Horizontal Pleiotropy
+
+A common source of error in Mendelian Randomization occurs when the genetic instrument affects the outcome through a causal pathway that does not involve the exposure.  This scenario, which is known as "horizontal pleiotropy", results in a violation of IV3.  If the strength of the causal effect through the alternative pathway is large, the results of Mendelian Randomization and be misleading.
+
+The diagram below provides an example of horizontal pleiotropy:
+
+``` mermaid
+graph LR
+A[Genetic Instrument] --> B[Protein 1];
+B --> C[Exposure];
+C --> D[Outcome];
+A --> E[Protein 2];
+E ----> D;
+```
+
+A genetic variant affects the levels of two proteins.  One protein affects the outcome through the exposure, while the other affects the outcome independently of the exposure. If we believe the [Omnigenic Model](Omnigenic_Model.md), we should expect this kind of horizontal pleiotropy to be relatively common.
+
+
+The risk of horizonal pleiotropy is magnified when the connection between the genetic variant and the exposure is complex and indirect.  An example would be aN study in which the genetic instrument affects neurodevelopmental, and the exposure is tobacco use.  The risk is reduced when the connection is straightforward and direct.  An example would be an MR study which the exposure is the plasma level of a a protein, and the genetic instrument is a cis-regulatory variant for that protein (a cis-pQTL).
+
+
+## Methods of Mendelian Randomization
+
+### The Wald Ratio
+
+
+todo
 
 
 
