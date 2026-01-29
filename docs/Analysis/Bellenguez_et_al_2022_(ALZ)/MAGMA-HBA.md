@@ -4,7 +4,7 @@ hide:
 - toc
 ---
 # MAGMA HBA
-I applied MAGMA to the Alzheimer's GWAS of Bellenguez et al. using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/HBA_scRNAseq.md) as a reference.
+I applied MAGMA to the Alzheimer's GWAS of Bellenguez et al.[@bellenguez2022new] using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] as a reference.
 
 ## Results
 The results are plotted below:

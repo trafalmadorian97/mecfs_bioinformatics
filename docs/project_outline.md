@@ -1,20 +1,26 @@
 
 
 # Project Outline
-This project aims to bring to bear bioinformatic techniques to advance the understanding of ME/CFS and other poorly-understood diseases.
-
-# Principles
-
-## Reproducibility
-
-It should be possible to reproduce any of main analyses with a few lines of Python code. In support of this principle, the downloading of auxiliary data and the installation of software tools should be automated.
+## Goal
+This project uses bioinformatic techniques to advance our understanding of ME/CFS and other poorly-understood diseases.
 
 
-## Verification
+## Principles
 
-We should verify the correctness of our code and our analysis. 
+When working on this project, there are a few key principles that govern how I write software and analyze data:
 
-Techniques for achieving this include:
 
-- We should implement unit and integration tests.
-- Whenever we apply biostatistical software to ME/CFS data, we should apply the same software to data from a better-understood disease and verify that the results are consistent with the known biology of that disease.
+
+**Reproducibility**: It should be possible to reproduce any of main analyses with a few lines of Python code. 
+
+
+
+
+
+**Verification**: As much as is feasible, code and analysis should be verified.
+
+Verification techniques include:
+
+- Implementing unit and integration tests to make sure that software continues to behave as expected, even as the software architecture inevitably evolves over time.  See [@winters2020software] for some excellent discussions of the principles of software reliability.
+- Running biostatistical software on diseases with known biology and checking that this known biology is re-capitulated.  This check evaluates both: a) the overall reliability of the software and b) that I have correctly understood how to use it.
+

@@ -3,10 +3,10 @@ hide:
 - navigation
 - toc
 ---
-# Cis pQTL MR Analysis
+# cis-pQTL MR Analysis
 
 
-I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to DecodeME GWAS 1[@genetics2025initial] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  I aimed to identify candidate proteins that may be causal in the DecodeME disease process.
+I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to DecodeME GWAS 1[@genetics2025initial] using cis-pQTL from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  I aimed to identify candidate proteins that may be causal in the DecodeME disease process.
 
 
 Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio method to estimate the causal effect of the proteins on ME/CFS.
@@ -42,7 +42,7 @@ The second shows the same region from the UK Biobank Pharma Proteomics Project G
 
 ![rabgap1l_region_plot](https://github.com/user-attachments/assets/161f1b0e-e309-4c0e-a88a-d312b8dc80ee)
 
-To me, it seems that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  Running a colocalization algorithm may clarify this.
+To me, it seems that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  Running a colocalization algorithm may clarify.
 
 ### BTN1A1
 
