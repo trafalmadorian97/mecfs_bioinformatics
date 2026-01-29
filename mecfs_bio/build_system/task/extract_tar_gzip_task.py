@@ -3,7 +3,9 @@ from typing import Literal
 import structlog
 
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
-from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import ProcessedGwasDataDirectoryMeta
+from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
+    ProcessedGwasDataDirectoryMeta,
+)
 
 logger = structlog.get_logger()
 import tarfile
@@ -99,7 +101,7 @@ class ExtractTarGzipTask(Task):
             )
         if isinstance(source_meta, GWASSummaryDataFileMeta):
             return cls(
-                meta= ProcessedGwasDataDirectoryMeta(
+                meta=ProcessedGwasDataDirectoryMeta(
                     short_id=AssetId(asset_id),
                     trait=source_meta.trait,
                     project=source_meta.project,
@@ -110,4 +112,3 @@ class ExtractTarGzipTask(Task):
                 read_mode=read_mode,
             )
         raise NotImplementedError(f"Handler for meta {source_meta} not implemented")
-

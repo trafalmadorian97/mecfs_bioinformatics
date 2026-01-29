@@ -3,9 +3,8 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.ukbb_ppp.btn1a1.generator.retrieve_and_process import BTN1A1_UKBB_PPP_GWAS_PROCESS
-from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.analysis.ukbb_rabgap1l_region_plot_37 import (
-    UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37,
+from mecfs_bio.assets.gwas.ukbb_ppp.btn1a1.generator.retrieve_and_process import (
+    BTN1A1_UKBB_PPP_GWAS_PROCESS,
 )
 
 
@@ -20,7 +19,8 @@ def run_initial_analysis():
             # UNIPROT_LOOKUP
             # GENE_THESAURUS
             # DUNCAN_ET_AL_2025_ST1_EXTRACTED
-        ]+[BTN1A1_UKBB_PPP_GWAS_PROCESS.plot_task],
+        ]
+        + [BTN1A1_UKBB_PPP_GWAS_PROCESS.plot_task],
         incremental_save=True,
         # must_rebuild_transitive=[SUN_ET_AL_2023_COMBINED_PQTLS_EXTRACTED],
         # must_rebuild_transitive=[PARQUET_DBSNP_37_UNNESTED],

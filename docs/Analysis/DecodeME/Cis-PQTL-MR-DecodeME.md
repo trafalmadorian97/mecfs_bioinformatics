@@ -46,7 +46,7 @@ To me, it seems that at least the primary signals do not colocalize: the GWAS pe
 
 ### BTN1A1
 
-If we relax the significance threshold to 0.05, one additional potentially causal protein is identified
+If we relax the significance threshold to 0.05, one additional potentially causal protein is identified: BTN1A1
 
 | Assay Target   |         b |        pval | UniProt Function [CC]                                                                                                                                                                                                                                                                                                                                                          |
 |:---------------|----------:|------------:|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -54,6 +54,22 @@ If we relax the significance threshold to 0.05, one additional potentially causa
 
 
 This protein appears to be anti-inflammatory, and higher levels are associated with a greater risk of ME/CFS.
+
+
+Again, to further investigate, I compared region plots in the vicinity of BTN1A1 from DecodeME and from the UK Biobank Pharma Proteomics Project GWAS of plasma BTN1A1 levels.
+
+The first plot is from DecodeME:
+
+![decode-me-btn1a1-region](https://github.com/user-attachments/assets/71e71dde-84d9-4e8e-8d2d-a5e28e075914)
+
+
+The second is from UK Biobank Pharma Proteomics Project:
+
+
+![ukbb_ppp_btn1a1](https://github.com/user-attachments/assets/400039dc-0e31-4cfd-b219-c3cea2350a3c)
+
+
+In this comparison, it seems even more obvious that the primary signals do not colocalize: they are separated by a clear recombination boundary.
 
 
 ## Follow-up questions

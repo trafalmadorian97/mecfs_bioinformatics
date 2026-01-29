@@ -3,10 +3,8 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 )
 from mecfs_bio.build_system.task.extract_tar_gzip_task import ExtractTarGzipTask
 
-PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED = (
-    ExtractTarGzipTask.create(
-        asset_id="partitioned_model_immgen_ld_scores_extracted",
-        source_task=PARTITIONED_MODEL_IMMGEN_LD_SCORES_RAW,
-        read_mode="r",
-    )
+PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED = ExtractTarGzipTask.create(
+    asset_id="partitioned_model_immgen_ld_scores_extracted",
+    source_task=PARTITIONED_MODEL_IMMGEN_LD_SCORES_RAW,
+    read_mode="r",
 )

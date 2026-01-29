@@ -9,9 +9,10 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
-from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
-from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import ProcessedGwasDataDirectoryMeta
+from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
+    ProcessedGwasDataDirectoryMeta,
+)
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
@@ -81,7 +82,8 @@ class ConcatFramesInDirTask(Task):
         path_glob: str,
         read_spec_for_frames: DataFrameReadSpec,
     ):
-        source_meta = source_dir_task.meta
+        meta: Meta
+        source_meta: Meta = source_dir_task.meta
         if isinstance(source_meta, ReferenceDataDirectoryMeta):
             meta = ReferenceFileMeta(
                 group=source_meta.group,
@@ -92,10 +94,10 @@ class ConcatFramesInDirTask(Task):
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             )
         elif isinstance(source_meta, ProcessedGwasDataDirectoryMeta):
-            meta=FilteredGWASDataMeta(
+            meta = FilteredGWASDataMeta(
                 short_id=AssetId(asset_id),
                 trait=source_meta.trait,
-                project= source_meta.project,
+                project=source_meta.project,
                 sub_dir=PurePath("processed"),
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             )
