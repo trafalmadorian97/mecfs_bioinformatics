@@ -6,7 +6,7 @@ hide:
 
 # S-LDSC ALZ Analysis
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from  Bellenguez et al.'s 2022 Meta-GWAS of Alzhiemers' disease[@bellenguez2022new].
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from  Bellenguez et al.'s 2022 Meta-GWAS of Alzhiemers' disease[@bellenguez2022new].
 
 ## Reference Data Sources
 

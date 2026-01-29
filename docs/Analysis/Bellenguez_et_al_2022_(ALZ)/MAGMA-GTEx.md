@@ -7,7 +7,7 @@ hide:
 # MAGMA GTEx
 
 
-I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to the Alzhiemer's GWAS of Bellenguez et al. using a reference dataset derived from [GTEx bulk RNAseq data](../../Data_Sources/GTEx_RNAseq_Data.md).  The gene-property analysis results are plotted below.
+I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to the Alzhiemer's GWAS of Bellenguez et al.[@bellenguez2022new] using a reference dataset derived from [GTEx bulk RNAseq data](../../Data_Sources/GTEx_RNAseq_Data.md).  The gene-property analysis results are plotted below.
 
 ![magma-alz-gtex](https://github.com/user-attachments/assets/e3c3741e-9042-4e2c-bdd0-7fbf185ccdcd)
 
