@@ -23,6 +23,10 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_region_plot_task_arbitrary_locu
 
 @frozen
 class UKBBPPPGWASPrep:
+    """
+    Grouping of tasks for downloading and preprocessing data from a UK Biobank Pharma Proteomics Project GWAS.
+    """
+
     fetch_task: GetFileFromSynapseTask
     untar_task: ExtractTarGzipTask
     stack_task: ConcatFramesInDirTask
@@ -37,6 +41,11 @@ def ubbb_ppp_gwas_prep(
     region_to_plot_chrom: int,
     region_to_plot_37_pos: int,
 ):
+    """
+    Asset generator to generate tasks to download and preprocess data from one of the UK Biobank Pharma Proteomics Project GWAS
+
+    Also plots a region of the downloaded GWAS.
+    """
     base_name = gene_name + "_ukbb_ppp"
     trait = "ukbb_ppp"
     fetch_task = GetFileFromSynapseTask(
