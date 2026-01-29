@@ -13,7 +13,8 @@ def run_initial_decode_me_analysis():
         [
             # DECODE_ME_RABGAP1L_REGION_PLOT_37,
 
-         DECODE_ME_BTN1A1_REGION_PLOT_37
+         # DECODE_ME_BTN1A1_REGION_PLOT_37
+            DECODE_ME_BTN1A1_REGION_PLOT_37
          ],
         # DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),

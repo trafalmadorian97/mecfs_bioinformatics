@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import pandas as pd
 import structlog
@@ -8,7 +8,10 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import ProcessedGwasDataDirectoryMeta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
@@ -86,6 +89,14 @@ class ConcatFramesInDirTask(Task):
                 sub_folder=source_meta.sub_folder,
                 asset_id=AssetId(asset_id),
                 extension=".parquet",
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+            )
+        elif isinstance(source_meta, ProcessedGwasDataDirectoryMeta):
+            meta=FilteredGWASDataMeta(
+                short_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project= source_meta.project,
+                sub_dir=PurePath("processed"),
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             )
         else:
