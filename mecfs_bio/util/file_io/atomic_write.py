@@ -13,12 +13,13 @@ def atomic_write_yaml(
     sort_keys: bool = True,
 ) -> None:
     """
-    This is from Chatgpt.
-
     The idea is that if the process is interrupted while we are writing a yaml file, either the complete old file or the complete new file should remain.  We should not get partially written new file.
 
-    Prior to introducing this function, I encountered an issue where interrupting the build system mid-run could result in a corrupted build info yaml file
 
+    Prior to introducing this function, I encountered an issue where interrupting the build system mid-run could result in a corrupted build info yaml file.
+
+
+    This is partially from Chatgpt.
     """
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
