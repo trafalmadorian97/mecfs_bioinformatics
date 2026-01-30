@@ -19,6 +19,8 @@ def atomic_write_yaml(
     Prior to introducing this function, I encountered an issue where interrupting the build system mid-run could result in a corrupted build info yaml file.
 
 
+    See https://en.wikipedia.org/wiki/Atomicity_(database_systems)
+
     This is partially from Chatgpt.
     """
     path = Path(path)
