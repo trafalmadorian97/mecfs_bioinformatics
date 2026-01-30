@@ -29,4 +29,5 @@ GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA = PipeDataFrameTask.cre
         AddAveragePipe(cols_to_exclude=["Gene"]),
         MoveColToFrontPipe(target_col="Gene"),
     ],
+    backend="polars",
 )
