@@ -1,13 +1,13 @@
-name: system_test_decodeme
+name: system_test_hba_magma_decode_me
 on:
   schedule:
-    - cron: "15 11 * * *"   #Run at 11:15 am daily
+    - cron: "0 4 * * 7"   #Run Sunday at 4 UTC
   workflow_dispatch: {}
 
 jobs:
   lead_variants:
     timeout-minutes: 600
-    name: Compute Lead Variants
+    name: Run HBA-MAGMA
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
@@ -17,6 +17,6 @@ jobs:
         with:
           pixi-version: v0.55.0
           cache: true
-      - name: Run lead variants integration test
-        run: pixi r python -m pytest -s test_mecfs_bio/system/test_decode_me_initial_analysis.py # run lead variants integration test
+      - name: Run HBA-MAGMA integration test
+        run: pixi r python -m pytest -s  test_mecfs_bio/system/test_decode_me_hba_magma.py   # run hba-magma on DecodeME data
 
