@@ -1,3 +1,10 @@
+"""
+Task to download summary statistics for GWAS-1 from Decode ME via OSF.
+
+GWAS-1 is the primary GWAS in the DECODE ME paper, with the largest number of cases and controls:
+See: https://www.medrxiv.org/content/10.1101/2025.08.06.25333109v1.full-text#:~:text=DecodeME%20GWAS%3A%20Overall%20and%20stratified%20analyses
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

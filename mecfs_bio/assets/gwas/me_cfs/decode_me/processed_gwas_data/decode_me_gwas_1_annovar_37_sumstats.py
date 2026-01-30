@@ -1,3 +1,7 @@
+"""
+Task to create a new GWASLab Sumstats object from the GRCh37 version of DECODE ME GWAS-1 with rsids assigned.
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )

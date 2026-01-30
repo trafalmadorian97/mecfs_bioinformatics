@@ -1,3 +1,10 @@
+"""
+Task to get the list of genetic variants passing quality control in DECODE ME.
+
+See the DECODE ME Summary Stats README for an explanation of quality control steps:
+https://osf.io/rgqs3/files/axp4k
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

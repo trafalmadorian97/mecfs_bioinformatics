@@ -1,3 +1,8 @@
+"""
+Task to filter SNPs in a GWAS according to another table of SNPs passing quality control.
+Implemented as a DataFrame join.
+"""
+
 from pathlib import Path
 
 from attrs import frozen
