@@ -14,8 +14,8 @@ def atomic_write_yaml(
 ) -> None:
     """
     This is from Chatgpt.
-    It is motivated by need to atomically write to a file.
-    The idea is that if the process is interrupted, either the complete old file or the complete new file remains.  We don't get a partially written new file
+
+    The idea is that if the process is interrupted while we are writing a yaml file, either the complete old file or the complete new file should remain.  We should not get partially written new file.
 
     Prior to introducing this function, I encountered an issue where interrupting the build system mid-run could result in a corrupted build info yaml file
 
