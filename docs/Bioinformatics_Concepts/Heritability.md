@@ -22,8 +22,8 @@ Note that in the uncorrelated-additive model above, $h^2$ is equal to the [coeff
 
 $$
 \begin{align}
-\mathrm{cor}(G,Y)^2&=\frac{\mathrm{cov}(Y,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}\\
-\mathrm{cor}(G,Y)^2&=\frac{\mathrm{cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}& \text{ by }(\ref{model})\\
+\mathrm{cor}(G,Y)^2&=\frac{\mathrm{Cov}(Y,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}\\
+\mathrm{cor}(G,Y)^2&=\frac{\mathrm{Cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}& \text{ by }(\ref{model})\\
 &=\frac{\mathrm{Var}(G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}} & \text{$G$ and  $E$ uncorrelated}\\
 &=\frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}\\
 &=:h^2
@@ -50,7 +50,7 @@ The heritability of a trait depends on the studied population.
 
 For instance, suppose we study a trait in two genetically identical populations $A$ and $B$, but population $B$ lives in a much more variable environment than population $A$, and that this variability affects the trait under study.  Then $\mathrm{Var}(Y_B)>\mathrm{Var}(Y_A)$ .  Consequently, $h^2_A> h^2_B$, despite the genetics of the two populations being the same. 
 
-As a more specific example, note that (a) many recent GWAS have shown that obesity is highly heritable, and that (b) there has been a large increase in obesity rates in recent history, indicating a strong environmental influence.  These two facts do not contradict one another.  The obesity GWASes have studied cross-sectional populations drawn from a single snapshot in time, and have shown that a large portion of the variability in obesity in such cross-sectional populations is attributable to genetics.  On the other hand, if the GWAS samples had included individuals from a range of historical periods, environmental influence would have been proportionately larger, and calculated heritability would have been smaller.
+As a more specific example, note that (a) many recent GWAS have shown that obesity is highly heritable, and that (b) there has been a large increase in obesity rates in recent history, indicating a strong environmental influence.  These two facts do not contradict one another.  The obesity GWAS have studied cross-sectional populations drawn from a single snapshot in time, and have shown that a large portion of the variability in obesity in such populations is attributable to genetics.  On the other hand, if the GWAS samples had included individuals from a range of historical periods, environmental influence would have been proportionately larger, and calculated heritability would have been smaller.
 
 For a popular science book that discusses subtle issues in the definition of heredity, see Harden 2021[@harden2021genetic].
 
@@ -62,11 +62,11 @@ The standard definition of heritability stated [above](Heritability.md#heritabil
 2. Even if we $G$ and $E$ were precisely defined, heritability also assumes the additive model $Y=G+E$.  Given the incredible complexity of biology, this is implausible.  It might, however, be reasonable to argue that the additive model reflects a first order Taylor expansion of the true phenotype-determining function.
 3. Even if we accept an additive model, the lack of correlation between $G$ and $E$ is also problematic.  Different individuals with different genes inhabit different environments.
 
-The above unsatisfactory aspects make heritability a somewhat fuzzy concept, and motivate the development of alternative ways of defining heritability.
+The above unsatisfactory aspects make heritability a somewhat fuzzy concept, and motivate the development of alternative definitions.
 
 ## Definition via conditional expectation
 
-In the definition [above](Heritability.md#heritability), we first specified a model of the relationship between $G$, $E$, and $Y$ , and then defined heritability in the context of those assumptions. It is possible to reverse this.  
+In the definition [above](Heritability.md#heritability), we first specified the relationship between $G$, $E$, and $Y$ , and then defined heritability in the context of this relationship. It is possible to reverse this.  
 
 As before, let the random variable $Y$ denote the phenotypic trait of interest. Let $g$ denote genotype.  Define:
 
@@ -87,7 +87,7 @@ $$
 \end{align}
 $$
 
-where the last line follows from the Projection Theorem (pg 345 in Grimmet and Stirzaker[@grimmett2020probability]).  Where before we needed to assume $\mathbb{Cov}(E,G)=0$, here this property is automatic.
+where the last line follows from the Projection Theorem (pg. 345 in Grimmet and Stirzaker[@grimmett2020probability]).  Where before we needed to assume $\mathbb{Cov}(E,G)=0$, here this property is automatic.
 
 
  - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this alternative definition is applicable to any phenotype representable by a random variable in $L_2$.  Mathematically, it is now crystal clear what we mean when we speak of $G$ and $E$.

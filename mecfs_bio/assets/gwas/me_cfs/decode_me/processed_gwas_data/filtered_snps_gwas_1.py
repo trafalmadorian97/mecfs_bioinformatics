@@ -1,3 +1,9 @@
+"""
+Task to filter genetic variants from DecodeME GWAS 1 to keep only those passing quality control.
+
+This is consistent with the README here: https://osf.io/rgqs3/files/axp4k.
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.raw_gwas_data.decode_me_gwas_1 import (
     DECODE_ME_GWAS_1_TASK,
 )

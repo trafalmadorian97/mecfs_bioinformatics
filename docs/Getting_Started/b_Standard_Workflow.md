@@ -28,7 +28,7 @@ The `invoke green` command runs linters, formatters, and tests. Run it with
 pixi r invoke green
 ```
 
-It is generally advisable to run `invoke green` and fix any detected errors prior to submitting a PR.
+It is advisable to run `invoke green` and fix any detected errors prior to submitting a PR.
 
 ##  Commit changes, create a PR
 
