@@ -1,3 +1,8 @@
+"""
+Task to convert the DECODE ME GWAS-1 summary statistics into a GWASLab Sumstats object, while performing minimal processing.
+See https://github.com/Cloufield/gwaslab/blob/1f055b632f62ff69e7a9c8a73155771b0dca52d0/src/gwaslab/g_Sumstats.py#L177
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.filtered_snps_gwas_1 import (
     DECODE_ME_FILTER_SNPS_GWAS_1_TASK,
 )

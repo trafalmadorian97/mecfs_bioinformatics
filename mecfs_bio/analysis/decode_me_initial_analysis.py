@@ -3,9 +3,6 @@ Script to run initial analysis on DecodeME data.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_cis_pqtl_mr import (
-    DECODE_ME_BASIC_CIS_PQTL_MR,
-)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_gene_list_markdown import (
     DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
 )
@@ -38,29 +35,26 @@ def run_initial_decode_me_analysis():
     - Generation of manhattan plot.
     - Extraction of lead variants.
     - Application of MAGMA to GTEx data to identify possible key tissues.
+    - Application of MAGMA to human brain atlas to identify key brain tissue
     - Use of S-LDSC to investigate key cell and tissue types
+    - USe of Mendelian Randomization to look for causal blood proteins
+
+
+    Comment out lines to remove tasks
     """
     DEFAULT_RUNNER.run(
-        # [
-        DECODE_ME_GWAS_1_MANHATTAN_AND_QQ_PLOT,
-        DECODE_ME_GWAS_1_MANHATTAN_PLOT,
-        DECODE_ME_GWAS_1_LEAD_VARIANTS,
-        #     DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST,
-        MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
-        #     # DECODE_ME_GWAS_1_COMBINED_GENE_LISTS,
-        DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
-        #     # # DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA,
-        #     # DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA_DROP_COLS,
-        #
-        # ]
-        +DECODE_ME_S_LDSC.get_terminal_tasks()
-        + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks()
-        + DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
+        [
+            DECODE_ME_GWAS_1_MANHATTAN_AND_QQ_PLOT,
+            DECODE_ME_GWAS_1_MANHATTAN_PLOT,
+            DECODE_ME_GWAS_1_LEAD_VARIANTS,
+            MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
+            DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
+        ]
+        + DECODE_ME_S_LDSC.get_terminal_tasks()
+        + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
+        # + DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
-        must_rebuild_transitive=[
-            # DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
-            # DECODE_ME_MASTER_GENE_LIST_WITH_GGET
-        ],
+        must_rebuild_transitive=[],
     )
 
 
