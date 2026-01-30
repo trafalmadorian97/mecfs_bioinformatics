@@ -24,6 +24,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_hba_magma_a
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot import (
     MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot_brain_average import (
+    MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT_BRAIN_AVERAGE,
+)
 
 
 def run_initial_decode_me_analysis():
@@ -48,10 +51,11 @@ def run_initial_decode_me_analysis():
             DECODE_ME_GWAS_1_MANHATTAN_PLOT,
             DECODE_ME_GWAS_1_LEAD_VARIANTS,
             MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
-            DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
-        ]
-        + DECODE_ME_S_LDSC.get_terminal_tasks()
-        + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
+            MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT_BRAIN_AVERAGE,
+        #    DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
+        ],
+        # + DECODE_ME_S_LDSC.get_terminal_tasks()
+        # + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
         # + DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[],
