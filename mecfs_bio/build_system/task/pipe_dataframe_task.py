@@ -49,6 +49,10 @@ class PipeDataFrameTask(Task):
     out_format: OutFormat
     backend: ValidBackend = "ibis"
 
+    def __attrs_post_init__(self):
+        if isinstance(self._source_meta.read_spec().format, DataFrameTextFormat):
+            assert self.backend in ("polars",), "Can only read text data with polars"
+
     @property
     def meta(self) -> Meta:
         return self._meta
