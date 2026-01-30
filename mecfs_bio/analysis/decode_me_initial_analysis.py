@@ -3,9 +3,6 @@ Script to run initial analysis on DecodeME data.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_cis_pqtl_mr import (
-    DECODE_ME_BASIC_CIS_PQTL_MR,
-)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_gene_list_markdown import (
     DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
 )
@@ -54,8 +51,8 @@ def run_initial_decode_me_analysis():
             DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
         ]
         + DECODE_ME_S_LDSC.get_terminal_tasks()
-        + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks()
-        + DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
+        + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
+        # + DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[],
     )
