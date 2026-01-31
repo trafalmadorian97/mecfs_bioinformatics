@@ -6,6 +6,8 @@ NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
 DOCS_PATH = Path("docs")
 
+USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
+
 
 # dev tasks
 @task
@@ -86,6 +88,12 @@ def checkimports(c):
     """
     print("Checking architectural constraints using import-linter...")
     c.run("pixi r lint-imports", pty=True)
+
+
+@task
+def checklinks(c):
+    print("Checking documentation links with lychee...")
+    c.run(f"lychee --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  ")
 
 
 @task(
