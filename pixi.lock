@@ -88,6 +88,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gcc_impl_linux-64-15.2.0-hcacfade_7.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gflags-2.2.2-h5888daf_1005.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gfortran_impl_linux-64-15.2.0-h281d09f_16.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/gh-2.86.0-h76a2195_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/glog-0.7.1-hbabe93e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/gmp-6.3.0-hac33072_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/graphite2-1.3.14-hecca717_2.conda
@@ -1705,7 +1706,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: e9fd2f3eae18db90719efbbe41a55d80ab427b8b071caa92111883d829c6f1ae
+  sha256: 73c60eeaed5ec890fe659c02dd2e17e8951e139b4517c5c228b9a4e62f060f95
   requires_dist:
   - attrs>=25.3.0
   - cattrs>=25.2.0
@@ -2412,6 +2413,16 @@ packages:
   - tqdm
   - lxml
   requires_python: '>=3.7'
+- conda: https://conda.anaconda.org/conda-forge/linux-64/gh-2.86.0-h76a2195_0.conda
+  sha256: 5225b9a1eaf4df27abbc331852800fbdbae4027d32cf6ac59bf4417ee2a286f8
+  md5: 64fa7f4e457cbc7b7195db1e04f33bee
+  depends:
+  - __glibc >=2.17,<3.0.a0
+  license: Apache-2.0
+  license_family: APACHE
+  purls: []
+  size: 22387882
+  timestamp: 1769078092835
 - pypi: https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl
   name: ghp-import
   version: 2.1.0
@@ -7958,6 +7969,7 @@ packages:
   - libzlib >=1.3.1,<2.0a0
   - ncurses >=6.5,<7.0a0
   license: MIT
+  purls: []
   size: 499281
   timestamp: 1752528204243
 - pypi: https://files.pythonhosted.org/packages/62/af/bfa4c379a0f52b6cb0fcea5d0e0852a4e27681180835582992b62d79dfc3/scikit_allel-1.3.13-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
