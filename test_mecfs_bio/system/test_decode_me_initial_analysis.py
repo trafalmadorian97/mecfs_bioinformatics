@@ -41,6 +41,8 @@ def test_run_initial_analysis():
     - Download data
     - Filter lead variants
     - Produce Manhattan plots
+    - Run MAGMA
+    - Produce a list of candidate Genes
 
     """
     with tempfile.TemporaryDirectory() as tempdirname:

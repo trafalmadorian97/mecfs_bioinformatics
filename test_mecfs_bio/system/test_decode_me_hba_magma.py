@@ -12,7 +12,7 @@ from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
 
 def test_run_hba_magma():
     """
-    Test that we can run stratified linkage disequilibrium score regression on the DECODE ME data
+    Test that we can run MAGMA via the human brain atlas on the DECODE ME data
     """
     with tempfile.TemporaryDirectory() as tempdirname:
         tempdir = Path(tempdirname)
