@@ -10,7 +10,7 @@ These challenges motivate the development of a data science build system.
 
 ## Framework 
 
-The build system used in this project is heavily based on the framework described by Mokhov et al. in their prize-winning papers[@mokhov2018build;@mokhov2020build].  I outline this framework below.
+The build system used in this project is heavily based on the framework described by Mokhov et al.[@mokhov2018build;@mokhov2020build].  I outline this framework below.
 
 ## Key Concepts
 
@@ -42,7 +42,7 @@ Here is the source code for the `Task` base class:
 - The key method is `execute`. Subclasses must override this method to specify how to construct their assets.  The `fetch` parameter is a special callback passed to `execute` by the build system.  Instead of directly accessing its dependencies, `execute` should use `fetch` to access dependencies via the build system
 
 
-Concrete Task subclass classes are defined [here][mecfs_bio.build_system.task].
+Concrete Task subclasses are defined [here][mecfs_bio.build_system.task].
 
 
 ### Rebuilder
@@ -61,7 +61,7 @@ Currently, there is one concrete implementation of `Rebuilder`, called the [Veri
 
 ### Scheduler
 
-Given on or more target assets requests by the user, it is the job of the scheduler to determine which tasks need to be run in what order to produce those assets.  The scheduler delegates the actual running of these tasks to the Rebuilder.
+Given one or more target assets requested by the user, it is the job of the scheduler to determine which tasks need to be run in what order to produce those assets.  The scheduler delegates the actual running of these tasks to the Rebuilder.
 
 Currently, there is one concrete scheduler: the [topological scheduler][mecfs_bio.build_system.scheduler.topological_scheduler].  The topological scheduler constructs a directed acyclic graph of the dependencies of the requested assets, then traverses this graph in [topological order](https://en.wikipedia.org/wiki/Topological_sorting).
 

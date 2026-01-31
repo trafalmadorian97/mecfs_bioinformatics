@@ -10,7 +10,7 @@ DOCS_PATH = Path("docs")
 # dev tasks
 @task
 def test(c):
-    print("Running unit and integration tests with pytest")
+    print("Running unit and integration tests with pytest...")
     cmd = f"pixi r python   -m pytest --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
     print(cmd)
     c.run(cmd, pty=True)
@@ -84,7 +84,7 @@ def checkimports(c):
     """
     Use import linter to enforce architectural constraints
     """
-    print("Checking architectural constraints using import-linter")
+    print("Checking architectural constraints using import-linter...")
     c.run("pixi r lint-imports", pty=True)
 
 
