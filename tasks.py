@@ -92,6 +92,11 @@ def checkimports(c):
 
 @task
 def check_all_links(c):
+    """
+    Check all links with lychee
+
+    I added "403" to the list of acceptable status codes to prevent this check from failing due to anti-bot systems.
+    """
     print("Checking links with lychee...")
     c.run(
         f"pixi r lychee --cache --accept 100..=103,200..=299,403 --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
