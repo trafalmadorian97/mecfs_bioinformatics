@@ -1,8 +1,10 @@
 name: system_test_hba_magma_decode_me
 on:
   schedule:
-    - cron: "0 4 * * 7"   #Run Sunday at 4 UTC
+    - cron: "0 4 * * 0"   #Run Sunday at 4 UTC
+
   workflow_dispatch: {}
+
 
 jobs:
   lead_variants:
