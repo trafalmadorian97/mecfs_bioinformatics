@@ -14,7 +14,7 @@ Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Rat
 I used the R package `TwoSampleMR`.
 
 
-**NOTE**: since the controls for the DecodeME project come from the UK biobank, and since the pQTLs from the UKBB PPP are also derived from analysis of the UK biobank, we do not actually have two fully independent samples, so we partially violate the assumptions of `TwoSampleMR`.  This could introduce some error. 
+**NOTE**: since the controls for the DecodeME project come from the UK Biobank, and since the pQTLs from the UKBB PPP are also derived from analysis of the UK Biobank, we do not actually have two fully independent samples, so we partially violate the assumptions of `TwoSampleMR`.  This could introduce some error. 
 
 ## Results
 
