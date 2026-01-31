@@ -92,8 +92,8 @@ def checkimports(c):
 
 @task
 def checklinks(c):
-    print("Checking documentation links with lychee...")
-    c.run(f"lychee --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  ")
+    print("Checking links with lychee...")
+    c.run(f"pixi r lychee --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  ")
 
 
 @task(
