@@ -105,7 +105,7 @@ Application of S-LDSC using the Corces ATAC-seq dataset produces one significant
 | CMP     |   1.52784e-08 |           0.259065    | False         |
 | CLP     |   2.07019e-08 |           0.282973    | False         |
 
-It is interesting that the significant hit is the "monocyte" cell type.  Microglia in the brain are believed to be key drivers of Alzheimer disease, and microglia are related to monocytes.  So it may be that S-LDSC with the Corces dataset has picked up on similarity of microglia to monocytes.
+It is interesting that the significant hit is the "monocyte" cell type.  
 
 
 
@@ -141,4 +141,4 @@ The lack of significant hits are surprising if one views Alzheimer's as a straig
 
 ## Comment
 
-It is interesting to contrast the above results with those produced when S-LDSC is applied to [inflammatory bowl disease](../Liu_et_al_2023_(IBD)/S-LDSC_IBD_Analysis.md).  Both conditions are "immune" in a broad sense, but their S-LDSC results are quite different.  Alzheimer's produces small number of cell-type hits at a moderate level of significance, whereas IBD produces a large number of highly significant cell-type hits.  The explanation may be that the immune aspect of Alzheimer's is focused on microglia, and there are no microglia cell types in any of the dataset considered above.  Thus, cell types are significant for Alzheimer's only to the extent that they resemble microglia.
+It is interesting to contrast the above results with those produced when S-LDSC is applied to [inflammatory bowl disease](../Liu_et_al_2023_(IBD)/S-LDSC_IBD_Analysis.md).  Both conditions are "immune" in a broad sense, but their S-LDSC results are quite different.  Alzheimer's produces small number of cell-type hits at a moderate level of significance, whereas IBD produces a large number of highly significant cell-type hits.  A tentative explanation may be that the immune aspect of Alzheimer's is focused on microglia, and there are no microglia cell types in any of the datasets considered above.  Thus, cell types are significant for Alzheimer's only to the extent that they resemble microglia.
