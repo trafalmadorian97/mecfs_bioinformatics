@@ -1,3 +1,7 @@
+"""
+Analogous to MAGMA_DECODE_ME_SPECIFIC_TISSUE_GENE_SET_ANALYSIS, but controls for average across brain tissue, not all tissues.
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_gwas_1_build_37_magma_ensembl_specific_tissue_gene_sets_brain_average import (
     MAGMA_DECODE_ME_SPECIFIC_TISSUE_GENE_SET_ANALYSIS_BRAIN_AVERAGE,
 )
