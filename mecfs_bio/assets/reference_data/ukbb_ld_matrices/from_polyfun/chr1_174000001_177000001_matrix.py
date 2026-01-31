@@ -1,3 +1,8 @@
+"""
+Task to download UKBB LD matrix for a small subset of the genome
+Chromosome 1 from 174000001 to 17700000 (genome build GRCh37).
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
