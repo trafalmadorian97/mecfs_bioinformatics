@@ -3,6 +3,9 @@ from pathlib import Path
 
 import pandas as pd
 
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_gene_list_markdown import (
+    DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_variants import (
     DECODE_ME_GWAS_1_LEAD_VARIANTS,
 )
@@ -11,6 +14,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan 
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan_and_qq import (
     DECODE_ME_GWAS_1_MANHATTAN_AND_QQ_PLOT,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot import (
+    MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
 )
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
@@ -35,6 +41,8 @@ def test_run_initial_analysis():
     - Download data
     - Filter lead variants
     - Produce Manhattan plots
+    - Run MAGMA
+    - Produce a list of candidate Genes
 
     """
     with tempfile.TemporaryDirectory() as tempdirname:
@@ -52,6 +60,8 @@ def test_run_initial_analysis():
                 DECODE_ME_GWAS_1_MANHATTAN_AND_QQ_PLOT,
                 DECODE_ME_GWAS_1_MANHATTAN_PLOT,
                 DECODE_ME_GWAS_1_LEAD_VARIANTS,
+                MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
+                DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
             ]
         )
         variants_asset = result[DECODE_ME_GWAS_1_LEAD_VARIANTS.asset_id]
