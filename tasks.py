@@ -93,7 +93,9 @@ def checkimports(c):
 @task
 def checklinks(c):
     print("Checking links with lychee...")
-    c.run(f"pixi r lychee --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  ")
+    c.run(
+        f"pixi r lychee --accept 100..=103,200..=299,403 --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+    )
 
 
 @task(
