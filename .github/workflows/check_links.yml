@@ -1,5 +1,5 @@
 # make sure links are still valid.  Avoid link rot.
-name: system_test_decodeme
+name: check_links
 on:
   schedule:
     - cron: "15 16 * * *"   #Run at 4:16 pm daily
