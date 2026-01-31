@@ -72,7 +72,7 @@ jobs:
         run: pixi r invoke checkimports
       - name: Check links
         if: steps.changes.outputs.nonmark == 'true'
-        run: pixi r invoke checklinks
+        run: pixi r invoke check-local-links
       - name: Check types with mypy
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke typecheck

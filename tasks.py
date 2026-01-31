@@ -91,11 +91,20 @@ def checkimports(c):
 
 
 @task
-def checklinks(c):
+def check_all_links(c):
     print("Checking links with lychee...")
     c.run(
-        f"pixi r lychee --accept 100..=103,200..=299,403 --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+        f"pixi r lychee --cache --accept 100..=103,200..=299,403 --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
     )
+
+
+@task
+def check_local_links(c):
+    """
+    Check local links with lychee
+    """
+    print("Checking offline links with lychee...")
+    c.run(f"pixi r lychee --offline {SRC_PATH} {DOCS_PATH}")
 
 
 @task(
@@ -104,6 +113,7 @@ def checklinks(c):
         format,
         spellcheck_docs,
         spellcheck_src,
+        check_local_links,
         checkimports,
         typecheck,
         test,
