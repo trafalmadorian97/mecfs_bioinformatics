@@ -65,7 +65,24 @@ class MAGMAPlotGeneSetResult(Task):
             trunc_df["P"] <= thresh, "Not Significant"
         )
         plot = px.bar(
-            trunc_df, x="FULL_NAME", y=GWASLAB_MLOG10P_COL, color="Significance"
+            trunc_df,
+            x="FULL_NAME",
+            y=GWASLAB_MLOG10P_COL,
+            labels={
+                "FULL_NAME": "Variable",
+                GWASLAB_MLOG10P_COL: "-log\u2081\u2080p",
+            },
+            color="Significance",
+            color_discrete_map={
+                "Significant": px.colors.qualitative.Plotly[1],
+                "Not Significant": px.colors.qualitative.Plotly[0],
+            },
+        )
+        plot.add_hline(
+            -np.log10(thresh),
+            line_dash="dot",
+            annotation_text="Significance threshold (Bonferroni)",
+            annotation_xshift=-10,
         )
         plots = {MAGMA_GENE_SET_PLOT_NAME: plot}
         write_plots_to_dir(scratch_dir, plots)
