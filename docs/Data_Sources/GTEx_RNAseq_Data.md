@@ -51,7 +51,7 @@ Ficucane et al.[@finucane2018heritability] applied Gene Ontology Enrichment Anal
 
 [GTEx Bulk Tissue Expression Data](https://gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression)
 
-[GTEx paper](https://www.science.org/doi/full/10.1126/science.aaz1776)
+[GTEx paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC7737656/)
 
 
 [Alberts, Bruce, et al. Molecular biology of the cell: seventh edition. WW Norton & Company, 2022. See Chapter 6.](https://wwnorton.com/books/9780393884821)

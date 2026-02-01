@@ -6,6 +6,8 @@ NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
 DOCS_PATH = Path("docs")
 
+USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
+
 
 # dev tasks
 @task
@@ -88,12 +90,35 @@ def checkimports(c):
     c.run("pixi r lint-imports", pty=True)
 
 
+@task
+def check_all_links(c):
+    """
+    Check all links with lychee
+
+    I added "403" to the list of acceptable status codes to prevent this check from failing due to anti-bot systems.
+    """
+    print("Checking links with lychee...")
+    c.run(
+        f"pixi r lychee --cache --accept 100..=103,200..=299,403 --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+    )
+
+
+@task
+def check_local_links(c):
+    """
+    Check local links with lychee
+    """
+    print("Checking offline links with lychee...")
+    c.run(f"pixi r lychee --offline {SRC_PATH} {DOCS_PATH}")
+
+
 @task(
     pre=[
         lintfix,
         format,
         spellcheck_docs,
         spellcheck_src,
+        check_local_links,
         checkimports,
         typecheck,
         test,

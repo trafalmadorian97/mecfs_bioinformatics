@@ -99,7 +99,7 @@ The above discussion is based on:
 
 [Note on Magma SNP-wise model](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true)
 
-[Paper Critiquing the original MAGMA SNP-wise model](https://www.biorxiv.org/content/10.1101/2020.08.20.260224v1.abstract) (MAGMA was updated in response to this critique.)
+[Paper Critiquing the original MAGMA SNP-wise model](https://web.archive.org/web/20240724122326/https://www.biorxiv.org/content/10.1101/2020.08.20.260224v1) (MAGMA was updated in response to this critique.)
 
 
 \bibliography

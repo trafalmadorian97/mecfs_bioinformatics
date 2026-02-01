@@ -11,3 +11,15 @@ layers =
     experiments
     test_mecfs_bio
     mecfs_bio
+
+
+
+[importlinter:contract:layers_inner]
+name = Enforce layered architecture inside mecfs_bio package.
+type = layers
+layers =
+    mecfs_bio.analysis
+    mecfs_bio.assets : mecfs_bio.asset_generator
+    mecfs_bio.build_system
+    mecfs_bio.util
+    mecfs_bio.constants

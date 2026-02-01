@@ -14,7 +14,7 @@ The results are plotted below:
 The x-axis corresponds to HBA cluster number, while the y-axis corresponds to the $-\log_{10}(p)$ score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.
 
 
-Almost all of the Bonferroni-significant cell types are in the microglia supercluster.  The only exception is a single monocyte cell type.  This is highly consistent with the theory of Alzheimer's as a primarily microglia-driven disease  (see pg. 1205 of Kandel et al.[@kandel2021principles]).
+Almost all of the Bonferroni-significant cell types are in the microglia supercluster.  The only exception is a single monocyte cell type.  This is consistent with the theory of Alzheimer's as a primarily microglia-driven disease  (see pg. 1205 of Kandel et al.[@kandel2021principles]).
 
 
 Applying a stepwise selection algorithm similar to the one describe in Watanabe et al.[@watanabe2019genetic] identifies only a single independently significant cluster: Cluster 12, which consists of microglial cells.

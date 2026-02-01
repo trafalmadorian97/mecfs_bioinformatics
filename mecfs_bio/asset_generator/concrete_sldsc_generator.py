@@ -143,7 +143,7 @@ def standard_sldsc_task_generator(
                     pipe_right=CompositePipe(
                         [
                             StrLowercasePipe(
-                                target_column="Cell type", new_column_name="Cell type"
+                                target_column="Cell Type", new_column_name="Cell type"
                             )
                         ]
                     ),
