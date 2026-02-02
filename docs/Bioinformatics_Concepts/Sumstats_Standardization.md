@@ -56,7 +56,7 @@ If one has access to a reference database of standardized genetic variants with 
 
 Even if we restrict ourselves to the forward strand, the same genetic variant can still be represented in multiple ways.
 
-This principle is demonstrated by the following examples from the [Center for Statistical Genetics at the University of Michigan:](https://genome.sph.umich.edu/w/index.php?title=Variant_Normalization&mobileaction=toggle_view_desktop)
+This principle is demonstrated by the following examples from the [Center for Statistical Genetics at the University of Michigan:](https://genome.sph.umich.edu/w/index.php?title=Variant_Normalization)
 
 ![trim_example_normalization](https://github.com/user-attachments/assets/2f87c2be-4e00-481b-b130-1df7554029cf)
 

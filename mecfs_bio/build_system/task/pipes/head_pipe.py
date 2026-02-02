@@ -6,6 +6,12 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 
 @frozen
 class HeadPipe(DataProcessingPipe):
+    """
+    Pipe to extract first rows of a dataframe
+
+    Can be useful in writing tests that operate on a subset of a large dataset.
+    """
+
     num_rows: int
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:

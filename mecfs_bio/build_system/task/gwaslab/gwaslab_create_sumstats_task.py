@@ -66,8 +66,8 @@ class HarmonizationOptions:
     Two reference files are used in harmonization:
 
     - A VCF file (ref_infer).  This is basically a table of genetic variants.
-       In some cases, this can be in dbSNP VCF format, so that there is one row per variant, and we are given frequency information.
-       In other cases, (such as thousand genomes data) this can be in genotype VCF format. In this case, the rows of the VCF file correspond to variants, and the columns correspond to individuals in the thousand genomes project.  The table tells for each individual and variant, whether that individual has that variant.  Variant frequency information can be calculated from this individual-level genome data.
+       In some cases, this table is in dbSNP VCF format.  In this case, each row describes a given genetic variant.  Sometimes this information includes allele frequency.
+       In other cases, (such as when using a thousand genomes reference data) this table is in genotype VCF format. In this case, the rows of the VCF file correspond to variants, and the columns correspond to individuals in the thousand genomes project.  The table tells for each individual and variant, whether that individual has that variant.  Variant frequency information can be calculated from this individual-level genome data.
 
 
     - A FASTA file (ref_seq).  This is a consensus human genome sequence.  Here is an example of some rows from the hg19 FASTA file:
@@ -93,7 +93,8 @@ class HarmonizationOptions:
 
 
 
-    Consulting these two reference files affects different digits of the gwaslab STATUS code
+    gwaslab uses these two reference files to harmonize summary statistics.
+    Each of these two reference files affects a different digit of the gwaslab STATUS code column.
 
     - Digit 7 of the status code is determined by the ability of gwaslab to find the variant in the reference VCF (ref_infer) :
       see here: https://github.com/Cloufield/gwaslab/blob/d639b67c5264b1ac7ec89e284e638f2c8454ac48/src/gwaslab/hm/hm_harmonize_sumstats.py#L1521-L1530
