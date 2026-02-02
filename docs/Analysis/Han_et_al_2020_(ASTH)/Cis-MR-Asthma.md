@@ -60,4 +60,4 @@ The table below provides descriptions from the UniProt database for these signif
 The top protein hits in the table above are consistent with the known biology of asthma.  As would be expected for an immunologically-driven phenotype, these hits consist mostly of cytokine receptors, innate immune system pattern receptors, and components of the MHC/HLA molecule.
 
 
-The direction of some of the effects is surprising: for instance, TLR1, an innate-immune system receptor, is associated with lower asthma risk.  This finding may be explained Donoguhe et al.'s[@donoghue2025integration] observation that TLR upregulates il-27, an anti-inflammatory cytokine that protects against asthma
+The direction of some of the effects is surprising: for instance, TLR1, an innate-immune system receptor, is associated with lower asthma risk.  This finding may be explained by Donoghue et al.'s[@donoghue2025integration] observation that TLR upregulates IL-27, an anti-inflammatory cytokine that protects against asthma.

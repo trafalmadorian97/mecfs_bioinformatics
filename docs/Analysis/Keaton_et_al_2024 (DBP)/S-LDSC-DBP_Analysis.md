@@ -119,9 +119,9 @@ The most significant cell types are heart, blood vessel, or kidney related, whic
 
 
 
-### Immgen data
+### ImmGen data
 
-No cell types were significant from the Immgen data, consistent with diastolic blood pressure not being a primarily immune condition.
+No cell types were significant from the ImmGen data, consistent with diastolic blood pressure not being a primarily immune condition.
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------------------------------|--------------:|----------------------:|:--------------|
@@ -204,8 +204,8 @@ This contrast implies that:
 
 I see two interpretations:
 
--  The genetic regulation of blood pressure is sufficiently complex that the genetic variants involved in BP control cannot identified by simply taking a 100-kb window around key genes (which is how the GTEx/Franke lab dataset is generated).  The use of epigenetics allows a much more precise identification of the key regulatory regions. 
-- Bulk RNAsew is too crude a tool:  the differences in bulk gene expression levels in the key cell types may be too small or too variable for S-LDSC to pick up.  It would be interesting to test this interpretation by using a single-cell RNAseq dataset with S-LDSC. 
+-  The genetic regulation of blood pressure is sufficiently complex that the genetic variants involved in BP control cannot be identified by simply taking a 100-kb window around key genes (which is how the GTEx/Franke lab dataset is generated).  The use of epigenetics allows a much more precise identification of the key regulatory regions. 
+- Bulk RNAseq is too crude a tool:  the differences in bulk gene expression levels in the key cell types may be too small or too variable for S-LDSC to pick up.  It would be interesting to test this interpretation by using a single-cell RNAseq dataset with S-LDSC. 
 
 ## How to reproduce
 

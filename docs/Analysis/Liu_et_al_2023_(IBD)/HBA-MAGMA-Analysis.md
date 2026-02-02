@@ -24,4 +24,4 @@ The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while 
 
 
 - Cluster2 (T-cells) is consistent with the known biology of inflammatory bowel disease.  The importance of T-cells to inflammatory bowel disease is well known.
-- Cluster4 (Microglia) is more surprising.  While there are some ("Gut-Brain-Axis") theories the give a role to the CNS in the development of Crohn's disease, it seems to me more likely that the significance of this cluster in MAGMA analysis is an artifact. Probably, IBD is associated with certain myeloid transcriptional programs, and microglia are the best representatives of these transcriptional programs in the human brain atlas dataset. 
+- Cluster4 (Microglia) is more surprising.  While there are some ("Gut-Brain-Axis") theories that give a role to the CNS in the development of Crohn's disease, it seems to me more likely that the significance of this cluster in MAGMA analysis is an artifact. Probably, IBD is associated with certain myeloid transcriptional programs, and microglia are the best representatives of these transcriptional programs in the human brain atlas dataset. 

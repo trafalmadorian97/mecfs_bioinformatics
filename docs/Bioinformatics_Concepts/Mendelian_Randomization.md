@@ -9,7 +9,7 @@ Hernan et al.[@hernan2019second] assert that the core activities of the data sci
 
 1. **Description**: Computing summary statistics, to enable large datasets to be easily comprehended. An example would be producing a chart summarizing the characteristics of heart disease patients.
 2. **Prediction**: Estimating the distribution of one variable conditional on other variables.  An example would be calculation of a person's odds of heart disease, conditional on their demographics, genetics, and [LDL](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) level.
-3. **Causal Inference**:   Reasoning about counterfactuals.   An example would be evaluating the evidence in support a statement like: "If all patients with high LDL were put on statins, occurrence of heart disease would be reduced by $X$ percent".  
+3. **Causal Inference**:   Reasoning about counterfactuals.   An example would be evaluating the evidence in support of a statement like: "If all patients with high LDL were put on statins, occurrence of heart disease would be reduced by $X$ percent".  
 
 
 
@@ -48,7 +48,7 @@ In MR, natural variation in the genetic instrument plays a role analogous to the
 
 ### The Fourth MR Assumption
 
-Many texts on MR emphasize IV1, IV2, and IV3. However, these conditions are not sufficient to uniquely determine the causal effect of the exposure on the outcome (See Hernan and Robins Chapter 16[@hernan2010causal]).  Another assumption is required.  There are numerous possible variants forms of this forth assumption, which can largely be grouped into 
+Many texts on MR emphasize IV1, IV2, and IV3. However, these conditions are not sufficient to uniquely determine the causal effect of the exposure on the outcome (See Hernan and Robins Chapter 16[@hernan2010causal]).  Another assumption is required.  There are numerous possible variants forms of this fourth assumption, which can largely be grouped into 
 
 - Homogeneity assumptions: roughly, the causal effect of the exposure on the outcome is the same for all individuals.
 - Monotonicity assumptions: roughly, the instrument moves the exposure in the same direction for all individuals.
@@ -71,7 +71,7 @@ Under this linear model, homogeneity holds automatically.
 
 ### Horizontal Pleiotropy
 
-A common source of error in Mendelian Randomization occurs when the genetic instrument affects the outcome through a causal pathway that does not involve the exposure.  This scenario, which is known as "horizontal pleiotropy", results in a violation of IV3.  If the strength of the causal effect through the alternative pathway is large, the results of Mendelian Randomization and be misleading.
+A common source of error in Mendelian Randomization occurs when the genetic instrument affects the outcome through a causal pathway that does not involve the exposure.  This scenario, which is known as "horizontal pleiotropy", results in a violation of IV3.  If the strength of the causal effect through the alternative pathway is large, the results of Mendelian Randomization can be misleading.
 
 The diagram below provides an example of horizontal pleiotropy:
 
@@ -87,7 +87,7 @@ E ----> D;
 A genetic variant affects the levels of two proteins.  One protein affects the outcome through the exposure, while the other affects the outcome independently of the exposure. If we believe the [Omnigenic Model](Omnigenic_Model.md), we should expect this kind of horizontal pleiotropy to be relatively common.
 
 
-The risk of horizontal pleiotropy is magnified when the connection between the genetic variant and the exposure is complex and indirect.  An example would be aN study in which the genetic instrument affects neurodevelopmental, and the exposure is tobacco use.  The risk is reduced when the connection is straightforward and direct.  An example would be an MR study which the exposure is the plasma level of a a protein, and the genetic instrument is a cis-regulatory variant for that protein (a cis-pQTL).
+The risk of horizontal pleiotropy is magnified when the connection between the genetic variant and the exposure is complex and indirect.  An example would be a study in which the genetic instrument affects neurodevelopment, and the exposure is tobacco use.  The risk is reduced when the connection is straightforward and direct.  An example would be an MR study in which the exposure is the plasma level of a a protein, and the genetic instrument is a cis-regulatory variant for that protein (a cis-pQTL).
 
 
 ## Methods of Mendelian Randomization

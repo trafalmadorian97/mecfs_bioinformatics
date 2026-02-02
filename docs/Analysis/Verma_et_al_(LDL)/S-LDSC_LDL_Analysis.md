@@ -27,11 +27,11 @@ I used the reference datasets recommended and preprocessed by the authors of the
 
 When S-LSDC is applied to GWAS summary statistics using a reference dataset of cell types, S-LSDC will return cell-type $\tau_i$ coefficients together with associated $p$-values.  A large coefficient and a small $p$ value for a given cell type $i$ suggests that genes related to cell-type $i$ are over-represented in the heritability of the phenotype of interest.
 
-The graph below shows the coefficient p-values for the cell types in the GTEx/Franke Lab dataset when L-DSC is applied to the LDL GWAS.  Cell types are grouped into categories according to the same scheme used in the original S-LDSC paper[@finucane2018heritability].
+The graph below shows the coefficient p-values for the cell types in the GTEx/Franke Lab dataset when S-LDSC is applied to the LDL GWAS.  Cell types are grouped into categories according to the same scheme used in the original S-LDSC paper[@finucane2018heritability].
 
 ![scatter_plot](https://github.com/user-attachments/assets/c160793f-9c28-4ae8-b078-7ec1c228fe54)
 
-Of note: the main 3 statistically significant cell types are all liver cell types.  [Consistently with the results of MAGMA](MAGMA_LDL_Analysis.md), this suggests that the liver is  central the physiological process determining LDL levels.  Note, however, that since both S-LDSC and MAGMA use the GTEx dataset, this not truly and independent piece of evidence.
+Of note: the main 3 statistically significant cell types are all liver cell types.  [Consistently with the results of MAGMA](MAGMA_LDL_Analysis.md), this suggests that the liver is  central the physiological process determining LDL levels.  Note, however, that since both S-LDSC and MAGMA use the GTEx dataset, this is not truly an independent piece of evidence.
 
 There is also one significant kidney cell type (on the right side of the graph).  It is unclear to me whether this reflects real biology, or is an artifact.
 
@@ -83,14 +83,14 @@ The following graph and table show the result:
 | Liver__H3K4me3                                                           |   3.02922e-07 |           0.00208174  | False         |
 | Duodenum_Mucosa__H3K4me1                                                 |   9.94451e-08 |           0.00223099  | False         |
 
-Note that the all the histone modifications in the table above are associated with increased gene expression.
+Note that all the histone modifications in the table above are associated with increased gene expression.
 
-Consistent with our findings above, these results point to the liver are a key cite of LDL physiology.  Unlike the GTEx results above, they also implicate adipose tissue as a cite of important physiology.
+Consistent with our findings above, these results point to the liver as a key site of LDL physiology.  Unlike the GTEx results above, they also implicate adipose tissue as a site of important physiology.
 
 
-## Immgen data
+## ImmGen data
 
-The next step is to use the SLDSC reference data derived from the Immgen project.  This results in no significant tissue-type hits.  The top non-significant hits are:
+The next step is to use the S-LDSC reference data derived from the ImmGen project.  This results in no significant tissue-type hits.  The top non-significant hits are:
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------------------------------|--------------:|----------------------:|:--------------|

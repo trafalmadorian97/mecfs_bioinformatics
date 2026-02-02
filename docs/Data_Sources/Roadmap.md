@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Roadmap Epigenetics Project[@bernstein2010nih] was an NIH-funded initiative whose aim was to gather [epigenic data](../Bioinformatics_Concepts/Epigenetics.md) such as:
+The Roadmap Epigenetics Project[@bernstein2010nih] was an NIH-funded initiative whose aim was to gather [epigenetic data](../Bioinformatics_Concepts/Epigenetics.md) such as:
 
 - DNA methylation data
 - [Histone modification data](../Bioinformatics_Concepts/Epigenetics.md#histone-marks)

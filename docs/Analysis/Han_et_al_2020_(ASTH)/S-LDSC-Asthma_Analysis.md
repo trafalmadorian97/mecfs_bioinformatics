@@ -116,14 +116,14 @@ The following graph and table show the results:
 Again the focus on immunological cell and tissue types is consistent with known biology.
 
 
-The single significant intestinal cell type is of unclear importance.  It may be noise/ and artifact, or it may reflect the presence of immune cells in the gut wall.
+The single significant intestinal cell type is of unclear importance.  It may be noise and/or artifact, or it may reflect the presence of immune cells in the gut wall.
 
 It is also interesting to observe that in both the GTEx and Roadmap analysis, T cells were the most significant, also consistent with known biology.
 
 
-### Immgen data
+### ImmGen data
 
-I next applied S-LDSC to the asthma GWAS using Immgen data as a reference.
+I next applied S-LDSC to the asthma GWAS using ImmGen data as a reference.
 
 The results are given in the plot and table below:
 
@@ -188,7 +188,7 @@ Yet again, we see strong significance of T-cell types.
 
 ### Cahoy and GTEx-Brain data
 
-Consistent with a disease that is not primarily neurological, there were not significant cell types in the cahot or GTEx-brain datasets.
+Consistent with a disease that is not primarily neurological, there were not significant cell types in the Cahoy or GTEx-brain datasets.
 
 
 | Name            |   Coefficient |   Coefficient_P_value | Reject Null   |
