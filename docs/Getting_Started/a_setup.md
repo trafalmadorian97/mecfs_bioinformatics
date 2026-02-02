@@ -1,14 +1,14 @@
 # Initial Setup
 
 
-If you have not done previously, [clone](https://git-scm.com/docs/git-clone) the repository.
+If you have not done so previously, [clone](https://git-scm.com/docs/git-clone) the repository.
 
 
 ```bash
 git clone git@github.com:trafalmadorian97/mecfs_bioinformatics.git
 ```
 
-We use [Pixi](https://pixi.sh/dev/) are our package manager.  Setup Pixi as described [here](https://pixi.sh/dev/installation/),
+We use [Pixi](https://pixi.sh/dev/) as are our package manager.  Setup Pixi as described [here](https://pixi.sh/dev/installation/),
 using the bash command
 
 ```bash

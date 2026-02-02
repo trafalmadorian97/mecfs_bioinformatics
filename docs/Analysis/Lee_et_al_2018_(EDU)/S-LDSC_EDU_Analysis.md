@@ -157,8 +157,8 @@ Similarly to the GTEx/Franke case, the non-specificity of the brain results may 
 The presence of a single significant skeletal muscle cell type is unexpected.  It is unclear if this is a real effect or an artifact.
 
 
-### Immgen data
-The next step is to use the SLDSC reference data derived from the Immgen project.  There are no significant hits.  The top non-significant results are:
+### ImmGen data
+The next step is to use the S-LDSC reference data derived from the ImmGen project.  There are no significant hits.  The top non-significant results are:
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------------------------------|--------------:|----------------------:|:--------------|
@@ -176,7 +176,7 @@ The next step is to use the SLDSC reference data derived from the Immgen project
 
 The next step is to use the Corces et al. dataset from ATAC-seq applied to blood cells.
 
-Again, no significant results.  The top non-significant results are:
+Again, there were no significant results.  The top non-significant results are:
 
 | Name    |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------|--------------:|----------------------:|:--------------|

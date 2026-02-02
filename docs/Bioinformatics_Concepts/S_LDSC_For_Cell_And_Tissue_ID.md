@@ -85,7 +85,7 @@ The regression provides estimates of the category heritability weights $\{\tau_k
 ### The output of S-LDSC
 
 - Using the $\tau_k$ weights, we can estimate the overall heritability as $h^2=\sum_i\sum_k \tau_k I_{i\in C_k}$.
-- We can evaluate the proportion of heritability due to category $k'$ as $\frac{\sum_i \tau_{k'} I_{i\in C_{k'}}}{\sum_i\sum_k \tau_k I_{i\in C_k}} $.  We can compare this to the proportion of genetic variants in category $k$, which is $|C_k|/M$.  This comparison gives us an estimate of the enrichment of heritability in the category.
+- We can evaluate the proportion of heritability due to category $k'$ as $\frac{\sum_i \tau_{k'} I_{i\in C_{k'}}}{\sum_i\sum_k \tau_k I_{i\in C_k}}$.  We can compare this to the proportion of genetic variants in category $k$, which is $|C_k|/M$.  This comparison gives us an estimate of the enrichment of heritability in the category.
 - We can run statistical tests to evaluate the evidence that $\tau_k\ne 0$.  If this evidence is strong, we can argue that category $k$ reflects a meaningful grouping of genetic variants that differentially affect the phenotype.
  
 

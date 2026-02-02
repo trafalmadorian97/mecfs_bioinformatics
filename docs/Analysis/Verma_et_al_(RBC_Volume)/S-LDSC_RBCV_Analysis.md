@@ -110,9 +110,9 @@ Again, consistent with known biology, the significant cell types are all in the 
 
 The presence of lymphocytes like T-cells on the list of significant cell types is interesting.  My guess is that this may reflect epigenetic features shared by all cells in haematopoietic stem cell lineage, rather than true etiological role for lymphocytes in red blood cell volume.
 
-### Imgen Data
+### ImmGen Data
 
-The next step is to use the SLDSC reference data derived from the Immgen project.
+The next step is to use the S-LDSC reference data derived from the ImmGen project.
 
 ![immgen-rbc-plot](https://github.com/user-attachments/assets/a227056b-2b3c-4a61-99a3-3717a6e23dca)
 

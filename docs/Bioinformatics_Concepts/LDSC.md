@@ -86,7 +86,7 @@ where:
 - $X\in\mathbb{R}^{N\times M}$ is the genotype matrix, normalized to have columns with sample mean 0 and sample variance 1.
 - $\beta\in\mathbb{R}^M$ is the vector of true SNP effect sizes.
 - $X\beta \in\mathbb{R}^N$ is thus the vector of total genetic effects for each individual.
-- $\epsilon\in\mathbb{R}^N$ is the vector non-genetic effects for each individual.
+- $\epsilon\in\mathbb{R}^N$ is the vector of non-genetic effects for each individual.
 
 Furthermore, we model $X,\beta,\epsilon$ as random variables with the following properties:
 
@@ -237,7 +237,7 @@ $$
 $$
 
 
-We write, $\mathbb{E}X_{1j}^2X_{1k}^2=1+2r_{jk}^2+\nu$ where we have used[ Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem) to compute the expectation of the product of the squares of two normal random variables, and then added error term $\nu$ to account for the non-normality of $X$.
+We write $\mathbb{E}X_{1j}^2X_{1k}^2=1+2r_{jk}^2+\nu$ where we have used [Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem) to compute the expectation of the product of the squares of two normal random variables, and then added error term $\nu$ to account for the non-normality of $X$.
  
 Thus we have 
 
@@ -307,7 +307,7 @@ How plausible is this assumption?
 
 On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  
 
-See this talk by Jonathan Pritchard, which proposes that most traits are "omnigenic", in the sense that they are controlled vast numbers of small contributions spread across the genome:
+See this talk by Jonathan Pritchard, which proposes that most traits are "omnigenic", in the sense that they are controlled by vast numbers of small contributions spread across the genome:
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/d_6MJgrD5ww?si=_xwDgdAQjWStYfKr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 

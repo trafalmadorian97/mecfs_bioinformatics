@@ -27,7 +27,7 @@ This data can be represented equivalently on the other strand as
 
 (Note that at multi-base alleles like the indel T/TG, we flip the order of the bases in addition to computing their complements)
 
-While GENEPOS always refers to genomic coordinate in the $5'\to 3'$ direction along the forward strand, summary statistics files have been known report alleles on either the forward or the reverse strand[@hartwig2016two]. This ambiguity is problematic when one seeks to jointly analyze two GWAS, or look up variants from a GWAS in a reference.
+While GENPOS always refers to genomic coordinate in the $5'\to 3'$ direction along the forward strand, summary statistics files have been known report alleles on either the forward or the reverse strand[@hartwig2016two]. This ambiguity is problematic when one seeks to jointly analyze two GWAS, or look up variants from a GWAS in a reference.
 
 In most cases, the ambiguity can be resolved by consulting a reference genome sequence [FASTA file](https://en.wikipedia.org/wiki/FASTA_format).  For each genetic variant, one compares the alleles to the reference sequence at the given genomic coordinate. If there is a match, we know the alleles are correctly represented on the forward strand.  If instead there is match with the complement of one the alleles, we know the alleles are represented on the reverse strand.  We can standardize the genetic variant by substituting the alleles for their complements.  If there is no match between the alleles and either the forward or reverse strand, this likely indicates an error.
 
@@ -36,7 +36,7 @@ In most cases, the ambiguity can be resolved by consulting a reference genome se
 
 Consider the C/G variant in the table above.  At position 90002963, the reference genome (GRCh38) has the base G.  There are two possible interpretations:
 
-- ALLELE 1 is the reference allele, while ALLELE 0 is the alternate allele, and the alleles refer the forward strand
+- ALLELE 1 is the reference allele, while ALLELE 0 is the alternate allele, and the alleles refer to the forward strand.
 - ALLELE 0 is the reference allele, while ALLELE 1 is the alternate allele, and the alleles refer to the reverse strand.
 
 
@@ -44,7 +44,8 @@ It is impossible to distinguish these cases using only CHROM/GENPOS/ALLELE0/ALLE
 
 
 If one has access to a reference database of standardized genetic variants with allele frequencies, one can sometime disambiguate using these frequencies. Suppose as above that we have a palindromic variant and ALLELE 1 matches the reference allele in the database. The procedure is:
-- Compare the allele frequency of ALLELE1 to the frequency of the reference allele in the database.  If there is a close match, we can assume that the allele pair in the summary statistics are on the forward strand
+
+- Compare the allele frequency of ALLELE1 to the frequency of the reference allele in the database.  If there is a close match, we can assume that the allele pair in the summary statistics are on the forward strand.
 - Compare the allele frequency of ALLELE1 to one minus the frequency of the reference allele in the database.  If there is a close match, we can assume the allele pair in the summary statistics are on the reverse strand.
 - If the allele frequency of ALLELE1 is close to 0.5, we can't disambiguate.
 

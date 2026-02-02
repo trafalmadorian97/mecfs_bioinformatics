@@ -1,5 +1,5 @@
 """
-Script to analyze inflammatory bowl disease GWAS from Liu et al.
+Script to analyze inflammatory bowel disease GWAS from Liu et al.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER

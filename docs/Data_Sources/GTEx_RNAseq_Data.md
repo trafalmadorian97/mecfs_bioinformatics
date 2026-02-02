@@ -3,9 +3,9 @@
 
 The Genotype Tissue Expression (GTEx) project[@gtex2020gtex] generates useful datasets via the analysis of diverse tissues from post-mortem human donors.
 
-One important class of GTEx dataset records levels of RNA expression across a wide range of tissues.  These GTEx RNAseq datasets can help us discover the tissues in which a particular gene plays an important role.  For instance, if we find that across many donors, the RNA transcripts of a gene are over-expressed in the colon relative to other tissues, is reasonable to assume that the gene plays its most important role in the colon.
+One important class of GTEx dataset records levels of RNA expression across a wide range of tissues.  These GTEx RNAseq datasets can help us discover the tissues in which a particular gene plays an important role.  For instance, if we find that across many donors, the RNA transcripts of a gene are over-expressed in the colon relative to other tissues, it is reasonable to assume that the gene plays its most important role in the colon.
 
-GTEx bulk tissue RNA-seq datasets are used by the gene set analysis step of [MAGMA](../Bioinformatics_Concepts/MAGMA_Overview.md) to construct hypothesis about which tissues are most involved in a trait or disease.  Continuing the above example, MAGMA works on the principle that if most of the genes strongly associated with a disease are over-expressed in the colon according to GTEx RNAseq data, it is likely that the colon is central to the disease process.
+GTEx bulk tissue RNA-seq datasets are used by the gene set analysis step of [MAGMA](../Bioinformatics_Concepts/MAGMA_Overview.md) to construct hypotheses about which tissues are most involved in a trait or disease.  Continuing the above example, MAGMA works on the principle that if most of the genes strongly associated with a disease are over-expressed in the colon according to GTEx RNAseq data, it is likely that the colon is central to the disease process.
 
 
 [//]: # (## The RNA-seq Vector Space)
@@ -29,7 +29,7 @@ GTEx bulk tissue RNA-seq datasets are used by the gene set analysis step of [MAG
 [//]: # ()
 ## Artifacts in GTEx RNAseq data
 
-Ficucane et al.[@finucane2018heritability] applied Gene Ontology Enrichment Analysis to the genes expressed in lung tissue in the GTEx bulk RNAseq dataset.  They found strong enrichment for immune-related genes.  They hypothesized that this enrichment of immune genes in the lung was not a real property of lung tissue, but was instead a consequence of the presence a blood in the lungs of the post-mortem donors from which GTEx samples were collected. Users of GTEx datasets need to be aware of the presence of this kind of data artifact.
+Finucane et al.[@finucane2018heritability] applied Gene Ontology Enrichment Analysis to the genes expressed in lung tissue in the GTEx bulk RNAseq dataset.  They found strong enrichment for immune-related genes.  They hypothesized that this enrichment of immune genes in the lung was not a real property of lung tissue, but was instead a consequence of the presence of blood in the lungs of the post-mortem donors from which GTEx samples were collected. Users of GTEx datasets need to be aware of the presence of this kind of data artifact.
 
 [//]: # (![rnaseq_pca]&#40;https://github.com/user-attachments/assets/02023612-3f4a-4714-940e-347acd20b054&#41;)
 

@@ -22,7 +22,7 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to broad tissue category.  Large points correspond to cell/tisse types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].  The table shows details of the cell/tissues types with the smallest p values.
+The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].  The table shows details of the cell/tissues types with the smallest p values.
 
 
 ![s-ldsc-decodme-gene-expression](https://github.com/user-attachments/assets/77dfefc0-2717-4e45-9b1d-4f09d67b7dc5)
@@ -110,11 +110,11 @@ I next applied S-LDSC using the reference dataset derived from the Roadmap epige
 | Brain_Hippocampus_Middle__H3K27ac                                        |   1.91901e-08 |           0.00173697  | False         |
 | Ganglion_Eminence_derived_primary_cultured_neurospheres__H3K4me1         |   3.16805e-08 |           0.00215425  | False         |
 
-Again, the strongest, and most significant associations are all with CNS cell-types.
+Again, the strongest and most significant associations are all with CNS cell-types.
 
-### Immgen data
+### ImmGen data
 
-Next, I applied S-LDSC using reference data from the Immgen project.
+Next, I applied S-LDSC using reference data from the ImmGen project.
 
 There were no significant cell types.
 

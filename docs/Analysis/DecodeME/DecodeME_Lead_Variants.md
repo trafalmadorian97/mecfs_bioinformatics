@@ -33,6 +33,6 @@ In particular
 -  The other variants are assigned to different genes by GWASLAB and the DecodeME preprint.  This reflects ambiguity about how to assign GWAS signals to genes.
 
 ## Reproducing
-To reproduce this analysis, run the [initial DecodeME analysis script][mecfs_bio.analysis.decode_me_initial_analysis]
+To reproduce this analysis, run the [initial DecodeME analysis script][mecfs_bio.analysis.decode_me_initial_analysis].
 
 
