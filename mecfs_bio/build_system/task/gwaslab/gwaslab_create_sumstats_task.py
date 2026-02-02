@@ -10,6 +10,9 @@ from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
+from mecfs_bio.build_system.task.gwaslab.gwaslab_util import (
+    gwaslab_download_ref_if_missing,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
@@ -54,24 +57,82 @@ class GWASLabVCFRef:
 @frozen
 class HarmonizationOptions:
     """
-    Options for the call to GWASLab's harmonize function
+    Options for the call to GWASLab's harmonize function.
+
+
+    gwaslab's harmonization function changes the status codes in the STATUS column.
+    These status codes are described here: https://cloufield.github.io/gwaslab/StatusCode/
+
+    Below I explain some points that were initially not clear to me from the gwaslab documentation.
+
+    Two reference files are used in harmonization:
+
+    - A VCF file (ref_infer).  This is basically a table of genetic variants.
+
+       In some cases, this table is in dbSNP VCF format.  In this case, each row describes a given genetic variant.
+       Sometimes this description includes allele frequency.
+
+       In other cases, (such as when using a thousand genomes reference data) this table is in genotype VCF format.
+       In this case, the rows of the VCF file correspond to variants, and the columns correspond to individuals (from the
+       thousand genomes project, for example).  For each individual and each variant, the table tells us whether that individual has that variant.
+       Variant frequency information can be calculated from this individual-level genome data.
+
+
+    - A FASTA file (ref_seq).  This is a consensus human genome sequence.  Here is an example of some rows from the hg19 FASTA file:
+
+        TAAGTTTTGTCTGGTAATAAAGGTATATTTTCAAAAGAGAGGTAAATAGA
+        TCCACATACTGTGGAGGGAATAAAATACTTTTTGAAAAACAAACAACAAG
+        TTGGATTTTTAGACACATAGAAATTGAATATGTACATTTATAAATATTTT
+        TGGATTGAACTATTTCAAAATTATACCATAAAATAACTTGTAAAAATGTA
+        GGCAAAATGTATATAATTATGGCATGAGGTATGCAACTTTAGGCAAGGAA
+        GCAAAAGCAGAAACCATGAAAAAAGTCTAAATTTTACCATATTGAATTTA
+        AATTTTCAAAAACAAAAATAAAGACAAAGTGGGAAAAATATGTATGCTTC
+        ATGTGTGACAAGCCACTGATACCTATTAAATATGAAGAATATTATAAATC
+        ATATCAATAACCACAACATTCAAGCTGTCAGTTTGAATAGACaatgtaaa
+        tgacaaaactacatactcaacaagataacagcaaaccagcttcgacagca
+        cgttaaaggggtcatacaacataatcgagtagaatttatctctgagatgc
+        aagaatggttcaaaatatggaaaccaataaatgtgatatgccacactaac
+        agaataaaaaataaaaatcatattatcatctcaatagatgcagaaaaagc
+        attaacaaaagtaaacattctttcataataagacatcagataaaacaaat
+        taggaatagaaggaatgtaccgcaacacaataaaggccatatataacaag
+        cccacagctaacatcataatagtaaaatcatcacactggtaaaaaaaatg
+
+
+
+
+
+    gwaslab uses these two reference files to harmonize summary statistics.
+    These two reference files each affect a different digit of the gwaslab STATUS code column.
+
+    - Digit 7 of the status code is determined by the ability of gwaslab to find the variant in the reference VCF (ref_infer) :
+      see here: https://github.com/Cloufield/gwaslab/blob/d639b67c5264b1ac7ec89e284e638f2c8454ac48/src/gwaslab/hm/hm_harmonize_sumstats.py#L1521-L1530
+      Values of 7 or 8 here mean that the variant is palindromic, and the database could not be used to disambiguate the strand of the variant, or the variant was not found in the database
+    - Digit 6 of the status code is instead determined by the ability of the gwaslab to find the variant in the reference genome build FASTA file (ref_seq)
+      see here: https://github.com/Cloufield/gwaslab/blob/d639b67c5264b1ac7ec89e284e638f2c8454ac48/src/gwaslab/hm/hm_harmonize_sumstats.py#L968-L975
+      a value of 8 means a failure to find the variant in the FASTA file.
+
+    Set drop_missing_from_ref_seq to drop based on digit 6.
+    Set drop_missing_from_ref_infer to drop based on digit 7.
+
     """
 
     ref_infer: GWASLabVCFRef
     ref_seq: str
     cores: int
     check_ref_files: bool
-    drop_missing_from_ref: bool
+    drop_missing_from_ref_seq: bool
+    drop_missing_from_ref_infer_or_ambiguous: bool = True
 
 
 def _do_harmonization(
     sumstats: gl.Sumstats, basic_check: bool, options: HarmonizationOptions
 ):
     if options.check_ref_files:
-        gwaslab.download_ref(name=options.ref_infer.name, overwrite=False)
-        gwaslab.download_ref(name=options.ref_seq, overwrite=False)
+        gwaslab_download_ref_if_missing(options.ref_infer.name)
+        gwaslab_download_ref_if_missing(options.ref_infer.name)
         for extra in options.ref_infer.extra_downloads:
             gwaslab.download_ref(name=extra, overwrite=False)
+
     sumstats.harmonize(
         basic_check=basic_check,
         n_cores=options.cores,
@@ -79,13 +140,21 @@ def _do_harmonization(
         ref_infer=gl.get_path(options.ref_infer.name),
         ref_alt_freq=options.ref_infer.ref_alt_freq,
     )
-    if options.drop_missing_from_ref:
+    if options.drop_missing_from_ref_seq:
         # see meaning of status codes here: https://cloufield.github.io/gwaslab/StatusCode/
-        missing_from_ref = sumstats.data[GWASLAB_STATUS_COL].str[5:6] == "8"
-        print(
-            f"Dropping {missing_from_ref.sum()} variants that are missing from the reference"
+        missing_from_ref_seq = sumstats.data[GWASLAB_STATUS_COL].str[5:6] == "8"
+        logger.debug(
+            f"Dropping {missing_from_ref_seq.sum()} variants that are missing from the sequence FASTA reference"
         )
-        sumstats.data = sumstats.data.loc[~missing_from_ref, :]
+        sumstats.data = sumstats.data.loc[~missing_from_ref_seq, :]
+    if options.drop_missing_from_ref_infer_or_ambiguous:
+        missing_from_ref_infer = (sumstats.data[GWASLAB_STATUS_COL].str[6] == "8") | (
+            sumstats.data[GWASLAB_STATUS_COL].str[6] == "7"
+        )
+        logger.debug(
+            f"Dropping {missing_from_ref_infer.sum()} variants that are missing from the VCF reference"
+        )
+        sumstats.data = sumstats.data.loc[~missing_from_ref_infer, :]
 
 
 @frozen

@@ -54,7 +54,7 @@ def annovar_37_basic_rsid_assignment(
                 ref_infer=GWASLabVCFRef(name="1kg_eur_hg19", ref_alt_freq="AF"),
                 ref_seq="ucsc_genome_hg19",
                 check_ref_files=True,
-                drop_missing_from_ref=True,
+                drop_missing_from_ref_seq=True,
                 cores=4,
             )
         ),
