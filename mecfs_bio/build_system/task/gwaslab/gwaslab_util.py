@@ -7,7 +7,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
-    GWASLabVCFRefFile,
 )
 from mecfs_bio.util.plotting.save_fig import normalize_filename
 
@@ -44,7 +43,7 @@ def df_to_variants(df: pd.DataFrame) -> list[Variant]:
     ]
 
 
-def gwaslab_download_ref_if_missing(ref: GWASLabVCFRefFile):
+def gwaslab_download_ref_if_missing(ref: str):
     result = gl.get_path(ref)
     if not result:
         gl.download_ref(ref)

@@ -124,6 +124,14 @@ class PipeDataFrameTask(Task):
                 extension=extension,
                 read_spec=read_spec,
             )
+        elif isinstance(source_meta, FilteredGWASDataMeta):
+            meta = FilteredGWASDataMeta(
+                short_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                sub_dir=source_meta.sub_dir,
+                read_spec=read_spec,
+            )
         else:
             raise ValueError("unknown source meta")
 
