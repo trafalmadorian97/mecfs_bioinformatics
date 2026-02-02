@@ -57,17 +57,25 @@ class GWASLabVCFRef:
 @frozen
 class HarmonizationOptions:
     """
-    Options for the call to GWASLab's harmonize function
+    Options for the call to GWASLab's harmonize function.
 
-    Harmonization relates to status codes here: https://cloufield.github.io/gwaslab/StatusCode/
 
-    Here are some points that were initially not clear to me from the documentation.
+    gwaslab's harmonization function changes the status codes in the STATUS column.
+    These status codes are described here: https://cloufield.github.io/gwaslab/StatusCode/
+
+    Below I explain some points that were initially not clear to me from the gwaslab documentation.
 
     Two reference files are used in harmonization:
 
     - A VCF file (ref_infer).  This is basically a table of genetic variants.
-       In some cases, this table is in dbSNP VCF format.  In this case, each row describes a given genetic variant.  Sometimes this information includes allele frequency.
-       In other cases, (such as when using a thousand genomes reference data) this table is in genotype VCF format. In this case, the rows of the VCF file correspond to variants, and the columns correspond to individuals in the thousand genomes project.  The table tells for each individual and variant, whether that individual has that variant.  Variant frequency information can be calculated from this individual-level genome data.
+
+       In some cases, this table is in dbSNP VCF format.  In this case, each row describes a given genetic variant.
+       Sometimes this description includes allele frequency.
+
+       In other cases, (such as when using a thousand genomes reference data) this table is in genotype VCF format.
+       In this case, the rows of the VCF file correspond to variants, and the columns correspond to individuals (from the
+       thousand genomes project, for example).  For each individual and each variant, the table tells us whether that individual has that variant.
+       Variant frequency information can be calculated from this individual-level genome data.
 
 
     - A FASTA file (ref_seq).  This is a consensus human genome sequence.  Here is an example of some rows from the hg19 FASTA file:
@@ -94,7 +102,7 @@ class HarmonizationOptions:
 
 
     gwaslab uses these two reference files to harmonize summary statistics.
-    Each of these two reference files affects a different digit of the gwaslab STATUS code column.
+    These two reference files each affect a different digit of the gwaslab STATUS code column.
 
     - Digit 7 of the status code is determined by the ability of gwaslab to find the variant in the reference VCF (ref_infer) :
       see here: https://github.com/Cloufield/gwaslab/blob/d639b67c5264b1ac7ec89e284e638f2c8454ac48/src/gwaslab/hm/hm_harmonize_sumstats.py#L1521-L1530
@@ -102,6 +110,10 @@ class HarmonizationOptions:
     - Digit 6 of the status code is instead determined by the ability of the gwaslab to find the variant in the reference genome build FASTA file (ref_seq)
       see here: https://github.com/Cloufield/gwaslab/blob/d639b67c5264b1ac7ec89e284e638f2c8454ac48/src/gwaslab/hm/hm_harmonize_sumstats.py#L968-L975
       a value of 8 means a failure to find the variant in the FASTA file.
+
+    Set drop_missing_from_ref_seq to drop based on digit 6.
+    Set drop_missing_from_ref_infer to drop based on digit 7.
+
     """
 
     ref_infer: GWASLabVCFRef
@@ -109,7 +121,7 @@ class HarmonizationOptions:
     cores: int
     check_ref_files: bool
     drop_missing_from_ref_seq: bool
-    drop_missing_from_ref_infer: bool = True
+    drop_missing_from_ref_infer_or_ambiguous: bool = True
 
 
 def _do_harmonization(
@@ -135,7 +147,7 @@ def _do_harmonization(
             f"Dropping {missing_from_ref_seq.sum()} variants that are missing from the sequence FASTA reference"
         )
         sumstats.data = sumstats.data.loc[~missing_from_ref_seq, :]
-    if options.drop_missing_from_ref_infer:
+    if options.drop_missing_from_ref_infer_or_ambiguous:
         missing_from_ref_infer = (sumstats.data[GWASLAB_STATUS_COL].str[6] == "8") | (
             sumstats.data[GWASLAB_STATUS_COL].str[6] == "7"
         )

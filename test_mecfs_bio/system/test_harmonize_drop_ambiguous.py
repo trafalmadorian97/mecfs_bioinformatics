@@ -34,7 +34,7 @@ logger = structlog.get_logger()
 def count_ambiguous_or_missing_cases(sumstats: gwaslab.Sumstats) -> int:
     """
     See status codes here: https://cloufield.github.io/gwaslab/StatusCode/
-    status code 7 indicates and indistinguishable variant, while status code 8 indicates a variant not in the reference
+    status code 7 indicates a strand-indistinguishable variant, while status code 8 indicates a variant not in the reference VCF
     """
     ambiguous_or_missing = (
         (sumstats.data["STATUS"].str.slice(-1) == "7")
