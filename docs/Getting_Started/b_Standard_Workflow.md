@@ -21,6 +21,20 @@ Implement your changes.  Typically, this will involve:
 
 If you added a new task class, you will also want to add a unit test to the `test_mecfs_bio directory` to verify that it works as intended on some dummy data.  To read about the principles of unit testing see Winters et al.[@winters2020software] (The chapter on testing can be found [here](https://abseil.io/resources/swe-book/html/ch12.html)).  
 
+## Update documentation
+
+If any documentation changes are needed, edit the corresponding files in the `docs` directory, then view the results by running the following command and accessing [http://localhost:8000](http://localhost:8000) in your browser.
+
+```
+pixi r mkdocs serve
+```
+
+To check for issues, add the `strict` flag, which will make the build abort if there are any warnings.
+
+```
+pixi r mkdocs serve --strict
+```
+
 ## Run linters, formatters, and tests
 The `invoke green` command runs linters, formatters, and tests. Run it with 
 
