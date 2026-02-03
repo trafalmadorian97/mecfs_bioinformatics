@@ -42,7 +42,7 @@ To evaluate the evidence, [MAGMA uses as its test statistic](https://vu.data.sur
 
 This test statistic has a [generalized chi-squared distribution](https://en.wikipedia.org/wiki/Generalized_chi-squared_distribution) under the null hypothesis.  The details of its distribution depend on the correlations between the individual $Z$-statistics, which in turn depends on the linkage disequilibrium structure of the SNPs under study.  This is why MAGMA gene analysis requires linkage disequilibrium reference data.
 
-MAGMA converts the test-statistic to a p-value via a[ numerical-integration procedure](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true). A small p value indicates strong evidence that the gene affects the phenotype.
+MAGMA converts the test-statistic to a p value via a[ numerical-integration procedure](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true). A small p value indicates strong evidence that the gene affects the phenotype.
 
 ## Gene Property Analysis
 
@@ -54,7 +54,7 @@ associated with the phenotype over-represented in particular biological systems?
 ## Requirements
 The gene property analysis module requires:
 
-1. The output of the gene analysis step, associating p-values with genes.
+1. The output of the gene analysis step, associating p values with genes.
 2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data like [GTEx](../Data_Sources/GTEx_RNAseq_Data.md) could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
  
 ## Mathematical Overview
@@ -72,7 +72,7 @@ $$
 
 where the $\beta$ are regression coefficients and $\epsilon_{i,j}$ is the regression error.
 
-The null hypothesis $\beta_{i,j}= 0$ is then tested.
+The null hypothesis $\beta_{j}= 0$ is then tested.
 
 Rejecting this null would indicate that the degree to which the gene $i$ participates in the biological system $j$ is predictive of the extent of association of the gene with the phenotype, $Z_i$.  This would suggest that the biological system is related to the phenotype.
 

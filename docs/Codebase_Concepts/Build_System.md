@@ -23,7 +23,7 @@ An asset is any file or directory consumed or produced by the build.  In the con
 - GWAS summary statistics.
 - Reference RNAseq data from the [GTEx project.](../Data_Sources/GTEx_RNAseq_Data.md)
 - Plots illustrating the results of applying [MAGMA](../Bioinformatics_Concepts/MAGMA_Overview.md) to GWAS summary statistics.
-- Tables of category heritability weights $\{\tau_k\}$ and their associated p-values produced by [Stratified Linkage Disequilibrium Score Regression](../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md).
+- Tables of category heritability weights $\{\tau_k\}$ and their associated p values produced by [Stratified Linkage Disequilibrium Score Regression](../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md).
 
 
 ### Task

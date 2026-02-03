@@ -5,7 +5,7 @@ hide:
 ---
 # S-LDSC Analysis of DecodeME
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS 1 of [DecodeME](../../Data_Sources/DecodeME.md).
+[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS-1 of [DecodeME](../../Data_Sources/DecodeME.md).
 
 ## Reference Data Sources
 
@@ -118,7 +118,7 @@ Next, I applied S-LDSC using reference data from the ImmGen project.
 
 There were no significant cell types.
 
-The cell types with the lowest p-values are shown in the table below:
+The cell types with the lowest p values are shown in the table below:
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------------------------------|--------------:|----------------------:|:--------------|

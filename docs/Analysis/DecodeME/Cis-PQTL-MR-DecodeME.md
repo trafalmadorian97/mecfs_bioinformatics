@@ -6,7 +6,7 @@ hide:
 # cis-pQTL MR Analysis
 
 
-I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to DecodeME GWAS 1[@genetics2025initial] using cis-pQTL from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  I aimed to identify candidate proteins that may be causal in the ME/CFS disease process.
+I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to DecodeME GWAS-1[@genetics2025initial] using cis-pQTL from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  I aimed to identify candidate proteins that may be causal in the ME/CFS disease process.
 
 
 Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio method to estimate the causal effect of the proteins on ME/CFS.

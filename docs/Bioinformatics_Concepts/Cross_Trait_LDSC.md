@@ -107,7 +107,7 @@ $$
 
 ### Regression equation
 
-Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the Wald $\chi^2$ statistics of a variant $j$ in GWAS 1 and 2: 
+Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the Wald $\chi^2$ statistics of a variant $j$ in GWAS-1 and 2: 
 
 $$
 \begin{align}
