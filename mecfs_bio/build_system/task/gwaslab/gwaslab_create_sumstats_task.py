@@ -129,7 +129,7 @@ def _do_harmonization(
 ):
     if options.check_ref_files:
         gwaslab_download_ref_if_missing(options.ref_infer.name)
-        gwaslab_download_ref_if_missing(options.ref_infer.name)
+        gwaslab_download_ref_if_missing(options.ref_seq)
         for extra in options.ref_infer.extra_downloads:
             gwaslab.download_ref(name=extra, overwrite=False)
 

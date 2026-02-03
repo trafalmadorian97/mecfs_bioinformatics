@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import gwaslab as gl
 import pandas as pd
 from attrs import frozen
@@ -43,7 +45,8 @@ def df_to_variants(df: pd.DataFrame) -> list[Variant]:
     ]
 
 
-def gwaslab_download_ref_if_missing(ref: str):
+def gwaslab_download_ref_if_missing(ref: str) -> Path:
     result = gl.get_path(ref)
     if not result:
         gl.download_ref(ref)
+    return result
