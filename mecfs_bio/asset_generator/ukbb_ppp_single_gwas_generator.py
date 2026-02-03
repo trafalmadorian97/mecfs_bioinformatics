@@ -1,3 +1,7 @@
+"""
+Asset generator for downloading and preprocessing data from the UK Biobank Pharma Proteomics Project.
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen

@@ -6,8 +6,8 @@ Image source: Aguilar et al.[@aguilar2020immgen]
 
 The ImmGen project[@aguilar2020immgen] is a public resource describing gene expression and gene regulation in the mouse immune system.  For each cell type in a highly granular taxonomy of mouse immune cell types, the ImmGen project seeks to record:
 
-- mRNA expression levels
-- [Epigenetic](../Bioinformatics_Concepts/Epigenetics.md) information describing chromatin regulation.
+- mRNA expression levels,
+- [Epigenetic](../Bioinformatics_Concepts/Epigenetics.md) information describing chromatin regulation,
 - Information on the relationship between mRNA and protein levels.
 
 ## Uses 
