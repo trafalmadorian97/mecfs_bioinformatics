@@ -5,7 +5,7 @@ hide:
 ---
 # S-LDSC Analysis of DecodeME
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS 1 of [DecodeME](../../Data_Sources/DecodeME.md).
+[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS-1 of [DecodeME](../../Data_Sources/DecodeME.md).
 
 ## Reference Data Sources
 

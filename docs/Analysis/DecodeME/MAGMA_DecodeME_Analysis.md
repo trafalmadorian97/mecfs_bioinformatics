@@ -9,7 +9,7 @@ As an initial step, I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overvi
 
 ## MAGMA Gene Analysis
 
-I applied MAGMA's SNP-wise-mean model to the summary statistics from DecodeME's GWAS 1. 
+I applied MAGMA's SNP-wise-mean model to the summary statistics from DecodeME's GWAS-1. 
 
 
 In this step:
