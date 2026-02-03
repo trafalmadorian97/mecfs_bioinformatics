@@ -8,7 +8,10 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameParquetFormat
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -108,6 +111,7 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
     def deps(self) -> list["Task"]:
         return [self.gwas_data_task, self.reference_task]
 
+
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         gwas_asset = fetch(self.source_gwas_asset_id)
         gwas_data = (
@@ -150,14 +154,15 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
             ).alias(_IS_PALINDROMIC)
         )
 
+
+        gd = gd.join(reference, on=GWASLAB_RSID_COL)
         if self.palindrome_strategy == "drop":
+            logger.debug(f"Dropping {gd[_IS_PALINDROMIC].sum()} palindromic variants\n")
             gd = gd.filter(~pl.col(_IS_PALINDROMIC))
         else:
             raise NotImplementedError(
                 f"mode {self.palindrome_strategy} not implemented"
             )
-
-        gd = gd.join(reference, on=GWASLAB_RSID_COL)
         gd = gd.with_columns(
             _mismatch_pos_or_chrom_expr(
                 pos_col=GWASLAB_POS_COL,
@@ -184,10 +189,56 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
         _report_matches(gd)
         gd = _handle_mismatched_alleles(gd, strategy=self.mismatched_alleles_strategy)
         gd = gd.drop(_REF_COLS)
+        logger.debug(
+            f"harmonized gwas has length: {len(gd)}"
+        )
         out_path = scratch_dir / "matched_to_ref.parquet"
         gd.write_parquet(out_path)
 
         return FileAsset(out_path)
+
+    @classmethod
+    def create(cls,
+               asset_id:str,
+               gwas_data_task: Task,
+        reference_task: Task,
+    palindrome_strategy: PalindromeStrategy,
+    chrom_pos_strategy: ChromPosStrategy,
+    mismatched_alleles_strategy: MismatchedAllelesStrategy,
+    gwas_pipe: DataProcessingPipe = IdentityPipe(),
+    ref_pipe: DataProcessingPipe = IdentityPipe(),
+               ):
+        source_meta=gwas_data_task.meta
+        read_spec =DataFrameReadSpec(
+            DataFrameParquetFormat()
+        )
+        if isinstance(source_meta, FilteredGWASDataMeta):
+            meta =FilteredGWASDataMeta(
+                short_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                sub_dir=source_meta.sub_dir,
+                read_spec=read_spec,
+            )
+        elif isinstance(source_meta, GWASSummaryDataFileMeta):
+            meta = GWASSummaryDataFileMeta(
+                short_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                sub_dir=source_meta.sub_dir,
+                project_path=None,
+                read_spec=read_spec,
+            )
+        return cls(
+            meta=meta,
+            gwas_data_task=gwas_data_task,
+            reference_task=reference_task,
+            palindrome_strategy=palindrome_strategy,
+            chrom_pos_strategy=chrom_pos_strategy,
+            mismatched_alleles_strategy=mismatched_alleles_strategy,
+            gwas_pipe=gwas_pipe,
+            ref_pipe=ref_pipe,
+        )
 
 
 def _complement_reverse_expr(col_name: str) -> pl.Expr:
@@ -308,6 +359,6 @@ def _report_matches(df: pl.DataFrame) -> None:
     num_matches = df[_MATCH_REFERENCE].sum()
     flip_matches = df[_MATCH_REFERENCE_FLIPPED].sum()
     logger.debug(
-        f"Found {num_matches} variants matching the reference in their base orientation"
+        f"Found {num_matches} variants matching the reference in their base orientation\n\n"
         f"Found {flip_matches} variants matching the reference when effect and non-effect alleles are flipped"
     )
