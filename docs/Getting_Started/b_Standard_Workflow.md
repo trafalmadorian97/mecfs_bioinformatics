@@ -1,6 +1,6 @@
 # Standard Workflow
 
-This page describes the standard workflow for contributing to the mecfs bioinformatics repository.
+This page describes the standard workflow for contributing to the mecfs_bioinformatics repository.
 
 
 
