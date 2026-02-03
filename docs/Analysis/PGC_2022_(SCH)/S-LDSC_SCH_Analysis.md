@@ -22,7 +22,7 @@ I used the standard reference data sources to associate chromatin regions with c
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot below illustrates the pattern of S-LDSC p-values across cell types. The table shows the cell types with the lowest p-values.
+The plot below illustrates the pattern of S-LDSC p values across cell types. The table shows the cell types with the lowest p values.
 
 
 ![s-ldsc-sch-gene-exp](https://github.com/user-attachments/assets/885f815c-2934-486e-aef8-0d3c799a1c5d)
@@ -200,7 +200,7 @@ As expected, the Cahoy dataset strongly localizes the Schizophrenia GWAS signal 
 | Astrocyte       |  -1.22911e-08 |           0.872973    | False         |⏎
 
 
-The GTEx brain dataset points to the cortex as a key site of disease activity. Here are tissue types with the lowest p-values:
+The GTEx brain dataset points to the cortex as a key site of disease activity. Here are tissue types with the lowest p values:
 
 
 

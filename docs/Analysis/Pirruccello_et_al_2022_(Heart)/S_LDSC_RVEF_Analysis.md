@@ -21,7 +21,7 @@ I used the standard reference data sources to associate chromatin regions with c
 
 ### GTEx and Franke lab tissue expression data
 
-The plot below illustrates the pattern of S-LDSC p-values across cell types. The table shows the cell types with the lowest p-values.
+The plot below illustrates the pattern of S-LDSC p values across cell types. The table shows the cell types with the lowest p values.
 
 
 ![gene-expression-sldsc-rvef](https://github.com/user-attachments/assets/1465eb75-246a-484f-9af5-82d512e49884)

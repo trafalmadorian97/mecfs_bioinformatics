@@ -92,7 +92,7 @@ Only a single cell type is significant. This cell type appears to be a form of k
 
 ### Corces et al. ATAC-seq data
 
-Application of S-LDSC using the Corces ATAC-seq dataset produces one significant hit.  The cell types with the lowest p-values are shown below.
+Application of S-LDSC using the Corces ATAC-seq dataset produces one significant hit.  The cell types with the lowest p values are shown below.
 
 | Name    |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------|--------------:|----------------------:|:--------------|

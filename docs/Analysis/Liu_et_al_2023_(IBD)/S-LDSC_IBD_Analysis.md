@@ -22,7 +22,7 @@ I used the standard reference data sources to associate chromatin regions with c
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot below illustrates the pattern of S-LDSC p-values across cell types. The table shows the cell types with the lowest p-values.
+The plot below illustrates the pattern of S-LDSC p values across cell types. The table shows the cell types with the lowest p values.
 
 
 ![s-ldsc-gene-ibd](https://github.com/user-attachments/assets/c806b332-a452-4ca2-9005-a03b9c4541d6)
@@ -196,7 +196,7 @@ The results are below
 | B.T3.Sp                         |   3.41897e-08 |           0.00172218  | False         |
 
 
-Overall these results are rather non-specific: there are significant cell types in all the categories.  However, the lowest p-values are associated with T and natural-killer cell types (and NK cells have broadly similar gene expression patterns to T cells).  This finding is consistent with the view of inflammatory bowel disease as primarily T-cell driven
+Overall these results are rather non-specific: there are significant cell types in all the categories.  However, the lowest p values are associated with T and natural-killer cell types (and NK cells have broadly similar gene expression patterns to T cells).  This finding is consistent with the view of inflammatory bowel disease as primarily T-cell driven
 
 ### Corces et al. ATAC-seq data
 

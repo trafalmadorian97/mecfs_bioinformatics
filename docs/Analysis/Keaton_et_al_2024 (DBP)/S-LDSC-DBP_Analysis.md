@@ -45,7 +45,7 @@ The cell types with the lowest p values are given below:
 The failure to find a significant cell type despite the very large size of the Keaton et al. meta-GWAS is surprising.  I discuss this more [below](S-LDSC-DBP_Analysis.md#comment-on-contrast-between-gtexfranke-lab-dataset-and-roadmap-dataset-results).
 
 
-Looking at the top non-significant cell types, the presence of arterial and heart-related cell types as contributors to blood pressure is unsurprising.  What is more surprising is the presence of reproductive tissue at low p-values: myometrium and uterus.  There are at least two potential explanations:
+Looking at the top non-significant cell types, the presence of arterial and heart-related cell types as contributors to blood pressure is unsurprising.  What is more surprising is the presence of reproductive tissue at low p values: myometrium and uterus.  There are at least two potential explanations:
 
 1. Siricilla et al.[@siricilla2019comparative] state that "RNA sequencing also revealed that the myometrial and vascular SMCs \[smooth muscle cells\] were more than 90% similar in their transcriptome".  Thus, one plausible explanation is that S-LDSC is picking up on associations of blood pressure with transcriptional programs that are active in vascular smooth muscle, and these transcriptional programs are similar to those of myometrial smooth muscle.  This is biologically plausible: the importance of vascular smooth muscle to blood pressure is well known.  
 2. S-LDSC may be picking up on a sex hormone effect on blood pressure.  Blood pressure is well known to be sexually dimorphic. 

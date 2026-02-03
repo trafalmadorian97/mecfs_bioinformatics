@@ -31,7 +31,7 @@ The results are plotted below
 ![s-ldsc-asthma-expression](https://github.com/user-attachments/assets/464dc75c-e693-4659-9a94-e42cd58fde11)
 
 
-The table below shows the tissue/cell types with the lowest p-values.
+The table below shows the tissue/cell types with the lowest p values.
 
 
 | Name                                                           |   Coefficient |   Coefficient_P_value | Reject Null   |

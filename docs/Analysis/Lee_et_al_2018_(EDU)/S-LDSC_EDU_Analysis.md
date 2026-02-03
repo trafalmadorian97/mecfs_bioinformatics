@@ -25,7 +25,7 @@ I used the standard reference datasets recommended and preprocessed by the autho
 
 
 
-The graph below shows the coefficient p-values for the cell types in the GTEx/Franke Lab dataset when S-LDSC is applied to the EDU GWAS.  Cell types are grouped into categories according to the same scheme used in the original S-LDSC paper[@finucane2018heritability].
+The graph below shows the coefficient p values for the cell types in the GTEx/Franke Lab dataset when S-LDSC is applied to the EDU GWAS.  Cell types are grouped into categories according to the same scheme used in the original S-LDSC paper[@finucane2018heritability].
 
 ![edu_scatter](https://github.com/user-attachments/assets/a87db2e0-1d9f-4200-994f-cd1a6a3b0c7b)
 

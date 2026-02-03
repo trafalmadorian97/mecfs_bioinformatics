@@ -27,7 +27,7 @@ I used the reference datasets recommended and preprocessed by the authors of the
 
 When S-LSDC is applied to GWAS summary statistics using a reference dataset of cell types, S-LSDC will return cell-type $\tau_i$ coefficients together with associated $p$-values.  A large coefficient and a small $p$ value for a given cell type $i$ suggests that genes related to cell-type $i$ are over-represented in the heritability of the phenotype of interest.
 
-The graph below shows the coefficient p-values for the cell types in the GTEx/Franke Lab dataset when S-LDSC is applied to the LDL GWAS.  Cell types are grouped into categories according to the same scheme used in the original S-LDSC paper[@finucane2018heritability].
+The graph below shows the coefficient p values for the cell types in the GTEx/Franke Lab dataset when S-LDSC is applied to the LDL GWAS.  Cell types are grouped into categories according to the same scheme used in the original S-LDSC paper[@finucane2018heritability].
 
 ![scatter_plot](https://github.com/user-attachments/assets/c160793f-9c28-4ae8-b078-7ec1c228fe54)
 

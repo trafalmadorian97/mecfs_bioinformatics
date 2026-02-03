@@ -118,7 +118,7 @@ Next, I applied S-LDSC using reference data from the ImmGen project.
 
 There were no significant cell types.
 
-The cell types with the lowest p-values are shown in the table below:
+The cell types with the lowest p values are shown in the table below:
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------------------------------|--------------:|----------------------:|:--------------|

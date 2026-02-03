@@ -21,7 +21,7 @@ I used standard S-LDSC reference datasets. These reference datasets were origina
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot below illustrates the pattern of S-LDSC p-values across cell types. The table shows the cell types with the lowest p-values.
+The plot below illustrates the pattern of S-LDSC p values across cell types. The table shows the cell types with the lowest p values.
 
 
 ![s-ldsc_rcvol_expression](https://github.com/user-attachments/assets/2bef69a9-7f86-45fc-b42c-894bb00cfafe)
