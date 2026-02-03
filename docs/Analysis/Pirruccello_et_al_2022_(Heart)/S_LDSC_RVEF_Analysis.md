@@ -6,7 +6,7 @@ hide:
 
 # S-LDSC Analysis of RVEF
 
-I used [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to analyze summary statistics from a GWAS of MRI-determined right ventricular ejection fraction (RVEF) by Pirruccello et al.  
+I used [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to analyze summary statistics from a GWAS of MRI-determined right ventricular ejection fraction (RVEF) by Pirruccello et al.[@pirruccello2022genetic]  
 
 I used the standard reference data sources to associate chromatin regions with cell or tissue types. These reference data sources were:
 
