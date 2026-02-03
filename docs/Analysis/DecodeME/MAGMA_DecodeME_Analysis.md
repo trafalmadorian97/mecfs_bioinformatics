@@ -9,7 +9,7 @@ As an initial step, I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overvi
 
 ## MAGMA Gene Analysis
 
-I applied MAGMA's SNP-wise-mean model to the summary statistics from DecodeME's GWAS 1. 
+I applied MAGMA's SNP-wise-mean model to the summary statistics from DecodeME's GWAS-1. 
 
 
 In this step:
@@ -50,7 +50,7 @@ MAGMA produces a table of genes, effect sizes, and p values.  Filtering these ge
 I next applied [MAGMA's](../../Bioinformatics_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../Data_Sources/DecodeME.md).  This step combined the gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../Data_Sources/GTEx_RNAseq_Data.md).  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
 
 ![bar_plot_decodeme_tissues](https://github.com/user-attachments/assets/519629d4-c60a-434b-9ceb-809c2878cbe5)
-In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p-value meets Bonferroni-corrected significance threshold,
+In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p value meets Bonferroni-corrected significance threshold,
 
 
 
