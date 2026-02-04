@@ -22,7 +22,7 @@ $$
 
 ## When Are Traits Genetically Correlated?
 
-What does it mean biologically when two traits are genetically correlated? The most straightforward case is that of pleiotropy: an overlapping set of genetic variants drives the two phenotypes.  This corresponds to the causal graph $A	\leftarrow, g\rightarrow B$ where g denotes the shared variants.  Mediated pleiotropy is also possible, in which genetics causes one trait which causes another: $g\leftarrow A\leftarrow B$.
+What does it mean biologically when two traits are genetically correlated? The most straightforward case is that of pleiotropy: an overlapping set of genetic variants drives the two phenotypes.  This corresponds to the causal graph $A	\leftarrow g\rightarrow B$ where g denotes the shared variants.  Mediated pleiotropy is also possible, in which genetics causes one trait which causes another: $g\rightarrow A\rightarrow B$.
 
 Besides these straightforward cases, there are also a number of more exotic possible causes of genetic correlation, as discussed [here](https://gcbias.org/2016/04/19/what-is-genetic-correlation/).  Briefly
 

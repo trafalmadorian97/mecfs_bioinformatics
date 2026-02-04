@@ -311,7 +311,7 @@ The following figure from Shi et al.[@shi2016contrasting] is a striking illustra
 
 ![shi_schz_chrom_heritability](https://github.com/user-attachments/assets/411240fd-38fd-44b4-ba9a-746e9b48d021)
 
-The authors applied the HESS method to Schizophrenia, a prototypically polygenic disease.  HESS estimates the proportion of [heritability](Heritability.md) attributal to each chromosome.  They found that schizophrenia heritability on a chromosome was approximately proportional to the chromosome's length.  This is consistent with fairly uniform polygenicity.
+The authors applied HESS to Schizophrenia, a prototypically polygenic disease.  HESS estimates the proportion of [heritability](Heritability.md) attributal to each chromosome.  They found that the schizophrenia heritability of a chromosome was approximately proportional to the chromosome's length.  This is consistent with uniform polygenicity.
 
 
 

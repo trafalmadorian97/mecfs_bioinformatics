@@ -2,7 +2,7 @@
 
 You may find that the analysis you would like to perform requires access to a software package that is not currently part of the `mecfs_bioinformatics` environment.
 
-## Adding PyPi packages
+## Adding PyPi Packages
 
 If your software package is available on PyPi, you can add it with 
 
