@@ -22,5 +22,5 @@ When working on this project, there are a few key principles that govern how to 
 Verification techniques include:
 
 - Implementing unit and integration tests to make sure that software continues to behave as expected, even as the project architecture inevitably evolves over time.  See Winters et al.[@winters2020software] for discussion of the principles of software reliability.
-- Running biostatistical software on diseases with known biology and checking that this known biology is re-capitulated.  This check evaluates both: a) the overall reliability of the software and b) that we have correctly understood how to use it.
+- Running biostatistical software on diseases with known biology and checking that this known biology is re-capitulated.  This check evaluates both: a) the reliability of the scientific assumptions underlying the software and b) that we have correctly understood how to use the software.
 

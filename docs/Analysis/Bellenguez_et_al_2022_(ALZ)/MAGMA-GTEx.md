@@ -11,4 +11,4 @@ I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md) to the Alzhie
 
 ![magma-alz-gtex](https://github.com/user-attachments/assets/e3c3741e-9042-4e2c-bdd0-7fbf185ccdcd)
 
-Three of the four significant tissues types (Whole blood, Spleen, Ileum Lymphode aggregate) are immune-related, which is consistent with theories of Alzheimer's as an immune-related disease.  How to interpret the significant hit at "Liver portal tract" is less obvious.
+Three of the four significant tissues types (Whole blood, Spleen, Ileum Lymphode aggregate) are immune-related, which is consistent with theories of Alzheimer's as an immune-related disease.  How to interpret "Liver portal tract" is less obvious.

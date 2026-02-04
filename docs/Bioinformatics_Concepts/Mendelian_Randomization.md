@@ -4,13 +4,15 @@
 
 [//]: # (To discuss: Formalism of Causal inferece.  How the three instrumental variables assumptions dont let us do causal inference without a `parametric` model.  Wald ratio.  Wald ratio error.  Other methods.)
 ## Categories of Data Science
-Hernan et al.[@hernan2019second] assert that the core activities of the data scientist are, in increasing order of difficulty:
+Hernan et al.[@hernan2019second] assert that the core activities of the data scientist are, in order of increasing complexity:
 
 
 1. **Description**: Computing summary statistics, to enable large datasets to be easily comprehended. An example would be producing a chart summarizing the characteristics of heart disease patients.
 2. **Prediction**: Estimating the distribution of one variable conditional on other variables.  An example would be calculation of a person's odds of heart disease, conditional on their demographics, genetics, and [LDL](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) level.
 3. **Causal Inference**:   Reasoning about counterfactuals.   An example would be evaluating the evidence in support of a statement like: "If all patients with high LDL were put on statins, occurrence of heart disease would be reduced by $X$ percent".  
 
+
+Here, we focus on causal inference.
 
 
 [//]: # (Since causal effects are the core of scientific knowledge, there is understandable interest in specifying the criteria according to which valid causal inferences can be made.)
@@ -73,7 +75,7 @@ Under this linear model, homogeneity holds automatically.
 
 A common source of error in Mendelian Randomization occurs when the genetic instrument affects the outcome through a causal pathway that does not involve the exposure.  This scenario, which is known as "horizontal pleiotropy", results in a violation of IV3.  If the strength of the causal effect through the alternative pathway is large, the results of Mendelian Randomization can be misleading.
 
-The diagram below provides an example of horizontal pleiotropy:
+The diagram below illustrates horizontal pleiotropy:
 
 ``` mermaid
 graph LR
