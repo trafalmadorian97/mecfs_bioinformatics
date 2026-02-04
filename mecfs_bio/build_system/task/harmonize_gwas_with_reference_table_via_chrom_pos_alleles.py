@@ -33,6 +33,9 @@ from .harmonize_gwas_with_reference_table_via_rsid import (
     handle_flipped,
     is_palindromic_expr,
 )
+from ..meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from ..meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
+from ..meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameParquetFormat
 
 logger = structlog.get_logger()
 
@@ -116,10 +119,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         assert len(
             gwas_data.unique(
                 subset=[
-                    GWASLAB_CHROM_COL,
-                    GWASLAB_POS_COL,
-                    GWASLAB_EFFECT_ALLELE_COL,
-                    GWASLAB_NON_EFFECT_ALLELE_COL,
+                    GWASLAB_CHROM_COL,GWASLAB_POS_COL,GWASLAB_EFFECT_ALLELE_COL,GWASLAB_NON_EFFECT_ALLELE_COL,
                 ]
             )
         ) == len(gwas_data)
@@ -210,11 +210,50 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
 
         return FileAsset(out_path)
 
+    @classmethod
+    def create(
+            cls,
+            asset_id: str,
+            gwas_data_task: Task,
+            reference_task: Task,
+            palindrome_strategy: PalindromeStrategy,
+            gwas_pipe: DataProcessingPipe = IdentityPipe(),
+            ref_pipe: DataProcessingPipe = IdentityPipe(),
+    ):
+        source_meta = gwas_data_task.meta
+        read_spec = DataFrameReadSpec(DataFrameParquetFormat())
+        meta: Meta
+        if isinstance(source_meta, FilteredGWASDataMeta):
+            meta = FilteredGWASDataMeta(
+                short_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                sub_dir=source_meta.sub_dir,
+                read_spec=read_spec,
+            )
+        elif isinstance(source_meta, GWASSummaryDataFileMeta):
+            meta = GWASSummaryDataFileMeta(
+                short_id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                sub_dir=source_meta.sub_dir,
+                project_path=None,
+                read_spec=read_spec,
+            )
+        return cls(
+            meta=meta,
+            gwas_data_task=gwas_data_task,
+            reference_task=reference_task,
+            palindrome_strategy=palindrome_strategy,
+            gwas_pipe=gwas_pipe,
+            ref_pipe=ref_pipe,
+        )
+
 
 def _report_matches(df: pl.DataFrame) -> None:
     num_matches = df[MATCH_REFERENCE].sum()
     flip_matches = df[MATCH_REFERENCE_FLIPPED].sum()
     logger.debug(
-        f"Found {num_matches} variants matching the reference in their base orientation"
+        f"Found {num_matches} variants matching the reference in their base orientation\n\n"
         f"Found {flip_matches} variants matching the reference when effect and non-effect alleles are flipped"
     )
