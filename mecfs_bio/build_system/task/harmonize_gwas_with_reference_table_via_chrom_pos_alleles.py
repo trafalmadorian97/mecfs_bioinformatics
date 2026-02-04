@@ -21,6 +21,12 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
 )
 
+from ..meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from ..meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
+from ..meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
 from .harmonize_gwas_with_reference_table_via_rsid import (
     IS_PALINDROMIC,
     MATCH_REFERENCE,
@@ -33,9 +39,6 @@ from .harmonize_gwas_with_reference_table_via_rsid import (
     handle_flipped,
     is_palindromic_expr,
 )
-from ..meta.filtered_gwas_data_meta import FilteredGWASDataMeta
-from ..meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
-from ..meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameParquetFormat
 
 logger = structlog.get_logger()
 
@@ -51,7 +54,7 @@ _REF_COLS_ALLELE_MATCH = [
 class HarmonizeGWASWithReferenceViaAlleles(Task):
     """
     Given a table of reference genetic variants, harmonize gwas data with that table of reference variants
-    using chromsome, position, alleles for matching
+    using chromosome, position, alleles for matching
 
     In this context harmonization means:
     For non-palindromic variants:
@@ -119,7 +122,10 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         assert len(
             gwas_data.unique(
                 subset=[
-                    GWASLAB_CHROM_COL,GWASLAB_POS_COL,GWASLAB_EFFECT_ALLELE_COL,GWASLAB_NON_EFFECT_ALLELE_COL,
+                    GWASLAB_CHROM_COL,
+                    GWASLAB_POS_COL,
+                    GWASLAB_EFFECT_ALLELE_COL,
+                    GWASLAB_NON_EFFECT_ALLELE_COL,
                 ]
             )
         ) == len(gwas_data)
@@ -212,13 +218,13 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
 
     @classmethod
     def create(
-            cls,
-            asset_id: str,
-            gwas_data_task: Task,
-            reference_task: Task,
-            palindrome_strategy: PalindromeStrategy,
-            gwas_pipe: DataProcessingPipe = IdentityPipe(),
-            ref_pipe: DataProcessingPipe = IdentityPipe(),
+        cls,
+        asset_id: str,
+        gwas_data_task: Task,
+        reference_task: Task,
+        palindrome_strategy: PalindromeStrategy,
+        gwas_pipe: DataProcessingPipe = IdentityPipe(),
+        ref_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         source_meta = gwas_data_task.meta
         read_spec = DataFrameReadSpec(DataFrameParquetFormat())

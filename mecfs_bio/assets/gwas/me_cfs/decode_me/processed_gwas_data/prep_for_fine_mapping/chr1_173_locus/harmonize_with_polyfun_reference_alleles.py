@@ -4,10 +4,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annova
 from mecfs_bio.assets.reference_data.ukbb_ld_matrices.from_polyfun.chr1_173000001.chr1_173000001_176000001_labels import (
     CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD,
 )
-from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import \
-    HarmonizeGWASWithReferenceViaAlleles
-from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
-    HarmonizeGWASWithReferenceViaRSIDTask,
+from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
+    HarmonizeGWASWithReferenceViaAlleles,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
@@ -37,14 +35,13 @@ DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES = HarmonizeGWASWithRefe
                 ],
                 keep="none",
                 order_by=[
-
                     GWASLAB_CHROM_COL,
                     GWASLAB_POS_COL,
                     GWASLAB_EFFECT_ALLELE_COL,
                     GWASLAB_NON_EFFECT_ALLELE_COL,
-                    GWASLAB_RSID_COL
-                ]
-            )
+                    GWASLAB_RSID_COL,
+                ],
+            ),
         ]
     ),
     ref_pipe=CompositePipe(
