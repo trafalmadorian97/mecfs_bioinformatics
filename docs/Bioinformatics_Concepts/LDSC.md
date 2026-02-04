@@ -305,9 +305,17 @@ How plausible is this assumption?
 
 ### Arguments that assumption is plausible
 
-On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  
+On the one hand, the discovery that many traits are highly polygenic has been one of the most important findings of the GWAS era.  
 
-See this talk by Jonathan Pritchard, which proposes that most traits are "omnigenic", in the sense that they are controlled by vast numbers of small contributions spread across the genome:
+The following figure from Shi et al.[@shi2016contrasting] is a striking illustration:
+
+![shi_schz_chrom_heritability](https://github.com/user-attachments/assets/411240fd-38fd-44b4-ba9a-746e9b48d021)
+
+The authors applied HESS to Schizophrenia, a prototypically polygenic disease.  HESS estimates the proportion of [heritability](Heritability.md) attributal to each chromosome.  They found that the schizophrenia heritability of a chromosome was approximately proportional to the chromosome's length.  This is consistent with uniform polygenicity.
+
+
+
+See also this talk by Jonathan Pritchard, which proposes that most traits are "[omnigenic](Omnigenic_Model.md)", in the sense that they are controlled by vast numbers of small contributions spread across the genome:
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/d_6MJgrD5ww?si=_xwDgdAQjWStYfKr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 

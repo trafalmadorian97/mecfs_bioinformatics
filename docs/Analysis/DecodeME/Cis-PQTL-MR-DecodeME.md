@@ -42,7 +42,7 @@ The second shows the same region from the UK Biobank Pharma Proteomics Project G
 
 ![rabgap1l_region_plot](https://github.com/user-attachments/assets/161f1b0e-e309-4c0e-a88a-d312b8dc80ee)
 
-To me, it seems that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  Running a colocalization algorithm may clarify.
+From visual inspection, it seems clear that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  A colocalization algorithm may clarify the question.
 
 ### BTN1A1
 
@@ -69,7 +69,7 @@ The second is from UK Biobank Pharma Proteomics Project:
 ![ukbb_ppp_btn1a1](https://github.com/user-attachments/assets/400039dc-0e31-4cfd-b219-c3cea2350a3c)
 
 
-In this comparison, it seems even more obvious that the primary signals do not colocalize: they are separated by a clear recombination boundary.
+In this comparison, it seems even more obvious that the primary signals do not colocalize: they are separated by a recombination boundary.
 
 
 ## Follow-up questions
