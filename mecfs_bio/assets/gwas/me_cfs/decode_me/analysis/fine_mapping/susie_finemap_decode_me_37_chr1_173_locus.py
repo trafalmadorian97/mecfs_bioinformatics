@@ -1,6 +1,6 @@
 """
 Apply SUSIE to finemap the main DecodeME GWAS hit on chromosome 1.
-Use the UK biobank LD matrix from the Broad Institute.
+As a reference, use the UK Biobank LD matrix from the Broad Institute.
 """
 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.prep_for_fine_mapping.chr1_173_locus.harmonize_with_polyfun_reference_alleles import (

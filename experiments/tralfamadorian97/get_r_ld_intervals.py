@@ -1,3 +1,7 @@
+"""
+Rough experimental scripts analyzing various LD data sources
+"""
+
 import numpy as np
 import tarfile
 from pathlib import Path

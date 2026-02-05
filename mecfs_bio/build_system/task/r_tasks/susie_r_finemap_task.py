@@ -126,15 +126,16 @@ class SusieRFinemapTask(Task):
 
         ld_matrix_asset = fetch(self.ld_matrix_source.task.asset_id)
         assert isinstance(ld_matrix_asset, FileAsset)
-        ld_matrix = _load_ld_matrix(
+        ld_matrix_sparse = _load_ld_matrix(
             path=ld_matrix_asset.path, ld_labels_table=ld_labels_table
         )
 
         gwas_table, ld_labels_table, ld_matrix = align_gwas_and_ld(
             gwas=gwas_table,
             ld_labels=ld_labels_table,
-            ld_matrix=ld_matrix,
+            ld_matrix_sparse=ld_matrix_sparse,
         )
+        del ld_matrix_sparse
         gwas_table, ld_labels_table, ld_matrix = apply_subsample(
             gwas_table, ld_labels_table, ld_matrix, subsample=self.subsample
         )
@@ -227,7 +228,7 @@ class SusieRFinemapTask(Task):
 
 
 def align_gwas_and_ld(
-    gwas: pl.DataFrame, ld_labels: pl.DataFrame, ld_matrix: coo_matrix
+    gwas: pl.DataFrame, ld_labels: pl.DataFrame, ld_matrix_sparse: coo_matrix
 ) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
     """
     Slice the reference LD matrix and the GWAS data so that they only include genetic variants in their intersection
@@ -243,7 +244,7 @@ def align_gwas_and_ld(
             GWASLAB_NON_EFFECT_ALLELE_COL,
         ],
     )
-    ld_matrix = csr_matrix(ld_matrix).toarray()
+    ld_matrix = csr_matrix(ld_matrix_sparse).toarray()
     ld_matrix = ld_matrix[
         joined["ld_index"].to_numpy().reshape(-1, 1),
         joined["ld_index"].to_numpy().reshape(1, -1),

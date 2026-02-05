@@ -1,3 +1,6 @@
+"""
+Rough experimental scripts pertaining to analysis of ME/CFS data
+"""
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 
