@@ -26,7 +26,7 @@ def scan_dataframe(
     path: Path, spec: DataFrameReadSpec, parquet_backend: ValidBackend = "polars"
 ) -> nw.LazyFrame:
     if isinstance(spec.format, DataFrameParquetFormat):
-        logger.debug(f"Scanning with backend {parquet_backend}")
+        logger.debug(f"Scanning parquet asset at {path} with backend {parquet_backend}")
         return nw.scan_parquet(path, backend=parquet_backend)
     if isinstance(spec.format, DataFrameTextFormat):
         if spec.format.column_names is not None:
@@ -35,6 +35,9 @@ def scan_dataframe(
         else:
             col_func = None
         if parquet_backend == "polars":
+            logger.debug(
+                f"scanning text table asset at {path} with backend {parquet_backend}"
+            )
             polars_scan = pl.scan_csv(
                 path,
                 separator=spec.format.separator,

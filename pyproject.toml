@@ -52,7 +52,7 @@ dependencies = [
     "seaborn>=0.13.2,<0.14",
     "textalloc>=1.2.1,<2",
     "types-seaborn>=0.13.2.20251221,<0.14",
- "rpy2>=3.6.4,<4", "uniprot-id-mapper>=1.1.4,<2", "forestplot>=0.4.1,<0.5", "zepid>=0.9.1,<0.10", "synapseclient>=4.11.0,<5", "import-linter>=2.9,<3"]
+ "rpy2>=3.6.4,<4", "uniprot-id-mapper>=1.1.4,<2", "forestplot>=0.4.1,<0.5", "zepid>=0.9.1,<0.10", "synapseclient>=4.11.0,<5", "import-linter>=2.9,<3", "pyreadr>=0.5.4,<0.6"]
 
 ## pyproject.toml
 #[tool.pixi.pypi-options.dependency-overrides]
@@ -104,7 +104,7 @@ r-dplyr = ">=1.1.4,<2"
 "r-data.table" = ">=1.17.8,<2"
 r-jsonlite = ">=2.0.0,<3"
 r-httr = ">=1.4.7,<2"
-r-ggplot2 = ">=4.0.1,<5"
+r-ggplot2 = ">=4.0.2,<5"
 r-cowplot = ">=1.2.0,<2"
 r-knitr = ">=1.51,<2"
 r-markdown = ">=2.0,<3"
@@ -119,3 +119,4 @@ r-mass = ">=7.3_65,<8"
 r-mendelianrandomization = ">=0.10.0,<0.11"
 gh = ">=2.86.0,<3"
 lychee = ">=0.22.0,<0.23"
+r-susier = ">=0.14.2,<0.15"
