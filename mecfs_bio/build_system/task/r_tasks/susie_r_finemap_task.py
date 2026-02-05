@@ -17,7 +17,7 @@ from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import (
     importr,
 )
-from scipy.sparse import csr_matrix, spmatrix
+from scipy.sparse import coo_matrix, csr_matrix
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -227,7 +227,7 @@ class SusieRFinemapTask(Task):
 
 
 def align_gwas_and_ld(
-    gwas: pl.DataFrame, ld_labels: pl.DataFrame, ld_matrix: spmatrix
+    gwas: pl.DataFrame, ld_labels: pl.DataFrame, ld_matrix: coo_matrix
 ) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
     """
     Slice the reference LD matrix and the GWAS data so that they only include genetic variants in their intersection
@@ -419,9 +419,9 @@ def _save_adjustment(adjustment: float, scratch_dir: Path):
     adjustment_df.to_parquet(scratch_dir / ADJUSTMENT_VALUE_FILENAME)
 
 
-def _load_ld_matrix(path: Path, ld_labels_table: pl.DataFrame):
+def _load_ld_matrix(path: Path, ld_labels_table: pl.DataFrame) -> coo_matrix:
     logger.debug(f"loading ld matrix from {path}")
-    partial_ld_matrix = scipy.sparse.load_npz(path)
+    partial_ld_matrix = coo_matrix(scipy.sparse.load_npz(path))
     ld_matrix = partial_ld_matrix + partial_ld_matrix.transpose()
     logger.debug("done loading ld matrix")
 
