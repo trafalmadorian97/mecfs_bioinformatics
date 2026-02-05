@@ -19,6 +19,17 @@ def test(c):
 
 
 @task
+def test_debug(c):
+    """
+    Run tests with extra information printed.  Useful for debugging.
+    """
+    print("Running unit and integration tests with pytest...")
+    cmd = f"pixi r python   -m pytest -s --typeguard-debug-instrumentation --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    print(cmd)
+    c.run(cmd, pty=True)
+
+
+@task
 def format(c):
     """
     Format code

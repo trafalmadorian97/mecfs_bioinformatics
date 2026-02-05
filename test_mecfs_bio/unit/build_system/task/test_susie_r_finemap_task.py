@@ -96,7 +96,7 @@ def test_align():
     rg, rr, rmat = align_gwas_and_ld(
         gwas=gwas,
         ld_labels=reference,
-        ld_matrix=ld_matrix,
+        ld_matrix_sparse=ld_matrix,
     )
     pl.testing.assert_frame_equal(
         rg,

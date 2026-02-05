@@ -170,7 +170,7 @@ class SusieRFinemapTask(Task):
         check_symmetric(ld_matrix)
         with localconverter(conv):
             ld_matrix_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
-        _save_adjustment(adjustment=adjustment, scratch_dir=scratch_dir)
+        _save_adjustment(adjustment=float(adjustment), scratch_dir=scratch_dir)
 
         logger.debug("Running SUSIE")
         susie_result = susie_package.susie_rss(
@@ -415,20 +415,20 @@ def check_symmetric(array: np.ndarray, tol=1e-6):
 
 def _save_adjustment(adjustment: float, scratch_dir: Path):
     adjustment_df = pd.DataFrame(
-        {"Adjustment": adjustment},
+        {"Adjustment": [float(adjustment)]},
     )
     adjustment_df.to_parquet(scratch_dir / ADJUSTMENT_VALUE_FILENAME)
 
 
 def _load_ld_matrix(path: Path, ld_labels_table: pl.DataFrame) -> coo_matrix:
     logger.debug(f"loading ld matrix from {path}")
-    partial_ld_matrix = coo_matrix(scipy.sparse.load_npz(path))
+    partial_ld_matrix = scipy.sparse.load_npz(path)
     ld_matrix = partial_ld_matrix + partial_ld_matrix.transpose()
     logger.debug("done loading ld matrix")
 
     assert ld_matrix.shape[0] == len(ld_labels_table)
     assert (abs(ld_matrix.diagonal() - 1)).max() <= 1e-4
-    return ld_matrix
+    return coo_matrix(ld_matrix)
 
 
 def _make_diagnostic_plot(
