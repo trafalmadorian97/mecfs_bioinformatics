@@ -1,3 +1,8 @@
+"""
+Download genetic variant labels for the Broad institute's UK Biobank LD matrix
+at Chromosome 1 173000001-17600000 (GRCh37)
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

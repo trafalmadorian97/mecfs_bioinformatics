@@ -17,7 +17,7 @@ from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import (
     importr,
 )
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, spmatrix
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -179,6 +179,7 @@ class SusieRFinemapTask(Task):
             L=self.max_credible_sets,
         )
         py_result = convert_r_named_list_to_python_dict(susie_result)
+        _check_converged(py_result)
         write_result(
             scratch_dir,
             py_result=py_result,
@@ -226,7 +227,7 @@ class SusieRFinemapTask(Task):
 
 
 def align_gwas_and_ld(
-    gwas: pl.DataFrame, ld_labels: pl.DataFrame, ld_matrix: scipy.sparse.coo_matrix
+    gwas: pl.DataFrame, ld_labels: pl.DataFrame, ld_matrix: spmatrix
 ) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
     """
     Slice the reference LD matrix and the GWAS data so that they only include genetic variants in their intersection
@@ -264,7 +265,7 @@ def make_psd_corr(matrix: np.ndarray, tol: float = 1e-4) -> np.ndarray:
     if (eigs >= tol).all():
         logger.debug(f"eigenvalues exceed {tol}.  No adjustment necessary.")
         return matrix
-    logger.debug(f"Smallest eigenvalue is {np.min(eigs)}< {tol}.  Applying adjustment")
+    logger.debug(f"Smallest eigenvalue is {np.min(eigs)} < {tol}.  Applying adjustment")
 
     eigs[eigs < tol] = tol
     reconstructed = eigvecs @ np.diag(eigs) @ eigvecs.T
@@ -323,6 +324,15 @@ def r_to_py_recursive(r_obj):
     return r_obj
 
 
+def _check_converged(py_result: dict):
+    conv = ro.default_converter
+    with localconverter(conv):
+        converged = ro.conversion.get_conversion().rpy2py(py_result["converged"])
+
+    logger.debug(f"Convergence: {converged}")
+    assert bool(converged), "SUSIE failed to converge"
+
+
 def write_result(
     directory: Path, py_result: dict, gwas_table: pl.DataFrame, L: int
 ) -> None:
@@ -351,7 +361,6 @@ def write_result(
     with localconverter(conv):
         alpha = ro.conversion.get_conversion().rpy2py(py_result["alpha"])
         pip = ro.conversion.get_conversion().rpy2py(py_result["pip"])
-        # converged = ro.conversion.get_conversion().rpy2py(py_result["converged"])
         mu = ro.conversion.get_conversion().rpy2py(py_result["mu"])
         mu2 = ro.conversion.get_conversion().rpy2py(py_result["mu2"])
     pd.DataFrame(alpha, columns=variant_names, index=credible_set_names).to_parquet(
@@ -393,7 +402,9 @@ def write_result(
         # mu2_for_set = pl.Series(values=mu2[set_number,set_values].reshape(-1), name=MU2_COLUMN_NAME)
         pip_for_set = pl.Series(values=pip[set_values].reshape(-1), name=PIP_COLUMN)
         gwas_for_set = gwas_for_set.with_columns(alpha_for_set, mu_for_set, pip_for_set)
-        logger.debug(f"Credible set {set_name}\n {gwas_for_set}")
+        logger.debug(
+            f"Credible set {set_name}\n {gwas_for_set.sort(by=PIP_COLUMN, descending=True)}"
+        )
         gwas_for_set.write_parquet(subdir / f"{set_name}.parquet")
 
 

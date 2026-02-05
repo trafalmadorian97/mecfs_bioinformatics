@@ -43,6 +43,9 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 
 def test_align():
+    """
+    Verify we can correctly align GWAS data with an LD reference
+    """
     gwas = pl.DataFrame(
         [
             {
@@ -104,6 +107,9 @@ def test_align():
 
 
 def test_fine_mapping(tmp_path: Path):
+    """
+    Test that we can find the causal SNPs in a simple synthetic example
+    """
     n = 2500
     m = 100
     susie_package = importr("susieR")

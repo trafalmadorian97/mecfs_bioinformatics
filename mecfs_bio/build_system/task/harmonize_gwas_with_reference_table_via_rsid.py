@@ -71,7 +71,7 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
     In this context harmonization means:
     For non-palindromic variants:
        - keep only variants where:
-          -- effect and non-effect allele match the reference
+          -- effect and non-effect allele match the reference, or
           --effect allele matches reference non-effect allele, and vice versa.  In this case, flip beta and invert odds ratio
 
     For palindromic variants:

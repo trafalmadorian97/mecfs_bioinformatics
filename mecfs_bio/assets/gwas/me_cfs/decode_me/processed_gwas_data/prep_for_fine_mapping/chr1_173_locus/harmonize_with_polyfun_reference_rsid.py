@@ -1,3 +1,7 @@
+"""
+Harmonize DecodeME GWAS data at the chr1 locus with the reference LD matrix by matching on rsid
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
