@@ -36,3 +36,8 @@ LD patterns can obscure the true causal variant. To illustrate the point, Wang e
 
 todo
 
+
+# Links
+
+[Primer on Fine Mapping by Ran Cui](https://www.youtube.com/watch?v=pglYf7wocSI)
+
