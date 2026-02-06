@@ -35,7 +35,9 @@ As an illustrative example, here is a plot of the absolute value of the correlat
 LD patterns can obscure the true causal variant. To illustrate the point, Wang and Huang[@wang2022methods] provide a toy example illustrated by the figure below:
 
 
-![gwas_wrong_causal_variant](https://github.com/user-attachments/assets/3c18c2e2-ee74-471e-bb76-f92f23fe1006)
+![gwas_wrong_causal_variant](https://github.com/user-attachments/assets/db71a06f-68b5-4410-bc18-3fb3c34c67c9)
+
+In the example, the left and right variants are causal, while the central variant is not.  The left and right variants are correlated with the central variant, but not one another.  As a result, the GWAS signal is misleading: if we were to select the candidate causal variant purely on p value, we would select the central variant.
 
 
 
