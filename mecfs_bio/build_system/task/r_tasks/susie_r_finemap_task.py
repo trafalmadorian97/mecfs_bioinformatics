@@ -239,6 +239,7 @@ def align_gwas_and_ld(
     """
     Slice the reference LD matrix and the GWAS data so that they only include genetic variants in their intersection
     """
+    gwas = gwas.sort(by=GWASLAB_POS_COL)
     gwas = gwas.with_row_index(name="gwas_index")
     ld_labels = ld_labels.with_row_index(name="ld_index")
     joined = gwas.join(
@@ -248,7 +249,7 @@ def align_gwas_and_ld(
             GWASLAB_POS_COL,
             GWASLAB_EFFECT_ALLELE_COL,
             GWASLAB_NON_EFFECT_ALLELE_COL,
-        ],
+        ],maintain_order="left"
     )
     ld_matrix = csr_matrix(ld_matrix_sparse).toarray()
     ld_matrix = ld_matrix[
