@@ -14,7 +14,7 @@ from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 @frozen
 class ResultTableMeta(FileMeta):
-    _asset_id: str
+    id: str
     trait: str
     project: str
     extension: str
@@ -26,4 +26,4 @@ class ResultTableMeta(FileMeta):
 
     @property
     def asset_id(self) -> AssetId:
-        return AssetId(self._asset_id)
+        return AssetId(self.id)

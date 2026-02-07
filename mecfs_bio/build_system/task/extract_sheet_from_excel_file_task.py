@@ -94,7 +94,7 @@ class ExtractSheetFromExelFileTask(Task):
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 sub_folder=PurePath("processed"),
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 filename=asset_id,
                 extension=extension,
                 read_spec=read_spec,

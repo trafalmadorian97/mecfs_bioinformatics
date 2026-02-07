@@ -18,7 +18,7 @@ GSEA_HUMAN_GENE_SET_2025_V1 = DownloadFileTask(
         group="gene_set_data",
         sub_group="gsea_human_data",
         sub_folder=PurePath("raw"),
-        asset_id=AssetId("gsea_human_data_2025_v1"),
+        id=AssetId("gsea_human_data_2025_v1"),
         filename="msigdb_v2025.1",
         extension=".zip",
     ),

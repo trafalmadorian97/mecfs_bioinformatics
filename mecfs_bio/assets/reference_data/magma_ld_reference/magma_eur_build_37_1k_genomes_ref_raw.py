@@ -11,7 +11,7 @@ MAGMA_EUR_BUILD_37_1K_GENOMES_REF = DownloadFileTask(
         group="magma_reference_data",
         sub_group="magma_ld_ref",
         sub_folder=PurePath("raw"),
-        asset_id=AssetId("magma_eur_1k_genomes_build_37_ld_ref_raw"),
+        id=AssetId("magma_eur_1k_genomes_build_37_ld_ref_raw"),
         extension=".zip",
         filename="g1000_eur",
     ),

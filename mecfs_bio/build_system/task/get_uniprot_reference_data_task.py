@@ -71,7 +71,7 @@ class GetUniProtReferenceDataTask(Task):
             group="protein_lookup",
             sub_group="uniprot",
             sub_folder=PurePath("raw"),
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             extension=".parquet",
             read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
         )

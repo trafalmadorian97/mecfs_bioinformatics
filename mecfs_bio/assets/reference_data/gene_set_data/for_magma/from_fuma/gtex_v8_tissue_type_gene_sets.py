@@ -18,7 +18,7 @@ GTEx_V8_TISSUE_EXPRESSION_BASED_GENE_SET_DATA = DownloadFileTask(
         group="gene_set_data",
         sub_group="fuma_gtex_human_data",
         sub_folder=PurePath("raw"),
-        asset_id=AssetId("gtex_v8_tissue_expression_data"),
+        id=AssetId("gtex_v8_tissue_expression_data"),
         filename="gtex_v8_ts_DEG",
         extension=".txt",
     ),

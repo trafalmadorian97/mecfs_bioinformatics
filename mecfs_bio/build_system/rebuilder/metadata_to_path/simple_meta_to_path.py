@@ -43,7 +43,7 @@ class SimpleMetaToPath(MetaToPath):
 
     def __call__(self, m: Meta) -> Path:
         if isinstance(m, SimpleFileMeta):
-            return self.root / "other_files" / m.short_id
+            return self.root / "other_files" / m.id
         if isinstance(m, SimpleDirectoryMeta):
             return self.root / "other_files" / m.asset_id
         if isinstance(m, GWASSummaryDataFileMeta):
@@ -51,7 +51,7 @@ class SimpleMetaToPath(MetaToPath):
             if m.project_path is not None:
                 pth = pth / m.project_path
             else:
-                f_name = str(m.short_id)
+                f_name = str(m.id)
                 if m.extension is not None:
                     f_name += m.extension
                 pth = pth / f_name
@@ -63,11 +63,11 @@ class SimpleMetaToPath(MetaToPath):
                 / m.trait
                 / m.project
                 / m.sub_dir
-                / str(m.short_id + m.extension)
+                / str(m.id + m.extension)
             )
             return pth
         if isinstance(m, ProcessedGwasDataDirectoryMeta):
-            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / str(m.short_id)
+            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / str(m.id)
             return pth
         if isinstance(m, GWASLabSumStatsMeta):
             pth = (
@@ -107,11 +107,11 @@ class SimpleMetaToPath(MetaToPath):
             if m.filename is not None:
                 pth = pth / (m.filename + m.extension)
             else:
-                pth = pth / str(m.asset_id + m.extension)
+                pth = pth / str(m.id + m.extension)
             return pth
 
         if isinstance(m, ReferenceDataDirectoryMeta):
-            dirname = m.dirname if m.dirname is not None else m.asset_id
+            dirname = m.dirname if m.dirname is not None else m.id
             pth = (
                 self.root
                 / "reference_data"
@@ -130,7 +130,7 @@ class SimpleMetaToPath(MetaToPath):
                     fname += m.extension
                 pth = pth / fname
             else:
-                pth = pth / m.asset_id
+                pth = pth / m.id
             return pth
 
         if isinstance(m, GWASPlotDirectoryMeta):
@@ -144,10 +144,10 @@ class SimpleMetaToPath(MetaToPath):
                 / m.trait
                 / m.project
                 / m.sub_dir
-                / (m.asset_id + m.extension)
+                / (m.id + m.extension)
             )
             return pth
         if isinstance(m, ResultDirectoryMeta):
-            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.asset_id
+            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.id
             return pth
         raise ValueError(f"Unknown meta {m} of type {type(m)}.")

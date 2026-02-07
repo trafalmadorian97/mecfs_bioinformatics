@@ -11,12 +11,12 @@ from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 @frozen
 class SimpleFileMeta(FileMeta):
-    short_id: AssetId = field(converter=AssetId)
+    id: AssetId = field(converter=AssetId)
     _read_spec: ReadSpec | None = None
 
     @property
     def asset_id(self) -> AssetId:
-        return self.short_id
+        return self.id
 
     def read_spec(self) -> ReadSpec | None:
         return self._read_spec
@@ -24,5 +24,5 @@ class SimpleFileMeta(FileMeta):
     @classmethod
     def create(cls, asset_id: str):
         return cls(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
         )

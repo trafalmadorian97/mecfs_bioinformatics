@@ -26,7 +26,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="coreces_atac_partitioned_ld_scores",
+        id="coreces_atac_partitioned_ld_scores",
         group="linkage_disequilibrium_scores",
         sub_group="LDSCORE_LDSC_SEG",
         sub_folder=PurePath("raw"),

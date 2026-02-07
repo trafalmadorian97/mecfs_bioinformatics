@@ -10,7 +10,7 @@ MAGMA_GENE_LOCATION_REFERENCE_DATA_BUILD_38_RAW = DownloadFileTask(
         group="magma_reference_data",
         sub_group="gene_locations",
         sub_folder=PurePath("raw"),
-        asset_id="magma_gene_location_reference_data_build_38_raw",
+        id="magma_gene_location_reference_data_build_38_raw",
         extension=".zip",
         filename="NCBI38",
     ),

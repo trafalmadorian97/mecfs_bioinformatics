@@ -93,7 +93,7 @@ class ExtractTarGzipTask(Task):
                     group=source_meta.group,
                     sub_group=source_meta.sub_group,
                     sub_folder=sub_folder,
-                    asset_id=AssetId(asset_id),
+                    id=AssetId(asset_id),
                 ),
                 source_file_task=source_task,
                 subdir_name=sub_folder_name_inside_tar,
@@ -102,7 +102,7 @@ class ExtractTarGzipTask(Task):
         if isinstance(source_meta, GWASSummaryDataFileMeta):
             return cls(
                 meta=ProcessedGwasDataDirectoryMeta(
-                    short_id=AssetId(asset_id),
+                    id=AssetId(asset_id),
                     trait=source_meta.trait,
                     project=source_meta.project,
                     sub_dir=sub_folder,

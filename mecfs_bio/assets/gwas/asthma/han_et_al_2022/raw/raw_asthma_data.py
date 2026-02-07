@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 HAN_ET_AL_ASTHMA_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("han_et_al_asthma_raw"),
+        id=AssetId("han_et_al_asthma_raw"),
         trait="asthma",
         project="han_et_al",
         sub_dir="raw",

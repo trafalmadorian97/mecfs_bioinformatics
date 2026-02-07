@@ -89,13 +89,13 @@ class ConcatFramesInDirTask(Task):
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 sub_folder=source_meta.sub_folder,
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 extension=".parquet",
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             )
         elif isinstance(source_meta, ProcessedGwasDataDirectoryMeta):
             meta = FilteredGWASDataMeta(
-                short_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 sub_dir=PurePath("processed"),

@@ -61,7 +61,7 @@ class ExtractFromZipTask(Task):
             meta=ReferenceFileMeta(
                 group=src_meta.group,
                 sub_folder=PurePath("extracted"),
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 filename=file_to_extract,
                 sub_group=src_meta.sub_group,
                 extension=extension,
@@ -83,7 +83,7 @@ class ExtractFromZipTask(Task):
         assert isinstance(src_meta, GWASSummaryDataFileMeta)
         return cls(
             meta=GWASSummaryDataFileMeta(
-                short_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=src_meta.trait,
                 project=src_meta.project,
                 sub_dir=sub_dir,

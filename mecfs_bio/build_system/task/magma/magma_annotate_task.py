@@ -95,7 +95,7 @@ class MagmaAnnotateTask(Task):
         snp_loc_meta = snp_loc_file_task.meta
         assert isinstance(snp_loc_meta, FilteredGWASDataMeta)
         meta = FilteredGWASDataMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=snp_loc_meta.trait,
             project=snp_loc_meta.project,
             sub_dir=PurePath(snp_loc_meta.sub_dir) / "magma",

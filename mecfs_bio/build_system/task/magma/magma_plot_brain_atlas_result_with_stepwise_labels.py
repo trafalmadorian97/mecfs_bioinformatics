@@ -163,7 +163,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         meta = GWASPlotDirectoryMeta(
             trait=source_meta.trait,
             project=source_meta.project,
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             sub_dir=PurePath("analysis/magma_plots"),
         )
         return cls(

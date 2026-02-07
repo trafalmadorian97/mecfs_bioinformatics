@@ -155,7 +155,7 @@ class MagmaGeneSetAnalysisTask(Task):
         gene_analysis_meta = magma_gene_analysis_task.meta
         assert isinstance(gene_analysis_meta, ProcessedGwasDataDirectoryMeta)
         meta = ProcessedGwasDataDirectoryMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=gene_analysis_meta.trait,
             project=gene_analysis_meta.project,
             sub_dir=sub_dir,

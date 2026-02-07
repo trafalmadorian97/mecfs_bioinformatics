@@ -30,14 +30,35 @@ class DownloadFileTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         target = scratch_dir / self.meta.asset_id
         wf.download_from_url(url=self._url, local_path=target)
-        if self._md5_hash is not None:
-            logger.debug("Verifying MD5 hash of downloaded file...")
-            hash_of_downloaded_file = calc_md5_checksum(target)
-            assert hash_of_downloaded_file == self._md5_hash, (
-                f"Expected Hash {hash_of_downloaded_file} to be equal to {self._md5_hash}"
-            )
-            logger.debug("Hash verified.")
+        verify_hash(target, expected_hash=self._md5_hash)
         return FileAsset(target)
+
+
+def verify_hash(downloaded_file: Path, expected_hash: str | None):
+    if expected_hash is None:
+        return
+    logger.debug("Verifying MD5 hash of downloaded file...")
+    hash_of_downloaded_file = calc_md5_checksum(downloaded_file)
+    if hash_of_downloaded_file == expected_hash:
+        logger.debug("Hash verified.")
+        return
+    head_file(downloaded_file)
+    raise AssertionError(
+        f"Expected has {hash_of_downloaded_file} of file {downloaded_file} to be equal to {expected_hash}"
+    )
+
+
+def head_file(filename: Path, n=10):
+    """Prints the first n lines of a file, like the Unix head command."""
+    logger.debug(f"first {n} lines of file {filename}:")
+    try:
+        with open(filename) as f:
+            for i, line in enumerate(f):
+                if i >= n:
+                    break
+                logger.debug(line.rstrip("\n"))  # rstrip to avoid double newlines
+    except FileNotFoundError:
+        print(f"Error: The file {filename} was not found.")
 
 
 def calc_md5_checksum(filepath: Path, chunk_size: int = 8192) -> str:

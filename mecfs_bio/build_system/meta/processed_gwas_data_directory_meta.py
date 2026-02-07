@@ -14,9 +14,9 @@ from mecfs_bio.build_system.meta.base_meta import DirMeta
 class ProcessedGwasDataDirectoryMeta(DirMeta):
     @property
     def asset_id(self) -> AssetId:
-        return self.short_id
+        return self.id
 
-    short_id: AssetId
+    id: AssetId
     trait: str
     project: str
     sub_dir: PurePath

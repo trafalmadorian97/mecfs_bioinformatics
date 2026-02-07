@@ -16,7 +16,7 @@ DUNCAN_ET_AL_2025_SUPPLEMENTARY_RAW = DownloadFileTask(
         group="research_paper_supplementary_material",
         sub_group="duncan_et_al_2025",
         sub_folder=PurePath("raw"),
-        asset_id="duncan_el_al_2025_raw",
+        id="duncan_el_al_2025_raw",
         filename="41593_2024_1834_MOESM2_ESM",
         extension=".xlsx",
     ),

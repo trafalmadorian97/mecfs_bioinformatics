@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.download_files_into_directory_task import (
 
 DB_SNP_VCF_FILE_WITH_INDEX_BUILD_37_DIR = DownloadFilesIntoDirectoryTask(
     meta=ReferenceDataDirectoryMeta(
-        asset_id="db_snp_build_37_with_index",
+        id="db_snp_build_37_with_index",
         group="db_snp_reference_data",
         sub_group="build_37",
         sub_folder=PurePath("vcf"),

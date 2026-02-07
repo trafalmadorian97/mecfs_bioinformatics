@@ -4,6 +4,7 @@ Task to fetch some metadata from the human brain atlas.
 
 from pathlib import PurePath
 
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameTextFormat,
@@ -18,7 +19,7 @@ CLUSTER_ANNOTATION_TERM_METADATA = DownloadFileTask(
         group="human_brain_atlas",
         sub_group="metadata",
         sub_folder=PurePath("raw"),
-        asset_id="human_brain_atlas_cluster_annotation_Term_metadata",
+        id=AssetId("human_brain_atlas_cluster_annotation_Term_metadata"),
         filename="cluster_annotation_term",
         extension=".csv",
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),

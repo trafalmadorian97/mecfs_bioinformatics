@@ -16,7 +16,7 @@ MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW = DownloadFileTask(
         group="magma_reference_data",
         sub_group="ensembl_gene_locations",
         sub_folder=PurePath("raw"),
-        asset_id="magma_ensembl_gene_location_reference_data_build_37_raw",
+        id="magma_ensembl_gene_location_reference_data_build_37_raw",
         extension=".txt",
         filename="ENSGv102.coding.genes",
     ),

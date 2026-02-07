@@ -55,7 +55,7 @@ class ExtractGzipTextFileTask(Task):
             group=src_meta.group,
             sub_group=src_meta.sub_group,
             sub_folder=PurePath("extracted"),
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             filename=src_meta.filename,
             extension="",
         )
@@ -76,7 +76,7 @@ class ExtractGzipTextFileTask(Task):
         if readspec is None:
             readspec = src_meta.read_spec()
         meta = GWASSummaryDataFileMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=src_meta.trait,
             project=src_meta.project,
             sub_dir=src_meta.sub_dir,

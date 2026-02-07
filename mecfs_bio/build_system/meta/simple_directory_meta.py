@@ -10,8 +10,8 @@ from mecfs_bio.build_system.meta.base_meta import DirMeta
 
 @frozen
 class SimpleDirectoryMeta(DirMeta):
-    directory_short_id: AssetId = field(converter=AssetId)
+    id: AssetId = field(converter=AssetId)
 
     @property
     def asset_id(self) -> AssetId:
-        return self.directory_short_id
+        return self.id

@@ -54,7 +54,7 @@ def ubbb_ppp_gwas_prep(
     trait = "ukbb_ppp"
     fetch_task = GetFileFromSynapseTask(
         meta=GWASSummaryDataFileMeta(
-            short_id=AssetId(base_name + "_downloaded_raw_data"),
+            id=AssetId(base_name + "_downloaded_raw_data"),
             trait=trait,
             project=gene_name,
             sub_dir="raw",

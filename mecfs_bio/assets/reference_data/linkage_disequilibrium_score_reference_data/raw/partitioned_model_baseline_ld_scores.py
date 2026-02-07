@@ -54,7 +54,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 THOUSAND_GENOME_BASE_MODEL_PARTITIONED_LD_SCORES = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="thousand_genomes_baseline_model_partitioned_ld_scores",
+        id="thousand_genomes_baseline_model_partitioned_ld_scores",
         group="linkage_disequilibrium_scores",
         sub_group="LDSCORE_1000G_Phase3_baseline",
         sub_folder=PurePath("raw"),

@@ -12,7 +12,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 PIRRUCCELLO_RAW_RIGHT_HEART_DATA = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("pirruccello_et_al_2022_raw_right_heart_data"),
+        id=AssetId("pirruccello_et_al_2022_raw_right_heart_data"),
         trait="imaging_derived_heart_phenotypes",
         project="pirruccello_et_al",
         sub_dir="raw",

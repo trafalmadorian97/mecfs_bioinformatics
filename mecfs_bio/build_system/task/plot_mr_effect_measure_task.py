@@ -116,7 +116,7 @@ class PlotMREffectMeasure(Task):
         meta = GWASPlotDirectoryMeta(
             trait=source_meta.trait,
             project=source_meta.project,
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
         )
         return cls(
             source_df_task=source_df_task,

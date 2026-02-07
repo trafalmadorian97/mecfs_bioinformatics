@@ -116,7 +116,7 @@ class CompressedCSVToParquetTask(Task):
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 sub_folder=source_meta.sub_folder,
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 extension=f".parquet.{target_compression}",
                 read_spec=DataFrameReadSpec(format=DataFrameParquetFormat()),
             )

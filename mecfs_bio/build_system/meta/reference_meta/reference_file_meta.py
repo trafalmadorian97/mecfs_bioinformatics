@@ -12,7 +12,7 @@ class ReferenceFileMeta(FileMeta):
     group: str
     sub_group: str
     sub_folder: PurePath
-    _asset_id: AssetId = field(converter=AssetId)
+    id: AssetId = field(converter=AssetId)
     filename: str | None = None
     extension: str = ".zip"
     _read_spec: ReadSpec | None = None
@@ -25,4 +25,4 @@ class ReferenceFileMeta(FileMeta):
 
     @property
     def asset_id(self) -> AssetId:
-        return self._asset_id
+        return self.id

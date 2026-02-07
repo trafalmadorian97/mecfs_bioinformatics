@@ -61,7 +61,7 @@ class ExtractAllFromZipTask(Task):
             group=src_meta.group,
             sub_group=src_meta.sub_group,
             sub_folder=PurePath("extracted"),
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             dirname=src_meta.filename,
         )
         return cls(

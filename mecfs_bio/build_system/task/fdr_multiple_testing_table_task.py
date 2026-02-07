@@ -137,7 +137,7 @@ class MultipleTestingTableTask(Task):
         source_meta = source_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = ResultTableMeta(
-            asset_id=asset_id,
+            id=asset_id,
             trait=source_meta.trait,
             project=source_meta.project,
             extension=".csv",
@@ -168,7 +168,7 @@ class MultipleTestingTableTask(Task):
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = ResultTableMeta(
-            asset_id=asset_id,
+            id=asset_id,
             trait=source_meta.trait,
             project=source_meta.project,
             extension=".csv",

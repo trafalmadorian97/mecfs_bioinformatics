@@ -140,7 +140,7 @@ class FetchGGetInfoTask(Task):
         extension, read_spec = get_extension_and_read_spec_from_format(out_format)
         if isinstance(source_meta, ResultTableMeta):
             meta = ResultTableMeta(
-                asset_id=asset_id,
+                id=asset_id,
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,
@@ -148,7 +148,7 @@ class FetchGGetInfoTask(Task):
             )
         elif isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 extension=extension,
