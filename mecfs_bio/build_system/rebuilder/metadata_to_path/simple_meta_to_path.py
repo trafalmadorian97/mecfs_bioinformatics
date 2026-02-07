@@ -67,7 +67,7 @@ class SimpleMetaToPath(MetaToPath):
             )
             return pth
         if isinstance(m, ProcessedGwasDataDirectoryMeta):
-            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / str(m.short_id)
+            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / str(m.id)
             return pth
         if isinstance(m, GWASLabSumStatsMeta):
             pth = (
@@ -130,7 +130,7 @@ class SimpleMetaToPath(MetaToPath):
                     fname += m.extension
                 pth = pth / fname
             else:
-                pth = pth / m.asset_id
+                pth = pth / m.id
             return pth
 
         if isinstance(m, GWASPlotDirectoryMeta):
@@ -144,10 +144,10 @@ class SimpleMetaToPath(MetaToPath):
                 / m.trait
                 / m.project
                 / m.sub_dir
-                / (m.asset_id + m.extension)
+                / (m.id + m.extension)
             )
             return pth
         if isinstance(m, ResultDirectoryMeta):
-            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.asset_id
+            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.id
             return pth
         raise ValueError(f"Unknown meta {m} of type {type(m)}.")

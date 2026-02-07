@@ -115,7 +115,7 @@ class ExpressionMatrixClusterMapTaskV2(Task):
         source_meta = extracted_magma_gene_results_source.task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=source_meta.trait,
             project=source_meta.project,
         )

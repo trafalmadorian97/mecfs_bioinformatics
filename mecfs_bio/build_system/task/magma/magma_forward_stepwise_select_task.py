@@ -129,7 +129,7 @@ class MagmaForwardStepwiseSelectTask(Task):
         source_meta = magma_marginal_output_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = ResultTableMeta(
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=source_meta.trait,
             project=source_meta.project,
             extension=".csv",

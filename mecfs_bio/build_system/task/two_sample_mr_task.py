@@ -350,7 +350,7 @@ class TwoSampleMRTask(Task):
         outcome_meta = outcome_data_task.meta
         assert isinstance(outcome_meta, FilteredGWASDataMeta)
         meta = ResultDirectoryMeta(
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=outcome_meta.trait,
             project=outcome_meta.project,
         )

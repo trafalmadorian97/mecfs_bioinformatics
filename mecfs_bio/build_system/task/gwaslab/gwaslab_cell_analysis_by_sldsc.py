@@ -172,7 +172,7 @@ class CellAnalysisByLDSCTask(Task):
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(
-            asset_id=asset_id,
+            id=asset_id,
             trait=sumstats_meta.trait,
             project=sumstats_meta.project,
             sub_dir=PurePath("analysis"),

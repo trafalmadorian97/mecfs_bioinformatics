@@ -53,7 +53,7 @@ class CopyFileFromDirectoryTask(Task):
         source_meta = source_directory_task.meta
         if isinstance(source_meta, ProcessedGwasDataDirectoryMeta):
             meta = ResultTableMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,
@@ -61,7 +61,7 @@ class CopyFileFromDirectoryTask(Task):
             )
         elif isinstance(source_meta, ResultDirectoryMeta):
             meta = ResultTableMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,

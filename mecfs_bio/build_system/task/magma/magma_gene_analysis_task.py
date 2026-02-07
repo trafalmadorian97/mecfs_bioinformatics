@@ -126,7 +126,7 @@ class MagmaGeneAnalysisTask(Task):
         annotation_meta = magma_annotation_task.meta  # magma_p_value_task.meta
         assert isinstance(annotation_meta, FilteredGWASDataMeta)
         meta = ProcessedGwasDataDirectoryMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=annotation_meta.trait,
             project=annotation_meta.project,
             sub_dir=PurePath(annotation_meta.sub_dir),

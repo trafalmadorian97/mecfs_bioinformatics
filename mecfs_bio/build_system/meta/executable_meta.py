@@ -20,11 +20,11 @@ class ExecutableMeta(FileMeta):
     sub_folder: PurePath
     extension: str | None
     filename: str | None
-    _asset_id: AssetId = field(converter=AssetId)
+    id: AssetId = field(converter=AssetId)
 
     @property
     def asset_id(self) -> AssetId:
-        return self._asset_id
+        return self.id
 
     @classmethod
     def create(
@@ -40,5 +40,5 @@ class ExecutableMeta(FileMeta):
             sub_folder=sub_folder,
             filename=filename,
             extension=extension,
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
         )

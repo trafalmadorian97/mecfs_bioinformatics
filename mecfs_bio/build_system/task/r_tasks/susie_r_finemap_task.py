@@ -207,7 +207,7 @@ class SusieRFinemapTask(Task):
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
             meta = ResultDirectoryMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 sub_dir=PurePath("analysis"),

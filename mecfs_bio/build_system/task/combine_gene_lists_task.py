@@ -114,7 +114,7 @@ class CombineGeneListsTask(Task):
         extension, read_spec = get_extension_and_read_spec_from_format(out_format)
         assert isinstance(src_meta, ResultTableMeta)
         meta = ResultTableMeta(
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=src_meta.trait,
             project=src_meta.project,
             extension=extension,

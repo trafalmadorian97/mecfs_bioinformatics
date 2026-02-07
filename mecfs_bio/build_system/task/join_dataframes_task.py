@@ -126,7 +126,7 @@ class JoinDataFramesTask(Task):
         meta: Meta
         if isinstance(source_meta, ResultTableMeta):
             meta = ResultTableMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,
@@ -144,7 +144,7 @@ class JoinDataFramesTask(Task):
             )
         elif isinstance(source_meta, GWASLabLeadVariantsMeta):
             meta = ResultTableMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,
