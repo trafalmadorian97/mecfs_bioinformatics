@@ -24,7 +24,9 @@ Some facts about LD:
 As an illustrative example, here is a plot of the absolute value of the correlation between genetic variants in a region of chromosome 1.
 
 
-![ld_example_plot](https://github.com/user-attachments/assets/3a396f4b-0da7-4cd6-8345-1d9d6e449688)
+![ld_example_plot](https://github.com/user-attachments/assets/a05681d5-91f3-4b89-8023-d3d50a22b8bd)
+
+Consistent with the facts above, we observe irregularly-spaced blocks of high LD.  Moreover, the high LD blocks are not uniform, but contain low-correlation genetic variants, perhaps the result of recent mutation.
 
 
 ## Effect of LD on Significance
@@ -39,6 +41,22 @@ In the example, the left and right variants are causal, while the central varian
 
 
 ## Fine Mapping
+
+Wang and Huang[@wang2022methods] note that fine mapping can be thought of as "an exercise to disentangle the effect of LD from the GWAS data".  The goal is to identify the true variants by reversing the obscuring effect of LD.
+
+Fine mapping is naturally formulated as a Bayesian linear regression variable selection problem.  In the case of a continuous phenotype, one writes
+
+$$
+y= \sum_{j\in J} \beta_j x_j + \epsilon
+$$
+
+where 
+
+- $y$ is the phenotype
+- $J$ is the set of genetic variants at the locus
+- $x_j$ is an individual's allele for variant $j$
+- $\beta_j$ is the effect of variant $j$ on the phenotype
+- $\epsilon$ accounts for the part of the phenotype not attributable to genetic variants at the locus.
 
 
 
