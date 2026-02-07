@@ -2,6 +2,7 @@
 Finemap a GWAS locus using SUSIE
 """
 
+from rich.pretty import pprint
 from pathlib import Path, PurePath
 
 import numpy as np
@@ -67,6 +68,9 @@ MU_FILENAME = "mu.parquet"
 MU2_FILENAME = "mu2.parquet"
 PURITY_FILENAME = "purity.parquet"
 SETS_FILENAME = "sets.yaml"
+COMBINED_CS_FILENAME = "combined_cs.parquet"
+FILTERED_GWAS_FILENAME = "filtered_gwas.parquet"
+FILTERED_LD_FILENAME = "filtered_ld.npy"
 
 CS_DATA_SUBDIR = "credible_set_data"
 
@@ -74,6 +78,7 @@ PIP_COLUMN = "PIP"
 ALPHA_COLUMN_NAME = "alpha"
 MU_COLUMN_NAME = "mu"
 MU2_COLUMN_NAME = "mu2"
+CS_COLUMN = "cs"
 
 
 @frozen
@@ -185,6 +190,7 @@ class SusieRFinemapTask(Task):
             scratch_dir,
             py_result=py_result,
             gwas_table=gwas_table,
+            ld_matrix=ld_matrix,
             L=self.max_credible_sets,
         )
 
@@ -335,9 +341,10 @@ def _check_converged(py_result: dict):
 
 
 def write_result(
-    directory: Path, py_result: dict, gwas_table: pl.DataFrame, L: int
+    directory: Path, py_result: dict, gwas_table: pl.DataFrame, L: int,
+        ld_matrix: np.ndarray,
 ) -> None:
-    gwas_table = gwas_table.select(
+    gt = gwas_table.select(
         [
             GWASLAB_CHROM_COL,
             GWASLAB_POS_COL,
@@ -349,10 +356,10 @@ def write_result(
     variant_names = [
         f"ch{chrom}_{pos}_{ea}_{nea}"
         for chrom, pos, ea, nea in zip(
-            gwas_table[GWASLAB_CHROM_COL],
-            gwas_table[GWASLAB_POS_COL],
-            gwas_table[GWASLAB_EFFECT_ALLELE_COL],
-            gwas_table[GWASLAB_NON_EFFECT_ALLELE_COL],
+            gt[GWASLAB_CHROM_COL],
+            gt[GWASLAB_POS_COL],
+            gt[GWASLAB_EFFECT_ALLELE_COL],
+            gt[GWASLAB_NON_EFFECT_ALLELE_COL],
         )
     ]
 
@@ -389,11 +396,12 @@ def write_result(
     subdir = directory / CS_DATA_SUBDIR
     subdir.mkdir(parents=True, exist_ok=True)
     logger.debug(f"Found {len(sets['cs'])} credible sets")
+    cs_data_tables = []
     for set_number, (set_name, set_values) in enumerate(sets["cs"].items()):
         set_values = (
             np.array(set_values).reshape(-1) - 1
         )  # Since r uses 1-based indexing
-        gwas_for_set: pl.DataFrame = gwas_table[set_values]
+        gwas_for_set: pl.DataFrame = gt[set_values]
         alpha_for_set = pl.Series(
             values=alpha[set_number, set_values].reshape(-1), name=ALPHA_COLUMN_NAME
         )
@@ -407,6 +415,14 @@ def write_result(
             f"Credible set {set_name}\n {gwas_for_set.sort(by=PIP_COLUMN, descending=True)}"
         )
         gwas_for_set.write_parquet(subdir / f"{set_name}.parquet")
+        cs_data_tables.append(
+            gwas_for_set.with_columns(pl.lit(set_name).alias(CS_COLUMN))
+        )
+    pl.concat(cs_data_tables,how="vertical").write_parquet(directory/COMBINED_CS_FILENAME)
+    gwas_table.write_parquet(directory / FILTERED_GWAS_FILENAME)
+    np.save(directory/FILTERED_LD_FILENAME, ld_matrix)
+
+
 
 
 def check_symmetric(array: np.ndarray, tol=1e-6):

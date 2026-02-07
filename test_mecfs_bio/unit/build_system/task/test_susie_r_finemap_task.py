@@ -1,9 +1,12 @@
+from typing import Iterator
+import tempfile
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import polars as pl
 import polars.testing
+import pytest
 import rpy2.robjects as ro
 import scipy.sparse
 from rpy2.robjects import numpy2ri, pandas2ri
@@ -13,6 +16,7 @@ from rpy2.robjects.packages import (
 )
 
 from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -21,6 +25,14 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 )
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
+from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import SimpleMetaToPath
+from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.simple_hasher import SimpleHasher
+from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_info import VerifyingTraceInfo
+from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import \
+    VerifyingTraceRebuilder
+from mecfs_bio.build_system.scheduler.topological_scheduler import topological
+from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     ADJUSTMENT_VALUE_FILENAME,
@@ -31,6 +43,9 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     SusieRFinemapTask,
     align_gwas_and_ld,
 )
+from mecfs_bio.build_system.task.susie_trackplot_task import SusieTrackPlotTask, EnsemblGeneInfoSource, \
+    RegionSelectOverride, RegionSelectDefault, PLOT_FILENAME
+from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -106,11 +121,13 @@ def test_align():
     np.testing.assert_array_equal(rmat, ld_matrix.toarray()[:-1, :-1])
 
 
-def test_fine_mapping(tmp_path: Path):
-    """
-    Test that we can find the causal SNPs in a simple synthetic example
-    """
-    n = 2500
+
+
+_susie_n=2500
+
+@pytest.fixture
+def susie_prerequisite_file_tasks(tmp_path: Path) ->Iterator[tuple[Task,Task, Task]]:
+    n = _susie_n
     m = 100
     susie_package = importr("susieR")
     generator = np.random.default_rng(40)
@@ -162,40 +179,100 @@ def test_fine_mapping(tmp_path: Path):
     gwas_data.to_parquet(gwas_data_path)
     ref_data.to_parquet(ld_labels_path)
     scipy.sparse.save_npz(ld_matrix_path, partial_ld_sparse)
-    tsk = SusieRFinemapTask(
-        meta=SimpleDirectoryMeta(AssetId("directory")),
-        gwas_data_task=FakeTask(
-            SimpleFileMeta(
-                AssetId("gwas_data"),
-                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
-            ),
-        ),
-        ld_labels_task=FakeTask(
+    with tempfile.TemporaryDirectory() as temp_dir:
+       temp_path = Path(temp_dir)
+       gwas_data_task= ExternalFileCopyTask(
+           SimpleFileMeta(
+       AssetId("gwas_data"),
+       read_spec = DataFrameReadSpec(DataFrameParquetFormat()),
+           ),
+           external_path=gwas_data_path
+       )
+       ld_labels_task= ExternalFileCopyTask(
             SimpleFileMeta(
                 "ld_labels", read_spec=DataFrameReadSpec(DataFrameParquetFormat())
-            )
-        ),
-        ld_matrix_source=BroadInstituteFormatLDMatrix(
-            FakeTask(SimpleFileMeta("ld_matrix")),
-        ),
-        effective_sample_size=n,
-        max_credible_sets=10,
+            ),
+           external_path=ld_labels_path
+        )
+       ld_matrix_task= ExternalFileCopyTask(
+           SimpleFileMeta(
+               "ld_matrix"
+           ),
+           external_path=ld_matrix_path
+       )
+       yield gwas_data_task, ld_labels_task, ld_matrix_task
+
+
+@pytest.fixture
+def dummy_ensmbl_data_task(tmp_path:Path)->Iterator[Task]:
+    dummy_data = """ENSG00000237683 1       25  50  -       AL627309.1
+                    ENSG00000235249 1       77  90  +       OR4F29"""
+    dummy_data_path = tmp_path / "dummy_data.txt"
+    dummy_data_path.write_text(dummy_data)
+    yield ExternalFileCopyTask(
+        SimpleFileMeta("dummy_ensmbl_data"),
+        external_path=dummy_data_path
     )
 
-    def fetch(asset_id: AssetId) -> Asset:
-        if asset_id == "gwas_data":
-            return FileAsset(gwas_data_path)
-        if asset_id == "ld_labels":
-            return FileAsset(ld_labels_path)
-        if asset_id == "ld_matrix":
-            return FileAsset(ld_matrix_path)
-        raise ValueError("unknown id")
 
-    tsk.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
-    adjustment = pd.read_parquet(scratch / ADJUSTMENT_VALUE_FILENAME)
+
+def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, Task, Task],
+                      dummy_ensmbl_data_task: Task
+                      ):
+    """
+    Test that we can find the causal SNPs in a simple synthetic example
+    """
+    gwas_data_task, ld_labels_task, ld_matrix_task = susie_prerequisite_file_tasks
+    susie_tsk = SusieRFinemapTask(meta=SimpleDirectoryMeta(AssetId("directory")),
+        gwas_data_task=gwas_data_task,
+        ld_labels_task=ld_labels_task,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(
+            ld_matrix_task
+        ),
+        effective_sample_size=_susie_n,
+        max_credible_sets=10,
+    )
+    plot_task =SusieTrackPlotTask(
+        meta=SimpleDirectoryMeta("susie_plot"),
+        susie_task=susie_tsk,
+        gene_info_source=EnsemblGeneInfoSource(
+            source_task=dummy_ensmbl_data_task,
+        ),
+        region_mode=RegionSelectDefault()
+    )
+    tasks = find_tasks([susie_tsk, plot_task])
+    wf = SimpleWF()
+    info: VerifyingTraceInfo = VerifyingTraceInfo.empty()
+
+    asset_dir = tmp_path / "asset_dir"
+    asset_dir.mkdir(exist_ok=True, parents=True)
+    meta_to_path = SimpleMetaToPath(root=asset_dir)
+
+    tracer = SimpleHasher.md5_hasher()
+    rebuilder = VerifyingTraceRebuilder(tracer)
+
+    targets = [susie_tsk.asset_id, plot_task.asset_id]
+
+    # Verify that all files are created in the correct location
+    store, info = topological(
+        rebuilder=rebuilder,
+        tasks=tasks,
+        targets=targets,
+        wf=wf,
+        info=info,
+        meta_to_path=meta_to_path,
+    )
+    asset = store[susie_tsk.asset_id]
+    assert isinstance(asset, DirectoryAsset)
+    suise_out_path = asset.path
+    adjustment = pd.read_parquet( suise_out_path/ ADJUSTMENT_VALUE_FILENAME)
     assert float(adjustment.iloc[0].item()) <= 0.01
-    pip = pd.read_parquet(scratch / PIP_FILENAME)
+    pip = pd.read_parquet(suise_out_path / PIP_FILENAME)
     assert pip[PIP_COLUMN].iloc[0] >= 0.95
     assert pip[PIP_COLUMN].iloc[99] >= 0.95
-    cs_subdir_contents = list((scratch / CS_DATA_SUBDIR).glob("*"))
+    cs_subdir_contents = list((suise_out_path / CS_DATA_SUBDIR).glob("*"))
     assert len(cs_subdir_contents) == 2  # 2 credible sets
+
+    plot_asset = store[plot_task.asset_id]
+    assert isinstance(plot_asset, DirectoryAsset)
+    assert (plot_asset.path/PLOT_FILENAME).exists()
