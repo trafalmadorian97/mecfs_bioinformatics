@@ -76,7 +76,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
         return GWASLabRegionPlotsMeta(
             trait=self._lead_variants_task_meta.trait,
             project=self._lead_variants_task_meta.project,
-            short_id=self.short_id,
+            id=self.short_id,
         )
 
     @property

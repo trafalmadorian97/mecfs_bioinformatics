@@ -16,7 +16,7 @@ CHR1_174000001_17700000_UKBB_LD_MATRIX_DOWNLOAD = DownloadFileTask(
         group="ukbb_reference_ld",
         sub_group="chr1_174000001_17700000",
         sub_folder=PurePath("raw"),
-        asset_id=AssetId("ukbb_chr1_174000001_17700000_ld_matrix"),
+        id=AssetId("ukbb_chr1_174000001_17700000_ld_matrix"),
         filename="chr1_174000001_177000001",
         extension=".npz",
     ),

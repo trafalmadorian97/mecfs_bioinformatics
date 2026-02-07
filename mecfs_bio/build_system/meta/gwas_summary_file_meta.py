@@ -15,9 +15,9 @@ from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 class GWASSummaryDataFileMeta(FileMeta):
     @property
     def asset_id(self) -> AssetId:
-        return self.short_id
+        return self.id
 
-    short_id: AssetId
+    id: AssetId
     trait: str
     project: str
     sub_dir: str

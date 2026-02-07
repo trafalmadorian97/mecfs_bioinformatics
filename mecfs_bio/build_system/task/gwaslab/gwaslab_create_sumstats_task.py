@@ -278,12 +278,12 @@ class GWASLabCreateSumstatsTask(Task):
     def meta(self) -> Meta:
         if isinstance(self._source_meta, ReferenceFileMeta):
             return GWASLabSumStatsMeta(
-                short_id=self._asset_id,
+                id=self._asset_id,
                 trait="reference_data_gwas",
                 project=self._source_meta.group,
             )
         return GWASLabSumStatsMeta(
-            short_id=self._asset_id,
+            id=self._asset_id,
             trait=self._source_meta.trait,
             project=self._source_meta.project,
             sub_dir="gwaslab_sumstats",

@@ -104,13 +104,13 @@ class PipeDataFrameTask(Task):
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 sub_folder=PurePath("processed"),
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 extension=extension,
                 read_spec=read_spec,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
             meta = FilteredGWASDataMeta(
-                short_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 sub_dir=PurePath("processed"),
@@ -126,7 +126,7 @@ class PipeDataFrameTask(Task):
             )
         elif isinstance(source_meta, FilteredGWASDataMeta):
             meta = FilteredGWASDataMeta(
-                short_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 sub_dir=source_meta.sub_dir,

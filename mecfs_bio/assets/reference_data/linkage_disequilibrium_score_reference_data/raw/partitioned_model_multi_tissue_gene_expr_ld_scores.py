@@ -22,7 +22,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 THOUSAND_GENOME_PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="multi_tissue_gene_expression_thousand_genomes_partitioned_ld_scores",
+        id="multi_tissue_gene_expression_thousand_genomes_partitioned_ld_scores",
         group="linkage_disequilibrium_scores",
         sub_group="LDSCORE_LDSC_SEG",
         sub_folder=PurePath("raw"),

@@ -99,7 +99,7 @@ class GwasLabRegionPlotTargetLocusTask(Task):
         meta = GWASLabRegionPlotsMeta(
             trait=reference_meta.trait,
             project=reference_meta.project,
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             sub_dir=PurePath("analysis") / "region_plots",
         )
         return cls(

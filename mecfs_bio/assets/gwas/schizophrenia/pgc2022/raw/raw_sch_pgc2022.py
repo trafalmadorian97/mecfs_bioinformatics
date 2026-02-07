@@ -21,7 +21,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 PGC_2022_SCH_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("pgc_2022_sch_raw"),
+        id=AssetId("pgc_2022_sch_raw"),
         trait="schizophrenia",
         project="pgc_2022",
         sub_dir="raw",

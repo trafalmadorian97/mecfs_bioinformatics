@@ -154,12 +154,12 @@ def create_new_meta(
     meta: Meta
     if isinstance(source_meta, SimpleFileMeta):
         meta = SimpleFileMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             read_spec=DataFrameReadSpec(format=format),
         )
     elif isinstance(source_meta, FilteredGWASDataMeta):
         meta = FilteredGWASDataMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             project=source_meta.project,
             trait=source_meta.trait,
             sub_dir=source_meta.sub_dir,

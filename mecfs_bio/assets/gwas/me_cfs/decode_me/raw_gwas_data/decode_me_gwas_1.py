@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.osf_retrieve_task import OSFRetrievalTask
 
 DECODE_ME_GWAS_1_TASK = OSFRetrievalTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("decode_me_gwas_1_raw"),
+        id=AssetId("decode_me_gwas_1_raw"),
         trait="ME_CFS",
         project="DecodeME",
         sub_dir="raw",

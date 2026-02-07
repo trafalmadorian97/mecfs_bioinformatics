@@ -25,7 +25,7 @@ GENE_THESAURUS = DownloadFileTask(
         sub_folder=PurePath("raw"),
         filename="biomart_thesaurus",
         extension=".csv",
-        asset_id=AssetId("gene_thesaurus"),
+        id=AssetId("gene_thesaurus"),
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
     ),
     url="https://www.dropbox.com/scl/fi/9yamk0bze0f509p9opcnk/biomart_thesaurus.csv?rlkey=r9f4sedug2l3f6b5ak7hs88o2&dl=1",

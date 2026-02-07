@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.osf_retrieve_task import OSFRetrievalTask
 
 DECODE_ME_QC_SNPS = OSFRetrievalTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("decode_me_snps_passing_quality_control"),
+        id=AssetId("decode_me_snps_passing_quality_control"),
         trait="ME_CFS",
         project="DecodeME",
         sub_dir="raw",

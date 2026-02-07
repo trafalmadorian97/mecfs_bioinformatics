@@ -77,7 +77,7 @@ class GwasLabSumstatsToTableTask(Task):
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
         meta = FilteredGWASDataMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=source_meta.trait,
             project=source_meta.project,
             sub_dir=sub_dir,

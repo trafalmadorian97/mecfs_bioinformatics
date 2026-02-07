@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 MILLION_VETERAN_PSORIASIS_EUR_DATA_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("million_veterans_psoriasis_eur_raw"),
+        id=AssetId("million_veterans_psoriasis_eur_raw"),
         trait="psoriasis",
         project="million_veterans",
         sub_dir="raw",

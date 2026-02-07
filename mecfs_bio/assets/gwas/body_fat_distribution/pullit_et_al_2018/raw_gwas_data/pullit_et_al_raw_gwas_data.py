@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 PULLIT_ET_AL_2018_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("pullit_et_al_2018_gwas_summary"),
+        id=AssetId("pullit_et_al_2018_gwas_summary"),
         trait="body_fat_distribution",
         project="pullt_et_al_2018",
         sub_dir="raw",

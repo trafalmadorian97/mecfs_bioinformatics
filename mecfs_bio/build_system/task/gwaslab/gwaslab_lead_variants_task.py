@@ -38,7 +38,7 @@ class GwasLabLeadVariantsTask(Task):
         return GWASLabLeadVariantsMeta(
             trait=self._input_meta.trait,
             project=self._input_meta.project,
-            short_id=self.short_id,
+            id=self.short_id,
         )
 
     @property

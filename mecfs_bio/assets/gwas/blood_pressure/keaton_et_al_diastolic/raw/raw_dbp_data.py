@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 KEATON_ET_AL_DBP_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("keaton_et_al_dbp_raw"),
+        id=AssetId("keaton_et_al_dbp_raw"),
         trait="diastolic_blood_pressure",
         project="keaton_et_al_dbp",
         sub_dir="raw",

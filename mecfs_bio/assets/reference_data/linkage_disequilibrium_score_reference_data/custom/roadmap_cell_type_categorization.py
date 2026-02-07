@@ -19,7 +19,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="roadmap_tissue_type_categories",
+        id="roadmap_tissue_type_categories",
         group="linkage_disequilibrium_score_regression_aux_data",
         sub_group="custom_data",
         sub_folder=PurePath("roadmap_categories"),

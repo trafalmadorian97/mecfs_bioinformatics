@@ -17,7 +17,7 @@ GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ = DownloadFileTask(
         sub_folder=PurePath("raw"),
         filename="GTEx_Analysis_v10_RNASeQCv2.4.2_gene_median_tpm.gct.gz",
         extension=".gz",
-        asset_id=AssetId("gtex_v10_rna_seq_median_tissue_expression_raw"),
+        id=AssetId("gtex_v10_rna_seq_median_tissue_expression_raw"),
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t", skip_rows=2)),
     ),
     url="https://storage.googleapis.com/adult-gtex/bulk-gex/v10/rna-seq/GTEx_Analysis_v10_RNASeQCv2.4.2_gene_median_tpm.gct.gz",

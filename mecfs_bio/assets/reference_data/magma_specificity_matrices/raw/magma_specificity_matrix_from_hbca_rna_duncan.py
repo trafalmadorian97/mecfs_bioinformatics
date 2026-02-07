@@ -23,7 +23,7 @@ MAGMA_ENTREZ_SPECIFICITY_MATRIX_HBCA_RNA_DUNCAN = DownloadFileTask(
         group="magma_reference_data",
         sub_group="gene_specificity_matrix",
         sub_folder=PurePath("raw"),
-        asset_id="magma_specificity_matrix_entrez_hbca_rna_duncan",
+        id="magma_specificity_matrix_entrez_hbca_rna_duncan",
         extension=".txt",
         filename="conti_specificity_matrix",
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),

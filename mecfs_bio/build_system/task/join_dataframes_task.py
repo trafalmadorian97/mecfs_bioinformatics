@@ -135,7 +135,7 @@ class JoinDataFramesTask(Task):
             )
         elif isinstance(source_meta, FilteredGWASDataMeta):
             meta = FilteredGWASDataMeta(
-                short_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,

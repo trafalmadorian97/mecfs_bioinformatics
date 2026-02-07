@@ -96,7 +96,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
         meta = GWASLabManhattanQQPlotMeta(
             trait=input_meta.trait,
             project=input_meta.project,
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
         )
         return cls(
             sumstats_task=sumstats_task,

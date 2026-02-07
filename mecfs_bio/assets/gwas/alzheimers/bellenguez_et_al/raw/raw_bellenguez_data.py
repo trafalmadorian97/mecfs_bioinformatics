@@ -21,7 +21,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 BELLENGUEZ_ET_AL_ALZHIEMERS_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("bellenguez_et_al_alzhiemers_raw"),
+        id=AssetId("bellenguez_et_al_alzhiemers_raw"),
         trait="alzheimers",
         project="bellenguez_et_al",
         sub_dir="raw",

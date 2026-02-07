@@ -18,7 +18,7 @@ SUN_ET_AL_2023_PQTL_SUPPLEMENTARY_RAW = DownloadFileTask(
         group="pqtl_data",
         sub_group="sun_et_al_2023",
         sub_folder=PurePath("raw"),
-        asset_id="sun_et_al_2023_pqtl",
+        id="sun_et_al_2023_pqtl",
         filename="sun_et_al_2023_supplementary",
         extension=".xlsx",
     ),

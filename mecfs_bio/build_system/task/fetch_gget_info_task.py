@@ -148,7 +148,7 @@ class FetchGGetInfoTask(Task):
             )
         elif isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 extension=extension,

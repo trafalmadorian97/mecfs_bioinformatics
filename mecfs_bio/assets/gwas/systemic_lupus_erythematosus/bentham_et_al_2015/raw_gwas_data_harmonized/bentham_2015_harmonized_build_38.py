@@ -16,7 +16,7 @@ for the gwas catalog entry for this publication
 """
 BENTHAM_2015_HARMONIZED_BUILD_38 = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("bentham_2015_harmonized_build_38"),
+        id=AssetId("bentham_2015_harmonized_build_38"),
         trait="systemic_lupus_erythematosus",
         project="bentham_et_al_2015",
         project_path=PurePath("26502338-GCST003156-EFO_0002690.h.tsv.gz"),
