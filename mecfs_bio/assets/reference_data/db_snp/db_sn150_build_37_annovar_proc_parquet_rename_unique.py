@@ -12,7 +12,7 @@ the S-LDSC reference data.
 """
 
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename import (
-    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME,
+    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_RD,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 
 PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE = PipeDataFrameTask.create(
     asset_id="db_snp150_annovar_proc_parquet_rename_unique",
-    source_task=PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME,
+    source_task=PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_RD,
     pipes=[
         DuckdbMemLimitPipe(limit_gb=4),
         UniquePipe(

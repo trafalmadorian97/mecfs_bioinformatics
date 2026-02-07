@@ -7,6 +7,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
+from mecfs_bio.build_system.task.discard_deps_task_wrapper import DiscardDepsWrapper
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 """
@@ -46,3 +47,5 @@ DB_SNP150_ANNOVAR_PROC = DownloadFileTask(
     url="https://www.dropbox.com/scl/fi/rvonq6jk3o88mtzc83mrn/hg19_avsnp150.txt?rlkey=gitowj4jrw2wjzbx2uyqi2xxp&dl=1",
     md5_hash="c17e8f96e9b36041455069be9c459555",
 )
+
+DB_SNP150_ANNOVAR_PROC_RD = DiscardDepsWrapper(DB_SNP150_ANNOVAR_PROC)

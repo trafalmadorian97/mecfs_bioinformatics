@@ -6,22 +6,22 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC,
 )
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_cahoy_ld_scores_extracted import (
-    PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED,
+    PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED_RD,
 )
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_corces_atac_ld_scores_extracted import (
-    PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_EXTRACTED,
+    PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_EXTRACTED_RD,
 )
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_gtex_brain_ld_scores_extracted import (
-    PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_EXTRACTED,
+    PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_EXTRACTED_RD,
 )
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_immgen_ld_scores_extracted import (
-    PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED,
+    PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED_RD,
 )
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_multi_tissue_chromatin_ld_scores_extracted import (
-    PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED,
+    PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED_RD,
 )
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_multi_tissue_gene_expr_ld_score_extracted import (
-    PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_EXTRACTED,
+    PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_EXTRACTED_RD,
 )
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.partitioned_model_regression_weights_extracted import (
     PARTITIONED_MODEL_REGRESSION_WEIGHTS_EXTRACTED,
@@ -72,19 +72,19 @@ def standard_sldsc_task_generator(
         w_ld_chr_inner_dirname="1000G_Phase3_weights_hm3_no_MHC/weights.hm3_noMHC.@",
         partitioned_entries=[
             PartitionedLDScoresRecord(
-                ref_ld_chr_cts_task=PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED,
+                ref_ld_chr_cts_task=PARTITIONED_MODEL_CAHOY_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="Cahoy.ldcts",
                 cell_or_tissue_labels_task=None,
                 entry_name="cahoy_cns",
             ),
             PartitionedLDScoresRecord(
-                ref_ld_chr_cts_task=PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_EXTRACTED,
+                ref_ld_chr_cts_task=PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="GTEx_brain.ldcts",
                 cell_or_tissue_labels_task=None,
                 entry_name="gtex_brain",
             ),
             PartitionedLDScoresRecord(
-                ref_ld_chr_cts_task=PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED,
+                ref_ld_chr_cts_task=PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="ImmGen.ldcts",
                 cell_or_tissue_labels_task=CellOrTissueLabelRecord(
                     FICUANE_2018_IMMGEN_CATEGORIES,
@@ -110,13 +110,13 @@ def standard_sldsc_task_generator(
                 entry_name="immgen",
             ),
             PartitionedLDScoresRecord(
-                ref_ld_chr_cts_task=PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_EXTRACTED,
+                ref_ld_chr_cts_task=PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="Corces_ATAC.ldcts",
                 cell_or_tissue_labels_task=None,
                 entry_name="corces_atac",
             ),
             PartitionedLDScoresRecord(
-                ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED,
+                ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="Multi_tissue_chromatin.ldcts",
                 entry_name="multi_tissue_chromatin",
                 cell_or_tissue_labels_task=CellOrTissueLabelRecord(
@@ -152,7 +152,7 @@ def standard_sldsc_task_generator(
                 ),
             ),
             PartitionedLDScoresRecord(
-                ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_EXTRACTED,
+                ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="Multi_tissue_gene_expr.ldcts",
                 cell_or_tissue_labels_task=CellOrTissueLabelRecord(
                     FICUANE_2018_FRANKE_GTEX_CATEGORIES,
