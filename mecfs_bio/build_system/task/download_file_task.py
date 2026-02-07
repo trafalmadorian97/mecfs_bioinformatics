@@ -43,7 +43,7 @@ def verify_hash(downloaded_file: Path, expected_hash: str | None):
         logger.debug("Hash verified.")
         return
     head_file(downloaded_file)
-    raise ValueError(
+    raise AssertionError(
         f"Expected has {hash_of_downloaded_file} of file {downloaded_file} to be equal to {expected_hash}"
     )
 
