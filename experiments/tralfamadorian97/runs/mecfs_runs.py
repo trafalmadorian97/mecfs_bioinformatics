@@ -21,6 +21,8 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC
 from mecfs_bio.assets.reference_data.ukbb_ld_matrices.from_polyfun.chr1_173000001.chr1_173000001_176000001_labels import \
     CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD
+from mecfs_bio.assets.reference_data.ukbb_ld_matrices.from_polyfun.chr1_173000001.chr1_173000001_176000001_matrix import \
+    CHR1_173000001_17600000_UKBB_LD_MATRIX_DOWNLOAD
 
 
 def run_initial_decode_me_analysis():
@@ -31,7 +33,10 @@ def run_initial_decode_me_analysis():
             # CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES
-            DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
+            # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS,
+            DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES,
+            CHR1_173000001_17600000_UKBB_LD_MATRIX_DOWNLOAD,
+            CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD
          # DECODE_ME_BTN1A1_REGION_PLOT_37
          #    DECODE_ME_BTN1A1_REGION_PLOT_37
          #    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC
@@ -42,7 +47,7 @@ def run_initial_decode_me_analysis():
         incremental_save=True,
         must_rebuild_transitive=[
 
-            DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
+            # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
             # DECODE_ME_BASIC_CIS_PQTL_MR.multiple_testing_task
             # DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,

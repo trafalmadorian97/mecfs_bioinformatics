@@ -49,7 +49,7 @@ def draw_schematic_ldsc_on_ax(ax: Axes, slope: float,seed:int, title:str|None=No
         ax.set_title(title)
 
 def draw_basic_ldsc_schematic():
-    fig, axes= plt.subplots(1, 2,figsize=(10,5))
+    fig, axes= plt.subplots(1, 2,figsize=(10,10))
     draw_schematic_ldsc_on_ax(axes[0], slope=0.2, title="Low $h^2$", seed=100)
     draw_schematic_ldsc_on_ax(axes[1], slope=0.8, title=   "High $h^2$", seed=101 )
     fig.show()
