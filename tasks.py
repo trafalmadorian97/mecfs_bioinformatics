@@ -65,7 +65,7 @@ def typecheck(c):
     Check for type errors
     """
     print("Typechecking with mypy...")
-    c.run("pixi r  mypy .", pty=True)
+    c.run(f"pixi r  mypy {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
 
 
 @task
