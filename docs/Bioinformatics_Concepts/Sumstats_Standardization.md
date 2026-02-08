@@ -27,7 +27,7 @@ This data can be represented equivalently on the other strand as
 
 (Note that at multi-base alleles like the indel T/TG, we flip the order of the bases in addition to computing their complements)
 
-While GENPOS always refers to genomic coordinate in the $5'\to 3'$ direction along the forward strand, summary statistics files have been known report alleles on either the forward or the reverse strand[@hartwig2016two]. This ambiguity is problematic when one seeks to jointly analyze two GWAS, or look up variants from a GWAS in a reference.
+While GENPOS always refers to genomic coordinate in the $5'\to 3'$ direction along the forward strand, summary statistics files have been known to report alleles on either the forward or the reverse strand[@hartwig2016two]. This ambiguity is problematic when one seeks to jointly analyze two GWAS, or look up variants from a GWAS in a reference.
 
 In most cases, the ambiguity can be resolved by consulting a reference genome sequence [FASTA file](https://en.wikipedia.org/wiki/FASTA_format).  For each genetic variant, one compares the alleles to the reference sequence at the given genomic coordinate. If there is a match, we know the alleles are correctly represented on the forward strand.  If instead there is match with the complement of one the alleles, we know the alleles are represented on the reverse strand.  We can standardize the genetic variant by substituting the alleles for their complements.  If there is no match between the alleles and either the forward or reverse strand, this likely indicates an error.
 

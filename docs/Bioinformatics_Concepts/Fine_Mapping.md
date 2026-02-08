@@ -10,14 +10,14 @@ In a GWAS, one runs one univariate regression per genetic variant.  The result i
 
 One of the primary purposes of GWAS is to identify genetic variants that play a causal role in the phenotype of interest.  By finding these causal variants, researchers can derive data-driven insights into the biological processes underlying the phenotype.
 
-It would be natural to take the most significant genetic variants  (i.e. the highest points on the Manhattan plot) and conclude that they are causal.  This approach omits a key consideration: linkage disequilibrium
+It would be natural to take the most significant genetic variants  (i.e. the highest points on the Manhattan plot) and conclude that they are causal.  This approach omits a key consideration: linkage disequilibrium.
 
 ## Linkage Disequilibrium
-"Linkage disequilibrium" (LD) refers to statistical dependence between genetic variants. LD is a central to nearly every aspect of statistical genomics.
+"Linkage disequilibrium" (LD) refers to statistical dependence between genetic variants. LD is central to nearly every aspect of statistical genomics.
 
 Some facts about LD:
 
-- LD decays as the distance between variants increases, because the odds of an intervening recombination event correspondingly increases. However, due the complex structure of Eukaryotic DNA, the odds of recombination events are highly non-uniform across a chromosome.  Thus the rate of LD decay with genomic distance is not constant.
+- LD decays as the distance between variants increases, because the odds of an intervening recombination event correspondingly increases. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are highly non-uniform across a chromosome.  Thus the rate of LD decay with genomic distance is not constant.
 - Genetic variants that are relatively recent tend to have low frequency in the population, and thus low LD with all other variants, regardless of distance.
 
 
