@@ -12,5 +12,5 @@ MAGMA_1_1_BINARY_ZIPPED = DownloadFileTask(
         filename="magma_v1.10",
     ),
     url="https://vu.data.surf.nl/public.php/dav/files/zkKbNeNOZAhFXZB/?accept=zip",
-    md5_hash=None,
+    md5_hash="139171d8b859527b6c9231103c4d695f",
 )

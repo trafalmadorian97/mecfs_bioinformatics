@@ -78,10 +78,12 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
             fetch=RestrictedFetch.from_task(fetch=fetch, task=task),
         )
         deps_traced = [(k, self.tracer(v)) for k, v in deps]
+        new_trace = self.tracer(new_value)
+        logger.debug(f"Trace of asset {task.asset_id} is:\n {new_trace}")
         update_verifying_trace_info_in_place(
             verifying_trace_info=info,
             meta=task.meta,
-            new_value_trace=self.tracer(new_value),
+            new_value_trace=new_trace,
             deps_traced=deps_traced,
         )
         return new_value, info

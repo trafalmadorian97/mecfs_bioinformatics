@@ -89,6 +89,7 @@ class HBAMagmaTasks:
         MAGMAPlotBrainAtlasResultWithStepwiseLabels | None
     ) = None
     independent_clusters_markdown_task: ConvertDataFrameToMarkdownTask | None = None
+    magma_independent_clusters_csv: JoinDataFramesTask | None = None
 
     def terminal_tasks(self) -> list[Task]:
         result: list = [self.magma_hba_result_plot_task]
@@ -238,6 +239,7 @@ def generate_human_brain_atlas_magma_tasks(
         magma_hba_forward_select = None
         magma_independent_cluster_plot = None
         independent_clusters_markdown = None
+        magma_independent_clusters_labeled_labeled = None
 
     return HBAMagmaTasks(
         snp_loc_task=snp_loc_task,
@@ -253,4 +255,5 @@ def generate_human_brain_atlas_magma_tasks(
         magma_hba_forward_select=magma_hba_forward_select,
         magma_independent_cluster_plot=magma_independent_cluster_plot,
         independent_clusters_markdown_task=independent_clusters_markdown,
+        magma_independent_clusters_csv=magma_independent_clusters_labeled_labeled,
     )

@@ -25,4 +25,5 @@ DECODE_ME_GWAS_1_TASK = OSFRetrievalTask(
         read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=" ")),
     ),
     osf_project_id="rgqs3",
+    md5_hash="eabd3c06ffdeb2ec6382bfa67eed7f37",
 )
