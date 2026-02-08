@@ -17,7 +17,7 @@ It would be natural to take the most significant genetic variants  (i.e. the hig
 
 Some facts about LD:
 
-- LD decays as the distance between variants increases, because the odds of an intervening recombination event correspondingly increases. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are highly non-uniform across a chromosome.  Thus the rate of LD decay with genomic distance is not constant.
+- LD decays as the distance between variants increases, because the odds of an intervening recombination event correspondingly increases. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are highly non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant.
 - Genetic variants that are relatively recent tend to have low frequency in the population, and thus low LD with all other variants, regardless of distance.
 
 
@@ -63,4 +63,5 @@ where
 # Links
 
 [Primer on Fine Mapping by Ran Cui](https://www.youtube.com/watch?v=pglYf7wocSI)
+
 
