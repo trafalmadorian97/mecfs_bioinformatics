@@ -25,4 +25,5 @@ DECODE_ME_QC_SNPS = OSFRetrievalTask(
         read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=" ")),
     ),
     osf_project_id="rgqs3",
+    md5_hash="b62e4dc634627b461c666bc444e9b0bf",
 )

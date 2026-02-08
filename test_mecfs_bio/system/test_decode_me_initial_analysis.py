@@ -1,4 +1,3 @@
-import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -24,6 +23,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash i
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_SNPID_COL
+from test_mecfs_bio.system.util import log_on_error
 
 expected_vars = {
     "1:173846152:T:C",
@@ -35,7 +35,7 @@ expected_vars = {
 }
 
 
-def test_run_initial_analysis():
+def test_run_initial_analysis(tmp_path: Path):
     """
     Test that we can run the initial DecodeME analysis:
     - Download data
@@ -45,10 +45,10 @@ def test_run_initial_analysis():
     - Produce a list of candidate Genes
 
     """
-    with tempfile.TemporaryDirectory() as tempdirname:
-        tempdir = Path(tempdirname)
-        info_store = tempdir / "info_store.yaml"
-        asset_root = tempdir / "asset_store"
+    info_store = tmp_path / "info_store.yaml"
+    asset_root = tmp_path / "asset_store"
+
+    with log_on_error(info_store):
         asset_root.mkdir(parents=True, exist_ok=True)
         test_runner = SimpleRunner(
             tracer=ImoHasher.with_xxhash_128(),
@@ -62,7 +62,8 @@ def test_run_initial_analysis():
                 DECODE_ME_GWAS_1_LEAD_VARIANTS,
                 MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
                 DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
-            ]
+            ],
+            incremental_save=True,
         )
         variants_asset = result[DECODE_ME_GWAS_1_LEAD_VARIANTS.asset_id]
         assert isinstance(variants_asset, FileAsset)

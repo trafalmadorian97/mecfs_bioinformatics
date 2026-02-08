@@ -8,6 +8,7 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
+from mecfs_bio.build_system.task.download_file_task import verify_hash
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
@@ -19,6 +20,7 @@ class OSFRetrievalTask(GeneratingTask):
 
     _meta: GWASSummaryDataFileMeta
     osf_project_id: str
+    md5_hash: str | None = None
 
     @property
     def meta(self) -> GWASSummaryDataFileMeta:
@@ -38,6 +40,8 @@ class OSFRetrievalTask(GeneratingTask):
             )
 
         fetch_osf(invoke.Context())
+        verify_hash(tmp_dst, self.md5_hash)
+
         return FileAsset(
             tmp_dst,
         )
