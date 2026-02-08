@@ -45,7 +45,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     align_gwas_and_ld,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import SusieStackPlotTask, GENE_INFO_START_COL, \
-    GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL
+    GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL, BinOptions
 from mecfs_bio.build_system.task.susie_trackplot_task import SusieTrackPlotTask, EnsemblGeneInfoSource, \
     RegionSelectOverride, RegionSelectDefault, PLOT_FILENAME
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
@@ -257,7 +257,8 @@ def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, 
         susie_task=susie_tsk,
         gene_info_task=dummy_ensmbl_data_task,
         region_mode=RegionSelectDefault(),
-        gene_info_pipe=IdentityPipe()
+        gene_info_pipe=IdentityPipe(),
+        heatmap_bin_options=BinOptions(num_bins=50)
 
     )
     tasks = find_tasks([susie_tsk, plot_task, stack_plot_task])

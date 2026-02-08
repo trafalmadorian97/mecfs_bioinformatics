@@ -19,8 +19,11 @@ from matplotlib.lines import Line2D
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
+from mecfs_bio.build_system.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
@@ -34,10 +37,14 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_POS_COL, GWASLAB_MLOG10P_COL
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
+@frozen
+class BinOptions:
+    num_bins: int
 GENE_INFO_START_COL = "gene_start"
 GENE_INFO_END_COL = "gene_end"
 GENE_INFO_NAME_COL ="gene_name"
 GENE_INFO_STRAND_COL = "strand"
+GENE_INFO_CHROM_COL ="chrom"
 
 _gwas_pipe = CompositePipe(
     [
@@ -55,6 +62,7 @@ class SusieStackPlotTask(Task):
     gene_info_task: Task
     gene_info_pipe: DataProcessingPipe
     region_mode: RegionSelect
+    heatmap_bin_options: BinOptions|None
 
 
     @property
@@ -78,6 +86,7 @@ class SusieStackPlotTask(Task):
 
 
         chrom, start, end = get_region(self.region_mode, susie_output_path=susie_dir)
+        gene_info_df = gene_info_df.filter(pl.col(GENE_INFO_CHROM_COL)==chrom)
 
 
 
@@ -90,6 +99,7 @@ class SusieStackPlotTask(Task):
             start_bp=start,
             end_bp=end,
             chrom=chrom,
+            heatmap_bin_options=self.heatmap_bin_options,
         )
         out_path = scratch_dir
         write_plots_to_dir(
@@ -98,8 +108,31 @@ class SusieStackPlotTask(Task):
                 "plot": fig
             }
         )
-        import pdb; pdb.set_trace()
-        return DirectoryAsset(out_path)
+        return FileAsset(out_path/"plot.png")
+    @classmethod
+    def create(cls,
+               asset_id:str,
+    susie_task: Task,
+    gene_info_task: Task,
+    gene_info_pipe: DataProcessingPipe,
+    region_mode: RegionSelect,
+    heatmap_bin_options: BinOptions | None
+    ):
+        src_meta = susie_task.meta
+        assert isinstance(src_meta,ResultDirectoryMeta)
+        meta = GWASPlotFileMeta(
+            trait=src_meta.trait,
+            project=src_meta.project,
+            id = AssetId(asset_id),
+        )
+        return cls(
+            meta=meta,
+            susie_task=susie_task,
+            gene_info_task=gene_info_task,
+            gene_info_pipe=gene_info_pipe,
+            region_mode=region_mode,
+            heatmap_bin_options=heatmap_bin_options
+        )
 
 
 
@@ -111,6 +144,7 @@ def plot_locus_tracks_matplotlib(
     start_bp: int ,
     end_bp: int ,
     chrom: int,
+    heatmap_bin_options:BinOptions|None,
     *,
     gwas_pos_col: str = GWASLAB_POS_COL,
     gwas_mlog10p_col: str = GWASLAB_MLOG10P_COL,
@@ -131,10 +165,10 @@ def plot_locus_tracks_matplotlib(
     )
 
     # initialize figure
-    fig = plt.figure(figsize=(12,12))
+    fig = plt.figure(figsize=(12,9))
     gs = gridspec.GridSpec(
         nrows=4, ncols=2,
-        height_ratios=[2.2, 2.2, 1.6, 1.3],
+        height_ratios=[1.8, 2.2, 1.6, 1.3],
         width_ratios=[1.0, 0.1],
         hspace=0.08,
         wspace=0.05,
@@ -211,7 +245,7 @@ def plot_locus_tracks_matplotlib(
                 sub[susie_pos_col].to_numpy(),
                 0.0,
                 sub[susie_pip_col].to_numpy(),
-                linewidth=0.9,
+                linewidth=1.5,
                 label=f"CS {i+1}",
                 color=color
             )
@@ -233,10 +267,12 @@ def plot_locus_tracks_matplotlib(
     ar, edges= get_array_and_edges_for_ld_heatmap(
         ld2=ld2,
         pos=gwas_df[gwas_pos_col].to_numpy(),
+        bin_options=heatmap_bin_options
+
     )
 
     mesh = ax_ld.pcolormesh(
-        edges, edges, ld2,
+        edges, edges, ar,
         shading="auto",
         vmin=0 , vmax=1,cmap="plasma"
     )
@@ -284,9 +320,6 @@ def plot_locus_tracks_matplotlib(
     return fig
 
 
-@frozen
-class BinOptions:
-    num_bins: int
 
 def get_array_and_edges_for_ld_heatmap(
         ld2:np.ndarray,
@@ -304,7 +337,10 @@ def get_array_and_edges_for_ld_heatmap(
     if bin_options is not None :
         da= da.groupby_bins(
             "x",bins=bin_options.num_bins,
-        ).mean().groupby_bins("y",bins=bin_options.num_bins)
+        ).mean().groupby_bins("y",bins=bin_options.num_bins).mean()
+        da = da.rename({"x_bins":"x", "y_bins":"y"})
+        da.coords["x"] = [i.mid for i in da.coords['x'].values]
+        da.coords["y"] = [i.mid for i in da.coords['y'].values]
     else:
         da = da.groupby("x").mean().groupby("y").mean()
 

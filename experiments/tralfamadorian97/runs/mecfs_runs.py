@@ -11,6 +11,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabga
     DECODE_ME_RABGAP1L_REGION_PLOT_37
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr1_173_locus import \
     DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_chr1_173_locus_stackplot import \
+    DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import \
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.prep_for_fine_mapping.chr1_173_locus.harmonize_with_polyfun_reference_alleles import \
@@ -34,9 +36,10 @@ def run_initial_decode_me_analysis():
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS,
-            DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES,
-            CHR1_173000001_17600000_UKBB_LD_MATRIX_DOWNLOAD,
-            CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD
+            DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
+            # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES,
+            # CHR1_173000001_17600000_UKBB_LD_MATRIX_DOWNLOAD,
+            # CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD
          # DECODE_ME_BTN1A1_REGION_PLOT_37
          #    DECODE_ME_BTN1A1_REGION_PLOT_37
          #    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC
@@ -46,7 +49,8 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-
+            DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS,
+            DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
             # DECODE_ME_BASIC_CIS_PQTL_MR.multiple_testing_task
