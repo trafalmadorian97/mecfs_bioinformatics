@@ -55,10 +55,11 @@ def go():
         ld_mat_squared,
         # annot=True,  # Add correlation values as annotations
         # fmt='.2f',  # Format annotations to two decimal places
-        cmap='coolwarm',  # Use a diverging colormap
+        cmap='rocket',  # Use a diverging colormap
         # vmin=-1,  # Ensure color scale covers full range from -1 to 1
         vmax=1,
-        center=0,  # Center the colormap at 0
+        vmin=0,
+        # center=0,  # Center the colormap at 0
         square=True,  # Make cells square shaped
         # linewidths=.5,  # Add lines to divide cells
         cbar_kws={"shrink": .75} , # Adjust color bar size
