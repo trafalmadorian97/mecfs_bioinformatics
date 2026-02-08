@@ -235,53 +235,21 @@ def plot_locus_tracks_matplotlib(
     pip_legend_ax.axis('off')
 
 
-    #2: SUSIE results
-    pip_traces = []
-    palette = list(TABLEAU_COLORS.values())
-    if len(susie_cs_df)>0:
-        for i,(cs, sub) in enumerate(susie_cs_df.group_by(susie_cs_col, maintain_order=True)):
-            color = palette[i % len(palette)]
-            ax_pip.vlines(
-                sub[susie_pos_col].to_numpy(),
-                0.0,
-                sub[susie_pip_col].to_numpy(),
-                linewidth=1.5,
-                label=f"CS {i+1}",
-                color=color
-            )
-            handle = Line2D([0], [0], color=color, lw=2, label=f"CS {i+1}")
-            pip_traces.append(handle)
-            # pip_trace_labels.append(f"CS {i+1}")
-        # ax_pip.legend(loc="upper right", fontsize=8, frameon=False, ncols=2)
-        pip_legend_ax.legend(handles=pip_traces,
-                             loc='center left',  # Vertically centered in the panel
-                             borderaxespad=0,  # Tight alignment to the left edge
-                             frameon=False,  # Clean look (no box)
-                             fontsize=9,
-                             )
-    ax_pip.set_ylabel("PIP (SUSIE)")
-    # ax_manh.set_title(title)
-
-    # #3 ld
-
-    ar, edges= get_array_and_edges_for_ld_heatmap(
+    #2: SUSIE track
+    plot_susie_track(
+        susie_cs_df=susie_cs_df,
+        pip_legend_ax=pip_legend_ax,
+        ax_pip=ax_pip
+    )
+    # #3 ld headmap track
+    plot_ld_heatmap(
         ld2=ld2,
-        pos=gwas_df[gwas_pos_col].to_numpy(),
-        bin_options=heatmap_bin_options
-
+        gwas_df=gwas_df,
+        heatmap_bin_options=heatmap_bin_options,
+        ax_ld=ax_ld,
+        fig=fig,
+        ld_cax=ld_cax,
     )
-
-    mesh = ax_ld.pcolormesh(
-        edges, edges, ar,
-        shading="auto",
-        vmin=0 , vmax=1,cmap="plasma"
-    )
-    ax_ld.set_ylabel("bp")
-    ax_ld.set_ylim(float(edges[0]), float(edges[-1]))
-
-    cbar = fig.colorbar(mesh, cax=ld_cax, shrink=0.8)
-    cbar.set_label(r"$r^2$")
-
     # 4: Gene tracks
     plot_gene_tracks(
         ax=ax_gene,
@@ -308,8 +276,6 @@ def plot_locus_tracks_matplotlib(
             top=False,  # ticks along the top edge are off
             labelbottom=False  # labels along the bottom edge are off
         )
-        # ax.spines["bottom"].set_visible(False)
-        # ax.set_xticks([])
 
     for ax in [ax_manh, ax_pip, ax_ld, ax_gene]:
         ax.spines["top"].set_visible(False)
@@ -326,6 +292,9 @@ def get_array_and_edges_for_ld_heatmap(
         pos: np.ndarray,
         bin_options: BinOptions|None=None,
 ) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Use xarray to bin LD data to facilitate creation of an LD heatmap
+    """
     da = xr.DataArray(
         ld2,
         coords={
@@ -352,7 +321,6 @@ def get_array_and_edges_for_ld_heatmap(
     return da.to_numpy(), edges
 
 
-import matplotlib.patheffects as pe
 
 
 def plot_gene_tracks(
@@ -368,6 +336,7 @@ def plot_gene_tracks(
         min_dist_between_genes: float = 0.03,  # Slightly increased buffer
 ):
     """
+    Generated With Gemini
     Plots gene tracks with smart label centering and collision avoidance.
     """
     # 1. Filter genes
@@ -605,8 +574,11 @@ def plot_susie_track(susie_cs_df: pl.DataFrame,
                      susie_cs_col: str= CS_COLUMN,
                      susie_pip_col:str=PIP_COLUMN,
                      susie_pos_col: str=GWASLAB_POS_COL,
-                     
+
                      ):
+    """
+    Plot SUSIE pip using a bar graph colored by credible set
+    """
     pip_traces = []
     palette = list(TABLEAU_COLORS.values())
     if len(susie_cs_df) > 0:
@@ -631,3 +603,32 @@ def plot_susie_track(susie_cs_df: pl.DataFrame,
                              fontsize=9,
                              )
     ax_pip.set_ylabel("PIP (SUSIE)")
+
+def plot_ld_heatmap(
+        ld2: np.ndarray,
+        gwas_df: pl.DataFrame,
+        heatmap_bin_options: BinOptions|None,
+        ax_ld,
+        fig,
+        ld_cax,
+    gwas_pos_col: str = GWASLAB_POS_COL,
+):
+
+
+    ar, edges = get_array_and_edges_for_ld_heatmap(
+        ld2=ld2,
+        pos=gwas_df[gwas_pos_col].to_numpy(),
+        bin_options=heatmap_bin_options
+
+    )
+
+    mesh = ax_ld.pcolormesh(
+        edges, edges, ar,
+        shading="auto",
+        vmin=0, vmax=1, cmap="plasma"
+    )
+    ax_ld.set_ylabel("bp")
+    ax_ld.set_ylim(float(edges[0]), float(edges[-1]))
+
+    cbar = fig.colorbar(mesh, cax=ld_cax, shrink=0.8)
+    cbar.set_label(r"$r^2$")
