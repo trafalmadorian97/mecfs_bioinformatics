@@ -1,3 +1,7 @@
+"""
+Save disk space materializing dependencies of the wrapped task in a temporary directory.
+"""
+
 import tempfile
 from pathlib import Path
 
@@ -20,6 +24,10 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class DiscardDepsWrapper(Task):
+    """
+    Save disk space materializing dependencies of the wrapped task in a temporary directory.
+    """
+
     _inner: Task
 
     @property
