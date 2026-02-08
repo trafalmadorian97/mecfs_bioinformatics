@@ -2,7 +2,6 @@
 Finemap a GWAS locus using SUSIE
 """
 
-from rich.pretty import pprint
 from pathlib import Path, PurePath
 
 import numpy as np
@@ -249,7 +248,8 @@ def align_gwas_and_ld(
             GWASLAB_POS_COL,
             GWASLAB_EFFECT_ALLELE_COL,
             GWASLAB_NON_EFFECT_ALLELE_COL,
-        ],maintain_order="left"
+        ],
+        maintain_order="left",
     )
     ld_matrix = csr_matrix(ld_matrix_sparse).toarray()
     ld_matrix = ld_matrix[
@@ -342,8 +342,11 @@ def _check_converged(py_result: dict):
 
 
 def write_result(
-    directory: Path, py_result: dict, gwas_table: pl.DataFrame, L: int,
-        ld_matrix: np.ndarray,
+    directory: Path,
+    py_result: dict,
+    gwas_table: pl.DataFrame,
+    L: int,
+    ld_matrix: np.ndarray,
 ) -> None:
     gt = gwas_table.select(
         [
@@ -419,11 +422,11 @@ def write_result(
         cs_data_tables.append(
             gwas_for_set.with_columns(pl.lit(set_name).alias(CS_COLUMN))
         )
-    pl.concat(cs_data_tables,how="vertical").write_parquet(directory/COMBINED_CS_FILENAME)
+    pl.concat(cs_data_tables, how="vertical").write_parquet(
+        directory / COMBINED_CS_FILENAME
+    )
     gwas_table.write_parquet(directory / FILTERED_GWAS_FILENAME)
-    np.save(directory/FILTERED_LD_FILENAME, ld_matrix)
-
-
+    np.save(directory / FILTERED_LD_FILENAME, ld_matrix)
 
 
 def check_symmetric(array: np.ndarray, tol=1e-6):

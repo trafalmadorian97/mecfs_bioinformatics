@@ -7,7 +7,7 @@ from pathlib import PurePath
 from attrs import field, frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.base_meta import FileMeta, DirMeta
+from mecfs_bio.build_system.meta.base_meta import DirMeta
 
 
 @frozen

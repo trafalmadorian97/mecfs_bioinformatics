@@ -11,7 +11,7 @@ from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_g
     LIU_ET_AL_2023_IBD_EUR_HARMONIZE_PARQUET,
 )
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
-    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE, PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_NON_RD,
+    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_NON_RD,
 )
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat

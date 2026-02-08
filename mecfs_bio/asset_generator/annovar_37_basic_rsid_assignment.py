@@ -6,7 +6,7 @@ import narwhals
 from attrs import frozen
 
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
-    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE, PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_NON_RD,
+    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_NON_RD,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (

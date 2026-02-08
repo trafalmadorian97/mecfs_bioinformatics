@@ -1,6 +1,6 @@
-from typing import Iterator
 import tempfile
 from pathlib import Path
+from typing import Iterator
 
 import numpy as np
 import pandas as pd
@@ -15,25 +15,30 @@ from rpy2.robjects.packages import (
     importr,
 )
 
-from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
-from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
-    DataFrameReadSpec, DataFrameWhiteSpaceSepTextFormat,
+    DataFrameReadSpec,
+    DataFrameWhiteSpaceSepTextFormat,
 )
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
-from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import SimpleMetaToPath
-from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.simple_hasher import SimpleHasher
-from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_info import VerifyingTraceInfo
-from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import \
-    VerifyingTraceRebuilder
+from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import (
+    SimpleMetaToPath,
+)
+from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.simple_hasher import (
+    SimpleHasher,
+)
+from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_info import (
+    VerifyingTraceInfo,
+)
+from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import (
+    VerifyingTraceRebuilder,
+)
 from mecfs_bio.build_system.scheduler.topological_scheduler import topological
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
-from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     ADJUSTMENT_VALUE_FILENAME,
@@ -44,10 +49,16 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     SusieRFinemapTask,
     align_gwas_and_ld,
 )
-from mecfs_bio.build_system.task.susie_stacked_plot_task import SusieStackPlotTask, GENE_INFO_START_COL, \
-    GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL, BinOptions, GENE_INFO_CHROM_COL
-from mecfs_bio.build_system.task.susie_trackplot_task import SusieTrackPlotTask, EnsemblGeneInfoSource, \
-    RegionSelectOverride, RegionSelectDefault, PLOT_FILENAME
+from mecfs_bio.build_system.task.susie_stacked_plot_task import (
+    GENE_INFO_CHROM_COL,
+    GENE_INFO_END_COL,
+    GENE_INFO_NAME_COL,
+    GENE_INFO_START_COL,
+    GENE_INFO_STRAND_COL,
+    BinOptions,
+    RegionSelectDefault,
+    SusieStackPlotTask,
+)
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -124,12 +135,11 @@ def test_align():
     np.testing.assert_array_equal(rmat, ld_matrix.toarray()[:-1, :-1])
 
 
+_susie_n = 2500
 
-
-_susie_n=2500
 
 @pytest.fixture
-def susie_prerequisite_file_tasks(tmp_path: Path) ->Iterator[tuple[Task,Task, Task]]:
+def susie_prerequisite_file_tasks(tmp_path: Path) -> Iterator[tuple[Task, Task, Task]]:
     n = _susie_n
     m = 100
     susie_package = importr("susieR")
@@ -183,73 +193,69 @@ def susie_prerequisite_file_tasks(tmp_path: Path) ->Iterator[tuple[Task,Task, Ta
     ref_data.to_parquet(ld_labels_path)
     scipy.sparse.save_npz(ld_matrix_path, partial_ld_sparse)
     with tempfile.TemporaryDirectory() as temp_dir:
-       temp_path = Path(temp_dir)
-       gwas_data_task= ExternalFileCopyTask(
-           SimpleFileMeta(
-       AssetId("gwas_data"),
-       read_spec = DataFrameReadSpec(DataFrameParquetFormat()),
-           ),
-           external_path=gwas_data_path
-       )
-       ld_labels_task= ExternalFileCopyTask(
+        temp_path = Path(temp_dir)
+        gwas_data_task = ExternalFileCopyTask(
+            SimpleFileMeta(
+                AssetId("gwas_data"),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+            ),
+            external_path=gwas_data_path,
+        )
+        ld_labels_task = ExternalFileCopyTask(
             SimpleFileMeta(
                 "ld_labels", read_spec=DataFrameReadSpec(DataFrameParquetFormat())
             ),
-           external_path=ld_labels_path
+            external_path=ld_labels_path,
         )
-       ld_matrix_task= ExternalFileCopyTask(
-           SimpleFileMeta(
-               "ld_matrix"
-           ),
-           external_path=ld_matrix_path
-       )
-       yield gwas_data_task, ld_labels_task, ld_matrix_task
+        ld_matrix_task = ExternalFileCopyTask(
+            SimpleFileMeta("ld_matrix"), external_path=ld_matrix_path
+        )
+        yield gwas_data_task, ld_labels_task, ld_matrix_task
 
 
 @pytest.fixture
-def dummy_ensmbl_data_task(tmp_path:Path)->Iterator[Task]:
+def dummy_ensmbl_data_task(tmp_path: Path) -> Iterator[Task]:
     dummy_data = """ENSG00000237683 1       25  50  -       AL627309.1
                     ENSG00000235249 1       77  90  +       OR4F29"""
     dummy_data_path = tmp_path / "dummy_data.txt"
     dummy_data_path.write_text(dummy_data)
     yield ExternalFileCopyTask(
-        SimpleFileMeta("dummy_ensmbl_data",
-                       read_spec=DataFrameReadSpec(
-                           DataFrameWhiteSpaceSepTextFormat(
-                               comment_code="#",
-                               col_names=["ensembl_name",GENE_INFO_CHROM_COL, GENE_INFO_START_COL, GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL]
-                           )
-                       )
-
-                       ),
-        external_path=dummy_data_path
+        SimpleFileMeta(
+            "dummy_ensmbl_data",
+            read_spec=DataFrameReadSpec(
+                DataFrameWhiteSpaceSepTextFormat(
+                    comment_code="#",
+                    col_names=[
+                        "ensembl_name",
+                        GENE_INFO_CHROM_COL,
+                        GENE_INFO_START_COL,
+                        GENE_INFO_END_COL,
+                        GENE_INFO_STRAND_COL,
+                        GENE_INFO_NAME_COL,
+                    ],
+                )
+            ),
+        ),
+        external_path=dummy_data_path,
     )
 
 
-
-def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, Task, Task],
-                      dummy_ensmbl_data_task: Task
-                      ):
+def test_fine_mapping(
+    tmp_path: Path,
+    susie_prerequisite_file_tasks: tuple[Task, Task, Task],
+    dummy_ensmbl_data_task: Task,
+):
     """
     Test that we can find the causal SNPs in a simple synthetic example
     """
     gwas_data_task, ld_labels_task, ld_matrix_task = susie_prerequisite_file_tasks
-    susie_tsk = SusieRFinemapTask(meta=SimpleDirectoryMeta(AssetId("directory")),
+    susie_tsk = SusieRFinemapTask(
+        meta=SimpleDirectoryMeta(AssetId("directory")),
         gwas_data_task=gwas_data_task,
         ld_labels_task=ld_labels_task,
-        ld_matrix_source=BroadInstituteFormatLDMatrix(
-            ld_matrix_task
-        ),
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=_susie_n,
         max_credible_sets=10,
-    )
-    plot_task =SusieTrackPlotTask(
-        meta=SimpleDirectoryMeta("susie_plot"),
-        susie_task=susie_tsk,
-        gene_info_source=EnsemblGeneInfoSource(
-            source_task=dummy_ensmbl_data_task,
-        ),
-        region_mode=RegionSelectDefault()
     )
 
     stack_plot_task = SusieStackPlotTask(
@@ -258,10 +264,9 @@ def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, 
         gene_info_task=dummy_ensmbl_data_task,
         region_mode=RegionSelectDefault(),
         gene_info_pipe=IdentityPipe(),
-        heatmap_bin_options=BinOptions(num_bins=50)
-
+        heatmap_bin_options=BinOptions(num_bins=50),
     )
-    tasks = find_tasks([susie_tsk, plot_task, stack_plot_task])
+    tasks = find_tasks([susie_tsk, stack_plot_task])
     wf = SimpleWF()
     info: VerifyingTraceInfo = VerifyingTraceInfo.empty()
 
@@ -272,7 +277,7 @@ def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, 
     tracer = SimpleHasher.md5_hasher()
     rebuilder = VerifyingTraceRebuilder(tracer)
 
-    targets = [susie_tsk.asset_id,  stack_plot_task.asset_id]
+    targets = [susie_tsk.asset_id, stack_plot_task.asset_id]
 
     # Verify that all files are created in the correct location
     store, info = topological(
@@ -286,14 +291,10 @@ def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, 
     asset = store[susie_tsk.asset_id]
     assert isinstance(asset, DirectoryAsset)
     suise_out_path = asset.path
-    adjustment = pd.read_parquet( suise_out_path/ ADJUSTMENT_VALUE_FILENAME)
+    adjustment = pd.read_parquet(suise_out_path / ADJUSTMENT_VALUE_FILENAME)
     assert float(adjustment.iloc[0].item()) <= 0.01
     pip = pd.read_parquet(suise_out_path / PIP_FILENAME)
     assert pip[PIP_COLUMN].iloc[0] >= 0.95
     assert pip[PIP_COLUMN].iloc[99] >= 0.95
     cs_subdir_contents = list((suise_out_path / CS_DATA_SUBDIR).glob("*"))
     assert len(cs_subdir_contents) == 2  # 2 credible sets
-
-    # plot_asset = store[plot_task.asset_id]
-    # assert isinstance(plot_asset, DirectoryAsset)
-    # assert (plot_asset.path/PLOT_FILENAME).exists()

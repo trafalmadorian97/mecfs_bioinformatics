@@ -11,5 +11,5 @@ class ComputeMlog10pIfNeededPipe(DataProcessingPipe):
             return x
         assert GWASLAB_P_COL in schema
         return x.with_columns(
-            (-1*( narwhals.col(GWASLAB_P_COL).log(base=10))).alias(GWASLAB_MLOG10P_COL)
+            (-1 * (narwhals.col(GWASLAB_P_COL).log(base=10))).alias(GWASLAB_MLOG10P_COL)
         )
