@@ -2,7 +2,7 @@
 Generate a chain of tasks to assign rsids to the decodeME genetic variants using dbSNP 150 reference data as pre-processed by annovar.
 Note that that unlike the approach based on ucsc hg19 sbSNP, this approach does allow assignment of rsids to non-SNP genetic variants.
 
-There are two versions of the SNP-assigned data.  One discards strand-ambiguous palindromic variants, and one keeps them.
+There are two versions of the rsid-assigned data.  One discards strand-ambiguous palindromic variants, and one keeps them.
 The version that keeps ambiguous variants is suitable for downstream tasks like MAGMA, which ignore variant direction of effect.
 On the other hand, it should not be used for downstream tasks like Mendelian Randomization, which crucially depend on direction of effect.
 """
