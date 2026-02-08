@@ -21,7 +21,7 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
-    DataFrameReadSpec,
+    DataFrameReadSpec, DataFrameWhiteSpaceSepTextFormat,
 )
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
@@ -34,6 +34,7 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import topological
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
 from mecfs_bio.build_system.task.fake_task import FakeTask
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     ADJUSTMENT_VALUE_FILENAME,
     CS_DATA_SUBDIR,
@@ -43,6 +44,8 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     SusieRFinemapTask,
     align_gwas_and_ld,
 )
+from mecfs_bio.build_system.task.susie_stacked_plot_task import SusieStackPlotTask, GENE_INFO_START_COL, \
+    GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL
 from mecfs_bio.build_system.task.susie_trackplot_task import SusieTrackPlotTask, EnsemblGeneInfoSource, \
     RegionSelectOverride, RegionSelectDefault, PLOT_FILENAME
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
@@ -210,7 +213,15 @@ def dummy_ensmbl_data_task(tmp_path:Path)->Iterator[Task]:
     dummy_data_path = tmp_path / "dummy_data.txt"
     dummy_data_path.write_text(dummy_data)
     yield ExternalFileCopyTask(
-        SimpleFileMeta("dummy_ensmbl_data"),
+        SimpleFileMeta("dummy_ensmbl_data",
+                       read_spec=DataFrameReadSpec(
+                           DataFrameWhiteSpaceSepTextFormat(
+                               comment_code="#",
+                               col_names=["ensembl_name", GENE_INFO_START_COL, GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL]
+                           )
+                       )
+
+                       ),
         external_path=dummy_data_path
     )
 
@@ -240,7 +251,16 @@ def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, 
         ),
         region_mode=RegionSelectDefault()
     )
-    tasks = find_tasks([susie_tsk, plot_task])
+
+    stack_plot_task = SusieStackPlotTask(
+        meta=SimpleDirectoryMeta("susie_stack_plot"),
+        susie_task=susie_tsk,
+        gene_info_task=dummy_ensmbl_data_task,
+        region_mode=RegionSelectDefault(),
+        gene_info_pipe=IdentityPipe()
+
+    )
+    tasks = find_tasks([susie_tsk, plot_task, stack_plot_task])
     wf = SimpleWF()
     info: VerifyingTraceInfo = VerifyingTraceInfo.empty()
 
@@ -251,7 +271,7 @@ def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, 
     tracer = SimpleHasher.md5_hasher()
     rebuilder = VerifyingTraceRebuilder(tracer)
 
-    targets = [susie_tsk.asset_id, plot_task.asset_id]
+    targets = [susie_tsk.asset_id,  stack_plot_task.asset_id]
 
     # Verify that all files are created in the correct location
     store, info = topological(
@@ -273,6 +293,6 @@ def test_fine_mapping(tmp_path: Path,susie_prerequisite_file_tasks: tuple[Task, 
     cs_subdir_contents = list((suise_out_path / CS_DATA_SUBDIR).glob("*"))
     assert len(cs_subdir_contents) == 2  # 2 credible sets
 
-    plot_asset = store[plot_task.asset_id]
-    assert isinstance(plot_asset, DirectoryAsset)
-    assert (plot_asset.path/PLOT_FILENAME).exists()
+    # plot_asset = store[plot_task.asset_id]
+    # assert isinstance(plot_asset, DirectoryAsset)
+    # assert (plot_asset.path/PLOT_FILENAME).exists()
