@@ -134,10 +134,13 @@ class SimpleMetaToPath(MetaToPath):
                 pth = pth / m.id
             return pth
 
-        if isinstance(m, (GWASPlotDirectoryMeta, GWASPlotFileMeta)):
+        if isinstance(m, (GWASPlotDirectoryMeta)):
             pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.asset_id
             return pth
 
+        if isinstance(m, ( GWASPlotFileMeta)):
+            pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / (m.asset_id+m.extension)
+            return pth
         if isinstance(m, ResultTableMeta):
             pth = (
                 self.root

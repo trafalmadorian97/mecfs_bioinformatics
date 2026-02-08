@@ -15,6 +15,7 @@ import polars as pl
 from matplotlib.colors import TABLEAU_COLORS
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
+from polars import String
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -57,6 +58,14 @@ _gwas_pipe = CompositePipe(
 
 @frozen
 class SusieStackPlotTask(Task):
+    """
+    Create a plot to illustrate the results of a SUSIE run.
+    Plot is a stack of panels showing
+    - LD structure
+    - marginal associations (i.e. Manhattan plot)
+    - SUSIE PIPs
+    - Genes
+    """
     _meta: Meta
     susie_task: Task
     gene_info_task: Task
@@ -86,7 +95,7 @@ class SusieStackPlotTask(Task):
 
 
         chrom, start, end = get_region(self.region_mode, susie_output_path=susie_dir)
-        gene_info_df = gene_info_df.filter(pl.col(GENE_INFO_CHROM_COL)==chrom)
+        gene_info_df = gene_info_df.filter(pl.col(GENE_INFO_CHROM_COL).cast(String())==pl.lit(chrom).cast(String()) )
 
 
 
@@ -124,6 +133,7 @@ class SusieStackPlotTask(Task):
             trait=src_meta.trait,
             project=src_meta.project,
             id = AssetId(asset_id),
+            extension=".png"
         )
         return cls(
             meta=meta,
@@ -155,20 +165,23 @@ def plot_locus_tracks_matplotlib(
     gene_end_col: str = GENE_INFO_END_COL,
     gene_name_col: str = GENE_INFO_NAME_COL,
     gene_strand_col: str = GENE_INFO_STRAND_COL,
-    # title: str = "Locus tracks",
         max_mlog10p:float=200,
 )-> Figure:
+    """
+    Helper function to create the matplotlib plot consisting of stacked pannels
+
+    """
     ld2 = ld_np**2
 
     gwas_df = gwas_df.with_columns(
         pl.min_horizontal(pl.lit(max_mlog10p), pl.col(GWASLAB_MLOG10P_COL)).alias(GWASLAB_MLOG10P_COL),
     )
 
-    # initialize figure
+    # initialize figure with 4 by 2 grid.  Right column is used for legends and colorbars
     fig = plt.figure(figsize=(12,9))
     gs = gridspec.GridSpec(
         nrows=4, ncols=2,
-        height_ratios=[1.8, 2.2, 1.6, 1.3],
+        height_ratios=[1.8, 2.2, 1.6, 1.4],
         width_ratios=[1.0, 0.1],
         hspace=0.08,
         wspace=0.05,
@@ -194,9 +207,9 @@ def plot_locus_tracks_matplotlib(
         borderpad=0           # No padding between anchor and axis
     )
 
-    #manhattan
+    #manhattan plot
     lead = int(np.argmax(gwas_df[gwas_mlog10p_col]))
-    ax_manh, sc = draw_manhattan_track(
+    ax_manh = draw_manhattan_track(
         fig=fig,
         target_gridspec_cell=gs[1, 0],
         gwas_df=gwas_df,
@@ -205,11 +218,10 @@ def plot_locus_tracks_matplotlib(
         gwas_mlog10p_col=gwas_mlog10p_col,
         break_at=20.0,
         max_break_proportion=0.5,
-        lead=lead
+        lead=lead,
+        colorbar_axis=manh_cax
     )
 
-    cbar = fig.colorbar(sc, cax=manh_cax, shrink=0.4)
-    cbar.set_label(r"$r^2$ with lead")
 
 
     #setup other axis
@@ -222,21 +234,9 @@ def plot_locus_tracks_matplotlib(
     pip_legend_ax = fig.add_subplot(gs[2, 1])
     pip_legend_ax.axis('off')
 
-    #1:  Manhattan
-    # ld2_with_lead = ld2[lead,:]
-    # sc=ax_manh.scatter(gwas_df[gwas_pos_col].to_numpy(), gwas_df[gwas_mlog10p_col], s=10, linewidths=0,
-    #                 c=ld2_with_lead, cmap="plasma")
-    # ax_manh.scatter(
-    #     gwas_df[gwas_pos_col][lead],gwas_df[gwas_mlog10p_col][lead],s=35,marker="^",c="black"
-    # )
-    # ax_manh.set_ylabel(r"$-\log_{10}(p)$")
-    #
-    #
-
 
     #2: SUSIE results
     pip_traces = []
-    pip_trace_labels = []
     palette = list(TABLEAU_COLORS.values())
     if len(susie_cs_df)>0:
         for i,(cs, sub) in enumerate(susie_cs_df.group_by(susie_cs_col, maintain_order=True)):
@@ -352,6 +352,9 @@ def get_array_and_edges_for_ld_heatmap(
     return da.to_numpy(), edges
 
 
+import matplotlib.patheffects as pe
+
+
 def plot_gene_tracks(
         ax,
         gene_df: pl.DataFrame,
@@ -362,13 +365,12 @@ def plot_gene_tracks(
         gene_name_col: str,
         gene_strand_col: str,
         font_size: int = 9,
-        min_dist_between_genes: float = 0.02,  # Fraction of x-axis
+        min_dist_between_genes: float = 0.03,  # Slightly increased buffer
 ):
     """
-    Gene track plotting function generated with help from Gemini
+    Plots gene tracks with smart label centering and collision avoidance.
     """
-    # 1. Filter genes within the window
-    # We allow genes that partially overlap the window
+    # 1. Filter genes
     region_df = gene_df.filter(
         (pl.col(gene_end_col) >= start_bp) &
         (pl.col(gene_start_col) <= end_bp)
@@ -379,20 +381,15 @@ def plot_gene_tracks(
         ax.set_yticks([])
         return
 
-    # 2. Heuristic for text width in coordinate space (bp)
-    # This assumes a standard matplotlib figure width.
-    # If the text is overlapping, increase 'char_width_factor'.
+    # 2. Setup Packing Parameters
     total_bp = end_bp - start_bp
-    char_width_factor = 0.012  # approx 1.2% of plot width per character
+    # Heuristic: How many bp does one character take up?
+    # You might need to tune '0.015' based on your specific figure width/dpi
+    char_width_factor = 0.015
     bp_per_char = total_bp * char_width_factor
     min_gap = total_bp * min_dist_between_genes
 
-    # 3. Greedy Packing Algorithm
-    # lanes is a list of end-coordinates for each y-level.
-    # We store the 'occupied_end' which includes the text width.
     lanes = []
-
-    # Store plot data to draw later
     gene_placements = []
 
     for row in region_df.iter_rows(named=True):
@@ -400,79 +397,90 @@ def plot_gene_tracks(
         g_end = min(end_bp, row[gene_end_col])
         g_name = row[gene_name_col]
 
-        # Calculate the "Visual End" of this object
-        # It's the maximum of the gene structure OR the text label length
-        text_end = g_start + (len(g_name) * bp_per_char)
-        visual_end = max(g_end, text_end) + min_gap
+        # --- NEW LOGIC: Calculate Text Dimensions & Position ---
+        text_width_bp = len(g_name) * bp_per_char
+        gene_width_bp = g_end - g_start
 
-        # Find the first lane where this gene fits
+        # Decision: Center label or Left-align?
+        if gene_width_bp > text_width_bp:
+            # Case A: Gene is longer than text -> CENTER text
+            text_x = (g_start + g_end) / 2
+            ha = 'center'
+            # Visual end is just the gene end (text is inside)
+            visual_end = g_end + min_gap
+        else:
+            # Case B: Gene is short -> LEFT-ALIGN text at start
+            text_x = g_start
+            ha = 'left'
+            # Visual end is the text end
+            visual_end = g_start + text_width_bp + min_gap
+            # Ensure we don't accidentally clip the gene if they are nearly same size
+            visual_end = max(visual_end, g_end + min_gap)
+
+        # --- Packing Algorithm ---
         y_level = -1
         for i, lane_end in enumerate(lanes):
             if lane_end < g_start:
                 y_level = i
-                lanes[i] = visual_end  # Update lane with new end
+                lanes[i] = visual_end
                 break
 
-        # If no lane fits, create a new one
         if y_level == -1:
             lanes.append(visual_end)
             y_level = len(lanes) - 1
 
         gene_placements.append({
-            "start": row[gene_start_col],  # Use real start for drawing
+            "start": row[gene_start_col],
             "end": row[gene_end_col],
             "name": g_name,
             "strand": row[gene_strand_col],
-            "y": y_level
+            "y": y_level,
+            "text_x": text_x,
+            "ha": ha
         })
 
-    # 4. Plotting
-    # Auto-scale y-axis based on number of lanes
+    # 3. Plotting
     n_lanes = len(lanes)
     ax.set_ylim(-0.5, n_lanes + 0.5)
 
-    # Optional: If many lanes, shrink font
     if n_lanes > 10:
         font_size = max(6, font_size - 2)
 
     for g in gene_placements:
         y = g["y"]
-        # Draw the main gene line
+        # Gene Body
         ax.plot([g["start"], g["end"]], [y, y], color='navy', lw=1.5)
 
-        # Draw vertical ticks at ends (like exon boundaries)
+        # Exon/End Ticks
         tick_h = 0.2
         ax.plot([g["start"], g["start"]], [y - tick_h, y + tick_h], color='navy', lw=1)
         ax.plot([g["end"], g["end"]], [y - tick_h, y + tick_h], color='navy', lw=1)
 
-        # Draw Label (placed slightly above the line, aligned left)
-        # Using a white outline (path_effects) helps readability if overlapping crowded lines
-        ax.text(
-            g["start"], y + 0.3,
-            f"  {g['name']}",  # space for padding
-            ha='left', va='center',
-            fontsize=font_size,
-            style='italic',
-            path_effects=[pe.withStroke(linewidth=2, foreground="white")]
-        )
-
-        # Draw Strand Arrows
-        # We place an arrow at the midpoint or end
+        # Strand Arrow
         mid = (max(start_bp, g["start"]) + min(end_bp, g["end"])) / 2
         marker = '>' if g["strand"] == '+' else '<'
         ax.scatter([mid], [y], marker=marker, color='navy', s=30, zorder=10)
 
-    # Clean up axes
-    ax.set_yticks([])
-    # ax.set_xlim(start_bp, end_bp)
+        # Label with Background Box
+        # We use a white 'bbox' with alpha=0.8 to hide any lines crossing behind the text
+        ax.text(
+            g["text_x"], y + 0.35,
+            g['name'],
+            ha=g['ha'], va='center',
+            fontsize=font_size,
+            style='italic',
+            bbox=dict(boxstyle="round,pad=0.1", fc="white", ec="none", alpha=0.8),
+            zorder=20  # Ensure text sits on top of lines
+        )
 
-    # Invert y-axis so first gene is at top (optional, matches standard genome browsers)
+    ax.set_yticks([])
     ax.invert_yaxis()
 
 
 def draw_manhattan_track(
         fig,
         target_gridspec_cell,  # e.g. gs[0, 0]
+        colorbar_axis,
         gwas_df: pl.DataFrame,
         ld2_colors: np.ndarray,  # Pre-calculated colors for the scatter points
         gwas_pos_col: str,
@@ -482,8 +490,11 @@ def draw_manhattan_track(
         break_at: float = 20.0,
         max_break_proportion: float = 0.5,  # Cap the top section at 50% height
         saturation_point: float = 100.0,  # Point where we reach max height proportion
+        significance_threshold: float=7.8239087
 ):
     """
+    Generated with Gemini and then modified.
+
     Draws a Manhattan plot into the provided GridSpec cell.
     Automatically handles axis breaking if values exceed 'break_at'.
     """
@@ -515,72 +526,108 @@ def draw_manhattan_track(
         ax.scatter(
             gwas_df[gwas_pos_col][lead],gwas_df[gwas_mlog10p_col][lead],s=35,marker="^",c="black"
         )
-        ax.axhline(y=8, color='grey', linestyle='--', linewidth=1.5,
+        ax.axhline(y=significance_threshold, color='grey', linestyle='--', linewidth=1.5,
                    label=f'Signifiance Threshold')
         ax.set_ylim(min_y, (gwas_df[gwas_mlog10p_col]).max()*1.05 )
 
-        return ax,sc  # Return the single axis for x-linking later
+    else:
+        # 3. Case B: Broken Axis (Nested GridSpec)
+        # Create a nested grid INSIDE the target cell
+        # height_ratios takes relative weights.
+        # If top_fraction is 0.3, bottom is 0.7.
+        gs_inner = gridspec.GridSpecFromSubplotSpec(
+            nrows=2, ncols=1,
+            subplot_spec=target_gridspec_cell,
+            height_ratios=[top_fraction, 1.0 - top_fraction],
+            hspace=0.05  # Tiny gap for the break marks
+        )
 
-    # 3. Case B: Broken Axis (Nested GridSpec)
-    # Create a nested grid INSIDE the target cell
-    # height_ratios takes relative weights.
-    # If top_fraction is 0.3, bottom is 0.7.
-    gs_inner = gridspec.GridSpecFromSubplotSpec(
-        nrows=2, ncols=1,
-        subplot_spec=target_gridspec_cell,
-        height_ratios=[top_fraction, 1.0 - top_fraction],
-        hspace=0.05  # Tiny gap for the break marks
-    )
+        ax_top = fig.add_subplot(gs_inner[0])
+        ax_bottom = fig.add_subplot(gs_inner[1], sharex=ax_top)
 
-    ax_top = fig.add_subplot(gs_inner[0])
-    ax_bottom = fig.add_subplot(gs_inner[1], sharex=ax_top)
-
-    # Plot data on BOTH
-    # (Optimization: You could filter data for ax_top, but scatter is fast enough usually)
-    for ax in [ax_top, ax_bottom]:
-        sc =ax.scatter(gwas_df[gwas_pos_col], gwas_df[gwas_mlog10p_col],
-                   s=10, c=ld2_colors, linewidths=0, cmap="plasma")
-
-
-    ax_top.scatter(
-        gwas_df[gwas_pos_col][lead],gwas_df[gwas_mlog10p_col][lead],s=35,marker="^",c="black"
-    )
-
-    ax_bottom.axhline(y=8, color='grey', linestyle='--', linewidth=1.5,
-               label=f'Signifiance Threshold')
-
-    # Set Limits
-    # Bottom: 0 to 20
-    ax_bottom.set_ylim(min_y, break_at)
-    # Top: 20 to Max
-    ax_top.set_ylim(break_at, max_val * 1.05)
-
-    # Visual Styling for the Break
-    # Hide the spines between them
-    ax_bottom.spines['top'].set_visible(False)
-    ax_bottom.spines['right'].set_visible(False)
-    ax_top.spines['bottom'].set_visible(False)
-    ax_top.spines['right'].set_visible(False)
+        # Plot data on BOTH
+        # (Optimization: You could filter data for ax_top, but scatter is fast enough usually)
+        for ax in [ax_top, ax_bottom]:
+            sc =ax.scatter(gwas_df[gwas_pos_col], gwas_df[gwas_mlog10p_col],
+                       s=10, c=ld2_colors, linewidths=0, cmap="plasma")
 
 
-    # Remove x-ticks from top
-    ax_top.tick_params(labelbottom=False, bottom=False)
+        ax_top.scatter(
+            gwas_df[gwas_pos_col][lead],gwas_df[gwas_mlog10p_col][lead],s=35,marker="^",c="black"
+        )
 
-    # Draw Diagonal "Cut" Lines
-    d = .006
-    kwargs = dict(transform=ax_top.transAxes, color='k', clip_on=False)
-    ax_top.plot((-d, +d), (-d, +d), **kwargs)  # top-left
-    ax_top.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right
+        ax_bottom.axhline(y=significance_threshold, color='grey', linestyle='--', linewidth=1.5,
+                   label=f'Signifiance Threshold')
 
-    kwargs.update(transform=ax_bottom.transAxes)
-    ax_bottom.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left
-    ax_bottom.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right
+        # Set Limits
+        # Bottom: 0 to 20
+        ax_bottom.set_ylim(min_y, break_at)
+        # Top: 20 to Max
+        ax_top.set_ylim(break_at, max_val * 1.05)
 
-    # Label: Center it on the "entire" side using figure coords is best,
-    # or just place it on the top axis to be safe.
-    ax_top.set_ylabel(r"$-\log_{10}(p)$")
-    # Ensure bottom axis label doesn't conflict
-    ax_bottom.set_ylabel("")
+        # Visual Styling for the Break
+        # Hide the spines between them
+        ax_bottom.spines['top'].set_visible(False)
+        ax_bottom.spines['right'].set_visible(False)
+        ax_top.spines['bottom'].set_visible(False)
+        ax_top.spines['right'].set_visible(False)
 
-    # Return the bottom axis so other tracks can link their x-axis to it
-    return ax_bottom,sc
+
+        # Remove x-ticks from top
+        ax_top.tick_params(labelbottom=False, bottom=False)
+
+        # Draw Diagonal "Cut" Lines
+        d = .006
+        kwargs = dict(transform=ax_top.transAxes, color='k', clip_on=False)
+        ax_top.plot((-d, +d), (-d, +d), **kwargs)  # top-left
+        ax_top.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right
+
+        kwargs.update(transform=ax_bottom.transAxes)
+        ax_bottom.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left
+        ax_bottom.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right
+
+        # Label: Center it on the "entire" side using figure coords is best,
+        # or just place it on the top axis to be safe.
+        ax_top.set_ylabel(r"$-\log_{10}(p)$")
+        # Ensure bottom axis label doesn't conflict
+        ax_bottom.set_ylabel("")
+        ax= ax_bottom
+        # Return the bottom axis so other tracks can link their x-axis to it
+
+    cbar = fig.colorbar(sc, cax=colorbar_axis, shrink=0.4)
+    cbar.set_label(r"$r^2$ with lead")
+    return ax  # Return the single axis for x-linking later
+
+
+def plot_susie_track(susie_cs_df: pl.DataFrame,
+                     ax_pip,
+                     pip_legend_ax,
+                     susie_cs_col: str= CS_COLUMN,
+                     susie_pip_col:str=PIP_COLUMN,
+                     susie_pos_col: str=GWASLAB_POS_COL,
+                     
+                     ):
+    pip_traces = []
+    palette = list(TABLEAU_COLORS.values())
+    if len(susie_cs_df) > 0:
+        for i, (cs, sub) in enumerate(susie_cs_df.group_by(susie_cs_col, maintain_order=True)):
+            color = palette[i % len(palette)]
+            ax_pip.vlines(
+                sub[susie_pos_col].to_numpy(),
+                0.0,
+                sub[susie_pip_col].to_numpy(),
+                linewidth=1.5,
+                label=f"CS {i + 1}",
+                color=color
+            )
+            handle = Line2D([0], [0], color=color, lw=2, label=f"CS {i + 1}")
+            pip_traces.append(handle)
+            # pip_trace_labels.append(f"CS {i+1}")
+        # ax_pip.legend(loc="upper right", fontsize=8, frameon=False, ncols=2)
+        pip_legend_ax.legend(handles=pip_traces,
+                             loc='center left',  # Vertically centered in the panel
+                             borderaxespad=0,  # Tight alignment to the left edge
+                             frameon=False,  # Clean look (no box)
+                             fontsize=9,
+                             )
+    ax_pip.set_ylabel("PIP (SUSIE)")

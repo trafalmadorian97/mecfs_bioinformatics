@@ -7,7 +7,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 )
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 from mecfs_bio.build_system.task.susie_stacked_plot_task import GENE_INFO_CHROM_COL, GENE_INFO_START_COL, \
-    GENE_INFO_END_COL, GENE_INFO_STRAND_COL
+    GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL
 
 """
 Official site:https://fuma.ctglab.nl/downloadPage
@@ -29,7 +29,9 @@ MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW = DownloadFileTask(
                 col_names=["ensembl_name",
                               GENE_INFO_CHROM_COL, GENE_INFO_START_COL,
                               GENE_INFO_END_COL,
-                              GENE_INFO_STRAND_COL],
+                              GENE_INFO_STRAND_COL,
+                            GENE_INFO_NAME_COL
+                           ],
                 comment_code="#"
             )
         )

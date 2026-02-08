@@ -45,7 +45,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     align_gwas_and_ld,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import SusieStackPlotTask, GENE_INFO_START_COL, \
-    GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL, BinOptions
+    GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL, BinOptions, GENE_INFO_CHROM_COL
 from mecfs_bio.build_system.task.susie_trackplot_task import SusieTrackPlotTask, EnsemblGeneInfoSource, \
     RegionSelectOverride, RegionSelectDefault, PLOT_FILENAME
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
@@ -217,7 +217,7 @@ def dummy_ensmbl_data_task(tmp_path:Path)->Iterator[Task]:
                        read_spec=DataFrameReadSpec(
                            DataFrameWhiteSpaceSepTextFormat(
                                comment_code="#",
-                               col_names=["ensembl_name", GENE_INFO_START_COL, GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL]
+                               col_names=["ensembl_name",GENE_INFO_CHROM_COL, GENE_INFO_START_COL, GENE_INFO_END_COL, GENE_INFO_STRAND_COL, GENE_INFO_NAME_COL]
                            )
                        )
 
