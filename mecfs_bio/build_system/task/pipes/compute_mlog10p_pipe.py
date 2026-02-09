@@ -7,20 +7,24 @@ from mecfs_bio.constants.gwaslab_constants import GWASLAB_MLOG10P_COL, GWASLAB_P
 
 @frozen
 class ComputeMlog10pIfNeededPipe(DataProcessingPipe):
-    min_value: float = 1e-200
+    min_p_value: float = 1e-250
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         schema = x.collect_schema()
         if GWASLAB_MLOG10P_COL in schema:
             return x
         assert GWASLAB_P_COL in schema
-        return x.with_columns(
+        result = x.with_columns(
             (
                 -1
                 * (
                     narwhals.max_horizontal(
-                        narwhals.col(GWASLAB_P_COL), narwhals.lit(self.min_value)
-                    ).log(base=10)
+                        narwhals.col(GWASLAB_P_COL),
+                        narwhals.lit(self.min_p_value),  # avoid taking the log of 0
+                    ).log(
+                        base=10,
+                    )
                 )
             ).alias(GWASLAB_MLOG10P_COL)
         )
+        return result

@@ -143,11 +143,10 @@ class SusieStackPlotTask(Task):
         gene_info_df = gene_info_df.filter(
             pl.col(GENE_INFO_CHROM_COL).cast(String()) == pl.lit(chrom).cast(String())
         )
+        loaded = pl.read_parquet(susie_dir / FILTERED_GWAS_FILENAME)
 
         fig = plot_locus_tracks_matplotlib(
-            gwas_df=_gwas_pipe.process_eager_polars(
-                pl.read_parquet(susie_dir / FILTERED_GWAS_FILENAME)
-            ),
+            gwas_df=_gwas_pipe.process_eager_polars(loaded),
             susie_cs_df=pl.read_parquet(susie_dir / COMBINED_CS_FILENAME),
             ld_np=np.load(susie_dir / FILTERED_LD_FILENAME),
             gene_df=gene_info_df,

@@ -1,4 +1,5 @@
 import narwhals
+import polars as pl
 import scipy.stats
 
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
@@ -19,4 +20,5 @@ class ComputePFromBetaSEPipeIfNeeded(DataProcessingPipe):
         collected = x.collect().to_pandas()
         z = collected[GWASLAB_BETA_COL] / collected[GWASLAB_SE_COL]
         collected[GWASLAB_P_COL] = 2 * scipy.stats.norm.sf(abs(z))
-        return narwhals.from_native(collected).lazy()
+        collected_polars = pl.from_pandas(collected)
+        return narwhals.from_native(collected_polars).lazy()
