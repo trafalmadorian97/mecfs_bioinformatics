@@ -80,6 +80,9 @@ RegionSelect = RegionSelectOverride | RegionSelectDefault
 
 
 def get_region(mode: RegionSelect, susie_output_path: Path) -> tuple[int, int, int]:
+    """
+    Determine the plotting region based on RegionSelect options
+    """
     if isinstance(mode, RegionSelectOverride):
         return mode.chrom, mode.start, mode.end
     df = pl.read_parquet(susie_output_path / FILTERED_GWAS_FILENAME)
@@ -97,8 +100,8 @@ def get_region(mode: RegionSelect, susie_output_path: Path) -> tuple[int, int, i
 @frozen
 class SusieStackPlotTask(Task):
     """
-    Create a plot to illustrate the results of a SUSIE run.
-    Plot is a stack of panels showing
+    Create a plot to illustrate the results of a SUSIE run on a given locus.
+    The resulting plot is a stack of panels showing
     - LD structure
     - marginal associations (i.e. Manhattan plot)
     - SUSIE PIPs
@@ -274,7 +277,12 @@ def plot_locus_tracks_matplotlib(
 
     # 2: SUSIE track
     plot_susie_track(
-        susie_cs_df=susie_cs_df, pip_legend_ax=pip_legend_ax, ax_pip=ax_pip
+        susie_cs_df=susie_cs_df,
+        pip_legend_ax=pip_legend_ax,
+        ax_pip=ax_pip,
+        susie_pip_col=susie_pip_col,
+        susie_pos_col=susie_pos_col,
+        susie_cs_col=susie_cs_col,
     )
     # #3 ld heatmap track
     plot_ld_heatmap(

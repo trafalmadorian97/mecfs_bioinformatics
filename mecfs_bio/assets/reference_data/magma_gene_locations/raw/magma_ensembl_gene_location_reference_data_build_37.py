@@ -1,3 +1,13 @@
+"""
+Task to retrieve a file listing the hg19 locations of human genes, together with their strand and Ensembl id.
+
+
+Official site:https://fuma.ctglab.nl/downloadPage
+File labeled "MAGMA gene boundaries Ensembl v110"
+No direct link from official site, so hosted on dropbox.
+
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -16,12 +26,6 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_STRAND_COL,
 )
 
-"""
-Official site:https://fuma.ctglab.nl/downloadPage
-File labeled "MAGMA gene boundaries Ensembl v110"
-No direct link from official site, so hosted on dropbox.
-
-"""
 MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW = DownloadFileTask(
     meta=ReferenceFileMeta(
         group="magma_reference_data",

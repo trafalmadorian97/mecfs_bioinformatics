@@ -1,3 +1,7 @@
+"""
+Metadata describing a single file plot
+"""
+
 from pathlib import PurePath
 
 from attrs import field, frozen
@@ -8,6 +12,10 @@ from mecfs_bio.build_system.meta.base_meta import FileMeta
 
 @frozen
 class GWASPlotFileMeta(FileMeta):
+    """
+    Metadata describing a single file plot
+    """
+
     trait: str
     project: str
     extension: str
