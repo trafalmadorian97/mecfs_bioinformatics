@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from attrs import frozen
 
@@ -10,6 +11,7 @@ from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.download_file_task import (
     DownloadFileTask,
     calc_md5_checksum,
+    head_file,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -47,3 +49,12 @@ def test_md5_check_passes_fails_appropriately(tmp_path: Path):
     tsk_1.execute(scratch_dir=scratch, fetch=fake_fetch, wf=wf)
     with pytest.raises(AssertionError):
         tsk_2.execute(scratch_dir=scratch, fetch=fake_fetch, wf=wf)
+
+
+def test_head(tmp_path: Path):
+    """
+    Verify that we do not get an error when attempting to print the head of a non text file.
+    """
+    dummy_parquet = tmp_path / "dummy_parquet.parquet"
+    pd.DataFrame({"a": [1, 2, 3]}).to_parquet(dummy_parquet)
+    head_file(dummy_parquet)
