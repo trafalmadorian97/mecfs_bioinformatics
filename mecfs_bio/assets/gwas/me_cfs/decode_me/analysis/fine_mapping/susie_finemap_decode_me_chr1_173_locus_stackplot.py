@@ -22,6 +22,6 @@ DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT = (
         gene_info_task=MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
         gene_info_pipe=IdentityPipe(),
         region_mode=RegionSelectDefault(),
-        heatmap_bin_options=BinOptions(num_bins=500),
+        heatmap_bin_options=None,
     )
 )
