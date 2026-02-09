@@ -6,7 +6,7 @@ import narwhals
 from attrs import frozen
 
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
-    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE,
+    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
@@ -76,7 +76,7 @@ def annovar_37_basic_rsid_assignment(
     join_with_rsid_task = JoinDataFramesTask.create_from_result_df(
         asset_id=base_name + "_assign_rsids_via_dbsnp150",
         result_df_task=dump_parquet_task,
-        reference_df_task=PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE,
+        reference_df_task=PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD,
         left_on=["CHR", "POS", "EA", "NEA"],
         right_on=["int_chrom", "POS", "ALT", "REF"],
         out_format=ParquetOutFormat(),
