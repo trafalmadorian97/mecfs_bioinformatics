@@ -50,7 +50,7 @@ def verify_hash(downloaded_file: Path, expected_hash: str | None):
 
 def head_file(filename: Path, n=10):
     """Prints the first n lines of a file, like the Unix head command."""
-    logger.debug(f"first {n} lines of file {filename}:")
+    logger.debug(f"Attempting first {n} lines of file {filename}:")
     try:
         with open(filename) as f:
             for i, line in enumerate(f):
@@ -59,6 +59,8 @@ def head_file(filename: Path, n=10):
                 logger.debug(line.rstrip("\n"))  # rstrip to avoid double newlines
     except FileNotFoundError:
         print(f"Error: The file {filename} was not found.")
+    except UnicodeDecodeError:
+        print(f"file {filename} does not appear to be a text file")
 
 
 def calc_md5_checksum(filepath: Path, chunk_size: int = 8192) -> str:
