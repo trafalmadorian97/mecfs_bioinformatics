@@ -17,6 +17,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.prep_for_fine_ma
     DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.prep_for_fine_mapping.chr1_173_locus.harmonize_with_polyfun_reference_rsid import \
     DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
+from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import \
+    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.custom.roadmap_cell_type_categorization import \
     ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC
 from mecfs_bio.assets.reference_data.ukbb_ld_matrices.from_polyfun.chr1_173000001.chr1_173000001_176000001_labels import \
@@ -31,7 +33,8 @@ def run_initial_decode_me_analysis():
             # CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES
-            DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
+            # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
+            PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD
          # DECODE_ME_BTN1A1_REGION_PLOT_37
          #    DECODE_ME_BTN1A1_REGION_PLOT_37
          #    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC
@@ -42,7 +45,7 @@ def run_initial_decode_me_analysis():
         incremental_save=True,
         must_rebuild_transitive=[
 
-            DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
+            # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
             # DECODE_ME_BASIC_CIS_PQTL_MR.multiple_testing_task
             # DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,

@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from subprocess import SubprocessError
 
 import structlog
 
@@ -35,4 +36,4 @@ def execute_command(cmd: list[str]) -> str:
         if p.returncode == 0:
             return output
         else:
-            raise Exception(cmd, p.returncode, output)
+            raise subprocess.CalledProcessError(cmd, p.returncode, output)
