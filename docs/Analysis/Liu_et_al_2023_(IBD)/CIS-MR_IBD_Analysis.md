@@ -39,7 +39,7 @@ However, the meaning of some of these results are less clear.  For instance
 
 
 
-The table below lists all significant plasma proteins together with there UniProt descriptions
+The table below lists all significant plasma proteins together with their UniProt descriptions.
 
 
 
