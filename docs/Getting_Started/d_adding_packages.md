@@ -18,7 +18,7 @@ This will update `pyproject.toml` and `pixi.lock`.  You can use `git add pyproje
 If your package is instead present on [bioconda](https://bioconda.github.io/) or [conda-forge](https://conda-forge.org/), you can add it with
 
 ```bash
-pixi add --pypi <your_package_name>
+pixi add <your_package_name>
 ```
 
 Again, commit the resulting changes to `pyproject.toml` and `pixi.lock`.
