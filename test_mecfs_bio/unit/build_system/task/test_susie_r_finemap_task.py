@@ -56,6 +56,7 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_START_COL,
     GENE_INFO_STRAND_COL,
     BinOptions,
+    HeatmapOptions,
     RegionSelectDefault,
     SusieStackPlotTask,
 )
@@ -264,7 +265,7 @@ def test_fine_mapping(
         gene_info_task=dummy_ensmbl_data_task,
         region_mode=RegionSelectDefault(),
         gene_info_pipe=IdentityPipe(),
-        heatmap_bin_options=BinOptions(num_bins=50),
+        heatmap_options=HeatmapOptions(BinOptions(num_bins=50), mode="ld2"),
     )
     tasks = find_tasks([susie_tsk, stack_plot_task])
     wf = SimpleWF()

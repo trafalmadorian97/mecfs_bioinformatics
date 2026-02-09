@@ -10,7 +10,7 @@ from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
-    BinOptions,
+    HeatmapOptions,
     RegionSelectDefault,
     SusieStackPlotTask,
 )
@@ -22,6 +22,8 @@ DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT = (
         gene_info_task=MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
         gene_info_pipe=IdentityPipe(),
         region_mode=RegionSelectDefault(),
-        heatmap_bin_options=None,
+        heatmap_options=HeatmapOptions(
+            heatmap_bin_options=None, mode="ld2", cmap="plasma"
+        ),
     )
 )

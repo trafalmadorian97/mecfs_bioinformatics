@@ -1,8 +1,10 @@
 from pathlib import Path
+from typing import Literal
 
 import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
+import seaborn as sns
 import xarray as xr
 from attrs import frozen
 
@@ -48,7 +50,6 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
-import seaborn as sns
 @frozen
 class BinOptions:
     num_bins: int
@@ -67,6 +68,7 @@ _gwas_pipe = CompositePipe(
 seaborn_rocket_cmap = sns.color_palette("rocket", n_colors=256)
 
 _matplotlib_rocket_cmap = ListedColormap(seaborn_rocket_cmap)
+
 
 @frozen
 class RegionSelectOverride:
@@ -101,6 +103,16 @@ def get_region(mode: RegionSelect, susie_output_path: Path) -> tuple[int, int, i
     )
 
 
+HeatMapPlotMode = Literal["ld2", "ld_abs"]
+
+
+@frozen
+class HeatmapOptions:
+    heatmap_bin_options: BinOptions | None
+    mode: HeatMapPlotMode
+    cmap: str | ListedColormap = "plasma"
+
+
 @frozen
 class SusieStackPlotTask(Task):
     """
@@ -117,7 +129,7 @@ class SusieStackPlotTask(Task):
     gene_info_task: Task
     gene_info_pipe: DataProcessingPipe
     region_mode: RegionSelect
-    heatmap_bin_options: BinOptions | None
+    heatmap_options: HeatmapOptions
 
     @property
     def meta(self) -> Meta:
@@ -157,7 +169,7 @@ class SusieStackPlotTask(Task):
             start_bp=start,
             end_bp=end,
             chrom=chrom,
-            heatmap_bin_options=self.heatmap_bin_options,
+            heatmap_options=self.heatmap_options,
         )
         out_path = scratch_dir
         write_plots_to_dir(out_path, {"plot": fig})
@@ -171,7 +183,7 @@ class SusieStackPlotTask(Task):
         gene_info_task: Task,
         gene_info_pipe: DataProcessingPipe,
         region_mode: RegionSelect,
-        heatmap_bin_options: BinOptions | None,
+        heatmap_options: HeatmapOptions,
     ):
         src_meta = susie_task.meta
         assert isinstance(src_meta, ResultDirectoryMeta)
@@ -187,7 +199,7 @@ class SusieStackPlotTask(Task):
             gene_info_task=gene_info_task,
             gene_info_pipe=gene_info_pipe,
             region_mode=region_mode,
-            heatmap_bin_options=heatmap_bin_options,
+            heatmap_options=heatmap_options,
         )
 
 
@@ -199,7 +211,8 @@ def plot_locus_tracks_matplotlib(
     start_bp: int,
     end_bp: int,
     chrom: int,
-    heatmap_bin_options: BinOptions | None,
+    heatmap_options: HeatmapOptions,
+    # heatmap_bin_options: BinOptions | None,
     *,
     gwas_pos_col: str = GWASLAB_POS_COL,
     gwas_mlog10p_col: str = GWASLAB_MLOG10P_COL,
@@ -291,11 +304,13 @@ def plot_locus_tracks_matplotlib(
     # #3 ld heatmap track
     plot_ld_heatmap(
         ld_abs=ld_abs,
+        ld2=ld2,
         gwas_df=gwas_df,
-        heatmap_bin_options=heatmap_bin_options,
+        options=heatmap_options,
         ax_ld=ax_ld,
         fig=fig,
         ld_cax=ld_cax,
+        gwas_pos_col=gwas_pos_col,
     )
     # 4: Gene tracks
     plot_gene_tracks(
@@ -689,25 +704,34 @@ def plot_susie_track(
     ax_pip.set_ylabel("PIP (SUSIE)")
 
 
-
 def plot_ld_heatmap(
     ld_abs: np.ndarray,
+    ld2: np.ndarray,
     gwas_df: pl.DataFrame,
-    heatmap_bin_options: BinOptions | None,
+    options: HeatmapOptions,
     ax_ld,
     fig,
     ld_cax,
     gwas_pos_col: str = GWASLAB_POS_COL,
 ):
+    if options.mode == "ld_abs":
+        to_plot = ld_abs
+    elif options.mode == "ld2":
+        to_plot = ld2
+    else:
+        raise ValueError(f"Unknown mode: {options.mode}")
     ar, edges = get_array_and_edges_for_ld_heatmap(
-        ld_abs=ld_abs, pos=gwas_df[gwas_pos_col].to_numpy(), bin_options=heatmap_bin_options
+        ld_abs=to_plot,
+        pos=gwas_df[gwas_pos_col].to_numpy(),
+        bin_options=options.heatmap_bin_options,
     )
 
     mesh = ax_ld.pcolormesh(
-        edges, edges, ar, shading="auto", vmin=0, vmax=1, cmap=_matplotlib_rocket_cmap
+        edges, edges, ar, shading="auto", vmin=0, vmax=1, cmap=options.cmap
     )
     ax_ld.set_ylabel("bp")
     ax_ld.set_ylim(float(edges[0]), float(edges[-1]))
 
     cbar = fig.colorbar(mesh, cax=ld_cax, shrink=0.8)
-    cbar.set_label(r"$|r|$")
+    label = r"$|r|$" if options.mode == "ld_abs" else "$r^2$"
+    cbar.set_label(label)
