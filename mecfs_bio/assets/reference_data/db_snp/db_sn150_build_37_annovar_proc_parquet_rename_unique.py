@@ -11,11 +11,21 @@ the S-LDSC reference data.
 
 """
 
+from pathlib import PurePath
+
 from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename import (
     PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_NON_RD,
     PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_RD,
 )
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.task.discard_deps_task_wrapper import DiscardDepsWrapper
+from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
     PipeDataFrameTask,
@@ -39,6 +49,22 @@ PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE = DiscardDepsWrapper(
         backend="duckdb",
     )
 )
+
+
+PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD = DownloadFileTask(
+    meta=ReferenceFileMeta(
+        group="db_snp_reference_data",
+        sub_group="build_37",
+        sub_folder=PurePath("annovar"),
+        id="db_snp150_annovar_proc_parquet_unique_direct_download",
+        filename="db_snp150_annovar_proc_parquet_unique_direct_download",
+        extension=".parquet",
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+    ),
+    url="https://www.dropbox.com/scl/fi/6oglew7b7eh3zk0bn9gen/db_snp150_annovar_proc_parquet_rename_unique.parquet?rlkey=geuwlsha5icnthu3bxoyvchnm&dl=1",
+    md5_hash="1e990169a3ff48bae01f53cc69336be3",
+)
+
 
 PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_NON_RD = PipeDataFrameTask.create(
     asset_id="db_snp150_annovar_proc_parquet_rename_unique",
