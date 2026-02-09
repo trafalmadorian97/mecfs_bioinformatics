@@ -1,4 +1,3 @@
-import tempfile
 from pathlib import Path
 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
@@ -8,16 +7,16 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash i
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
+from test_mecfs_bio.system.util import log_on_error
 
 
-def test_run_s_lsdc():
+def test_run_s_lsdc(tmp_path: Path):
     """
     Test that we can run stratified linkage disequilibrium score regression on the DECODE ME data
     """
-    with tempfile.TemporaryDirectory() as tempdirname:
-        tempdir = Path(tempdirname)
-        info_store = tempdir / "info_store.yaml"
-        asset_root = tempdir / "asset_store"
+    info_store = tmp_path / "info_store.yaml"
+    asset_root = tmp_path / "asset_store"
+    with log_on_error(info_store):
         asset_root.mkdir(parents=True, exist_ok=True)
         test_runner = SimpleRunner(
             tracer=ImoHasher.with_xxhash_128(),

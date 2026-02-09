@@ -16,5 +16,5 @@ MAGMA_EUR_BUILD_37_1K_GENOMES_REF = DownloadFileTask(
         filename="g1000_eur",
     ),
     url="https://vu.data.surf.nl/public.php/dav/files/VZNByNwpD8qqINe/?accept=zip",
-    md5_hash=None,
+    md5_hash="1919cb5c79bbe7871aed71ae4abe6217",
 )

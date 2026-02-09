@@ -41,7 +41,10 @@ class RSIDAssignmentTaskGroup:
 
 
 def annovar_37_basic_rsid_assignment(
-    sumstats_task: Task, base_name: str, use_gwaslab_rsids_convention: bool = False
+    sumstats_task: Task,
+    base_name: str,
+    use_gwaslab_rsids_convention: bool = False,
+    drop_palindromic_ambiguous: bool = True,
 ) -> RSIDAssignmentTaskGroup:
     """
     Asset generator that creates a chain of tasks to assign rsids to existing build 37 sumstats datasets using the annovar dbSNP reference data
@@ -55,6 +58,7 @@ def annovar_37_basic_rsid_assignment(
                 ref_seq="ucsc_genome_hg19",
                 check_ref_files=True,
                 drop_missing_from_ref_seq=True,
+                drop_missing_from_ref_infer_or_ambiguous=drop_palindromic_ambiguous,
                 cores=4,
             )
         ),
