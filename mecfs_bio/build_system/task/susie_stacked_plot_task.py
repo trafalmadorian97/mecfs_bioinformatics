@@ -8,7 +8,7 @@ from attrs import frozen
 
 # import pandas as pd
 from matplotlib import gridspec
-from matplotlib.colors import TABLEAU_COLORS
+from matplotlib.colors import TABLEAU_COLORS, ListedColormap
 from matplotlib.figure import Figure
 from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
@@ -48,6 +48,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
+import seaborn as sns
 @frozen
 class BinOptions:
     num_bins: int
@@ -63,6 +64,9 @@ _gwas_pipe = CompositePipe(
     [ComputePFromBetaSEPipeIfNeeded(), ComputeMlog10pIfNeededPipe()]
 )
 
+seaborn_rocket_cmap = sns.color_palette("rocket", n_colors=256)
+
+_matplotlib_rocket_cmap = ListedColormap(seaborn_rocket_cmap)
 
 @frozen
 class RegionSelectOverride:
@@ -213,6 +217,7 @@ def plot_locus_tracks_matplotlib(
 
     """
     ld2 = ld_np**2
+    ld_abs = abs(ld_np)
 
     gwas_df = gwas_df.with_columns(
         pl.min_horizontal(pl.lit(max_mlog10p), pl.col(GWASLAB_MLOG10P_COL)).alias(
@@ -285,7 +290,7 @@ def plot_locus_tracks_matplotlib(
     )
     # #3 ld heatmap track
     plot_ld_heatmap(
-        ld2=ld2,
+        ld_abs=ld_abs,
         gwas_df=gwas_df,
         heatmap_bin_options=heatmap_bin_options,
         ax_ld=ax_ld,
@@ -328,7 +333,7 @@ def plot_locus_tracks_matplotlib(
 
 
 def get_array_and_edges_for_ld_heatmap(
-    ld2: np.ndarray,
+    ld_abs: np.ndarray,
     pos: np.ndarray,
     bin_options: BinOptions | None = None,
 ) -> tuple[np.ndarray, np.ndarray]:
@@ -336,7 +341,7 @@ def get_array_and_edges_for_ld_heatmap(
     Use xarray to bin LD data to facilitate creation of an LD heatmap
     """
     da = xr.DataArray(
-        ld2,
+        ld_abs,
         coords={
             "x": pos,
             "y": pos,
@@ -684,8 +689,9 @@ def plot_susie_track(
     ax_pip.set_ylabel("PIP (SUSIE)")
 
 
+
 def plot_ld_heatmap(
-    ld2: np.ndarray,
+    ld_abs: np.ndarray,
     gwas_df: pl.DataFrame,
     heatmap_bin_options: BinOptions | None,
     ax_ld,
@@ -694,14 +700,14 @@ def plot_ld_heatmap(
     gwas_pos_col: str = GWASLAB_POS_COL,
 ):
     ar, edges = get_array_and_edges_for_ld_heatmap(
-        ld2=ld2, pos=gwas_df[gwas_pos_col].to_numpy(), bin_options=heatmap_bin_options
+        ld_abs=ld_abs, pos=gwas_df[gwas_pos_col].to_numpy(), bin_options=heatmap_bin_options
     )
 
     mesh = ax_ld.pcolormesh(
-        edges, edges, ar, shading="auto", vmin=0, vmax=1, cmap="plasma"
+        edges, edges, ar, shading="auto", vmin=0, vmax=1, cmap=_matplotlib_rocket_cmap
     )
     ax_ld.set_ylabel("bp")
     ax_ld.set_ylim(float(edges[0]), float(edges[-1]))
 
     cbar = fig.colorbar(mesh, cax=ld_cax, shrink=0.8)
-    cbar.set_label(r"$r^2$")
+    cbar.set_label(r"$|r|$")
