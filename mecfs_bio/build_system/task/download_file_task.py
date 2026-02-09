@@ -58,9 +58,9 @@ def head_file(filename: Path, n=10):
                     break
                 logger.debug(line.rstrip("\n"))  # rstrip to avoid double newlines
     except FileNotFoundError:
-        print(f"Error: The file {filename} was not found.")
+        logger.debug(f"Error: The file {filename} was not found.")
     except UnicodeDecodeError:
-        print(f"file {filename} does not appear to be a text file")
+        logger.debug(f"file {filename} does not appear to be a text file")
 
 
 def calc_md5_checksum(filepath: Path, chunk_size: int = 8192) -> str:
