@@ -9,6 +9,10 @@ The optimal choice is to select the rsid that will match what is expected by the
 For example, if we are going to perform S-LDSC, for each variant we should choose the rsid that matches the one in
 the S-LDSC reference data.
 
+There are several versions of the Task below:
+- A base version (PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_NON_RD)
+- A version that discards its dependencies to save space (PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE)
+- A version that directly downloads a previously computed parquet file (PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD).  This was added to prevent CI machines from running out of disk space.
 """
 
 from pathlib import PurePath
