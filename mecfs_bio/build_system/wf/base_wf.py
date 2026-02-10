@@ -3,7 +3,7 @@ from pathlib import Path
 
 import py3_wget
 
-from mecfs_bio.util.download.robust_download import robust_download_with_curl
+from mecfs_bio.util.download.robust_download import robust_download_with_aria
 from mecfs_bio.util.download.verify import verify_hash
 
 
@@ -39,7 +39,7 @@ class RobustDownloadWF(WF):
     def download_from_url(
         self, url: str, local_path: Path, md5_hash: str | None
     ) -> None:
-        robust_download_with_curl(
+        robust_download_with_aria(
             md5sum=md5_hash,
             url=url,
             dest=local_path,

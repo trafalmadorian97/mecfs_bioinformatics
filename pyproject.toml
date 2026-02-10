@@ -3,7 +3,8 @@ name = "biostatistics"
 version = "0.1.0"
 readme = "README.md"
 requires-python = "==3.12"
-dependencies = [
+[dependency-groups]
+analysis = [
     "attrs>=25.3.0",
     "cattrs>=25.2.0",
     "emoji>=2.15.0",
@@ -85,7 +86,7 @@ packages = ["mecfs_bio"]
 [tool.pixi.activation]
 env = { R_LIBS_USER = "r-libs" }
 
-[tool.pixi.dependencies]
+[tool.pixi.feature.analysis.dependencies]
 pysam = ">=0.23.3,<0.24"
 pixi-pycharm = ">=0.0.9,<0.0.10"
 ruff = ">=0.14.2,<0.15"
@@ -122,3 +123,11 @@ lychee = ">=0.22.0,<0.23"
 r-susier = ">=0.14.2,<0.15"
 tomli-w = ">=1.2.0,<2"
 wget = ">=1.21.4,<2"
+
+[tool.pixi.feature.download.dependencies]
+aria2 = { channel = "conda-forge" }
+
+[tool.pixi.environments]
+default = ["analysis"]
+
+download-env = ["download"]

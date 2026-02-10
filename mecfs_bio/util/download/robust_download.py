@@ -11,11 +11,12 @@ from mecfs_bio.util.subproc.run_command import execute_command
 logger = structlog.get_logger()
 
 
-def robust_download_with_curl(
+def robust_download_with_aria(
     md5sum: str | None,
     dest: Path,
     url: str,
     max_outer_retries: int = 10,
+    num_simil: int=4,
 ):
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -31,25 +32,31 @@ def robust_download_with_curl(
                 temp_out.rename(dest)
                 return
             try:
+                cmd = [
+                    "stdbuf", "-o0", "-e0",
+                    "pixi",
+                    "r",
+                    "--environment",
+                    "download-env",
+                    "aria2c",
+                    "-x",
+                    str(num_simil),
+                    "--continue=true",
+                    "--check-integrity=true",
+                    "--allow-overwrite=true",
+                    "--auto-file-renaming=false",
+                    "--max-tries=8",
+                    "--retry-wait=5",
+                    "--timeout=30",
+                    "--connect-timeout=10",
+                    "--file-allocation=none",
+                    "--dir", str(temp_out.parent),
+                    "--out", temp_out.name,
+                    url,
+                ]
+                # --- DEFINE ENVIRONMENTS ---
                 execute_command(
-                    cmd=[
-                        "curl",
-                        "-L",
-                        "-C",
-                        "-",
-                        "--retry",
-                        "8",
-                        "--retry-all-errors",
-                        "--retry-delay",
-                        "5",
-                        "--connect-timeout",
-                        "10",
-                        "--max-time",
-                        "0",
-                        "-o",
-                        str(temp_out),
-                        url,
-                    ]
+                    cmd=cmd
                 )
                 last_attempt_succeeded = True
             except CalledProcessError as e:
@@ -64,3 +71,4 @@ def robust_download_with_curl(
         raise RuntimeError(
             f"Download of from {url} to {dest} failed after {max_outer_retries}"
         )
+
