@@ -14,3 +14,4 @@ class FigureManager:
      def generate_figs_from_tasks(self,
                                   tasks: Sequence[Task],
                                   )->None:
+         pass
