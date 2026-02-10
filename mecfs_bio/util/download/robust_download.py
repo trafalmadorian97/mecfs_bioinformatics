@@ -16,7 +16,8 @@ def robust_download_with_aria(
     dest: Path,
     url: str,
     max_outer_retries: int = 10,
-    num_simil: int=4,
+    num_simil: int = 4,
+    summary_interval: int = 10,
 ):
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -33,12 +34,13 @@ def robust_download_with_aria(
                 return
             try:
                 cmd = [
-                    "stdbuf", "-o0", "-e0",
+                    # "stdbuf", "-o0", "-e0",
                     "pixi",
                     "r",
                     "--environment",
                     "download-env",
                     "aria2c",
+                    f"--summary-interval={summary_interval}",
                     "-x",
                     str(num_simil),
                     "--continue=true",
@@ -50,14 +52,14 @@ def robust_download_with_aria(
                     "--timeout=30",
                     "--connect-timeout=10",
                     "--file-allocation=none",
-                    "--dir", str(temp_out.parent),
-                    "--out", temp_out.name,
+                    "--dir",
+                    str(temp_out.parent),
+                    "--out",
+                    temp_out.name,
                     url,
                 ]
                 # --- DEFINE ENVIRONMENTS ---
-                execute_command(
-                    cmd=cmd
-                )
+                execute_command(cmd=cmd)
                 last_attempt_succeeded = True
             except CalledProcessError as e:
                 if i >= max_outer_retries:
@@ -71,4 +73,3 @@ def robust_download_with_aria(
         raise RuntimeError(
             f"Download of from {url} to {dest} failed after {max_outer_retries}"
         )
-
