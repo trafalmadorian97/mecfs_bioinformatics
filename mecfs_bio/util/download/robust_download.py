@@ -19,6 +19,10 @@ def robust_download_with_aria(
     num_simil: int = 4,
     summary_interval: int = 10,
 ):
+    """
+    Use aria2 to robustly download file.
+    If aria2 files, call it again in a loop
+    """
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
@@ -49,8 +53,8 @@ def robust_download_with_aria(
                     "--auto-file-renaming=false",
                     "--max-tries=8",
                     "--retry-wait=5",
-                    "--timeout=30",
-                    "--connect-timeout=10",
+                    "--timeout=60",
+                    "--connect-timeout=60",
                     "--file-allocation=none",
                     "--dir",
                     str(temp_out.parent),
@@ -58,7 +62,6 @@ def robust_download_with_aria(
                     temp_out.name,
                     url,
                 ]
-                # --- DEFINE ENVIRONMENTS ---
                 execute_command(cmd=cmd)
                 last_attempt_succeeded = True
             except CalledProcessError as e:

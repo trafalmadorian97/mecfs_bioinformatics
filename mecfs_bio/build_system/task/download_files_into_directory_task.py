@@ -64,12 +64,6 @@ class DownloadFilesIntoDirectoryTask(Task):
             target = scratch_dir / entry.filename
             logger.debug(f"Downloading {entry}")
             wf.download_from_url(entry.url, target, md5_hash=entry.md5hash)
-            logger.debug("Verifying MD5 hash of downloaded file...")
-            # hash_of_downloaded_file = calc_md5_checksum(target)
-            # assert hash_of_downloaded_file == entry.md5hash, (
-            #     f"Expected Hash {hash_of_downloaded_file} to be equal to {entry.md5hash}"
-            # )
-            logger.debug("Hash verified.")
             if entry.post_download_command is not None:
                 post_download_command = entry.post_download_command(target)
                 logger.debug(
