@@ -42,7 +42,7 @@ def robust_download_with_aria(
                     str(num_simil),
                     "--continue=true",
                     "--allow-overwrite=true",
-                    "--user-agent=Wget/1.21.4",
+                    "--user-agent=Wget/1.21.4",  # This is needed, otherwise Dropbox rejects download attempts
                     "--auto-file-renaming=false",
                     "--max-tries=8",
                     "--retry-wait=5",
