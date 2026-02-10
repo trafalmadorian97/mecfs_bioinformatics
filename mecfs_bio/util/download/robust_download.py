@@ -59,7 +59,7 @@ def robust_download_with_aria(
                     temp_out.rename(dest)
                     return
             except CalledProcessError as e:
-                if i >= max_outer_retries:
+                if i >= (max_outer_retries-1):
                     break
                 backoff = min(2 ** (i), 60)
                 logger.debug(
