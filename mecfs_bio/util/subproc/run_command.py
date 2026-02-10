@@ -29,7 +29,7 @@ def execute_command(cmd: list[str]) -> str:
             line = stdout.readline()
             if line != "":
                 output += line + "\n"
-                logger.debug(line)
+                print(line)
             elif p.poll() != None:
                 break
         sys.stdout.flush()
