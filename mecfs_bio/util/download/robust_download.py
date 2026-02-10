@@ -16,12 +16,14 @@ def robust_download_with_aria(
     dest: Path,
     url: str,
     max_outer_retries: int = 10,
-    num_simil: int = 4,
+    num_simil: int = 1,
     summary_interval: int = 10,
 ):
     """
     Use aria2 to robustly download file.
     If aria2 fails, call it again in a loop
+
+    https://aria2.github.io/manual/en/html/aria2c.html
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -39,8 +41,8 @@ def robust_download_with_aria(
                     "-x",
                     str(num_simil),
                     "--continue=true",
-                    "--check-integrity=true",
                     "--allow-overwrite=true",
+                    "--user-agent=Wget/1.21.4",
                     "--auto-file-renaming=false",
                     "--max-tries=8",
                     "--retry-wait=5",
@@ -58,8 +60,7 @@ def robust_download_with_aria(
                     temp_out.rename(dest)
                     return
                 else:
-                    import pdb; pdb.set_trace()
-                    logger.debug("hash mismatch")
+                    logger.debug("Download failure")
             except CalledProcessError as e:
                 if i >= (max_outer_retries - 1):
                     break

@@ -34,7 +34,7 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import (
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
-from mecfs_bio.build_system.wf.base_wf import RobustDownloadWF, SimpleWF
+from mecfs_bio.build_system.wf.base_wf import RobustDownloadWF
 
 
 @frozen
