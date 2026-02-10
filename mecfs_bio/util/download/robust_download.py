@@ -34,7 +34,6 @@ def robust_download_with_curl(
                         "-",
                         "--retry",
                         "8",
-                        "--retry-all-errors",
                         "--retry-delay",
                         "5",
                         "--connect-timeout",
