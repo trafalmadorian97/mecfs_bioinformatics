@@ -30,7 +30,6 @@ def robust_download_with_aria(
         for i in range(max_outer_retries):
             try:
                 cmd = [
-                    # "stdbuf", "-o0", "-e0",
                     "pixi",
                     "r",
                     "--environment",
