@@ -32,6 +32,7 @@ from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMet
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
+from mecfs_bio.build_system.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.rebuilder.metadata_to_path.base_meta_to_path import (
     MetaToPath,
 )
@@ -133,10 +134,20 @@ class SimpleMetaToPath(MetaToPath):
                 pth = pth / m.id
             return pth
 
-        if isinstance(m, GWASPlotDirectoryMeta):
+        if isinstance(m, (GWASPlotDirectoryMeta)):
             pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.asset_id
             return pth
 
+        if isinstance(m, (GWASPlotFileMeta)):
+            pth = (
+                self.root
+                / "gwas"
+                / m.trait
+                / m.project
+                / m.sub_dir
+                / (m.asset_id + m.extension)
+            )
+            return pth
         if isinstance(m, ResultTableMeta):
             pth = (
                 self.root
