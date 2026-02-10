@@ -10,18 +10,23 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.download_file_task import (
     DownloadFileTask,
-    calc_md5_checksum,
-    head_file,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.util.download.verify import calc_md5_checksum, head_file, verify_hash
 
 
 @frozen
 class FakeWF(WF):
     source_file: Path
 
-    def download_from_url(self, url: str, local_path: Path) -> None:
+    def download_from_url(
+        self, url: str, local_path: Path, md5_hash: str | None
+    ) -> None:
         shutil.copyfile(self.source_file, local_path)
+        verify_hash(
+            downloaded_file=local_path,
+            expected_hash=md5_hash,
+        )
 
 
 def test_md5_check_passes_fails_appropriately(tmp_path: Path):

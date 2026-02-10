@@ -13,7 +13,6 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.download_file_task import calc_md5_checksum
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.external_util.bcftools import build_bcftools_index_command
 from mecfs_bio.util.subproc.run_command import execute_command
@@ -64,13 +63,7 @@ class DownloadFilesIntoDirectoryTask(Task):
         for entry in self.entries:
             target = scratch_dir / entry.filename
             logger.debug(f"Downloading {entry}")
-            wf.download_from_url(entry.url, target)
-            logger.debug("Verifying MD5 hash of downloaded file...")
-            hash_of_downloaded_file = calc_md5_checksum(target)
-            assert hash_of_downloaded_file == entry.md5hash, (
-                f"Expected Hash {hash_of_downloaded_file} to be equal to {entry.md5hash}"
-            )
-            logger.debug("Hash verified.")
+            wf.download_from_url(entry.url, target, md5_hash=entry.md5hash)
             if entry.post_download_command is not None:
                 post_download_command = entry.post_download_command(target)
                 logger.debug(

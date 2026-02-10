@@ -18,7 +18,7 @@ BELLENGUEZ_STANDARD_ANALYSIS = (
     concrete_standard_analysis_generator_assume_already_has_rsid(
         base_name="bellenguez_et_al_alz",
         raw_gwas_data_task=BELLINGUEZ_ET_AL_ALZHIEMERS_EXTRACTED,
-        sample_size=301478,  # from gwas caltalog
+        sample_size=487511,  # from gwas catalog
         include_hba_magma_tasks=True,
         fmt=GWASLabColumnSpecifiers(
             rsid="hm_rsid",
