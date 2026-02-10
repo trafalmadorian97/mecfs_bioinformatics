@@ -21,7 +21,7 @@ def robust_download_with_aria(
 ):
     """
     Use aria2 to robustly download file.
-    If aria2 files, call it again in a loop
+    If aria2 fails, call it again in a loop
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdir:

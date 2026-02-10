@@ -14,7 +14,7 @@ def execute_command(cmd: list[str]) -> str:
     """
     output = ""
     str_cmd = " ".join(cmd)
-    print(f"Running {str_cmd}")
+    logger.debug(f"Running {str_cmd}")
     with subprocess.Popen(
         str_cmd,
         shell=True,
