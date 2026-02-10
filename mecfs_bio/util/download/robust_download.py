@@ -17,6 +17,9 @@ def robust_download_with_curl(
     url: str,
     max_outer_retries: int = 10,
 ):
+    """
+    Call curl in a loop to robustly download a file
+    """
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
