@@ -27,15 +27,7 @@ def robust_download_with_aria(
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
         temp_out = tmp_path / dest.name
-        last_attempt_succeeded = False
-        for i in range(max_outer_retries):
-            if (
-                temp_out.exists()
-                and hash_matches(temp_out, md5sum)
-                and last_attempt_succeeded
-            ):
-                temp_out.rename(dest)
-                return
+        for i in range(max_outer_retries + 1):
             try:
                 cmd = [
                     # "stdbuf", "-o0", "-e0",
@@ -63,11 +55,12 @@ def robust_download_with_aria(
                     url,
                 ]
                 execute_command(cmd=cmd)
-                last_attempt_succeeded = True
+                if temp_out.exists() and hash_matches(temp_out, md5sum):
+                    temp_out.rename(dest)
+                    return
             except CalledProcessError as e:
                 if i >= max_outer_retries:
                     break
-                last_attempt_succeeded = False
                 backoff = min(2 ** (i), 60)
                 logger.debug(
                     f"Download attempt {i + 1} failed.  Backing off for {backoff} seconds"
