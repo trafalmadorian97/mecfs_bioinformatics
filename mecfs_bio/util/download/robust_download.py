@@ -56,7 +56,7 @@ def robust_download_with_curl(
                 if i >= max_outer_retries:
                     break
                 last_attempt_succeeded = False
-                backoff = min(2 ** (i - 1), 60)
+                backoff = min(2 ** (i), 60)
                 logger.debug(
                     f"Download attempt {i + 1} failed.  Backing off for {backoff} seconds"
                 )
