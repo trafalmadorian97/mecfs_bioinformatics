@@ -27,7 +27,7 @@ def robust_download_with_aria(
     with tempfile.TemporaryDirectory() as tmpdir:
         tmp_path = Path(tmpdir)
         temp_out = tmp_path / dest.name
-        for i in range(max_outer_retries + 1):
+        for i in range(max_outer_retries):
             try:
                 cmd = [
                     # "stdbuf", "-o0", "-e0",
