@@ -9,10 +9,10 @@ logger = structlog.get_logger()
 def verify_hash(downloaded_file: Path, expected_hash: str | None):
     if expected_hash is None:
         return
-    print("Verifying MD5 hash of downloaded file...")
+    logger.debug("Verifying MD5 hash of downloaded file...")
     hash_of_downloaded_file = calc_md5_checksum(downloaded_file)
     if hash_of_downloaded_file == expected_hash:
-        print("Hash verified.")
+        logger.debug("Hash verified.")
         return
     head_file(downloaded_file)
     raise AssertionError(
@@ -38,11 +38,14 @@ def head_file(filename: Path, n=10):
 def hash_matches(downloaded_file: Path, expected_hash: str | None) -> bool:
     if expected_hash is None:
         return True
-    print("Verifying MD5 hash of downloaded file...")
+    logger.debug("Verifying MD5 hash of downloaded file...")
     hash_of_downloaded_file = calc_md5_checksum(downloaded_file)
     if hash_of_downloaded_file == expected_hash:
-        print("Hash verified.")
+        logger.debug("Hash verified.")
         return True
+    logger.debug(
+        f"Hash {hash_of_downloaded_file} of downloaded file {downloaded_file} is not equal to {expected_hash}"
+    )
     return False
 
 
