@@ -57,6 +57,9 @@ def robust_download_with_aria(
                 if temp_out.exists() and hash_matches(temp_out, md5sum):
                     temp_out.rename(dest)
                     return
+                else:
+                    import pdb; pdb.set_trace()
+                    logger.debug("hash mismatch")
             except CalledProcessError as e:
                 if i >= (max_outer_retries - 1):
                     break

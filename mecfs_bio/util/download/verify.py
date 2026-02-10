@@ -43,6 +43,7 @@ def hash_matches(downloaded_file: Path, expected_hash: str | None) -> bool:
     if hash_of_downloaded_file == expected_hash:
         logger.debug("Hash verified.")
         return True
+    logger.debug(f"Hash {hash_of_downloaded_file} of downloaded file {downloaded_file} is not equal to {expected_hash}")
     return False
 
 
