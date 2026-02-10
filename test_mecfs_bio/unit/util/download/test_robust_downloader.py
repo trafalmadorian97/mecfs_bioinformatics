@@ -38,10 +38,13 @@ def test_robust_downloader(tmp_path: Path):
     dummy_file.write_text(_TRUE_FILE_CONTENTS)
     out_path = tmp_path / "out"
     expected_hash = calc_md5_checksum(dummy_file)
+    dl = FakeDownloader()
     robust_download(
         expected_hash,
         dest=out_path,
         url="fake_url",
-        downloader=FakeDownloader(),
+        downloader=dl,
         max_backoff_time=0,
     )
+    assert calc_md5_checksum(out_path) == expected_hash
+    assert dl.num_calls == 3
