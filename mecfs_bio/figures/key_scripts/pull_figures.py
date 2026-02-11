@@ -19,6 +19,7 @@ def pull_figures(
     repo_name: str = GH_REPO_NAME,
     fig_dir: Path = FIGURE_DIRECTORY,
 ):
+    fig_dir.mkdir(parents=True, exist_ok=True)
     if not does_release_exist(repo_name=repo_name, release_tag=tag):
         logger.debug(
             f"No release with the tag '{tag}' exists in repository {repo_name}.  Nothing to download."

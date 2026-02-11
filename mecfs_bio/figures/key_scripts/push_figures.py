@@ -21,6 +21,7 @@ def push_figures(
     repo_name: str = GH_REPO_NAME,
     fig_dir: Path = FIGURE_DIRECTORY,
 ):
+    fig_dir.mkdir(parents=True, exist_ok=True)
     pull_figures(
         tag=tag,
         repo_name=repo_name,
