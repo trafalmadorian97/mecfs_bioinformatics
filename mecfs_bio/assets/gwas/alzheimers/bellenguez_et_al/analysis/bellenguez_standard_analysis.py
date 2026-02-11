@@ -30,7 +30,6 @@ BELLENGUEZ_STANDARD_ANALYSIS = (
             OR="hm_odds_ratio",
             se="standard_error",
             p="p_value",
-            info=None,
             eaf="hm_effect_allele_frequency",
             beta="hm_beta",
             ncase="n_cas",
