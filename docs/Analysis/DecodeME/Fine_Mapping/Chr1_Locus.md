@@ -5,19 +5,19 @@ hide:
 ---
 # Chr1 Locus
 
-In an attempt to narrow down the DecodeME[@genetics2025initial] GWAS signal, I [fine-mapped](../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 1 using SUSIE[@wang2020simple].
+In an attempt to narrow down the DecodeME[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 1 using SUSIE[@wang2020simple].
 
-As a linkage disequilibrium reference, I used a UK Biobank LD reference hosted on [AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used liftover to translate the DecodeME GWAS-1 summary statistics to GRCh37.
+As a linkage disequilibrium reference, I used a UK Biobank LD matrix hosted on [AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used liftover to translate the DecodeME GWAS-1 summary statistics to GRCh37.
 
-The results are plotted below:
+The results of running SUSIE on the chromosome 1 DecodeME GWAS-1 locus are plotted below:
 
 ![decodeme_ch1_stackplot](../../../figs/stackplot_decode_me_gwas_1_37_susie_finemap_chr1_173000001_locus.png)
 
-- The top panel is a heatmap in which the color of the pixel at location (i,j) shows the squared correlation of between variant i and j in the region of the GWAS hit.  It thus reveals the local linkage disequilibrium (LD) structure.
+- The top panel is a heatmap in pixel (i,j) is colored according to the  correlation of between variants i and j.  The heatmap thus reveals the local linkage disequilibrium (LD) structure in the vicinity of the GWAS hit.
 
-- The second panel shows a local Manhattan plot in the region of the GWAS hit.
+- The second panel shows a local Manhattan plot.
 
-- The third panel shows SUSIE posterior inclusion probability (PIP) in the region of the GWAS hit
+- The third panel shows SUSIE posterior inclusion probability (PIP).
 
 - The bottom panel shows genes in the region of the GWAS hit. 
 

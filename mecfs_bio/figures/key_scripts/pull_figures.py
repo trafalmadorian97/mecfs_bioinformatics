@@ -19,6 +19,9 @@ def pull_figures(
     repo_name: str = GH_REPO_NAME,
     fig_dir: Path = FIGURE_DIRECTORY,
 ):
+    """
+    Download figures from Github, merging them with contents of the local figure directory.
+    """
     fig_dir.mkdir(parents=True, exist_ok=True)
     if not does_release_exist(repo_name=repo_name, release_tag=tag):
         logger.debug(

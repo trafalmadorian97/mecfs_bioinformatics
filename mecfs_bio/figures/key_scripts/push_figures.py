@@ -21,6 +21,9 @@ def push_figures(
     repo_name: str = GH_REPO_NAME,
     fig_dir: Path = FIGURE_DIRECTORY,
 ):
+    """
+    Merge the contents of the local figure directory with figures stored on Github, then upload to Github the result of this merge.
+    """
     fig_dir.mkdir(parents=True, exist_ok=True)
     pull_figures(
         tag=tag,

@@ -19,6 +19,10 @@ logger = structlog.get_logger()
 
 @frozen
 class FigureExporter:
+    """
+    Responsible for invoking the build system to generate Assets corresponding to figures, then copying those assets to the figure directory.
+    """
+
     runner: Callable[[Sequence[Task]], Mapping[AssetId, Asset]]
     tracer: Tracer
 
@@ -38,11 +42,8 @@ class FigureExporter:
             assert isinstance(asset, FileAsset)
             src = asset.path
             dst = get_fig_path(meta=meta, fig_dir=fig_dir)
-            if dst.exists() and self.tracer(asset) == self.tracer(FileAsset(dst)):
-                logger.debug(f"Figure asset {task.asset_id} already exists at {dst}.")
-            else:
-                shutil.copy(src, dst)
-                logger.debug(f"Figure asset {task.asset_id} copied to {dst}.")
+            shutil.copy(src, dst)
+            logger.debug(f"Figure asset {task.asset_id} copied to {dst}.")
 
 
 def get_fig_path(meta: GWASPlotFileMeta, fig_dir: Path) -> Path:

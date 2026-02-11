@@ -13,6 +13,9 @@ logger = structlog.get_logger()
 def release_from_dir(
     release_tag: str, dir_path: Path, title: str, draft: bool, repo_name: str
 ):
+    """
+    Create a github release by zipping the contents of a directory
+    """
     assert dir_path.is_dir()
 
     with tempfile.TemporaryDirectory() as tmpdirname:
@@ -63,6 +66,9 @@ def does_release_exist(repo_name: str, release_tag: str):
 
 
 def download_release_to_dir(release_tag: str, dir_path: Path, repo_name: str):
+    """
+    Download a github release, which is assumed to be a zip file. Extract it into a directory.
+    """
     assert dir_path.is_dir()
     with tempfile.TemporaryDirectory() as tmpdirname:
         zip_path = Path(tmpdirname) / f"{release_tag}.zip"
