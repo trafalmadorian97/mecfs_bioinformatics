@@ -26,13 +26,15 @@ If you added a new task class, you will also want to add a unit test to the `tes
 If any documentation changes are needed, edit the corresponding files in the `docs` directory, then view the results by running the following command and accessing [http://localhost:8000](http://localhost:8000) in your browser.
 
 ```
-pixi r mkdocs serve
+pixi r invoke sdocs
 ```
+
+`sdocs` will both download figures and serve docs. To only serve docs without downloading figures, use `pixi r invoke serve-docs`.
 
 To check for issues, add the `strict` flag, which will make the build abort if there are any warnings.
 
 ```
-pixi r mkdocs serve --strict
+pixi r invoke sdocs --strict
 ```
 
 ## Run linters, formatters, and tests

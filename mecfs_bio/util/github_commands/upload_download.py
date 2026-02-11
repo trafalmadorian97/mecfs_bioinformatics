@@ -5,6 +5,7 @@ from subprocess import CalledProcessError
 
 import structlog
 
+from mecfs_bio.util.download.robust_download import robust_download_with_aria
 from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
@@ -85,3 +86,28 @@ def download_release_to_dir(release_tag: str, dir_path: Path, repo_name: str):
         execute_command(cmd)
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_ref.extractall(dir_path)
+
+
+def download_release_to_dir_no_auth(
+    release_tag: str, dir_path: Path, repo_name: str, title: str
+) -> None:
+    """
+    As above, but don't use the Github command line tool, so do not require authorization.
+    """
+    assert dir_path.is_dir()
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        zip_path = Path(tmpdirname) / f"{release_tag}.zip"
+        robust_download_with_aria(
+            md5sum=None,
+            dest=zip_path,
+            url=get_release_url(
+                release_tag=release_tag, repo_name=repo_name, title=title
+            ),
+        )
+
+        with zipfile.ZipFile(zip_path, "r") as zip_ref:
+            zip_ref.extractall(dir_path)
+
+
+def get_release_url(release_tag: str, repo_name: str, title: str) -> str:
+    return f"https://github.com/{repo_name}/releases/download/{release_tag}/{title}.zip"

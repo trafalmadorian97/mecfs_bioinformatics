@@ -21,9 +21,12 @@ def _runner_func(tasks: Sequence[Task]) -> Mapping[AssetId, Asset]:
 FIGURE_EXPORTER = FigureExporter(runner=_runner_func, tracer=_imo_hasher_128)
 
 
-def generate_figures():
-    FIGURE_EXPORTER.export(ALL_FIGURE_TASKS, fig_dir=FIGURE_DIRECTORY)
+def generate_figures(tasks: list[Task]):
+    """
+    Use the build system to generate the figure assets, then copy them to the figure directory
+    """
+    FIGURE_EXPORTER.export(tasks, fig_dir=FIGURE_DIRECTORY)
 
 
 if __name__ == "__main__":
-    generate_figures()
+    generate_figures(ALL_FIGURE_TASKS)

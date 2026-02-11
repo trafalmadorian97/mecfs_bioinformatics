@@ -250,4 +250,4 @@ r-libs
 #we dont want to commit plots
 *.html
 *.png
-docs/figs
+docs/_figs
