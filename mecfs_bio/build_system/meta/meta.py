@@ -17,6 +17,7 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_region_plots_meta import (
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
     GWASLabSumStatsMeta,
 )
+from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
@@ -46,6 +47,7 @@ Meta = (
     | ExecutableMeta
     | ProcessedGwasDataDirectoryMeta
     | GWASPlotDirectoryMeta
+    | GWASPlotFileMeta
     | ResultTableMeta
     | ResultDirectoryMeta
 )

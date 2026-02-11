@@ -25,6 +25,7 @@ class DataFrameParquetFormat:
 @frozen
 class DataFrameWhiteSpaceSepTextFormat:
     comment_code: str
+    col_names: list[str] | None = None
 
 
 DataFrameFormat = (

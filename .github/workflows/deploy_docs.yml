@@ -30,5 +30,8 @@ jobs:
         with:
           pixi-version: v0.55.0
           cache: true
-#      - run: pip install mkdocs-material
+      - run: pixi r invoke pfig
+        name: Download figures
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: pixi r mkdocs gh-deploy --force
