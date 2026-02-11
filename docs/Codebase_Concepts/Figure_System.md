@@ -3,7 +3,7 @@
 Plots and tables are important to the presentation of data science results.  The `mecfs_bioinformatics` repo is transitioning to programmatic system for managing plots and tables (referred to in the codebase as "figures").  The components of this system are:
 
 - The list `ALL_FIGURE_TASKS` in [mecfs_bio/figures/figure_tasks.py][mecfs_bio.figures.figure_tasks]] specifies the tasks that should be used to generate figures.
-- The script [mecfs_bio/figures/key_scripts/generate_figures][mecfs_bio.figures.key_scripts.generate_figures] invokes the [build system](Build_System.md) to generate the assets correspond to the tasks in `ALL_FIGURE_TASKS`, then copies these figure assets into `docs/_figs`.
+- The script [mecfs_bio/figures/key_scripts/generate_figures][mecfs_bio.figures.key_scripts.generate_figures] invokes the [build system](Build_System.md) to generate the assets corresponding to the tasks in `ALL_FIGURE_TASKS`, then copies these figure assets into `docs/_figs`.
 - The script [mecfs_bio/figures/key_scripts/pull_figures][mecfs_bio.figures.key_scripts.pull_figures] downloads figures from Github and merges them with the contents of `docs/_figs`.
 - The script [mecfs_bio/figures/key_scripts/push_figures][mecfs_bio.figures.key_scripts.push_figures] uploads the figure assets in `docs/figs` to Github as a release. Running this script may require permission from a repository maintainer.
 

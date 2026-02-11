@@ -2,7 +2,11 @@ from pathlib import Path
 
 import structlog
 
+"""
+Merge the contents of the local figure directory with figures stored on Github, then upload to Github the result of this merge.
+"""
 from mecfs_bio.constants.gh_constants import GH_REPO_NAME
+
 from mecfs_bio.figures.fig_constants import (
     FIGURE_DIRECTORY,
     FIGURE_GITHUB_RELEASE_TAG,

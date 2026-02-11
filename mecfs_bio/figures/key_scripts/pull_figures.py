@@ -1,3 +1,7 @@
+"""
+Download figures from Github, merging them with contents of the local figure directory.
+"""
+
 import shutil
 import tempfile
 from pathlib import Path
