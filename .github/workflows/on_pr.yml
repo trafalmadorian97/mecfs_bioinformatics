@@ -55,6 +55,8 @@ jobs:
       - name: Download figures
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke pfig
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check that we can build docs
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r mkdocs build --strict

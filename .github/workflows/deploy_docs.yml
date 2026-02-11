@@ -32,4 +32,6 @@ jobs:
           cache: true
       - run: pixi r invoke pfig
         name: Download figures
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: pixi r mkdocs gh-deploy --force

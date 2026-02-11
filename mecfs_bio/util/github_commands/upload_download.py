@@ -55,7 +55,11 @@ def does_release_exist(repo_name: str, release_tag: str):
         return True
     except CalledProcessError as e:
         logger.debug(f"Got status code {e.returncode}")
-        return False
+        if (
+            e.returncode == 1
+        ):  # Return codes are ambiguous, but 1 typically means release not found: https://cli.github.com/manual/gh_help_exit-codes#:~:text=If%20a%20command%20completes%20successfully,exit%20code%20will%20be%204
+            return False
+        raise e
 
 
 def download_release_to_dir(release_tag: str, dir_path: Path, repo_name: str):
