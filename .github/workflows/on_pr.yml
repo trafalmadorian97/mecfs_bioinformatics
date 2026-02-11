@@ -54,7 +54,7 @@ jobs:
         run: pixi r invoke install-r-packages
       - name: Download figures
         if: steps.changes.outputs.nonmark == 'true'
-        run: pixi r mecfs_bio/figures/key_scripts/pull_figures.py
+        run: pixi r invoke pfig
       - name: Check that we can build docs
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r mkdocs build --strict

@@ -30,6 +30,6 @@ jobs:
         with:
           pixi-version: v0.55.0
           cache: true
-      - run: pixi r mecfs_bio/figures/key_scripts/pull_figures.py
+      - run: pixi r invoke pfig
         name: Download figures
       - run: pixi r mkdocs gh-deploy --force

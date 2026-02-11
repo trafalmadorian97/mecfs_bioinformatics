@@ -8,6 +8,8 @@ DOCS_PATH = Path("docs")
 
 USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
 
+PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
+
 
 # dev tasks
 @task
@@ -153,3 +155,14 @@ def init(c):
     Initial repo setup
     """
     pass
+
+
+### Figures and Documentation
+
+
+@task()
+def pfig(c):
+    """
+    Pull figures from github to populate the figs directory
+    """
+    c.run(f"pixi r python {PULL_FIGURE_SCRIPT_PATH}")

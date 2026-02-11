@@ -34,10 +34,12 @@ def pull_figures(
         )
         logger.debug("download complete")
         logger.debug(
-            "Overlaying existing figures on downloaded figures in staging directory"
+            "Overlaying existing figures on downloaded figures in staging directory."
         )
         shutil.copytree(fig_dir, staging_dir, dirs_exist_ok=True)
-        logger.debug("Copying figures back from staging directory to figures directory")
+        logger.debug(
+            f"Copying figures back from staging directory to figures directory {fig_dir}."
+        )
         shutil.copytree(staging_dir, fig_dir, dirs_exist_ok=True)
 
 
