@@ -161,14 +161,14 @@ def _do_harmonization(
 class GWASLabColumnSpecifiers:
     rsid: str | None
     snpid: str | None
-    chrom: str
-    pos: str
-    ea: str
-    nea: str
-    OR: str | None
-    se: str | None
-    p: str | None
-    info: str | None
+    chrom: str | None = None
+    pos: str | None = None
+    ea: str | None = None
+    nea: str | None = None
+    OR: str | None = None
+    se: str | None = None
+    p: str | None = None
+    info: str | None = None
     eaf: str | None = None
     neaf: str | None = None
     beta: str | None = None
