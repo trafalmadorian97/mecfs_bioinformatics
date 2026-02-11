@@ -163,6 +163,27 @@ def init(c):
 @task()
 def pfig(c):
     """
-    Pull figures from github to populate the figs directory
+    Pull figures from github to populate the _figs directory
     """
     c.run(f"pixi r python {PULL_FIGURE_SCRIPT_PATH}")
+
+
+@task
+def serve_docs(c, strict: bool = False):
+    """
+    Use mkdocs to serve documentation
+    """
+    cmd = "pixi r mkdocs serve"
+    if strict:
+        cmd += " --strict"
+    print("Serving documentation...")
+    print(f"runnng {cmd}")
+    c.run(cmd, pty=True)
+
+
+@task(pre=pfig)
+def sdocs(c, strict: bool = False):
+    """
+    Retrieve figures, then serve docs
+    """
+    serve_docs(c, strict)
