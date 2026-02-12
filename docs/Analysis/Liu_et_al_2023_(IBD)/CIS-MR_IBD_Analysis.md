@@ -10,13 +10,13 @@ hide:
 
 I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the IBD GWAS of Liu et al.[@liu2023genetic] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.
 
-Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio method to estimate the causal effect of the proteins on IBD.
+Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio to estimate the causal effects of the proteins on IBD.
 
 I used the R package `TwoSampleMR`.
 
 ## Results
 
-The plot below summarizes the effect sizes and standard errors of the Bonferroni-significant proteins resulting from MR analysis with cis-pQTLs.  Effect sizes are expresses in IBD liability units per inverse-rank-transformed protein abundance unit.
+The plot below summarizes the effect sizes and standard errors of the Bonferroni-significant proteins found by MR analysis with cis-pQTLs.  Effect sizes are expressed in IBD liability units per inverse-normal rank-transformed protein abundance unit.
 
 
 ![ibd-cis-pqtl-mr](https://github.com/user-attachments/assets/abef7606-d3a9-4df6-af9a-435f2d45dbba)
@@ -26,8 +26,8 @@ Mostly, these results make sense.  For instance:
 [//]: # ( CEP43 has been found in mouse models to be important to gut epithelial renewal[@trsan2024centrosomal]. )
 
 
-- [IL-12](https://en.wikipedia.org/wiki/Interleukin_12) is a cytokine linked to auto-immunity.
-- [IL-10](https://en.wikipedia.org/wiki/Interleukin_10) is a powerful anti-inflammatory cytokine.
+- [IL-12](https://en.wikipedia.org/wiki/Interleukin_12) is a cytokine linked to auto-immunity. It makes sense that increased levels of both the heterodimeric Il-12 (IL12A_IL12B) and the B sub-unit (IL12B) are linked to increased risk of IBD.
+- [IL-10](https://en.wikipedia.org/wiki/Interleukin_10) is a powerful anti-inflammatory cytokine. It makes sense that increased levels of IL-10 are associated with reduced risk of IBD.
 
 However, the meaning of some of these results are less clear.  For instance 
 
