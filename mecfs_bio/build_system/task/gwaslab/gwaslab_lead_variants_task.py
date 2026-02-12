@@ -59,6 +59,8 @@ class GwasLabLeadVariantsTask(Task):
         sumstats_asset = fetch(self._input_asset_id)
         sumstats: gl.Sumstats = read_sumstats(sumstats_asset)
         variant_df = sumstats.get_lead(anno=True, sig_level=self.sig_level)
+        if not 'GENE' in variant_df.columns:
+            variant_df['GENE'] = None
         out_path = scratch_dir / "lead_variants.csv"
         variant_df.to_csv(out_path, index=False)
         return FileAsset(out_path)
