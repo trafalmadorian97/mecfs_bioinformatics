@@ -8,6 +8,8 @@ DOCS_PATH = Path("docs")
 
 USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
 
+PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
+
 
 # dev tasks
 @task
@@ -153,3 +155,35 @@ def init(c):
     Initial repo setup
     """
     pass
+
+
+### Figures and Documentation
+
+
+@task()
+def pfig(c):
+    """
+    Pull figures from github to populate the _figs directory
+    """
+    c.run(f"pixi r python {PULL_FIGURE_SCRIPT_PATH}")
+
+
+@task
+def serve_docs(c, strict: bool = False):
+    """
+    Use mkdocs to serve documentation
+    """
+    cmd = "pixi r mkdocs serve"
+    if strict:
+        cmd += " --strict"
+    print("Serving documentation...")
+    print(f"runnng {cmd}")
+    c.run(cmd, pty=True)
+
+
+@task(pre=pfig)
+def sdocs(c, strict: bool = False):
+    """
+    Retrieve figures, then serve docs
+    """
+    serve_docs(c, strict)

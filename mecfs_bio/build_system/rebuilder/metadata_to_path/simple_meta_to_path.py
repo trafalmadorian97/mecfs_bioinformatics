@@ -18,6 +18,7 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
     GWASLabSumStatsMeta,
 )
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
@@ -133,10 +134,20 @@ class SimpleMetaToPath(MetaToPath):
                 pth = pth / m.id
             return pth
 
-        if isinstance(m, GWASPlotDirectoryMeta):
+        if isinstance(m, (GWASPlotDirectoryMeta)):
             pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.asset_id
             return pth
 
+        if isinstance(m, (GWASPlotFileMeta)):
+            pth = (
+                self.root
+                / "gwas"
+                / m.trait
+                / m.project
+                / m.sub_dir
+                / (m.asset_id + m.extension)
+            )
+            return pth
         if isinstance(m, ResultTableMeta):
             pth = (
                 self.root

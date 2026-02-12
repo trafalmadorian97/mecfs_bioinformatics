@@ -1,0 +1,1 @@
+GH_REPO_NAME = "trafalmadorian97/mecfs_bioinformatics"

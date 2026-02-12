@@ -34,7 +34,7 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import (
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import RobustDownloadWF
 
 
 @frozen
@@ -65,7 +65,7 @@ class SimpleRunner:
         """
         Targets: the ultimate targets we aim to produce.  All transitive dependencies of these targets will either be rebuilt, or fetched (determined according to that status of their trace)
         must_rebuild_transitive: list of tasks that the rebuilder will be forced to rebuild, regardless of the status of their trace.
-           - This is particularly useful when you have changed the code that generates and asset, and so want it and its depndees to be regenerated.
+           - This is particularly useful when you have changed the code that generates and asset, and so want it and its dependees to be regenerated.
         returns:
         mapping from asset id to file system information for all assets that were built or retrieved as part of the execution of the scheduler
         """
@@ -76,7 +76,8 @@ class SimpleRunner:
         if incremental_save:
             logger.debug("incremental save is enabled")
         rebuilder = VerifyingTraceRebuilder(self.tracer)
-        wf = SimpleWF()
+        wf = RobustDownloadWF()
+        # wf= SimpleWF()
         meta_to_path = self.meta_to_path
         tasks = find_tasks(targets)
         must_rebuild_graph = dependees_of_targets_from_tasks(
