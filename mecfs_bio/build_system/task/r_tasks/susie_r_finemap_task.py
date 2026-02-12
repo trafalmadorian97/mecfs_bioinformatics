@@ -71,6 +71,8 @@ COMBINED_CS_FILENAME = "combined_cs.parquet"
 FILTERED_GWAS_FILENAME = "filtered_gwas.parquet"
 FILTERED_LD_FILENAME = "filtered_ld.npy"
 
+NO_CS_FOUND_FILENAME = "no_credible_sets_foun.txt"
+
 CS_DATA_SUBDIR = "credible_set_data"
 
 PIP_COLUMN = "PIP"
@@ -348,6 +350,9 @@ def write_result(
     L: int,
     ld_matrix: np.ndarray,
 ) -> None:
+
+    gwas_table.write_parquet(directory / FILTERED_GWAS_FILENAME)
+    np.save(directory / FILTERED_LD_FILENAME, ld_matrix)
     gt = gwas_table.select(
         [
             GWASLAB_CHROM_COL,
@@ -375,6 +380,7 @@ def write_result(
         pip = ro.conversion.get_conversion().rpy2py(py_result["pip"])
         mu = ro.conversion.get_conversion().rpy2py(py_result["mu"])
         mu2 = ro.conversion.get_conversion().rpy2py(py_result["mu2"])
+
     pd.DataFrame(alpha, columns=variant_names, index=credible_set_names).to_parquet(
         directory / ALPHA_FILENAME
     )
@@ -387,46 +393,49 @@ def write_result(
     pd.DataFrame(mu2, columns=variant_names, index=credible_set_names).to_parquet(
         directory / MU2_FILENAME
     )
-    pd.DataFrame(sets["purity"]).to_parquet(directory / PURITY_FILENAME)
-    sets.pop("purity")
-    with open(directory / "sets.yaml", "w") as f:
-        yaml.dump(
-            sets,
-            f,
-            sort_keys=True,
-            default_flow_style=False,
-            allow_unicode=True,
+
+    if "purity" not in sets:
+        logger.debug("No credible sets found. Aborting.")
+        (directory/NO_CS_FOUND_FILENAME).write_text("no credible sets foun")
+    else:
+        pd.DataFrame(sets["purity"]).to_parquet(directory / PURITY_FILENAME)
+        sets.pop("purity")
+        with open(directory / "sets.yaml", "w") as f:
+            yaml.dump(
+                sets,
+                f,
+                sort_keys=True,
+                default_flow_style=False,
+                allow_unicode=True,
+            )
+        subdir = directory / CS_DATA_SUBDIR
+        subdir.mkdir(parents=True, exist_ok=True)
+        logger.debug(f"Found {len(sets['cs'])} credible sets")
+        cs_data_tables = []
+        for set_number, (set_name, set_values) in enumerate(sets["cs"].items()):
+            set_values = (
+                np.array(set_values).reshape(-1) - 1
+            )  # Since r uses 1-based indexing
+            gwas_for_set: pl.DataFrame = gt[set_values]
+            alpha_for_set = pl.Series(
+                values=alpha[set_number, set_values].reshape(-1), name=ALPHA_COLUMN_NAME
+            )
+            mu_for_set = pl.Series(
+                values=mu[set_number, set_values].reshape(-1), name=MU_COLUMN_NAME
+            )
+            # mu2_for_set = pl.Series(values=mu2[set_number,set_values].reshape(-1), name=MU2_COLUMN_NAME)
+            pip_for_set = pl.Series(values=pip[set_values].reshape(-1), name=PIP_COLUMN)
+            gwas_for_set = gwas_for_set.with_columns(alpha_for_set, mu_for_set, pip_for_set)
+            logger.debug(
+                f"Credible set {set_name}\n {gwas_for_set.sort(by=PIP_COLUMN, descending=True)}"
+            )
+            gwas_for_set.write_parquet(subdir / f"{set_name}.parquet")
+            cs_data_tables.append(
+                gwas_for_set.with_columns(pl.lit(set_name).alias(CS_COLUMN))
+            )
+        pl.concat(cs_data_tables, how="vertical").write_parquet(
+            directory / COMBINED_CS_FILENAME
         )
-    subdir = directory / CS_DATA_SUBDIR
-    subdir.mkdir(parents=True, exist_ok=True)
-    logger.debug(f"Found {len(sets['cs'])} credible sets")
-    cs_data_tables = []
-    for set_number, (set_name, set_values) in enumerate(sets["cs"].items()):
-        set_values = (
-            np.array(set_values).reshape(-1) - 1
-        )  # Since r uses 1-based indexing
-        gwas_for_set: pl.DataFrame = gt[set_values]
-        alpha_for_set = pl.Series(
-            values=alpha[set_number, set_values].reshape(-1), name=ALPHA_COLUMN_NAME
-        )
-        mu_for_set = pl.Series(
-            values=mu[set_number, set_values].reshape(-1), name=MU_COLUMN_NAME
-        )
-        # mu2_for_set = pl.Series(values=mu2[set_number,set_values].reshape(-1), name=MU2_COLUMN_NAME)
-        pip_for_set = pl.Series(values=pip[set_values].reshape(-1), name=PIP_COLUMN)
-        gwas_for_set = gwas_for_set.with_columns(alpha_for_set, mu_for_set, pip_for_set)
-        logger.debug(
-            f"Credible set {set_name}\n {gwas_for_set.sort(by=PIP_COLUMN, descending=True)}"
-        )
-        gwas_for_set.write_parquet(subdir / f"{set_name}.parquet")
-        cs_data_tables.append(
-            gwas_for_set.with_columns(pl.lit(set_name).alias(CS_COLUMN))
-        )
-    pl.concat(cs_data_tables, how="vertical").write_parquet(
-        directory / COMBINED_CS_FILENAME
-    )
-    gwas_table.write_parquet(directory / FILTERED_GWAS_FILENAME)
-    np.save(directory / FILTERED_LD_FILENAME, ld_matrix)
 
 
 def check_symmetric(array: np.ndarray, tol=1e-6):
@@ -464,6 +473,7 @@ def _make_diagnostic_plot(
         zscores_r, ld_matrix_r, n=effective_sample_size
     )
     r_plot_object = plot_and_table.rx2("plot")
+    import pdb; pdb.set_trace()
     ggplot2_package.ggsave(
         filename=str(scratch_dir / KRIGING_PLOT_FILENAME),
         plot=r_plot_object,
@@ -472,3 +482,4 @@ def _make_diagnostic_plot(
         dpi=300,
         device="png",
     )
+

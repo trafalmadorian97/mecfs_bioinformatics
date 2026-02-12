@@ -39,7 +39,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     CS_COLUMN,
     FILTERED_GWAS_FILENAME,
     FILTERED_LD_FILENAME,
-    PIP_COLUMN,
+    PIP_COLUMN, NO_CS_FOUND_FILENAME,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -50,10 +50,11 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
+import structlog
 @frozen
 class BinOptions:
     num_bins: int
-
+logger= structlog.get_logger()
 
 GENE_INFO_START_COL = "gene_start"
 GENE_INFO_END_COL = "gene_end"
@@ -144,6 +145,11 @@ class SusieStackPlotTask(Task):
         susie_asset = fetch(self.susie_task.asset_id)
         assert isinstance(susie_asset, DirectoryAsset)
         susie_dir = susie_asset.path
+        if (susie_dir/NO_CS_FOUND_FILENAME).exists():
+            logger.debug("No credible sets to plot.  Aborting")
+            (scratch_dir/NO_CS_FOUND_FILENAME).write_text("No credible sets.")
+            asset = FileAsset(scratch_dir/NO_CS_FOUND_FILENAME)
+            return asset
 
         gene_info_asset = fetch(self.gene_info_task.asset_id)
         assert isinstance(gene_info_asset, FileAsset)
@@ -205,7 +211,7 @@ class SusieStackPlotTask(Task):
 
 def plot_locus_tracks_matplotlib(
     gwas_df: pl.DataFrame,
-    susie_cs_df: pl.DataFrame,
+    susie_cs_df: pl.DataFrame |None,
     ld_np: np.ndarray,
     gene_df: pl.DataFrame,
     start_bp: int,
