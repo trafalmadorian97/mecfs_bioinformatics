@@ -59,6 +59,8 @@ class BroadInstituteFormatLDMatrix:
 LDMatrixSource = BroadInstituteFormatLDMatrix
 
 KRIGING_PLOT_FILENAME = "kriging_diagnostic_plot.png"
+KRIGING_TABLE_FILENAME = "kriging_diagnostic_table.parquet"
+
 ADJUSTMENT_VALUE_FILENAME = "adjustment_value.parquet"
 
 ALPHA_FILENAME = "alpha.parquet"
@@ -162,7 +164,7 @@ class SusieRFinemapTask(Task):
                 zscores_r, ld_matrix_r, n=int(self.effective_sample_size)
             )
             logger.debug(f"LD matrix adjustment parameter is: {adjustment}")
-        _make_diagnostic_plot(
+        diagnostic_table = _make_diagnostic_plot_and_table(
             zscores_r=zscores_r,
             ld_matrix_r=ld_matrix_r,
             effective_sample_size=int(self.effective_sample_size),
@@ -170,11 +172,24 @@ class SusieRFinemapTask(Task):
             ggplot2_package=ggplot2,
             scratch_dir=scratch_dir,
         )
+
+        gwas_table, ld_matrix = filter_variants_based_on_diagnostics(
+            gwas_table=gwas_table,
+            ld_matrix=ld_matrix,
+            diagnostic_table=diagnostic_table,
+            log_lr_threshold=2.0,  # Recommended threshold
+            z_score_threshold=2.0,
+        )
+
         ld_matrix = (1 - adjustment) * ld_matrix + adjustment * np.eye(
             ld_matrix.shape[0]
         )
         check_symmetric(ld_matrix)
         with localconverter(conv):
+            zscores_pandas = (
+                gwas_table[GWASLAB_BETA_COL] / gwas_table[GWASLAB_SE_COL]
+            ).to_pandas()
+            zscores_r = ro.conversion.get_conversion().py2rpy(zscores_pandas)
             ld_matrix_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
         _save_adjustment(adjustment=float(adjustment), scratch_dir=scratch_dir)
 
@@ -350,7 +365,6 @@ def write_result(
     L: int,
     ld_matrix: np.ndarray,
 ) -> None:
-
     gwas_table.write_parquet(directory / FILTERED_GWAS_FILENAME)
     np.save(directory / FILTERED_LD_FILENAME, ld_matrix)
     gt = gwas_table.select(
@@ -396,7 +410,7 @@ def write_result(
 
     if "purity" not in sets:
         logger.debug("No credible sets found. Aborting.")
-        (directory/NO_CS_FOUND_FILENAME).write_text("no credible sets foun")
+        (directory / NO_CS_FOUND_FILENAME).write_text("no credible sets foun")
     else:
         pd.DataFrame(sets["purity"]).to_parquet(directory / PURITY_FILENAME)
         sets.pop("purity")
@@ -425,7 +439,9 @@ def write_result(
             )
             # mu2_for_set = pl.Series(values=mu2[set_number,set_values].reshape(-1), name=MU2_COLUMN_NAME)
             pip_for_set = pl.Series(values=pip[set_values].reshape(-1), name=PIP_COLUMN)
-            gwas_for_set = gwas_for_set.with_columns(alpha_for_set, mu_for_set, pip_for_set)
+            gwas_for_set = gwas_for_set.with_columns(
+                alpha_for_set, mu_for_set, pip_for_set
+            )
             logger.debug(
                 f"Credible set {set_name}\n {gwas_for_set.sort(by=PIP_COLUMN, descending=True)}"
             )
@@ -460,20 +476,25 @@ def _load_ld_matrix(path: Path, ld_labels_table: pl.DataFrame) -> coo_matrix:
     return coo_matrix(ld_matrix)
 
 
-def _make_diagnostic_plot(
+def _make_diagnostic_plot_and_table(
     zscores_r,
     ld_matrix_r,
     effective_sample_size: int,
     susie_package: RPackageType,
     ggplot2_package: RPackageType,
     scratch_dir: Path,
-):
+) -> pl.DataFrame:
     logger.debug("Creating diagnostic plot")
     plot_and_table = susie_package.kriging_rss(
         zscores_r, ld_matrix_r, n=effective_sample_size
     )
     r_plot_object = plot_and_table.rx2("plot")
-    import pdb; pdb.set_trace()
+    r_table = plot_and_table.rx2("conditional_dist")
+
+    conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
+    with localconverter(conv):
+        py_table: pd.DataFrame = ro.conversion.get_conversion().rpy2py(r_table)
+    py_table.to_parquet(scratch_dir / KRIGING_TABLE_FILENAME)
     ggplot2_package.ggsave(
         filename=str(scratch_dir / KRIGING_PLOT_FILENAME),
         plot=r_plot_object,
@@ -482,4 +503,53 @@ def _make_diagnostic_plot(
         dpi=300,
         device="png",
     )
+    return pl.from_pandas(py_table)
 
+
+def filter_variants_based_on_diagnostics(
+    gwas_table: pl.DataFrame,
+    ld_matrix: np.ndarray,
+    diagnostic_table: pl.DataFrame,
+    log_lr_threshold: float = 2.0,
+    z_score_threshold: float = 2.0,
+) -> tuple[pl.DataFrame, np.ndarray]:
+    """
+    Filter out variants that show evidence of inconsistency between the GWAS and LD matrix
+
+    According to Zou et al. (2022), filtering out these variants is  valid correction strategy
+    """
+
+    # Ensure diagnostic table aligns with inputs
+    if len(diagnostic_table) != len(gwas_table):
+        raise ValueError(
+            f"Dimension mismatch: Diagnostic table has {len(diagnostic_table)} rows, "
+            f"but GWAS table has {len(gwas_table)} rows."
+        )
+
+    bad_variant_mask = (diagnostic_table["logLR"] > log_lr_threshold) & (
+        diagnostic_table["z"].abs() > z_score_threshold
+    )
+
+    n_removed = bad_variant_mask.sum()
+
+    if n_removed == 0:
+        logger.info("Diagnostics passed: No inconsistent variants found.")
+        return gwas_table, ld_matrix
+
+    logger.warning(
+        f"Diagnostics failed for {n_removed} variants. "
+        f"Filtering them out based on logLR > {log_lr_threshold} and |z| > {z_score_threshold}."
+    )
+
+    bad_indices = np.where(bad_variant_mask)[0]
+    removed_variants = gwas_table[bad_indices]
+    for row in removed_variants.iter_rows(named=True):
+        logger.debug(f"Removing inconsistent variant: {row} ")
+
+    keep_indices = np.where(~bad_variant_mask)[0]
+
+    gwas_table_filtered = gwas_table[keep_indices]
+
+    ld_matrix_filtered = ld_matrix[keep_indices][:, keep_indices]
+
+    return gwas_table_filtered, ld_matrix_filtered

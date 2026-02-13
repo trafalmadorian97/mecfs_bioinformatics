@@ -1,63 +1,91 @@
+import structlog
 from attrs import frozen
 
-from mecfs_bio.asset_generator.ukbb_broad_ld_matrix_generator import \
-    get_ld_labels_and_matrix_task_for_chrom_pos_build_37, get_optimal_ukbb_ld_interval, \
-    get_ld_labels_and_matrix_task_for_genomic_interval_build_37, get_genomic_interval_stem_name
-from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import \
-    MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW
+from mecfs_bio.asset_generator.ukbb_broad_ld_matrix_generator import (
+    get_genomic_interval_stem_name,
+    get_ld_labels_and_matrix_task_for_genomic_interval_build_37,
+    get_optimal_ukbb_ld_interval,
+)
+from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import (
+    MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
+)
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import \
-    HarmonizeGWASWithReferenceViaAlleles
-from mecfs_bio.build_system.task.pipe_dataframe_task import PipeDataFrameTask, ParquetOutFormat
+from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
+    HarmonizeGWASWithReferenceViaAlleles,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
+    ParquetOutFormat,
+    PipeDataFrameTask,
+)
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
-from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import SusieRFinemapTask, BroadInstituteFormatLDMatrix
-from mecfs_bio.build_system.task.susie_stacked_plot_task import SusieStackPlotTask, RegionSelectDefault, HeatmapOptions
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL, GWASLAB_POS_COL, GWASLAB_NON_EFFECT_ALLELE_COL, \
-    GWASLAB_EFFECT_ALLELE_COL, GWASLAB_RSID_COL
-import structlog
-logger=structlog.get_logger()
+from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
+    BroadInstituteFormatLDMatrix,
+    SusieRFinemapTask,
+)
+from mecfs_bio.build_system.task.susie_stacked_plot_task import (
+    HeatmapOptions,
+    RegionSelectDefault,
+    SusieStackPlotTask,
+)
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_CHROM_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
+    GWASLAB_RSID_COL,
+)
+
+logger = structlog.get_logger()
+
 
 @frozen
 class BroadFineMapTaskGroup:
-    ld_labels_task:Task
+    ld_labels_task: Task
     ld_matrix_task: Task
-    renamed_ld_labels_task:Task
-    harmonized_sumstats_task:Task
-    susie_finemap_task:Task
-    susie_stackplot_task:Task
-    def terminal_tasks(self)->list[Task]:
-        return [self.susie_finemap_task,self.susie_stackplot_task,]
+    renamed_ld_labels_task: Task
+    harmonized_sumstats_task: Task
+    susie_finemap_task: Task
+    susie_stackplot_task: Task
+
+    def terminal_tasks(self) -> list[Task]:
+        return [
+            self.susie_finemap_task,
+            self.susie_stackplot_task,
+        ]
 
 
 def generate_assets_broad_ukbb_fine_map(
-        chrom:int,
-        pos:int,
-        build_37_sumstats_task:Task,
-        base_name:str,
-        sumstats_pipe:DataProcessingPipe,
-        sample_size_or_effect_sample_size:int
-)->BroadFineMapTaskGroup:
+    chrom: int,
+    pos: int,
+    build_37_sumstats_task: Task,
+    base_name: str,
+    sumstats_pipe: DataProcessingPipe,
+    sample_size_or_effect_sample_size: int,
+) -> BroadFineMapTaskGroup:
     interval = get_optimal_ukbb_ld_interval(
         chrom=chrom,
         pos=pos,
     )
-    logger.debug(f"To finemap position {pos} on chromosome {chrom}, interval {interval} was selected.")
-    ld_labels_task, ld_matrix_task =get_ld_labels_and_matrix_task_for_genomic_interval_build_37(
-        interval=interval,
+    logger.debug(
+        f"To finemap position {pos} on chromosome {chrom}, interval {interval} was selected."
+    )
+    ld_labels_task, ld_matrix_task = (
+        get_ld_labels_and_matrix_task_for_genomic_interval_build_37(
+            interval=interval,
+        )
     )
 
     stem = get_genomic_interval_stem_name(interval)
     base_name = base_name + "_" + stem
     ld_labels_task_renamed = PipeDataFrameTask.create(
         source_task=ld_labels_task,
-        asset_id=ld_labels_task.asset_id+"_renamed",
+        asset_id=ld_labels_task.asset_id + "_renamed",
         out_format=ParquetOutFormat(),
         pipes=[
-
             RenameColPipe(old_name="rsid", new_name=GWASLAB_RSID_COL),
             RenameColPipe(old_name="chromosome", new_name=GWASLAB_CHROM_COL),
             RenameColPipe(old_name="position", new_name=GWASLAB_POS_COL),
@@ -68,11 +96,11 @@ def generate_assets_broad_ukbb_fine_map(
             ),
             RenameColPipe(old_name="allele2", new_name=GWASLAB_EFFECT_ALLELE_COL),
         ],
-        backend="polars"
+        backend="polars",
     )
 
-    harmonized_sumstats_task=HarmonizeGWASWithReferenceViaAlleles.create(
-        asset_id=base_name+"_gwas_harmonized_with_ref",
+    harmonized_sumstats_task = HarmonizeGWASWithReferenceViaAlleles.create(
+        asset_id=base_name + "_gwas_harmonized_with_ref",
         gwas_data_task=build_37_sumstats_task,
         reference_task=ld_labels_task_renamed,
         palindrome_strategy="drop",
@@ -98,16 +126,14 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
     susie_finemap_task = SusieRFinemapTask.create(
-        asset_id=base_name+"_susie_finemap",
-    gwas_data_task=harmonized_sumstats_task,
-    ld_labels_task=ld_labels_task_renamed,
-    ld_matrix_source=BroadInstituteFormatLDMatrix(
-       ld_matrix_task
-    ),
-    effective_sample_size=sample_size_or_effect_sample_size,
+        asset_id=base_name + "_susie_finemap",
+        gwas_data_task=harmonized_sumstats_task,
+        ld_labels_task=ld_labels_task_renamed,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=sample_size_or_effect_sample_size,
     )
-    susie_stack_plot_task=SusieStackPlotTask.create(
-        asset_id=base_name+"_susie_stackplot",
+    susie_stack_plot_task = SusieStackPlotTask.create(
+        asset_id=base_name + "_susie_stackplot",
         susie_task=susie_finemap_task,
         gene_info_task=MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
         gene_info_pipe=IdentityPipe(),

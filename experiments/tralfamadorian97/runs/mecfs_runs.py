@@ -53,7 +53,7 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
-        must_rebuild_transitive=[
+        must_rebuild_transitive= DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
             # DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.harmonized_sumstats_task
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
@@ -62,7 +62,7 @@ def run_initial_decode_me_analysis():
             # DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
             # DECODE_ME_MASTER_GENE_LIST_WITH_GGET
             # DECODE_ME_HBA_MAGMA_TASKS.magma_independent_cluster_plot
-        ],
+
     )
 
 
