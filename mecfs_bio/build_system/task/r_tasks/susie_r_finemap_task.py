@@ -100,6 +100,8 @@ class SusieRFinemapTask(Task):
     ld_labels_pipe: DataProcessingPipe = IdentityPipe()
     subsample: int | None = None
     max_credible_sets: int = 10
+    log_lr_filtering_threshold: float = 2.0
+    z_score_filtering_threshold: float = 2.0
 
     @property
     def meta(self) -> Meta:
@@ -177,8 +179,8 @@ class SusieRFinemapTask(Task):
             gwas_table=gwas_table,
             ld_matrix=ld_matrix,
             diagnostic_table=diagnostic_table,
-            log_lr_threshold=2.0,  # Recommended threshold
-            z_score_threshold=2.0,
+            log_lr_threshold=self.log_lr_filtering_threshold,
+            z_score_threshold=self.z_score_filtering_threshold,
         )
 
         ld_matrix = (1 - adjustment) * ld_matrix + adjustment * np.eye(
@@ -224,6 +226,8 @@ class SusieRFinemapTask(Task):
         ld_labels_pipe: DataProcessingPipe = IdentityPipe(),
         subsample: int | None = None,
         max_credible_sets: int = 10,
+        log_lr_filtering_threshold: float = 2.0,
+        z_score_filtering_threshold: float = 2.0,
     ):
         source_meta = gwas_data_task.meta
         meta: Meta
@@ -246,6 +250,8 @@ class SusieRFinemapTask(Task):
             ld_labels_pipe=ld_labels_pipe,
             max_credible_sets=max_credible_sets,
             subsample=subsample,
+            log_lr_filtering_threshold=log_lr_filtering_threshold,
+            z_score_filtering_threshold=z_score_filtering_threshold,
         )
 
 
@@ -408,6 +414,8 @@ def write_result(
         directory / MU2_FILENAME
     )
 
+    subdir = directory / CS_DATA_SUBDIR
+    subdir.mkdir(parents=True, exist_ok=True)
     if "purity" not in sets:
         logger.debug("No credible sets found. Aborting.")
         (directory / NO_CS_FOUND_FILENAME).write_text("no credible sets foun")
@@ -422,36 +430,50 @@ def write_result(
                 default_flow_style=False,
                 allow_unicode=True,
             )
-        subdir = directory / CS_DATA_SUBDIR
-        subdir.mkdir(parents=True, exist_ok=True)
         logger.debug(f"Found {len(sets['cs'])} credible sets")
-        cs_data_tables = []
-        for set_number, (set_name, set_values) in enumerate(sets["cs"].items()):
-            set_values = (
-                np.array(set_values).reshape(-1) - 1
-            )  # Since r uses 1-based indexing
-            gwas_for_set: pl.DataFrame = gt[set_values]
-            alpha_for_set = pl.Series(
-                values=alpha[set_number, set_values].reshape(-1), name=ALPHA_COLUMN_NAME
-            )
-            mu_for_set = pl.Series(
-                values=mu[set_number, set_values].reshape(-1), name=MU_COLUMN_NAME
-            )
-            # mu2_for_set = pl.Series(values=mu2[set_number,set_values].reshape(-1), name=MU2_COLUMN_NAME)
-            pip_for_set = pl.Series(values=pip[set_values].reshape(-1), name=PIP_COLUMN)
-            gwas_for_set = gwas_for_set.with_columns(
-                alpha_for_set, mu_for_set, pip_for_set
-            )
-            logger.debug(
-                f"Credible set {set_name}\n {gwas_for_set.sort(by=PIP_COLUMN, descending=True)}"
-            )
-            gwas_for_set.write_parquet(subdir / f"{set_name}.parquet")
-            cs_data_tables.append(
-                gwas_for_set.with_columns(pl.lit(set_name).alias(CS_COLUMN))
-            )
-        pl.concat(cs_data_tables, how="vertical").write_parquet(
+        cs_data_tables = extract_cs_data_tables(
+            alpha=alpha, mu=mu, pip=pip, sets=sets, gt=gt
+        )
+        for name, cs_table in cs_data_tables.items():
+            cs_table.write_parquet(subdir / f"{name}.parquet")
+
+        #     cs_data_tables.append(
+        #         gwas_for_set.with_columns(pl.lit(set_name).alias(CS_COLUMN))
+        #     )
+        pl.concat(list(cs_data_tables.values()), how="vertical").write_parquet(
             directory / COMBINED_CS_FILENAME
         )
+
+
+def extract_cs_data_tables(
+    alpha: np.ndarray,
+    mu: np.ndarray,
+    pip: np.ndarray,
+    sets: dict,
+    gt: pl.DataFrame,
+) -> dict[str, pl.DataFrame]:
+    cs_data_tables = {}
+    for set_name, set_values in sets["cs"].items():
+        set_number = int(set_name.replace("L", "")) - 1
+        set_values = (
+            np.array(set_values).reshape(-1) - 1
+        )  # Since r uses 1-based indexing
+        gwas_for_set: pl.DataFrame = gt[set_values]
+        alpha_for_set = pl.Series(
+            values=alpha[set_number, set_values].reshape(-1), name=ALPHA_COLUMN_NAME
+        )
+        mu_for_set = pl.Series(
+            values=mu[set_number, set_values].reshape(-1), name=MU_COLUMN_NAME
+        )
+        pip_for_set = pl.Series(values=pip[set_values].reshape(-1), name=PIP_COLUMN)
+        gwas_for_set = gwas_for_set.with_columns(alpha_for_set, mu_for_set, pip_for_set)
+        logger.debug(
+            f"Credible set {set_name}\n {gwas_for_set.sort(by=PIP_COLUMN, descending=True)}"
+        )
+        cs_data_tables[set_name] = gwas_for_set.with_columns(
+            pl.lit(set_name).alias(CS_COLUMN)
+        )
+    return cs_data_tables
 
 
 def check_symmetric(array: np.ndarray, tol=1e-6):
@@ -517,6 +539,8 @@ def filter_variants_based_on_diagnostics(
     Filter out variants that show evidence of inconsistency between the GWAS and LD matrix
 
     According to Zou et al. (2022), filtering out these variants is  valid correction strategy
+
+    See the supplementary material to the paper for an in depth discussion of the filtering strategy.
     """
 
     # Ensure diagnostic table aligns with inputs
@@ -533,7 +557,7 @@ def filter_variants_based_on_diagnostics(
     n_removed = bad_variant_mask.sum()
 
     if n_removed == 0:
-        logger.info("Diagnostics passed: No inconsistent variants found.")
+        logger.debug("Diagnostics passed: No inconsistent variants found.")
         return gwas_table, ld_matrix
 
     logger.warning(

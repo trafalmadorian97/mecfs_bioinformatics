@@ -6,7 +6,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annova
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 
-DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP = generate_assets_broad_ukbb_fine_map(
+DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP = generate_assets_broad_ukbb_fine_map(
     chrom=20,
     pos=47_653_230,
     build_37_sumstats_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,

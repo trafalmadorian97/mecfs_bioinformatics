@@ -48,6 +48,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     BroadInstituteFormatLDMatrix,
     SusieRFinemapTask,
     align_gwas_and_ld,
+    extract_cs_data_tables,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_CHROM_COL,
@@ -139,15 +140,18 @@ def test_align():
 _susie_n = 2500
 
 
-@pytest.fixture
-def susie_prerequisite_file_tasks(tmp_path: Path) -> Iterator[tuple[Task, Task, Task]]:
+@pytest.fixture(params=[[0, -1], []])
+def susie_prerequisite_file_tasks(
+    tmp_path: Path, request
+) -> Iterator[tuple[Task, Task, Task, list[int]]]:
     n = _susie_n
     m = 100
     susie_package = importr("susieR")
     generator = np.random.default_rng(40)
     true_effects = np.zeros(m)
-    true_effects[0] = 1
-    true_effects[-1] = 1
+    causal_variants = request.param
+    for cv in causal_variants:
+        true_effects[cv] = 1
     q = np.linspace(1, 0, num=m)
     lamb = 0.2
     covar = (1 - lamb) * q.reshape(-1, 1) * q.reshape(1, -1) + lamb * np.eye(m)
@@ -211,7 +215,7 @@ def susie_prerequisite_file_tasks(tmp_path: Path) -> Iterator[tuple[Task, Task, 
         ld_matrix_task = ExternalFileCopyTask(
             SimpleFileMeta("ld_matrix"), external_path=ld_matrix_path
         )
-        yield gwas_data_task, ld_labels_task, ld_matrix_task
+        yield gwas_data_task, ld_labels_task, ld_matrix_task, causal_variants
 
 
 @pytest.fixture
@@ -243,13 +247,15 @@ def dummy_ensmbl_data_task(tmp_path: Path) -> Iterator[Task]:
 
 def test_fine_mapping(
     tmp_path: Path,
-    susie_prerequisite_file_tasks: tuple[Task, Task, Task],
+    susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_ensmbl_data_task: Task,
 ):
     """
     Test that we can find the causal SNPs in a simple synthetic example
     """
-    gwas_data_task, ld_labels_task, ld_matrix_task = susie_prerequisite_file_tasks
+    gwas_data_task, ld_labels_task, ld_matrix_task, causal_variants = (
+        susie_prerequisite_file_tasks
+    )
     susie_tsk = SusieRFinemapTask(
         meta=SimpleDirectoryMeta(AssetId("directory")),
         gwas_data_task=gwas_data_task,
@@ -295,7 +301,62 @@ def test_fine_mapping(
     adjustment = pd.read_parquet(suise_out_path / ADJUSTMENT_VALUE_FILENAME)
     assert float(adjustment.iloc[0].item()) <= 0.01
     pip = pd.read_parquet(suise_out_path / PIP_FILENAME)
-    assert pip[PIP_COLUMN].iloc[0] >= 0.95
-    assert pip[PIP_COLUMN].iloc[99] >= 0.95
+    for cv in causal_variants:
+        assert pip[PIP_COLUMN].iloc[cv] >= 0.95
     cs_subdir_contents = list((suise_out_path / CS_DATA_SUBDIR).glob("*"))
-    assert len(cs_subdir_contents) == 2  # 2 credible sets
+    assert len(cs_subdir_contents) == len(causal_variants)  # 2 credible sets
+
+
+def test_extract_cs_data_tables():
+    """
+    Test that we can correctly extract SUSIE output
+
+    The main failure case here is when SUSIE uses its purity filters to discard the first credible set, and so
+    the "SETS" object it returns does not contain L1
+
+    This test verifies we can handle this case
+    """
+    gt = pl.DataFrame(
+        {
+            "CHROM": [20] * 5,
+            "POS": [100, 200, 300, 400, 500],
+            "EA": ["A", "C", "G", "T", "A"],
+            "NEA": ["T", "G", "C", "A", "C"],
+        }
+    )
+
+    mock_alpha = np.array(
+        [
+            [0.2, 0.2, 0.2, 0.2, 0.2],
+            [1.0, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.5, 0.5],
+        ]
+    )
+
+    mock_mu = np.array(
+        [
+            [0.1, 0.1, 0.1, 0.1, 0.1],
+            [0.5, 0.0, 0.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0, 0.3, 0.3],
+        ]
+    )
+
+    mock_pip = np.array([1.0, 0.2, 0.2, 0.7, 0.7])
+
+    mock_sets = {
+        "cs": {
+            "L2": [1],  # Refers to variant index 0
+            "L3": [4, 5],  # Refers to variant indices 3 and 4
+        },
+        "purity": pd.DataFrame({"min.abs.corr": [1.0, 0.8]}),
+    }
+    cs_table_dict = extract_cs_data_tables(
+        alpha=mock_alpha,
+        mu=mock_mu,
+        pip=mock_pip,
+        sets=mock_sets,
+        gt=gt,
+    )
+    combined_cs = pl.concat(cs_table_dict.values(), how="vertical")
+    l2_mu = combined_cs.filter(pl.col("cs") == "L2")["mu"][0]
+    assert l2_mu == 0.5

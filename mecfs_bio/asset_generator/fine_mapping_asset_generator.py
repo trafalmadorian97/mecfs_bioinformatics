@@ -50,11 +50,19 @@ class BroadFineMapTaskGroup:
     harmonized_sumstats_task: Task
     susie_finemap_task: Task
     susie_stackplot_task: Task
+    susie_finemap_strict_task: Task
+    susie_finemap_strict_plot: Task
+    susie_finemap_1_credible_set_task: Task
+    susie_finemap_1_credible_set_plot: Task
 
     def terminal_tasks(self) -> list[Task]:
         return [
             self.susie_finemap_task,
             self.susie_stackplot_task,
+            self.susie_finemap_strict_task,
+            self.susie_finemap_strict_plot,
+            self.susie_finemap_1_credible_set_task,
+            self.susie_finemap_1_credible_set_plot,
         ]
 
 
@@ -132,6 +140,20 @@ def generate_assets_broad_ukbb_fine_map(
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
     )
+    # copy_cs=CopyFileFromDirectoryTask.create_result_table(
+    #     asset_id=base_name + "_copy_cs_from_directory",
+    #     source_directory_task=susie_finemap_task,
+    #     path_inside_directory=Path(COMBINED_CS_FILENAME),
+    #     extension=".parquet",
+    #     read_spec=DataFrameReadSpec(
+    #         DataFrameParquetFormat()
+    #     )
+    #
+    # )
+    # cs_markdown=ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+    #     asset_id=base_name + "_convert_cs_to_markdown",
+    #     source_task=copy_cs,
+    # )
     susie_stack_plot_task = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot",
         susie_task=susie_finemap_task,
@@ -142,6 +164,46 @@ def generate_assets_broad_ukbb_fine_map(
             heatmap_bin_options=None, mode="ld2", cmap="plasma"
         ),
     )
+
+    susie_finemap_task_strict = SusieRFinemapTask.create(
+        asset_id=base_name + "_susie_finemap_strict_threshold",
+        gwas_data_task=harmonized_sumstats_task,
+        ld_labels_task=ld_labels_task_renamed,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=sample_size_or_effect_sample_size,
+        z_score_filtering_threshold=1.0,
+    )
+    strict_plot = SusieStackPlotTask.create(
+        asset_id=base_name + "_susie_stackplot_strict",
+        susie_task=susie_finemap_task_strict,
+        gene_info_task=MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
+        gene_info_pipe=IdentityPipe(),
+        region_mode=RegionSelectDefault(),
+        heatmap_options=HeatmapOptions(
+            heatmap_bin_options=None, mode="ld2", cmap="plasma"
+        ),
+    )
+
+    susie_finemap_task_1_credible_set = SusieRFinemapTask.create(
+        asset_id=base_name + "_susie_finemap_1_credible_set",
+        gwas_data_task=harmonized_sumstats_task,
+        ld_labels_task=ld_labels_task_renamed,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=sample_size_or_effect_sample_size,
+        max_credible_sets=1,
+        # z_score_filtering_threshold=1.0
+    )
+    susie_plot_1_credible_set = SusieStackPlotTask.create(
+        asset_id=base_name + "_susie_stackplot_1_credible_set",
+        susie_task=susie_finemap_task_1_credible_set,
+        gene_info_task=MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
+        gene_info_pipe=IdentityPipe(),
+        region_mode=RegionSelectDefault(),
+        heatmap_options=HeatmapOptions(
+            heatmap_bin_options=None, mode="ld2", cmap="plasma"
+        ),
+    )
+
     return BroadFineMapTaskGroup(
         ld_labels_task=ld_labels_task,
         ld_matrix_task=ld_matrix_task,
@@ -149,4 +211,8 @@ def generate_assets_broad_ukbb_fine_map(
         harmonized_sumstats_task=harmonized_sumstats_task,
         susie_finemap_task=susie_finemap_task,
         susie_stackplot_task=susie_stack_plot_task,
+        susie_finemap_strict_task=susie_finemap_task_strict,
+        susie_finemap_strict_plot=strict_plot,
+        susie_finemap_1_credible_set_task=susie_finemap_task_1_credible_set,
+        susie_finemap_1_credible_set_plot=susie_plot_1_credible_set,
     )

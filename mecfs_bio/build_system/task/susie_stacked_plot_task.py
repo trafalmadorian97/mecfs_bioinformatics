@@ -149,10 +149,11 @@ class SusieStackPlotTask(Task):
         assert isinstance(susie_asset, DirectoryAsset)
         susie_dir = susie_asset.path
         if (susie_dir / NO_CS_FOUND_FILENAME).exists():
-            logger.debug("No credible sets to plot.  Aborting")
+            logger.debug("No credible sets to plot. Skipping susie panel.")
             (scratch_dir / NO_CS_FOUND_FILENAME).write_text("No credible sets.")
-            asset = FileAsset(scratch_dir / NO_CS_FOUND_FILENAME)
-            return asset
+            susie_df = None
+        else:
+            susie_df = pl.read_parquet(susie_dir / COMBINED_CS_FILENAME)
 
         gene_info_asset = fetch(self.gene_info_task.asset_id)
         assert isinstance(gene_info_asset, FileAsset)
@@ -172,7 +173,7 @@ class SusieStackPlotTask(Task):
 
         fig = plot_locus_tracks_matplotlib(
             gwas_df=_gwas_pipe.process_eager_polars(loaded),
-            susie_cs_df=pl.read_parquet(susie_dir / COMBINED_CS_FILENAME),
+            susie_cs_df=susie_df,
             ld_np=np.load(susie_dir / FILTERED_LD_FILENAME),
             gene_df=gene_info_df,
             start_bp=start,
@@ -674,7 +675,7 @@ def draw_manhattan_track(
 
 
 def plot_susie_track(
-    susie_cs_df: pl.DataFrame,
+    susie_cs_df: pl.DataFrame | None,
     ax_pip,
     pip_legend_ax,
     susie_cs_col: str = CS_COLUMN,
@@ -684,6 +685,8 @@ def plot_susie_track(
     """
     Plot SUSIE pip using a bar graph colored by credible set
     """
+    if susie_cs_df is None:
+        return
     pip_traces = []
     palette = list(TABLEAU_COLORS.values())
     if len(susie_cs_df) > 0:
