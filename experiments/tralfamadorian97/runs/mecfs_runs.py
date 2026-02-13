@@ -12,6 +12,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabga
     DECODE_ME_RABGAP1L_REGION_PLOT_37
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr1_173_locus import \
     DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr6_26215000_locus import \
+    DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_chr1_173_locus_stackplot import \
     DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import \
@@ -30,9 +32,9 @@ from mecfs_bio.assets.reference_data.ukbb_ld_matrices.from_polyfun.chr1_17300000
 
 def run_initial_decode_me_analysis():
     DEFAULT_RUNNER.run(
-        [
-
-            MILLION_VETERAN_LDL_EUR_DATA_RAW
+        # [
+            DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
+            # MILLION_VETERAN_LDL_EUR_DATA_RAW
             # DECODE_ME_RABGAP1L_REGION_PLOT_37,
             # DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.harmonize_task
             # CHR1_173000001_17600000_UKBB_LD_LABELS_DOWNLOAD
@@ -47,11 +49,12 @@ def run_initial_decode_me_analysis():
          #    DECODE_ME_BTN1A1_REGION_PLOT_37
          #    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC
 
-         ],
+         # ],
         # DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
-        must_rebuild_transitive=[
+        must_rebuild_transitive= DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
+            # DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.harmonized_sumstats_task
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
             # DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD
@@ -59,7 +62,7 @@ def run_initial_decode_me_analysis():
             # DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
             # DECODE_ME_MASTER_GENE_LIST_WITH_GGET
             # DECODE_ME_HBA_MAGMA_TASKS.magma_independent_cluster_plot
-        ],
+
     )
 
 

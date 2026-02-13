@@ -37,4 +37,5 @@ LIU_ET_AL_2023_IBD_META_EUR_ONLY = PipeDataFrameTask.create(
         ),
         DropNullsPipe(),
     ],
+    backend="polars",
 )
