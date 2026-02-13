@@ -6,7 +6,7 @@ hide:
 
 # S-LDSC RBCV Analysis
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from a GWAS of Red Blood Cell Volume from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program.md).
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] (S-LDSC) to summary statistics from a GWAS of Red Blood Cell Volume from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program.md).
 
 I used standard S-LDSC reference datasets. These reference datasets were originally derived from:
 

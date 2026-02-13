@@ -153,14 +153,6 @@ def install_r_packages(c):
     c.run("pixi r install-mr", pty=True)
 
 
-@task(pre=[install_r_packages, green])
-def init(c):
-    """
-    Initial repo setup
-    """
-    pass
-
-
 ### Figures and Documentation
 
 
@@ -191,3 +183,12 @@ def sdocs(c, strict: bool = False):
     Retrieve figures, then serve docs
     """
     serve_docs(c, strict)
+
+
+# initialization
+@task(pre=[install_r_packages, pfig, green])
+def init(c):
+    """
+    Initial repo setup
+    """
+    pass
