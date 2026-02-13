@@ -124,7 +124,7 @@ def check_local_links(c):
     Check local links with lychee
     """
     print("Checking offline links with lychee...")
-    cmd = f"pixi r lychee  --offline {SRC_PATH} {DOCS_PATH}"
+    cmd = f"pixi r lychee --exclude {FIGS_PATH}  --offline {SRC_PATH} {DOCS_PATH}"
     print(f"running {cmd}")
     c.run(cmd)
 

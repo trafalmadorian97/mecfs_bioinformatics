@@ -46,13 +46,6 @@ pixi r invoke green
 
 It is advisable to run `invoke green` and fix any detected errors prior to submitting a PR.
 
-If someone has recently updated the documentation, you may also need to run 
-
-```
-pixi r invoke pfig
-```
-
-to download the latest versions of plots and tables. Otherwise `invoke green` may complain about missing links to figures in the documentation. 
 
 ##  Commit changes, create a PR
 
