@@ -1,3 +1,7 @@
+"""
+Asset generator to automatically determine the optimal UKBB LD matrix to use for fine-mapping
+"""
+
 from pathlib import Path, PurePath
 
 import pandas as pd

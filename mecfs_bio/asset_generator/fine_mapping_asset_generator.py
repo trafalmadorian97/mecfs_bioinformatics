@@ -1,3 +1,7 @@
+"""
+Asset generator for fine mapping with SUSIE
+"""
+
 import structlog
 from attrs import frozen
 
@@ -74,6 +78,10 @@ def generate_assets_broad_ukbb_fine_map(
     sumstats_pipe: DataProcessingPipe,
     sample_size_or_effect_sample_size: int,
 ) -> BroadFineMapTaskGroup:
+    """
+    Asset generator for fine mapping using SUSIE.
+    by default, calls SUSIE with a number of different parameter settings to check how the results are affected
+    """
     interval = get_optimal_ukbb_ld_interval(
         chrom=chrom,
         pos=pos,
