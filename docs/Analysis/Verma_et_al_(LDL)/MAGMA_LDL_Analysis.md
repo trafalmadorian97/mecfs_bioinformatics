@@ -1,3 +1,8 @@
+---
+hide:
+    - navigation
+    - toc
+---
 
 
 # MAGMA Analysis of LDL
