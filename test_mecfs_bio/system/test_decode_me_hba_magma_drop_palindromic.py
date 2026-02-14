@@ -1,26 +1,26 @@
 from pathlib import Path
 
-from mecfs_bio.asset_generator.hba_magma_asset_generator import generate_human_brain_atlas_magma_tasks
+from mecfs_bio.asset_generator.hba_magma_asset_generator import (
+    generate_human_brain_atlas_magma_tasks,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_hba_magma_analysis import (
     DECODE_ME_HBA_MAGMA_TASKS,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import \
-    DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED_KEEP_AMBIGUOUS, \
-    DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED
+from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
+    DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
+)
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
-from mecfs_bio.build_system.task.magma.magma_forward_stepwise_select_task import (
-    RETAINED_CLUSTERS_COLUMN,
+from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import (
+    HBAIndepPlotOptions,
 )
-from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import HBAIndepPlotOptions
 from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 from test_mecfs_bio.system.util import log_on_error
-
 
 DECODE_ME_HBA_MAGMA_TASKS_DROP_PALINDROMIC = generate_human_brain_atlas_magma_tasks(
     base_name="decode_me_hba_magma_tasks",
@@ -31,6 +31,8 @@ DECODE_ME_HBA_MAGMA_TASKS_DROP_PALINDROMIC = generate_human_brain_atlas_magma_ta
     pipes=[RenameColPipe(old_name="rsid", new_name=GWASLAB_RSID_COL)],
     hba_indep_plot_options=HBAIndepPlotOptions(annotation_text_size=13),
 )
+
+
 def test_run_hba_magma(tmp_path: Path):
     """
     Test that we can run MAGMA via the human brain atlas on the DECODE ME data
@@ -48,7 +50,9 @@ def test_run_hba_magma(tmp_path: Path):
         )
         result = test_runner.run(
             DECODE_ME_HBA_MAGMA_TASKS_DROP_PALINDROMIC.terminal_tasks()
-            + [DECODE_ME_HBA_MAGMA_TASKS_DROP_PALINDROMIC.magma_independent_clusters_csv],
+            + [
+                DECODE_ME_HBA_MAGMA_TASKS_DROP_PALINDROMIC.magma_independent_clusters_csv
+            ],
             incremental_save=True,
         )
         assert result is not None
@@ -62,6 +66,4 @@ def test_run_hba_magma(tmp_path: Path):
             .collect()
             .to_polars()
         )
-        import pdb; pdb.set_trace()
         print("yo")
-

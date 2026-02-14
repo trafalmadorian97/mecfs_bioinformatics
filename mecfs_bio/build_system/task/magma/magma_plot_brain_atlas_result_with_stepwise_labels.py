@@ -118,32 +118,33 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         ax.set_xlabel("CLUSTER", fontsize="x-large")
         ax.set_ylabel("MLOG10P", fontsize="x-large")
 
-        x_coords = []
-        y_cords = []
-        texts = []
-        for item in independent_clusters:
-            x_coords.append(table.loc[table["VARIABLE"] == item]["CLUSTER"].item())
-            y_cords.append(table.loc[table["VARIABLE"] == item]["MLOG10P"].item())
-            texts.append(
-                get_condensed_hba_cluster_label(
-                    table.loc[table["VARIABLE"] == item].iloc[0, :],
+        if len(independent_clusters) > 0:
+            x_coords = []
+            y_cords = []
+            texts = []
+            for item in independent_clusters:
+                x_coords.append(table.loc[table["VARIABLE"] == item]["CLUSTER"].item())
+                y_cords.append(table.loc[table["VARIABLE"] == item]["MLOG10P"].item())
+                texts.append(
+                    get_condensed_hba_cluster_label(
+                        table.loc[table["VARIABLE"] == item].iloc[0, :],
+                    )
                 )
+            ta.allocate(
+                ax,
+                x_coords,
+                y_cords,
+                texts,
+                x_scatter=table["CLUSTER"].tolist(),
+                y_scatter=table["MLOG10P"].tolist(),
+                x_lines=[[table["CLUSTER"].max(), table["CLUSTER"].min()]],
+                y_lines=[[sig_level, sig_level]],
+                linewidth=1,
+                avoid_crossing_label_lines=True,
+                avoid_label_lines_overlap=True,
+                linecolor="black",
+                textsize=self.plot_options.annotation_text_size,
             )
-        ta.allocate(
-            ax,
-            x_coords,
-            y_cords,
-            texts,
-            x_scatter=table["CLUSTER"].tolist(),
-            y_scatter=table["MLOG10P"].tolist(),
-            x_lines=[[table["CLUSTER"].max(), table["CLUSTER"].min()]],
-            y_lines=[[sig_level, sig_level]],
-            linewidth=1,
-            avoid_crossing_label_lines=True,
-            avoid_label_lines_overlap=True,
-            linecolor="black",
-            textsize=self.plot_options.annotation_text_size,
-        )
 
         figs = {"hba_magma_fig": fig}
         write_plots_to_dir(scratch_dir, figs)
