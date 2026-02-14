@@ -18,6 +18,10 @@ jobs:
         with:
           pixi-version: v0.55.0
           cache: true
+      - name: Download figures
+        run: pixi r invoke pfig
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Check links
         run: pixi r invoke check-all-links
 

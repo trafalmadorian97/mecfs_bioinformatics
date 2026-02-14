@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import polars as pl
 import seaborn as sns
+import structlog
 import xarray as xr
 from attrs import frozen
 
@@ -39,6 +40,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     CS_COLUMN,
     FILTERED_GWAS_FILENAME,
     FILTERED_LD_FILENAME,
+    NO_CS_FOUND_FILENAME,
     PIP_COLUMN,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -54,6 +56,8 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 class BinOptions:
     num_bins: int
 
+
+logger = structlog.get_logger()
 
 GENE_INFO_START_COL = "gene_start"
 GENE_INFO_END_COL = "gene_end"
@@ -144,6 +148,12 @@ class SusieStackPlotTask(Task):
         susie_asset = fetch(self.susie_task.asset_id)
         assert isinstance(susie_asset, DirectoryAsset)
         susie_dir = susie_asset.path
+        if (susie_dir / NO_CS_FOUND_FILENAME).exists():
+            logger.debug("No credible sets to plot. Skipping susie panel.")
+            (scratch_dir / NO_CS_FOUND_FILENAME).write_text("No credible sets.")
+            susie_df = None
+        else:
+            susie_df = pl.read_parquet(susie_dir / COMBINED_CS_FILENAME)
 
         gene_info_asset = fetch(self.gene_info_task.asset_id)
         assert isinstance(gene_info_asset, FileAsset)
@@ -163,7 +173,7 @@ class SusieStackPlotTask(Task):
 
         fig = plot_locus_tracks_matplotlib(
             gwas_df=_gwas_pipe.process_eager_polars(loaded),
-            susie_cs_df=pl.read_parquet(susie_dir / COMBINED_CS_FILENAME),
+            susie_cs_df=susie_df,
             ld_np=np.load(susie_dir / FILTERED_LD_FILENAME),
             gene_df=gene_info_df,
             start_bp=start,
@@ -205,7 +215,7 @@ class SusieStackPlotTask(Task):
 
 def plot_locus_tracks_matplotlib(
     gwas_df: pl.DataFrame,
-    susie_cs_df: pl.DataFrame,
+    susie_cs_df: pl.DataFrame | None,
     ld_np: np.ndarray,
     gene_df: pl.DataFrame,
     start_bp: int,
@@ -665,7 +675,7 @@ def draw_manhattan_track(
 
 
 def plot_susie_track(
-    susie_cs_df: pl.DataFrame,
+    susie_cs_df: pl.DataFrame | None,
     ax_pip,
     pip_legend_ax,
     susie_cs_col: str = CS_COLUMN,
@@ -675,6 +685,8 @@ def plot_susie_track(
     """
     Plot SUSIE pip using a bar graph colored by credible set
     """
+    if susie_cs_df is None:
+        return
     pip_traces = []
     palette = list(TABLEAU_COLORS.values())
     if len(susie_cs_df) > 0:

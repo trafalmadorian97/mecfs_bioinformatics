@@ -59,7 +59,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     In this context harmonization means:
     For non-palindromic variants:
        - keep only variants where:
-          -- effect and non-effect allele match the or,
+          -- effect and non-effect allele match  or,
           --effect allele matches reference non-effect allele, and vice versa.  In this case, flip beta and invert odds ratio
 
     For palindromic variants:
@@ -206,6 +206,12 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         ).with_columns(
             pl.lit(True).alias(MATCH_REFERENCE_FLIPPED),
             pl.lit(False).alias(MATCH_REFERENCE),
+        )
+        logger.debug(
+            f"Example matching alleles:\n {gd_match.select(GWASLAB_CHROM_COL, GWASLAB_POS_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL).head()}"
+        )
+        logger.debug(
+            f"Example flipped alleles:\n {gd_reverse_match.select(GWASLAB_CHROM_COL, GWASLAB_POS_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL).head()}"
         )
         gd = pl.concat([gd_match, gd_reverse_match], how="vertical")
         gd = handle_flipped(gd)

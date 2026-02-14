@@ -10,6 +10,8 @@ USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
 
 PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
 
+FIGS_PATH = Path("docs/_figs/")
+
 
 # dev tasks
 @task
@@ -122,7 +124,9 @@ def check_local_links(c):
     Check local links with lychee
     """
     print("Checking offline links with lychee...")
-    c.run(f"pixi r lychee --offline {SRC_PATH} {DOCS_PATH}")
+    cmd = f"pixi r lychee --exclude {FIGS_PATH}  --offline {SRC_PATH} {DOCS_PATH}"
+    print(f"running {cmd}")
+    c.run(cmd)
 
 
 @task(
@@ -149,14 +153,6 @@ def install_r_packages(c):
     c.run("pixi r install-mr", pty=True)
 
 
-@task(pre=[install_r_packages, green])
-def init(c):
-    """
-    Initial repo setup
-    """
-    pass
-
-
 ### Figures and Documentation
 
 
@@ -169,7 +165,7 @@ def pfig(c):
 
 
 @task
-def serve_docs(c, strict: bool = False):
+def serve_docs(c, strict: bool = True):
     """
     Use mkdocs to serve documentation
     """
@@ -177,13 +173,21 @@ def serve_docs(c, strict: bool = False):
     if strict:
         cmd += " --strict"
     print("Serving documentation...")
-    print(f"runnng {cmd}")
+    print(f"running {cmd}")
     c.run(cmd, pty=True)
 
 
-@task(pre=pfig)
-def sdocs(c, strict: bool = False):
+@task(pre=[pfig, serve_docs])
+def sdocs(c):
     """
     Retrieve figures, then serve docs
     """
-    serve_docs(c, strict)
+
+
+# initialization
+@task(pre=[install_r_packages, pfig, green])
+def init(c):
+    """
+    Initial repo setup
+    """
+    pass

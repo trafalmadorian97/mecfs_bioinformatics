@@ -31,11 +31,6 @@ pixi r invoke sdocs
 
 `sdocs` will both download figures and serve docs. To only serve docs without downloading figures, use `pixi r invoke serve-docs`.
 
-To check for issues, add the `strict` flag, which will make the build abort if there are any warnings.
-
-```
-pixi r invoke sdocs --strict
-```
 
 ## Run linters, formatters, and tests
 The `invoke green` command runs linters, formatters, and tests. Run it with 
@@ -45,6 +40,7 @@ pixi r invoke green
 ```
 
 It is advisable to run `invoke green` and fix any detected errors prior to submitting a PR.
+
 
 ##  Commit changes, create a PR
 
