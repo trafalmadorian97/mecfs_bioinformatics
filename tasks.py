@@ -165,7 +165,7 @@ def pfig(c):
 
 
 @task
-def serve_docs(c, strict: bool = False):
+def serve_docs(c, strict: bool = True):
     """
     Use mkdocs to serve documentation
     """
@@ -177,12 +177,11 @@ def serve_docs(c, strict: bool = False):
     c.run(cmd, pty=True)
 
 
-@task(pre=pfig)
-def sdocs(c, strict: bool = False):
+@task(pre=[pfig, serve_docs])
+def sdocs(c):
     """
     Retrieve figures, then serve docs
     """
-    serve_docs(c, strict)
 
 
 # initialization

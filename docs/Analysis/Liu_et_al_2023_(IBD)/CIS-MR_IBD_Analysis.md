@@ -8,7 +8,7 @@ hide:
 
 # MR with cis-pQTLs
 
-I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the IBD GWAS of Liu et al.[@liu2023genetic] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.
+I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the European-ancestry subset of the IBD GWAS of Liu et al.[@liu2023genetic], using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.
 
 Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Ratio to estimate the causal effects of the proteins on IBD.
 
@@ -26,8 +26,8 @@ Mostly, these results make sense.  For instance:
 [//]: # ( CEP43 has been found in mouse models to be important to gut epithelial renewal[@trsan2024centrosomal]. )
 
 
-- [IL-12](https://en.wikipedia.org/wiki/Interleukin_12) is a cytokine linked to auto-immunity. It makes sense that increased levels of both the heterodimeric Il-12 (IL12A_IL12B) and the B sub-unit (IL12B) are linked to increased risk of IBD.
-- [IL-10](https://en.wikipedia.org/wiki/Interleukin_10) is a powerful anti-inflammatory cytokine. It makes sense that increased levels of IL-10 are associated with reduced risk of IBD.
+- [IL-12](https://en.wikipedia.org/wiki/Interleukin_12) is a cytokine linked to autoimmunity. It makes sense that increased levels of both the heterodimeric Il-12 (IL12A_IL12B) and the B sub-unit (IL12B) increase risk of IBD.
+- [IL-10](https://en.wikipedia.org/wiki/Interleukin_10) is a powerful anti-inflammatory cytokine. It makes sense that increased levels of IL-10 reduce risk of IBD.
 
 However, the meaning of some of these results are less clear.  For instance 
 
