@@ -26,8 +26,8 @@ Mostly, these results make sense.  For instance:
 [//]: # ( CEP43 has been found in mouse models to be important to gut epithelial renewal[@trsan2024centrosomal]. )
 
 
-- [IL-12](https://en.wikipedia.org/wiki/Interleukin_12) is a cytokine linked to autoimmunity. It makes sense that increased levels of both the heterodimeric Il-12 (IL12A_IL12B) and the B sub-unit (IL12B) are linked to increased risk of IBD.
-- [IL-10](https://en.wikipedia.org/wiki/Interleukin_10) is a powerful anti-inflammatory cytokine. It makes sense that increased levels of IL-10 are associated with reduced risk of IBD.
+- [IL-12](https://en.wikipedia.org/wiki/Interleukin_12) is a cytokine linked to autoimmunity. It makes sense that increased levels of both the heterodimeric Il-12 (IL12A_IL12B) and the B sub-unit (IL12B) increase risk of IBD.
+- [IL-10](https://en.wikipedia.org/wiki/Interleukin_10) is a powerful anti-inflammatory cytokine. It makes sense that increased levels of IL-10 reduce risk of IBD.
 
 However, the meaning of some of these results are less clear.  For instance 
 

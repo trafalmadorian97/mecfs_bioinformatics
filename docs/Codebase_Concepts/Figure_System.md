@@ -10,7 +10,7 @@ Plots and tables are important to the presentation of data science results.  The
 
 ## Standard Workflow
 
-Suppose that you have analyzed a genomic dataset and produced figures.  You wish to publish these figures and an associated write-up to the project documentation page.  Follow these steps:
+Suppose that you have analyzed a genomic dataset and generated figures.  You wish to publish these figures and an associated write-up to the project documentation page.  Follow these steps:
 
 - Add the Tasks that generate your figures to `ALL_FIGURE_TASKS`.
 - Either invoke the [generate_figures.py][mecfs_bio.figures.key_scripts.generate_figures] script to generate all figures, or write your own script to call the [generate_figures][mecfs_bio.figures.key_scripts.generate_figures.generate_figures] function on just your newly added Tasks. In either case, your figures will be copied into `docs/_figs`
