@@ -23,7 +23,7 @@ Note that in the uncorrelated-additive model above, $h^2$ is equal to the [coeff
 $$
 \begin{align}
 \mathrm{cor}(G,Y)^2&=\frac{\mathrm{Cov}(Y,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}\\
-\mathrm{cor}(G,Y)^2&=\frac{\mathrm{Cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}& \text{ by }(\ref{model})\\
+&=\frac{\mathrm{Cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}& \text{ by }(\ref{model})\\
 &=\frac{\mathrm{Var}(G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}} & \text{$G$ and  $E$ uncorrelated}\\
 &=\frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}\\
 &=:h^2
