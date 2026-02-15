@@ -244,8 +244,6 @@ def plot_locus_tracks_matplotlib(
     Helper function to create the matplotlib plot consisting of stacked panels
 
     """
-    # ld2 = ld_np**2
-    # ld_abs = abs(ld_np)
 
     gwas_df = gwas_df.with_columns(
         pl.min_horizontal(pl.lit(max_mlog10p), pl.col(GWASLAB_MLOG10P_COL)).alias(
@@ -733,7 +731,7 @@ def plot_ld_heatmap(
     gwas_pos_col: str = GWASLAB_POS_COL,
 ):
     if options.mode == "ld_abs":
-        to_plot = abs(ld_np)
+        to_plot: np.ndarray = abs(ld_np)
     elif options.mode == "ld2":
         to_plot = ld_np**2
     else:

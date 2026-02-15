@@ -137,9 +137,7 @@ class SusieRFinemapTask(Task):
 
         ld_matrix_asset = fetch(self.ld_matrix_source.task.asset_id)
         assert isinstance(ld_matrix_asset, FileAsset)
-        partial_ld_matrix_sparse = _load_partial_ld_matrix(
-            path=ld_matrix_asset.path, ld_labels_table=ld_labels_table
-        )
+        partial_ld_matrix_sparse = _load_partial_ld_matrix(path=ld_matrix_asset.path)
 
         gwas_table, ld_labels_table, ld_matrix = align_gwas_and_ld(
             gwas=gwas_table,
@@ -510,12 +508,10 @@ def _save_adjustment(adjustment: float, scratch_dir: Path):
     adjustment_df.to_parquet(scratch_dir / ADJUSTMENT_VALUE_FILENAME)
 
 
-def _load_partial_ld_matrix(path: Path, ld_labels_table: pl.DataFrame) -> csr_matrix:
+def _load_partial_ld_matrix(path: Path) -> csr_matrix:
     logger.debug(f"loading partial ld matrix from {path}")
     partial_ld_matrix = scipy.sparse.load_npz(path)
-    # ld_matrix = partial_ld_matrix + partial_ld_matrix.transpose()
-    # del partial_ld_matrix
-    logger.debug("done loading parital ld matrix")
+    logger.debug("done loading partial ld matrix")
 
     return csr_matrix(partial_ld_matrix)
 
