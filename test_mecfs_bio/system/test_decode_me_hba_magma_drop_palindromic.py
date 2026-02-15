@@ -33,10 +33,11 @@ DECODE_ME_HBA_MAGMA_TASKS_DROP_PALINDROMIC = generate_human_brain_atlas_magma_ta
 )
 
 
-def test_run_hba_magma(tmp_path: Path):
+def test_run_hba_magma():
     """
     Test that we can run MAGMA via the human brain atlas on the DECODE ME data
     """
+    tmp_path = Path("data/empty_covar_run")
 
     info_store = tmp_path / "info_store.yaml"
     asset_root = tmp_path / "asset_store"
@@ -66,4 +67,5 @@ def test_run_hba_magma(tmp_path: Path):
             .collect()
             .to_polars()
         )
+        import pdb; pdb.set_trace()
         print("yo")
