@@ -1,3 +1,4 @@
+import gc
 from pathlib import Path
 from typing import Literal
 
@@ -183,6 +184,10 @@ class SusieStackPlotTask(Task):
         )
         out_path = scratch_dir
         write_plots_to_dir(out_path, {"plot": fig})
+        del fig
+        del loaded
+        del gene_info_df
+        gc.collect()
         return FileAsset(out_path / "plot.png")
 
     @classmethod
@@ -239,14 +244,16 @@ def plot_locus_tracks_matplotlib(
     Helper function to create the matplotlib plot consisting of stacked panels
 
     """
-    ld2 = ld_np**2
-    ld_abs = abs(ld_np)
 
     gwas_df = gwas_df.with_columns(
         pl.min_horizontal(pl.lit(max_mlog10p), pl.col(GWASLAB_MLOG10P_COL)).alias(
             GWASLAB_MLOG10P_COL
         ),
     )
+
+    lead = int(np.argmax(gwas_df[gwas_mlog10p_col]))
+
+    ld2_slice = ld_np[lead, :] ** 2
 
     # initialize figure with 4 by 2 grid.  Right column is used for legends and colorbars
     fig = plt.figure(figsize=(12, 9))
@@ -280,12 +287,11 @@ def plot_locus_tracks_matplotlib(
     )
 
     # manhattan plot
-    lead = int(np.argmax(gwas_df[gwas_mlog10p_col]))
     ax_manh = draw_manhattan_track(
         fig=fig,
         target_gridspec_cell=gs[1, 0],
         gwas_df=gwas_df,
-        ld2_colors=ld2[lead, :],  # Pass the color array
+        ld2_colors=ld2_slice,  # Pass the color array
         gwas_pos_col=gwas_pos_col,
         gwas_mlog10p_col=gwas_mlog10p_col,
         break_at=20.0,
@@ -313,8 +319,7 @@ def plot_locus_tracks_matplotlib(
     )
     # #3 ld heatmap track
     plot_ld_heatmap(
-        ld_abs=ld_abs,
-        ld2=ld2,
+        ld_np=ld_np,
         gwas_df=gwas_df,
         options=heatmap_options,
         ax_ld=ax_ld,
@@ -717,8 +722,7 @@ def plot_susie_track(
 
 
 def plot_ld_heatmap(
-    ld_abs: np.ndarray,
-    ld2: np.ndarray,
+    ld_np: np.ndarray,
     gwas_df: pl.DataFrame,
     options: HeatmapOptions,
     ax_ld,
@@ -727,9 +731,9 @@ def plot_ld_heatmap(
     gwas_pos_col: str = GWASLAB_POS_COL,
 ):
     if options.mode == "ld_abs":
-        to_plot = ld_abs
+        to_plot: np.ndarray = abs(ld_np)
     elif options.mode == "ld2":
-        to_plot = ld2
+        to_plot = ld_np**2
     else:
         raise ValueError(f"Unknown mode: {options.mode}")
     ar, edges = get_array_and_edges_for_ld_heatmap(
