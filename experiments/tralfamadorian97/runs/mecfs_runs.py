@@ -10,12 +10,20 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_BTN1A
     DECODE_ME_BTN1A1_REGION_PLOT_37
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabgap1l_locus_37 import \
     DECODE_ME_RABGAP1L_REGION_PLOT_37
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr15_54_925_638_locus import \
+    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr17_50_237_377_locus import \
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr1_173_locus import \
     DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr6_26215000_locus import \
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr20_47_653_230_locus import \
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr6_26_215_000_locus import \
     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_chr1_173_locus_stackplot import \
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr1_173_locus_stackplot import \
     DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.susie_finemap_decode_me_37_chr6_97_505_620_locus import \
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import \
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.prep_for_fine_mapping.chr1_173_locus.harmonize_with_polyfun_reference_alleles import \
@@ -33,7 +41,12 @@ from mecfs_bio.assets.reference_data.ukbb_ld_matrices.from_polyfun.chr1_17300000
 def run_initial_decode_me_analysis():
     DEFAULT_RUNNER.run(
         # [
-            DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP.terminal_tasks()
+        +DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP.terminal_tasks()
+    +DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP.terminal_tasks()
+    +DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP.terminal_tasks()
+        ,
+        #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
             # MILLION_VETERAN_LDL_EUR_DATA_RAW
             # DECODE_ME_RABGAP1L_REGION_PLOT_37,
             # DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.harmonize_task
@@ -53,7 +66,7 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
-        must_rebuild_transitive= DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
+        # must_rebuild_transitive= DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
             # DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.harmonized_sumstats_task
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT
             # DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS

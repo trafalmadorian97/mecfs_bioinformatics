@@ -2,6 +2,8 @@
 Asset generator for fine mapping with SUSIE
 """
 
+from pathlib import Path
+
 import structlog
 from attrs import frozen
 
@@ -13,7 +15,17 @@ from mecfs_bio.asset_generator.ukbb_broad_ld_matrix_generator import (
 from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import (
     MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
 )
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
+    ConvertDataFrameToMarkdownTask,
+)
+from mecfs_bio.build_system.task.copy_file_from_directory_task import (
+    CopyFileFromDirectoryTask,
+)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     HarmonizeGWASWithReferenceViaAlleles,
 )
@@ -27,6 +39,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
+    COMBINED_CS_FILENAME,
     BroadInstituteFormatLDMatrix,
     SusieRFinemapTask,
 )
@@ -58,6 +71,9 @@ class BroadFineMapTaskGroup:
     susie_finemap_strict_plot: Task
     susie_finemap_1_credible_set_task: Task
     susie_finemap_1_credible_set_plot: Task
+    susie_finemap_2_credible_set_task: Task
+    susie_finemap_2_credible_set_plot: Task
+    markdown_table_tasks: list[Task]
 
     def terminal_tasks(self) -> list[Task]:
         return [
@@ -67,7 +83,7 @@ class BroadFineMapTaskGroup:
             self.susie_finemap_strict_plot,
             self.susie_finemap_1_credible_set_task,
             self.susie_finemap_1_credible_set_plot,
-        ]
+        ] + self.markdown_table_tasks
 
 
 def generate_assets_broad_ukbb_fine_map(
@@ -141,6 +157,7 @@ def generate_assets_broad_ukbb_fine_map(
             ]
         ),
     )
+    markdown_table_tasks = []
     susie_finemap_task = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap",
         gwas_data_task=harmonized_sumstats_task,
@@ -148,20 +165,6 @@ def generate_assets_broad_ukbb_fine_map(
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
     )
-    # copy_cs=CopyFileFromDirectoryTask.create_result_table(
-    #     asset_id=base_name + "_copy_cs_from_directory",
-    #     source_directory_task=susie_finemap_task,
-    #     path_inside_directory=Path(COMBINED_CS_FILENAME),
-    #     extension=".parquet",
-    #     read_spec=DataFrameReadSpec(
-    #         DataFrameParquetFormat()
-    #     )
-    #
-    # )
-    # cs_markdown=ConvertDataFrameToMarkdownTask.create_from_result_table_task(
-    #     asset_id=base_name + "_convert_cs_to_markdown",
-    #     source_task=copy_cs,
-    # )
     susie_stack_plot_task = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot",
         susie_task=susie_finemap_task,
@@ -171,6 +174,11 @@ def generate_assets_broad_ukbb_fine_map(
         heatmap_options=HeatmapOptions(
             heatmap_bin_options=None, mode="ld2", cmap="plasma"
         ),
+    )
+    markdown_table_tasks.append(
+        markdown_cs_table_task(
+            susie_finemap_task=susie_finemap_task, base_name=base_name + "_susie_base"
+        )
     )
 
     susie_finemap_task_strict = SusieRFinemapTask.create(
@@ -192,6 +200,13 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
+    markdown_table_tasks.append(
+        markdown_cs_table_task(
+            susie_finemap_task=susie_finemap_task_strict,
+            base_name=base_name + "_susie_strict",
+        )
+    )
+
     susie_finemap_task_1_credible_set = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap_1_credible_set",
         gwas_data_task=harmonized_sumstats_task,
@@ -199,7 +214,6 @@ def generate_assets_broad_ukbb_fine_map(
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
         max_credible_sets=1,
-        # z_score_filtering_threshold=1.0
     )
     susie_plot_1_credible_set = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_1_credible_set",
@@ -210,6 +224,39 @@ def generate_assets_broad_ukbb_fine_map(
         heatmap_options=HeatmapOptions(
             heatmap_bin_options=None, mode="ld2", cmap="plasma"
         ),
+    )
+
+    markdown_table_tasks.append(
+        markdown_cs_table_task(
+            susie_finemap_task=susie_finemap_task_1_credible_set,
+            base_name=base_name + "_susie_1",
+        )
+    )
+
+    susie_finemap_task_2_credible_set = SusieRFinemapTask.create(
+        asset_id=base_name + "_susie_finemap_2_credible_set",
+        gwas_data_task=harmonized_sumstats_task,
+        ld_labels_task=ld_labels_task_renamed,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=sample_size_or_effect_sample_size,
+        max_credible_sets=1,
+    )
+    susie_plot_2_credible_set = SusieStackPlotTask.create(
+        asset_id=base_name + "_susie_stackplot_2_credible_set",
+        susie_task=susie_finemap_task_2_credible_set,
+        gene_info_task=MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
+        gene_info_pipe=IdentityPipe(),
+        region_mode=RegionSelectDefault(),
+        heatmap_options=HeatmapOptions(
+            heatmap_bin_options=None, mode="ld2", cmap="plasma"
+        ),
+    )
+
+    markdown_table_tasks.append(
+        markdown_cs_table_task(
+            susie_finemap_task=susie_finemap_task_2_credible_set,
+            base_name=base_name + "_susie_2",
+        )
     )
 
     return BroadFineMapTaskGroup(
@@ -223,4 +270,25 @@ def generate_assets_broad_ukbb_fine_map(
         susie_finemap_strict_plot=strict_plot,
         susie_finemap_1_credible_set_task=susie_finemap_task_1_credible_set,
         susie_finemap_1_credible_set_plot=susie_plot_1_credible_set,
+        markdown_table_tasks=markdown_table_tasks,
+        susie_finemap_2_credible_set_task=susie_finemap_task_2_credible_set,
+        susie_finemap_2_credible_set_plot=susie_plot_2_credible_set,
     )
+
+
+def markdown_cs_table_task(
+    susie_finemap_task: SusieRFinemapTask, base_name: str
+) -> Task:
+    copy_cs = CopyFileFromDirectoryTask.create_result_table(
+        asset_id=base_name + "_copy_cs_from_directory",
+        source_directory_task=susie_finemap_task,
+        path_inside_directory=Path(COMBINED_CS_FILENAME),
+        extension=".parquet",
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+    )
+
+    cs_markdown = ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+        asset_id=base_name + "_convert_cs_to_markdown",
+        source_task=copy_cs,
+    )
+    return cs_markdown

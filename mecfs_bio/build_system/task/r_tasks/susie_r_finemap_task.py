@@ -2,6 +2,7 @@
 Finemap a GWAS locus using SUSIE
 """
 
+import gc
 from pathlib import Path, PurePath
 
 import numpy as np
@@ -17,7 +18,7 @@ from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import (
     importr,
 )
-from scipy.sparse import coo_matrix, csr_matrix
+from scipy.sparse import csr_matrix
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -136,16 +137,16 @@ class SusieRFinemapTask(Task):
 
         ld_matrix_asset = fetch(self.ld_matrix_source.task.asset_id)
         assert isinstance(ld_matrix_asset, FileAsset)
-        ld_matrix_sparse = _load_ld_matrix(
+        partial_ld_matrix_sparse = _load_partial_ld_matrix(
             path=ld_matrix_asset.path, ld_labels_table=ld_labels_table
         )
 
         gwas_table, ld_labels_table, ld_matrix = align_gwas_and_ld(
             gwas=gwas_table,
             ld_labels=ld_labels_table,
-            ld_matrix_sparse=ld_matrix_sparse,
+            partial_ld_matrix_sparse=partial_ld_matrix_sparse,
         )
-        del ld_matrix_sparse
+        del partial_ld_matrix_sparse
         gwas_table, ld_labels_table, ld_matrix = apply_subsample(
             gwas_table, ld_labels_table, ld_matrix, subsample=self.subsample
         )
@@ -212,6 +213,15 @@ class SusieRFinemapTask(Task):
             L=self.max_credible_sets,
         )
 
+        del ld_matrix
+        del gwas_table
+        del susie_result
+
+        # Force Python GC
+        gc.collect()
+
+        # Force R GC
+        ro.r("gc()")
         return DirectoryAsset(scratch_dir)
 
     @classmethod
@@ -256,7 +266,7 @@ class SusieRFinemapTask(Task):
 
 
 def align_gwas_and_ld(
-    gwas: pl.DataFrame, ld_labels: pl.DataFrame, ld_matrix_sparse: coo_matrix
+    gwas: pl.DataFrame, ld_labels: pl.DataFrame, partial_ld_matrix_sparse: csr_matrix
 ) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
     """
     Slice the reference LD matrix and the GWAS data so that they only include genetic variants in their intersection
@@ -274,14 +284,20 @@ def align_gwas_and_ld(
         ],
         maintain_order="left",
     )
-    ld_matrix = csr_matrix(ld_matrix_sparse).toarray()
-    ld_matrix = ld_matrix[
-        joined["ld_index"].to_numpy().reshape(-1, 1),
-        joined["ld_index"].to_numpy().reshape(1, -1),
+    keep_ld_index = joined["ld_index"].to_numpy()
+    partial_ld_matrix_sparse = partial_ld_matrix_sparse[keep_ld_index, :][
+        :, keep_ld_index
     ]
+    partial_ld_matrix_dense = partial_ld_matrix_sparse.toarray()
+    ld_matrix = partial_ld_matrix_dense + partial_ld_matrix_dense.T
+
+    ld_labels = ld_labels[joined["ld_index"]].drop("ld_index")
+
+    assert ld_matrix.shape[0] == len(ld_labels)
+    assert (abs(ld_matrix.diagonal() - 1)).max() <= 1e-4
     return (
         gwas[joined["gwas_index"]].drop("gwas_index"),
-        ld_labels[joined["ld_index"]].drop("ld_index"),
+        ld_labels,
         ld_matrix,
     )
 
@@ -418,7 +434,11 @@ def write_result(
     subdir.mkdir(parents=True, exist_ok=True)
     if "purity" not in sets:
         logger.debug("No credible sets found. Aborting.")
-        (directory / NO_CS_FOUND_FILENAME).write_text("no credible sets foun")
+        (directory / NO_CS_FOUND_FILENAME).write_text("no credible sets found")
+        dummy_cs_df = pd.DataFrame(
+            {ALPHA_COLUMN_NAME: [], MU_COLUMN_NAME: [], PIP_COLUMN: [], CS_COLUMN: []}
+        )
+        dummy_cs_df.to_parquet(directory / COMBINED_CS_FILENAME)
     else:
         pd.DataFrame(sets["purity"]).to_parquet(directory / PURITY_FILENAME)
         sets.pop("purity")
@@ -440,9 +460,12 @@ def write_result(
         #     cs_data_tables.append(
         #         gwas_for_set.with_columns(pl.lit(set_name).alias(CS_COLUMN))
         #     )
-        pl.concat(list(cs_data_tables.values()), how="vertical").write_parquet(
-            directory / COMBINED_CS_FILENAME
-        )
+        pl.concat(list(cs_data_tables.values()), how="vertical").sort(
+            by=[CS_COLUMN, PIP_COLUMN], descending=[False, True]
+        ).select(
+            pl.col(CS_COLUMN),
+            pl.exclude(CS_COLUMN),  # bring credible set column to front
+        ).write_parquet(directory / COMBINED_CS_FILENAME)
 
 
 def extract_cs_data_tables(
@@ -487,15 +510,14 @@ def _save_adjustment(adjustment: float, scratch_dir: Path):
     adjustment_df.to_parquet(scratch_dir / ADJUSTMENT_VALUE_FILENAME)
 
 
-def _load_ld_matrix(path: Path, ld_labels_table: pl.DataFrame) -> coo_matrix:
-    logger.debug(f"loading ld matrix from {path}")
+def _load_partial_ld_matrix(path: Path, ld_labels_table: pl.DataFrame) -> csr_matrix:
+    logger.debug(f"loading partial ld matrix from {path}")
     partial_ld_matrix = scipy.sparse.load_npz(path)
-    ld_matrix = partial_ld_matrix + partial_ld_matrix.transpose()
-    logger.debug("done loading ld matrix")
+    # ld_matrix = partial_ld_matrix + partial_ld_matrix.transpose()
+    # del partial_ld_matrix
+    logger.debug("done loading parital ld matrix")
 
-    assert ld_matrix.shape[0] == len(ld_labels_table)
-    assert (abs(ld_matrix.diagonal() - 1)).max() <= 1e-4
-    return coo_matrix(ld_matrix)
+    return csr_matrix(partial_ld_matrix)
 
 
 def _make_diagnostic_plot_and_table(
