@@ -14,6 +14,7 @@ from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import (
     importr,
 )
+from scipy.sparse import csr_matrix
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -121,20 +122,21 @@ def test_align():
             },
         ]
     )
-    ld_matrix = scipy.sparse.coo_matrix(
-        np.array([[1, 0.2, 0.3], [0.2, 1, 0.4], [0.3, 0.4, 1]])
-    )
+    ld_matrix = np.array([[1, 0.2, 0.3], [0.2, 1, 0.4], [0.3, 0.4, 1]])
+    partial_ld = np.tril(ld_matrix)
+    partial_ld[[0, 1, 2], [0, 1, 2]] = 0.5
+
     rg, rr, rmat = align_gwas_and_ld(
         gwas=gwas,
         ld_labels=reference,
-        ld_matrix_sparse=ld_matrix,
+        partial_ld_matrix_sparse=csr_matrix(partial_ld),
     )
     pl.testing.assert_frame_equal(
         rg,
         gwas[1:],
     )
     pl.testing.assert_frame_equal(rr, reference[:-1])
-    np.testing.assert_array_equal(rmat, ld_matrix.toarray()[:-1, :-1])
+    np.testing.assert_array_equal(rmat, ld_matrix[:-1, :-1])
 
 
 _susie_n = 2500
