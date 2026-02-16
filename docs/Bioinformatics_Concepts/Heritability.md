@@ -99,6 +99,10 @@ Todo[@leia2025heritability]
 
 
 
+# Links
+
+[Broad Institute Prime Talk on Heritability](https://www.youtube.com/watch?v=wM7yxJlvwe8)
+
 
 # References
 
