@@ -110,7 +110,7 @@ class MagmaGeneSetAnalysisTask(Task):
             gene_set_or_covar_path = (
                 gene_set_or_covar_asset.path / self.gene_set_or_covar_task.path_in_dir
             )
-        if _empty_gene_set_file(gene_set_or_covar_path):
+        if _empty_gene_set_file(gene_set_or_covar_path, model_params=self.model_params):
             pd.DataFrame({MAGMA_VARIABLE_COLUMN: [], MAGMA_P_COLUMN: []}).to_csv(
                 out_dir / (GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"),
                 sep="\t",
@@ -180,11 +180,18 @@ class MagmaGeneSetAnalysisTask(Task):
         )
 
 
-def _empty_gene_set_file(gene_set_file_path: Path):
+def _empty_gene_set_file(
+    gene_set_file_path: Path, model_params: ModelParams | None
+) -> bool:
     """
-    Check if the gene set file contains no gene sets.  This can occur if we perform pre-filtering on gene sets
+    Check if the gene set file contains no gene sets.   This can occur if we perform pre-filtering on gene sets
+    In the case of a joint pairs model, we need at least 2 gene sets
     """
+
+    lim = (
+        1 if (model_params is None or ~model_params.joint_pairs) else 2
+    )  # the first column is the "GENE" column, so to have 1 gene set we need two columns, and to have two gene sets we need three
     df = pd.read_csv(gene_set_file_path, sep="\s+")
-    if len(df.columns) <= 1:
+    if len(df.columns) <= lim:
         return True
     return False
