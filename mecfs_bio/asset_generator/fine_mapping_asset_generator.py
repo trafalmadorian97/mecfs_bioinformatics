@@ -29,6 +29,7 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     HarmonizeGWASWithReferenceViaAlleles, ChromRange,
 )
+from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import PalindromeStrategy
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
     PipeDataFrameTask,
@@ -95,7 +96,8 @@ def generate_assets_broad_ukbb_fine_map(
     base_name: str,
     sumstats_pipe: DataProcessingPipe,
     sample_size_or_effect_sample_size: int,
-    chrom_range: ChromRange|None=None
+    chrom_range: ChromRange|None=None,
+palindrome_strategy:PalindromeStrategy="drop"
 
 ) -> BroadFineMapTaskGroup:
     """
@@ -111,12 +113,14 @@ def generate_assets_broad_ukbb_fine_map(
         assert chrom == chrom_range.chrom
         assert pos>= chrom_range.start
         assert pos <=chrom_range.end
-        assert interval.start >= chrom_range.start
+        assert interval.start <= chrom_range.start
         assert chrom_range.end <= interval.end
         base_name = base_name +   f"chr{chrom_range.chrom}_{chrom_range.start}_{chrom_range.end}"
     else:
         stem = get_genomic_interval_stem_name(interval)
         base_name = base_name + "_" + stem
+    if palindrome_strategy!="drop":
+        base_name = base_name + "_palindromes_"+palindrome_strategy
 
     logger.debug(
         f"To finemap position {pos} on chromosome {chrom}, interval {interval} was selected."
@@ -149,7 +153,7 @@ def generate_assets_broad_ukbb_fine_map(
         asset_id=base_name + "_gwas_harmonized_with_ref",
         gwas_data_task=build_37_sumstats_task,
         reference_task=ld_labels_task_renamed,
-        palindrome_strategy="drop",
+        palindrome_strategy=palindrome_strategy,
         gwas_pipe=CompositePipe(
             [
                 sumstats_pipe,
@@ -170,6 +174,7 @@ def generate_assets_broad_ukbb_fine_map(
                 ),
             ]
         ),
+        chrom_range_filter=chrom_range,
     )
     markdown_table_tasks = []
     susie_finemap_task = SusieRFinemapTask.create(
