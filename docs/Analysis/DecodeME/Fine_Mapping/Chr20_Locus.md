@@ -15,7 +15,7 @@ As a linkage disequilibrium reference, I used a UK Biobank LD matrix hosted on [
 The results of running SUSIE on the chromosome 20 DecodeME GWAS-1 locus are plotted below:
 
 
-[//]: # (![decode_me_susie_chr20]&#40;../../../_figs/decode_me_chr20_46000001_49000001_susie_stackplot.png&#41;)
+![decode_me_susie_chr20](https://github.com/user-attachments/assets/1c35d8cb-5614-4872-8d4a-618b408b632a)
 
 
 SUSIE reports that it has found two credible sets, one of which is diffuse, and one of which is highly concentrated. In the table below, the "cs" column indexes the credible set.  SUSIE assumes that each credible set contains exactly one variant.  The "PIP" column corresponds to "Posterior Inclusion Probability": the odds that a given variant is causal, conditional on the data.
