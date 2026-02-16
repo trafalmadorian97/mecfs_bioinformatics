@@ -37,7 +37,9 @@ logger = structlog.getLogger()
 
 _dummy_gget_result = pd.DataFrame(
     {
+        "primary_gene_name": [None],
         "ensembl_description": [None],
+        "uniprot_id": [None],
         "uniprot_description": [None],
         "ncbi_description": [None],
         "subcellular_localisation": [None],
