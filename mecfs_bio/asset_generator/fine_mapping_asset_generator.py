@@ -27,7 +27,7 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
-    HarmonizeGWASWithReferenceViaAlleles,
+    HarmonizeGWASWithReferenceViaAlleles, ChromRange,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
@@ -84,6 +84,7 @@ class BroadFineMapTaskGroup:
             self.susie_finemap_1_credible_set_task,
             self.susie_finemap_1_credible_set_plot,
             self.susie_finemap_2_credible_set_task,
+            self.susie_finemap_2_credible_set_plot
         ] + self.markdown_table_tasks
 
 
@@ -94,15 +95,29 @@ def generate_assets_broad_ukbb_fine_map(
     base_name: str,
     sumstats_pipe: DataProcessingPipe,
     sample_size_or_effect_sample_size: int,
+    chrom_range: ChromRange|None=None
+
 ) -> BroadFineMapTaskGroup:
     """
     Asset generator for fine mapping using SUSIE.
     by default, calls SUSIE with a number of different parameter settings to check how the results are affected
     """
+
     interval = get_optimal_ukbb_ld_interval(
         chrom=chrom,
         pos=pos,
     )
+    if chrom_range is not None:
+        assert chrom == chrom_range.chrom
+        assert pos>= chrom_range.start
+        assert pos <=chrom_range.end
+        assert interval.start >= chrom_range.start
+        assert chrom_range.end <= interval.end
+        base_name = base_name +   f"chr{chrom_range.chrom}_{chrom_range.start}_{chrom_range.end}"
+    else:
+        stem = get_genomic_interval_stem_name(interval)
+        base_name = base_name + "_" + stem
+
     logger.debug(
         f"To finemap position {pos} on chromosome {chrom}, interval {interval} was selected."
     )
@@ -112,8 +127,6 @@ def generate_assets_broad_ukbb_fine_map(
         )
     )
 
-    stem = get_genomic_interval_stem_name(interval)
-    base_name = base_name + "_" + stem
     ld_labels_task_renamed = PipeDataFrameTask.create(
         source_task=ld_labels_task,
         asset_id=ld_labels_task.asset_id + "_renamed",
