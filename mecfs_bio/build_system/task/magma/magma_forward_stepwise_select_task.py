@@ -85,6 +85,20 @@ class MagmaForwardStepwiseSelectTask(Task):
         )
         df_marg = pd.read_csv(marginal_path, comment="#", sep=r"\s+")
         df_cond = pd.read_csv(conditional_path, comment="#", sep=r"\s+")
+        if (len(df_marg) == 0) or (len(df_cond) == 0):
+            logger.debug(
+                f"Marginal DF has {len(df_marg)} rows, while conditional df has {len(df_cond)} rows.  Cannot perform stepwise analysis. Skipping"
+            )
+            retained_cluster_list: list = []
+            retained_cluster_df = pd.DataFrame(
+                {
+                    RETAINED_CLUSTERS_COLUMN: retained_cluster_list,
+                }
+            )
+            out_path = scratch_dir / self.asset_id
+            retained_cluster_df.to_csv(out_path, index=False)
+            return FileAsset(out_path)
+
         df_wide = generate_wide_dataframe(df_cond=df_cond, df_marg=df_marg)
         p_marg_dict, prop_sig_dict = generate_mappers_from_wide_dataframe(
             df_wide=df_wide

@@ -43,6 +43,8 @@ extra_javascript:
   - javascripts/tablesort-init.js
 
 markdown_extensions:
+  - admonition
+  - pymdownx.details
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid

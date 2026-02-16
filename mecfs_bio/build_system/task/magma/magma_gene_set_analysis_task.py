@@ -1,6 +1,7 @@
 from pathlib import Path, PurePath
 from typing import Literal, Sequence
 
+import pandas as pd
 import structlog
 from attrs import frozen
 
@@ -18,6 +19,7 @@ from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
     GENE_ANALYSIS_OUTPUT_STEM_NAME,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.magma_constants import MAGMA_P_COLUMN, MAGMA_VARIABLE_COLUMN
 from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
@@ -96,11 +98,9 @@ class MagmaGeneSetAnalysisTask(Task):
         return deps
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        binary_asset = fetch(self._magma_binary_id)
-        gene_analysis_asset = fetch(self._magma_gene_analysis_id())
+        out_dir = scratch_dir / "gene_set_analysis_dir"
+        out_dir.mkdir(parents=True, exist_ok=True)
         gene_set_or_covar_asset = fetch(self._gene_set_or_covar_task_id)
-        assert isinstance(binary_asset, FileAsset)
-        assert isinstance(gene_analysis_asset, DirectoryAsset)
         if isinstance(self.gene_set_or_covar_task, Task):
             assert isinstance(gene_set_or_covar_asset, FileAsset)
             gene_set_or_covar_path = gene_set_or_covar_asset.path
@@ -110,14 +110,24 @@ class MagmaGeneSetAnalysisTask(Task):
             gene_set_or_covar_path = (
                 gene_set_or_covar_asset.path / self.gene_set_or_covar_task.path_in_dir
             )
+        if _empty_gene_set_file(gene_set_or_covar_path, model_params=self.model_params):
+            pd.DataFrame({MAGMA_VARIABLE_COLUMN: [], MAGMA_P_COLUMN: []}).to_csv(
+                out_dir / (GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"),
+                sep="\t",
+                index=False,
+            )
+            logger.debug("Gene set file is empty, skipping running MAGMA")
+            return DirectoryAsset(out_dir)
 
+        binary_asset = fetch(self._magma_binary_id)
+        gene_analysis_asset = fetch(self._magma_gene_analysis_id())
+        assert isinstance(binary_asset, FileAsset)
+        assert isinstance(gene_analysis_asset, DirectoryAsset)
         binary_path = binary_asset.path
         gene_analysis_path_root_path = gene_analysis_asset.path
         gene_analysis_full_path = gene_analysis_path_root_path / (
             GENE_ANALYSIS_OUTPUT_STEM_NAME + ".genes.raw"
         )
-        out_dir = scratch_dir / "gene_set_analysis_dir"
-        out_dir.mkdir(parents=True, exist_ok=True)
         out_base_path = out_dir / GENE_SET_ANALYSIS_OUTPUT_STEM_NAME
 
         set_or_covar_command = (
@@ -168,3 +178,20 @@ class MagmaGeneSetAnalysisTask(Task):
             set_or_covar=set_or_covar,
             model_params=model_params,
         )
+
+
+def _empty_gene_set_file(
+    gene_set_file_path: Path, model_params: ModelParams | None
+) -> bool:
+    """
+    Check if the gene set file contains no gene sets.   This can occur if we perform pre-filtering on gene sets
+    In the case of a joint pairs model, we need at least 2 gene sets
+    """
+
+    lim = (
+        1 if (model_params is None or ~model_params.joint_pairs) else 2
+    )  # the first column is the "GENE" column, so to have 1 gene set we need two columns, and to have two gene sets we need three
+    df = pd.read_csv(gene_set_file_path, sep="\s+")
+    if len(df.columns) <= lim:
+        return True
+    return False
