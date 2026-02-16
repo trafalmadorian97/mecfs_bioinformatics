@@ -51,6 +51,13 @@ _REF_COLS_ALLELE_MATCH = [
 
 
 @frozen
+class ChromRange:
+    chrom: int
+    start: int
+    end: int
+
+
+@frozen
 class HarmonizeGWASWithReferenceViaAlleles(Task):
     """
     Given a table of reference genetic variants, harmonize gwas data with that table of reference variants
@@ -73,6 +80,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     gwas_data_task: Task
     reference_task: Task
     palindrome_strategy: PalindromeStrategy
+    chrom_range_filter: ChromRange | None = None
     gwas_pipe: DataProcessingPipe = IdentityPipe()
     ref_pipe: DataProcessingPipe = IdentityPipe()
 
@@ -166,10 +174,13 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         if self.palindrome_strategy == "drop":
             logger.debug(f"dropping {gd[IS_PALINDROMIC].sum()} palindromic variants")
             gd = gd.filter(~pl.col(IS_PALINDROMIC))
+        elif self.palindrome_strategy == "keep":
+            logger.debug(f"keeping {gd[IS_PALINDROMIC].sum()} palindromic variants")
         else:
             raise NotImplementedError(
                 f"mode {self.palindrome_strategy} not implemented"
             )
+        gd = _filter_chrom_range(gd, chrom_range=self.chrom_range_filter)
 
         gd_match = gd.join(
             reference,
@@ -268,4 +279,17 @@ def _report_matches(df: pl.DataFrame) -> None:
     logger.debug(
         f"Found {num_matches} variants matching the reference in their base orientation\n\n"
         f"Found {flip_matches} variants matching the reference when effect and non-effect alleles are flipped"
+    )
+
+
+def _filter_chrom_range(
+    gwas_data: pl.DataFrame, chrom_range: ChromRange | None
+) -> pl.DataFrame:
+    if chrom_range is None:
+        return gwas_data
+    logger.debug(f"Filtering genomic data to the range {chrom_range}.")
+    return gwas_data.filter(
+        (pl.col(GWASLAB_POS_COL) >= chrom_range.start)
+        & (pl.col(GWASLAB_POS_COL) <= chrom_range.end)
+        & (pl.col(GWASLAB_CHROM_COL) == chrom_range.chrom),
     )
