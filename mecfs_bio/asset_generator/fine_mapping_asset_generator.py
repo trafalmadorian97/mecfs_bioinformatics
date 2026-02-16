@@ -83,6 +83,7 @@ class BroadFineMapTaskGroup:
             self.susie_finemap_strict_plot,
             self.susie_finemap_1_credible_set_task,
             self.susie_finemap_1_credible_set_plot,
+            self.susie_finemap_2_credible_set_task,
         ] + self.markdown_table_tasks
 
 
