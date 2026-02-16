@@ -101,10 +101,11 @@ Todo[@leia2025heritability]
 
 # Links
 
-[Broad Institute Prime Talk on Heritability](https://www.youtube.com/watch?v=wM7yxJlvwe8)
+[Broad Institute Primer Talk on Heritability](https://www.youtube.com/watch?v=wM7yxJlvwe8)
 
 
 # References
 
 - Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019. (Chapter 15)
+
 - Visscher, Peter M., William G. Hill, and Naomi R. Wray. "Heritability in the genomics era—concepts and misconceptions." Nature reviews genetics 9.4 (2008): 255-266.
