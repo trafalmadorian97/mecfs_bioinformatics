@@ -41,10 +41,10 @@ from mecfs_bio.assets.reference_data.ukbb_ld_matrices.from_polyfun.chr1_17300000
 def run_initial_decode_me_analysis():
     DEFAULT_RUNNER.run(
         # [
-    [DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP.susie_finemap_2_credible_set_plot]
-        # +DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP.terminal_tasks()
-    # +DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP.terminal_tasks()
-    # +DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP.terminal_tasks()
+    # [DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP.susie_finemap_2_credible_set_plot]
+    #     DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP.terminal_tasks()
+    # DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP.terminal_tasks()
+   DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP.terminal_tasks()
         ,
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
             # MILLION_VETERAN_LDL_EUR_DATA_RAW
