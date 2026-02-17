@@ -1,6 +1,7 @@
 from pathlib import Path, PurePath
 
 import pandas as pd
+import pytest
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -20,12 +21,24 @@ from mecfs_bio.build_system.task.upset_plot_task import (
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
 
 
-def test_upset_plot_task(tmp_path: Path):
+@pytest.mark.parametrize(
+    ["df_1", "df_2"],
+    [
+        (
+            pd.DataFrame({"col1": ["A", "B", "C"]}),
+            pd.DataFrame({"col1": ["B", "C", "D"]}),
+        ),
+        (pd.DataFrame({"col1": []}), pd.DataFrame({"col1": []})),
+    ],
+)
+def test_upset_plot_task(
+    tmp_path: Path,
+    df_1: pd.DataFrame,
+    df_2: pd.DataFrame,
+):
     scratch = tmp_path / "scratch"
     scratch.mkdir(parents=True, exist_ok=True)
     path_in_dir = PurePath("file_in_dir.parquet")
-    df_1 = pd.DataFrame({"col1": ["A", "B", "C"]})
-    df_2 = pd.DataFrame({"col1": ["B", "C", "D"]})
     file1_path = tmp_path / "file1.parquet"
     df_1.to_parquet(file1_path)
     dir1_path = tmp_path / "dir"
