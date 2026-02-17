@@ -35,7 +35,6 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     RegionSelectDefault,
     SusieStackPlotTask,
 )
-from mecfs_bio.build_system.task.upset_plot_task import UpSetPlotTask
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -212,8 +211,6 @@ def generate_assets_broad_ukbb_fine_map(
             heatmap_bin_options=None, mode="ld2", cmap="plasma"
         ),
     )
-
-
 
     return BroadFineMapTaskGroup(
         ld_labels_task=ld_labels_task,
