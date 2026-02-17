@@ -638,6 +638,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c2/14/e2a54fabd4f08cd7af1c07030603c3356b74da07f7cc056e600436edfa17/tzlocal-5.3.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/ff/c7a96f308d1585a7a7d4b925c7e5a7fce5a0dc5d4172c16b099259b029c1/uniprot_id_mapper-1.1.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ae/0c/6dc1e50b29ba5ebdbeaab325207e2bba93f072207a6787accc4630b811e3/universal_pathlib-0.3.4-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/fb/63/a5a1628898729bcfb67ea785a152e424d78e0f57dfbba46213a652532d6a/UpSetPlot-0.9.0.tar.gz
       - pypi: https://files.pythonhosted.org/packages/fa/6e/3e955517e22cbdd565f2f8b2e73d52528b14b8bcfdb04f62466b071de847/validators-0.35.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b5/e8/dbf020b4d98251a9860752a094d09a65e1b436ad181faf929983f697048f/watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/3f/0e/fa3b193432cfc60c93b42f3be03365f5f909d2b3ea410295cf36df739e31/widgetsnbextension-4.0.15-py3-none-any.whl
@@ -1894,7 +1895,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: c719a80def687f3ede007e5d0aa97c9ca2347c7c75a7b16f893ed974e119984e
+  sha256: 76a19cf49f4ca6961dbcbb5986638a920da4654e3981bd6d6a1639ecd43e9745
   requires_python: ==3.12
   editable: true
 - pypi: https://files.pythonhosted.org/packages/7f/ad/ed66f7dd3d5e595a8bf1e115a54f77a185b616eb49ea94fe052c7fd4259e/blosc2-4.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
@@ -9546,6 +9547,15 @@ packages:
   - pydantic ; extra == 'dev-third-party'
   - pydantic-settings ; extra == 'dev-third-party'
   requires_python: '>=3.9'
+- pypi: https://files.pythonhosted.org/packages/fb/63/a5a1628898729bcfb67ea785a152e424d78e0f57dfbba46213a652532d6a/UpSetPlot-0.9.0.tar.gz
+  name: upsetplot
+  version: 0.9.0
+  sha256: 95b76ac38c624c9dfb1eca1de1a37e30e07e83678b1c57839c943184247b8592
+  requires_dist:
+  - pandas>=0.23
+  - matplotlib>=2.0
+  - pytest>=2.7 ; extra == 'testing'
+  - pytest-cov<2.6 ; extra == 'testing'
 - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.3-pyhd8ed1ab_0.conda
   sha256: af641ca7ab0c64525a96fd9ad3081b0f5bcf5d1cbb091afb3f6ed5a9eee6111a
   md5: 9272daa869e03efe68833e3dc7a02130
