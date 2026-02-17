@@ -5,7 +5,7 @@ hide:
 ---
 # Chr1 Locus
 
-In an attempt to narrow down the DecodeME[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 1 using SUSIE[@wang2020simple].
+In an attempt to narrow down the DecodeME[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 1 using SUSIE[@wang2020simple].
 
 As a linkage disequilibrium reference, I used a UK Biobank LD matrix hosted on [AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used liftover to translate the DecodeME GWAS-1 summary statistics to GRCh37.
 
