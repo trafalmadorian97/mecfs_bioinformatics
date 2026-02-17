@@ -99,5 +99,7 @@ The risk of horizontal pleiotropy is magnified when the connection between the g
 
 todo
 
+## Links
 
+[Talk on MR by Dr. Jean Morrison](https://www.youtube.com/watch?v=kxhmy3EWH8Q&t=34m13s)
 
