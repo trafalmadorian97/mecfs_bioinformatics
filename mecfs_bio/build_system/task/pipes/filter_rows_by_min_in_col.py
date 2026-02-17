@@ -1,5 +1,3 @@
-from typing import Sequence
-
 import narwhals
 from attrs import frozen
 
@@ -17,5 +15,5 @@ class FilterRowsByMinInCol(DataProcessingPipe):
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         return x.filter(
-            narwhals.col(self.col)>=self.min_value,
+            narwhals.col(self.col) >= self.min_value,
         )

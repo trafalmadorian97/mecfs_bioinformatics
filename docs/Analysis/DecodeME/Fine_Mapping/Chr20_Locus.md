@@ -195,7 +195,7 @@ The result is a rather dramatic change: the first, high-confidence credible set 
 
 ## Results when $L=2$ and $L=1$
 
-Weissbrod et al.[@weissbrod2020functionally] observe that setting $L$, the maximum number of credible sets that can be found by SUSIE, to 1 protects against instability or inaccuracy due to a mispatch between the LD reference population and the GWAS population, because whe $L=1$, SUSIE no longer depends on LD.   They also point out that empirically, when $L=2$, even though SUSIE still depends on LD, it tends to be robust to moderate levels of LD mismatch.  I therefore ran SUSIE with these two settings.
+Weissbrod et al.[@weissbrod2020functionally] observe that setting $L$, the maximum number of credible sets that can be found by SUSIE, to 1 protects against instability or inaccuracy due to a mispatch between the LD reference population and the GWAS population, because when $L=1$, SUSIE no longer depends on LD.   They also point out that empirically, when $L=2$, even though SUSIE still depends on LD, it tends to be robust to moderate levels of LD mismatch.  I therefore ran SUSIE with these two settings.
 
 
 The results for $L=1$ are below:

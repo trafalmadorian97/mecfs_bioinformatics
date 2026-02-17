@@ -27,9 +27,12 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
-    HarmonizeGWASWithReferenceViaAlleles, ChromRange,
+    ChromRange,
+    HarmonizeGWASWithReferenceViaAlleles,
 )
-from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import PalindromeStrategy
+from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
+    PalindromeStrategy,
+)
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
     PipeDataFrameTask,
@@ -37,22 +40,24 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.concat_str_pipe import ConcatStrPipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
-from mecfs_bio.build_system.task.pipes.filter_rows_by_min_in_col import FilterRowsByMinInCol
-from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
+from mecfs_bio.build_system.task.pipes.filter_rows_by_min_in_col import (
+    FilterRowsByMinInCol,
+)
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
+    PIP_COLUMN,
     BroadInstituteFormatLDMatrix,
-    SusieRFinemapTask, PIP_COLUMN,
+    SusieRFinemapTask,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     HeatmapOptions,
     RegionSelectDefault,
     SusieStackPlotTask,
 )
-from mecfs_bio.build_system.task.upset_plot_task import UpSetPlotTask, DirSetSource
+from mecfs_bio.build_system.task.upset_plot_task import DirSetSource, UpSetPlotTask
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -108,9 +113,8 @@ def generate_assets_broad_ukbb_fine_map(
     base_name: str,
     sumstats_pipe: DataProcessingPipe,
     sample_size_or_effect_sample_size: int,
-    chrom_range: ChromRange|None=None,
-palindrome_strategy:PalindromeStrategy="drop"
-
+    chrom_range: ChromRange | None = None,
+    palindrome_strategy: PalindromeStrategy = "drop",
 ) -> BroadFineMapTaskGroup:
     """
     Asset generator for fine mapping using SUSIE.
@@ -123,16 +127,18 @@ palindrome_strategy:PalindromeStrategy="drop"
     )
     if chrom_range is not None:
         assert chrom == chrom_range.chrom
-        assert pos>= chrom_range.start
-        assert pos <=chrom_range.end
+        assert pos >= chrom_range.start
+        assert pos <= chrom_range.end
         assert interval.start <= chrom_range.start
         assert chrom_range.end <= interval.end
-        base_name = base_name +   f"chr{chrom_range.chrom}_{chrom_range.start}_{chrom_range.end}"
+        base_name = (
+            base_name + f"chr{chrom_range.chrom}_{chrom_range.start}_{chrom_range.end}"
+        )
     else:
         stem = get_genomic_interval_stem_name(interval)
         base_name = base_name + "_" + stem
-    if palindrome_strategy!="drop":
-        base_name = base_name + "_palindromes_"+palindrome_strategy
+    if palindrome_strategy != "drop":
+        base_name = base_name + "_palindromes_" + palindrome_strategy
 
     logger.debug(
         f"To finemap position {pos} on chromosome {chrom}, interval {interval} was selected."
@@ -290,45 +296,27 @@ palindrome_strategy:PalindromeStrategy="drop"
         )
     )
     variant_id = "__variant_id"
-    id_variant_pipe= ConcatStrPipe(
-       target_cols=[
-           GWASLAB_CHROM_COL,
-           GWASLAB_POS_COL,
-           GWASLAB_EFFECT_ALLELE_COL,
-           GWASLAB_NON_EFFECT_ALLELE_COL
-       ] ,
+    id_variant_pipe = ConcatStrPipe(
+        target_cols=[
+            GWASLAB_CHROM_COL,
+            GWASLAB_POS_COL,
+            GWASLAB_EFFECT_ALLELE_COL,
+            GWASLAB_NON_EFFECT_ALLELE_COL,
+        ],
         sep="__",
         new_col_name=variant_id,
     )
 
-    filtered_id_variant_pipe_005=CompositePipe(
-        [
-            id_variant_pipe,
-            FilterRowsByMinInCol(
-                min_value=0.05,
-                col=PIP_COLUMN
-            )
-        ]
+    filtered_id_variant_pipe_005 = CompositePipe(
+        [id_variant_pipe, FilterRowsByMinInCol(min_value=0.05, col=PIP_COLUMN)]
     )
 
-    filtered_id_variant_pipe_0025=CompositePipe(
-        [
-            id_variant_pipe,
-            FilterRowsByMinInCol(
-                min_value=0.025,
-                col=PIP_COLUMN
-            )
-        ]
+    filtered_id_variant_pipe_0025 = CompositePipe(
+        [id_variant_pipe, FilterRowsByMinInCol(min_value=0.025, col=PIP_COLUMN)]
     )
 
-    filtered_id_variant_pipe_001=CompositePipe(
-        [
-            id_variant_pipe,
-            FilterRowsByMinInCol(
-                min_value=0.01,
-                col=PIP_COLUMN
-            )
-        ]
+    filtered_id_variant_pipe_001 = CompositePipe(
+        [id_variant_pipe, FilterRowsByMinInCol(min_value=0.01, col=PIP_COLUMN)]
     )
 
     upset_plot = UpSetPlotTask.create(
@@ -338,44 +326,33 @@ palindrome_strategy:PalindromeStrategy="drop"
                 name="L=10",
                 task=susie_finemap_task,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=id_variant_pipe,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=10, Strict",
                 task=susie_finemap_task_strict,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=id_variant_pipe,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=2",
                 task=susie_finemap_task_2_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=id_variant_pipe,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=1",
                 task=susie_finemap_task_1_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=id_variant_pipe,
-                col_name=variant_id
+                col_name=variant_id,
             ),
         ],
     )
@@ -387,48 +364,36 @@ palindrome_strategy:PalindromeStrategy="drop"
                 name="L=10",
                 task=susie_finemap_task,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_005,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=10, Strict",
                 task=susie_finemap_task_strict,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_005,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=2",
                 task=susie_finemap_task_2_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_005,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=1",
                 task=susie_finemap_task_1_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_005,
-                col_name=variant_id
+                col_name=variant_id,
             ),
         ],
     )
-
 
     upset_plot_pip0025 = UpSetPlotTask.create(
         asset_id=base_name + "_upset_plot_pip0025",
@@ -437,44 +402,33 @@ palindrome_strategy:PalindromeStrategy="drop"
                 name="L=10",
                 task=susie_finemap_task,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_0025,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=10, Strict",
                 task=susie_finemap_task_strict,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_0025,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=2",
                 task=susie_finemap_task_2_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_0025,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=1",
                 task=susie_finemap_task_1_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_0025,
-                col_name=variant_id
+                col_name=variant_id,
             ),
         ],
     )
@@ -486,44 +440,33 @@ palindrome_strategy:PalindromeStrategy="drop"
                 name="L=10",
                 task=susie_finemap_task,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_001,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=10, Strict",
                 task=susie_finemap_task_strict,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_001,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=2",
                 task=susie_finemap_task_2_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_001,
-                col_name=variant_id
+                col_name=variant_id,
             ),
-
             DirSetSource(
                 name="L=1",
                 task=susie_finemap_task_1_credible_set,
                 file_in_dir=PurePath(COMBINED_CS_FILENAME),
-                read_spec=DataFrameReadSpec(
-                    DataFrameParquetFormat()
-                ),
+                read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 pipe=filtered_id_variant_pipe_001,
-                col_name=variant_id
+                col_name=variant_id,
             ),
         ],
     )
@@ -545,7 +488,7 @@ palindrome_strategy:PalindromeStrategy="drop"
         upset_plot_task=upset_plot,
         upset_plot_task_pip005=upset_plot_pip005,
         upset_plot_task_pip0025=upset_plot_pip0025,
-        upset_plot_task_pip001=upset_plot_pip001
+        upset_plot_task_pip001=upset_plot_pip001,
     )
 
 

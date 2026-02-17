@@ -242,7 +242,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         palindrome_strategy: PalindromeStrategy,
         gwas_pipe: DataProcessingPipe = IdentityPipe(),
         ref_pipe: DataProcessingPipe = IdentityPipe(),
-        chrom_range_filter: ChromRange|None=None
+        chrom_range_filter: ChromRange | None = None,
     ):
         source_meta = gwas_data_task.meta
         read_spec = DataFrameReadSpec(DataFrameParquetFormat())
