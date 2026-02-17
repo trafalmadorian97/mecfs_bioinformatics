@@ -1,3 +1,7 @@
+"""
+Copy a file within a DirectoryAsset to create a FileAsset.  Useful when downstream tasks require FileAssets.
+"""
+
 import shutil
 from pathlib import Path, PurePath
 
@@ -21,6 +25,10 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class CopyFileFromDirectoryTask(Task):
+    """
+    Copy a file within a DirectoryAsset to create a FileAsset.  Useful when downstream tasks require FileAssets.
+    """
+
     _meta: Meta
     source_directory_task: Task
     path_inside_directory: PurePath

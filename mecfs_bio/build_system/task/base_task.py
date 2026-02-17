@@ -1,3 +1,7 @@
+"""
+Instructions for materializing an asset.
+"""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 
