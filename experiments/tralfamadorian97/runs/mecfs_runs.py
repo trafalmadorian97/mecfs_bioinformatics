@@ -3,6 +3,8 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr20_47_653_230_locus_palindromes import \
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROME
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus_palindromes import \
     DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES
 
@@ -20,6 +22,7 @@ def run_initial_decode_me_analysis():
 
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
         DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.terminal_tasks(),
+        # DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROME.terminal_tasks(),
         # MILLION_VETERAN_LDL_EUR_DATA_RAW
             # DECODE_ME_RABGAP1L_REGION_PLOT_37,
             # DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.harmonize_task
