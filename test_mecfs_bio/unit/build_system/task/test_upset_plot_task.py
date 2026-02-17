@@ -62,4 +62,3 @@ def test_upset_plot_task(tmp_path: Path):
 
     result = plot_task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
     assert isinstance(result, FileAsset)
-    print("yo")

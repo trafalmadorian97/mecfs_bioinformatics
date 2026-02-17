@@ -76,6 +76,11 @@ def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
 
 @frozen
 class UpSetPlotTask(Task):
+    """
+    Create an upset plot to describe the intersection of sets represented as dataframe columns
+    See: https://en.wikipedia.org/wiki/UpSet_plot
+    """
+
     _meta: Meta
     set_sources: Sequence[SetSource]
 
