@@ -11,7 +11,7 @@ As a linkage disequilibrium reference, I used a UK Biobank LD matrix hosted on [
 
 The results of running SUSIE on the chromosome 1 DecodeME GWAS-1 locus are plotted below:
 
-![decodeme_ch1_stackplot](../../../_figs/stackplot_decode_me_gwas_1_37_susie_finemap_chr1_173000001_locus.png)
+[//]: # (![decodeme_ch1_stackplot]&#40;../../../_figs/stackplot_decode_me_gwas_1_37_susie_finemap_chr1_173000001_locus.png&#41;)
 
 - The top panel is a heatmap in pixel (i,j) is colored according to the  correlation of between variants i and j.  The heatmap thus reveals the local linkage disequilibrium (LD) structure in the vicinity of the GWAS hit.
 
