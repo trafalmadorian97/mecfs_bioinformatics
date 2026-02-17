@@ -98,8 +98,6 @@ class BroadFineMapTaskGroup:
             self.susie_finemap_2_credible_set_task,
             self.susie_finemap_2_credible_set_plot,
             self.upset_plot_task,
-            # self.upset_plot_task_pip005,
-            # self.upset_plot_task_pip0025,
             self.upset_plot_task_pip001,
         ] + self.markdown_table_tasks
 
