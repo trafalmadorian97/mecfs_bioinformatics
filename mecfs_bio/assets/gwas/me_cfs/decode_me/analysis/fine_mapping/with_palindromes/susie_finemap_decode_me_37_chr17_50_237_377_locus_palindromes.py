@@ -4,7 +4,9 @@ from mecfs_bio.asset_generator.fine_mapping_asset_generator import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
-from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import ChromRange
+from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
+    ChromRange,
+)
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 
 DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES = generate_assets_broad_ukbb_fine_map(
@@ -17,5 +19,5 @@ DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES = generate_assets_broad_u
         4 / (1 / 15_579 + 1 / 259_909)
     ),  # 4/(1/cases + 1/controls)
     palindrome_strategy="keep",
-    chrom_range=ChromRange(17,50_000_000, 51_000_000)
+    chrom_range=ChromRange(17, 50_000_000, 51_000_000),
 )

@@ -1,12 +1,12 @@
-import structlog
+import array
 from pathlib import Path, PurePath
 from typing import Sequence
 
 import matplotlib.pyplot as plt
+import png
+import structlog
 from attrs import frozen
 from upsetplot import UpSet, from_contents
-import png
-import array
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -27,7 +27,9 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
-logger= structlog.get_logger()
+logger = structlog.get_logger()
+
+
 @frozen
 class FileSetSource:
     name: str
@@ -103,7 +105,9 @@ class UpSetPlotTask(Task):
         sets = from_contents(contents_dict)
         if len(sets) == 0:
             write_blank_png(scratch_dir / "sets.png")
-            logger.debug("No sets to intersect.  Writing a blank png file as a placeholder.")
+            logger.debug(
+                "No sets to intersect.  Writing a blank png file as a placeholder."
+            )
             return FileAsset(scratch_dir / "sets.png")
         UpSet(
             sets,
@@ -137,11 +141,11 @@ class UpSetPlotTask(Task):
         raise ValueError(f"Unknown source meta {source_meta}")
 
 
-def write_blank_png(pth:Path):
+def write_blank_png(pth: Path):
     width = 200
     height = 100
-    pixel_data = array.array('B', [255] * (width * height))
+    pixel_data = array.array("B", [255] * (width * height))
 
-    with open(pth, 'wb') as f:
+    with open(pth, "wb") as f:
         w = png.Writer(width, height, greyscale=True, bitdepth=8)
-        w.write(f, [pixel_data[i * width:(i + 1) * width] for i in range(height)])
+        w.write(f, [pixel_data[i * width : (i + 1) * width] for i in range(height)])
