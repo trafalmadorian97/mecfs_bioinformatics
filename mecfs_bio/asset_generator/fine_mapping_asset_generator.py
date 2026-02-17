@@ -2,7 +2,7 @@
 Asset generator for fine mapping with SUSIE
 """
 
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import structlog
 from attrs import frozen
@@ -35,21 +35,24 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.concat_str_pipe import ConcatStrPipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.filter_rows_by_min_in_col import FilterRowsByMinInCol
+from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     BroadInstituteFormatLDMatrix,
-    SusieRFinemapTask,
+    SusieRFinemapTask, PIP_COLUMN,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     HeatmapOptions,
     RegionSelectDefault,
     SusieStackPlotTask,
 )
-from mecfs_bio.build_system.task.upset_plot_task import UpSetPlotTask
+from mecfs_bio.build_system.task.upset_plot_task import UpSetPlotTask, DirSetSource
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -76,6 +79,10 @@ class BroadFineMapTaskGroup:
     susie_finemap_2_credible_set_task: Task
     susie_finemap_2_credible_set_plot: Task
     markdown_table_tasks: list[Task]
+    upset_plot_task: Task
+    upset_plot_task_pip005: Task
+    upset_plot_task_pip0025: Task
+    upset_plot_task_pip001: Task
 
     def terminal_tasks(self) -> list[Task]:
         return [
@@ -86,7 +93,11 @@ class BroadFineMapTaskGroup:
             self.susie_finemap_1_credible_set_task,
             self.susie_finemap_1_credible_set_plot,
             self.susie_finemap_2_credible_set_task,
-            self.susie_finemap_2_credible_set_plot
+            self.susie_finemap_2_credible_set_plot,
+            self.upset_plot_task,
+            self.upset_plot_task_pip005,
+            self.upset_plot_task_pip0025,
+            self.upset_plot_task_pip001,
         ] + self.markdown_table_tasks
 
 
@@ -278,6 +289,244 @@ palindrome_strategy:PalindromeStrategy="drop"
             base_name=base_name + "_susie_2",
         )
     )
+    variant_id = "__variant_id"
+    id_variant_pipe= ConcatStrPipe(
+       target_cols=[
+           GWASLAB_CHROM_COL,
+           GWASLAB_POS_COL,
+           GWASLAB_EFFECT_ALLELE_COL,
+           GWASLAB_NON_EFFECT_ALLELE_COL
+       ] ,
+        sep="__",
+        new_col_name=variant_id,
+    )
+
+    filtered_id_variant_pipe_005=CompositePipe(
+        [
+            id_variant_pipe,
+            FilterRowsByMinInCol(
+                min_value=0.05,
+                col=PIP_COLUMN
+            )
+        ]
+    )
+
+    filtered_id_variant_pipe_0025=CompositePipe(
+        [
+            id_variant_pipe,
+            FilterRowsByMinInCol(
+                min_value=0.025,
+                col=PIP_COLUMN
+            )
+        ]
+    )
+
+    filtered_id_variant_pipe_001=CompositePipe(
+        [
+            id_variant_pipe,
+            FilterRowsByMinInCol(
+                min_value=0.01,
+                col=PIP_COLUMN
+            )
+        ]
+    )
+
+    upset_plot = UpSetPlotTask.create(
+        asset_id=base_name + "_upset_plot",
+        set_sources=[
+            DirSetSource(
+                name="L=10",
+                task=susie_finemap_task,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=id_variant_pipe,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=10, Strict",
+                task=susie_finemap_task_strict,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=id_variant_pipe,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=2",
+                task=susie_finemap_task_2_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=id_variant_pipe,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=1",
+                task=susie_finemap_task_1_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=id_variant_pipe,
+                col_name=variant_id
+            ),
+        ],
+    )
+
+    upset_plot_pip005 = UpSetPlotTask.create(
+        asset_id=base_name + "_upset_plot_pip005",
+        set_sources=[
+            DirSetSource(
+                name="L=10",
+                task=susie_finemap_task,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_005,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=10, Strict",
+                task=susie_finemap_task_strict,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_005,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=2",
+                task=susie_finemap_task_2_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_005,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=1",
+                task=susie_finemap_task_1_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_005,
+                col_name=variant_id
+            ),
+        ],
+    )
+
+
+    upset_plot_pip0025 = UpSetPlotTask.create(
+        asset_id=base_name + "_upset_plot_pip0025",
+        set_sources=[
+            DirSetSource(
+                name="L=10",
+                task=susie_finemap_task,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_0025,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=10, Strict",
+                task=susie_finemap_task_strict,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_0025,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=2",
+                task=susie_finemap_task_2_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_0025,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=1",
+                task=susie_finemap_task_1_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_0025,
+                col_name=variant_id
+            ),
+        ],
+    )
+
+    upset_plot_pip001 = UpSetPlotTask.create(
+        asset_id=base_name + "_upset_plot_pip001",
+        set_sources=[
+            DirSetSource(
+                name="L=10",
+                task=susie_finemap_task,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_001,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=10, Strict",
+                task=susie_finemap_task_strict,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_001,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=2",
+                task=susie_finemap_task_2_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_001,
+                col_name=variant_id
+            ),
+
+            DirSetSource(
+                name="L=1",
+                task=susie_finemap_task_1_credible_set,
+                file_in_dir=PurePath(COMBINED_CS_FILENAME),
+                read_spec=DataFrameReadSpec(
+                    DataFrameParquetFormat()
+                ),
+                pipe=filtered_id_variant_pipe_001,
+                col_name=variant_id
+            ),
+        ],
+    )
 
     return BroadFineMapTaskGroup(
         ld_labels_task=ld_labels_task,
@@ -293,6 +542,10 @@ palindrome_strategy:PalindromeStrategy="drop"
         markdown_table_tasks=markdown_table_tasks,
         susie_finemap_2_credible_set_task=susie_finemap_task_2_credible_set,
         susie_finemap_2_credible_set_plot=susie_plot_2_credible_set,
+        upset_plot_task=upset_plot,
+        upset_plot_task_pip005=upset_plot_pip005,
+        upset_plot_task_pip0025=upset_plot_pip0025,
+        upset_plot_task_pip001=upset_plot_pip001
     )
 
 
