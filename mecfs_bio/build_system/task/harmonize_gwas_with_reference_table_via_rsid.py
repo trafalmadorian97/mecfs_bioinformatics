@@ -34,7 +34,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 logger = structlog.get_logger()
 
-PalindromeStrategy = Literal["drop", "resolve"]
+PalindromeStrategy = Literal["drop", "resolve", "keep"]
 
 ChromPosStrategy = Literal["drop", "raise"]
 
@@ -160,6 +160,8 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
         if self.palindrome_strategy == "drop":
             logger.debug(f"Dropping {gd[IS_PALINDROMIC].sum()} palindromic variants\n")
             gd = gd.filter(~pl.col(IS_PALINDROMIC))
+        elif self.palindrome_strategy == "keep":
+            logger.debug(f"Keeping {gd[IS_PALINDROMIC].sum()} palindromic variants\n")
         else:
             raise NotImplementedError(
                 f"mode {self.palindrome_strategy} not implemented"

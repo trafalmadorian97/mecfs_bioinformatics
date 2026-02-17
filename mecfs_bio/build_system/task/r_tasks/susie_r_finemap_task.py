@@ -434,7 +434,16 @@ def write_result(
         logger.debug("No credible sets found. Aborting.")
         (directory / NO_CS_FOUND_FILENAME).write_text("no credible sets found")
         dummy_cs_df = pd.DataFrame(
-            {ALPHA_COLUMN_NAME: [], MU_COLUMN_NAME: [], PIP_COLUMN: [], CS_COLUMN: []}
+            {
+                ALPHA_COLUMN_NAME: [],
+                MU_COLUMN_NAME: [],
+                PIP_COLUMN: [],
+                CS_COLUMN: [],
+                GWASLAB_CHROM_COL: [],
+                GWASLAB_POS_COL: [],
+                GWASLAB_EFFECT_ALLELE_COL: [],
+                GWASLAB_NON_EFFECT_ALLELE_COL: [],
+            }
         )
         dummy_cs_df.to_parquet(directory / COMBINED_CS_FILENAME)
     else:
