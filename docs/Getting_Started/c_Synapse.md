@@ -6,8 +6,8 @@ Some datasets must be downloaded from [Synapse](https://www.synapse.org/). An ex
 ## Steps to Set Up Synapse Access Token
 
 
-1.  Go to https://www.synapse.org/, and register to create an account.
-2. Click on Account Settings -> Personal Access Tokens -> Manage Personal Access Tokens -> Create New Token.
+1.  Go to https://www.synapse.org/, and create an account.
+2. Click Account Settings $\to$ Personal Access Tokens $\to$ Manage Personal Access Tokens $\to$ Create New Token.
 3. Create a file `~/.synapseConfig` at the root of your user directory.  Edit it so it has the following contents:
 
 ```bash

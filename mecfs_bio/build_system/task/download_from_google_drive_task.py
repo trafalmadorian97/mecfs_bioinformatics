@@ -1,3 +1,7 @@
+"""
+Some GWAS summary statistics are stored on Google Drive.  Use this task to access them.
+"""
+
 from pathlib import Path
 
 import gdown

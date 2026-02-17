@@ -1,3 +1,7 @@
+"""
+Copy a single file.  Mainly used for testing.
+"""
+
 import shutil
 from pathlib import Path
 

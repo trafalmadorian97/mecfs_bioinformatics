@@ -1,3 +1,7 @@
+"""
+Prepare results for presentation by converting a dataframe to markdown format.
+"""
+
 from pathlib import Path
 
 import numpy as np
