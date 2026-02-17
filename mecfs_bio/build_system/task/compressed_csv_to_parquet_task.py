@@ -1,3 +1,7 @@
+"""
+Enable efficient SQL operations by converting CSV to parquet.
+"""
+
 from typing import Mapping
 
 import structlog

@@ -1,3 +1,7 @@
+"""
+For testing purposes, recording the number of times that a wrapped task has been executed.
+"""
+
 from pathlib import Path
 
 from attrs import define

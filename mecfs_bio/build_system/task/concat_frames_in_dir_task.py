@@ -1,3 +1,7 @@
+"""
+Concatenate dataframes in a DirectoryAsset to create a single FileAsset.
+"""
+
 from pathlib import Path, PurePath
 
 import pandas as pd
