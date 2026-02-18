@@ -8,16 +8,16 @@ hide:
 
 ## Methodology
 
-In an attempt to narrow the DecodeME[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../Bioinformatics_Concepts/Fine_Mapping.md) the hit on chromosome 20 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
+To narrow the [DecodeME](../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../Bioinformatics_Concepts/Fine_Mapping.md) the hit on chromosome 20 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
 
 
 ## Results
 
 
-At the chromosome 20 locus, the $L=10$ SUSIE run returns two credible sets.  Moreover, one of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant.  In contrast, the three other SUSIE runs return a single diffuse credible set.  Given that the concentrated credible set is absent from the SUSIE results when any kind of regularization is used, I am inclined to discount it as an artifact, possible resulting from a slight mismatch between the population used to generate the GWAS summary statistics and the population used to create the LD matrix.  It would be interesting to re-run SUSIE on this locus using individual-level data to determine whether a population mismatch is truly the cause of the issue.
+At the chromosome 20 locus, the $L=10$ SUSIE run returned two credible sets.  One of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant.  In contrast, the three other SUSIE runs return a single diffuse credible set.  Given that the concentrated credible set is absent from the SUSIE runs with regularization, I am inclined to discount it as an artifact, possible resulting from a slight mismatch between the population used to generate the GWAS summary statistics and the population used to create the LD matrix.  It would be interesting to re-run SUSIE on this locus using individual-level data to confirm or refute this explanation.
 
 
-The UpSet plot for this locus reveals that the variants found by the $L=10$ SUSIE run are rather different from those found by the other runs. 
+The UpSet plot for this locus reveals that the variants found by the $L=10$ SUSIE run differ from those found by other runs. 
 
 
 
@@ -27,7 +27,7 @@ The UpSet plot for this locus reveals that the variants found by the $L=10$ SUSI
 
 
 
-The Stackplot and variant list for the $L=10$ runs shows the highly concentrated nature of one of the credible sets.
+The Stackplot and variant list for the $L=10$ run shows the highly concentrated nature of one of the credible sets.
 
 
 ![chr20_l10](https://github.com/user-attachments/assets/53ab0988-4002-4a52-b88e-f3c59f695e6f)
@@ -146,12 +146,12 @@ The Stackplot and variant list for the $L=10$ runs shows the highly concentrated
 
 
 
-In contrast, the stackplot and variant list for $L=2$ reveals a single credible set
+In contrast, the stackplot and variant list for $L=2$ reveal a single credible set
 
 
 ![chr20_L2](https://github.com/user-attachments/assets/3863e3a8-e4aa-40af-8a1d-5bd0efd46109)
 
-This region of chromosome 20 is relatively dense, so that are a number of plausible candidate genes.
+This region of chromosome 20 is relatively gene-dense, so that are a number of plausible causal genes.
 
 ??? info "Variant List (L=10)"
 
