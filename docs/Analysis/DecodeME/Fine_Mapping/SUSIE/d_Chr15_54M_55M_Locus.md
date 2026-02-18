@@ -8,7 +8,7 @@ hide:
 
 ## Methodology
 
-In an attempt to narrow the DecodeME[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../Bioinformatics_Concepts/Fine_Mapping.md) the hit on chromosome 15 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
+To narrow the [DecodeME](../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../Bioinformatics_Concepts/Fine_Mapping.md) the hit on chromosome 15 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
 
 
 ## Results
@@ -26,7 +26,7 @@ Here is a plot of the SUSIE results for the $L=10$ case.  It is representative o
 
 Compare to the other loci, the SUSIE credible set at this locus is relatively concentrated on a single variant: a G $\to$ A substitution at GRCh37 position 55158922 on chromosome 15.
 
-The detailed of results for the $L=10$ case are below.
+The detailed results for the $L=10$ run are below.
 
 
 ??? info "Variant List (L=10)"

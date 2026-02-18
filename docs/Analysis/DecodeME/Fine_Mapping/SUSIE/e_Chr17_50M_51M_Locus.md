@@ -8,7 +8,7 @@ hide:
 
 ## Methodology
 
-In an attempt to narrow down the DecodeME[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 17 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
+To narrow down the [DecodeME](../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 17 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
 
 
 ## Results
@@ -19,7 +19,10 @@ Each of the 4 SUSIE runs produced a single credible set with the same 63 variant
 ![chr17_upset](https://github.com/user-attachments/assets/79044a67-d441-4841-b68f-e0bc602eefde)
 
 
-The distribution of probability mass across these variants was slightly different across the runs, as illustrated by the following upsetplot, which is restricted to variants of $PIP>0.01$.
+The distribution of probability mass across these variants was slightly different across the runs, as illustrated by the following UpSet plot, which is restricted to variants of $PIP>0.01$.
+
+
+
 ![chr_17_pip001](https://github.com/user-attachments/assets/a8867989-fb8e-452e-8754-24ee46dbe761)
 
 
@@ -27,7 +30,7 @@ The stackplot below, for the $L=10$ case, illustrates the typical PIP pattern ac
 
 ![chr17_stackplot](https://github.com/user-attachments/assets/f449a641-b3f5-4671-b7ae-0369e2c01179)
 
-The credible set at this locus is focused upstream of the CA10 gene.  At a glance, this would seem to make a CA10 the best candidate for further investigation.  
+The credible set at this locus is focused upstream of the CA10 gene.  This would seem to make a CA10 a good candidate for further investigation.  
 
 The detailed variants results are below:
 
