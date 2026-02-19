@@ -50,6 +50,7 @@ UNIPROT_ID_COL = "uniprot_id"
 UNIPROT_DESCRIPTION = "uniprot_description"
 PROTEIN_NAMES_COL = "protein_names"
 PRIMARY_GENE_NAME = "primary_gene_name"
+SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
 
 
 @frozen
@@ -180,6 +181,10 @@ def _preprocess_columns(df: pd.DataFrame) -> pd.DataFrame:
         df[UNIPROT_DESCRIPTION] = _wrap_col_in_list(df[UNIPROT_DESCRIPTION])
     if PRIMARY_GENE_NAME in df.columns:
         df[PRIMARY_GENE_NAME] = _wrap_col_in_list(df[PRIMARY_GENE_NAME])
+    if SUBCELLULAR_LOCALISATION_COL in df.columns:
+        df[SUBCELLULAR_LOCALISATION_COL] = _wrap_col_in_list(
+            df[SUBCELLULAR_LOCALISATION_COL]
+        )
     for col in df.columns:
         df[col] = _array_to_list(df[col])
         df[col] = _unnest_list(df[col])
