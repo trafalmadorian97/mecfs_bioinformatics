@@ -13,7 +13,7 @@ from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene
 from mecfs_bio.assets.reference_data.magma_ld_reference.magma_eur_build_37_1k_genomes_ref_extracted import (
     MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
 )
-from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
+from mecfs_bio.assets.reference_data.rna_seq_data.gtex.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
     GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (

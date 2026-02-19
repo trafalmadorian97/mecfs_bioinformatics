@@ -3,6 +3,10 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import GENE_THESAURUS
+from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long import YU_DRG_COUNTS_LONG
+from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long_with_cell_type import \
+    YU_DRG_COUNTS_LONG_WITH_CELL_TYPE
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_extracted_counts_data import \
     YU_DRG_EXTRACTED_COUNTS
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_metadata_table import YU_DRG_METADATA_TABLE
@@ -36,7 +40,10 @@ def run_initial_decode_me_analysis():
         (
             # [YU_DRG_SRC1_RDATA]
             [YU_DRG_EXTRACTED_COUNTS,
-             YU_DRG_METADATA_TABLE
+             YU_DRG_METADATA_TABLE,
+             GENE_THESAURUS,
+             YU_DRG_COUNTS_LONG,
+             YU_DRG_COUNTS_LONG_WITH_CELL_TYPE
              ]
         # DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.terminal_tasks()
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP_PALINDROMES.terminal_tasks()

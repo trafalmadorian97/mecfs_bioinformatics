@@ -3,7 +3,7 @@ Analogous to GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA, but avera
 By controlling for average expression across brain tissues, we can see if expression in any brain tissues is associated with a phenotype, and which is not simply due to general brain-wide expression. This may potentially narrow down which specific tissue may be causal.
 """
 
-from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_expression_rna_seq_raw import (
+from mecfs_bio.assets.reference_data.rna_seq_data.gtex.gtex_v10_median_tissue_expression_rna_seq_raw import (
     GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import (

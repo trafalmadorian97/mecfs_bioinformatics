@@ -1,4 +1,4 @@
-from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_expression_rna_seq_raw import (
+from mecfs_bio.assets.reference_data.rna_seq_data.gtex.gtex_v10_median_tissue_expression_rna_seq_raw import (
     GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
