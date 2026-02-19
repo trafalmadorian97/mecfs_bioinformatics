@@ -1,3 +1,7 @@
+"""
+A task that always fails, which can be used for testing.
+"""
+
 from pathlib import Path
 from typing import Sequence
 

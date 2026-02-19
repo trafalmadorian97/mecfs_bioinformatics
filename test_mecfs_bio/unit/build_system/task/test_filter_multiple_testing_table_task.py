@@ -12,7 +12,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 )
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
+from mecfs_bio.build_system.task.multiple_testing_table_task import (
     Method,
     MultipleTestingTableTask,
 )

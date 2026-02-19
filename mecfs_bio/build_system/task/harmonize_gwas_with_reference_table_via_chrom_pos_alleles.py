@@ -1,3 +1,8 @@
+"""
+Given a table of reference genetic variants, harmonize gwas data with that table of reference variants
+using chromosome, position, alleles for matching
+"""
+
 from pathlib import Path
 
 import polars as pl

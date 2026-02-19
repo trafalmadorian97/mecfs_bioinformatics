@@ -1,3 +1,8 @@
+"""
+Create an upset plot to describe the intersection of sets represented as dataframe columns
+See: https://en.wikipedia.org/wiki/UpSet_plot
+"""
+
 import array
 from pathlib import Path, PurePath
 from typing import Sequence

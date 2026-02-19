@@ -6,10 +6,6 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
-from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
-    Method,
-    MultipleTestingTableTask,
-)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_sldsc import (
     CellAnalysisByLDSCTask,
 )
@@ -17,6 +13,10 @@ from mecfs_bio.build_system.task.gwaslab.sldsc_scatter_plot_task import (
     SLDSCScatterPlotTask,
 )
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
+from mecfs_bio.build_system.task.multiple_testing_table_task import (
+    Method,
+    MultipleTestingTableTask,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe

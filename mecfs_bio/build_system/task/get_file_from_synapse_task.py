@@ -1,3 +1,7 @@
+"""
+Task to get a file from synapse.org, a scientific data repository.
+"""
+
 from pathlib import Path
 
 import structlog

@@ -1,7 +1,7 @@
 # Initial Setup
 
 
-If you have not done so previously, [clone](https://git-scm.com/docs/git-clone) the repository:
+[Clone](https://git-scm.com/docs/git-clone) the repository:
 
 
 ```bash

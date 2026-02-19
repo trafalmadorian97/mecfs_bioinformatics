@@ -1,10 +1,10 @@
 # Sumstats Standardization
 
-Before analyzing GWAS summary statistics, it is often desirable to bring them to a standard form.  This is a complex, multi-step process.
+Before analyzing GWAS summary statistics, it is desirable to bring them to a standard form.  This is a complex, multi-step process.
 
 ## Step 1: Strand Standardization
 
-In the double-stranded DNA molecule, the two strands are complementary: adenine (A) always pairs with thymine (T), and cytosine (C) always pairs with guanine (G).  This means that the same variant can be represented equivalently by describing its base sequences on either strand.
+In the DNA double helix, the two strands are complementary: adenine (A) always pairs with thymine (T), and cytosine (C) always pairs with guanine (G).  This means that the same variant can be represented equivalently by describing its base sequence on either strand.
 
 For instance, suppose that a GWAS summary statistics file contains the following data: 
 
@@ -25,11 +25,11 @@ This data can be represented equivalently on the other strand as
 |       5 | 90002963 | C         | G       | 0.0109188 | -0.0368269   | 0.257525   |
 |       5 | 90003830 | C         | T       | 0.160737  | -0.00019273  | 0.0038963  |
 
-(Note that at multi-base alleles like the indel T/TG, we flip the order of the bases in addition to computing their complements)
+(Note that at multi-base alleles like the indel T/TG, we flip the order of the bases.)
 
-While GENPOS always refers to genomic coordinate in the $5'\to 3'$ direction along the forward strand, summary statistics files have been known to report alleles on either the forward or the reverse strand[@hartwig2016two]. This ambiguity is problematic when one seeks to jointly analyze two GWAS, or look up variants from a GWAS in a reference.
+While GENPOS always refers to genomic coordinates in the $5'\to 3'$ direction along the forward strand, summary statistics files have been known to report alleles on either the forward or the reverse strand[@hartwig2016two]. This ambiguity is problematic when one seeks to jointly analyze two GWAS, or look up variants from a GWAS in a reference.
 
-In most cases, the ambiguity can be resolved by consulting a reference genome sequence [FASTA file](https://en.wikipedia.org/wiki/FASTA_format).  For each genetic variant, one compares the alleles to the reference sequence at the given genomic coordinate. If there is a match, we know the alleles are correctly represented on the forward strand.  If instead there is match with the complement of one the alleles, we know the alleles are represented on the reverse strand.  We can standardize the genetic variant by substituting the alleles for their complements.  If there is no match between the alleles and either the forward or reverse strand, this likely indicates an error.
+In most cases, the ambiguity can be resolved by consulting a reference genome sequence [FASTA file](https://en.wikipedia.org/wiki/FASTA_format).  For each genetic variant, one compares the alleles to the reference sequence at the given genomic coordinate. If there is a match, we know the alleles are correctly represented on the forward strand.  If instead there is match with the complement of one the alleles, we know the alleles are represented on the reverse strand, and we can standardize the genetic variant by substituting the alleles for their complements.  If there is no match between the alleles and either the forward or reverse strand, this likely indicates an error.
 
 
 ### Palindromic variants
@@ -45,9 +45,10 @@ It is impossible to distinguish these cases using only CHROM/GENPOS/ALLELE0/ALLE
 
 If one has access to a reference database of standardized genetic variants with allele frequencies, one can sometime disambiguate using these frequencies. Suppose as above that we have a palindromic variant and ALLELE 1 matches the reference allele in the database. The procedure is:
 
-- Compare the allele frequency of ALLELE1 to the frequency of the reference allele in the database.  If there is a close match, we can assume that the allele pair in the summary statistics are on the forward strand.
-- Compare the allele frequency of ALLELE1 to one minus the frequency of the reference allele in the database.  If there is a close match, we can assume the allele pair in the summary statistics are on the reverse strand.
-- If the allele frequency of ALLELE1 is close to 0.5, we can't disambiguate.
+
+- If the allele frequency of ALLELE1 is close to 0.5, we can't disambiguate. Otherwise:
+- Compare the allele frequency of ALLELE1 to the frequency of the reference allele in the database.  If there is a close match, we can assume that the allele pair in the summary statistics is on the forward strand.
+- Compare the allele frequency of ALLELE1 to one minus the frequency of the reference allele in the database.  If there is a close match, we can assume the allele pair in the summary statistics is on the reverse strand.
 
 
 

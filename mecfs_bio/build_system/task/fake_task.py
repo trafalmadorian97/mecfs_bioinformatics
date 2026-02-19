@@ -1,3 +1,7 @@
+"""
+A Task that does nothing, which can be used for testing.
+"""
+
 from pathlib import Path
 
 from attrs import frozen
