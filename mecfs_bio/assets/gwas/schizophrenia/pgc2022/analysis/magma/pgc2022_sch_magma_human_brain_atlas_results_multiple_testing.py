@@ -1,7 +1,7 @@
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.magma.pgc2022_sch_magma_human_brain_atlas_results_labeled import (
     MAGMA_PGC2022_SCH_HUMAN_BRAIN_ATLAS_GENE_COVAR_LABELED,
 )
-from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
+from mecfs_bio.build_system.task.multiple_testing_table_task import (
     MultipleTestingTableTask,
 )
 

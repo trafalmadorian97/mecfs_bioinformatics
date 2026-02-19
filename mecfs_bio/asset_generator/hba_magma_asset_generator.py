@@ -35,9 +35,6 @@ from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
-from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
-    MultipleTestingTableTask,
-)
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.magma.magma_annotate_task import MagmaAnnotateTask
 from mecfs_bio.build_system.task.magma.magma_forward_stepwise_select_task import (
@@ -64,6 +61,9 @@ from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import (
     KEY_HBA_ANNOTATION_COLUMNS,
     PlotMagmaBrainAtlasResultTask,
     PlotSettings,
+)
+from mecfs_bio.build_system.task.multiple_testing_table_task import (
+    MultipleTestingTableTask,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe

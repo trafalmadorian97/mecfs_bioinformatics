@@ -1,3 +1,7 @@
+"""
+Task to copy a file from an external source.  Used to testing.
+"""
+
 import shutil
 from pathlib import Path
 

@@ -1,3 +1,7 @@
+"""
+Task to transform a dataframe asset using a DataProcessingPipes.
+"""
+
 from pathlib import Path, PurePath
 from typing import Sequence
 
@@ -28,7 +32,6 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-# OutFormat= Literal["parquet","csv"]
 class ParquetOutFormat:
     pass
 
