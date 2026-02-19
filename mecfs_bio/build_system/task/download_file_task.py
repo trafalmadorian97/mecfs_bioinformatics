@@ -1,7 +1,7 @@
 """
 Download a file, possibly verifying it using a hash.
 
-This Task is the main GWAS summary statistics are added to the build system.
+This Task is the main way GWAS summary statistics are added to the build system.
 """
 
 from pathlib import Path
