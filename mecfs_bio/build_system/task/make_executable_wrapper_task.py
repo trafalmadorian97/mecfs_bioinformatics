@@ -1,3 +1,7 @@
+"""
+Task to make a file executable by editing unix file permissions (a la chmod).
+"""
+
 import os
 import stat
 from pathlib import Path

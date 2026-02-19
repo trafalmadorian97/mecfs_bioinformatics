@@ -1,3 +1,7 @@
+"""
+A Task and associated helper methods to plot the results and context of SUSIE fine mapping using stacked panels.
+"""
+
 import gc
 from pathlib import Path
 from typing import Literal

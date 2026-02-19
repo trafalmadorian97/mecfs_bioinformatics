@@ -10,7 +10,7 @@ If your software package is available on PyPi, you can add it with
 pixi add --pypi <your_package_name> --feature analysis
 ```
 
-This will update `pyproject.toml` and `pixi.lock` by adding the package to the analysis dependency group (the main dependency group used by the project).  You can use `git add pyproject.toml pixi.lock; git commit -m <your_message>` to add the environment update to your branch. 
+This will update `pyproject.toml` and `pixi.lock` by adding the package to the analysis dependency group (the main dependency group used by the project).  You can use `git add pyproject.toml pixi.lock; git commit -m '<your_message>'` to add the environment update to your branch. 
 
 
 ## Adding bioconda/ conda-forge packages

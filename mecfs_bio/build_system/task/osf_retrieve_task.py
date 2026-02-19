@@ -1,3 +1,7 @@
+"""
+A task that fetches GWAS data from the Open Science data store
+"""
+
 import shlex
 from pathlib import Path
 

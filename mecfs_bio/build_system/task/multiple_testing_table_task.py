@@ -1,3 +1,8 @@
+"""
+Task to compute a multiple testing correction of a table of p values.
+Can optionally filter rows according to a threshold
+"""
+
 from pathlib import Path
 from typing import Literal
 

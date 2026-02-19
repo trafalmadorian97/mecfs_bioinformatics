@@ -1,3 +1,7 @@
+"""
+Task to download reference data about proteins from UniProt
+"""
+
 from pathlib import Path, PurePath
 
 from attrs import frozen

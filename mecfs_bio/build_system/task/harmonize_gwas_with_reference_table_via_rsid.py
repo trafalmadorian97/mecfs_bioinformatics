@@ -1,3 +1,8 @@
+"""
+Given a table of reference genetic variants, harmonize gwas data with that table of reference variants
+using rsid for matching
+"""
+
 from pathlib import Path
 from typing import Literal
 

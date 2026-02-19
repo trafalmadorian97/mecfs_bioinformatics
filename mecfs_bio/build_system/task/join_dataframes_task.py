@@ -1,3 +1,7 @@
+"""
+Task to perform a SQL-style join.
+"""
+
 from pathlib import Path
 from typing import Sequence
 

@@ -1,3 +1,7 @@
+"""
+Copies a directory from an external source.
+"""
+
 import shutil
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset

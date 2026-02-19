@@ -5,7 +5,7 @@ hide:
 ---
 # S-LDSC
 
-Stratified Linkage Disequilibrium Score Regression (S-LDSC)[@finucane2018heritability;@finucane2015partitioning] is an extension of Linkage Disequilibrium Score Regression [(LDSC)](LDSC.md).  S-LDSC relaxes some of the assumptions of LDSC, making it more broadly applicable. S-LDSC can be used to generate hypotheses  about the key cell-types and tissues underlying a phenotype.
+Stratified Linkage Disequilibrium Score Regression (S-LDSC)[@finucane2018heritability;@finucane2015partitioning] is an extension of Linkage Disequilibrium Score Regression [(LDSC)](LDSC.md)[@bulik2015ld]. S-LDSC can be used to generate hypotheses  about the key cell-types and tissues underlying a phenotype.
 
 
 
@@ -14,7 +14,7 @@ Stratified Linkage Disequilibrium Score Regression (S-LDSC)[@finucane2018heritab
 
 ### Review of LDSC
 
-Recall that LDSC assumes isotropic pleiotropy: heritability is evenly distributed across the genome.
+Recall that LDSC assumes isotropic polygenicity: heritability is evenly distributed across the genome.
 
 Mathematically, in LDSC we have that for all genetic variants $i$ and $j$
 
@@ -30,7 +30,7 @@ where $\beta_i$ is the true effect of variant $i$ on the phenotype and $Q\in\mat
 
 ### Overview of S-LDSC
 
-S-LSDC instead assumes that the genome is divided into regions, and isotropic pleiotropy holds within each region.
+S-LSDC instead assumes that the genome is divided into regions, and isotropic polygenicity holds within each region.
 
 Mathematically, in S-LDSC we have that for all genetic variants $i$ and $j$:
 
