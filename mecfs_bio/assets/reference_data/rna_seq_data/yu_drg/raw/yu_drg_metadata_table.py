@@ -1,5 +1,6 @@
 """
 Task to download cluster metadata from the paper "Leveraging deep single-soma RNA sequencing to explore the neural basis of human somatosensation" by Yu et al.
+Main github repo for this paper is here: https://github.com/taimeimiaole/NN_hDRG-neuron-sequencing/
 """
 
 from pathlib import PurePath
