@@ -23,3 +23,18 @@ class ShiftedLogPipe(DataProcessingPipe):
                 )
 
         return x
+
+@frozen
+class ShiftedLogPipeInclude(DataProcessingPipe):
+    base: int
+    cols_to_include: Sequence[str]
+    pseudocount: float = 1
+
+    def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
+        for col_name in self.cols_to_include:
+                x = x.with_columns(
+                    (narwhals.col(col_name) + self.pseudocount)
+                    .log(base=self.base)
+                    .alias(col_name)
+                )
+        return x
