@@ -14,7 +14,7 @@ To narrow the [DecodeME](../../../../Data_Sources/DecodeME.md)[@genetics2025init
 ## Results
 
 
-At the chromosome 20 locus, the $L=10$ SUSIE run returned two credible sets.  One of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant.  In contrast, the three other SUSIE runs return a single diffuse credible set.  Given that the concentrated credible set is absent from the SUSIE runs with regularization, I am inclined to discount it as an artifact, possible resulting from a slight mismatch between the population used to generate the GWAS summary statistics and the population used to create the LD matrix.  It would be interesting to re-run SUSIE on this locus using individual-level data to confirm or refute this explanation.
+At the chromosome 20 locus, the $L=10$ SUSIE run returned two credible sets.  One of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant.  In contrast, the three other SUSIE runs return a single diffuse credible set.  Given that the concentrated credible set is absent from the SUSIE runs with regularization, I am inclined to discount it as an artifact, possibly resulting from a slight mismatch between the population used to generate the GWAS summary statistics and the population used to create the LD matrix.  It would be interesting to re-run SUSIE on this locus using individual-level data to confirm or refute this explanation.
 
 
 The UpSet plot for this locus reveals that the variants found by the $L=10$ SUSIE run differ from those found by other runs. 
@@ -153,7 +153,7 @@ In contrast, the stackplot and variant list for $L=2$ reveal a single credible s
 
 This region of chromosome 20 is relatively gene-dense, so that are a number of plausible causal genes.
 
-??? info "Variant List (L=10)"
+??? info "Variant List (L=2)"
 
     | cs   |   CHR |      POS | EA        | NEA    |       alpha |         mu |         PIP |
     |:-----|------:|---------:|:----------|:-------|------------:|-----------:|------------:|
