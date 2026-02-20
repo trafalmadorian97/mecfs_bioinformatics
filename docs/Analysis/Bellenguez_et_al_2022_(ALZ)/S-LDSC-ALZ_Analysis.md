@@ -6,7 +6,7 @@ hide:
 
 # S-LDSC ALZ Analysis
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from  Bellenguez et al.'s 2022 Meta-GWAS of Alzhiemers' disease[@bellenguez2022new].
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from  Bellenguez et al.'s 2022 Meta-GWAS of Alzheimers' disease[@bellenguez2022new].
 
 ## Reference Data Sources
 
@@ -132,7 +132,7 @@ The cell classes with the lowest p values from the Cahoy and GTEx brain datasets
 | Brain_Putamen_(basal_ganglia)           |   1.23503e-09 |            0.215505   | False         |
 
 
-The lack of significant hits are surprising if one views Alzheimer's as a straightforwardly neurological disease. However, these results make sense given theories of Alzheimer's as immune- or microglia- driven.
+The lack of significant hits is surprising if one views Alzheimer's as a straightforwardly neurological disease. However, these results make sense given theories of Alzheimer's as immune- or microglia- driven.
 
 
 
