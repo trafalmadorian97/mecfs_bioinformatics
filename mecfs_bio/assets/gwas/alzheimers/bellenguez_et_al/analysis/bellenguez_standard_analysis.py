@@ -6,7 +6,7 @@ from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import 
     concrete_standard_analysis_generator_assume_already_has_rsid,
 )
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.processed.extracted_bellinguez_data import (
-    BELLINGUEZ_ET_AL_ALZHIEMERS_EXTRACTED,
+    BELLINGUEZ_ET_AL_ALZHEIMERS_EXTRACTED,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.pipes.drop_null_pipe import DropNullsPipe
 BELLENGUEZ_STANDARD_ANALYSIS = (
     concrete_standard_analysis_generator_assume_already_has_rsid(
         base_name="bellenguez_et_al_alz",
-        raw_gwas_data_task=BELLINGUEZ_ET_AL_ALZHIEMERS_EXTRACTED,
+        raw_gwas_data_task=BELLINGUEZ_ET_AL_ALZHEIMERS_EXTRACTED,
         sample_size=487511,  # from gwas catalog
         include_hba_magma_tasks=True,
         fmt=GWASLabColumnSpecifiers(
