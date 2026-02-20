@@ -1,11 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.sch_clustermap_plot import \
     SCH_PGC_2022_MAGMA_CLUSTER_MAP
-from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_pgc_2022 import (
-    SCH_PGC_2022_STANDARD_ANALYSIS,
-)
-from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import \
-    GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA
 
 
 def run_initial_schizophrenia_analysis():

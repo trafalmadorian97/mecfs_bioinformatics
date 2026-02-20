@@ -3,21 +3,29 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr15_54_925_638_locus_plalindindromes import \
-    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr17_50_237_377_locus_palindromes import \
-    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import \
-    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr20_47_653_230_locus_palindromes import \
-    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_26_215_000_locus_palindromes import \
-    DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP_PALINDROMES
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus_palindromes import \
-    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES
-
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.without_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus import \
-    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP
+from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import GENE_THESAURUS
+from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long import YU_DRG_COUNTS_LONG
+from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long_with_cell_type import \
+    YU_DRG_COUNTS_LONG_WITH_CELL_TYPE
+from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_extracted_counts_data import \
+    YU_DRG_EXTRACTED_COUNTS
+from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_metadata_table import YU_DRG_METADATA_TABLE
+# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr15_54_925_638_locus_plalindindromes import \
+#     DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES
+# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr17_50_237_377_locus_palindromes import \
+#     DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES
+# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import \
+#     DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES
+# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr20_47_653_230_locus_palindromes import \
+#     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES
+# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_26_215_000_locus_palindromes import \
+#     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP_PALINDROMES
+# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus_palindromes import \
+#     DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES
+#
+# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.without_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus import \
+#     DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP
+from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_raw_counts_rdata import YU_DRG_SRC1_RDATA
 
 
 def run_initial_decode_me_analysis():
@@ -30,7 +38,14 @@ def run_initial_decode_me_analysis():
 
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
         (
-        DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.terminal_tasks()
+            # [YU_DRG_SRC1_RDATA]
+            [YU_DRG_EXTRACTED_COUNTS,
+             YU_DRG_METADATA_TABLE,
+             GENE_THESAURUS,
+             YU_DRG_COUNTS_LONG,
+             YU_DRG_COUNTS_LONG_WITH_CELL_TYPE
+             ]
+        # DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.terminal_tasks()
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP_PALINDROMES.terminal_tasks()
     # DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.terminal_tasks()
     #     DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.terminal_tasks()+

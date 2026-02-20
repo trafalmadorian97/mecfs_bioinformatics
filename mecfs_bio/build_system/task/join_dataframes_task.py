@@ -21,6 +21,9 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
     ValidBackend,
     scan_dataframe_asset,
 )
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -135,7 +138,6 @@ class JoinDataFramesTask(Task):
                 project=source_meta.project,
                 extension=extension,
                 read_spec=read_spec,
-                # read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
             )
         elif isinstance(source_meta, FilteredGWASDataMeta):
             meta = FilteredGWASDataMeta(
@@ -154,6 +156,15 @@ class JoinDataFramesTask(Task):
                 extension=extension,
                 read_spec=read_spec,
                 sub_dir=source_meta.sub_dir,
+            )
+        elif isinstance(source_meta, ReferenceFileMeta):
+            meta = ReferenceFileMeta(
+                id=AssetId(asset_id),
+                group=source_meta.group,
+                sub_group=source_meta.sub_group,
+                sub_folder=source_meta.sub_folder,
+                extension=extension,
+                read_spec=read_spec,
             )
         else:
             raise ValueError(f"Source meta has unknown type: {source_meta}")

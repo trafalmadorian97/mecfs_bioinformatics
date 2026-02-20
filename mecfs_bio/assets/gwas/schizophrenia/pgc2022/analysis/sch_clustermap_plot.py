@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_
 from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
     GENE_THESAURUS,
 )
-from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
+from mecfs_bio.assets.reference_data.rna_seq_data.gtex.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
     GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
 )
 from mecfs_bio.build_system.data_manipulation.xr_data.xr_gene_dataset_load import (
