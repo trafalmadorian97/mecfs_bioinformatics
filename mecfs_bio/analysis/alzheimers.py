@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_stand
 )
 
 
-def run_initial_alzhiemers_analysis():
+def run_initial_alzheimers_analysis():
     """
     Function to analyze GWAS of Alzheimer's phenotype.
     Includes:
@@ -23,4 +23,4 @@ def run_initial_alzhiemers_analysis():
 
 
 if __name__ == "__main__":
-    run_initial_alzhiemers_analysis()
+    run_initial_alzheimers_analysis()
