@@ -31,7 +31,7 @@ where:
 - $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of genetic effects on all individual in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects on all individuals in the two GWAS.
 
-Furthermore, we model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties:
+We model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties:
 
 
 $$
@@ -42,18 +42,26 @@ $$
 \rho_e &\text{ if } j=k \le N_s \\
 0 & \text{ else }
 \end{cases} & \text{ for some }\rho_e>0 \label{cov_delta_epsilon}\\
-\mathbb{Var}(\beta) &= \frac{1}{M} h_1^2 I\\
-\mathbb{Var}(\gamma) &= \frac{1}{M} h_2^2 I\\
+\mathbb{Var}(\beta) &= \frac{1}{M} h_1^2 I \label{var_beta} \\
+\mathbb{Var}(\gamma) &= \frac{1}{M} h_2^2 I  \label{var_gamma}  \\
 \mathbb{Cov}(\beta, \gamma)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{cov_beta_gamma}\\
-\mathbb{E}(\delta)&=0\\
-\mathbb{E}(\beta)&=0 \\
-\mathbb{E} Y &=0 \\ 
-\mathbb{E}(\epsilon)&=0\\
-\mathbb{E}(\gamma)&=0 \\
-\mathbb{E} (Z) &=0 \\ 
+\mathbb{E}(\delta)&=0\label{e_delta}\\
+\mathbb{E}(\beta)&=0  \label{e_beta} \\
+\mathbb{E} Y &=0 \label{e_Y} \\ 
+\mathbb{E}(\epsilon)&=0   \label{e_epsilon} \\
+\mathbb{E}(\gamma)&=0  \label{e_gamma} \\
+\mathbb{E} (Z) &=0  \label{e_Z} \\ 
 \mathbb{E}(Y_i^2) &=\mathbb{E}(Z_i^2)=1 &\text{ for all }i \label{y_z_var}
 \end{align}
 $$
+
+- Assumptions ($\ref{var_beta}$), ($\ref{var_gamma}$), and ($\ref{cov_beta_gamma}$) specify an isotropically polygenic architecture, analogous to the one used in [LDSC](LDSC.md).
+- Assumptions ($\ref{e_delta}$), ($\ref{e_beta}$), ($\ref{e_Y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) specify that the data has been pre-normalized.
+
+
+
+
+Furthermore, we assume the following relationships between the random variables
 
 - The rows of $Y$ and $Z$ are mutually independent, except in the case that a row of $Y$ and $Z$ refer to the same individual (one of the $N_s$ individuals present in both GWAS).
 - The rows of $Y$ and $Z$ are identically distributed.
