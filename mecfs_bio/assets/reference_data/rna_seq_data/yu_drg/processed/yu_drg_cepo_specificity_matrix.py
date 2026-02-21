@@ -1,3 +1,9 @@
+"""
+Create the gene/cell specificity matrix for the YU DRG dataset using CEPO
+see:
+Kim, Hani Jieun, et al. "Cepo uncovers cell identity through differential stability." bioRxiv (2021): 2021-01.
+"""
+
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long_with_cell_type import (
     YU_DRG_COUNTS_LONG_WITH_CELL_TYPE,
 )

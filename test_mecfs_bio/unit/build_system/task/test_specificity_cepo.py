@@ -20,10 +20,23 @@ from mecfs_bio.build_system.wf.base_wf import SimpleWF
 
 _dummy_df = pd.DataFrame(  # X is stable in A.  Y is stable in B
     {
-        "cell_type": ["A", "A", "A", "A", "B", "B", "B", "B"],
-        "cell": ["A1", "A1", "A2", "A2", "B1", "B1", "B2", "B2"],
-        "gene": ["X", "Y", "X", "Y", "X", "Y", "X", "Y"],
-        "count": [10, 1, 10, 50, 1, 10, 50, 10],
+        "cell_type": ["A", "A", "A", "A", "B", "B", "B", "B", "C", "C", "C", "C"],
+        "cell": [
+            "A1",
+            "A1",
+            "A2",
+            "A2",
+            "B1",
+            "B1",
+            "B2",
+            "B2",
+            "C1",
+            "C1",
+            "C2",
+            "C2",
+        ],
+        "gene": ["X", "Y", "X", "Y", "X", "Y", "X", "Y", "X", "Y", "X", "Y"],
+        "count": [10, 1, 10, 50, 1, 10, 50, 10, 0, 0, 0, 0],
     }
 )
 
@@ -63,4 +76,6 @@ def test_prepare_specificity_cepo(tmp_path: Path):
         index="cell_type", columns="gene", values=DIFFERENTIAL_STABILITY
     )
     assert pivoted.loc["A", "X"] > pivoted.loc["B", "X"]
+    assert pivoted.loc["B", "X"] >= pivoted.loc["C", "X"]
     assert pivoted.loc["A", "Y"] < pivoted.loc["B", "Y"]
+    assert pivoted.loc["A", "Y"] >= pivoted.loc["C", "Y"]

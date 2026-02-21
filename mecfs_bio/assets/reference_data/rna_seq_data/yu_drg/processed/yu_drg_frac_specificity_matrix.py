@@ -1,3 +1,9 @@
+"""
+Create the cell/gene specificity matrix for the YU DRG dataset using the traditional fractional approach.
+
+Here the specificity of gene X for cell Y is log(1+ expression of X in Y)/(sum_Z log(1+ expression of X in Z))
+"""
+
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long_with_cell_type import (
     YU_DRG_COUNTS_LONG_WITH_CELL_TYPE,
 )

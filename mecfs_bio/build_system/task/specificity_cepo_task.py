@@ -76,7 +76,8 @@ class PrepareSpecificityCepo(Task):
         )
         df = filter_missing_genes(df, gene_col=self.gene_col, count_col=self.count_col)
         num_genes = df.select(narwhals.col(self.gene_col).n_unique()).collect().item()
-        df = _compute_inv_coef_prop_nonzero(
+        _check_not_sparse(df=df, cell_col=self.cell_col, gene_col=self.gene_col)
+        df = _compute_inv_coef_prop_zero(
             df=df,
             cell_type_col=self.cell_type_col,
             count_col=self.count_col,
@@ -153,16 +154,16 @@ class PrepareSpecificityCepo(Task):
 _count_mean = "__count_mean__"
 _count_std = "__count_std__"
 _inv_coef = "__count_inv_coef_var__"
-_count_prop_nonzero = "__count_prop_nonzero__"
+_count_prop_zero = "__count_prop_zero__"
 
 _inv_coef_rank = "__inv_coef_rank__"
-_nonzero_rank = "__nonzero_rank__"
+_zero_rank = "__zero_rank__"
 
 _stability = "__stability__"
 DIFFERENTIAL_STABILITY = "differential_stability"
 
 
-def _compute_inv_coef_prop_nonzero(
+def _compute_inv_coef_prop_zero(
     df: narwhals.LazyFrame,
     cell_type_col: str,
     count_col: str,
@@ -172,14 +173,14 @@ def _compute_inv_coef_prop_nonzero(
     df = df.group_by([cell_type_col, gene_col]).agg(
         narwhals.col(count_col).mean().alias(_count_mean),
         narwhals.col(count_col).std().alias(_count_std),
-        (((narwhals.col(count_col) > 0).sum()) / (narwhals.col(count_col).len())).alias(
-            _count_prop_nonzero
-        ),
+        (
+            ((narwhals.col(count_col) == 0).sum()) / (narwhals.col(count_col).len())
+        ).alias(_count_prop_zero),
     )
     df = df.with_columns(
-        (narwhals.col(_count_std) / (narwhals.col(_count_mean) + epsilon)).alias(
-            _inv_coef
-        )
+        (
+            (narwhals.col(_count_std) + epsilon) / (narwhals.col(_count_mean) + epsilon)
+        ).alias(_inv_coef)
     )
     return df
 
@@ -196,10 +197,10 @@ def _compute_ranks(
             order_by=_inv_coef,
         )
         .alias(_inv_coef_rank),
-        narwhals.col(_count_prop_nonzero)
+        narwhals.col(_count_prop_zero)
         .rank("max")
-        .over(cell_type_col, order_by=_count_prop_nonzero)
-        .alias(_nonzero_rank),
+        .over(cell_type_col, order_by=_count_prop_zero)
+        .alias(_zero_rank),
     )
 
 
@@ -207,7 +208,10 @@ def _compute_stability(df: narwhals.LazyFrame, num_genes: int) -> narwhals.LazyF
     return df.with_columns(
         (
             1
-            - (narwhals.col(_inv_coef_rank) + narwhals.col(_count_prop_nonzero))
+            - (
+                narwhals.col(_inv_coef_rank).cast(narwhals.dtypes.Float64)
+                + narwhals.col(_zero_rank).cast(narwhals.dtypes.Float64)
+            )
             / (2 * num_genes)
         ).alias(_stability)
     )
@@ -221,3 +225,15 @@ def _compute_differential_stability(
             narwhals.col(_stability) - narwhals.col(_stability).mean().over(gene_col)
         ).alias(DIFFERENTIAL_STABILITY)
     )
+
+
+def _check_not_sparse(df: narwhals.LazyFrame, cell_col: str, gene_col: str):
+    """
+    Verify that every cell has every gene
+    If I decide to allow sparse dataframes in the future (i.e. if I do include ros for zero expression values), I will need to adjust the calculation of mean, std, and proportion zeros
+    """
+    actual_combinations = len(df.select(cell_col, gene_col).unique().collect())
+    expected_combinations = len(df.select(cell_col).unique().collect()) * len(
+        df.select(gene_col).unique().collect()
+    )
+    assert actual_combinations == expected_combinations
