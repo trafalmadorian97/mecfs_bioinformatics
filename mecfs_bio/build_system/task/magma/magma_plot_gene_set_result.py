@@ -33,6 +33,7 @@ class MAGMAPlotGeneSetResult(Task):
     _meta: Meta
     gene_set_analysis_task: Task
     number_of_bars: int = 20
+    label_col: str = "FULL_NAME"
 
     @property
     def meta(self) -> Meta:
@@ -66,10 +67,10 @@ class MAGMAPlotGeneSetResult(Task):
         )
         plot = px.bar(
             trunc_df,
-            x="FULL_NAME",
+            x=self.label_col,
             y=GWASLAB_MLOG10P_COL,
             labels={
-                "FULL_NAME": "Variable",
+                self.label_col: "Variable",
                 GWASLAB_MLOG10P_COL: "-log\u2081\u2080p",
             },
             color="Significance",
@@ -90,7 +91,11 @@ class MAGMAPlotGeneSetResult(Task):
 
     @classmethod
     def create(
-        cls, gene_set_analysis_task: Task, asset_id: str, number_of_bars: int = 20
+        cls,
+        gene_set_analysis_task: Task,
+        asset_id: str,
+        number_of_bars: int = 20,
+        label_col: str = "FULL_NAME",
     ):
         source_meta = gene_set_analysis_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
@@ -104,4 +109,5 @@ class MAGMAPlotGeneSetResult(Task):
             meta,
             gene_set_analysis_task=gene_set_analysis_task,
             number_of_bars=number_of_bars,
+            label_col=label_col,
         )
