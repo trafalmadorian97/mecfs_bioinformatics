@@ -1,5 +1,5 @@
 """
-This task uses GWASLAB's wrapper around the original LDSC code to estimate estimate genetic correlation by cross-trait
+This task uses GWASLAB's wrapper around the original LDSC code to estimate genetic correlation by cross-trait
 ld-score regression.
 
 While LDSC is a useful and powerful technique, its results should be taken with a grain of salt.
@@ -19,11 +19,11 @@ Chapter authors are S. Burgess, C.N. Foley and V. Zuber
 """
 
 from pathlib import Path, PurePath
+from typing import Sequence
 
 import pandas as pd
 import structlog
 from attrs import frozen
-from jedi.inference.value.iterable import Sequence
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -58,6 +58,9 @@ class SumstatsSource:
 
 @frozen
 class GeneticCorrelationByCTLDSCTask(Task):
+    """
+    Estimate genetic correlation by cross-trait linkage disequilibrium score regression.
+    """
     source_sumstats_tasks: Sequence[SumstatsSource]
     ld_ref_task: Task
     ld_file_filename_pattern: str
@@ -87,15 +90,19 @@ class GeneticCorrelationByCTLDSCTask(Task):
         assert isinstance(ref_asset, DirectoryAsset)
         results = []
         for i in range(len(self.source_sumstats_tasks)):
-            i_name = self.source_sumstats_tasks[i].alias
-            i_sumstats_asset = fetch(self.source_sumstats_tasks[i].asset_id)
+            i_source:SumstatsSource = self.source_sumstats_tasks[i]
+            i_name = i_source.alias
+            i_sumstats_asset = fetch(i_source.asset_id)
             logger.debug(f"reading sumstats for {i_name}")
             i_sumstats = read_sumstats(i_sumstats_asset)
+            i_sumstats.data = i_source.pipe.process_pandas(i_sumstats.data)
             for j in range(i+1, len(self.source_sumstats_tasks)):
-                j_name = self.source_sumstats_tasks[j].alias
-                j_sumstats_asset = fetch(self.source_sumstats_tasks[j].asset_id)
+                j_source =self.source_sumstats_tasks[j]
+                j_name = j_source.alias
+                j_sumstats_asset = fetch(j_source.asset_id)
                 logger.debug(f"reading sumstats for {j_name}")
                 j_sumstats = read_sumstats(j_sumstats_asset)
+                j_sumstats.data= j_source.pipe.process_pandas(j_sumstats.data)
                 i_sumstats.estimate_rg_by_ldsc(
                     other_traits=[j_sumstats],
                     rg=f"{i_name},{j_name}",
@@ -119,15 +126,15 @@ class GeneticCorrelationByCTLDSCTask(Task):
         cls,
         asset_id: str,
         sources: Sequence[SumstatsSource],
-        source_sumstats_task: Task,
         ld_ref_task: Task,
         ld_file_filename_pattern: str = "/LDscore.@",
     ):
-        sumstats_meta = source_sumstats_task.meta
+        assert len(sources)>1
+        sumstats_meta = sources[0].task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(
             id=asset_id,
-            trait="multi_gwas",
+            trait="multi_trait",
             project="genetic_correlation",
             sub_dir=PurePath("ct_ldsc"),
             extension=".csv",

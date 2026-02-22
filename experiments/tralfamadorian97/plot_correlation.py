@@ -69,7 +69,6 @@ def go():
     )
     ax.tick_params(left=False, bottom=False)
     fig.show()
-    import pdb; pdb.set_trace()
     write_plots_to_dir(
        Path( "data"),
         {
