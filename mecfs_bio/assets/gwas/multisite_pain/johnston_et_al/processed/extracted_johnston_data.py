@@ -6,5 +6,4 @@ from mecfs_bio.build_system.task.extract_gzip_task import ExtractGzipTextFileTas
 JOHNSTON_ET_AL_PAIN_EXTRACTED = ExtractGzipTextFileTask.create_for_gwas_file(
     source_file_task=JOHNSTON_ET_AL_PAIN_RAW,
     asset_id="johnston_et_al_pain_extracted",
-
 )
