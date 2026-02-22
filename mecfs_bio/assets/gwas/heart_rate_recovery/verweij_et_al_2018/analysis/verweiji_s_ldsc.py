@@ -4,10 +4,8 @@ from mecfs_bio.asset_generator.concrete_sldsc_generator import (
 from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.processed.verweiji_magma_task_generator import (
     VERWEIJI_ET_AL_COMBINED_MAGMA_TASKS,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
-    GWASLAB_SAMPLE_SIZE_COLUMN,
-)
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
 
 # todo:
 # Try again with a different info filtering strategy

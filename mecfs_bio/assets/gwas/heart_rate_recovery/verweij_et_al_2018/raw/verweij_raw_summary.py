@@ -19,7 +19,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 VERWEIJI_ET_AL_RAW_HARMONIZED_BUILD_37 = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("verweij_et_al_2018_raw_harmonized"),
+        id=AssetId("verweij_et_al_2018_raw_harmonized"),
         trait="heart_rate_recovery",
         project="verweij_et_al_2018",
         sub_dir="raw",
