@@ -30,6 +30,6 @@ PGC_2022_SCH_RAW = DownloadFileTask(
             format=DataFrameTextFormat(separator="\t", comment_char="#")
         ),
     ),
-    url="https://figshare.com/ndownloader/files/34517828",
+    url="https://ndownloader.figshare.com/files/34517828",
     md5_hash="6ebe2376f5cda972d37efa0f214c4df0",
 )
