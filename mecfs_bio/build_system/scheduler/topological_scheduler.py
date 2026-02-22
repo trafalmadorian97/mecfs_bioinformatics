@@ -1,3 +1,7 @@
+"""
+A scheduler that builds a dependency graph of tasks, and executes them in topological order
+"""
+
 from copy import deepcopy
 from pathlib import Path
 from typing import Mapping, Sequence

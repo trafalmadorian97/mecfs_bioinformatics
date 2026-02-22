@@ -39,7 +39,7 @@ LD patterns can obscure the true causal variant. To illustrate the point, Wang a
 
 In the example, the left and right variants are causal, while the central variant is not.  The left and right variants are correlated with the central variant, but not one another.  As a result, the GWAS signal is misleading: if we were to select the candidate causal variants according to p value, we would select the central variant.
 
-Wang and Huang's example is not a purely academic construction.  It reflects a phenomenon seen in real GWAS.  For instance, in a large scale UK Biobank fine-mapping study of 49 traits, Weisbrod et al.[@weissbrod2020functionally] report that "Only 39% of the 2,225 \[likely-causal\] SNPs were also lead GWAS SNPs".
+Wang and Huang's example is not a purely theoretical construction.  It reflects a phenomenon seen in real GWAS.  For instance, in a large scale UK Biobank fine-mapping study of 49 traits, Weisbrod et al.[@weissbrod2020functionally] report that "Only 39% of the 2,225 \[likely-causal\] SNPs were also lead GWAS SNPs".
 
 
 
@@ -72,7 +72,7 @@ $$
 P(\lvert\beta_i\rvert\gg 0 |D) \approx 1.
 $$
 
-Where $D$ is the GWAS data. In fine mapping terminology, a causal SNP is one has a high posterior probability of contributing significantly to the phenotype.
+where $D$ is the GWAS data. In fine mapping terminology, a causal SNP is one has a high posterior probability of contributing significantly to the phenotype.
 
 
 It is natural to ask why, when so many other bioinformatic techniques use frequentist statistics, Bayesian statistics has come to dominate fine-mapping.  There are two main reasons.
