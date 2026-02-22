@@ -1,3 +1,7 @@
+"""
+Abstract base class for Rebuilders.  See Andrey Mokhov, Neil Mitchell, and Simon Peyton Jones. Build systems à la carte.
+"""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -14,8 +18,8 @@ class Rebuilder[Info](ABC):
     """
     Key Operations:
     - Decide whether a given asset is up-to-date using information from Info.
-    - If the asset is up-to-date, return it together with the Info
-    - If the asset is not up-to-date, bring it up-to-date, update Info, and return the new values of both
+    - If the asset is up-to-date, return it together with Info.
+    - If the asset is not up-to-date, bring it up-to-date, update Info, and return the new values of both.
     """
 
     @abstractmethod

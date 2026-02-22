@@ -1,3 +1,7 @@
+"""
+Task to extract the entire contents of a zip archive
+"""
+
 from pathlib import Path, PurePath
 from zipfile import ZipFile
 
@@ -21,6 +25,10 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class ExtractAllFromZipTask(Task):
+    """
+    Task to extract the entire contents of a zip archive
+    """
+
     _meta: Meta
     source_file_task: Task
 
@@ -61,7 +69,7 @@ class ExtractAllFromZipTask(Task):
             group=src_meta.group,
             sub_group=src_meta.sub_group,
             sub_folder=PurePath("extracted"),
-            asset_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             dirname=src_meta.filename,
         )
         return cls(

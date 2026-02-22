@@ -1,3 +1,7 @@
+"""
+Copies a directory from an external source.
+"""
+
 import shutil
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -36,5 +40,5 @@ class ExternalDirectoryCopyTask(GeneratingTask):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:
         target_path = scratch_dir / "target"
-        shutil.copy(str(self.external_path), str(target_path))
+        shutil.copytree(str(self.external_path), str(target_path))
         return DirectoryAsset(target_path)

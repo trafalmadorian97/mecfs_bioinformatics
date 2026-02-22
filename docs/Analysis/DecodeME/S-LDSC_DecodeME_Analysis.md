@@ -5,24 +5,25 @@ hide:
 ---
 # S-LDSC Analysis of DecodeME
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS 1 of [DecodeME](../../Data_Sources/MECFS/DecodeME.md).
+[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS-1 of [DecodeME](../../Data_Sources/DecodeME.md)[genetics2025initial].
 
 ## Reference Data Sources
 
 I used the standard reference datasets prepared by the authors of the S-LDSC method.
 
-- [The GTEx Project](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md)
+- [The GTEx Project](../../Data_Sources/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
-- [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap_Epigenetic_Project/Roadmap.md)
-- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_Et_Al_Blood_Cell_Epigenetics/Corces_et_al.md).
-- The [ImmGen](../../Data_Sources/Immgen_Project/Immgen_Project.md) Project
+- [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap.md)
+- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_et_al.md).
+- The [ImmGen](../../Data_Sources/Immgen_Project.md) Project
 - The Cahoy Mouse Central Nervous System Dataset
 
 
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets.
+The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].  The table shows details of the cell/tissues types with the smallest p values.
+
 
 ![s-ldsc-decodme-gene-expression](https://github.com/user-attachments/assets/77dfefc0-2717-4e45-9b1d-4f09d67b7dc5)
 
@@ -109,15 +110,15 @@ I next applied S-LDSC using the reference dataset derived from the Roadmap epige
 | Brain_Hippocampus_Middle__H3K27ac                                        |   1.91901e-08 |           0.00173697  | False         |
 | Ganglion_Eminence_derived_primary_cultured_neurospheres__H3K4me1         |   3.16805e-08 |           0.00215425  | False         |
 
-Again, the strongest, and most significant associations are all with CNS cell-types
+Again, the strongest and most significant associations are all with CNS cell-types.
 
-### Immgen data
+### ImmGen data
 
-Next, I applied S-LDSC using reference data from the Immgen project.
+Next, I applied S-LDSC using reference data from the ImmGen project.
 
 There were no significant cell types.
 
-The cell types with the lowest p-values are shown in the table below:
+The cell types with the lowest p values are shown in the table below:
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------------------------------|--------------:|----------------------:|:--------------|
@@ -183,5 +184,5 @@ When we apply the S-LDSC using the GTEx brain dataset, we find the the cortex ti
 
 # Reproducing Analysis
 
-To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis]
+To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
 

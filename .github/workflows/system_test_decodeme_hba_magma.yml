@@ -1,0 +1,38 @@
+name: system_test_hba_magma_decode_me
+on:
+  schedule:
+    - cron: "0 4 * * 0"   #Run Sunday at 4 UTC
+
+  workflow_dispatch: {}
+
+
+jobs:
+  lead_variants:
+    timeout-minutes: 600
+    name: Run HBA-MAGMA
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v4
+      - name: Free Disk Space (Ubuntu)
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+          large-packages: true
+          docker-images: true
+          swap-storage: true
+      - uses: mathio/gha-cleanup@v1
+        with:
+          remove-browsers: true
+          verbose: true
+      - uses: prefix-dev/setup-pixi@v0.9.2
+        name: Setup Pixi Environment
+        with:
+          pixi-version: v0.55.0
+          cache: true
+      - name: Run HBA-MAGMA integration test
+        run: pixi r python -m pytest -s  test_mecfs_bio/system/test_decode_me_hba_magma.py   # run hba-magma on DecodeME data
+

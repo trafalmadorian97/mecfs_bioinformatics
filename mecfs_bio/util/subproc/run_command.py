@@ -1,5 +1,6 @@
 import subprocess
 import sys
+from subprocess import CalledProcessError
 
 import structlog
 
@@ -13,6 +14,7 @@ def execute_command(cmd: list[str]) -> str:
     """
     output = ""
     str_cmd = " ".join(cmd)
+    logger.debug(f"Running {str_cmd}")
     with subprocess.Popen(
         str_cmd,
         shell=True,
@@ -35,4 +37,4 @@ def execute_command(cmd: list[str]) -> str:
         if p.returncode == 0:
             return output
         else:
-            raise Exception(cmd, p.returncode, output)
+            raise CalledProcessError(cmd=cmd, returncode=p.returncode, output=output)

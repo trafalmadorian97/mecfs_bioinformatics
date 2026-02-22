@@ -4,7 +4,7 @@ from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.magma.liu_et_al_2023_eur_37_magma_ensembl_gene_analysis import (
     LIU_ET_AL_IBD_2023_EUR_37_MAGMA_ENSEMBL_GENE_ANALYSIS,
 )
-from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
+from mecfs_bio.assets.reference_data.rna_seq_data.gtex.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
     GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
 )
 from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (

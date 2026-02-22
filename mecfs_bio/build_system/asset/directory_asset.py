@@ -1,3 +1,7 @@
+"""
+An Asset representing a directory.
+"""
+
 from pathlib import Path
 
 from attrs import frozen

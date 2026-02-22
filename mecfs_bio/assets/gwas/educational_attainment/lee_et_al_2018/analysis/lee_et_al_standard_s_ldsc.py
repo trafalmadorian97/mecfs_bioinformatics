@@ -4,10 +4,10 @@ from mecfs_bio.asset_generator.concrete_sldsc_generator import (
 from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
     LEE_ET_AL_2018_COMBINED_MAGMA_TASKS,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
-from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 
 LEE_ET_AL_EDU_STANDARD_SLDSC_TASK_GROUP = standard_sldsc_task_generator(
     sumstats_task=LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.sumstats_task,

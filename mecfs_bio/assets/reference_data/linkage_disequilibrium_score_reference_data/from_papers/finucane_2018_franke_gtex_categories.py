@@ -20,7 +20,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 FICUANE_2018_FRANKE_GTEX_CATEGORIES = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="ficuane_2018_combined_gtex_franke_categories",
+        id="ficuane_2018_combined_gtex_franke_categories",
         group="linkage_disequilibrium_score_regression_aux_data",
         sub_group="data_from_papers",
         sub_folder=PurePath("ficuane_2018"),

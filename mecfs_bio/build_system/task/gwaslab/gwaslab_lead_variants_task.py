@@ -38,7 +38,7 @@ class GwasLabLeadVariantsTask(Task):
         return GWASLabLeadVariantsMeta(
             trait=self._input_meta.trait,
             project=self._input_meta.project,
-            short_id=self.short_id,
+            id=self.short_id,
         )
 
     @property
@@ -59,6 +59,15 @@ class GwasLabLeadVariantsTask(Task):
         sumstats_asset = fetch(self._input_asset_id)
         sumstats: gl.Sumstats = read_sumstats(sumstats_asset)
         variant_df = sumstats.get_lead(anno=True, sig_level=self.sig_level)
+
+        """
+        GWASLab (sumstats.get_lead()) does not add the GENE column if no significant variants are found.
+        See: https://github.com/Cloufield/gwaslab/blob/eb4daf636f6e171d74a80c16723293734e851ee2/src/gwaslab/util/util_in_get_sig.py#L164-L177. 
+        However, the GENE column is required by downstream tasks.
+        """
+        if not "GENE" in variant_df.columns:
+            variant_df["GENE"] = None
+
         out_path = scratch_dir / "lead_variants.csv"
         variant_df.to_csv(out_path, index=False)
         return FileAsset(out_path)

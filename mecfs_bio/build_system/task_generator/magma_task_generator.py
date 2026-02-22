@@ -3,6 +3,10 @@ from pathlib import PurePath
 from attrs import frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameWhiteSpaceSepTextFormat,
+)
 from mecfs_bio.build_system.reference.schemas.chrom_rename_rules import (
     CHROM_RENAME_RULES,
 )
@@ -16,11 +20,10 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
-from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
-    MultipleTestingTableTask,
+from mecfs_bio.build_system.task.copy_file_from_directory_task import (
+    CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GwaslabKnownFormat
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GenomeBuildMode,
     GWASLabColumnSpecifiers,
@@ -32,6 +35,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.task.magma.magma_annotate_task import MagmaAnnotateTask
 from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
+    GENE_ANALYSIS_OUTPUT_STEM_NAME,
     MagmaGeneAnalysisTask,
 )
 from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
@@ -42,9 +46,13 @@ from mecfs_bio.build_system.task.magma.magma_plot_gene_set_result import (
     MAGMAPlotGeneSetResult,
 )
 from mecfs_bio.build_system.task.magma.magma_snp_location_task import MagmaSNPFileTask
+from mecfs_bio.build_system.task.multiple_testing_table_task import (
+    MultipleTestingTableTask,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
+from mecfs_bio.constants.gwaslab_constants import GwaslabKnownFormat
 
 
 @frozen
@@ -62,6 +70,7 @@ class StandardMagmaTaskGenerator:
     snp_loc_task: Task
     annotations_task: Task
     gene_analysis_task: Task
+    gene_analysis_extracted_result_task: Task
     gene_set_analysis_task: Task
     bar_plot_task: Task
     filtered_gene_analysis_task: Task
@@ -88,6 +97,7 @@ class StandardMagmaTaskGenerator:
         ld_ref_file_stem: str = "g1000_eur",
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
+        number_of_bars: int = 20,
     ):
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
@@ -114,6 +124,20 @@ class StandardMagmaTaskGenerator:
             ld_ref_file_stem=ld_ref_file_stem,
             sample_size=sample_size,
         )
+        extracted_gene_analysis_result_task = (
+            CopyFileFromDirectoryTask.create_result_table(
+                asset_id=base_name + "_copy_gene_analysis_result",
+                source_directory_task=gene_analysis_task,
+                path_inside_directory=PurePath(
+                    GENE_ANALYSIS_OUTPUT_STEM_NAME + ".genes.out"
+                ),
+                extension=".txt",
+                read_spec=DataFrameReadSpec(
+                    DataFrameWhiteSpaceSepTextFormat(comment_code="#")
+                ),
+            )
+        )
+
         tissue_gene_set_analysis = MagmaGeneSetAnalysisTask.create(
             asset_id=base_name + "_magma_tissue_gene_set_analysis",
             magma_gene_analysis_task=gene_analysis_task,
@@ -128,6 +152,7 @@ class StandardMagmaTaskGenerator:
         bar_plot_task = MAGMAPlotGeneSetResult.create(
             gene_set_analysis_task=tissue_gene_set_analysis,
             asset_id=base_name + "_magma_bar_plot",
+            number_of_bars=number_of_bars,
         )
 
         filtered_gene_task = (
@@ -190,6 +215,7 @@ class StandardMagmaTaskGenerator:
             thesaurus_labeled_filtered_gene_analysis_task=labeled_filtered_gene_task,
             gget_labeled_filtered_gene_analysis_task=gget_labeled_gene_task,
             markdown_gget_labeled_filtered_gene_analysis_task=markdown_gget_labeled_task,
+            gene_analysis_extracted_result_task=extracted_gene_analysis_result_task,
         )
 
 
@@ -220,6 +246,8 @@ class MagmaTaskGeneratorFromRaw:
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
         gene_thesaurus_task: Task | None = None,
+        gget_settings: GGetSettings | None = GGetSettings(50),
+        number_of_bars: int = 20,
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
@@ -249,6 +277,8 @@ class MagmaTaskGeneratorFromRaw:
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
                 gene_thesaurus_task=gene_thesaurus_task,
+                gget_settings=gget_settings,
+                number_of_bars=number_of_bars,
             ),
         )
 
@@ -281,6 +311,8 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
+        gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
+        number_of_bars: int = 20,
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
@@ -317,6 +349,8 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
                 base_name=base_name,
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
+                gget_settings=gget_settings,
+                number_of_bars=number_of_bars,
             ),
             assign_rsids_task=assign_rsids_37_task,
         )

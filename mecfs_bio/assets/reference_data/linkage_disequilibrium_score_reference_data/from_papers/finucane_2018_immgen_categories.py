@@ -1,9 +1,8 @@
 """
-Categories for mouse immune cell types from the immgen project
+Categories for mouse immune cell types from the Immgen project
 
 source:
-Suplementary Table 10 in
-Supplementary material to
+Supplementary Table 10 in
 Finucane, Hilary K., et al. "Heritability enrichment of specifically expressed genes identifies disease-relevant tissues and cell types." Nature genetics 50.4 (2018): 621-629.
 
 """
@@ -21,7 +20,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 FICUANE_2018_IMMGEN_CATEGORIES = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="ficuane_2018_immgen_categories",
+        id="ficuane_2018_immgen_categories",
         group="linkage_disequilibrium_score_regression_aux_data",
         sub_group="data_from_papers",
         sub_folder=PurePath("ficuane_2018"),

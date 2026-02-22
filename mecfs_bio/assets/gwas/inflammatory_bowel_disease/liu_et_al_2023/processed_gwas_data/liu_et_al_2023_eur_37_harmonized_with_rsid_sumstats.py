@@ -6,11 +6,11 @@ from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_g
     LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.task.gwaslab import gwaslab_constants
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
     GWASLabCreateSumstatsTask,
 )
+from mecfs_bio.constants import gwaslab_constants
 
 LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150 = GWASLabCreateSumstatsTask(
     df_source_task=LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR,

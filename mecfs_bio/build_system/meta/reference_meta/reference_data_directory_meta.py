@@ -11,9 +11,9 @@ class ReferenceDataDirectoryMeta(DirMeta):
     group: str
     sub_group: str
     sub_folder: PurePath
-    _asset_id: AssetId = field(converter=AssetId)
+    id: AssetId = field(converter=AssetId)
     dirname: str | None = None
 
     @property
     def asset_id(self) -> AssetId:
-        return self._asset_id
+        return self.id

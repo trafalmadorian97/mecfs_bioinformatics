@@ -3,7 +3,8 @@ name = "biostatistics"
 version = "0.1.0"
 readme = "README.md"
 requires-python = "==3.12"
-dependencies = [
+[dependency-groups]
+analysis = [
     "attrs>=25.3.0",
     "cattrs>=25.2.0",
     "emoji>=2.15.0",
@@ -33,19 +34,26 @@ dependencies = [
     "types-requests>=2.32.4.20250913",
     "types-tqdm>=4.67.0.20250809",
     "universal-pathlib>=0.3.4",
-    "xarray>=2025.9.1",
+    "xarray>=2025.12.0,<2026",
     "xxhash>=3.6.0", "ibis-framework[duckdb,examples]>=11.0.0,<12",
     "scikit-learn>=1.7.2,<2",
     "gdown>=5.2.0,<6",
     "mkdocs-gen-files>=0.5.0,<0.6",
     "mkdocs-literate-nav",
     "mkdocs-api-autonav>=0.4.0,<0.5",
-    "mkdocs-material>=9.6.23,<10",
+    "mkdocs-material>=9.7.1,<10",
     "mkdocstrings>=0.30.1,<0.31",
     "tabulate>=0.9.0,<0.10",
     "mkdocs-bibtex>=4.4.0,<5",
-    "statsmodels>=0.14.5"
-, "gget>=0.29.3,<0.30"]
+    "statsmodels>=0.14.5",
+  "gget>=0.29.3,<0.30",
+    "openpyxl>=3.1.5,<4",
+    "scipy-stubs>=1.17.0.0,<2",
+    "adjusttext>=0.8,<0.9",
+    "seaborn>=0.13.2,<0.14",
+    "textalloc>=1.2.1,<2",
+    "types-seaborn>=0.13.2.20251221,<0.14",
+ "rpy2>=3.6.4,<4", "uniprot-id-mapper>=1.1.4,<2", "forestplot>=0.4.1,<0.5", "zepid>=0.9.1,<0.10", "synapseclient>=4.11.0,<5", "import-linter>=2.9,<3", "pyreadr>=0.5.4,<0.6", "pygenometracks>=3.9,<4", "pybedtools>=0.12.0,<0.13", "tomli-w", "upsetplot>=0.9.0,<0.10", "pypng>=0.20220715.0,<0.20220716", ]
 
 ## pyproject.toml
 #[tool.pixi.pypi-options.dependency-overrides]
@@ -64,10 +72,21 @@ biostatistics = { path = ".", editable = true }
 [tool.pixi.tasks]
 install-parquet-cli = { cmd = "bash -lc 'cargo install parquet@57.0.0 --features=cli --locked --root ${CONDA_PREFIX}'" }
 parquet-fromcsv = { cmd = "parquet-fromcsv" }
+install-mr = """
+mkdir -p r-libs && \
+Rscript -e "if (!requireNamespace('TwoSampleMR', quietly = TRUE)) install.packages('TwoSampleMR', repos=c('https://mrcieu.r-universe.dev', 'https://cloud.r-project.org'))"
+"""
+install-raps= """
+mkdir -p r-libs && \
+Rscript -e "if (!requireNamespace('mr.raps', quietly = TRUE)) install.packages('mr.raps', repos=c('https://mrcieu.r-universe.dev', 'https://cloud.r-project.org'))"
+"""
 [tool.setuptools]
 packages = ["mecfs_bio"]
 
-[tool.pixi.dependencies]
+[tool.pixi.activation]
+env = { R_LIBS_USER = "r-libs" }
+
+[tool.pixi.feature.analysis.dependencies]
 pysam = ">=0.23.3,<0.24"
 pixi-pycharm = ">=0.0.9,<0.0.10"
 ruff = ">=0.14.2,<0.15"
@@ -77,3 +96,40 @@ rust = ">=1.90.0,<1.91"
 duckdb = ">=1.4.1,<2"
 pandoc = ">=3.8.2.1,<4"
 bcftools = ">=1.22,<2"
+typos = ">=1.41.0,<2"
+r-base = ">=4.0,<4.6"
+bioconductor-celldex = ">=1.16.0,<2"
+pixi = "*"
+make = ">=4.4.1,<5"
+r-dplyr = ">=1.1.4,<2"
+"r-data.table" = ">=1.17.8,<2"
+r-jsonlite = ">=2.0.0,<3"
+r-httr = ">=1.4.7,<2"
+r-ggplot2 = ">=4.0.2,<5"
+r-cowplot = ">=1.2.0,<2"
+r-knitr = ">=1.51,<2"
+r-markdown = ">=2.0,<3"
+r-plyr = ">=1.8.9,<2"
+r-reshape2 = ">=1.4.5,<2"
+r-stringr = ">=1.6.0,<2"
+r-xml2 = ">=1.5.1,<2"
+r-magrittr = ">=2.0.4,<3"
+r-ieugwasr = ">=1.1.0,<2"
+r-glmnet = ">=4.1_10,<5"
+r-mass = ">=7.3_65,<8"
+r-mendelianrandomization = ">=0.10.0,<0.11"
+gh = ">=2.86.0,<3"
+lychee = ">=0.22.0,<0.23"
+r-susier = ">=0.14.2,<0.15"
+tomli-w = ">=1.2.0,<2"
+awscli = ">=2.33.8,<3"
+r-rfast = ">=2.1.5.2,<3"
+r-seurat = ">=5.4.0,<6"
+
+[tool.pixi.feature.download.dependencies]
+aria2 = { channel = "conda-forge" }
+
+[tool.pixi.environments]
+default = ["analysis"]
+
+download-env = ["download"]

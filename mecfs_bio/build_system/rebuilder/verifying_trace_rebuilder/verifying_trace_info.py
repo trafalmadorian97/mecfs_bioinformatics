@@ -6,6 +6,7 @@ from attrs import define, field
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.serialization.converter import CONVERTER_FOR_SERIALIZATION
+from mecfs_bio.util.file_io.atomic_write import atomic_write_yaml
 
 TraceRecord = tuple[str, list[tuple[AssetId, str]]]
 
@@ -35,10 +36,8 @@ class VerifyingTraceInfo:
     def serialize(self, path: Path) -> None:
         conv = CONVERTER_FOR_SERIALIZATION
         path.parent.mkdir(parents=True, exist_ok=True)
-        with open(path, "w") as outfile:
-            yaml.dump(
-                conv.unstructure(self.trace_store), outfile, default_flow_style=False
-            )
+        unstructured = conv.unstructure(self.trace_store)
+        atomic_write_yaml(path=path, data=unstructured)
 
     @classmethod
     def deserialize(cls, path: Path) -> "VerifyingTraceInfo":

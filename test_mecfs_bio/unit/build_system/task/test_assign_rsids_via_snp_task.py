@@ -17,9 +17,9 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_
 )
 from mecfs_bio.build_system.scheduler.topological_scheduler import topological
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GWASLAB_RSID_COL
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 
 # from test_mecfs_bio.unit.build_system.task.conftest import parquet_snp151, dummy_processed_gwas_parquet
 

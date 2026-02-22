@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 LEE_ET_AL_2018_CATALOG_HARMONIZED_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("lee_at_al_2018_catalog_harmonized"),
+        id=AssetId("lee_at_al_2018_catalog_harmonized"),
         trait="educational_attainment",
         project="lee_el_al_2018",
         sub_dir="raw",

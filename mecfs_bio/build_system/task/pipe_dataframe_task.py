@@ -1,3 +1,7 @@
+"""
+Task to transform a dataframe asset using a DataProcessingPipes.
+"""
+
 from pathlib import Path, PurePath
 from typing import Sequence
 
@@ -28,7 +32,6 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-# OutFormat= Literal["parquet","csv"]
 class ParquetOutFormat:
     pass
 
@@ -48,6 +51,10 @@ class PipeDataFrameTask(Task):
     _meta: Meta
     out_format: OutFormat
     backend: ValidBackend = "ibis"
+
+    def __attrs_post_init__(self):
+        if isinstance(self._source_meta.read_spec().format, DataFrameTextFormat):
+            assert self.backend in ("polars",), "Can only read text data with polars"
 
     @property
     def meta(self) -> Meta:
@@ -100,13 +107,13 @@ class PipeDataFrameTask(Task):
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 sub_folder=PurePath("processed"),
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 extension=extension,
                 read_spec=read_spec,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
             meta = FilteredGWASDataMeta(
-                short_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 sub_dir=PurePath("processed"),
@@ -114,10 +121,18 @@ class PipeDataFrameTask(Task):
             )
         elif isinstance(source_meta, ResultTableMeta):
             meta = ResultTableMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,
+                read_spec=read_spec,
+            )
+        elif isinstance(source_meta, FilteredGWASDataMeta):
+            meta = FilteredGWASDataMeta(
+                id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                sub_dir=source_meta.sub_dir,
                 read_spec=read_spec,
             )
         else:

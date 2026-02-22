@@ -21,7 +21,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 MILLION_VETERAN_LDL_EUR_DATA_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("million_veterans_ldl_eur_raw"),
+        id=AssetId("million_veterans_ldl_eur_raw"),
         trait="ldl",
         project="million_veterans",
         sub_dir="raw",

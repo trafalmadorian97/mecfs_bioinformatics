@@ -1,3 +1,10 @@
+"""
+Task to Assign rsids to SNPs using the ucsc hg19 sbSNP build 151 reference file.
+
+Note that this approach only allows assignment of rsids to SNPs.  Non-SNP variants are dropped.
+
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_gwas_1_37_parquet_file import (
     DECODE_ME_GWAS_1_LIFTOVER_TO_37_PARQUET,
 )

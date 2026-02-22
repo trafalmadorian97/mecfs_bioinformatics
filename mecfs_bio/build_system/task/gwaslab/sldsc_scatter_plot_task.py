@@ -13,7 +13,7 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.fdr_multiple_testing_table_task import (
+from mecfs_bio.build_system.task.multiple_testing_table_task import (
     REJECT_NULL_LABEL,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -91,7 +91,7 @@ class SLDSCScatterPlotTask(Task):
         meta = GWASPlotDirectoryMeta(
             trait=source_meta.trait,
             project=source_meta.project,
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
         )
         return cls(
             meta=meta,
