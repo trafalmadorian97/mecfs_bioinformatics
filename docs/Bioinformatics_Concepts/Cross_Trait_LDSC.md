@@ -57,7 +57,7 @@ $$
 
 - Assumption ($\ref{cov_delta_epsilon}$) specifies that error is uncorrelated between GWAS, except for individuals who are participants both studies.
 - Assumptions ($\ref{var_beta}$), ($\ref{var_gamma}$), and ($\ref{cov_beta_gamma}$) specify an isotropically polygenic architecture, analogous to the one used in [LDSC](LDSC.md).
-- Assumptions ($\ref{e_delta}$), ($\ref{e_beta}$), ($\ref{e_Y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) specify that the data has been pre-normalized.
+- Assumptions ($\ref{e_delta}$), ($\ref{e_beta}$), ($\ref{e_Y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) specify that the data has been pre-normalized. Here ($\ref{e_y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) elide the distinction between sample and population level normalization, which should only introduce minor error given the large sample size of a typical GWAS.
 
 
 
@@ -136,7 +136,7 @@ z_{j,2} &\approx \frac{y_1^T Z_{j}}{\sqrt{N_2}} \label{d2}.
 $$
 
 
-Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics.  To derive the regression equation, we must estimate the expectation of this product: $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation (see Grimmett and Stirzaker[@grimmett2020probability]), 
+Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics.  To derive the regression equation, we must estimate $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation (see Grimmett and Stirzaker pg.336[@grimmett2020probability]), 
 
 $$
 \begin{align}
@@ -165,7 +165,7 @@ $$
 Q_{i,j}&= \begin{cases}
 1 & \text{ if }i=j \le N_s\\
 0 & \text{else}
-\end{cases}
+\end{cases}.
 \end{align}
 $$
 
@@ -194,7 +194,7 @@ $$
 $$
 
 Where we have approximated the random variables as having a normal distribution, and used 
-[ Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem).  Recall that we also used Isserlis's theorem at a similar point in the original derivation of [LDSC](LDSC.md#expectation-of-empirical-ld-scores).
+[ Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem).  Recall that we also used Isserlis's theorem at a similar point in the derivation of [LDSC](LDSC.md#expectation-of-empirical-ld-scores).
 
 
 - Case 2: $i$ and $q$ refer to different individuals.  There are $N_1N_2-N_s$ such pairs.
