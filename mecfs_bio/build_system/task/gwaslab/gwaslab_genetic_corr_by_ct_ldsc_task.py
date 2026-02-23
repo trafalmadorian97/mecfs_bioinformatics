@@ -114,10 +114,16 @@ class SumstatsSource:
 class GeneticCorrelationByCTLDSCTask(Task):
     """
     Estimate genetic correlation by cross-trait linkage disequilibrium score regression.
-    Note that when CT-LDSC runs, it will also print observed scale heritabilities.
+    See: Bulik-Sullivan, Brendan, et al. "An atlas of genetic correlations across human diseases and traits." Nature genetics 47.11 (2015): 1236-1241.
+
+    NOTE:  When CT-LDSC runs, it will print observed scale heritabilities.
     For binary traits, observed scale heritability is not directly meaningful, and must be converted to liability scale.
 
-    See: Bulik-Sullivan, Brendan, et al. "An atlas of genetic correlations across human diseases and traits." Nature genetics 47.11 (2015): 1236-1241.
+    However, as Bulik-Sulivan et al. says: "there is no distinction between observed and liability scale genetic correlation for case/control traits, so we can define and estimate
+    genetic correlation between a case/control trait and a quantitative trait and genetic
+    correlation between pairs of case/control traits without the need to specify a scale"
+    i.e. when we only care about genetic correlation, we do not need to worry about observed vs liability scale.
+
     """
 
     source_sumstats_tasks: Sequence[SumstatsSource]
