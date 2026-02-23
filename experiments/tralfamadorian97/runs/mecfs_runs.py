@@ -3,7 +3,7 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_1 import CT_LDSC_INITIAL
+from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_initial import CT_LDSC_INITIAL
 
 
 def run_initial_decode_me_analysis():
@@ -60,6 +60,7 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
+            CT_LDSC_INITIAL
             # YU_DRG_CEPO_SPECIFICITY_MATRIX
             # YU_DRG_FRAC_SPECIFICITY_MATRIX
 
