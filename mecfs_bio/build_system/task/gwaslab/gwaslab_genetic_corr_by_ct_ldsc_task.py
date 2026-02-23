@@ -102,11 +102,11 @@ class BinaryPhenotypeSampleInfo:
     sample_prevalence:float
     estimated_population_prevalence:float
 
-# @frozen
-# class QuantPhenotype:
-#     pass
-#
-# PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
+@frozen
+class QuantPhenotype:
+    pass
+
+PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
 
 
 @frozen
@@ -118,7 +118,7 @@ class SumstatsSource:
     task: Task
     alias: str
     pipe: DataProcessingPipe = IdentityPipe()
-    sample_info: BinaryPhenotypeSampleInfo| None = None
+    sample_info: PhenotypeInfo| None = None
 
     @property
     def asset_id(self) -> AssetId:
@@ -241,15 +241,21 @@ class GeneticCorrelationByCTLDSCTask(Task):
         )
 
 
-def get_prev_options(trait_1_prev:BinaryPhenotypeSampleInfo|None,trait_2_prev:BinaryPhenotypeSampleInfo|None ) -> dict:
-    if trait_1_prev is None or trait_2_prev is None:
-        return {}
-    t1_sp= trait_1_prev.sample_prevalence if trait_1_prev is not None else "nan"
-    t2_sp= trait_2_prev.sample_prevalence if trait_1_prev is not None else "nan"
-    return {
-        "samp_prev":f"{trait_1_prev.sample_prevalence},{trait_2_prev.sample_prevalence}",
-        "pop_prev":f"{trait_1_prev.estimated_population_prevalence},{trait_2_prev.estimated_population_prevalence}",
+def get_prev_options(trait_1_prev:PhenotypeInfo|None,trait_2_prev:PhenotypeInfo|None ) -> dict:
+    # if trait_1_prev is None and trait_2_prev is None:
+    #     return {}
+    t1_sp= trait_1_prev.sample_prevalence if isinstance(trait_1_prev,BinaryPhenotypeSampleInfo) else "nan"
+    t2_sp= trait_2_prev.sample_prevalence if isinstance(trait_2_prev,BinaryPhenotypeSampleInfo) else "nan"
+    t1_pp = trait_1_prev.estimated_population_prevalence if isinstance(trait_1_prev,BinaryPhenotypeSampleInfo) else "nan"
+    t2_pp =  trait_2_prev.estimated_population_prevalence if isinstance(trait_2_prev,BinaryPhenotypeSampleInfo) else "nan"
+    options ={
+        "samp_prev":f"{t1_sp},{t2_sp}",
+        "pop_prev":f"{t1_pp},{t2_pp}",
     }
+    logger.debug(
+        f"Prevalance Options: {options}"
+    )
+    return options
 
 
 def load_and_preprocess_sumstats(
