@@ -61,6 +61,8 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
+
+
 @frozen
 class FilterSettings:
     """
@@ -96,6 +98,18 @@ def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build:
 
 
 @frozen
+class BinaryPhenotypeSampleInfo:
+    sample_prevalence:float
+    estimated_population_prevalence:float
+
+# @frozen
+# class QuantPhenotype:
+#     pass
+#
+# PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
+
+
+@frozen
 class SumstatsSource:
     """
     A source of GWASlab sumstats to use for computing genetic correlation
@@ -104,6 +118,7 @@ class SumstatsSource:
     task: Task
     alias: str
     pipe: DataProcessingPipe = IdentityPipe()
+    sample_info: BinaryPhenotypeSampleInfo| None = None
 
     @property
     def asset_id(self) -> AssetId:
@@ -157,14 +172,14 @@ class GeneticCorrelationByCTLDSCTask(Task):
         assert isinstance(ref_asset, DirectoryAsset)
         results = []
         for i in range(len(self.source_sumstats_tasks) - 1):
-            i_sumstats, i_name = load_and_preprocess_sumstats(
+            i_sumstats, i_name, i_sample_info = load_and_preprocess_sumstats(
                 source=self.source_sumstats_tasks[i],
                 fetch=fetch,
                 settings=self.filter_settings,
                 build=self.build,
             )
             for j in range(i + 1, len(self.source_sumstats_tasks)):
-                j_sumstats, j_name = load_and_preprocess_sumstats(
+                j_sumstats, j_name, j_sample_info = load_and_preprocess_sumstats(
                     source=self.source_sumstats_tasks[j],
                     fetch=fetch,
                     settings=self.filter_settings,
@@ -178,12 +193,14 @@ class GeneticCorrelationByCTLDSCTask(Task):
                         compatible_rsids[GWASLAB_RSID_COL]
                     )
                 ]
+                options = get_prev_options(trait_1_prev=i_sample_info, trait_2_prev=j_sample_info)
                 i_sumstats.estimate_rg_by_ldsc(
                     other_traits=[j_sumstats],
                     rg=f"{i_name},{j_name}",
                     ref_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
                     w_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
                     build=self.build,
+                    **options
                 )
             results.append(i_sumstats.ldsc_rg)
 
@@ -224,9 +241,20 @@ class GeneticCorrelationByCTLDSCTask(Task):
         )
 
 
+def get_prev_options(trait_1_prev:BinaryPhenotypeSampleInfo|None,trait_2_prev:BinaryPhenotypeSampleInfo|None ) -> dict:
+    if trait_1_prev is None or trait_2_prev is None:
+        return {}
+    t1_sp= trait_1_prev.sample_prevalence if trait_1_prev is not None else "nan"
+    t2_sp= trait_2_prev.sample_prevalence if trait_1_prev is not None else "nan"
+    return {
+        "samp_prev":f"{trait_1_prev.sample_prevalence},{trait_2_prev.sample_prevalence}",
+        "pop_prev":f"{trait_1_prev.estimated_population_prevalence},{trait_2_prev.estimated_population_prevalence}",
+    }
+
+
 def load_and_preprocess_sumstats(
     source: SumstatsSource, fetch: Fetch, settings: FilterSettings, build: GenomeBuild
-) -> tuple[gwaslab.Sumstats, str]:
+) -> tuple[gwaslab.Sumstats, str, BinaryPhenotypeSampleInfo|None]:
     name = source.alias
     sumstats_asset = fetch(source.asset_id)
     logger.debug(f"reading sumstats for {name}")
@@ -234,7 +262,7 @@ def load_and_preprocess_sumstats(
     assert GWASLAB_RSID_COL in sumstats.data.columns
     sumstats.data = source.pipe.process_pandas(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)
-    return sumstats, name
+    return sumstats, name, source.sample_info
 
 
 def get_compatible_snps_polars(df_i: pd.DataFrame, df_j: pd.DataFrame) -> pd.DataFrame:
