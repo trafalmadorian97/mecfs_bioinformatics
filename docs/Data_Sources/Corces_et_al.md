@@ -1,4 +1,4 @@
-# The Corces et al. Blood Cell Epigenetics Dataset
+# Corces et al. Blood Cell Epigenetics
 
 
 

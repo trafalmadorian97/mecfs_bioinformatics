@@ -1,4 +1,4 @@
-# The ImmGen Project
+# ImmGen
 
 ![Immgen-visualization](https://github.com/user-attachments/assets/8e0ac3f0-101e-4659-bc01-764810040e69)
 Image source: Aguilar et al.[@aguilar2020immgen]

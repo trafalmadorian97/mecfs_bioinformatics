@@ -7,7 +7,7 @@ hide:
 
 
 
-I applied the MAGMA pipeline to summary statistics from a GWAS of red blood cell (RBC) volume from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program.md).  In the gene set analysis step, I incorporated [tissue-specific RNAseq data from GTEx](../../Data_Sources/GTEx_RNAseq_Data.md) to try to link genes associated with RBC volume to specific tissues.
+I applied the MAGMA pipeline to summary statistics from a GWAS of red blood cell (RBC) volume from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity].  I incorporated [tissue-specific RNAseq data from GTEx](../../Data_Sources/GTEx_RNAseq_Data.md)[@gtex2020gtex] to try to link genes associated with RBC volume to specific tissues.
 
 
 ## Gene set/ Gene property analysis
