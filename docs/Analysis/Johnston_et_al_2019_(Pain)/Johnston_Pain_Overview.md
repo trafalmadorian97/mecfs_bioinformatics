@@ -1,0 +1,5 @@
+## Multisite Chronic Pain
+
+Johnston et al.[@johnston2019genome] performed a genome-wide association study (GWAS) of Multisite Chronic Pain (MCP), using data from 387,649 UK Biobank participants. MCP was defined as the number of body sites where an individual had, recently and for at least 3 months, experienced pain, with possible values ranging from 0 to 7.
+
+Interestingly, the [DecodeME study](../../Data_Sources/DecodeME.md)[@genetics2025initial] found that ME/CFS colocalized with MCP near the gene CA10. Several studies have also noted a high rate of pain in individuals with ME/CFS[@board2015beyond]. Consistent with previous research, the DecodeME study found that 86.1% of 16,730 ME/CFS cases reported experiencing muscle pain. These factors suggest that pain and ME/CFS may share some underlying pathomechanisms. Therefore, to potentially gain further insights into both chronic pain and ME/CFS, the `mecfs_bioinformatics` repo was used to further analyze Johnston et al.'s MCP study.
