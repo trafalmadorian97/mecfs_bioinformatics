@@ -1,4 +1,4 @@
-# The Million Veterans Program
+# Million Veterans Program
 
 
 The Million Veterans Program (MVP) is a longitudinal health cohort study organized by the US Department of Veterans Affairs, which enrolled its one-millionth participant in 2023[@verma2024diversity].

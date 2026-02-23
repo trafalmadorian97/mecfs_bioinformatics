@@ -1,4 +1,4 @@
-# The Roadmap Epigenetics Project
+# Roadmap Epigenetics Project
 
 ## Overview
 

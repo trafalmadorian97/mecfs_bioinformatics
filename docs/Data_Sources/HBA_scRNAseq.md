@@ -1,4 +1,4 @@
-# HBA scRNAseq Dataset
+# HBA scRNAseq
 
 The Human Brain Atlas (HBA)[@siletti2023transcriptomic] surveys cell types across the brain through single-cell RNA sequencing (scRNAseq).
 
