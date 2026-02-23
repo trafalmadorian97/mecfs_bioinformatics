@@ -26,7 +26,7 @@ where:
 - There are $N_1 \gg 0$ individuals in the GWAS of trait 1 and $N_2 \gg 0$ individuals in the GWAS of trait 2.
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for the GWAS of trait 1 and the GWAS of trait 2, respectively.
-- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.
+- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
 - $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true genetic effect sizes of each genetic variant on the two traits. 
 - $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of genetic effects in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
@@ -152,9 +152,20 @@ $$
 &\mathbb{E}(z_{j,1}z_{j,2}|Z,Y)\\
 &\approx\frac{1}{\sqrt{N_1N_2}} \mathbb{E}\left(Y_j^T y_1 y_1^T Z_j|Z,Y \right) & \text{ by (\ref{d1}, \ref{d2})}\\
 &=\frac{1}{\sqrt{N_1N_2}}Y^T_j \mathbb{E}\left( (Y\beta+\delta)(Z\gamma+\epsilon)^T  |Z,Y\right)Z_j & \text{ by (\ref{dg1},\ref{dg2})}\\
-&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \left(Y \mathbb{E}(\beta \gamma^T)Z^T +  \mathbb{E}(\delta \gamma^T) Z^T + Y \mathbb{E}(\beta \epsilon^T) + \mathbb{E}(\epsilon \delta^T) \right)Z_j & \text{ linearity, independence}\\
-&=\frac{1}{\sqrt{N_1N_2}}Y^T_j\left(\frac{\rho_g}{M}YZ^T + \rho_e I\right)Z_j & \text{ by (\ref{cov_beta_gamma},\ref{cov_delta_epsilon})}\\
-&=\frac{1}{\sqrt{N_1N_2}}\left(\frac{\rho_g}{M}Y_j^TYZ^TZ_j + \rho_e Y_j^TZ_j\right) \label{cond_exp}
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \left(Y \mathbb{E}(\beta \gamma^T)Z^T +  \mathbb{E}(\delta \gamma^T) Z^T + Y \mathbb{E}(\beta \epsilon^T) + \mathbb{E}(\epsilon \delta^T) \right)Z_j & \text{linearity, independence}\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j\left(\frac{\rho_g}{M}YZ^T + \rho_e Q\right)Z_j & \text{ by (\ref{cov_beta_gamma},\ref{cov_delta_epsilon})}\\
+&=\frac{1}{\sqrt{N_1N_2}}\left(\frac{\rho_g}{M}Y_j^TYZ^TZ_j + \rho_e Y_j^T QZ_j\right) \label{cond_exp}
+\end{align}
+$$
+
+where $Q\in\mathbb{R}^{N_1\times N_2}$ and 
+
+$$
+\begin{align}
+Q_{i,j}&= \begin{cases}
+1 & \text{ if }i=j \le N_s\\
+0 & \text{else}
+\end{cases}
 \end{align}
 $$
 
@@ -213,7 +224,7 @@ Returning to the second term in $(\ref{cond_exp})$, we have that
 
 $$
 \begin{align}
-\mathbb{E}(Y_j^TZ_j)=N_s \label{exp_prod_2}
+\mathbb{E}(Y_j^TQZ_j)=N_s \label{exp_prod_2}
 \end{align}
 $$ 
 
