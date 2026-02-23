@@ -3,10 +3,6 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.magma.johnson_drg_magma_analysis_cepo_bar_plot import \
-    JOHNSON_DRG_MAGMA_CEPO_BAR_PLOT
-from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.magma.johnson_drg_magma_analysis_frac_bar_plot import \
-    JOHNSON_DRG_MAGMA_FRAC_BAR_PLOT
 from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import GENE_THESAURUS
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_cepo_specificity_matrix import \
     YU_DRG_CEPO_SPECIFICITY_MATRIX
