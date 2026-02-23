@@ -61,8 +61,6 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
-
-
 @frozen
 class FilterSettings:
     """
@@ -99,12 +97,14 @@ def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build:
 
 @frozen
 class BinaryPhenotypeSampleInfo:
-    sample_prevalence:float
-    estimated_population_prevalence:float
+    sample_prevalence: float
+    estimated_population_prevalence: float
+
 
 @frozen
 class QuantPhenotype:
     pass
+
 
 PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
 
@@ -118,7 +118,7 @@ class SumstatsSource:
     task: Task
     alias: str
     pipe: DataProcessingPipe = IdentityPipe()
-    sample_info: PhenotypeInfo| None = None
+    sample_info: PhenotypeInfo | None = None
 
     @property
     def asset_id(self) -> AssetId:
@@ -131,8 +131,9 @@ class GeneticCorrelationByCTLDSCTask(Task):
     Estimate genetic correlation by cross-trait linkage disequilibrium score regression.
     See: Bulik-Sullivan, Brendan, et al. "An atlas of genetic correlations across human diseases and traits." Nature genetics 47.11 (2015): 1236-1241.
 
-    NOTE:  When CT-LDSC runs, it will print observed scale heritabilities.
+    NOTE:  When CT-LDSC runs, in it addition to computing genetic correlations, it will also compute  heritabilities.
     For binary traits, observed scale heritability is not directly meaningful, and must be converted to liability scale.
+    To get liability scale heritabilities, pass it  appropriate PhenotypeInfo objects.
 
     However, as Bulik-Sulivan et al. says: "there is no distinction between observed and liability scale genetic correlation for case/control traits, so we can define and estimate
     genetic correlation between a case/control trait and a quantitative trait and genetic
@@ -193,14 +194,16 @@ class GeneticCorrelationByCTLDSCTask(Task):
                         compatible_rsids[GWASLAB_RSID_COL]
                     )
                 ]
-                options = get_prev_options(trait_1_prev=i_sample_info, trait_2_prev=j_sample_info)
+                options = get_prev_options(
+                    trait_1_prev=i_sample_info, trait_2_prev=j_sample_info
+                )
                 i_sumstats.estimate_rg_by_ldsc(
                     other_traits=[j_sumstats],
                     rg=f"{i_name},{j_name}",
                     ref_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
                     w_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
                     build=self.build,
-                    **options
+                    **options,
                 )
             results.append(i_sumstats.ldsc_rg)
 
@@ -241,26 +244,42 @@ class GeneticCorrelationByCTLDSCTask(Task):
         )
 
 
-def get_prev_options(trait_1_prev:PhenotypeInfo|None,trait_2_prev:PhenotypeInfo|None ) -> dict:
+def get_prev_options(
+    trait_1_prev: PhenotypeInfo | None, trait_2_prev: PhenotypeInfo | None
+) -> dict:
     # if trait_1_prev is None and trait_2_prev is None:
     #     return {}
-    t1_sp= trait_1_prev.sample_prevalence if isinstance(trait_1_prev,BinaryPhenotypeSampleInfo) else "nan"
-    t2_sp= trait_2_prev.sample_prevalence if isinstance(trait_2_prev,BinaryPhenotypeSampleInfo) else "nan"
-    t1_pp = trait_1_prev.estimated_population_prevalence if isinstance(trait_1_prev,BinaryPhenotypeSampleInfo) else "nan"
-    t2_pp =  trait_2_prev.estimated_population_prevalence if isinstance(trait_2_prev,BinaryPhenotypeSampleInfo) else "nan"
-    options ={
-        "samp_prev":f"{t1_sp},{t2_sp}",
-        "pop_prev":f"{t1_pp},{t2_pp}",
-    }
-    logger.debug(
-        f"Prevalance Options: {options}"
+    t1_sp = (
+        trait_1_prev.sample_prevalence
+        if isinstance(trait_1_prev, BinaryPhenotypeSampleInfo)
+        else "nan"
     )
+    t2_sp = (
+        trait_2_prev.sample_prevalence
+        if isinstance(trait_2_prev, BinaryPhenotypeSampleInfo)
+        else "nan"
+    )
+    t1_pp = (
+        trait_1_prev.estimated_population_prevalence
+        if isinstance(trait_1_prev, BinaryPhenotypeSampleInfo)
+        else "nan"
+    )
+    t2_pp = (
+        trait_2_prev.estimated_population_prevalence
+        if isinstance(trait_2_prev, BinaryPhenotypeSampleInfo)
+        else "nan"
+    )
+    options = {
+        "samp_prev": f"{t1_sp},{t2_sp}",
+        "pop_prev": f"{t1_pp},{t2_pp}",
+    }
+    logger.debug(f"Prevalance Options: {options}")
     return options
 
 
 def load_and_preprocess_sumstats(
     source: SumstatsSource, fetch: Fetch, settings: FilterSettings, build: GenomeBuild
-) -> tuple[gwaslab.Sumstats, str, BinaryPhenotypeSampleInfo|None]:
+) -> tuple[gwaslab.Sumstats, str, PhenotypeInfo | None]:
     name = source.alias
     sumstats_asset = fetch(source.asset_id)
     logger.debug(f"reading sumstats for {name}")
