@@ -2,7 +2,7 @@ from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_lead_variant_tasks import (
     VERWEIJI_LEAD_VARIANTS,
 )
-from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.processed.verweiji_magma_task_generator import (
+from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_magma_task_generator import (
     VERWEIJI_ET_AL_COMBINED_MAGMA_TASKS,
 )
 from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.raw.verweij_raw_summary import (

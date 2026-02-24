@@ -1,4 +1,4 @@
-from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.processed.verweiji_magma_task_generator import (
+from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_magma_task_generator import (
     VERWEIJI_ET_AL_COMBINED_MAGMA_TASKS,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
