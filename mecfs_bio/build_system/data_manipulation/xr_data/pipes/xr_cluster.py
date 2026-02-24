@@ -11,7 +11,7 @@ from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_data_pipe import 
 )
 
 Linkage = Literal["average"]
-Metric = Literal["correlation"]
+Metric = Literal["correlation", "euclidean"]
 logger = structlog.get_logger()
 
 
