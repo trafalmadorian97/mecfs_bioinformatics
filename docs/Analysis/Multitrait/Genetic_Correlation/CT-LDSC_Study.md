@@ -30,3 +30,7 @@ Potential next steps:
 
 - Techniques like GenomicSEM[@grotzinger2019genomic], LCV[@o2018distinguishing], and MiXeR may elucidate the causal structure of correlations discovered so far.
 -  The inclusion of additional well-chosen phenotypes in the correlation study may shed light on existing traits through triangulation.
+
+## Reproducing
+
+To reproduce these results, use [this script][mecfs_bio.analysis.ct_ldsc_analysis].
