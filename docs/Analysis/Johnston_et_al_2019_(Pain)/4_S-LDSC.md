@@ -4,13 +4,13 @@ hide:
   - toc
 ---
 
-# S-LDSC Multisite Chronic Pain Analysis
+# S-LDSC
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from Bellenguez et al.'s 2019 Meta-GWAS of Multisite Chronic Pain (MCP)[@johnston2019genome].
+[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] was applied to summary statistics from Bellenguez et al.'s 2019 Meta-GWAS of Multisite Chronic Pain (MCP)[@johnston2019genome].
 
 ## Reference Data Sources
 
-I used the standard reference datasets recommended and preprocessed by the authors of the S-LDSC method.
+This analysis used standard reference datasets recommended and preprocessed by the authors of the S-LDSC method:
 
 - [The GTEx Project](../../Data_Sources/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
@@ -23,7 +23,7 @@ I used the standard reference datasets recommended and preprocessed by the autho
 
 ### GTEx and Franke lab tissue expression data
 
-Similarly to the [GTEx MAGMA results](./MAGMA-GTEx.md), all of the significant tissues in the S-LDSC analysis were related to the brain. Here are the cell/tissue types which were significant after FDR correction:
+Similarly to the [GTEx MAGMA results](./2_MAGMA-GTEx.md), all of the significant tissues in the S-LDSC analysis were related to the brain. Here are the cell/tissue types which were significant after correction using FDR < 0.01:
 
 ![s-ldsc_gene-expression](https://github.com/user-attachments/assets/306bb51c-fcd3-402c-84ff-7b6996067e73)
 
@@ -117,10 +117,51 @@ In the ImmGen dataset, there were no significant cell types. The following graph
 | T.DP69+.Th.v2                   |   2.07881e-09 |             0.0313165 | False         |
 
 
-#TODO following sections
-
 ### Corces et al. ATAC-seq data
 
+There were no significant hematopoietic-related cell types in the Corces ATAC-seq dataset.
+
+| Name    |   Coefficient |   Coefficient_P_value | Reject Null   |
+|:--------|--------------:|----------------------:|:--------------|
+| HSC     |   9.54732e-09 |              0.237687 | False         |
+| GMP     |   7.81531e-09 |              0.273387 | False         |
+| LMPP    |   7.72366e-09 |              0.306756 | False         |
+| CMP     |   5.13328e-09 |              0.335868 | False         |
+| Erythro |   7.49673e-09 |              0.355135 | False         |
+| MEP     |   3.51756e-09 |              0.394091 | False         |
+| MPP     |   2.5947e-09  |              0.416588 | False         |
+| Bcell   |  -7.28211e-09 |              0.717223 | False         |
+| Mono    |  -1.5232e-08  |              0.775996 | False         |
+| NK      |  -1.02646e-08 |              0.791595 | False         |
+| CLP     |  -1.81887e-08 |              0.872501 | False         |
+| CD4     |  -2.39266e-08 |              0.968438 | False         |
+| CD8     |  -2.37645e-08 |              0.971765 | False         |
 
 
 ### Cahoy and GTEx-Brain data
+
+There were no significant cell types when analyzing the neurological cell types in the Cahoy dataset using S-LDSC:
+
+| Name            |   Coefficient |   Coefficient_P_value | Reject Null   |
+|:----------------|--------------:|----------------------:|:--------------|
+| Neuron          |   2.57912e-09 |             0.0117611 | False         |
+| Oligodendrocyte |   8.92979e-10 |             0.217456  | False         |
+| Astrocyte       |  -8.78228e-10 |             0.816394  | False         |
+
+Similarly, there were no significant tissues when testing the GTEx brain tissues using S-LDSC. This contrasts with [MAGMA testing](./2_MAGMA-GTEx.md) on the same tissues revealing several significant brain tissues.
+
+| Name                                    |   Coefficient |   Coefficient_P_value | Reject Null   |
+|:----------------------------------------|--------------:|----------------------:|:--------------|
+| Brain_Cortex                            |   2.57871e-09 |            0.00388189 | False         |
+| Brain_Anterior_cingulate_cortex_(BA24)  |   2.07682e-09 |            0.0103041  | False         |
+| Brain_Cerebellum                        |   2.05731e-09 |            0.0341111  | False         |
+| Brain_Cerebellar_Hemisphere             |   1.69167e-09 |            0.0639314  | False         |
+| Brain_Frontal_Cortex_(BA9)              |   1.15989e-09 |            0.0914603  | False         |
+| Brain_Nucleus_accumbens_(basal_ganglia) |   1.05259e-09 |            0.125348   | False         |
+| Brain_Caudate_(basal_ganglia)           |   6.12944e-10 |            0.263903   | False         |
+| Brain_Putamen_(basal_ganglia)           |   1.48494e-10 |            0.440862   | False         |
+| Brain_Amygdala                          |  -5.54761e-10 |            0.722775   | False         |
+| Brain_Hippocampus                       |  -1.10526e-09 |            0.887114   | False         |
+| Brain_Hypothalamus                      |  -1.22832e-09 |            0.904589   | False         |
+| Brain_Spinal_cord_(cervical_c-1)        |  -1.70661e-09 |            0.97087    | False         |
+| Brain_Substantia_nigra                  |  -2.03971e-09 |            0.986552   | False         |
