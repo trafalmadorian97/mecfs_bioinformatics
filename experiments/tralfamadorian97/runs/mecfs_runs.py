@@ -62,6 +62,7 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
+            CT_LDSC_INITIAL_PLOT
             # CT_LDSC_INITIAL
             # YU_DRG_CEPO_SPECIFICITY_MATRIX
             # YU_DRG_FRAC_SPECIFICITY_MATRIX
