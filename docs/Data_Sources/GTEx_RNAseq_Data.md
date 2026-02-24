@@ -1,5 +1,5 @@
 
-# GTEx Bulk Tissue RNA-seq Data
+# GTEx Bulk RNA-seq
 
 The Genotype Tissue Expression (GTEx) project[@gtex2020gtex] generates useful datasets via the analysis of diverse tissues from post-mortem human donors.
 
