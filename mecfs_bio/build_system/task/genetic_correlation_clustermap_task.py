@@ -209,16 +209,13 @@ def rg_plot(ds: xr.Dataset, plot_mode: GeneticCorrPlotMode) -> Figure:
                 + "Trait 2: %{x}<br>"
                 + "Genetic Correlation: %{z}<br>"
                 + "p value: %{customdata}<br>"
-                + "<extra></extra>",  # Removes the default "trace 0" info
+                + "<extra></extra>",
                 showscale=True,
                 hovertemplatefallback="None",
             )
         )
         fig.update_layout(
             xaxis=dict(side="top"),
-            title="Genetic Correlations",
-            xaxis_title="Trait 2",
-            yaxis_title="Trait 1",
         )
         fig.update_yaxes(autorange="reversed")  # want the origin in top left corner
         return fig

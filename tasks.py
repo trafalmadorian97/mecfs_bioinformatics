@@ -11,6 +11,7 @@ USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
 PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
 
 FIGS_PATH = Path("docs/_figs/")
+FIGS_PATTERN = "_figs"
 
 
 # dev tasks
@@ -124,7 +125,7 @@ def check_local_links(c):
     Check local links with lychee
     """
     print("Checking offline links with lychee...")
-    cmd = f"pixi r lychee --exclude {FIGS_PATH}  --offline {SRC_PATH} {DOCS_PATH}"
+    cmd = f"pixi r lychee --exclude {FIGS_PATTERN}  --offline {SRC_PATH} {DOCS_PATH}"
     print(f"running {cmd}")
     c.run(cmd)
 
