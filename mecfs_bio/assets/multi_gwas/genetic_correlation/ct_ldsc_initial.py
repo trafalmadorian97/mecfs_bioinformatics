@@ -8,6 +8,12 @@ from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_standard_analys
 from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_standard_analysis import (
     KEATON_DBP_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
+    LEE_ET_AL_2018_COMBINED_MAGMA_TASKS,
+)
+from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_37_harmonized_with_rsid_sumstats import (
+    LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_with_annovar_37_rsids_sumstats import (
     DECODEME_ME_SUMSTATS_37_WITH_ANNOVAR_RSID,
 )
@@ -94,6 +100,27 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
                 729882,  # from summary statistics file
             ),
             sample_info=QuantPhenotype(),
+        ),
+        SumstatsSource(
+            LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.sumstats_task,
+            alias="educational_attainment",
+            pipe=SetColToConstantPipe(
+                GWASLAB_SAMPLE_SIZE_COLUMN,
+                257841,  # source: GWASLAB metadata
+            ),
+            sample_info=QuantPhenotype(),
+        ),
+        SumstatsSource(
+            LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150,
+            alias="inflammatory_bowel_disease",
+            pipe=SetColToConstantPipe(
+                GWASLAB_SAMPLE_SIZE_COLUMN,
+                59957,  # 25,042 + 34,915
+            ),
+            sample_info=BinaryPhenotypeSampleInfo(
+                sample_prevalence=0.4177,  # 25,042 /(25,042 + 34,915) see Liu et al: https://pmc.ncbi.nlm.nih.gov/articles/PMC10290755/#:~:text=including%2025%2C042%20cases%20and%2034%2C915%20controls%20of%20non%2DFinnish%20European%20(NFE)%20ancestries%20from%20the%20International%20IBD%20Genetics%20Consortium
+                estimated_population_prevalence=0.002,  # See Figure 3 of Liu, Zhanju, et al. "Genetic architecture of the inflammatory bowel diseases across East Asian and European ancestries." Nature genetics 55.5 (2023): 796-806.
+            ),
         ),
     ],
     ld_ref_task=THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
