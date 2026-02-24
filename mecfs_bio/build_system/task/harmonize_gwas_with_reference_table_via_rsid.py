@@ -178,13 +178,13 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
                 ref_pos_col=REFERENCE_POS,
                 ref_chrom_col=REFERENCE_CHROM,
             ).alias(_MISMATCH_POS_CHROM),
-            _match_reference_expr(
+            match_reference_expr(
                 ea_col=GWASLAB_EFFECT_ALLELE_COL,
                 nea_col=GWASLAB_NON_EFFECT_ALLELE_COL,
                 ref_ea_col=REFERENCE_EFFECT_ALLELE,
                 ref_nea_col=REFERENCE_NON_EFFECT_ALLELE,
             ).alias(MATCH_REFERENCE),
-            _match_flipped_reference_expr(
+            match_flipped_reference_expr(
                 ea_col=GWASLAB_EFFECT_ALLELE_COL,
                 nea_col=GWASLAB_NON_EFFECT_ALLELE_COL,
                 ref_ea_col=REFERENCE_EFFECT_ALLELE,
@@ -278,7 +278,7 @@ def _mismatch_pos_or_chrom_expr(
     )
 
 
-def _match_reference_expr(
+def match_reference_expr(
     ea_col: str,
     nea_col: str,
     ref_ea_col: str,
@@ -289,7 +289,7 @@ def _match_reference_expr(
     )
 
 
-def _match_flipped_reference_expr(
+def match_flipped_reference_expr(
     ea_col: str,
     nea_col: str,
     ref_ea_col: str,
