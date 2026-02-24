@@ -97,12 +97,21 @@ def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build:
 
 @frozen
 class BinaryPhenotypeSampleInfo:
+    """
+    For binary phenotypes, sample prevalence and population prevalence are required to convert heritability from the observed scale to the liability scale.
+    Only the liability scale is biologically meaningful.
+    """
+
     sample_prevalence: float
     estimated_population_prevalence: float
 
 
 @frozen
 class QuantPhenotype:
+    """
+    Marker class to indicate that a phenotype is quantitative, not binary, and so does not need to be converted to the liability scale.
+    """
+
     pass
 
 
@@ -247,8 +256,9 @@ class GeneticCorrelationByCTLDSCTask(Task):
 def get_prev_options(
     trait_1_prev: PhenotypeInfo | None, trait_2_prev: PhenotypeInfo | None
 ) -> dict:
-    # if trait_1_prev is None and trait_2_prev is None:
-    #     return {}
+    """
+    Get prevalence-related options to pass to CT-LDSC
+    """
     t1_sp = (
         trait_1_prev.sample_prevalence
         if isinstance(trait_1_prev, BinaryPhenotypeSampleInfo)
@@ -292,10 +302,10 @@ def load_and_preprocess_sumstats(
 
 def get_compatible_snps_polars(df_i: pd.DataFrame, df_j: pd.DataFrame) -> pd.DataFrame:
     """
-    Get a DataFrame of rsIDs corresponding to SNPs for which both dataframes have compatible alleles.
-    This is necessary because certain dbSNP rsIDs actually correspond to multiple allele pairs.
+    Get a DataFrame of rsIDs corresponding to SNPs for which both dataframes have matching alleles.
+    This is necessary because certain dbSNP rsIDs actually correspond to multiple different allele pairs.
 
-    pandas joins on string columns can very slow, so this operation uses polars.
+    pandas joins on string columns can very slow, so this operation uses polars instead.
     """
     pl_i = pl.from_pandas(
         df_i[

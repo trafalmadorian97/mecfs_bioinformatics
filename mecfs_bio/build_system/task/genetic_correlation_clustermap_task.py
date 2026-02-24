@@ -47,6 +47,10 @@ NUM_PAIRS = "num_pairs"
 
 @frozen
 class GeneticCorrSource:
+    """
+    Describe a dataframe from which to load genetic correlation data
+    """
+
     task: Task
     trait_1_col: str = "p1"
     trait_2_col: str = "p2"
@@ -70,6 +74,9 @@ def fill_out_corr_df(
     df_nw: narwhals.DataFrame,
     src: GeneticCorrSource,
 ) -> narwhals.DataFrame:
+    """
+    Full out the upper triangle and diagonal of the correlation matrix
+    """
     df_2_nw = df_nw.with_columns(
         narwhals.col(src.trait_1_col).alias(src.trait_2_col),
         narwhals.col(src.trait_2_col).alias(
@@ -94,6 +101,9 @@ def load_xr_corr_dataset(
     src: GeneticCorrSource,
     fetch: Fetch,
 ) -> xr.Dataset:
+    """
+    Retrieve the correlation data.  Return in the form of an xarray dataset.
+    """
     asset = fetch(src.task.asset_id)
     df_nw = (
         src.df_pipe.process(
@@ -158,6 +168,9 @@ def get_sig(
     num_pairs: int,
     sig_mode: SigMode,
 ) -> np.ndarray:
+    """
+    Get a binary array indicating which elements of the correlation matrix are significance
+    """
     if isinstance(sig_mode, BonferoniSig):
         thresh = sig_mode.alpha / num_pairs
         logger.debug(
@@ -168,6 +181,9 @@ def get_sig(
 
 
 def rg_plot(ds: xr.Dataset, plot_mode: GeneticCorrPlotMode) -> Figure:
+    """
+    Produce a plotly heatmap figure showing genetic correlation
+    """
     if isinstance(plot_mode, RGWithAsterix):
         corr_df = ds[XR_GENETIC_CORR_ARRAY].to_pandas()
         sig = get_sig(
@@ -211,6 +227,10 @@ def rg_plot(ds: xr.Dataset, plot_mode: GeneticCorrPlotMode) -> Figure:
 
 @frozen
 class GeneticCorrelationClustermapTask(Task):
+    """
+    Task to generate a heatmap of genetic correlation
+    """
+
     _meta: Meta
     xr_pipe: XRDataPipe
     genetic_corr_source: GeneticCorrSource
