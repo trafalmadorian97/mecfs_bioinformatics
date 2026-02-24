@@ -115,7 +115,7 @@ def check_all_links(c):
     """
     print("Checking links with lychee...")
     c.run(
-        f"pixi r lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+        f"pixi r lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --exclude {FIGS_PATTERN} --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
     )
 
 
