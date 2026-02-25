@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 ## MAGMA GTEx Analysis
