@@ -12,6 +12,8 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
+from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
@@ -58,7 +60,8 @@ class CopyFileFromDirectoryTask(Task):
         extension: str,
         read_spec: DataFrameReadSpec | None,
     ):
-        source_meta = source_directory_task.meta
+        source_meta: Meta = source_directory_task.meta
+        meta: Meta
         if isinstance(source_meta, ProcessedGwasDataDirectoryMeta):
             meta = ResultTableMeta(
                 id=AssetId(asset_id),
@@ -74,6 +77,13 @@ class CopyFileFromDirectoryTask(Task):
                 project=source_meta.project,
                 extension=extension,
                 read_spec=read_spec,
+            )
+        elif isinstance(source_meta, GWASPlotDirectoryMeta):
+            meta = GWASPlotFileMeta(
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
+                id=AssetId(asset_id),
             )
         else:
             raise ValueError("Unknown source meta")
