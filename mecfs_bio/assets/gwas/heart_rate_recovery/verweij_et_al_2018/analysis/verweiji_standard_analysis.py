@@ -1,3 +1,7 @@
+"""
+Task to perform standard analysis on heart rate recovery GWAS of Verweiji et al.
+"""
+
 from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import (
     concrete_standard_analysis_generator_assume_already_has_rsid,
 )
