@@ -18,7 +18,7 @@ def run_initial_hrr_analysis():
         (
             # [YU_DRG_SRC1_RDATA]
 
-                VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.get_terminal_tasks()
+                [VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot]
                 # YU_DRG_FRAC_SPECIFICITY_MATRIX
                 # CT_LDSC_INITIAL
                 # JOHNSON_DRG_MAGMA_CEPO_BAR_PLOT,
@@ -61,6 +61,7 @@ def run_initial_hrr_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
+            VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot
             # CT_LDSC_INITIAL
             # YU_DRG_CEPO_SPECIFICITY_MATRIX
             # YU_DRG_FRAC_SPECIFICITY_MATRIX
