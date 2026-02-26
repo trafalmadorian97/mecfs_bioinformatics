@@ -19,8 +19,9 @@ def run_initial_decode_me_analysis():
         (
             # [YU_DRG_SRC1_RDATA]
             [
-                # YU_DRG_FRAC_SPECIFICITY_MATRIX
                 CT_LDSC_INITIAL_PLOT
+                # YU_DRG_FRAC_SPECIFICITY_MATRIX
+                # CT_LDSC_INITIAL_PLOT
                 # CT_LDSC_INITIAL
                 # JOHNSON_DRG_MAGMA_CEPO_BAR_PLOT,
                 # JOHNSON_DRG_MAGMA_FRAC_BAR_PLOT
@@ -62,8 +63,8 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            CT_LDSC_INITIAL,
-            CT_LDSC_INITIAL_PLOT
+            # CT_LDSC_INITIAL,
+            # CT_LDSC_INITIAL_PLOT
             # CT_LDSC_INITIAL
             # YU_DRG_CEPO_SPECIFICITY_MATRIX
             # YU_DRG_FRAC_SPECIFICITY_MATRIX
