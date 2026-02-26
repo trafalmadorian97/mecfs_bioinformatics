@@ -1,9 +1,3 @@
----
-hide:
-- navigation
-- toc
----
-
 # Overview
 
 Johnston et al. performed a genome-wide association study (GWAS) of Multisite Chronic Pain (MCP) using data from 387,649 UK Biobank participants. To quantify MCP, participants reported the number of body sites where they had experienced pain recently and for at least 3 months, with values ranging from 0 to 7. The study identified 76 independent SNPs at 39 loci which were significantly associated with MCP.[@johnston2019genome]
