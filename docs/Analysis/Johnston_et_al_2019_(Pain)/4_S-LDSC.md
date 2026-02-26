@@ -147,7 +147,7 @@ There were no significant cell types when analyzing the neurological cell types 
 | Oligodendrocyte |   8.92979e-10 |             0.217456  | False         |
 | Astrocyte       |  -8.78228e-10 |             0.816394  | False         |
 
-Similarly, there were no significant tissues when testing the GTEx brain tissues using S-LDSC. This contrasts with [MAGMA testing](./2_MAGMA-GTEx.md) on the same tissues revealing several significant brain tissues.
+Similarly, there were no significant tissues when testing the GTEx brain tissues using S-LDSC. 
 
 | Name                                    |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:----------------------------------------|--------------:|----------------------:|:--------------|
@@ -164,3 +164,5 @@ Similarly, there were no significant tissues when testing the GTEx brain tissues
 | Brain_Hypothalamus                      |  -1.22832e-09 |            0.904589   | False         |
 | Brain_Spinal_cord_(cervical_c-1)        |  -1.70661e-09 |            0.97087    | False         |
 | Brain_Substantia_nigra                  |  -2.03971e-09 |            0.986552   | False         |
+
+In this S-LDSC analysis, tissue gene sets were defined as those genes specifically expressed in a tissue relative to other tissues. Thus, a dataset restricted to only brain tissues will exclude general brain genes which are highly expressed in multiple brain tissues. If these general genes are truly causal, excluding them can reduce the ability for S-LDSC to detect true effects. This likely explains why there were no brain tissues significant in this analysis, while several brain tissues were significant in the [GTEx MAGMA analysis](./2_MAGMA-GTEx.md) which instead controlled for average expression across all GTEx body tissues.
