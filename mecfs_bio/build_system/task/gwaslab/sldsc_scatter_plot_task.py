@@ -76,17 +76,14 @@ class SLDSCScatterPlotTask(Task):
                 "tissue_or_cell": False,
             },
             template="plotly_white",
-            labels={
-                "mlog10p": "$-log\u2081\u2080p$",
-                "tissue_or_cell": "Tissue or Cell",
-            },
+            labels={"mlog10p": "-log\u2081\u2080p", "tissue_or_cell": "Tissue or Cell"},
         )
         fig = fig.update_xaxes(showticklabels=False)
         # fig= fig.update_layout(xaxis_title=None)
         figs = {}
         figs["sldsc_scatter"] = fig
         out_dir = scratch_dir / "scatter_plots"
-        write_plots_to_dir(out_dir, figs, plotly_mathjax_mode="cdn")
+        write_plots_to_dir(out_dir, figs)
         return DirectoryAsset(out_dir)
 
     @classmethod
