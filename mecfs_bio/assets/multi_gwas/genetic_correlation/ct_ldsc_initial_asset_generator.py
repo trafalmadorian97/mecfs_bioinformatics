@@ -1,5 +1,6 @@
 """
-Task to use cross-trait LD Score Regression to estimate genetic correlation between a several traits.
+Task generator to use cross-trait LD Score Regression to estimate genetic correlation between a several traits.
+Each pair of traits is a Task.  This facilitates caching of results
 """
 
 from mecfs_bio.asset_generator.genetic_correlation_asset_generator import (

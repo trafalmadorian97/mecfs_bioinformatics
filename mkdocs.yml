@@ -7,6 +7,8 @@ theme:
     - content.footnote.tooltips
 plugins:
 - search
+- macros
+- glightbox
 - bibtex:
     bib_file: "docs/refs.bib"
 - mkdocstrings:
