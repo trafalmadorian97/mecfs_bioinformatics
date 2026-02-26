@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # Chr17 50M-51M

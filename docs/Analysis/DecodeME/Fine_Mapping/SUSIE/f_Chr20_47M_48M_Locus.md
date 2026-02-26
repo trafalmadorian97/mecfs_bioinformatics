@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # Chr20 47M-48.2M
