@@ -5,8 +5,6 @@ theme:
   features:
     - navigation.indexes
     - content.footnote.tooltips
-
-
 plugins:
 - search
 - bibtex:

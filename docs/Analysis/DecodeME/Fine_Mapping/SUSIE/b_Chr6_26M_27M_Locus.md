@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # Chr6 26M-27M
