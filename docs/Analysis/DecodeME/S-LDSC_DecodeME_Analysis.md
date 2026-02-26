@@ -181,7 +181,7 @@ When we apply the S-LDSC using the GTEx brain dataset, we find the the cortex ti
 | Brain_Cerebellar_Hemisphere             |   2.45686e-10 |           0.39188     | False         
 
 
-# Reproducing Analysis
+## How to Reproduce This
 
 To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
 
