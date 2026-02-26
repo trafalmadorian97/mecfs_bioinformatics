@@ -6,7 +6,12 @@ hide:
 
 I applied [cross-trait linkage disequilibrium score regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between diverse phenotypes, including the ME/CFS phenotype defined in [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial].  The genetic correlations are plotted in the heatmap below. Asterixes denote Bonferroni-corrected statistically significant correlations.
 
-<iframe src="../../../../_figs/initial_genetic_correlation_by_ct_ldsc_plot.html" style="width:100%; height:750px; border:none;"></iframe>
+
+
+
+
+{{ plotly_embed("../../../../_figs/initial_genetic_correlation_by_ct_ldsc_plot.html", id="ct-ldsc-plot") }}
+
 
 The traits are:
 

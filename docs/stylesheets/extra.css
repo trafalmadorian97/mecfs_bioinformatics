@@ -1,0 +1,4 @@
+/* Force white background for all GLightbox iframes */
+.gslide-iframe {
+    background-color: white;
+}
