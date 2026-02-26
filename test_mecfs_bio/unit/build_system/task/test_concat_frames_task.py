@@ -1,10 +1,14 @@
 from pathlib import Path
+
 import pandas as pd
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameTextFormat
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
 from mecfs_bio.build_system.task.fake_task import FakeTask
@@ -28,16 +32,17 @@ def test_concat_frames_in_dir_task(tmp_path: Path):
         meta=SimpleFileMeta("concat_result"),
         frames_tasks=[
             FakeTask(
-                SimpleFileMeta("frame1",
-                               read_spec=DataFrameReadSpec(DataFrameTextFormat(",")))
+                SimpleFileMeta(
+                    "frame1", read_spec=DataFrameReadSpec(DataFrameTextFormat(","))
+                )
             ),
-
             FakeTask(
-                SimpleFileMeta("frame2",
-                               read_spec=DataFrameReadSpec(DataFrameTextFormat(",")))
+                SimpleFileMeta(
+                    "frame2", read_spec=DataFrameReadSpec(DataFrameTextFormat(","))
+                )
             ),
         ],
-        out_format=ParquetOutFormat()
+        out_format=ParquetOutFormat(),
     )
 
     def fetch(asset_id: AssetId) -> Asset:

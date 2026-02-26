@@ -1,7 +1,10 @@
 """
 Task to use cross-trait LD Score Regression to estimate genetic correlation between a several traits.
 """
-from mecfs_bio.asset_generator.genetic_correlation_asset_generator import genetic_corr_by_ct_ldsc_asset_generator
+
+from mecfs_bio.asset_generator.genetic_correlation_asset_generator import (
+    genetic_corr_by_ct_ldsc_asset_generator,
+)
 from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_standard_analysis import (
     HAN_ASTHMA_STANDARD_ANALYSIS,
 )
@@ -31,7 +34,6 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     BinaryPhenotypeSampleInfo,
-    GeneticCorrelationByCTLDSCTask,
     QuantPhenotype,
     SumstatsSource,
 )
