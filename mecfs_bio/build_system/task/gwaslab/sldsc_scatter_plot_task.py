@@ -83,7 +83,7 @@ class SLDSCScatterPlotTask(Task):
         figs = {}
         figs["sldsc_scatter"] = fig
         out_dir = scratch_dir / "scatter_plots"
-        write_plots_to_dir(out_dir, figs, plotly_mathjax_mode="cdn")
+        write_plots_to_dir(out_dir, figs)
         return DirectoryAsset(out_dir)
 
     @classmethod
