@@ -1,7 +1,6 @@
 ---
 hide:
-  - navigation
-  - toc
+- toc
 ---
 # MAGMA HBA Analysis
 I applied MAGMA to the Liu et al.[@liu2023genetic] GWAS of inflammatory bowel disease  using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/HBA_scRNAseq.md) as a reference.

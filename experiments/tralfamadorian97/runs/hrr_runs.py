@@ -1,13 +1,12 @@
-"""
-Rough experimental scripts pertaining to analysis of ME/CFS data
-"""
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_standard_analysis import \
+    VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS
 from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_initial import CT_LDSC_INITIAL
 from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_plot import CT_LDSC_INITIAL_PLOT
 
 
-def run_initial_decode_me_analysis():
+def run_initial_hrr_analysis():
     DEFAULT_RUNNER.run(
         # [
     # [DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP.susie_finemap_2_credible_set_plot]
@@ -18,9 +17,9 @@ def run_initial_decode_me_analysis():
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
         (
             # [YU_DRG_SRC1_RDATA]
-            [
+
+                [VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot]
                 # YU_DRG_FRAC_SPECIFICITY_MATRIX
-                CT_LDSC_INITIAL_PLOT
                 # CT_LDSC_INITIAL
                 # JOHNSON_DRG_MAGMA_CEPO_BAR_PLOT,
                 # JOHNSON_DRG_MAGMA_FRAC_BAR_PLOT
@@ -31,7 +30,7 @@ def run_initial_decode_me_analysis():
              # GENE_THESAURUS,
              # YU_DRG_COUNTS_LONG,
              # YU_DRG_COUNTS_LONG_WITH_CELL_TYPE
-             ]
+
         # DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.terminal_tasks()
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP_PALINDROMES.terminal_tasks()
     # DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.terminal_tasks()
@@ -62,8 +61,7 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            CT_LDSC_INITIAL,
-            CT_LDSC_INITIAL_PLOT
+            VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot
             # CT_LDSC_INITIAL
             # YU_DRG_CEPO_SPECIFICITY_MATRIX
             # YU_DRG_FRAC_SPECIFICITY_MATRIX
@@ -84,4 +82,4 @@ def run_initial_decode_me_analysis():
 
 
 if __name__ == "__main__":
-    run_initial_decode_me_analysis()
+    run_initial_hrr_analysis()

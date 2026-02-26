@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # MAGMA Analysis of RBC Volume

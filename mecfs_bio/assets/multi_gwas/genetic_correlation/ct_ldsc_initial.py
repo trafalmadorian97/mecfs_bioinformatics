@@ -11,6 +11,9 @@ from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton
 from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
     LEE_ET_AL_2018_COMBINED_MAGMA_TASKS,
 )
+from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_standard_analysis import (
+    VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_37_harmonized_with_rsid_sumstats import (
     LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150,
 )
@@ -54,8 +57,17 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
             ),
         ),
         SumstatsSource(
+            VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+            alias="HR recovery",
+            pipe=SetColToConstantPipe(
+                GWASLAB_SAMPLE_SIZE_COLUMN,
+                58_818,  # from abstract
+            ),
+            sample_info=QuantPhenotype(),
+        ),
+        SumstatsSource(
             JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
-            alias="multisite_pain",
+            alias="Multisite pain",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN, constant=387649
             ),  # True total sample size. From Gwas catalog
@@ -63,7 +75,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             SCH_PGC_2022_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
-            alias="schizophrenia",
+            alias="Schizophrenia",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN,
                 constant=130644,  # from summary statistics file (130644=53386+77258)
@@ -75,7 +87,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             HAN_ASTHMA_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
-            alias="asthma",
+            alias="Asthma",
             pipe=CompositePipe(
                 [
                     SetColToConstantPipe(
@@ -94,7 +106,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         # https://www.nature.com/articles/s41467-020-15649-3#Sec28:~:text=The%20GWAS%20analysis%20in%20the%20UK%20Biobank%20included%2064%2C538%20cases%20and%20329%2C321%20controls
         SumstatsSource(
             KEATON_DBP_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
-            alias="dbp",
+            alias="DBP",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN,
                 729882,  # from summary statistics file
@@ -103,7 +115,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.sumstats_task,
-            alias="educational_attainment",
+            alias="Educational attainment",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN,
                 257841,  # source: GWASLAB metadata
@@ -112,7 +124,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150,
-            alias="inflammatory_bowel_disease",
+            alias="Inflammatory bowel disease",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN,
                 59957,  # 25,042 + 34,915

@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # Chr6 97.5M-99M

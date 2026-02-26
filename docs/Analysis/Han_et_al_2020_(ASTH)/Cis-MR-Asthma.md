@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # MR with cis-pQTLs

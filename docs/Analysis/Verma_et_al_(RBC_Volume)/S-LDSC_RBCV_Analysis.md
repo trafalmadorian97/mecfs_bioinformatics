@@ -1,7 +1,6 @@
 ---
 hide:
-    - navigation
-    - toc
+- toc
 ---
 
 # S-LDSC RBCV Analysis

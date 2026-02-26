@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # CT-LDSC Study

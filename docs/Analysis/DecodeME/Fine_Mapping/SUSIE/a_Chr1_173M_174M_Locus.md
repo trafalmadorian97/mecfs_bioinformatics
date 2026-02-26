@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # Chr1 173.5M-174.5M
