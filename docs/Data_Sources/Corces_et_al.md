@@ -7,9 +7,9 @@
 
 ![corces_diagram](https://github.com/user-attachments/assets/d35feda9-d700-41e3-a3a1-c542e9e3411f)
 
-
-(Diagram from Corces et al.[@corces2016lineage] showing 5 important ATAC-seq regions for each of 13 blood cell types.)
-
+/// caption
+Diagram from Corces et al.[@corces2016lineage] showing 5 important ATAC-seq regions for each of 13 blood cell types.
+///
 
 In their 2016 paper, Corces et al.[@corces2016lineage] used [ATAC-seq](https://en.wikipedia.org/wiki/ATAC-seq) to record [epigenetic](../Bioinformatics_Concepts/Epigenetics.md) chromatin accessibility data from 13 blood-cell types.
 
