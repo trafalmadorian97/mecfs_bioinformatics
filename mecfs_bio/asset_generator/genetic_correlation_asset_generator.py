@@ -1,3 +1,9 @@
+"""
+Task generator that, given a list of tasks that generate gwaslab sumstats,
+creates one task for each pair of sumstats to compute their genetic correlation.
+The advantage of this approach is that each correlation is cached separately.
+"""
+
 import itertools
 from typing import Mapping, Sequence
 
@@ -30,6 +36,11 @@ def genetic_corr_by_ct_ldsc_asset_generator(
     ld_file_filename_pattern: str = "/LDscore.@",
     build: GenomeBuild = "19",
 ) -> GeneticCorrTasks:
+    """
+    Task generator that, given a list of tasks that generate gwaslab sumstats,
+    creates one task for each pair of sumstats to compute their genetic correlation.
+    The advantage of this approach is that each correlation is cached separately.
+    """
     tasks = {}
     for source_1, source_2 in itertools.combinations(sources, 2):
         sorted_sources = sorted([source_1, source_2], key=lambda x: x.alias.lower())
