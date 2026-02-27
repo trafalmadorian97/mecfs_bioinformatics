@@ -158,6 +158,36 @@ def check_table_trailing_newlines(c):
 
 
 @task
+def fix_table_trailing_newlines(c):
+    """
+    Added by Claude:
+    Autofix markdown files that end with a table but lack a trailing blank line.
+    See check_table_trailing_newlines for why this is needed.
+    """
+    print("Fixing markdown files ending with a table but missing trailing newlines...")
+    fixed = []
+
+    for md_file in sorted(DOCS_PATH.rglob("*.md")):
+        content = md_file.read_text(encoding="utf-8")
+        if not content:
+            continue
+        last_nonempty = next(
+            (line for line in reversed(content.splitlines()) if line.strip()), None
+        )
+        if last_nonempty and last_nonempty.strip().startswith("|"):
+            if not content.endswith("\n\n"):
+                md_file.write_text(content.rstrip("\n") + "\n\n", encoding="utf-8")
+                fixed.append(md_file)
+
+    if fixed:
+        print(f"Fixed {len(fixed)} file(s):")
+        for f in fixed:
+            print(f"  {f}")
+    else:
+        print("No files needed fixing.")
+
+
+@task
 def check_local_links(c):
     """
     Check local links with lychee
@@ -175,7 +205,7 @@ def check_local_links(c):
         spellcheck_docs,
         spellcheck_src,
         check_local_links,
-        check_table_trailing_newlines,
+        fix_table_trailing_newlines,
         checkimports,
         typecheck,
         test,
