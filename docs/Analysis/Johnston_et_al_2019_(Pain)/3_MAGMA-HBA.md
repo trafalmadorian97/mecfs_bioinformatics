@@ -8,7 +8,7 @@ MAGMA was used to test the Johnston 2019[@johnston2019genome] GWAS of Multisite 
 ## Results
 The results are plotted below:
 
-{{ plotly_embed("../../../../_figs/human_brain_atlas_plot.html", id="abc") }}
+![hba-magma-mcp](https://github.com/user-attachments/assets/0c098a3b-7543-4c1c-9f1f-1b3440b56be7)
 
 The x-axis corresponds to HBA cluster number, while the y-axis corresponds to the $-\log_{10}(p)$ score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.
 
