@@ -16,8 +16,9 @@ Eukaryotic DNA is tightly wound around spool-like complexes of proteins called h
 
 ![histone_image_from_wikipedia](https://github.com/user-attachments/assets/077abc51-5dfa-4891-8fa1-e83db80976eb)
 
+/// caption
 [Image Source: David O Morgan](https://en.wikipedia.org/wiki/Nucleosome#/media/File:Basic_units_of_chromatin_structure.svg).
-
+///
 
 Histones can covalently bond to a variety of molecules.  These bonds are called "histone marks".  Histone marks affect the three-dimensional structure of chromatin.  For example, certain histone marks cause DNA to be tightly wound, so that the genes it contains cannot be transcribed, while other histone marks cause DNA to open up, allowing genes to be readily transcribed (see Alberts et al. pg 220[@alberts2022molecular]).
 

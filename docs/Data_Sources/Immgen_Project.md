@@ -1,8 +1,9 @@
 # ImmGen
 
 ![Immgen-visualization](https://github.com/user-attachments/assets/8e0ac3f0-101e-4659-bc01-764810040e69)
+/// caption
 Image source: Aguilar et al.[@aguilar2020immgen]
-
+///
 
 The ImmGen project[@aguilar2020immgen] is a public resource describing gene expression and gene regulation in the mouse immune system.  For each cell type in a highly granular taxonomy of mouse immune cell types, the ImmGen project seeks to record:
 
