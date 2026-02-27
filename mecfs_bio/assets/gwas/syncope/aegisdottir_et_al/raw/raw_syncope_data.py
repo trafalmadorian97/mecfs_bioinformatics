@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("aegisdottir_et_al_raw_syncope_data"),
+        id=AssetId("aegisdottir_et_al_raw_syncope_data"),
         trait="syncope",
         project="aegisdottir",
         sub_dir="",

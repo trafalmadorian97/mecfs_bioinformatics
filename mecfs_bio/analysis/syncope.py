@@ -23,7 +23,6 @@ def run_syncope_analysis():
     DEFAULT_RUNNER.run(
         [
             AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA,
-            AEGISDOTTIR_COMBINED_MAGMA_TASKS.inner.bar_plot_task,
         ]
         + SYNCOPE_S_LDSC_TASKS.get_terminal_tasks(),
         incremental_save=True,

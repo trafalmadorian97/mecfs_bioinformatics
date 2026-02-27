@@ -18,9 +18,8 @@ from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene
 from mecfs_bio.assets.reference_data.magma_ld_reference.magma_eur_build_37_1k_genomes_ref_extracted import (
     MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
 )
-from mecfs_bio.assets.reference_data.rna_seq_data.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
-    GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
-)
+from mecfs_bio.assets.reference_data.rna_seq_data.gtex.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import \
+    GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
 )
@@ -36,7 +35,7 @@ AEGISDOTTIR_COMBINED_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
     magma_ld_ref_task=MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
     tissue_expression_gene_set_task=GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
     base_name="aegisdottir_et_al_2023",
-    sample_size=20_256,  # This is the effective sample size as reported in the supplemental material to the paper.  Seems that LDSC recommends using effective sample size too: https://groups.google.com/g/genomic-sem-users/c/37sU1fmFv_k/m/TIKjykwqDwAJ
+    sample_size=946_861,
     fmt=GWASLabColumnSpecifiers(
         chrom="Chrom",
         pos="Pos",
