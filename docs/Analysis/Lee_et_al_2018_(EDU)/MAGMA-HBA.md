@@ -28,3 +28,8 @@ The independent clusters are listed in more detail in the table below:
 | Cluster133          | 1.1749e-07 | Upper-layer intratelencephalic | NEUR                    | VGLUT1 VGLUT2                      | ADCYAP CBLN CCK CHGA CHGB NAMPT NUCB SCG UBL VGF proSAAS                         | 0                         |                         | Cerebral cortex: 100.0%, Basal forebrain: 0.0%, Hypothalamus: 0.0% | LINC02388, AC112770.1, AC092448.1, AC126182.3, VIPR2, TRPC3, AC020637.1, IGFBP2, SLC38A11, LINC02296           |
 | Cluster404          | 2.9387e-07 | Miscellaneous                  | NEUR                    | VGLUT1                             | CBLN CCK CHGA CHGB IGF NAMPT NUCB NXPH SCG SST TAC VGF proSAAS                   | 0                         |                         | Cerebral cortex: 94.4%, Amygdala: 2.5%, Basal forebrain: 1.2%      | AC016687.2, AC021134.1, LINC02378, LINC02263, LINC01915, CXCL14, AL033539.2, AC004862.1, AC073578.2, LINC02306 |
 | Cluster439          | 6.1461e-07 | Midbrain-derived inhibitory    | NEUR                    | GABA                               | CBLN CHGA CHGB IGF NAMPT NPPC NUCB NXPH SCG UBL proSAAS                          | 0                         |                         | Midbrain: 52.8%, Thalamus: 31.3%, Pons: 10.7%                      | DMBX1, OTX2-AS1, OTX2, LINC01210, GATA3, AC008163.1, AL161757.4, LINC02055, SOX14, PRSS12                      |
+
+
+
+
+
