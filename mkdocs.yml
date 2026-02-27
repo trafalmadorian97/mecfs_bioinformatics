@@ -42,6 +42,7 @@ extra_javascript:
 
 markdown_extensions:
   - admonition
+  - pymdownx.blocks.caption
   - pymdownx.details
   - pymdownx.superfences:
       custom_fences:
