@@ -117,7 +117,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
             y="MLOG10P",
             labels={
                 "CLUSTER": "Cluster",
-                "MLOG10P": r"$-\log_{10}(p)$",
+                "MLOG10P": "-log\u2081\u2080p",
             },
             color="Supercluster",
             color_discrete_map=colormap,

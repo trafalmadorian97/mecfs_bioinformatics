@@ -65,10 +65,6 @@ class SLDSCScatterPlotTask(Task):
             df,
             x="tissue_or_cell",
             y="mlog10p",
-            labels={
-                "tissue_or_cell": "Tissue or Cell",
-                "mlog10p": r"$-\log_{10}(p)$",
-            },
             color="Category",
             hover_name="Name",
             size="marker_size",
