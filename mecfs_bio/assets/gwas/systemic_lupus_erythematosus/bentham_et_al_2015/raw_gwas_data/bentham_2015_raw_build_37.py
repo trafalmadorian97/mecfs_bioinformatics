@@ -14,7 +14,7 @@ for the gwas catalog entry for this publication
 """
 BENTHAM_2015_RAW_BUILD_37 = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("bentham_2015_raw_build_37"),
+        id=AssetId("bentham_2015_raw_build_37"),
         trait="systemic_lupus_erythematosus",
         project="bentham_et_al_2015",
         sub_dir="raw",

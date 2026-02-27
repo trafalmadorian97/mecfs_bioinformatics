@@ -1,6 +1,7 @@
 import shutil
 from pathlib import Path
 
+import pandas as pd
 import pytest
 from attrs import frozen
 
@@ -9,17 +10,23 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.download_file_task import (
     DownloadFileTask,
-    calc_md5_checksum,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.util.download.verify import calc_md5_checksum, head_file, verify_hash
 
 
 @frozen
 class FakeWF(WF):
     source_file: Path
 
-    def download_from_url(self, url: str, local_path: Path) -> None:
+    def download_from_url(
+        self, url: str, local_path: Path, md5_hash: str | None
+    ) -> None:
         shutil.copyfile(self.source_file, local_path)
+        verify_hash(
+            downloaded_file=local_path,
+            expected_hash=md5_hash,
+        )
 
 
 def test_md5_check_passes_fails_appropriately(tmp_path: Path):
@@ -47,3 +54,12 @@ def test_md5_check_passes_fails_appropriately(tmp_path: Path):
     tsk_1.execute(scratch_dir=scratch, fetch=fake_fetch, wf=wf)
     with pytest.raises(AssertionError):
         tsk_2.execute(scratch_dir=scratch, fetch=fake_fetch, wf=wf)
+
+
+def test_head(tmp_path: Path):
+    """
+    Verify that we do not get an error when attempting to print the head of a non text file.
+    """
+    dummy_parquet = tmp_path / "dummy_parquet.parquet"
+    pd.DataFrame({"a": [1, 2, 3]}).to_parquet(dummy_parquet)
+    head_file(dummy_parquet)

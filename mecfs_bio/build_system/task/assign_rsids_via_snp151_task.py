@@ -23,14 +23,14 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
 )
-from mecfs_bio.build_system.wf.base_wf import WF
 
 
 @frozen
@@ -154,12 +154,12 @@ def create_new_meta(
     meta: Meta
     if isinstance(source_meta, SimpleFileMeta):
         meta = SimpleFileMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             read_spec=DataFrameReadSpec(format=format),
         )
     elif isinstance(source_meta, FilteredGWASDataMeta):
         meta = FilteredGWASDataMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             project=source_meta.project,
             trait=source_meta.trait,
             sub_dir=source_meta.sub_dir,

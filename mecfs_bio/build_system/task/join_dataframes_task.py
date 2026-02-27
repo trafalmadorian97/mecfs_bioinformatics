@@ -1,3 +1,7 @@
+"""
+Task to perform a SQL-style join.
+"""
+
 from pathlib import Path
 from typing import Sequence
 
@@ -9,10 +13,16 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_lead_variants_meta import (
+    GWASLabLeadVariantsMeta,
+)
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
     ValidBackend,
     scan_dataframe_asset,
+)
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
 )
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
@@ -123,22 +133,41 @@ class JoinDataFramesTask(Task):
         meta: Meta
         if isinstance(source_meta, ResultTableMeta):
             meta = ResultTableMeta(
-                asset_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,
                 read_spec=read_spec,
-                # read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
             )
         elif isinstance(source_meta, FilteredGWASDataMeta):
             meta = FilteredGWASDataMeta(
-                short_id=AssetId(asset_id),
+                id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
                 extension=extension,
                 read_spec=read_spec,
                 sub_dir=source_meta.sub_dir,
             )
+        elif isinstance(source_meta, GWASLabLeadVariantsMeta):
+            meta = ResultTableMeta(
+                id=AssetId(asset_id),
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
+                read_spec=read_spec,
+                sub_dir=source_meta.sub_dir,
+            )
+        elif isinstance(source_meta, ReferenceFileMeta):
+            meta = ReferenceFileMeta(
+                id=AssetId(asset_id),
+                group=source_meta.group,
+                sub_group=source_meta.sub_group,
+                sub_folder=source_meta.sub_folder,
+                extension=extension,
+                read_spec=read_spec,
+            )
+        else:
+            raise ValueError(f"Source meta has unknown type: {source_meta}")
         return cls(
             df_1_task=result_df_task,
             df_2_task=reference_df_task,

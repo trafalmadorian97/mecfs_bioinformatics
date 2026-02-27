@@ -1,11 +1,10 @@
 from pathlib import Path
 
 import numpy as np
-import math
 import plotly.express as px
 import pandas as pd
 
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import GWASLAB_MLOG10P_COL
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_MLOG10P_COL
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 

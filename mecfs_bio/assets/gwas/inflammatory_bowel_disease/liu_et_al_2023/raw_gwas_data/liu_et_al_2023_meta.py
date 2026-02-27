@@ -20,7 +20,7 @@ from mecfs_bio.build_system.task.download_from_google_drive_task import (
 
 LIU_ET_AL_2023_IBD_META = DownloadFromGoogleDriveTask(
     meta=GWASSummaryDataFileMeta(
-        short_id=AssetId("liu_et_all_2023_ibd_meta_raw"),
+        id=AssetId("liu_et_all_2023_ibd_meta_raw"),
         trait="inflammatory_bowl_disease",
         project="liu_et_al_2023_ibd_meta",
         sub_dir="raw",

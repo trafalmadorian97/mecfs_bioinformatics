@@ -43,7 +43,7 @@ def test_compressed_csv_to_parquet_task(tmp_path: Path):
             group="",
             sub_folder=PurePath(""),
             sub_group="",
-            asset_id=AssetId("123"),
+            id=AssetId("123"),
             read_spec=DataFrameReadSpec(
                 format=DataFrameTextFormat(
                     separator="\t", column_names=HG19_SNP151_SCHEMA

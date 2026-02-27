@@ -1,3 +1,7 @@
+"""
+Metadata describing GWAS summary statistics.
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen
@@ -6,16 +10,14 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
-# from mecfs_bio.build_system.meta.remote_file_meta import RemoteFileMeta
-
 
 @frozen
 class GWASSummaryDataFileMeta(FileMeta):
     @property
     def asset_id(self) -> AssetId:
-        return self.short_id
+        return self.id
 
-    short_id: AssetId
+    id: AssetId
     trait: str
     project: str
     sub_dir: str

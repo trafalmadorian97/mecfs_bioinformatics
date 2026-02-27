@@ -2,6 +2,11 @@ from typing import Literal
 
 import structlog
 
+from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
+from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
+    ProcessedGwasDataDirectoryMeta,
+)
+
 logger = structlog.get_logger()
 import tarfile
 import tempfile
@@ -31,6 +36,9 @@ class ExtractTarGzipTask(Task):
     """
     Task to extract the contents of a (possibly gzipped) tar file to a target directory
     Set subdir_name to extract only the contents of one subfolder within the tar file
+
+
+    read_mode: use r to only untar, and not ungzip.
     """
 
     _meta: Meta
@@ -70,7 +78,7 @@ class ExtractTarGzipTask(Task):
         return DirectoryAsset(scratch_dir)
 
     @classmethod
-    def create_from_reference_file_task(
+    def create(
         cls,
         asset_id: str,
         source_task: Task,
@@ -79,15 +87,28 @@ class ExtractTarGzipTask(Task):
         read_mode: ReadMode = "r:gz",
     ) -> "ExtractTarGzipTask":
         source_meta = source_task.meta
-        assert isinstance(source_meta, ReferenceFileMeta)
-        return cls(
-            meta=ReferenceDataDirectoryMeta(
-                group=source_meta.group,
-                sub_group=source_meta.sub_group,
-                sub_folder=sub_folder,
-                asset_id=AssetId(asset_id),
-            ),
-            source_file_task=source_task,
-            subdir_name=sub_folder_name_inside_tar,
-            read_mode=read_mode,
-        )
+        if isinstance(source_meta, ReferenceFileMeta):
+            return cls(
+                meta=ReferenceDataDirectoryMeta(
+                    group=source_meta.group,
+                    sub_group=source_meta.sub_group,
+                    sub_folder=sub_folder,
+                    id=AssetId(asset_id),
+                ),
+                source_file_task=source_task,
+                subdir_name=sub_folder_name_inside_tar,
+                read_mode=read_mode,
+            )
+        if isinstance(source_meta, GWASSummaryDataFileMeta):
+            return cls(
+                meta=ProcessedGwasDataDirectoryMeta(
+                    id=AssetId(asset_id),
+                    trait=source_meta.trait,
+                    project=source_meta.project,
+                    sub_dir=sub_folder,
+                ),
+                source_file_task=source_task,
+                subdir_name=sub_folder_name_inside_tar,
+                read_mode=read_mode,
+            )
+        raise NotImplementedError(f"Handler for meta {source_meta} not implemented")

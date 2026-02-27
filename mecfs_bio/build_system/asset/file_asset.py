@@ -1,3 +1,7 @@
+"""
+An Asset representing a file.
+"""
+
 from pathlib import Path
 
 from attrs import frozen

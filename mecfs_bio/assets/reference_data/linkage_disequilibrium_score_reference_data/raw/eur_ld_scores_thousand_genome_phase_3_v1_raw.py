@@ -12,7 +12,7 @@ New data location: https://zenodo.org/records/7768714
 """
 THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_RAW = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="thousand_genomes_phase_3_v1_eur_ld_scores_tar_gzip",
+        id="thousand_genomes_phase_3_v1_eur_ld_scores_tar_gzip",
         group="linkage_disequilibrium_scores",
         sub_group="thousand_genomes_phase_3_v1",
         sub_folder=PurePath("raw"),

@@ -25,11 +25,11 @@ class SimpleTasks(Tasks):
         yield from self._tasks
 
 
-def find_tasks(tasks: list[Task]) -> SimpleTasks:
+def find_tasks(target_tasks: list[Task]) -> SimpleTasks:
     """
     Build a SimpleTasks object by walking the task graph
     """
-    _tasks = {}
+    _tasks: dict[AssetId, Task] = {}
     visited = set()
 
     def explore_task(t: Task):
@@ -37,8 +37,12 @@ def find_tasks(tasks: list[Task]) -> SimpleTasks:
         for dep in t.deps:
             if dep.asset_id not in visited:
                 explore_task(dep)
+        if t.asset_id in _tasks and (t != _tasks[t.asset_id]):
+            raise ValueError(
+                f"Found two tasks with asset id  {t.asset_id}.  tasks are {t} and {_tasks[t.asset_id]}"
+            )
         _tasks[t.asset_id] = t
 
-    for task in tasks:
+    for task in target_tasks:
         explore_task(task)
     return SimpleTasks(_tasks)

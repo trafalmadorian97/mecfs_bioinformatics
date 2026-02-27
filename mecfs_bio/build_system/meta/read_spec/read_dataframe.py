@@ -26,7 +26,7 @@ def scan_dataframe(
     path: Path, spec: DataFrameReadSpec, parquet_backend: ValidBackend = "polars"
 ) -> nw.LazyFrame:
     if isinstance(spec.format, DataFrameParquetFormat):
-        logger.debug(f"Scanning with backend {parquet_backend}")
+        logger.debug(f"Scanning parquet asset at {path} with backend {parquet_backend}")
         return nw.scan_parquet(path, backend=parquet_backend)
     if isinstance(spec.format, DataFrameTextFormat):
         if spec.format.column_names is not None:
@@ -35,6 +35,9 @@ def scan_dataframe(
         else:
             col_func = None
         if parquet_backend == "polars":
+            logger.debug(
+                f"scanning text table asset at {path} with backend {parquet_backend}"
+            )
             polars_scan = pl.scan_csv(
                 path,
                 separator=spec.format.separator,
@@ -48,8 +51,15 @@ def scan_dataframe(
             return nw.from_native(polars_scan)
         raise ValueError("Only polars backend can be used to read text files")
     if isinstance(spec.format, DataFrameWhiteSpaceSepTextFormat):
+        extra_options: dict = {}
+        if spec.format.col_names is not None:
+            extra_options = extra_options | {"names": spec.format.col_names}
         return nw.from_native(
-            pd.read_csv(path, sep=r"\s+", comment=spec.format.comment_code)
+            pl.from_pandas(
+                pd.read_csv(
+                    path, sep=r"\s+", comment=spec.format.comment_code, **extra_options
+                )
+            )
         ).lazy()
 
     raise ValueError("Unknown format")

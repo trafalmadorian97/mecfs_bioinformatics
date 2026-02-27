@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 LD_SCORE_REGRESSION_ALLELE_FREQS = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="s_ldsc_allele_freqs",
+        id="s_ldsc_allele_freqs",
         group="linkage_disequilibrium_score_regression_aux_data",
         sub_group="LDSCORE_1000G_Phase",
         sub_folder=PurePath("raw"),

@@ -1,13 +1,14 @@
+from pathlib import Path
+
 import gwaslab as gl
 import pandas as pd
 from attrs import frozen
 
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
-    GWASLabVCFRefFile,
 )
 from mecfs_bio.util.plotting.save_fig import normalize_filename
 
@@ -44,7 +45,9 @@ def df_to_variants(df: pd.DataFrame) -> list[Variant]:
     ]
 
 
-def gwaslab_download_ref_if_missing(ref: GWASLabVCFRefFile):
+def gwaslab_download_ref_if_missing(ref: str) -> Path:
     result = gl.get_path(ref)
     if not result:
         gl.download_ref(ref)
+        result = gl.get_path(ref)
+    return result

@@ -3,7 +3,7 @@ import structlog
 
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
-loger = structlog.get_logger()
+logger = structlog.get_logger()
 
 
 class LogMarkdownPipe(DataProcessingPipe):
@@ -13,5 +13,5 @@ class LogMarkdownPipe(DataProcessingPipe):
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         collected = x.collect().to_pandas()
-        loger.debug(f"\n DataFrame:\n{collected.to_markdown(index=False)} \n")
+        logger.debug(f"\n DataFrame:\n{collected.to_markdown(index=False)} \n")
         return x

@@ -1,5 +1,11 @@
+"""
+Prepare results for presentation by converting a dataframe to markdown format.
+"""
+
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -53,6 +59,7 @@ class ConvertDataFrameToMarkdownTask(Task):
         )
 
         df = nw_df.collect().to_pandas()
+        df = _array_to_list(df)
         out_path = scratch_dir / "output.md"
         markdown_str = df.to_markdown(index=False)
         with open(out_path, "w") as f:
@@ -66,10 +73,17 @@ class ConvertDataFrameToMarkdownTask(Task):
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = FilteredGWASDataMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=source_meta.trait,
             project=source_meta.project,
             sub_dir=source_meta.sub_dir,
             extension=".md",
         )
         return cls(meta=meta, df_task=source_task, pipe=pipe)
+
+
+def _array_to_list(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    for col in df.columns:
+        df[col] = df[col].apply(lambda x: list(x) if isinstance(x, np.ndarray) else x)
+    return df

@@ -20,11 +20,11 @@ class GWASLabLeadVariantsMeta(FileMeta):
 
     @property
     def asset_id(self) -> AssetId:
-        return self.short_id
+        return self.id
 
     trait: str
     project: str
-    short_id: AssetId = field(converter=AssetId)
+    id: AssetId = field(converter=AssetId)
     sub_dir: PurePath = PurePath("analysis/lead_variants")
 
     def read_spec(self) -> ReadSpec | None:

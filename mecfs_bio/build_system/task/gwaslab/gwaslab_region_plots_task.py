@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 plt.rcParams["font.sans-serif"] = (
-    "DejaVu Sans"  # Gwaslab defaults to plotting in Arial font, which is not availible by default on linux
+    "DejaVu Sans"  # Gwaslab defaults to plotting in Arial font, which is not available by default on linux
 )
 plt.rcParams["font.family"] = "sans-serif"
 
@@ -33,9 +33,6 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_constants import (
-    GWASLabVCFRefFile,
-)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
 )
@@ -48,6 +45,9 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_util import (
     gwaslab_download_ref_if_missing,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLabVCFRefFile,
+)
 
 
 @frozen
@@ -76,7 +76,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
         return GWASLabRegionPlotsMeta(
             trait=self._lead_variants_task_meta.trait,
             project=self._lead_variants_task_meta.project,
-            short_id=self.short_id,
+            id=self.short_id,
         )
 
     @property
@@ -137,7 +137,7 @@ def get_top_var_df(df: pd.DataFrame, plot_top: int | None) -> pd.DataFrame:
     )
 
 
-def _plot_region_around_variant(
+def plot_region_around_variant(
     sumstats: gl.Sumstats,
     chrom: int,
     pos: int,
@@ -176,7 +176,7 @@ def plot_region_around_variants(
 ) -> None:
     for variant in variants:
         logger.debug(f"Creating region plot around variant {variant.id}")
-        _plot_region_around_variant(
+        plot_region_around_variant(
             sumstats=sumstats,
             chrom=variant.chromosome,
             pos=variant.position,

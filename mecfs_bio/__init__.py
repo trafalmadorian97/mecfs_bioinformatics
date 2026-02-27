@@ -1,3 +1,3 @@
 """
-Root directory for refactored code, that makes use of the new incremental build system.
+Root directory for the ME/CFS biostatistics project.
 """

@@ -1,4 +1,9 @@
-import hashlib
+"""
+Download a file, possibly verifying it using a hash.
+
+This Task is the main way GWAS summary statistics are added to the build system.
+"""
+
 from pathlib import Path
 
 import structlog
@@ -29,23 +34,5 @@ class DownloadFileTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         target = scratch_dir / self.meta.asset_id
-        wf.download_from_url(url=self._url, local_path=target)
-        if self._md5_hash is not None:
-            logger.debug("Verifying MD5 hash of downloaded file...")
-            hash_of_downloaded_file = calc_md5_checksum(target)
-            assert hash_of_downloaded_file == self._md5_hash, (
-                f"Expected Hash {hash_of_downloaded_file} to be equal to {self._md5_hash}"
-            )
-            logger.debug("Hash verified.")
+        wf.download_from_url(url=self._url, local_path=target, md5_hash=self._md5_hash)
         return FileAsset(target)
-
-
-def calc_md5_checksum(filepath: Path, chunk_size: int = 8192) -> str:
-    hasher = hashlib.md5()
-    with open(filepath, "rb") as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break  # End of file
-            hasher.update(chunk)
-    return hasher.hexdigest()

@@ -2,7 +2,7 @@
 Meta objects are uniquely identifying metadata describing either an asset that currently exists, or an asset that can be created by a build system.
 """
 
-from mecfs_bio.build_system.meta.executable.executable_meta import ExecutableMeta
+from mecfs_bio.build_system.meta.executable_meta import ExecutableMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_lead_variants_meta import (
@@ -17,8 +17,9 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_region_plots_meta import (
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
     GWASLabSumStatsMeta,
 )
+from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
-from mecfs_bio.build_system.meta.procesed_gwas_data_directory_meta import (
+from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
 from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta import (
@@ -27,6 +28,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta im
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
+from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
@@ -45,5 +47,7 @@ Meta = (
     | ExecutableMeta
     | ProcessedGwasDataDirectoryMeta
     | GWASPlotDirectoryMeta
+    | GWASPlotFileMeta
     | ResultTableMeta
+    | ResultDirectoryMeta
 )

@@ -1,3 +1,7 @@
+"""
+Instructions for materializing an asset.
+"""
+
 from abc import ABC, abstractmethod
 from pathlib import Path
 
@@ -16,11 +20,17 @@ class GeneratingTask(ABC):
     @property
     @abstractmethod
     def meta(self) -> Meta:
+        """
+        Metadata describing the target asset.
+        """
         pass
 
     @property
     @abstractmethod
     def deps(self) -> list["Task"]:
+        """
+        List of tasks whose assets are needed to produce the target asset.
+        """
         pass
 
     @property
@@ -34,6 +44,9 @@ class GeneratingTask(ABC):
         fetch: Fetch,
         wf: WF,
     ) -> Asset:
+        """
+        Materialize the target asset, using the 'fetch' callback to access asset dependencies.
+        """
         pass
 
 

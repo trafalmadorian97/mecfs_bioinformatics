@@ -30,6 +30,9 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import (
 )
 from mecfs_bio.build_system.task.copy_task import CopyTask
 from mecfs_bio.build_system.task.counting_task import CountingTask
+from mecfs_bio.build_system.task.discard_deps_task_wrapper import (
+    DiscardDepsWrapper,
+)
 from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
 from mecfs_bio.build_system.task.failing_task import FailingTask
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
@@ -186,6 +189,44 @@ def test_file_copying_task(tmp_path: Path, tracer: Tracer) -> None:
     assert task1.run_count == 2
     assert task2.run_count == 3
     assert task3.run_count == 3
+
+    # check that we can use DiscardDepsWrapper to materialize the dependencies of
+    # task 3 in a temporary directory
+
+    wrapped_task_3 = DiscardDepsWrapper(
+        inner=task3,
+    )
+    assert len(wrapped_task_3.deps) == 0
+    tasks_wrapped = find_tasks([wrapped_task_3])
+
+    wrapped_targets = [wrapped_task_3.asset_id]
+    topological(
+        rebuilder=rebuilder,
+        tasks=tasks_wrapped,
+        targets=wrapped_targets,
+        wf=wf,
+        info=info_2,
+        meta_to_path=meta_to_path,
+        incremental_save_path=incremental_save_path,
+    )
+
+    assert task1.run_count == 3
+    assert task2.run_count == 4
+    assert task3.run_count == 4
+
+    topological(
+        rebuilder=rebuilder,
+        tasks=tasks_wrapped,
+        targets=wrapped_targets,
+        wf=wf,
+        info=info_2,
+        meta_to_path=meta_to_path,
+        incremental_save_path=incremental_save_path,
+    )
+
+    assert task1.run_count == 3
+    assert task2.run_count == 4
+    assert task3.run_count == 4
 
 
 def test_graph_generation(tmp_path: Path):

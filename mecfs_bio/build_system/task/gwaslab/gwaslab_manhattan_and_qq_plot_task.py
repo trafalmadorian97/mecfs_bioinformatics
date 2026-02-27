@@ -59,10 +59,10 @@ class GWASLabManhattanAndQQPlotTask(Task):
         sumstats_asset = fetch(self._input_asset_id)
         sumstats: gl.Sumstats = read_sumstats(sumstats_asset)
         if self.plot_setting == "mqq":
-            fig, (ax1, ax2) = plt.subplots(figsize=(24, 16), ncols=2, nrows=1)
+            fig, (ax1, ax2) = plt.subplots(figsize=(12, 14), ncols=2, nrows=1)
             figax = [fig, ax1, ax2]
         else:
-            fig, ax1 = plt.subplots(figsize=(24, 16), ncols=1, nrows=1)
+            fig, ax1 = plt.subplots(figsize=(12, 14), ncols=1, nrows=1)
             figax = [
                 fig,
                 ax1,
@@ -88,7 +88,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
         cls,
         sumstats_task: GWASLabCreateSumstatsTask,
         asset_id: str,
-        sig_leve: float = 5e-8,
+        sig_level: float = 5e-8,
         plot_setting: str = "mqq",
     ):
         input_meta = sumstats_task.meta
@@ -96,11 +96,11 @@ class GWASLabManhattanAndQQPlotTask(Task):
         meta = GWASLabManhattanQQPlotMeta(
             trait=input_meta.trait,
             project=input_meta.project,
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
         )
         return cls(
             sumstats_task=sumstats_task,
             meta=meta,
-            sig_level=sig_leve,
+            sig_level=sig_level,
             plot_setting=plot_setting,
         )

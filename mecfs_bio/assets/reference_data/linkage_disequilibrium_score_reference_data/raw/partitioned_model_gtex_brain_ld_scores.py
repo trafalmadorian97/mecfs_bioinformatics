@@ -1,5 +1,5 @@
 """
-Paritioned LD scores associated from brain tissue types.
+Partitioned LD scores associated from brain tissue types.
 
 
 Comes from the paper:
@@ -22,7 +22,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="gtex_brain_partitioned_ld_scores",
+        id="gtex_brain_partitioned_ld_scores",
         group="linkage_disequilibrium_scores",
         sub_group="LDSCORE_LDSC_SEG",
         sub_folder=PurePath("raw"),

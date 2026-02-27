@@ -1,4 +1,3 @@
-import subprocess
 from pathlib import Path, PurePath
 
 import structlog
@@ -12,6 +11,7 @@ from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
 
@@ -22,12 +22,15 @@ class MagmaAnnotateTask(Task):
     Perform the annotate step of the MAGMA pipeline.
     This step associates SNPs with genes.
     See page 5 of the MAGMA manual here: https://vu.data.surfsara.nl/s/MUiv3y1SFRePnyG?dir=/&editing=false&openfile=true
+
+    The window option is used to optionally associate SNPs outside the transcription region of a gene with the gene.
     """
 
     _meta: Meta
     magma_binary_task: Task
     snp_loc_file_task: Task
     gene_loc_file_task: Task
+    window: tuple[int, int] | None = None
 
     @property
     def magma_binary_id(self) -> AssetId:
@@ -63,6 +66,10 @@ class MagmaAnnotateTask(Task):
         cmd = [
             str(binary_path),
             "--annotate",
+        ]
+        if self.window is not None:
+            cmd.extend([f"window={self.window[0]},{self.window[1]}"])
+        cmd += [
             "--snp-loc",
             str(snp_loc_path),
             "--gene-loc",
@@ -71,10 +78,8 @@ class MagmaAnnotateTask(Task):
             str(out_base_path),
         ]
         logger.debug(f"Running command: {' '.join(cmd)}")
-        result = subprocess.run(cmd, check=True, text=True, capture_output=True)
-        logger.debug(
-            f"Command produced result: \n\n{result.stdout}\n{result.stderr}\n\n"
-        )
+        result = execute_command(cmd)
+        logger.debug(f"Command produced result: \n\n{result}\n\n\n")
         out_full_path = Path(str(out_base_path) + ".genes.annot")
         return FileAsset(out_full_path)
 
@@ -85,11 +90,12 @@ class MagmaAnnotateTask(Task):
         magma_binary_task: Task,
         snp_loc_file_task: Task,
         gene_loc_file_task: Task,
+        window: tuple[int, int] | None = None,
     ) -> "MagmaAnnotateTask":
         snp_loc_meta = snp_loc_file_task.meta
         assert isinstance(snp_loc_meta, FilteredGWASDataMeta)
         meta = FilteredGWASDataMeta(
-            short_id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=snp_loc_meta.trait,
             project=snp_loc_meta.project,
             sub_dir=PurePath(snp_loc_meta.sub_dir) / "magma",
@@ -100,4 +106,5 @@ class MagmaAnnotateTask(Task):
             magma_binary_task=magma_binary_task,
             snp_loc_file_task=snp_loc_file_task,
             gene_loc_file_task=gene_loc_file_task,
+            window=window,
         )

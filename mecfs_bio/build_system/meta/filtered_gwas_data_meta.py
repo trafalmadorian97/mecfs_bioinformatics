@@ -1,3 +1,7 @@
+"""
+Metadata describing an asset resulting from the processing of GWAS data.
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen
@@ -11,9 +15,9 @@ from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 class FilteredGWASDataMeta(FileMeta):
     @property
     def asset_id(self) -> AssetId:
-        return self.short_id
+        return self.id
 
-    short_id: AssetId
+    id: AssetId
     trait: str
     project: str
     sub_dir: str | PurePath

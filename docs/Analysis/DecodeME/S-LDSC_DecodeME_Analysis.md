@@ -1,23 +1,28 @@
+---
+hide:
+- toc
+---
 # S-LDSC Analysis of DecodeME
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS 1 of [DecodeME](../../Data_Sources/MECFS/DecodeME.md).
+[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS-1 of [DecodeME](../../Data_Sources/DecodeME.md)[genetics2025initial].
 
 ## Reference Data Sources
 
 I used the standard reference datasets prepared by the authors of the S-LDSC method.
 
-- [The GTEx Project](../../Data_Sources/GTEx_Project/GTEx_RNAseq_Data.md)
+- [The GTEx Project](../../Data_Sources/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
-- [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap_Epigenetic_Project/Roadmap.md)
-- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_Et_Al_Blood_Cell_Epigenetics/Corces_et_al.md).
-- The [ImmGen](../../Data_Sources/Immgen_Project/Immgen_Project.md) Project
+- [The Roadmap Epigenetic Project](../../Data_Sources/Roadmap.md)
+- The [Corces et al. ATAC-seq dataset of 13 blood cell types](../../Data_Sources/Corces_et_al.md).
+- The [ImmGen](../../Data_Sources/Immgen_Project.md) Project
 - The Cahoy Mouse Central Nervous System Dataset
 
 
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets.
+The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].  The table shows details of the cell/tissues types with the smallest p values.
+
 
 ![s-ldsc-decodme-gene-expression](https://github.com/user-attachments/assets/77dfefc0-2717-4e45-9b1d-4f09d67b7dc5)
 
@@ -93,38 +98,6 @@ I next applied S-LDSC using the reference dataset derived from the Roadmap epige
 | Ganglion_Eminence_derived_primary_cultured_neurospheres__H3K4me3         |   9.46707e-08 |           8.30653e-05 | True          |
 | Brain_Inferior_Temporal_Lobe__H3K9ac                                     |   5.55865e-08 |           8.69272e-05 | True          |
 | Brain_Hippocampus_Middle__H3K4me3                                        |   6.50022e-08 |           0.000226226 | True          |
-paiforsyth@PeterPowerDell ~/s/t/biostatistics (main)> head -n 40 assets/base_asset_store/gwas/ME_CFS/DecodeME/analysis/decode_me_gwas_1_multi_ti
-ssue_chromatin_s_ldsc_cell_analysis_md_table.md
-| Name                                                                     |   Coefficient |   Coefficient_P_value | Reject Null   |
-|:-------------------------------------------------------------------------|--------------:|----------------------:|:--------------|
-| Fetal_Brain_Female__DNase                                                |   1.02689e-07 |           4.68419e-10 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K27ac                            |   5.08217e-08 |           1.23002e-09 | True          |
-| Fetal_Brain_Male__DNase                                                  |   9.55596e-08 |           2.73287e-09 | True          |
-| Fetal_Brain_Male__H3K4me1                                                |   3.78077e-08 |           5.22621e-09 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K4me3                            |   1.70485e-07 |           5.98839e-09 | True          |
-| Fetal_Brain_Female__H3K4me1                                              |   6.20252e-08 |           1.37543e-08 | True          |
-| Brain_Anterior_Caudate__H3K27ac                                          |   3.86611e-08 |           3.06201e-08 | True          |
-| Brain_Inferior_Temporal_Lobe__H3K27ac                                    |   3.30624e-08 |           2.87328e-07 | True          |
-| Brain_Cingulate_Gyrus__H3K9ac                                            |   8.70527e-08 |           3.38485e-07 | True          |
-| Brain_Angular_Gyrus__H3K9ac                                              |   8.39789e-08 |           9.75539e-07 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K4me1                            |   5.21768e-08 |           1.72804e-06 | True          |
-| Brain_Germinal_Matrix__H3K4me3                                           |   1.26424e-07 |           1.85932e-06 | True          |
-| Brain_Inferior_Temporal_Lobe__H3K4me3                                    |   1.03363e-07 |           3.9248e-06  | True          |
-| Brain_Anterior_Caudate__H3K4me3                                          |   1.02781e-07 |           4.68e-06    | True          |
-| Fetal_Brain_Female__H3K4me3                                              |   1.26751e-07 |           5.12867e-06 | True          |
-| Brain_Angular_Gyrus__H3K4me3                                             |   1.29751e-07 |           9.79109e-06 | True          |
-| Brain_Dorsolateral_Prefrontal_Cortex__H3K9ac                             |   9.32505e-08 |           9.83818e-06 | True          |
-| Brain_Cingulate_Gyrus__H3K4me3                                           |   1.06995e-07 |           1.02402e-05 | True          |
-| Brain_Angular_Gyrus__H3K4me1                                             |   4.08889e-08 |           1.39444e-05 | True          |
-| Brain_Angular_Gyrus__H3K27ac                                             |   3.26885e-08 |           1.89114e-05 | True          |
-| Brain_Anterior_Caudate__H3K4me1                                          |   3.54259e-08 |           3.15633e-05 | True          |
-| Brain_Anterior_Caudate__H3K9ac                                           |   6.35599e-08 |           3.21619e-05 | True          |
-| Brain_Cingulate_Gyrus__H3K27ac                                           |   2.92786e-08 |           3.245e-05   | True          |
-| Brain_Cingulate_Gyrus__H3K4me1                                           |   3.2249e-08  |           4.08821e-05 | True          |
-| Cortex_derived_primary_cultured_neurospheres__H3K4me3                    |   1.30409e-07 |           5.87376e-05 | True          |
-| Ganglion_Eminence_derived_primary_cultured_neurospheres__H3K4me3         |   9.46707e-08 |           8.30653e-05 | True          |
-| Brain_Inferior_Temporal_Lobe__H3K9ac                                     |   5.55865e-08 |           8.69272e-05 | True          |
-| Brain_Hippocampus_Middle__H3K4me3                                        |   6.50022e-08 |           0.000226226 | True          |
 | Brain_Inferior_Temporal_Lobe__H3K4me1                                    |   3.38614e-08 |           0.00032817  | True          |
 | Brain_Hippocampus_Middle__H3K4me1                                        |   1.98882e-08 |           0.000355901 | True          |
 | Fetal_Brain_Female__H3K36me3                                             |   3.17864e-08 |           0.000550213 | True          |
@@ -136,15 +109,15 @@ ssue_chromatin_s_ldsc_cell_analysis_md_table.md
 | Brain_Hippocampus_Middle__H3K27ac                                        |   1.91901e-08 |           0.00173697  | False         |
 | Ganglion_Eminence_derived_primary_cultured_neurospheres__H3K4me1         |   3.16805e-08 |           0.00215425  | False         |
 
-Again, the strongest, and most significant associations are all with CNS cell-types
+Again, the strongest and most significant associations are all with CNS cell-types.
 
-### Immgen data
+### ImmGen data
 
-Next, I applied S-LDSC using reference data from the Immgen project.
+Next, I applied S-LDSC using reference data from the ImmGen project.
 
 There were no significant cell types.
 
-The cell types with the lowest p-values are shown in the table below:
+The cell types with the lowest p values are shown in the table below:
 
 | Name                            |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:--------------------------------|--------------:|----------------------:|:--------------|
@@ -208,7 +181,7 @@ When we apply the S-LDSC using the GTEx brain dataset, we find the the cortex ti
 | Brain_Cerebellar_Hemisphere             |   2.45686e-10 |           0.39188     | False         
 
 
-# Reproducing Analysis
+## How to Reproduce This
 
-To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis]
+To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
 

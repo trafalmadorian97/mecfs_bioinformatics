@@ -172,7 +172,7 @@ class CellAnalysisByLDSCTask(Task):
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(
-            asset_id=asset_id,
+            id=asset_id,
             trait=sumstats_meta.trait,
             project=sumstats_meta.project,
             sub_dir=PurePath("analysis"),
@@ -199,8 +199,8 @@ class LDCTSFileEntry:
     control_gene_data_path: Path
 
     def __attrs_post_init__(self):
-        forbiden_chars = ["\t", " ", ","]
-        for char in forbiden_chars:
+        forbidden_chars = ["\t", " ", ","]
+        for char in forbidden_chars:
             assert char not in self.label
             assert char not in str(self.target_gene_data_path)
             assert char not in str(self.control_gene_data_path)

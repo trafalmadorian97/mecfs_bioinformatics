@@ -1,4 +1,8 @@
-# Linkage Disequilibrium Score Regression 
+---
+hide:
+- toc
+---
+# LDSC
 Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
 
 ## Intuition and High-level summary
@@ -75,13 +79,13 @@ $$
 where:
 
 
-- There are $M  \gg 0$ genotypes.  
+- There are $M  \gg 0$ genetic variants.  
 - There are $N  \gg 0$ individuals.  
 - $\phi\in\mathbb{R}^N$ is the vector of phenotypes.
 - $X\in\mathbb{R}^{N\times M}$ is the genotype matrix, normalized to have columns with sample mean 0 and sample variance 1.
 - $\beta\in\mathbb{R}^M$ is the vector of true SNP effect sizes.
 - $X\beta \in\mathbb{R}^N$ is thus the vector of total genetic effects for each individual.
-- $\epsilon\in\mathbb{R}^N$ is the vector non-genetic effects for each individual.
+- $\epsilon\in\mathbb{R}^N$ is the vector of non-genetic effects for each individual.
 
 Furthermore, we model $X,\beta,\epsilon$ as random variables with the following properties:
 
@@ -214,7 +218,7 @@ $$
 \begin{align}
 &\chi_j^2\\
 &= \frac{\hat{\beta_j}^2}{\mathrm{SE}(\hat{\beta_j})^2}\\
-&\approx N \hat{\beta_j} & \text{by (\ref{sebeta})} \label{wald}
+&\approx N \hat{\beta_j^2} & \text{by (\ref{sebeta})} \label{wald}
 \end{align}
 $$
 
@@ -232,7 +236,7 @@ $$
 $$
 
 
-We write, $\mathbb{E}X_{1j}^2X_{1k}^2=1+2r_{jk}^2+\nu$ where we have used[ Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem) to compute the expectation of the product of the squares of two normal random variables, and then added error term $\nu$ to account for the non-normality of $X$.
+We write $\mathbb{E}X_{1j}^2X_{1k}^2=1+2r_{jk}^2+\nu$ where we have used [Isserlis's Theorem](https://en.wikipedia.org/wiki/Isserlis%27s_theorem) to compute the expectation of the product of the squares of two normal random variables, and then added error term $\nu$ to account for the non-normality of $X$.
  
 Thus we have 
 
@@ -289,19 +293,45 @@ The key steps in the LDSC derivation above are between equations ($\ref{varphi}$
 
 
 
-## Critique of assumptions
+## Critique of assumption
 
 [//]: # (Numerous authors have criticised the plausibility of the assumptions underlying LDSC.  For instance ...)
 
 
-We saw above that the most important of LDSC's assumptions is that  $\mathbb{Var}\beta=h^2 I$.  This can be understood as an **isotropic pleiotropy** assumption, and it amounts to the assumption that the heritability of a trait is distributed evenly across the genome, without correlation between SNPs.
+We saw above that the most important of LDSC's assumptions is that  $\mathbb{Var}\beta=h^2 I$.  This can be understood as an **isotropic polygenicity** assumption, and it amounts to the assumption that the heritability of a trait is distributed evenly across the genome, without correlation between SNPs.
 
 How plausible is this assumption?
 
-- On the one hand, the discovery that many traits are highly pleiotropic has been one of the most important findings of the GWAS era.  So, in a rough sense, assuming that the heritability of a trait is distributed across the genome is not unreasonable.
-- On the other hand, the assumption of perfectly uniform pleiotropy strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region.
+### Arguments that assumption is plausible
 
-The issue of the implausibility of isotropic pleiotropy  is partially resolved by stratified linkage disequilibrium score regression[@finucane2015partitioning] (S-LDSC), an extension proposed by the same authors who devised LDSC.  S-LDSC allows the use of a pre-specified functional partitioning of the genome. While heritability is still assumed to be evenly distributed within a given partition, S-LDSC allows it to differ across partitions.
+On the one hand, the discovery that many traits are highly polygenic has been one of the most important findings of the GWAS era.  
+
+The following figure from Shi et al.[@shi2016contrasting] is a striking illustration:
+
+![shi_schz_chrom_heritability](https://github.com/user-attachments/assets/411240fd-38fd-44b4-ba9a-746e9b48d021)
+
+The authors applied HESS to Schizophrenia, a prototypically polygenic disease.  HESS estimates the proportion of [heritability](Heritability.md) attributal to each chromosome.  They found that the schizophrenia heritability of a chromosome was approximately proportional to the chromosome's length.  This is consistent with uniform polygenicity.
+
+
+
+See also this talk by Jonathan Pritchard, which proposes that most traits are "[omnigenic](Omnigenic_Model.md)", in the sense that they are controlled by vast numbers of small contributions spread across the genome:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/d_6MJgrD5ww?si=_xwDgdAQjWStYfKr" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+
+So, in a rough sense, assuming that the heritability of a trait is distributed across the genome is not unreasonable.
+
+
+
+### Arguments that assumption is implausible
+
+On the other hand, the assumption of perfectly uniform polygenicity strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region.
+
+
+### Extensions to make assumption more plausible
+
+The issue of the implausibility of isotropic polygenicity is partially resolved by [Stratified Linkage Disequilibrium Score Segression](S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2015partitioning] (S-LDSC), an extension proposed by the same authors who devised LDSC.  S-LDSC allows the use of a pre-specified functional partitioning of the genome. While heritability is still assumed to be evenly distributed within a given partition, S-LDSC allows it to differ across partitions.
 
 
 [//]: # (So it would be fair to say that while LDSC's key assumption is valid in a rough sense, it is not accurate in a granular sense.)

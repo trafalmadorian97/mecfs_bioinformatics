@@ -26,7 +26,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 HM3_LD_SCORE_REGRESSION_WEIGHTS = DownloadFileTask(
     meta=ReferenceFileMeta(
-        asset_id="s_ldsc_hapmap3_regression_weights",
+        id="s_ldsc_hapmap3_regression_weights",
         group="linkage_disequilibrium_score_regression_aux_data",
         sub_group="LDSCORE_1000G_Phase",
         sub_folder=PurePath("raw"),

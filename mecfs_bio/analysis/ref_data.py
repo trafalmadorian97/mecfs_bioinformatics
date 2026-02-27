@@ -3,28 +3,26 @@ Script to download some reference data.  Mainly for testing.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parquet_rename_unique import (
-    PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE,
+from mecfs_bio.assets.gwas.ukbb_ppp.btn1a1.generator.retrieve_and_process import (
+    BTN1A1_UKBB_PPP_GWAS_PROCESS,
 )
 
 
 def run_initial_analysis():
     DEFAULT_RUNNER.run(
         [
-            # MILLION_VETERAN_RED_BLOOD_VOLUME_EUR_DATA_RAW
-            # DB_SNP_VCF_FILE_WITH_INDEX_BUILD_37_DIR
-            # MILLION_VETERAN_RED_BLOOD_VOLUME_EUR_DATA_RAW_HARMONIZED
-            # LIU_ET_AL_2023_IBD_EUR_HARMONIZE
-            # DB_SNP_VCF_FILE_BUILD_37        ,
-            # PARQUET_DBSNP_37,
-            # PARQUET_DBSNP_37_UNNESTED,
-            # PARQUET_DBSNP_37_UNNESTED_SORTED
-            # DB_SNP150_ANNOVAR_PROC,
-            # PARQUET_DBSNP150_37_ANNOVAR_PROC,
-            # PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME
-            PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE
-        ],
+            # UKBB_PPP_RABGAP1L,
+            # UKBB_PPP_RABGAP1L_UNTAR,
+            # STACK_UKBBPPP_RABGAP1L
+            # UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37
+            # UKBBPPP_RABGAP1l_SUMSTATS_37_HARMONIZED
+            # UNIPROT_LOOKUP
+            # GENE_THESAURUS
+            # DUNCAN_ET_AL_2025_ST1_EXTRACTED
+        ]
+        + [BTN1A1_UKBB_PPP_GWAS_PROCESS.plot_task],
         incremental_save=True,
+        # must_rebuild_transitive=[SUN_ET_AL_2023_COMBINED_PQTLS_EXTRACTED],
         # must_rebuild_transitive=[PARQUET_DBSNP_37_UNNESTED],
         # must_rebuild_transitive=[DB_SNP150_ANNOVAR_PROC]
     )

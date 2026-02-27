@@ -1,0 +1,3 @@
+UNIPROT_DAT_ID_COL = "Entry"
+UNIPROT_DAT_FUNCTION_COL = "Function [CC]"
+UNIPROT_DAT_SUBCELLULAR_LOC_COL = "Subcellular location [CC]"
