@@ -28,7 +28,7 @@ exclude = [
     "venv",
 ]
 [lint]
-select= ["I","F401","F541","UP"]
+select= ["I","F401","F541","UP", "W605"]
 ignore =["UP007", "UP035"]
 [format]
 docstring-code-format = true

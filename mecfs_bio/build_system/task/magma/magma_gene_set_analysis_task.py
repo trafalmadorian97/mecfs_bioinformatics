@@ -191,7 +191,7 @@ def _empty_gene_set_file(
     lim = (
         1 if (model_params is None or ~model_params.joint_pairs) else 2
     )  # the first column is the "GENE" column, so to have 1 gene set we need two columns, and to have two gene sets we need three
-    df = pd.read_csv(gene_set_file_path, sep="\s+")
+    df = pd.read_csv(gene_set_file_path, sep=r"\s+")
     if len(df.columns) <= lim:
         return True
     return False

@@ -1,7 +1,11 @@
 """
-Task to use cross-trait LD Score Regression to estimate genetic correlation between a several traits.
+Task generator to use cross-trait LD Score Regression to estimate genetic correlation between a several traits.
+Each pair of traits is a Task.  This facilitates caching of results
 """
 
+from mecfs_bio.asset_generator.genetic_correlation_asset_generator import (
+    genetic_corr_by_ct_ldsc_asset_generator,
+)
 from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_standard_analysis import (
     HAN_ASTHMA_STANDARD_ANALYSIS,
 )
@@ -31,7 +35,6 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     BinaryPhenotypeSampleInfo,
-    GeneticCorrelationByCTLDSCTask,
     QuantPhenotype,
     SumstatsSource,
 )
@@ -41,8 +44,8 @@ from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
 
-CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
-    "initial_genetic_correlation_by_ct_ldsc",
+CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
+    "initial_rg",
     sources=[
         SumstatsSource(
             DECODEME_ME_SUMSTATS_37_WITH_ANNOVAR_RSID,
@@ -58,7 +61,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
-            alias="HR recovery",
+            alias="HR_recovery",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN,
                 58_818,  # from abstract
@@ -67,7 +70,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
-            alias="Multisite pain",
+            alias="Multisite_pain",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN, constant=387649
             ),  # True total sample size. From Gwas catalog
@@ -115,7 +118,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.sumstats_task,
-            alias="Educational attainment",
+            alias="Educational_attainment",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN,
                 257841,  # source: GWASLAB metadata
@@ -124,7 +127,7 @@ CT_LDSC_INITIAL = GeneticCorrelationByCTLDSCTask.create(
         ),
         SumstatsSource(
             LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150,
-            alias="Inflammatory bowel disease",
+            alias="Inflammatory_bowel_disease",
             pipe=SetColToConstantPipe(
                 GWASLAB_SAMPLE_SIZE_COLUMN,
                 59957,  # 25,042 + 34,915
