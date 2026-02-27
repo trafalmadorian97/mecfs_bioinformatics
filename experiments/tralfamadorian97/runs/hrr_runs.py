@@ -2,8 +2,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_standard_analysis import \
     VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS
-from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_initial import CT_LDSC_INITIAL
-from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_plot import CT_LDSC_INITIAL_PLOT
 
 
 def run_initial_hrr_analysis():
