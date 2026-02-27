@@ -135,7 +135,10 @@ class PlotMagmaBrainAtlasResultTask(Task):
             # size_max=20
         )
         plot = plot.update_traces(marker=dict(size=15))
-        plot = plot.update_layout(font=dict(size=17))
+        plot.update_layout(
+            xaxis_title_font=dict(size=20),
+            yaxis_title_font=dict(size=23),
+        )
 
         sig_level = -math.log10(0.01 / len(table))
         line_color = "white" if self.plot_mode == "plotly_dark" else "black"
@@ -146,6 +149,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
             opacity=0.5,
             annotation_text="Significance threshold (Bonferroni)",
             annotation_xshift=-10,
+            annotation_font=dict(size=17),
         )
         plot = plot.add_annotation(
             x=float(top_cluster["CLUSTER"]),
