@@ -78,7 +78,9 @@ class SLDSCScatterPlotTask(Task):
             template="plotly_white",
             labels={"mlog10p": "-log\u2081\u2080p", "tissue_or_cell": "Tissue or Cell"},
         )
-        fig = fig.update_xaxes(showticklabels=False)
+        fig = fig.update_layout(font=dict(size=17))
+        fig = fig.update_xaxes(showticklabels=False, showgrid=False, zeroline=False)
+        fig = fig.update_yaxes(showgrid=False)
         # fig= fig.update_layout(xaxis_title=None)
         figs = {}
         figs["sldsc_scatter"] = fig

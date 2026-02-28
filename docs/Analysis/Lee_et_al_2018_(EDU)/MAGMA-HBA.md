@@ -30,6 +30,3 @@ The independent clusters are listed in more detail in the table below:
 | Cluster439          | 6.1461e-07 | Midbrain-derived inhibitory    | NEUR                    | GABA                               | CBLN CHGA CHGB IGF NAMPT NPPC NUCB NXPH SCG UBL proSAAS                          | 0                         |                         | Midbrain: 52.8%, Thalamus: 31.3%, Pons: 10.7%                      | DMBX1, OTX2-AS1, OTX2, LINC01210, GATA3, AC008163.1, AL161757.4, LINC02055, SOX14, PRSS12                      |
 
 
-
-
-
