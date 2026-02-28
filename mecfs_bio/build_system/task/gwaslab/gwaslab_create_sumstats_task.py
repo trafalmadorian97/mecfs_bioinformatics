@@ -201,6 +201,7 @@ def _get_sumstats(
     if isinstance(fmt, GWASLabColumnSpecifiers):
         x = fmt.get_selection_pipe().process(x)
     x = x.drop(drop_cols)
+    logger.debug("Collecting Narwhals Lazyframe and converting to pandas")
     collected_df = x.collect().to_pandas()
     if isinstance(fmt, GWASLabColumnSpecifiers):
         return gl.Sumstats(
@@ -295,6 +296,7 @@ class GWASLabCreateSumstatsTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         df = scan_dataframe_asset(asset=fetch(self._source_id), meta=self._source_meta)
+        logger.debug("Applying pre-pipe")
         df = self.pre_pipe.process(df)
         logger.debug("Fetching source dataframe asset...")
         sumstats = _get_sumstats(df, self.fmt, drop_cols=self.drop_col_list)

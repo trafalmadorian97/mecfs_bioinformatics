@@ -28,6 +28,7 @@ logger = structlog.get_logger()
 
 GENE_ANALYSIS_OUTPUT_STEM_NAME = "gene_analysis_output"
 SynonymMode = Literal["skip", "drop", "drop-dup"]
+DuplicateMode = Literal["first", "last", "error"]
 
 
 @frozen
@@ -40,6 +41,7 @@ class MagmaGeneAnalysisTask(Task):
     ld_ref_file_stem: str
     sample_size: int
     synonym_mode: SynonymMode = "drop-dup"
+    duplicate_mode: DuplicateMode | None = "first"
 
     @property
     def meta(self) -> Meta:
@@ -97,6 +99,7 @@ class MagmaGeneAnalysisTask(Task):
             f"synonym-dup={self.synonym_mode}",
             "--pval",
             str(p_value_path),
+            f"duplicate={self.duplicate_mode}",
             f"N={self.sample_size}",
             "--gene-annot",
             str(annotation_path),
@@ -104,12 +107,8 @@ class MagmaGeneAnalysisTask(Task):
             str(out_base_path),
         ]
         logger.debug(f"Running command: {' '.join(cmd)}")
-        # result = subprocess.run(cmd, check=True, text=True, capture_output=True)
-        result = execute_command(cmd)
-        # logger.debug(
-        #     f"Command produced result: \n\n{result.stdout}\n{result.stderr}\n\n"
-        # )
-        # out_full_path = Path(str(out_base_path) + ".genes.raw")
+        execute_command(cmd)
+
         return DirectoryAsset(out_dir)
 
     @classmethod

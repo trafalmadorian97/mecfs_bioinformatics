@@ -102,7 +102,6 @@ class CellAnalysisByLDSCTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         sumstats_asset = fetch(self._source_sumstats_id)
         sumstats = read_sumstats(sumstats_asset)
-
         sumstats.data = (
             self.pre_pipe.process(narwhals.from_native(sumstats.data).lazy())
             .collect()
