@@ -4,7 +4,7 @@ from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_initial_asset_gener
 from mecfs_bio.build_system.task.genetic_correlation_clustermap_task import (
     GeneticCorrelationClustermapTask,
     GeneticCorrSource,
-    RGWithAsterix,
+    RGWithAsterisk,
 )
 
 CT_LDSC_INITIAL_PLOT = GeneticCorrelationClustermapTask.create_std_with_clustering(
@@ -12,5 +12,5 @@ CT_LDSC_INITIAL_PLOT = GeneticCorrelationClustermapTask.create_std_with_clusteri
     genetic_corr_source=GeneticCorrSource(
         task=CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task
     ),
-    plot_options=RGWithAsterix(color_scale="tropic"),
+    plot_options=RGWithAsterisk(color_scale="tropic"),
 )

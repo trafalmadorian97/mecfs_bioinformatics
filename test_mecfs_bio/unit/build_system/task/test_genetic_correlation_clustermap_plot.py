@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.genetic_correlation_clustermap_task import (
     GeneticCorrelationClustermapTask,
     GeneticCorrSource,
-    RGWithAsterix,
+    RGWithAsterisk,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
 
@@ -47,7 +47,7 @@ def test_genetic_correlation_clustermap(tmp_path: Path):
                 )
             )
         ),
-        plot_options=RGWithAsterix(),
+        plot_options=RGWithAsterisk(),
         xr_pipe=XRIdentityPipe(),
     )
 

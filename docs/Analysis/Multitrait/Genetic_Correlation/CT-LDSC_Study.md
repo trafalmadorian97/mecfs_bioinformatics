@@ -4,7 +4,7 @@ hide:
 ---
 # CT-LDSC Study
 
-I applied [cross-trait linkage disequilibrium score regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between diverse phenotypes, including the ME/CFS phenotype defined in [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial].  The genetic correlations are plotted in the heatmap below. Asterixes denote Bonferroni-corrected statistically significant correlations.
+I applied [cross-trait linkage disequilibrium score regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between diverse phenotypes, including the ME/CFS phenotype defined in [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial].  The genetic correlations are plotted in the heatmap below. Asterisks denote Bonferroni-corrected statistically significant correlations.
 
 
 
