@@ -1,3 +1,8 @@
+"""
+Apply HBA MAGMA to syncope data.
+MAGMA's synonym handling capability should automatically deal with the duplicate SNPs in these summary statistics
+"""
+
 from mecfs_bio.asset_generator.hba_magma_asset_generator import (
     generate_human_brain_atlas_magma_tasks,
 )

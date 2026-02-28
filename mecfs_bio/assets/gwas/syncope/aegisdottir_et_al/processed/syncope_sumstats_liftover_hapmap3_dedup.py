@@ -1,6 +1,6 @@
 """
-Summary statistics restricted to hapmap3 and deduplicated
-This avoid any potential issue downstream due to multiple rows referring to the same variant with different rsi
+Task to restrict the Aegisdottir et al. summary statistics to hapmap3 and deduplicate them.
+This avoids any potential issue downstream due to multiple rows referring to the same variant with different rsi
 """
 
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_sumstats_liftover import (

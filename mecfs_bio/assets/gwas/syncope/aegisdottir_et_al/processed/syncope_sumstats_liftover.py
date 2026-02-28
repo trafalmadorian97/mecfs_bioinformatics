@@ -1,3 +1,7 @@
+"""
+Liftover the Aegisdottir et al. syncope summary statistics to the hg19 genome build.
+"""
+
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_sumstats_explode_and_scale import (
     SYNCOPE_SUMSTATS_EXPLODE_AND_SCALE,
 )

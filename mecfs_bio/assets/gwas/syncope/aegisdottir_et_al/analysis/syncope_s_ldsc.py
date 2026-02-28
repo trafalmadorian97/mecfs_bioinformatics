@@ -1,5 +1,5 @@
 """
-Task to apply S-LDSC to the aegisdottir Syncope data
+Task generator to apply S-LDSC to the Aegisdottir et al. Syncope GWAS summary statistics.
 """
 
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (

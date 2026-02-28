@@ -1,11 +1,11 @@
 """
-The Syncope GWAS sumstats file is formatted in an usual way:
+The Syncope GWAS sumstats file is formatted in an unusual way:
 - Effect allele frequency is expressed as a percent, not a proportion.
 - Some rows have multiple rsIDS, to account for rsid synonyms.
 
 This Task preprocesses the file to address these issues, then creates GWASLAB sumstats
-- Note 1: if the sumstats issues are not fixed prior to conversion to GWASlab sumstats format, this can cause downstream issues.
-- Note 2:  This task resolves the issues of synonymous rsids by creating separate row for each synonym.  Downstream tasks tasks need to take this into account to avoid double-counting
+- Note 1: if the sumstats issues are not fixed prior to conversion to GWASlab sumstats format, this can cause a large number of SNPs to be unnecessarily discarded.
+- Note 2:  This task resolves the issues of synonymous rsids by creating separate row for each synonym.  Downstream tasks  need to take this into account to avoid double-counting SNPs
 """
 
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.raw.raw_syncope_data import (

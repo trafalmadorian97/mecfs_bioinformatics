@@ -1,3 +1,8 @@
+"""
+Task to retrieve data form Aegisdottir et al's GWAS of Syncope
+Citation:  Aegisdottir, Hildur M., et al. "Genetic variants associated with syncope implicate neural and autonomic processes." European heart journal 44.12 (2023): 1070-1080.
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

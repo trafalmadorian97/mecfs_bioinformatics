@@ -1,9 +1,6 @@
 """
-Generate MAGMA tasks for the Syncope GWAS study of AegisDottir et al.
-
-Looks like the data is already filtered to include only SNPs with imputation quality of at least 0.9
-So no further filtering is required
-
+Generate MAGMA tasks for the Syncope GWAS study of Aegisdottir et al.
+MAGMA's synonym handling capability should automatically deal with duplicate SNPs
 """
 
 from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
