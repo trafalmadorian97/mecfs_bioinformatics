@@ -138,7 +138,20 @@ class PlotMagmaBrainAtlasResultTask(Task):
         plot.update_layout(
             xaxis_title_font=dict(size=21),
             yaxis_title_font=dict(size=21),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=0,
+                xanchor="center",
+                x=0.5,
+                yref="container",
+                title=dict(
+                    side="top",
+                ),
+            ),
+            margin=dict(l=0, r=0, t=2, b=2),
         )
+        plot.update_xaxes(zeroline=False)
 
         sig_level = -math.log10(0.01 / len(table))
         line_color = "white" if self.plot_mode == "plotly_dark" else "black"
@@ -147,16 +160,13 @@ class PlotMagmaBrainAtlasResultTask(Task):
             line_color=line_color,
             line_dash="dot",
             opacity=0.5,
-            annotation_text="Significance threshold (Bonferroni)",
-            annotation_xshift=-10,
-            annotation_font=dict(size=17),
         )
         plot = plot.add_annotation(
             x=float(top_cluster["CLUSTER"]),
             y=float(top_cluster["MLOG10P"]),
             text=top_cluster_label,
             font=dict(  # Customize font properties
-                size=20,
+                size=15,
                 color=colormap[top_cluster["Supercluster"]],
             ),
             arrowhead=2,  # Style of the arrowhead
