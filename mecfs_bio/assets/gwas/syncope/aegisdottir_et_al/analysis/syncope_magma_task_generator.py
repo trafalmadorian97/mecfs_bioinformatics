@@ -9,6 +9,8 @@ So no further filtering is required
 from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
     MAGMA_1_1_BINARY_EXTRACTED,
 )
+from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.sumstats_liftover_dump_to_parquet import \
+    AEGISDOTTIR_SUMSTATS_DUMP_TO_PARQUET
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.raw.raw_syncope_data import (
     AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA,
 )
@@ -29,25 +31,13 @@ from mecfs_bio.build_system.task_generator.magma_task_generator import (
 )
 
 AEGISDOTTIR_COMBINED_MAGMA_TASKS = MagmaTaskGeneratorFromRaw.create(
-    raw_gwas_data_task=AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA,
+    raw_gwas_data_task=AEGISDOTTIR_SUMSTATS_DUMP_TO_PARQUET,
     magma_binary_task=MAGMA_1_1_BINARY_EXTRACTED,
     gene_loc_file_task=MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
     magma_ld_ref_task=MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
     tissue_expression_gene_set_task=GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
     base_name="aegisdottir_et_al_2023",
     sample_size=946_861,
-    fmt=GWASLabColumnSpecifiers(
-        chrom="Chrom",
-        pos="Pos",
-        ea="EA",
-        nea="OA",
-        eaf="EAF",
-        p="Pval",
-        snpid="ID",
-        OR="OR",
-        se="SE",
-        info="Info",
-        rsid="rsName",
-    ),
+    fmt="gwaslab",
     post_pipe=ComputeBetaPipe(),
 )
