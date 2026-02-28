@@ -26,7 +26,7 @@ where:
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for the GWAS of trait 1 and the GWAS of trait 2, respectively.
 - $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
-- $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true genetic effect sizes of each genetic variant on the two traits. 
+- $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits. 
 - $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of genetic effects in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 
@@ -56,7 +56,7 @@ $$
 
 - Assumption ($\ref{cov_delta_epsilon}$) specifies that error is uncorrelated between GWAS, except for individuals who are participants both studies.
 - Assumptions ($\ref{var_beta}$), ($\ref{var_gamma}$), and ($\ref{cov_beta_gamma}$) specify an isotropically polygenic architecture, analogous to the one used in [LDSC](LDSC.md).
-- Assumptions ($\ref{e_delta}$), ($\ref{e_beta}$), ($\ref{e_Y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) specify that the data has been pre-normalized. Here ($\ref{e_y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) elide the distinction between sample and population level normalization, which should only introduce minor error given the large sample size of a typical GWAS.
+- Assumptions ($\ref{e_delta}$), ($\ref{e_beta}$), ($\ref{e_Y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) specify that the data has been pre-normalized. Here ($\ref{e_Y}$), ($\ref{e_Z}$), and ($\ref{y_z_var}$) elide the distinction between sample and population level normalization, which should only introduce minor error given the large sample size of a typical GWAS.
 
 
 
@@ -64,7 +64,7 @@ $$
 Furthermore, we assume the following relationships between the random variables, which are faily standard in linear data-generating models:
 
 - The rows of $Y$ and $Z$ are mutually independent, except in the case that a row of $Y$ and $Z$ refer to the same individual (one of the $N_s$ individuals present in both GWAS).
-- The rows of $Y$ and $Z$ are identically distributed.
+- The rows of $Y$ and $Z$ are identically distributed. That is, the two GWAS samples are drawn independently from the sample population.
 - $Y, \beta, \delta$ are all mutually independent, as are $Z,\gamma, \epsilon$.
 - $\beta$ is independent of $\epsilon$ and $Z$, and $\gamma$ is independent of $\delta$ and $Y$.
 
@@ -108,7 +108,7 @@ $$
 
 Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By the derivation of LDSC, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
 
-The genetic correlation of the two traits can be computed as their genetic covariance divided by the square root of the product of their heritabilities:
+The genetic correlation of the two traits can be computed as their genetic covariance divided by the square root of the product of their [heritabilities](Heritability.md):
 
 $$
 \frac{\rho_g}{h_1h_2}.
@@ -116,7 +116,7 @@ $$
 
 ### Regression equation
 
-Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the Wald $\chi^2$ statistics of a variant $j$ in the two GWAS: 
+Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the [Wald](https://en.wikipedia.org/wiki/Wald_test) $\chi^2$ statistics of a variant $j$ in the two GWAS: 
 
 $$
 \begin{align}
@@ -135,7 +135,7 @@ z_{j,2} &\approx \frac{y_1^T Z_{j}}{\sqrt{N_2}} \label{d2}.
 $$
 
 
-Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics.  To derive the regression equation, we must estimate $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation (see Grimmett and Stirzaker pg.336[@grimmett2020probability]), 
+Recall that in [LDSC](LDSC.md), the regression dependent variable was the Wald $\chi^2$ statistic.  In CT-LDSC, the regression dependent variable is the product of the $z$-statistics from the two GWAS.  To derive the regression equation, we must estimate $\mathbb{E}(z_{j,1}z_{j,2})$.  By the Tower Law of Expectation (see Grimmett and Stirzaker pg.336[@grimmett2020probability]), 
 
 $$
 \begin{align}

@@ -12,4 +12,4 @@ I used the standard reference data sources to associate chromatin regions with c
 - The [ImmGen](../../Data_Sources/Immgen_Project.md) Project
 - The Cahoy Mouse Central Nervous System Dataset
 
-Surprisingly, there were no significant tissue or cell types with any of these datasets. This may indicate a poor match between the cell and tissue types present in these datasets and the physiology of heart rate recovery.
+Surprisingly, there were no significant tissue or cell types in any of these datasets. This may indicate a poor match between the cell and tissue types present in these datasets and the physiology of heart rate recovery.
