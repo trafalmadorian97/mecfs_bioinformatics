@@ -18,6 +18,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 @frozen
 class FakeTask(Task):
     _meta: Meta
+    _deps: tuple[Task, ...] = tuple()
     """
     For testing
     """
@@ -28,7 +29,7 @@ class FakeTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return []
+        return list(self._deps)
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         raise NotImplementedError()
