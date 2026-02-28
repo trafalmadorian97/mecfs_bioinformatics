@@ -115,6 +115,10 @@ class PlotMagmaBrainAtlasResultTask(Task):
             table,
             x="CLUSTER",
             y="MLOG10P",
+            labels={
+                "CLUSTER": "Cluster",
+                "MLOG10P": "-log\u2081\u2080p",
+            },
             color="Supercluster",
             color_discrete_map=colormap,
             template=self.plot_mode,
@@ -131,14 +135,21 @@ class PlotMagmaBrainAtlasResultTask(Task):
             # size_max=20
         )
         plot = plot.update_traces(marker=dict(size=15))
+        plot.update_layout(
+            xaxis_title_font=dict(size=21),
+            yaxis_title_font=dict(size=21),
+        )
 
         sig_level = -math.log10(0.01 / len(table))
         line_color = "white" if self.plot_mode == "plotly_dark" else "black"
         plot = plot.add_hline(
             y=sig_level,
             line_color=line_color,
-            # annotation_text=f"Significance Level: {sig_level}",
-            line_dash="dash",
+            line_dash="dot",
+            opacity=0.5,
+            annotation_text="Significance threshold (Bonferroni)",
+            annotation_xshift=-10,
+            annotation_font=dict(size=17),
         )
         plot = plot.add_annotation(
             x=float(top_cluster["CLUSTER"]),
@@ -153,6 +164,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
             arrowwidth=2,  # Width of the arrow line
             arrowcolor=colormap[top_cluster["Supercluster"]],
             ay=-60,  # Y-component of the arrow tail offset (pixels from head)
+            standoff=10,
         )
         plots = {BRAIN_ATLAS_PLOT_NAME: plot}
         write_plots_to_dir(scratch_dir, plots)

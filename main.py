@@ -1,6 +1,6 @@
 def define_env(env):
     @env.macro
-    def plotly_embed(src, id, height="750px"):
+    def plotly_embed(src, id, height="775px"):
         """
         This is a macro function added by Claude to allow the embedding of plotly plots which can be expanded to full screen.
 

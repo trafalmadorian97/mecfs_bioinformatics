@@ -114,9 +114,21 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             right=0.8,
         )
         sns.move_legend(ax, "upper left", bbox_to_anchor=(1.0, 1), fontsize="small")
-        ax.axhline(y=sig_level, color="black", linestyle="--", linewidth=4, zorder=-100)
-        ax.set_xlabel("CLUSTER", fontsize="x-large")
-        ax.set_ylabel("MLOG10P", fontsize="x-large")
+        leg1 = ax.get_legend()
+        significance_line = ax.axhline(
+            y=sig_level,
+            color="black",
+            linestyle=":",
+            linewidth=2,
+            alpha=0.7,
+            zorder=-100,
+            label="Significance threshold (Bonferroni)",
+        )
+        ax.legend(handles=[significance_line], loc="lower right")
+        ax.add_artist(leg1)
+
+        ax.set_xlabel("Cluster", fontsize="x-large")
+        ax.set_ylabel(r"$-\log_{10}(p)$", fontsize="x-large")
 
         if len(independent_clusters) > 0:
             x_coords = []
