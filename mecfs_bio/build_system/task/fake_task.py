@@ -18,7 +18,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 @frozen
 class FakeTask(Task):
     _meta: Meta
-    _deps: tuple[Task]= tuple()
+    _deps: tuple[Task, ...] = tuple()
     """
     For testing
     """
