@@ -2,7 +2,7 @@
 hide:
 - toc
 ---
-# MR with cis-pQTLs
+# cis-pQTL MR Analysis
 
 I applied [Mendelian Randomization](../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the asthma GWAS of Han et al.[@han2020genome] using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  I aimed to identify candidate proteins that may be causal in the asthma disease process.
 
