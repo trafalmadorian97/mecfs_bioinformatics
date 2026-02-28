@@ -6,9 +6,6 @@ from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.analysis.syncope_s_ldsc import (
     SYNCOPE_S_LDSC_TASKS,
 )
-from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_magma_task_generator import (
-    AEGISDOTTIR_COMBINED_MAGMA_TASKS,
-)
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.raw.raw_syncope_data import (
     AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA,
 )

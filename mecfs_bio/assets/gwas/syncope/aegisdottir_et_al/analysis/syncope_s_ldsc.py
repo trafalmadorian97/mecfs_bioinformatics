@@ -4,11 +4,6 @@ Task to apply S-LDSC to the aegisdottir Syncope data
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
 )
-from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_magma_task_generator import (
-    AEGISDOTTIR_COMBINED_MAGMA_TASKS,
-)
-from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_sumstats_liftover import \
-    AEGISDOTTIR_SYNCOPE_LIFTOVER_SUMSTATS
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_sumstats_liftover_hapmap3_dedup import \
     AEGISDOTTIR_SYNCOPE_LIFTOVER_SUMSTATS_HAPMAP3_DEDUP
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe

@@ -30,6 +30,8 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_stand
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_pgc_2022 import (
     SCH_PGC_2022_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_sumstats_liftover_hapmap3_dedup import \
+    AEGISDOTTIR_SYNCOPE_LIFTOVER_SUMSTATS_HAPMAP3_DEDUP
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.eur_ld_scores_thousand_genome_phase_3_v1_extracted import (
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
@@ -39,7 +41,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
     SumstatsSource,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
-from mecfs_bio.build_system.task.pipes.compute_beta_pipe import ComputeBetaPipe
+from mecfs_bio.build_system.task.pipes.compute_beta_pipe import ComputeBetaPipe, ComputeBetaIfNeededPipe
 from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
@@ -137,6 +139,23 @@ CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
                 estimated_population_prevalence=0.002,  # See Figure 3 of Liu, Zhanju, et al. "Genetic architecture of the inflammatory bowel diseases across East Asian and European ancestries." Nature genetics 55.5 (2023): 796-806.
             ),
         ),
+        SumstatsSource(
+            AEGISDOTTIR_SYNCOPE_LIFTOVER_SUMSTATS_HAPMAP3_DEDUP ,
+            alias="Syncope",
+            pipe=CompositePipe([SetColToConstantPipe(
+                GWASLAB_SAMPLE_SIZE_COLUMN,
+                946_861,
+            ),
+ComputeBetaIfNeededPipe()
+
+            ]),
+            sample_info=BinaryPhenotypeSampleInfo(
+                sample_prevalence=56_071/946_861, #netic variants associated with syncope implicate neural and autonomic processes
+                estimated_population_prevalence=0.3,
+                # See Figure 3 of Liu, Zhanju, et al. "Genetic architecture of the inflammatory bowel diseases across East Asian and European ancestries." Nature genetics 55.5 (2023): 796-806.
+            ),
+
+        )
     ],
     ld_ref_task=THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
     build="19",
