@@ -106,15 +106,9 @@ class MagmaGeneAnalysisTask(Task):
             "--out",
             str(out_base_path),
         ]
-        # if self.duplicate_mode is not None:
-        #     cmd.append(f"--duplicate={self.duplicate_mode}")
         logger.debug(f"Running command: {' '.join(cmd)}")
-        # result = subprocess.run(cmd, check=True, text=True, capture_output=True)
-        result = execute_command(cmd)
-        # logger.debug(
-        #     f"Command produced result: \n\n{result.stdout}\n{result.stderr}\n\n"
-        # )
-        # out_full_path = Path(str(out_base_path) + ".genes.raw")
+        execute_command(cmd)
+
         return DirectoryAsset(out_dir)
 
     @classmethod

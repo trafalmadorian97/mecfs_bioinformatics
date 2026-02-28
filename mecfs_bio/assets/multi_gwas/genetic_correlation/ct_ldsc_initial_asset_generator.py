@@ -157,9 +157,8 @@ CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
             ),
             sample_info=BinaryPhenotypeSampleInfo(
                 sample_prevalence=56_071
-                / 946_861,  # netic variants associated with syncope implicate neural and autonomic processes
-                estimated_population_prevalence=0.3,
-                # See Figure 3 of Liu, Zhanju, et al. "Genetic architecture of the inflammatory bowel diseases across East Asian and European ancestries." Nature genetics 55.5 (2023): 796-806.
+                / 946_861,  # see: Genetic variants associated with syncope implicate neural and autonomic processes (Aegisdottir et al.)
+                estimated_population_prevalence=0.3,  # This is the prevalence used in the paper
             ),
         ),
     ],
