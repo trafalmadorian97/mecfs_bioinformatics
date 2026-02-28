@@ -21,6 +21,8 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GwasLabTransformSpec,
     transform_gwaslab_sumstats,
 )
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
@@ -33,6 +35,7 @@ class GWASLabTransformSumstatsTask(Task):
     _meta: Meta
     source_sumstats_task: Task
     transform_spec: GwasLabTransformSpec
+    post_pipe: DataProcessingPipe= IdentityPipe()
 
     @property
     def meta(self) -> Meta:
@@ -57,6 +60,7 @@ class GWASLabTransformSumstatsTask(Task):
             sumstats,
             spec=self.transform_spec,
         )
+        sumstats.data = self.post_pipe.process_pandas(sumstats.data)
         out_path = scratch_dir / "pickled_sumstats.pickle"
         gl.dump_pickle(sumstats, path=out_path)
         return FileAsset(out_path)
@@ -67,6 +71,7 @@ class GWASLabTransformSumstatsTask(Task):
         source_tsk: Task,
         asset_id: str,
         spec: GwasLabTransformSpec,
+            post_pipe: DataProcessingPipe=IdentityPipe(),
     ):
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
@@ -80,4 +85,5 @@ class GWASLabTransformSumstatsTask(Task):
             meta=meta,
             source_sumstats_task=source_tsk,
             transform_spec=spec,
+            post_pipe=post_pipe,
         )
