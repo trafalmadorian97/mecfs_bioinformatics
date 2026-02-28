@@ -63,6 +63,9 @@ jobs:
       - name: Check formatting with ruff
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke formatcheck
+      - name: Check that markdown files ending in tables have trailing newlines
+        if: steps.changes.outputs.nonmark == 'true'
+        run: pixi r invoke check-table-trailing-newlines
       - name: Lint using ruff
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke lintcheck
