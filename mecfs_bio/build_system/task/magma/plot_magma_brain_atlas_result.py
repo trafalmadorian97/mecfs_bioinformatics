@@ -136,8 +136,8 @@ class PlotMagmaBrainAtlasResultTask(Task):
         )
         plot = plot.update_traces(marker=dict(size=15))
         plot.update_layout(
-            xaxis_title_font=dict(size=20),
-            yaxis_title_font=dict(size=23),
+            xaxis_title_font=dict(size=21),
+            yaxis_title_font=dict(size=21),
         )
 
         sig_level = -math.log10(0.01 / len(table))
