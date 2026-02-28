@@ -35,7 +35,7 @@ class GWASLabTransformSumstatsTask(Task):
     _meta: Meta
     source_sumstats_task: Task
     transform_spec: GwasLabTransformSpec
-    post_pipe: DataProcessingPipe= IdentityPipe()
+    post_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def meta(self) -> Meta:
@@ -71,7 +71,7 @@ class GWASLabTransformSumstatsTask(Task):
         source_tsk: Task,
         asset_id: str,
         spec: GwasLabTransformSpec,
-            post_pipe: DataProcessingPipe=IdentityPipe(),
+        post_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)

@@ -1,7 +1,12 @@
-from mecfs_bio.asset_generator.labeled_lead_variants_asset_generator import generate_tasks_labeled_lead_variants
-from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.raw.raw_syncope_data import AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GWASLabColumnSpecifiers
-from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.asset_generator.labeled_lead_variants_asset_generator import (
+    generate_tasks_labeled_lead_variants,
+)
+from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.raw.raw_syncope_data import (
+    AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA,
+)
+from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
+    GWASLabColumnSpecifiers,
+)
 
 SYNCOPE_LABELED_LEAD_VARIANT = generate_tasks_labeled_lead_variants(
     base_name="syncope_labeled_lead_variant_tasks",

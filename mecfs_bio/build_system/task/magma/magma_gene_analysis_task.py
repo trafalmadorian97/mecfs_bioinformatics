@@ -28,7 +28,7 @@ logger = structlog.get_logger()
 
 GENE_ANALYSIS_OUTPUT_STEM_NAME = "gene_analysis_output"
 SynonymMode = Literal["skip", "drop", "drop-dup"]
-DuplicateMode = Literal["first","last","error"]
+DuplicateMode = Literal["first", "last", "error"]
 
 
 @frozen
@@ -41,7 +41,7 @@ class MagmaGeneAnalysisTask(Task):
     ld_ref_file_stem: str
     sample_size: int
     synonym_mode: SynonymMode = "drop-dup"
-    duplicate_mode : DuplicateMode|None = "first"
+    duplicate_mode: DuplicateMode | None = "first"
 
     @property
     def meta(self) -> Meta:
