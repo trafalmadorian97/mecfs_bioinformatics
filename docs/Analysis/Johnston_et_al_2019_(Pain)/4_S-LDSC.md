@@ -147,7 +147,7 @@ There were no significant cell types when analyzing the neurological cell types 
 | Oligodendrocyte |   8.92979e-10 |             0.217456  | False         |
 | Astrocyte       |  -8.78228e-10 |             0.816394  | False         |
 
-Similarly, there were no significant tissues when testing the GTEx brain tissues using S-LDSC. 
+Similarly, there were no significant tissues when testing the GTEx brain tissues using S-LDSC:
 
 | Name                                    |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:----------------------------------------|--------------:|----------------------:|:--------------|

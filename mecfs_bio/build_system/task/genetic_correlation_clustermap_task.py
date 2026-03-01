@@ -150,7 +150,7 @@ SigMode = BonferoniSig
 
 
 @frozen
-class RGWithAsterix:
+class RGWithAsterisk:
     sig_mode: SigMode = BonferoniSig()
     color_scale: str = "RdBu_r"
 
@@ -160,7 +160,7 @@ class RGHideNonSig:
     pass
 
 
-GeneticCorrPlotMode = RGWithAsterix | RGHideNonSig
+GeneticCorrPlotMode = RGWithAsterisk | RGHideNonSig
 
 
 def get_sig(
@@ -184,21 +184,21 @@ def rg_plot(ds: xr.Dataset, plot_mode: GeneticCorrPlotMode) -> Figure:
     """
     Produce a plotly heatmap figure showing genetic correlation
     """
-    if isinstance(plot_mode, RGWithAsterix):
+    if isinstance(plot_mode, RGWithAsterisk):
         corr_df = ds[XR_GENETIC_CORR_ARRAY].to_pandas()
         sig = get_sig(
             p_value_matrix=ds[XR_GENETIC_CORR_P_VALUE_ARRAY].values,
             num_pairs=ds[NUM_PAIRS].values.item(),
             sig_mode=plot_mode.sig_mode,
         )
-        asterix_matrix = np.where(sig, "★", "")
+        asterisk_matrix = np.where(sig, "★", "")
 
         fig = go.Figure(
             data=go.Heatmap(
                 z=corr_df,
                 x=corr_df.columns,
                 y=corr_df.index,
-                text=asterix_matrix,
+                text=asterisk_matrix,
                 texttemplate="%{text}",
                 textfont={"size": 20, "color": "black"},
                 colorscale=plot_mode.color_scale,
