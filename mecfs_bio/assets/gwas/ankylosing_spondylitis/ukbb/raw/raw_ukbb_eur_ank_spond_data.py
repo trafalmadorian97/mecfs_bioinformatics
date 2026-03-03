@@ -4,11 +4,15 @@ Summary statistics from Ankylosing spondylitis in the UK biobank whole genome se
 
 See: https://www.ebi.ac.uk/gwas/studies/GCST90474065
 """
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameTextFormat
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 UK_BIOBANK_ANKYLOSING_SPONDYLITIS_EUR_DATA_RAW = DownloadFileTask(

@@ -244,7 +244,7 @@ class GWASLabCreateSumstatsTask(Task):
     """
 
     _df_source_task: Task
-    _asset_id: AssetId
+    _asset_id: AssetId = attrs.field(converter=AssetId)
     basic_check: bool
     genome_build: GenomeBuildMode
     filter_hapmap3: bool = False
