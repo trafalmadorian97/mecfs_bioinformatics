@@ -20,20 +20,25 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
-    GWASLAB_SE_COL,
+    GWASLAB_SE_COL, GWASLAB_EFFECTIVE_SAMPLE_SIZE,
 )
+import structlog
+logger = structlog.get_logger()
 
 
 @frozen
 class CaseControlSampleInfo:
     cases: int
     controls: int
+    def effective_sample_size(self)-> int:
+        return int(4/( 1/self.cases + 1/self.controls  ))
 
+SampleInfo = CaseControlSampleInfo # add other types of sample info later
 
 @frozen
 class GwasSource:
     task: Task
-    sample_info: CaseControlSampleInfo
+    sample_info: SampleInfo
     pipe: DataProcessingPipe = IdentityPipe()
 
 
@@ -50,6 +55,8 @@ class FixedEffectsMetaAnalysisTask(Task):
     """
     Task to perform a fixed effects meta analysis on non-overlapping GWAS of the same trait
     Assumes all alleles are expressed with respect to the forward strand
+
+    The variants present in the output dataframe will be equal to the intersection of the variants in the studies
     """
 
     _meta: Meta
@@ -121,6 +128,9 @@ class FixedEffectsMetaAnalysisTask(Task):
             meta_std.alias(GWASLAB_SE_COL),
         )
         out_path = scratch_dir / (self.asset_id + ".parquet")
+        df = add_effective_sample_size_column(
+            df, [item.sample_info for item in self.sources]
+        )
         df.sink_parquet(
             out_path,
         )
@@ -153,3 +163,15 @@ def _select_df_1_columns(
     if GWASLAB_RSID_COL in schema:
         cols.append(GWASLAB_RSID_COL)
     return df.select(cols)
+
+
+def add_effective_sample_size_column(
+        out_df: narwhals.LazyFrame,
+        sample_info: list[SampleInfo],
+) -> narwhals.LazyFrame:
+    effective_sample_size = sum(
+        item.effective_sample_size() for item in sample_info
+    )
+    return out_df.with_columns(
+        narwhals.lit(effective_sample_size).alias(GWASLAB_EFFECTIVE_SAMPLE_SIZE)
+    )
