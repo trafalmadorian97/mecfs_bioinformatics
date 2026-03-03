@@ -19,7 +19,7 @@ Implement your changes.  Typically, this will involve:
 - Defining a new `Task` object in the [assets][mecfs_bio.assets] directory.  This can often be accomplished using an existing `Task` class, but if no `Task` class meets your needs, you can implement a new one in the [task][mecfs_bio.build_system.task] directory.
 - Adding an [analysis script][mecfs_bio.analysis] to materialize the new asset you defined.
 
-If you added a new `Task` class, you will also want to add a unit test to the `test_mecfs_bio directory` to verify that it works as intended on some dummy data.  To read about the principles of unit testing, see Winters et al.[@winters2020software] (The chapter on testing can be found [here](https://abseil.io/resources/swe-book/html/ch12.html)).  
+If you added a new `Task` class, you will also want to add a unit test to the `test_mecfs_bio directory` to verify that it works as intended on some dummy data.  To read about the principles of unit testing, see Winters et al.[@winters2020software] [^winters_chapter].  
 
 ## Update documentation
 
@@ -50,3 +50,4 @@ git add mecfs_bio test_mecfs_bio; git commit -m '<your message>';git push --set-
 ```
 Finally, use the github interface to create a PR from your changes, and ask a reviewer for a review.
 
+[^winters_chapter]: The chapter on testing can be found [here](https://abseil.io/resources/swe-book/html/ch12.html).
