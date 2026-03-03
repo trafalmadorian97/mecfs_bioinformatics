@@ -42,13 +42,6 @@ class GwasSource:
     pipe: DataProcessingPipe = IdentityPipe()
 
 
-_key_cols = [
-    GWASLAB_EFFECT_ALLELE_COL,
-    GWASLAB_NON_EFFECT_ALLELE_COL,
-    GWASLAB_BETA_COL,
-    GWASLAB_SE_COL,
-]
-
 
 @frozen
 class FixedEffectsMetaAnalysisTask(Task):
@@ -75,7 +68,9 @@ class FixedEffectsMetaAnalysisTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         asset = fetch(self.sources[0].task.asset_id)
-        df = scan_dataframe_asset(asset, self.sources[0].task.meta)
+        df = self.sources[0].pipe.process(scan_dataframe_asset(asset, self.sources[0].task.meta))
+        _check_unique_variants(df)
+        _check_nonzero_se(df)
         df = _select_df_1_columns(df)
         df = df.rename(
             {
@@ -91,6 +86,8 @@ class FixedEffectsMetaAnalysisTask(Task):
             i += 1
             asset = fetch(source.task.asset_id)
             source_df = scan_dataframe_asset(asset, source.task.meta)
+            _check_unique_variants(source_df)
+            _check_nonzero_se(source_df)
             source_df = source_df.select(
                 [
                     GWASLAB_CHROM_COL,
@@ -149,9 +146,11 @@ class FixedEffectsMetaAnalysisTask(Task):
         df.sink_parquet(
             out_path,
         )
+        final  =narwhals.scan_parquet(out_path, backend="polars")
         report_flips(
-            narwhals.scan_parquet(out_path, backend="polars"),num_sources=len(self.sources),
+           final,num_sources=len(self.sources),
         )
+        report_ouput_size(final)
         return FileAsset(out_path)
 
 
@@ -217,3 +216,29 @@ def report_flips(
         *sum_cols,
     ).collect()
     logger.debug(f"Flipped alleles:\n{result}")
+
+def report_ouput_size(
+        df: narwhals.LazyFrame,
+):
+    l = df.select(narwhals.len()).collect().item()
+    logger.debug(f"Final meta-analysis has {l} variants")
+
+
+
+def _check_unique_variants(
+        df: narwhals.LazyFrame
+):
+    assert  df.select(
+        [GWASLAB_CHROM_COL,
+         GWASLAB_POS_COL,
+         GWASLAB_EFFECT_ALLELE_COL,
+         GWASLAB_NON_EFFECT_ALLELE_COL,]
+    ).unique().select(narwhals.len()).collect().item() == df.select(narwhals.len()).collect().item()
+
+
+def _check_nonzero_se(
+        df: narwhals.LazyFrame,
+):
+    assert df.select(
+        (narwhals.col(GWASLAB_SE_COL)>0).all()
+    ).collect().item()
