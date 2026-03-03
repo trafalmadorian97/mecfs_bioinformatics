@@ -109,7 +109,7 @@ class FixedEffectsMetaAnalysisTask(Task):
             )
             beta_col_list.append(GWASLAB_BETA_COL + f"_{i}")
             se_col_list.append(GWASLAB_SE_COL + f"_{i}")
-            df = df.join(
+            df_forward_match = df.join(
                 source_df,
                 on=[
                     GWASLAB_CHROM_COL,
@@ -117,7 +117,22 @@ class FixedEffectsMetaAnalysisTask(Task):
                     GWASLAB_EFFECT_ALLELE_COL,
                     GWASLAB_NON_EFFECT_ALLELE_COL,
                 ],
+            ).with_columns(
+                narwhals.lit(False).alias(f"flipped_{i}")
             )
+            source_df_flipped = get_reversed(source_df, beta_col=GWASLAB_BETA_COL + f"_{i}")
+            df_reverse_match = df.join(
+                source_df_flipped,
+                on=[
+                    GWASLAB_CHROM_COL,
+                    GWASLAB_POS_COL,
+                    GWASLAB_EFFECT_ALLELE_COL,
+                    GWASLAB_NON_EFFECT_ALLELE_COL,
+                ],
+            ).with_columns(
+                narwhals.lit(True).alias(f"flipped_{i}")
+            )
+            df =narwhals.concat([df_forward_match, df_reverse_match], how="vertical")
 
         meta_beta, meta_std = _fixed_effects_beta_se_cols(
             beta_cols=beta_col_list,
@@ -133,6 +148,9 @@ class FixedEffectsMetaAnalysisTask(Task):
         )
         df.sink_parquet(
             out_path,
+        )
+        report_flips(
+            narwhals.scan_parquet(out_path, backend="polars"),num_sources=len(self.sources),
         )
         return FileAsset(out_path)
 
@@ -175,3 +193,27 @@ def add_effective_sample_size_column(
     return out_df.with_columns(
         narwhals.lit(effective_sample_size).alias(GWASLAB_EFFECTIVE_SAMPLE_SIZE)
     )
+
+
+def get_reversed(
+    df: narwhals.LazyFrame,
+        beta_col:str
+    )   -> narwhals.LazyFrame:
+    return df.with_columns(
+        narwhals.col(GWASLAB_EFFECT_ALLELE_COL).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
+        narwhals.col(GWASLAB_NON_EFFECT_ALLELE_COL).alias(GWASLAB_EFFECT_ALLELE_COL),
+        (-1*narwhals.col(beta_col)).alias(beta_col),
+    )
+
+
+def report_flips(
+        df: narwhals.LazyFrame,
+        num_sources: int
+):
+    sum_cols = [
+        narwhals.col(f"flipped_{i}").sum().alias(f"num_flipped_{i}") for i in range(1, num_sources )
+    ]
+    result = df.select(
+        *sum_cols,
+    ).collect()
+    logger.debug(f"Flipped alleles:\n{result}")

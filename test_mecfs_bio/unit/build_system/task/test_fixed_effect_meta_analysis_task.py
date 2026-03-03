@@ -29,6 +29,9 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 
 def test_fixed_effect_meta_analysis_task(tmp_path: Path):
+    """
+    Run a meta-analysis in a simple synthetic case
+    """
     df_1 = pd.DataFrame(
         {
             GWASLAB_CHROM_COL: [1],
