@@ -5,7 +5,6 @@ using chromosome, position, alleles for matching
 
 from pathlib import Path
 
-import narwhals
 import polars as pl
 import structlog
 from attrs import frozen
@@ -301,5 +300,3 @@ def _filter_chrom_range(
         & (pl.col(GWASLAB_POS_COL) <= chrom_range.end)
         & (pl.col(GWASLAB_CHROM_COL) == chrom_range.chrom),
     )
-
-
