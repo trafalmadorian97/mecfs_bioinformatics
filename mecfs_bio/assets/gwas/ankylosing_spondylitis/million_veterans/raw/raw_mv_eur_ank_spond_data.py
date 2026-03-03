@@ -7,7 +7,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 MILLION_VETERAN_ANKYLOSING_SPONDYLITIS_EUR_DATA_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        id=AssetId("million_veterans_as_eur_raw"),
+        id=AssetId("million_veterans_spond_eur_raw"),
         trait="ankylosing_spondylitis",
         project="million_veterans",
         sub_dir="raw",

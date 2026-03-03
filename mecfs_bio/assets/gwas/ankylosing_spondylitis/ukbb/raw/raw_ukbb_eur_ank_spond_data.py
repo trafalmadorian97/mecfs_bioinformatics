@@ -13,13 +13,13 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 UK_BIOBANK_ANKYLOSING_SPONDYLITIS_EUR_DATA_RAW = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
-        id=AssetId("uk_biobank_as_eur_raw"),
+        id=AssetId("uk_biobank_spond_eur_raw"),
         trait="ankylosing_spondylitis",
         project="uk_biobank",
         sub_dir="raw",
-        project_path=PurePath(""),
+        project_path=PurePath("GCST90474065.h.tsv.gz"),
         read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
     ),
     url="http://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90474001-GCST90475000/GCST90474065/harmonised/GCST90474065.h.tsv.gz",
-    md5_hash="",
+    md5_hash="de05204abea442b35338963d6b571372",
 )
