@@ -32,9 +32,7 @@ class FigureExporter:
         fig_dir.mkdir(parents=True, exist_ok=True)
         meta_list = []
         for task in to_export:
-            assert isinstance(
-                task.meta, (GWASPlotFileMeta, GWASPlotDirectoryMeta)
-            )
+            assert isinstance(task.meta, (GWASPlotFileMeta, GWASPlotDirectoryMeta))
             meta_list.append(task.meta)
         result = self.runner(
             to_export,
@@ -43,11 +41,13 @@ class FigureExporter:
             asset = result[task.asset_id]
             if isinstance(asset, FileAsset):
                 src = asset.path
+                assert isinstance(meta, GWASPlotFileMeta)
                 dst = get_fig_file_path(meta=meta, fig_dir=fig_dir)
                 shutil.copy(src, dst)
                 logger.debug(f"Figure asset {task.asset_id} copied to {dst}.")
             elif isinstance(asset, DirectoryAsset):
                 src = asset.path
+                assert isinstance(meta, GWASPlotDirectoryMeta)
                 dst = get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
                 shutil.copytree(src, dst)
                 logger.debug(f"Directory figure asset {task.asset_id} copied to {dst}.")
@@ -56,5 +56,6 @@ class FigureExporter:
 def get_fig_file_path(meta: GWASPlotFileMeta, fig_dir: Path) -> Path:
     return fig_dir / (meta.asset_id + meta.extension)
 
-def get_fig_dir_meta(meta:GWASPlotDirectoryMeta, fig_dir:Path) -> Path:
-    return fig_dir/ meta.id
+
+def get_fig_dir_meta(meta: GWASPlotDirectoryMeta, fig_dir: Path) -> Path:
+    return fig_dir / meta.id
