@@ -1,7 +1,7 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.finngen.processed.finngen_ank_spond_sumstats import \
     FINGNEN_ANK_SPOND_SUMSTATS
-from mecfs_bio.assets.gwas.ankylosing_spondylitis.finngen.processed.finngen_ank_spond_sumstats_harmoinzed import \
+from mecfs_bio.assets.gwas.ankylosing_spondylitis.finngen.processed.finngen_ank_spond_sumstats_harmonized import \
     FINGNEN_ANK_SPOND_SUMSTATS_HARMONIZED
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.finngen.raw.raw_finngen_ank_spond_data import \
     FINNGEN_ANKYLOSING_SPONDYLITIS_DATA_RAW
