@@ -1,3 +1,4 @@
+import shutil
 import tempfile
 import zipfile
 from pathlib import Path
@@ -23,8 +24,10 @@ def release_from_dir(
         temp_path = Path(tmpdirname)
         zip_path = temp_path / f"{title}.zip"
         with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zipf:
-            for file_path in dir_path.glob("*"):
-                zipf.write(file_path, arcname=file_path.name)
+            for file_path in dir_path.rglob("*"):
+                archive_path = file_path.relative_to(dir_path)
+                zipf.write(file_path, arcname=archive_path)
+                logger.debug(f"Added {archive_path} to figures release")
 
         if not does_release_exist(release_tag=release_tag, repo_name=repo_name):
             cmd = [
@@ -73,6 +76,9 @@ def download_release_to_dir(release_tag: str, dir_path: Path, repo_name: str):
     assert dir_path.is_dir()
     with tempfile.TemporaryDirectory() as tmpdirname:
         zip_path = Path(tmpdirname) / f"{release_tag}.zip"
+
+        tmp_output_path = Path(tmpdirname) / "tmp_dir"
+        tmp_output_path.mkdir(parents=True, exist_ok=True)
         cmd = [
             "gh",
             "release",
@@ -85,7 +91,8 @@ def download_release_to_dir(release_tag: str, dir_path: Path, repo_name: str):
         ]
         execute_command(cmd)
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            zip_ref.extractall(dir_path)
+            zip_ref.extractall(tmp_output_path)
+            shutil.copytree(tmp_output_path, dir_path, dirs_exist_ok=True)
 
 
 def download_release_to_dir_no_auth(
@@ -97,6 +104,8 @@ def download_release_to_dir_no_auth(
     assert dir_path.is_dir()
     with tempfile.TemporaryDirectory() as tmpdirname:
         zip_path = Path(tmpdirname) / f"{release_tag}.zip"
+        tmp_output_path = Path(tmpdirname) / "tmp_dir"
+        tmp_output_path.mkdir(parents=True, exist_ok=True)
         robust_download_with_aria(
             md5sum=None,
             dest=zip_path,
@@ -106,7 +115,8 @@ def download_release_to_dir_no_auth(
         )
 
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
-            zip_ref.extractall(dir_path)
+            zip_ref.extractall(tmp_output_path)
+            shutil.copytree(tmp_output_path, dir_path, dirs_exist_ok=True)
 
 
 def get_release_url(release_tag: str, repo_name: str, title: str) -> str:
