@@ -33,6 +33,9 @@ from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_
 from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_sumstats_liftover_hapmap3_dedup import (
     AEGISDOTTIR_SYNCOPE_LIFTOVER_SUMSTATS_HAPMAP3_DEDUP,
 )
+from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
+    BENTHAM_LUPUS_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.eur_ld_scores_thousand_genome_phase_3_v1_extracted import (
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
@@ -159,6 +162,17 @@ CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
                 sample_prevalence=56_071
                 / 946_861,  # see: Genetic variants associated with syncope implicate neural and autonomic processes (Aegisdottir et al.)
                 estimated_population_prevalence=0.3,  # This is the prevalence used in the paper
+            ),
+        ),
+        SumstatsSource(
+            BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+            alias="Lupus",
+            pipe=CompositePipe(
+                [SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN, 14267)]
+            ),
+            sample_info=BinaryPhenotypeSampleInfo(
+                sample_prevalence=0.3645,  # https://www.ebi.ac.uk/gwas/studies/GCST003156
+                estimated_population_prevalence=0.001,  # rough estimate, based on the wide ranged reported in https://pmc.ncbi.nlm.nih.gov/articles/PMC8982275/pdf/nihms-1780632.pdf
             ),
         ),
     ],

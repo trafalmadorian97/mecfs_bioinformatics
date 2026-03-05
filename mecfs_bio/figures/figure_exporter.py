@@ -49,7 +49,7 @@ class FigureExporter:
                 src = asset.path
                 assert isinstance(meta, GWASPlotDirectoryMeta)
                 dst = get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
-                shutil.copytree(src, dst)
+                shutil.copytree(src, dst, dirs_exist_ok=True)
                 logger.debug(f"Directory figure asset {task.asset_id} copied to {dst}.")
 
 
