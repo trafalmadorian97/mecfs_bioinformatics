@@ -44,7 +44,7 @@ ANK_SPOND_FIXED_EFFECTS_META_ANALYSIS=FixedEffectsMetaAnalysisTask.create(
             pipe=CompositePipe([
 
                 ComputeBetaPipe(),
-                ComputeSEPipe(),
+                ComputeSEPipe(out_backend="polars"),
 
                 UniquePipe(
                 # duplicated rows in the million veterans GWAS are likely the consequence of liftover effects
