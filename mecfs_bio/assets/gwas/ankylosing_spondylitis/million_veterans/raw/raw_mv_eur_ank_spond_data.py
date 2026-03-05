@@ -1,3 +1,9 @@
+"""
+Task to download GWAS summary statistics for the Million Veterans program GWAS of Ankylosng Spondylitis
+from GWAS catalog.
+
+For the GWAS catalog entry see here: https://www.ebi.ac.uk/gwas/studies/GCST90476232
+"""
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

@@ -5,6 +5,10 @@ Summary statistics from Ankylosing spondylitis in Finngen
 See: https://opengwas.io/datasets/finn-b-M13_ANKYLOSPON#
 
 opengwas only provides a temporary link, so I mirrored on dropbox.
+
+
+Note: This dataset appears to contain some anomalies, probably due to the conversion of multi-allelic to bi-allelic genetic variants
+- e.g. There are duplicated genetic variants with different effect sizes
 """
 
 from pathlib import PurePath

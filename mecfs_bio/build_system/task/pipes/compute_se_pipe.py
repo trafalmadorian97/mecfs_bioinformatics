@@ -19,6 +19,7 @@ class ComputeSEPipe(DataProcessingPipe):
     """
     Pipe to compute standard error in GWAS summary statistics using p-value and beta
     """
+    min_p_value: float=1e-250
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         cols = x.collect_schema().keys()
@@ -27,6 +28,7 @@ class ComputeSEPipe(DataProcessingPipe):
         assert GWASLAB_BETA_COL in cols
         collected: pd.DataFrame = x.collect().to_pandas()
         pvals: np.ndarray = collected[GWASLAB_P_COL].to_numpy()
+        pvals =np.maximum(pvals, self.min_p_value)
         z_score: np.ndarray = abs(scipy.stats.norm.ppf(1 - pvals / 2))
         z_score_2: np.ndarray = abs(scipy.stats.norm.ppf(pvals / 2))
         min_z_score = np.minimum(

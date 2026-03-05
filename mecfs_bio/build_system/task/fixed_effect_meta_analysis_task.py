@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Sequence
 
 import narwhals
@@ -7,7 +7,10 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameParquetFormat
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -92,6 +95,7 @@ class FixedEffectsMetaAnalysisTask(Task):
             i += 1
             asset = fetch(source.task.asset_id)
             source_df = scan_dataframe_asset(asset, source.task.meta)
+            source_df = source.pipe.process(source_df)
             _check_unique_variants(source_df)
             _check_nonzero_se(source_df)
             source_df = source_df.select(
@@ -157,6 +161,32 @@ class FixedEffectsMetaAnalysisTask(Task):
         )
         report_output_size(final)
         return FileAsset(out_path)
+
+    @classmethod
+    def create(cls,
+               asset_id:str,
+               meta_analysis_name:str,
+               sources: Sequence[GwasSource]
+               ):
+        assert len(sources) > 1
+        source_meta = sources[0].task.meta
+        assert isinstance(source_meta, FilteredGWASDataMeta)
+        for item in sources[1:]:
+            assert isinstance(item.task.meta, FilteredGWASDataMeta)
+            assert item.task.meta.trait == source_meta.trait
+        meta = FilteredGWASDataMeta(
+           id=AssetId(asset_id),
+            trait=source_meta.trait,
+            project=meta_analysis_name,
+            sub_dir=PurePath("processed"),
+            read_spec=DataFrameReadSpec(
+                DataFrameParquetFormat()
+            ),
+        )
+        return cls(
+            meta=meta,
+            sources=sources,
+        )
 
 
 def _fixed_effects_beta_se_cols(
