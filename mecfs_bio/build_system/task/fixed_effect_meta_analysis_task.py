@@ -1,3 +1,7 @@
+"""
+Task to combine GWAS with fixed-effects meta analysis
+"""
+
 from pathlib import Path, PurePath
 from typing import Sequence
 
@@ -10,7 +14,10 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameParquetFormat
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -33,6 +40,10 @@ logger = structlog.get_logger()
 
 @frozen
 class CaseControlSampleInfo:
+    """
+    Specifies the number of cases and controls in a case control study
+    """
+
     cases: int
     controls: int
 
@@ -45,6 +56,10 @@ SampleInfo = CaseControlSampleInfo  # add other types of sample info later
 
 @frozen
 class GwasSource:
+    """
+    Describes a source from which to draw GWAS data in order to perform a meta analysis
+    """
+
     task: Task
     sample_info: SampleInfo
     pipe: DataProcessingPipe = IdentityPipe()
@@ -57,6 +72,11 @@ class FixedEffectsMetaAnalysisTask(Task):
     Assumes all alleles are expressed with respect to the forward strand
 
     The variants present in the output dataframe will be equal to the intersection of the variants in the studies
+
+
+    For more information on fixed effects meta analysis, see:
+    Chapter 22 of
+    Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019.
     """
 
     _meta: Meta
@@ -163,11 +183,9 @@ class FixedEffectsMetaAnalysisTask(Task):
         return FileAsset(out_path)
 
     @classmethod
-    def create(cls,
-               asset_id:str,
-               meta_analysis_name:str,
-               sources: Sequence[GwasSource]
-               ):
+    def create(
+        cls, asset_id: str, meta_analysis_name: str, sources: Sequence[GwasSource]
+    ):
         assert len(sources) > 1
         source_meta = sources[0].task.meta
         assert isinstance(source_meta, FilteredGWASDataMeta)
@@ -175,13 +193,11 @@ class FixedEffectsMetaAnalysisTask(Task):
             assert isinstance(item.task.meta, FilteredGWASDataMeta)
             assert item.task.meta.trait == source_meta.trait
         meta = FilteredGWASDataMeta(
-           id=AssetId(asset_id),
+            id=AssetId(asset_id),
             trait=source_meta.trait,
             project=meta_analysis_name,
             sub_dir=PurePath("processed"),
-            read_spec=DataFrameReadSpec(
-                DataFrameParquetFormat()
-            ),
+            read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
         )
         return cls(
             meta=meta,
