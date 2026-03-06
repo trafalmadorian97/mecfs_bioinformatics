@@ -24,14 +24,9 @@ def test_compute_se_pipe():
 @pytest.mark.parametrize(
     ["dummy_data"],
     [
-        [pd.DataFrame(
-        {GWASLAB_BETA_COL: [0.0388], GWASLAB_P_COL: [6.500000e-18]}
-    )],
-
-        [pd.DataFrame(
-            {GWASLAB_BETA_COL: [0.0], GWASLAB_P_COL: [6.500000e-18]}
-        )],
-    ]
+        [pd.DataFrame({GWASLAB_BETA_COL: [0.0388], GWASLAB_P_COL: [6.500000e-18]})],
+        [pd.DataFrame({GWASLAB_BETA_COL: [0.0], GWASLAB_P_COL: [6.500000e-18]})],
+    ],
 )
 def test_compute_se_pipe_handles_small_pvalues(dummy_data: pd.DataFrame):
     """
