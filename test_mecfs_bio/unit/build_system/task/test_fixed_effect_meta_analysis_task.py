@@ -30,6 +30,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 # As an experiment, I asked Claude to implement unit tests
+# All but one of the unit tests in this file were written by Claude
 
 # ---------------------------------------------------------------------------
 # Helpers

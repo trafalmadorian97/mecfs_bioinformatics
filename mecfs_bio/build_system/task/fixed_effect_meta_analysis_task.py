@@ -1,3 +1,7 @@
+"""
+Task to combine GWAS with fixed-effects meta analysis
+"""
+
 from pathlib import Path, PurePath
 from typing import Sequence
 
@@ -36,6 +40,10 @@ logger = structlog.get_logger()
 
 @frozen
 class CaseControlSampleInfo:
+    """
+    Specifies the number of cases and controls in a case control study
+    """
+
     cases: int
     controls: int
 
@@ -48,6 +56,10 @@ SampleInfo = CaseControlSampleInfo  # add other types of sample info later
 
 @frozen
 class GwasSource:
+    """
+    Describes a source from which to draw GWAS data in order to perform a meta analysis
+    """
+
     task: Task
     sample_info: SampleInfo
     pipe: DataProcessingPipe = IdentityPipe()
@@ -60,6 +72,11 @@ class FixedEffectsMetaAnalysisTask(Task):
     Assumes all alleles are expressed with respect to the forward strand
 
     The variants present in the output dataframe will be equal to the intersection of the variants in the studies
+
+
+    For more information on fixed effects meta analysis, see:
+    Chapter 22 of
+    Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019.
     """
 
     _meta: Meta
