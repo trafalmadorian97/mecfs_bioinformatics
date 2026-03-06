@@ -36,10 +36,10 @@ def define_env(env):
         )
         if caption:
             return (
-                f'<figure style="width:100%; margin:0;">\n'
+                f'<div style="width:100%; margin:0;">\n'
                 f"{button}"
                 f"{iframe}\n"
-                f"<figcaption>{caption}</figcaption>\n"
-                f"</figure>"
+                f'<p style="width:100%; text-align:center; font-style:italic; margin-top:0.5em;">{caption}</p>\n'
+                f"</div>"
             )
         return button + iframe
