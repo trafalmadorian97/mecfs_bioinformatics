@@ -71,6 +71,9 @@ class FixedEffectsMetaAnalysisTask(Task):
     Task to perform a fixed effects meta analysis on non-overlapping GWAS of the same trait
     Assumes all alleles are expressed with respect to the forward strand
 
+    As a precaution to make sure that the forward strand assumption is respected, it may be a good idea to harmonize all the constituent
+    GWAS via gwaslab before running this Task.
+
     The variants present in the output dataframe will be equal to the intersection of the variants in the studies
 
 

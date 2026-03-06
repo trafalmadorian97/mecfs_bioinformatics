@@ -25,8 +25,8 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
+PlotMode = Literal["mqq", "qqm", "qq", "m"]
 
-PlotMode= Literal[	"mqq","qqm","qq","m"]
 
 @attrs.frozen
 class GWASLabManhattanAndQQPlotTask(Task):
@@ -41,7 +41,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
     sig_level: float = 5e-8
     top_cut: int = 12  # upper bound of graph
     plot_setting: PlotMode = "mqq"  # passed to gwaslab to decide which plots to create
-    pipe: DataProcessingPipe= IdentityPipe()
+    pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def meta(self) -> GWASLabManhattanQQPlotMeta:
@@ -97,7 +97,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
         asset_id: str,
         sig_level: float = 5e-8,
         plot_setting: PlotMode = "mqq",
-            pipe: DataProcessingPipe=IdentityPipe(),
+        pipe: DataProcessingPipe = IdentityPipe(),
     ):
         input_meta = sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
