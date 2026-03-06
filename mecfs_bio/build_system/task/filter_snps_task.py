@@ -15,6 +15,8 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
@@ -25,6 +27,8 @@ class FilterSNPsTask(Task):
     _meta: FilteredGWASDataMeta
     _col_in_raw_data: str = "ID"
     _col_in_filter_data: str = "ID"
+    _raw_pipe: DataProcessingPipe = IdentityPipe()
+    _filter_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def meta(self) -> Meta:
@@ -35,11 +39,15 @@ class FilterSNPsTask(Task):
         return [self._raw_gwas_task, self._snp_list_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
-        df_1 = scan_dataframe_asset(
-            asset=fetch(self._raw_gwas_task.asset_id), meta=self._raw_gwas_task.meta
+        df_1 = self._raw_pipe.process(
+            scan_dataframe_asset(
+                asset=fetch(self._raw_gwas_task.asset_id), meta=self._raw_gwas_task.meta
+            )
         )
-        df_2 = scan_dataframe_asset(
-            asset=fetch(self._snp_list_task.asset_id), meta=self._snp_list_task.meta
+        df_2 = self._filter_pipe.process(
+            scan_dataframe_asset(
+                asset=fetch(self._snp_list_task.asset_id), meta=self._snp_list_task.meta
+            ).select(self._col_in_filter_data)
         )
         result = df_1.join(
             df_2, left_on=self._col_in_raw_data, right_on=self._col_in_filter_data
