@@ -9,4 +9,5 @@ from mecfs_bio.util.type_related.unwrap import unwrap
 ALL_FIGURE_TASKS = [
     CT_LDSC_INITIAL_PLOT,
     unwrap(BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks).extracted_plot_task,
+    BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
 ]
