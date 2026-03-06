@@ -74,7 +74,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
                 fig,
                 ax1,
             ]
-
+        import pdb; pdb.set_trace()
         figs = {}
         plot_name = "mqq"
         sumstats.plot_mqq(

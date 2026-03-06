@@ -10,7 +10,7 @@ ANK_SPOND_META_ANALYSIS_MANHATTAN=GWASLabManhattanAndQQPlotTask.create(
     asset_id="ank_spond_meta_analysis_manhattan",
     plot_setting="m",
     pipe= CompositePipe([
-ComputePFromBetaSEPipeIfNeeded(),
+        ComputePFromBetaSEPipeIfNeeded(),
         ComputeMlog10pIfNeededPipe()
     ]),
 )
