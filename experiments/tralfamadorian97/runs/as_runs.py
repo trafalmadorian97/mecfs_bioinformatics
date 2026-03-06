@@ -7,6 +7,8 @@ from mecfs_bio.assets.gwas.ankylosing_spondylitis.finngen.processed.finngen_ank_
     FINGNEN_ANK_SPOND_SUMSTATS_HARMONIZED
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.finngen.raw.raw_finngen_ank_spond_data import \
     FINNGEN_ANKYLOSING_SPONDYLITIS_DATA_RAW
+from mecfs_bio.assets.gwas.ankylosing_spondylitis.fixed_effects_meta_analysis.analysis.ank_spond_meta_analysis_manhattan import \
+    ANK_SPOND_META_ANALYSIS_MANHATTAN
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.fixed_effects_meta_analysis.processed.ank_spond_meta_analysis import \
     ANK_SPOND_FIXED_EFFECTS_META_ANALYSIS
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.million_veterans.analysis.mv_ankspond_manhattan import \
@@ -51,9 +53,10 @@ def go():
                 # MILLION_VETERANS_ANK_SPOND_SUMSTATS_HARMONIZED,
                 #
                 # UKBB_ANK_SPOND_SUMSTATS_HARMONIZED
-                ANK_SPOND_FIXED_EFFECTS_META_ANALYSIS
+                # ANK_SPOND_FIXED_EFFECTS_META_ANALYSIS
                 # FINGEN_ANK_SPOND_MANHATTAN
                 # MV_ANK_SPOND_MANHATTAN
+                ANK_SPOND_META_ANALYSIS_MANHATTAN
             ]
         ),
 
