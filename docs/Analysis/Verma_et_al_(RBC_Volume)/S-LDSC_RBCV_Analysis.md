@@ -63,7 +63,9 @@ These findings makes sense, and are consistent with known biology: "Erethryoid c
 
 ![haemopoetic-cells](https://github.com/user-attachments/assets/ccb67146-5c88-4168-be81-769a55e6b844)
 
+/// caption
 Figure: By A. Rad and M. Häggström. CC-BY-SA 3.0 license
+///
 
 ### Roadmap Chromatin data
 

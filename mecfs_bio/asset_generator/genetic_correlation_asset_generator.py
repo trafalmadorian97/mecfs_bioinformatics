@@ -37,8 +37,7 @@ def genetic_corr_by_ct_ldsc_asset_generator(
     build: GenomeBuild = "19",
 ) -> GeneticCorrTasks:
     """
-    Task generator that, given a list of tasks that generate gwaslab sumstats,
-    creates one task for each pair of sumstats to compute their genetic correlation.
+    Task generator that, given a list of tasks that generate gwaslab sumstats, creates one task for each pair of sumstats to compute their genetic correlation via CT-LDSC.
     The advantage of this approach is that each correlation is cached separately.
     """
     tasks = {}
