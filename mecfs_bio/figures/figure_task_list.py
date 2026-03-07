@@ -10,4 +10,6 @@ ALL_FIGURE_TASKS = [
     CT_LDSC_INITIAL_PLOT,
     unwrap(BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks).extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["multi_tissue_chromatin"].plot_task,
+    BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["multi_tissue_gene_expression"].plot_task,
 ]
