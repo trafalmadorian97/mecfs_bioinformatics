@@ -202,7 +202,7 @@ class LavaTask(Task):
             # Read loci
             loci_r = lava.read_loci(str(locus_asset.path))
             ro.globalenv["lava_loci"] = loci_r
-            n_loci = int(ro.r("nrow(lava_loci)")[0])
+            n_loci = int(ro.r("nrow(lava_loci)")[0])  # type: ignore
             logger.debug(f"Processing {n_loci} loci")
 
             # Process each locus
@@ -214,7 +214,7 @@ class LavaTask(Task):
                 locus_row = ro.r(f"lava_loci[{i},]")
                 locus = lava.process_locus(locus_row, lava_input)
 
-                if bool(r_is_null(locus)[0]):
+                if bool(r_is_null(locus)[0]):  # type: ignore
                     continue
 
                 loc_info = _extract_locus_info(locus)
@@ -234,7 +234,7 @@ class LavaTask(Task):
 
                 # Extract bivariate results if present
                 bivar_r = result.rx2("bivar")
-                if not bool(r_is_null(bivar_r)[0]):
+                if not bool(r_is_null(bivar_r)[0]):  # type: ignore
                     with localconverter(conv):
                         bivar_df: pd.DataFrame = ro.conversion.get_conversion().rpy2py(
                             bivar_r

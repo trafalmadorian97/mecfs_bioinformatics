@@ -33,7 +33,7 @@ _VIGNETTE_RAW_URL = "https://raw.githubusercontent.com/josefin-werme/LAVA/refs/h
 
 # LD reference: g1000_test .bed/.bim/.fam (PLINK format)
 LAVA_VIGNETTE_LD_REF = DownloadFilesIntoDirectoryTask(
-    _meta=SimpleDirectoryMeta(id="lava_vignette_g1000_test_ld_ref"),
+    meta=SimpleDirectoryMeta(id="lava_vignette_g1000_test_ld_ref"),
     entries=[
         DownloadEntry(
             url=f"{_VIGNETTE_RAW_URL}/g1000_test.bed",
