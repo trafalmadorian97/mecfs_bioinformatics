@@ -29,7 +29,7 @@ class DownloadEntry:
 
     url: str
     filename: str
-    md5hash: str|None
+    md5hash: str | None
     post_download_command: Callable[[Path], list[str]] | None
 
     @classmethod
