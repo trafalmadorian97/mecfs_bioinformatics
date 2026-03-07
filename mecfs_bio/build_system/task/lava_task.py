@@ -4,6 +4,7 @@ from typing import Sequence
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
@@ -43,9 +44,11 @@ class LDReferenceInfo:
 @frozen
 class LavaTask(Task):
     """
-    Given a locus definition file, for each locus in the file,
-    this Task estimates heritability all phenotypes and genetic correlation between all phenotypes using LAVA
-    The results are written
+    Given a locus definition file does the following for each locus in the file:
+    - estimates heritability all phenotypes  using LAVA
+    - For each pair of phenotypes, if the heritabilities are both sufficiently significant, calculates genetic correlation at the locus using LAVA
+
+
     """
     _meta: Meta
     sources: Sequence[LavaPhenotypeDataSource]
@@ -63,4 +66,5 @@ class LavaTask(Task):
         return [item.task for item in self.sources]+ [self.ld_reference_info.ld_ref_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        pass
+        # todo
+        return DirectoryAsset(scratch_dir)
