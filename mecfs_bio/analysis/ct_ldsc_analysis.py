@@ -7,7 +7,7 @@ Bulik-Sullivan, Brendan, et al. "An atlas of genetic correlations across human d
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_plot import (
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc_plot import (
     CT_LDSC_INITIAL_PLOT,
 )
 

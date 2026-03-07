@@ -1,3 +1,7 @@
+"""
+Asset generator to find lead variants of a GWAS using gwaslab.
+"""
+
 from attrs import frozen
 
 from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (

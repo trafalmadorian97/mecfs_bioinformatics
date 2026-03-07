@@ -6,11 +6,11 @@ hide:
 
 
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] (S-LDSC) was applied to summary statistics from Betham et al.'s GWAS of lupus[@bentham2015genetic].
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] (S-LDSC) to summary statistics from Betham et al.'s GWAS of lupus[@bentham2015genetic].
 
 ## Reference Data Sources
 
-I used the standard reference datasets prepared by the authors of the S-LDSC method.
+I used the standard reference datasets prepared by the authors of the S-LDSC method[@finucane2018heritability].
 
 - [The GTEx Project](../../Data_Sources/GTEx_RNAseq_Data.md)
 - The Franke lab dataset
@@ -123,7 +123,7 @@ The next two reference datasets pertain to the nervous system.  The results of r
 | Brain_Caudate_(basal_ganglia)           |  -3.65828e-08 |            0.978487   | False         |
 
 
-There are no significant cell types.  This is consistent with lupus being primarily immune-driven.
+There are no significant cell types.  This is consistent with lupus being primarily non-neurological.
 
 
 
