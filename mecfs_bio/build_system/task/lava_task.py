@@ -9,11 +9,12 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import PhenotypeInfo
+from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    PhenotypeInfo,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
-
 
 
 @frozen
@@ -35,6 +36,7 @@ class LavaPhenotypeDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
+
 @frozen
 class LDReferenceInfo:
     ld_ref_task: Task
@@ -50,12 +52,12 @@ class LavaTask(Task):
 
 
     """
+
     _meta: Meta
     sources: Sequence[LavaPhenotypeDataSource]
     ld_reference_info: LDReferenceInfo
     lava_locus_definitions_task: Task
-    ct_ldsc_task_for_overlap:Task
-
+    ct_ldsc_task_for_overlap: Task
 
     @property
     def meta(self) -> Meta:
@@ -63,7 +65,9 @@ class LavaTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [item.task for item in self.sources]+ [self.ld_reference_info.ld_ref_task]
+        return [item.task for item in self.sources] + [
+            self.ld_reference_info.ld_ref_task
+        ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         # todo
