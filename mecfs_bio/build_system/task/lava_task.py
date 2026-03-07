@@ -1,42 +1,118 @@
-from pathlib import Path
+"""
+Compute local genetic correlation using LAVA (Local Analysis of [co]Variant Association).
+
+See: Werme et al. "An integrated framework for local genetic correlation analysis"
+Nature Genetics 54 (2022): 274-282.
+
+LAVA estimates local heritability (h2) for each phenotype at each genomic locus,
+and local genetic correlation (rg) between pairs of phenotypes at loci where both
+show significant heritability.
+
+This task wraps the R LAVA package via rpy2.
+"""
+
+import gc
+import tempfile
+from pathlib import Path, PurePath
 from typing import Sequence
 
+import pandas as pd
+import polars as pl
+import rpy2.robjects as ro
+import structlog
 from attrs import frozen
+from rpy2.robjects import pandas2ri
+from rpy2.robjects.conversion import localconverter
+from rpy2.robjects.packages import importr
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
+from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import PhenotypeInfo
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_BETA_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_RSID_COL,
+    GWASLAB_SAMPLE_SIZE_COLUMN,
+    GWASLAB_SE_COL,
+)
 
+logger = structlog.get_logger()
+
+# LAVA expected column names
+LAVA_SNP_COL = "SNP"
+LAVA_A1_COL = "A1"
+LAVA_A2_COL = "A2"
+LAVA_N_COL = "N"
+LAVA_Z_COL = "Z"
+
+# Output filenames
+UNIV_RESULTS_FILENAME = "lava_univariate.csv"
+BIVAR_RESULTS_FILENAME = "lava_bivariate.csv"
+
+
+@frozen
+class LavaBinarySampleInfo:
+    """
+    Sample information for a binary (case/control) phenotype.
+
+    LAVA uses cases and controls to determine if a phenotype is binary,
+    and optionally uses prevalence to convert observed h2 to liability scale.
+    """
+
+    cases: int
+    controls: int
+    prevalence: float | None = None
+
+
+@frozen
+class LavaContinuousSampleInfo:
+    """Marker indicating a continuous (quantitative) phenotype."""
+
+    pass
+
+
+LavaSampleInfo = LavaBinarySampleInfo | LavaContinuousSampleInfo
 
 
 @frozen
 class LavaPhenotypeDataSource:
     """
-    A source Task providing tabular Gwas summary statistics pertaining to a phenotype
-    columns are assumed to be in GWASLAB format
-    (see: mecfs_bio/constants/gwaslab_constants.py)
-    will be copied and converted to format expected by lava
+    A source Task providing tabular GWAS summary statistics for a phenotype.
 
+    Column names are assumed to be in GWASLAB format
+    (see: mecfs_bio/constants/gwaslab_constants.py).
+    Data will be copied and converted to the format expected by LAVA.
     """
 
     task: Task
     alias: str
     pipe: DataProcessingPipe = IdentityPipe()
-    sample_info: PhenotypeInfo | None = None
+    sample_info: LavaSampleInfo = LavaContinuousSampleInfo()
 
     @property
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
+
 @frozen
 class LDReferenceInfo:
+    """
+    Reference LD data for LAVA.
+
+    filename_prefix is the prefix of the PLINK-format LD reference files
+    (i.e. the path without .bed/.bim/.fam extensions).
+    """
+
     ld_ref_task: Task
     filename_prefix: str
 
@@ -44,18 +120,22 @@ class LDReferenceInfo:
 @frozen
 class LavaTask(Task):
     """
-    Given a locus definition file does the following for each locus in the file:
-    - estimates heritability all phenotypes  using LAVA
-    - For each pair of phenotypes, if the heritabilities are both sufficiently significant, calculates genetic correlation at the locus using LAVA
+    Given a locus definition file, does the following for each locus:
+    - Estimates heritability for all phenotypes using LAVA
+    - For each pair of phenotypes whose heritabilities are both significant
+      at the locus, calculates local genetic correlation using LAVA
 
-
+    Outputs two CSV files to scratch_dir:
+    - lava_univariate.csv: heritability estimates per phenotype per locus
+    - lava_bivariate.csv: genetic correlation estimates per phenotype pair per locus
     """
+
     _meta: Meta
     sources: Sequence[LavaPhenotypeDataSource]
     ld_reference_info: LDReferenceInfo
     lava_locus_definitions_task: Task
-    ct_ldsc_task_for_overlap:Task
-
+    ct_ldsc_task_for_overlap: Task | None = None
+    univ_p_threshold: float = 0.05
 
     @property
     def meta(self) -> Meta:
@@ -63,8 +143,249 @@ class LavaTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [item.task for item in self.sources]+ [self.ld_reference_info.ld_ref_task]
+        result: list[Task] = [item.task for item in self.sources]
+        result.append(self.ld_reference_info.ld_ref_task)
+        result.append(self.lava_locus_definitions_task)
+        if self.ct_ldsc_task_for_overlap is not None:
+            result.append(self.ct_ldsc_task_for_overlap)
+        return result
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        # todo
+        lava = importr("LAVA")
+        conv = ro.default_converter + pandas2ri.converter
+        r_is_null = ro.r("is.null")
+
+        # Fetch LD reference
+        ld_ref_asset = fetch(self.ld_reference_info.ld_ref_task.asset_id)
+        assert isinstance(ld_ref_asset, DirectoryAsset)
+        ref_prefix = str(ld_ref_asset.path / self.ld_reference_info.filename_prefix)
+
+        # Fetch locus definitions
+        locus_asset = fetch(self.lava_locus_definitions_task.asset_id)
+        assert isinstance(locus_asset, FileAsset)
+
+        # Fetch sample overlap if available
+        sample_overlap_path = _get_sample_overlap_path(
+            self.ct_ldsc_task_for_overlap, fetch
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_path = Path(tmp_dir)
+
+            # Write LAVA-compatible summary statistics and build input info
+            info_rows: list[dict] = []
+            pheno_names: list[str] = []
+            for source in self.sources:
+                sumstats_path = _write_lava_sumstats(
+                    source=source, fetch=fetch, tmp_dir=tmp_path
+                )
+                info_rows.append(_make_info_row(source, sumstats_path))
+                pheno_names.append(source.alias)
+
+            # Write the input info file
+            info_file_path = tmp_path / "input.info.txt"
+            info_df = pd.DataFrame(info_rows)
+            info_df.to_csv(info_file_path, sep="\t", index=False)
+            logger.debug(f"LAVA input info file:\n{info_df}")
+
+            # Process input through LAVA
+            sample_overlap_r = (
+                ro.NULL if sample_overlap_path is None else sample_overlap_path
+            )
+            lava_input = lava.process_input(
+                input_info_file=str(info_file_path),
+                sample_overlap_file=sample_overlap_r,
+                ref_prefix=ref_prefix,
+                phenos=ro.StrVector(pheno_names),
+            )
+
+            # Read loci
+            loci_r = lava.read_loci(str(locus_asset.path))
+            ro.globalenv["lava_loci"] = loci_r
+            n_loci = int(ro.r("nrow(lava_loci)")[0])
+            logger.debug(f"Processing {n_loci} loci")
+
+            # Process each locus
+            univ_results: list[pd.DataFrame] = []
+            bivar_results: list[pd.DataFrame] = []
+
+            ro.globalenv["lava_input"] = lava_input
+            for i in range(1, n_loci + 1):
+                locus_row = ro.r(f"lava_loci[{i},]")
+                locus = lava.process_locus(locus_row, lava_input)
+
+                if bool(r_is_null(locus)[0]):
+                    continue
+
+                loc_info = _extract_locus_info(locus)
+
+                # Run univariate + bivariate with automatic filtering
+                result = lava.run_univ_bivar(locus, univ_thresh=self.univ_p_threshold)
+
+                # Extract univariate results
+                univ_r = result.rx2("univ")
+                with localconverter(conv):
+                    univ_df: pd.DataFrame = ro.conversion.get_conversion().rpy2py(
+                        univ_r
+                    )
+                for key, val in loc_info.items():
+                    univ_df[key] = val
+                univ_results.append(univ_df)
+
+                # Extract bivariate results if present
+                bivar_r = result.rx2("bivar")
+                if not bool(r_is_null(bivar_r)[0]):
+                    with localconverter(conv):
+                        bivar_df: pd.DataFrame = ro.conversion.get_conversion().rpy2py(
+                            bivar_r
+                        )
+                    for key, val in loc_info.items():
+                        bivar_df[key] = val
+                    bivar_results.append(bivar_df)
+
+        _write_output(scratch_dir, univ_results, bivar_results)
+
+        # Clean up R memory
+        gc.collect()
+        ro.r("gc()")
+
         return DirectoryAsset(scratch_dir)
+
+    @classmethod
+    def create(
+        cls,
+        asset_id: str,
+        sources: Sequence[LavaPhenotypeDataSource],
+        ld_reference_info: LDReferenceInfo,
+        lava_locus_definitions_task: Task,
+        ct_ldsc_task_for_overlap: Task | None = None,
+        univ_p_threshold: float = 0.05,
+    ) -> "LavaTask":
+        meta = ResultDirectoryMeta(
+            id=asset_id,
+            trait="multi_trait",
+            project="lava_local_rg",
+            sub_dir=PurePath("analysis"),
+        )
+        return cls(
+            meta=meta,
+            sources=sources,
+            ld_reference_info=ld_reference_info,
+            lava_locus_definitions_task=lava_locus_definitions_task,
+            ct_ldsc_task_for_overlap=ct_ldsc_task_for_overlap,
+            univ_p_threshold=univ_p_threshold,
+        )
+
+
+def _extract_locus_info(locus: ro.ListVector) -> dict:
+    """Extract locus metadata from a processed LAVA locus object."""
+    return {
+        "locus": int(locus.rx2("id")[0]),
+        "chr": int(locus.rx2("chr")[0]),
+        "start": int(locus.rx2("start")[0]),
+        "stop": int(locus.rx2("stop")[0]),
+        "n.snps": int(locus.rx2("n.snps")[0]),
+        "n.pcs": int(locus.rx2("K")[0]),
+    }
+
+
+def _write_lava_sumstats(
+    source: LavaPhenotypeDataSource, fetch: Fetch, tmp_dir: Path
+) -> Path:
+    """
+    Read gwaslab-format summary statistics and write a LAVA-compatible copy.
+
+    LAVA expects columns: SNP, A1, A2, N, Z
+    gwaslab provides: rsID, EA, NEA, N, BETA, SE
+    Z-scores are computed as BETA / SE.
+    """
+    asset = fetch(source.asset_id)
+    df = (
+        source.pipe.process(scan_dataframe_asset(asset, source.task.meta))
+        .collect()
+        .to_polars()
+    )
+
+    required_cols = [
+        GWASLAB_RSID_COL,
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+        GWASLAB_SAMPLE_SIZE_COLUMN,
+        GWASLAB_BETA_COL,
+        GWASLAB_SE_COL,
+    ]
+    for col in required_cols:
+        assert col in df.columns, (
+            f"Missing required column '{col}' in source '{source.alias}'"
+        )
+
+    lava_df = df.select(
+        [
+            pl.col(GWASLAB_RSID_COL).alias(LAVA_SNP_COL),
+            pl.col(GWASLAB_EFFECT_ALLELE_COL).alias(LAVA_A1_COL),
+            pl.col(GWASLAB_NON_EFFECT_ALLELE_COL).alias(LAVA_A2_COL),
+            pl.col(GWASLAB_SAMPLE_SIZE_COLUMN).alias(LAVA_N_COL),
+            (pl.col(GWASLAB_BETA_COL) / pl.col(GWASLAB_SE_COL)).alias(LAVA_Z_COL),
+        ]
+    )
+
+    output_path = tmp_dir / f"{source.alias}.sumstats.txt"
+    lava_df.to_pandas().to_csv(output_path, sep="\t", index=False)
+    logger.debug(
+        f"Wrote LAVA sumstats for '{source.alias}' to {output_path} ({len(lava_df)} variants)"
+    )
+    return output_path
+
+
+def _make_info_row(source: LavaPhenotypeDataSource, sumstats_path: Path) -> dict:
+    """Create a row for the LAVA input info file."""
+    info = source.sample_info
+    if isinstance(info, LavaBinarySampleInfo):
+        return {
+            "phenotype": source.alias,
+            "cases": info.cases,
+            "controls": info.controls,
+            "prevalence": info.prevalence if info.prevalence is not None else "NA",
+            "filename": str(sumstats_path),
+        }
+    return {
+        "phenotype": source.alias,
+        "cases": "NA",
+        "controls": "NA",
+        "prevalence": "NA",
+        "filename": str(sumstats_path),
+    }
+
+
+def _get_sample_overlap_path(ct_ldsc_task: Task | None, fetch: Fetch) -> str | None:
+    """Get path to sample overlap file from CT-LDSC results, if available."""
+    if ct_ldsc_task is None:
+        return None
+    # Sample overlap correction from CT-LDSC is not yet implemented.
+    # When implemented, this should extract the LDSC intercept matrix
+    # and write it in the format expected by LAVA's process.input().
+    logger.debug("Sample overlap correction from CT-LDSC not yet implemented")
+    return None
+
+
+def _write_output(
+    scratch_dir: Path,
+    univ_results: list[pd.DataFrame],
+    bivar_results: list[pd.DataFrame],
+) -> None:
+    """Write univariate and bivariate results to CSV files."""
+    if univ_results:
+        all_univ = pd.concat(univ_results, ignore_index=True)
+        logger.debug(f"Univariate results ({len(all_univ)} rows):\n{all_univ}")
+        all_univ.to_csv(scratch_dir / UNIV_RESULTS_FILENAME, index=False)
+    else:
+        logger.warning("No univariate results produced")
+        pd.DataFrame().to_csv(scratch_dir / UNIV_RESULTS_FILENAME, index=False)
+
+    if bivar_results:
+        all_bivar = pd.concat(bivar_results, ignore_index=True)
+        logger.debug(f"Bivariate results ({len(all_bivar)} rows):\n{all_bivar}")
+        all_bivar.to_csv(scratch_dir / BIVAR_RESULTS_FILENAME, index=False)
+    else:
+        logger.debug("No bivariate results produced")
+        pd.DataFrame().to_csv(scratch_dir / BIVAR_RESULTS_FILENAME, index=False)
