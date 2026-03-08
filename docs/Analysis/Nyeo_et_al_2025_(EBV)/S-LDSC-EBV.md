@@ -6,7 +6,7 @@ hide:
 
 
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] (S-LDSC) to summary statistics from Nyeo et al.'s GWAS of blood EBV DNA levels[].
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] (S-LDSC) to summary statistics from Nyeo et al.'s GWAS of blood EBV DNA levels[@nyeo2026population].
 
 ## Reference Data Sources
 

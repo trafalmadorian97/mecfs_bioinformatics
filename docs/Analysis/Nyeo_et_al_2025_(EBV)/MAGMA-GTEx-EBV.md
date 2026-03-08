@@ -10,4 +10,4 @@ I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma]
 
 {{ plotly_embed("../../../_figs/nyeo_ebv_dna_magma_bar_plot/magma_gene_set_plot.html", id="ebv-gtex-magma", caption="Result of MAGMA GTEx applied to Nyeo et al.'s EBV GWAS. The x axis corresponds to tissue type, while the y axis measures MAGMA significance level.") }}
 
-The four significant tissue/cell types are _Ilium Lymphoe aggregate, Whole Blood, Spleen, and EBV-Transformed Lymphocytes_.  All are immune-related.  Given that the primary determinant of a person's EBV DNA levels is the ability of their immune system to keep their EBV infection is intact, this makes sense.
+The four significant tissue/cell types are _Ilium Lymphode Aggregate, Whole Blood, Spleen, and EBV-Transformed Lymphocytes_.  All are immune-related.  Given that the primary determinant of a person's EBV DNA levels is the ability of their immune system to keep their EBV infection under control and in a dormant state, this makes sense.
