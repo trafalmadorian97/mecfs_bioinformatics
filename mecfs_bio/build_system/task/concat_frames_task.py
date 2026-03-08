@@ -64,15 +64,19 @@ class ConcatFramesTask(Task):
         asset_id: str,
         frames_tasks: Sequence[Task],
         out_format: OutFormat,
+        override_trait: str|None=None,
+        override_project : str|None=None
     ):
         extension, spec = get_extension_and_read_spec_from_format(out_format)
         assert len(frames_tasks) > 0
         source_meta = frames_tasks[0].meta
+        trait = override_trait if override_trait is not None else source_meta.trait
+        project = override_project if override_project is not None else source_meta.project
         if isinstance(source_meta, ResultTableMeta):
             meta = ResultTableMeta(
                 id=AssetId(asset_id),
-                trait=source_meta.trait,
-                project=source_meta.project,
+                trait=trait,
+                project=project,
                 extension=extension,
                 read_spec=spec,
                 sub_dir=source_meta.sub_dir,

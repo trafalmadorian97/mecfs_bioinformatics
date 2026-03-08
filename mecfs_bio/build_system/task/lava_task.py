@@ -432,6 +432,8 @@ def _get_sample_overlap_path(
     mat_cor = mat / np.outer(d, d)
     mat_cor = np.round(mat_cor, 5)
 
+    assert not np.isnan(mat_cor).any()
+
     overlap_path = tmp_dir / "sample_overlap.txt"
     overlap_df = pd.DataFrame(mat_cor, index=pheno_names, columns=pheno_names)
     overlap_df.to_csv(overlap_path, sep=" ")

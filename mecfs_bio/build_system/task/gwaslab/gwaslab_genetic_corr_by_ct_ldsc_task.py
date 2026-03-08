@@ -283,7 +283,7 @@ def get_prev_options(
         "samp_prev": f"{t1_sp},{t2_sp}",
         "pop_prev": f"{t1_pp},{t2_pp}",
     }
-    logger.debug(f"Prevalance Options: {options}")
+    logger.debug(f"Prevalence Options: {options}")
     return options
 
 

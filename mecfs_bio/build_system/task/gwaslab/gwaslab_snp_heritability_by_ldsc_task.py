@@ -32,10 +32,14 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
     GWASLabSumStatsMeta,
 )
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameTextFormat
 from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
+from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import PhenotypeInfo, QuantPhenotype
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
@@ -50,6 +54,9 @@ class SNPHeritabilityByLDSCTask(Task):
     source_sumstats_task: Task
     ld_ref_task: Task
     ld_file_filename_pattern: str
+    phenotype_info: PhenotypeInfo
+    pipe: DataProcessingPipe
+    build: GenomeBuild
     set_N: int | None
 
     @property
@@ -70,14 +77,19 @@ class SNPHeritabilityByLDSCTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         sumstats_asset = fetch(self._source_sumstats_id)
         sumstats = read_sumstats(sumstats_asset)
+        sumstats.data =self.pipe.process_pandas(sumstats.data)
         ref_id = self._ld_ref_id()
         ref_asset = fetch(ref_id)
         assert isinstance(ref_asset, DirectoryAsset)
         if self.set_N is not None:
             sumstats.data[GWASLAB_SAMPLE_SIZE_COLUMN] = self.set_N
+        sumstats.infer_build()
+        assert sumstats.meta["gwaslab"]["genome_build"] ==self.build
         sumstats.estimate_h2_by_ldsc(
             ref_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
             w_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
+            **_get_prev_params(self.phenotype_info),
+
         )
         out_df: pd.DataFrame = sumstats.ldsc_h2
         logger.debug(
@@ -93,6 +105,9 @@ class SNPHeritabilityByLDSCTask(Task):
         asset_id: str,
         source_sumstats_task: Task,
         ld_ref_task: Task,
+        phenotype_info: PhenotypeInfo,
+        pipe: DataProcessingPipe,
+        build: GenomeBuild,
         set_sample_size: int | None = None,
         ld_file_filename_pattern: str = "/LDscore.@",
     ):
@@ -104,6 +119,9 @@ class SNPHeritabilityByLDSCTask(Task):
             project=sumstats_meta.project,
             sub_dir=PurePath("analysis"),
             extension=".csv",
+            read_spec=DataFrameReadSpec(
+                DataFrameTextFormat(",")
+            )
         )
         return cls(
             meta=meta,
@@ -111,4 +129,18 @@ class SNPHeritabilityByLDSCTask(Task):
             ld_ref_task=ld_ref_task,
             ld_file_filename_pattern=ld_file_filename_pattern,
             set_N=set_sample_size,
+            phenotype_info=phenotype_info,
+            pipe=pipe,
+            build=build,
         )
+
+def _get_prev_params( phenotype_info: PhenotypeInfo) -> dict:
+    if isinstance(phenotype_info, QuantPhenotype):
+        return {
+            "samp_prev":float("nan"),
+            "pop_prev":float("nan"),
+        }
+    return {
+        "samp_prev": phenotype_info.sample_prevalence,
+        "pop_prev": phenotype_info.estimated_population_prevalence
+    }
