@@ -24,7 +24,7 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 
 ### GTEx and Franke lab tissue expression data
 
-I first applied S-LDSC use the GTEx/ Franke lab dataset as a reference.  At a false discovery rate of 0.01, there were no significant cell/tissue types.
+I first applied S-LDSC using the GTEx/Franke lab dataset as a reference.  At a false discovery rate of 0.01, there were no significant cell/tissue types.
 
 
 ## Roadmap epigenetic data
@@ -125,7 +125,7 @@ The next two reference datasets pertain to the nervous system.  The results of r
 |:----------------|--------------:|----------------------:|:--------------|
 | Astrocyte       |   1.32785e-09 |             0.0924435 | False         |
 | Neuron          |  -6.41258e-10 |             0.828212  | False         |
-| Oligodendrocyte |  -1.82847e-09 |             0.980079  | False         |⏎ 
+| Oligodendrocyte |  -1.82847e-09 |             0.980079  | False         |
 
 
 | Name                                    |   Coefficient |   Coefficient_P_value | Reject Null   |
