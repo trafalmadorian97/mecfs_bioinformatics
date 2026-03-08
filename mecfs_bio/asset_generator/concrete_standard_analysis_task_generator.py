@@ -192,7 +192,7 @@ def concrete_standard_analysis_generator_no_rsid(
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
     drop_palindromic_in_harmonized: bool = True,
-    include_hba_magma_tasks: bool = True,
+    include_hba_magma_tasks: bool = False,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
