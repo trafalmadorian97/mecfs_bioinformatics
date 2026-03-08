@@ -11,7 +11,8 @@ Two system tests are provided:
 
 2. test_lava_vignette_data:
    Uses the small sample data bundled with the LAVA R package vignettes.
-   Downloads only a few MB and runs much faster.
+   Downloads only a few MB and runs much faster. Includes sample overlap
+   correction from a fake CT-LDSC output file.
 """
 
 from pathlib import Path
@@ -36,10 +37,17 @@ from mecfs_bio.assets.reference_data.lava_vignette_data.lava_vignette_data impor
     LAVA_VIGNETTE_LOCI,
     LAVA_VIGNETTE_NEURO_SUMSTATS,
 )
+from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
+from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
+from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
 from mecfs_bio.build_system.task.lava_task import (
     BIVAR_RESULTS_FILENAME,
     UNIV_RESULTS_FILENAME,
@@ -96,6 +104,16 @@ _NEURO_RENAME_PIPE = CompositePipe(
     ]
 )
 
+# Fake CT-LDSC output for sample overlap correction
+_FAKE_CT_LDSC_CSV = Path(__file__).parent / "test_data" / "fake_ct_ldsc_bmi_neuro.csv"
+_FAKE_CT_LDSC_TASK = ExternalFileCopyTask(
+    meta=SimpleFileMeta(
+        AssetId("fake_ct_ldsc_bmi_neuro"),
+        read_spec=DataFrameReadSpec(DataFrameTextFormat(",")),
+    ),
+    external_path=_FAKE_CT_LDSC_CSV,
+)
+
 LAVA_VIGNETTE_TEST_TASK = LavaTask.create(
     asset_id="lava_vignette_test",
     sources=[
@@ -115,6 +133,7 @@ LAVA_VIGNETTE_TEST_TASK = LavaTask.create(
         filename_prefix="g1000_test",
     ),
     lava_locus_definitions_task=LAVA_VIGNETTE_LOCI,
+    ct_ldsc_task_for_overlap=_FAKE_CT_LDSC_TASK,
 )
 
 

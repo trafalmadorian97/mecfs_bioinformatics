@@ -19,6 +19,7 @@ import tempfile
 from pathlib import Path, PurePath
 from typing import Sequence
 
+import numpy as np
 import pandas as pd
 import polars as pl
 import rpy2.robjects as ro
@@ -169,11 +170,6 @@ class LavaTask(Task):
         locus_asset = fetch(self.lava_locus_definitions_task.asset_id)
         assert isinstance(locus_asset, FileAsset)
 
-        # Fetch sample overlap if available
-        sample_overlap_path = _get_sample_overlap_path(
-            self.ct_ldsc_task_for_overlap, fetch
-        )
-
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
 
@@ -192,6 +188,11 @@ class LavaTask(Task):
             info_df = pd.DataFrame(info_rows)
             info_df.to_csv(info_file_path, sep="\t", index=False)
             logger.debug(f"LAVA input info file:\n{info_df}")
+
+            # Build sample overlap matrix from CT-LDSC results if available
+            sample_overlap_path = _get_sample_overlap_path(
+                self.ct_ldsc_task_for_overlap, fetch, pheno_names, tmp_path
+            )
 
             # Process input through LAVA
             sample_overlap_r = (
@@ -369,15 +370,73 @@ def _make_info_row(source: LavaPhenotypeDataSource, sumstats_path: Path) -> dict
     }
 
 
-def _get_sample_overlap_path(ct_ldsc_task: Task | None, fetch: Fetch) -> str | None:
-    """Get path to sample overlap file from CT-LDSC results, if available."""
+def _get_sample_overlap_path(
+    ct_ldsc_task: Task | None,
+    fetch: Fetch,
+    pheno_names: list[str],
+    tmp_dir: Path,
+) -> str | None:
+    """Build a sample overlap file from CT-LDSC results for LAVA.
+
+    Reads the cross-trait LDSC output (a CSV with columns p1, p2, gcov_int,
+    h2_int, …), builds a covariance matrix from the genetic covariance
+    intercepts, standardises it via cov2cor, and writes it in the format
+    expected by LAVA's ``process.input(sample_overlap_file=…)``.
+
+    The procedure follows the LAVA sample-overlap tutorial:
+    https://github.com/josefin-werme/LAVA/blob/main/vignettes/sample_overlap.md
+
+    When self-LDSC entries (p1 == p2) are absent, the diagonal of the
+    covariance matrix is filled from the ``h2_int`` column of rows where the
+    phenotype appears as ``p2``.
+    """
     if ct_ldsc_task is None:
         return None
-    # Sample overlap correction from CT-LDSC is not yet implemented.
-    # When implemented, this should extract the LDSC intercept matrix
-    # and write it in the format expected by LAVA's process.input().
-    logger.debug("Sample overlap correction from CT-LDSC not yet implemented")
-    return None
+
+    ct_ldsc_asset = fetch(ct_ldsc_task.asset_id)
+    ct_ldsc_df = (
+        scan_dataframe_asset(ct_ldsc_asset, ct_ldsc_task.meta).collect().to_pandas()
+    )
+
+    n = len(pheno_names)
+    mat = np.full((n, n), np.nan)
+    name_to_idx = {name: i for i, name in enumerate(pheno_names)}
+
+    # Fill the matrix from gcov_int (including diagonal for self-LDSC entries)
+    for _, row in ct_ldsc_df.iterrows():
+        p1, p2 = str(row["p1"]), str(row["p2"])
+        if p1 in name_to_idx and p2 in name_to_idx:
+            i, j = name_to_idx[p1], name_to_idx[p2]
+            mat[i, j] = float(row["gcov_int"])
+            if np.isnan(mat[j, i]):
+                mat[j, i] = float(row["gcov_int"])
+
+    # Fill diagonal from h2_int when self-LDSC entries are missing
+    for _, row in ct_ldsc_df.iterrows():
+        p2 = str(row["p2"])
+        if p2 in name_to_idx:
+            idx = name_to_idx[p2]
+            if np.isnan(mat[idx, idx]):
+                mat[idx, idx] = float(row["h2_int"])
+
+    # Symmetrise (prefer upper-triangle values)
+    for i in range(n):
+        for j in range(i + 1, n):
+            if np.isnan(mat[i, j]) and not np.isnan(mat[j, i]):
+                mat[i, j] = mat[j, i]
+            elif np.isnan(mat[j, i]) and not np.isnan(mat[i, j]):
+                mat[j, i] = mat[i, j]
+
+    # Standardise using cov2cor: D^{-1/2} C D^{-1/2}
+    d = np.sqrt(np.diag(mat))
+    mat_cor = mat / np.outer(d, d)
+    mat_cor = np.round(mat_cor, 5)
+
+    overlap_path = tmp_dir / "sample_overlap.txt"
+    overlap_df = pd.DataFrame(mat_cor, index=pheno_names, columns=pheno_names)
+    overlap_df.to_csv(overlap_path, sep=" ")
+    logger.debug(f"Sample overlap matrix:\n{overlap_df}")
+    return str(overlap_path)
 
 
 def _write_output(
