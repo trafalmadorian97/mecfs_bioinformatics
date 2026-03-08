@@ -22,5 +22,7 @@ EBV_DNA_STANDARD_ANALYSIS=concrete_standard_analysis_generator_no_rsid(
     pre_pipe=CompositePipe([
         ComputePPipe()
     ]),
-    drop_palindromic_in_harmonized=False
+    drop_palindromic_in_harmonized=False,
+
+
 )

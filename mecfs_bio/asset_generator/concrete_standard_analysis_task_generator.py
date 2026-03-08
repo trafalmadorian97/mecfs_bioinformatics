@@ -190,7 +190,8 @@ def concrete_standard_analysis_generator_no_rsid(
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
-    drop_palindromic_in_harmonized:bool=True
+    drop_palindromic_in_harmonized:bool=True,
+    include_hba_magma_tasks: bool = True,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
@@ -222,6 +223,7 @@ def concrete_standard_analysis_generator_no_rsid(
         pre_sldsc_pipe=pre_sldsc_pipe,
         sample_size_for_sldsc=sample_size_for_sldsc,
         include_master_gene_lists=include_master_gene_lists,
+        include_hba_magma_tasks = include_hba_magma_tasks,
     )
     return StandardAnalysisTaskGroupAddRSIDS(
         tasks=standard_tasks,
