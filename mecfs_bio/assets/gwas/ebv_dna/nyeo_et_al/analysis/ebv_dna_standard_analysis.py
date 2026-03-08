@@ -28,4 +28,5 @@ EBV_DNA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
     sample_size=490_560,
     pre_pipe_after_rsid_assignment=CompositePipe([ComputePPipe()]),
     drop_palindromic_in_harmonized=False,
+    include_hba_magma_tasks=True,
 )

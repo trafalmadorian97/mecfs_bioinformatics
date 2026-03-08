@@ -27,7 +27,7 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 I first applied S-LDSC using the GTEx/Franke lab dataset as a reference.  At a false discovery rate of 0.01, there were no significant cell/tissue types.
 
 
-## Roadmap epigenetic data
+### Roadmap epigenetic data
 
 
 I next applied S-LDSC using the reference dataset derived from the Roadmap epigenetic project.  The results are in the plot below:
