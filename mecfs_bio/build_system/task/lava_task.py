@@ -1,6 +1,9 @@
 """
 Compute local genetic correlation using LAVA (Local Analysis of [co]Variant Association).
 
+
+Implemented by Github copilot
+
 See: Werme et al. "An integrated framework for local genetic correlation analysis"
 Nature Genetics 54 (2022): 274-282.
 
@@ -24,6 +27,7 @@ from attrs import frozen
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import importr
+from tqdm import tqdm
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -136,6 +140,7 @@ class LavaTask(Task):
     lava_locus_definitions_task: Task
     ct_ldsc_task_for_overlap: Task | None = None
     univ_p_threshold: float = 0.05
+    max_loci: int | None = None
 
     @property
     def meta(self) -> Meta:
@@ -203,6 +208,8 @@ class LavaTask(Task):
             loci_r = lava.read_loci(str(locus_asset.path))
             ro.globalenv["lava_loci"] = loci_r
             n_loci = int(ro.r("nrow(lava_loci)")[0])  # type: ignore
+            if self.max_loci is not None:
+                n_loci = min(n_loci, self.max_loci)
             logger.debug(f"Processing {n_loci} loci")
 
             # Process each locus
@@ -210,7 +217,7 @@ class LavaTask(Task):
             bivar_results: list[pd.DataFrame] = []
 
             ro.globalenv["lava_input"] = lava_input
-            for i in range(1, n_loci + 1):
+            for i in tqdm(range(1, n_loci + 1)):
                 locus_row = ro.r(f"lava_loci[{i},]")
                 locus = lava.process_locus(locus_row, lava_input)
 
@@ -283,14 +290,14 @@ def _extract_locus_info(locus: ro.RObject) -> dict:
     LAVA's process.locus() returns an R environment (not a list),
     so we use ro.r("$") to access fields reliably.
     """
-    ro.globalenv["_tmp_locus"] = locus
+
     return {
-        "locus": int(ro.r("_tmp_locus$id")[0]),
-        "chr": int(ro.r("_tmp_locus$chr")[0]),
-        "start": int(ro.r("_tmp_locus$start")[0]),
-        "stop": int(ro.r("_tmp_locus$stop")[0]),
-        "n.snps": int(ro.r("_tmp_locus$n.snps")[0]),
-        "n.pcs": int(ro.r("_tmp_locus$K")[0]),
+        "locus": int(locus["id"][0]),  # type: ignore
+        "chr": int(locus["chr"][0]),  # type: ignore
+        "start": int(locus["start"][0]),  # type: ignore
+        "stop": int(locus["stop"][0]),  # type: ignore
+        "n.snps": int(locus["n.snps"][0]),  # type: ignore
+        "n.pcs": int(locus["K"][0]),  # type: ignore
     }
 
 
