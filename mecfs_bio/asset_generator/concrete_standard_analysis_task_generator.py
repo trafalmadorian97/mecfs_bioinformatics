@@ -193,6 +193,7 @@ def concrete_standard_analysis_generator_no_rsid(
     include_master_gene_lists: bool = True,
     drop_palindromic_in_harmonized: bool = True,
     include_hba_magma_tasks: bool = False,
+    include_independent_cluster_plot_in_hba: bool = False,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
@@ -225,7 +226,7 @@ def concrete_standard_analysis_generator_no_rsid(
         sample_size_for_sldsc=sample_size_for_sldsc,
         include_master_gene_lists=include_master_gene_lists,
         include_hba_magma_tasks=include_hba_magma_tasks,
-        include_independent_cluster_plot_in_hba=True,
+        include_independent_cluster_plot_in_hba=include_independent_cluster_plot_in_hba,
     )
     return StandardAnalysisTaskGroupAddRSIDS(
         tasks=standard_tasks,
