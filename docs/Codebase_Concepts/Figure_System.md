@@ -28,7 +28,7 @@ This approach is more complex, but more robust.
 
 The components of the programmatic figure system are:
 
-- The list `ALL_FIGURE_TASKS` in [figure_tasks.py][mecfs_bio.figures.figure_tasks] specifies the build-system [Tasks](Build_System.md#task) that generate programmatic figures.
+- The list `ALL_FIGURE_TASKS` in [figure_tasks.py][mecfs_bio.figures.figure_task_list] specifies the build-system [Tasks](Build_System.md#task) that generate programmatic figures.
 - The script [generate_figures.py][mecfs_bio.figures.key_scripts.generate_figures] invokes the [build system](Build_System.md) to generate the assets corresponding to `ALL_FIGURE_TASKS`, then copies these figure assets into `docs/_figs`.
 - The script [pull_figures.py][mecfs_bio.figures.key_scripts.pull_figures] downloads figures from Github and merges them with the contents of `docs/_figs`.
 - The script [push_figures.py][mecfs_bio.figures.key_scripts.push_figures] uploads the figure assets in `docs/figs` to Github as a release. Running this script may require permission from a repository maintainer.

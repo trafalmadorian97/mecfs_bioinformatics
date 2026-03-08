@@ -1,4 +1,4 @@
-from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_initial_asset_generator import (
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc_initial_asset_generator import (
     CT_LDSC_INITIAL_ASSET_GENERATOR,
 )
 from mecfs_bio.build_system.task.genetic_correlation_clustermap_task import (
