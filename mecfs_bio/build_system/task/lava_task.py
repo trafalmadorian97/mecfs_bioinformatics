@@ -277,15 +277,20 @@ class LavaTask(Task):
         )
 
 
-def _extract_locus_info(locus: ro.ListVector) -> dict:
-    """Extract locus metadata from a processed LAVA locus object."""
+def _extract_locus_info(locus: ro.RObject) -> dict:
+    """Extract locus metadata from a processed LAVA locus object.
+
+    LAVA's process.locus() returns an R environment (not a list),
+    so we use ro.r("$") to access fields reliably.
+    """
+    ro.globalenv["_tmp_locus"] = locus
     return {
-        "locus": int(locus.rx2("id")[0]),
-        "chr": int(locus.rx2("chr")[0]),
-        "start": int(locus.rx2("start")[0]),
-        "stop": int(locus.rx2("stop")[0]),
-        "n.snps": int(locus.rx2("n.snps")[0]),
-        "n.pcs": int(locus.rx2("K")[0]),
+        "locus": int(ro.r("_tmp_locus$id")[0]),
+        "chr": int(ro.r("_tmp_locus$chr")[0]),
+        "start": int(ro.r("_tmp_locus$start")[0]),
+        "stop": int(ro.r("_tmp_locus$stop")[0]),
+        "n.snps": int(ro.r("_tmp_locus$n.snps")[0]),
+        "n.pcs": int(ro.r("_tmp_locus$K")[0]),
     }
 
 
