@@ -1,3 +1,7 @@
+"""
+Task generator to perform standard analysis on Nyeo et al's GWAS of EBV DNA.
+"""
+
 from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import (
     concrete_standard_analysis_generator_no_rsid,
 )

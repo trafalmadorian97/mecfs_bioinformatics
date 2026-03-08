@@ -31,8 +31,4 @@ ALL_FIGURE_TASKS = [
     EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_CHROMATIN_REF
     ].plot_task,
-    # EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-    #     MULTI_TISSUE_GENE_EXPRESSION_REF
-    # ].plot_task,
-    # EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[IMMGEN_REF].plot_task,
 ]

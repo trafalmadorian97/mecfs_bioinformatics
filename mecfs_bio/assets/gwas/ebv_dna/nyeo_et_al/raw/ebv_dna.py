@@ -1,3 +1,9 @@
+"""
+Task to download raw summary statistics from Nyeo et al's GWAS of EBV DNA.
+
+Citation: Nyeo, Sherry S., et al. "Population-scale sequencing resolves determinants of persistent EBV DNA." Nature (2026): 1-9.
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
@@ -17,5 +23,5 @@ NYEO_EBV_DNA_SUMSTATS = DownloadFileTask(
         project_path=PurePath("ebv_dna_sumstats.gz"),
         read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
     ),
-    md5_hash=None,
+    md5_hash="5bc20da4b176fe1c605f35fd69577783",
 )
