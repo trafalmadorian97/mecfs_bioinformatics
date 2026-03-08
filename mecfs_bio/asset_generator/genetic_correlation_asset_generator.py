@@ -23,6 +23,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import SNPHeritabilityByLDSCTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import CSVOutFormat
+from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 
 
 @frozen
@@ -85,7 +86,11 @@ def genetic_corr_by_ct_ldsc_asset_generator(
         column_type_override={
             "Ratio": narwhals.dtypes.String(),
             "Ratio_se": narwhals.dtypes.String(),
-        }
+        },
+        frames_pipes=[
+            SetColToConstantPipe(col_name="p", constant=source.alias) for source in sources
+        ]
+
     )
 
     return GeneticCorrTasks(

@@ -23,6 +23,7 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
     get_extension_and_read_spec_from_format,
 )
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
@@ -35,7 +36,12 @@ class ConcatFramesTask(Task):
     _meta: Meta
     frames_tasks: Sequence[Task]
     out_format: OutFormat
+    frames_pipes: Sequence[DataProcessingPipe] | None = None,
     column_type_override: Mapping[str, narwhals.dtypes.DType]= frozendict()
+
+    def __attrs_post_init__(self):
+        if self.frames_pipes is not None:
+            assert len(self.frames_pipes) == len(self.frames_tasks)
 
     @property
     def meta(self) -> Meta:
@@ -47,11 +53,14 @@ class ConcatFramesTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         frames = []
-        for task in self.frames_tasks:
+        for i,task in enumerate(self.frames_tasks):
             asset = fetch(task.asset_id)
-            frames.append(scan_dataframe_asset(asset, meta=task.meta).with_columns(
+            frame= scan_dataframe_asset(asset, meta=task.meta).with_columns(
                 *[narwhals.col(col).cast(t) for col, t in self.column_type_override.items()]
-            ))
+            )
+            if self.frames_pipes is not None:
+                frame= self.frames_pipes[i].process(frame)
+            frames.append(frame)
         result = narwhals.concat(frames, how="vertical")
         out_path = scratch_dir / f"{self.meta.asset_id}"
         if isinstance(self.out_format, CSVOutFormat):
@@ -71,6 +80,7 @@ class ConcatFramesTask(Task):
         override_trait: str|None=None,
         override_project : str|None=None,
             column_type_override: Mapping[str, narwhals.dtypes.DType]=frozendict(),
+            frames_pipes: Sequence[DataProcessingPipe] | None = None,
     ):
         extension, spec = get_extension_and_read_spec_from_format(out_format)
         assert len(frames_tasks) > 0
@@ -94,4 +104,5 @@ class ConcatFramesTask(Task):
             frames_tasks=frames_tasks,
             out_format=out_format,
             column_type_override=column_type_override,
+            frames_pipes=frames_pipes,
         )

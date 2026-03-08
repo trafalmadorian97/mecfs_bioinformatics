@@ -67,6 +67,8 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
+
+            CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task
             # CT_LDSC_INITIAL_PLOT.genetic_corr_source.task
             # CT_LDSC_INITIAL,
             # CT_LDSC_INITIAL_PLOT

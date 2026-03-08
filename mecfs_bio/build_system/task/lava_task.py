@@ -377,6 +377,7 @@ def _get_sample_overlap_path(
     fetch: Fetch,
     pheno_names: list[str],
     tmp_dir: Path,
+    set_diag_to_1: bool=False,
 ) -> str | None:
     """Build a sample overlap file from CT-LDSC results for LAVA.
 
@@ -413,13 +414,26 @@ def _get_sample_overlap_path(
             if np.isnan(mat[j, i]):
                 mat[j, i] = float(row["gcov_int"])
 
-    # Fill diagonal from h2_int when self-LDSC entries are missing
-    for _, row in ct_ldsc_df.iterrows():
-        p2 = str(row["p2"])
-        if p2 in name_to_idx:
-            idx = name_to_idx[p2]
-            if np.isnan(mat[idx, idx]):
-                mat[idx, idx] = float(row["h2_int"])
+    if set_diag_to_1:
+        np.fill_diagonal(mat, 1)
+    else:
+        # Fill diagonal from h2_int when self-LDSC entries are missing
+        for _, row in ct_ldsc_df.iterrows():
+            p2 = str(row["p2"])
+            if p2 in name_to_idx:
+                idx = name_to_idx[p2]
+                if np.isnan(mat[idx, idx]):
+                    mat[idx, idx] = float(row["h2_int"])
+
+        if heritability_task is not None:
+            heritability_asset  = fetch(heritability_task.asset_id)
+            heritability_df = scan_dataframe_asset(heritability_asset, heritability_task.meta).collect().to_pandas()
+            for _, row in heritability_df.iterrows():
+                nm = str(row["p"])
+                idx = name_to_idx[nm]
+                if np.isnan(mat[idx, idx]):
+                    mat[idx, idx] = float(row["Intercept"])
+
 
     # Symmetrise (prefer upper-triangle values)
     for i in range(n):
@@ -428,10 +442,6 @@ def _get_sample_overlap_path(
                 mat[i, j] = mat[j, i]
             elif np.isnan(mat[j, i]) and not np.isnan(mat[i, j]):
                 mat[j, i] = mat[i, j]
-    if heritability_task is not None:
-        heritability_asset  = fetch(heritability_task.asset_id)
-        heritability_df = scan_dataframe_asset(heritability_asset, heritability_task.meta).collect().to_pandas()
-
     # Standardise using cov2cor: D^{-1/2} C D^{-1/2}
     d = np.sqrt(np.diag(mat))
     mat_cor = mat / np.outer(d, d)
