@@ -14,7 +14,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 NYEO_EBV_DNA_SUMSTATS = DownloadFileTask(
-    url="https://my.locuszoom.org/gwas/409414/data/?token=6385c90400414f34b8ed17679bf1495b",
+    url="https://my.locuszoom.org/gwas/409414/data/",
     meta=GWASSummaryDataFileMeta(
         id="nyeo_ebv_dna_sumstats",
         trait="ebv_dna",
