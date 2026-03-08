@@ -140,6 +140,7 @@ class LavaTask(Task):
     ld_reference_info: LDReferenceInfo
     lava_locus_definitions_task: Task
     ct_ldsc_task_for_overlap: Task | None = None
+    heritability_task_for_overlap: Task | None = None
     univ_p_threshold: float = 0.05
     max_loci: int | None = None
 
@@ -372,6 +373,7 @@ def _make_info_row(source: LavaPhenotypeDataSource, sumstats_path: Path) -> dict
 
 def _get_sample_overlap_path(
     ct_ldsc_task: Task | None,
+    heritability_task: Task | None,
     fetch: Fetch,
     pheno_names: list[str],
     tmp_dir: Path,
@@ -426,6 +428,9 @@ def _get_sample_overlap_path(
                 mat[i, j] = mat[j, i]
             elif np.isnan(mat[j, i]) and not np.isnan(mat[i, j]):
                 mat[j, i] = mat[i, j]
+    if heritability_task is not None:
+        heritability_asset  = fetch(heritability_task.asset_id)
+        heritability_df = scan_dataframe_asset(heritability_asset, heritability_task.meta).collect().to_pandas()
 
     # Standardise using cov2cor: D^{-1/2} C D^{-1/2}
     d = np.sqrt(np.diag(mat))

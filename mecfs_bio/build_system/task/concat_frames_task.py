@@ -3,10 +3,11 @@ Task to combine the results of multiple Tasks, each of which produces a datafram
 """
 
 from pathlib import Path
-from typing import Sequence
+from typing import Sequence, Mapping
 
 import narwhals
 from attrs import frozen
+from frozendict import frozendict
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -34,6 +35,7 @@ class ConcatFramesTask(Task):
     _meta: Meta
     frames_tasks: Sequence[Task]
     out_format: OutFormat
+    column_type_override: Mapping[str, narwhals.dtypes.DType]= frozendict()
 
     @property
     def meta(self) -> Meta:
@@ -47,7 +49,9 @@ class ConcatFramesTask(Task):
         frames = []
         for task in self.frames_tasks:
             asset = fetch(task.asset_id)
-            frames.append(scan_dataframe_asset(asset, meta=task.meta))
+            frames.append(scan_dataframe_asset(asset, meta=task.meta).with_columns(
+                *[narwhals.col(col).cast(t) for col, t in self.column_type_override.items()]
+            ))
         result = narwhals.concat(frames, how="vertical")
         out_path = scratch_dir / f"{self.meta.asset_id}"
         if isinstance(self.out_format, CSVOutFormat):
@@ -65,7 +69,8 @@ class ConcatFramesTask(Task):
         frames_tasks: Sequence[Task],
         out_format: OutFormat,
         override_trait: str|None=None,
-        override_project : str|None=None
+        override_project : str|None=None,
+            column_type_override: Mapping[str, narwhals.dtypes.DType]=frozendict(),
     ):
         extension, spec = get_extension_and_read_spec_from_format(out_format)
         assert len(frames_tasks) > 0
@@ -88,4 +93,5 @@ class ConcatFramesTask(Task):
             meta=meta,
             frames_tasks=frames_tasks,
             out_format=out_format,
+            column_type_override=column_type_override,
         )

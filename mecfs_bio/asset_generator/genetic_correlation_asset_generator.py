@@ -7,6 +7,7 @@ The advantage of this approach is that each correlation is cached separately.
 import itertools
 from typing import Mapping, Sequence
 
+import narwhals.dtypes
 from attrs import frozen
 from frozendict import frozendict
 
@@ -80,7 +81,11 @@ def genetic_corr_by_ct_ldsc_asset_generator(
         frames_tasks=heritability_tasks,
         out_format=CSVOutFormat(","),
         override_trait="multi_trait",
-        override_project="heritability"
+        override_project="heritability",
+        column_type_override={
+            "Ratio": narwhals.dtypes.String(),
+            "Ratio_se": narwhals.dtypes.String(),
+        }
     )
 
     return GeneticCorrTasks(
