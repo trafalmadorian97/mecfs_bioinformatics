@@ -29,7 +29,7 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 @frozen
 class HBAIndepPlotOptions:
-    annotation_text_size: int = 7
+    annotation_text_size: int | None = None
 
 
 @frozen
@@ -131,6 +131,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         ax.set_ylabel(r"$-\log_{10}(p)$", fontsize="x-large")
 
         if len(independent_clusters) > 0:
+            text_size = _get_text_size(self.plot_options, len(independent_clusters))
             x_coords = []
             y_cords = []
             texts = []
@@ -155,7 +156,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
                 avoid_crossing_label_lines=True,
                 avoid_label_lines_overlap=True,
                 linecolor="black",
-                textsize=self.plot_options.annotation_text_size,
+                textsize=text_size,
             )
 
         figs = {"hba_magma_fig": fig}
@@ -185,3 +186,13 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             stepwise_cluster_list_task=stepwise_cluster_list_task,
             plot_options=plot_options,
         )
+
+
+def _get_text_size(options: HBAIndepPlotOptions, num_clusters: int) -> int:
+    if options.annotation_text_size is not None:
+        return options.annotation_text_size
+    if num_clusters >= 4:
+        return 7
+    if num_clusters >= 2:
+        return 10
+    return 12

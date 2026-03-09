@@ -4,9 +4,6 @@ import pandas as pd
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_identity import (
-    XRIdentityPipe,
-)
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
@@ -17,7 +14,10 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.genetic_correlation_clustermap_task import (
     GeneticCorrelationClustermapTask,
     GeneticCorrSource,
-    RGWithAsterix,
+    RGWithAsterisk,
+)
+from mecfs_bio.build_system.task.xr_pipes.xr_identity import (
+    XRIdentityPipe,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
 
@@ -47,7 +47,7 @@ def test_genetic_correlation_clustermap(tmp_path: Path):
                 )
             )
         ),
-        plot_options=RGWithAsterix(),
+        plot_options=RGWithAsterisk(),
         xr_pipe=XRIdentityPipe(),
     )
 

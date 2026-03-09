@@ -49,6 +49,7 @@ def test_compressed_csv_to_parquet_task(tmp_path: Path):
                     separator="\t", column_names=HG19_SNP151_SCHEMA
                 )
             ),
+            extension=".zip",
         )
     )
     task = CompressedCSVToParquetTask.create(

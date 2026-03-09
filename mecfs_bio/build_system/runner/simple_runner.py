@@ -61,7 +61,7 @@ class SimpleRunner:
         self,
         targets: list[Task],
         must_rebuild_transitive: Sequence[Task] = tuple(),
-        incremental_save: bool = False,
+        incremental_save: bool = True,
     ) -> Mapping[AssetId, Asset]:
         """
         Targets: the ultimate targets we aim to produce.  All transitive dependencies of these targets will either be rebuilt, or fetched (determined according to that status of their trace)

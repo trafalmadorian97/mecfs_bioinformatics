@@ -10,7 +10,7 @@ These challenges motivate the development of a data science build system.
 
 ## Framework 
 
-The build system used in this project is based on the framework described by Mokhov et al.[@mokhov2018build;@mokhov2020build].  I outline this framework below.
+The build system used in this project is based on the framework of Mokhov et al.[@mokhov2018build;@mokhov2020build]  I outline this framework below.
 
 ## Key Concepts
 
@@ -37,7 +37,7 @@ Here is the source code for the `Task` base class:
 ```
 
 
-- The `meta` property returns a metadata object (see below) describing the asset created by the Task. This metadata object must include a string id uniquely identifying the asset.
+- The `meta` property returns a metadata object describing the asset created by the Task. This metadata object must include a string id uniquely identifying the asset.
 - The `deps` property returns a list of pre-requisite Tasks that must be executed prior to the current Task.  The build system uses `deps` to construct the Task dependency graph.
 - The key method is `execute`. Subclasses override this method to specify how to construct their assets.  The `fetch` parameter is a special callback passed to `execute` by the build system.  Instead of directly accessing its dependencies, `execute` should use `fetch` to access dependencies via the build system
 
@@ -63,6 +63,6 @@ Currently, there is one concrete implementation of `Rebuilder`, called the [Veri
 
 Given one or more target assets requested by the user, it is the job of the scheduler to determine which tasks need to be run in what order to produce those assets.  The scheduler delegates the actual running of these tasks to the Rebuilder.
 
-Currently, there is one concrete scheduler: the [topological scheduler][mecfs_bio.build_system.scheduler.topological_scheduler].  The topological scheduler constructs a directed acyclic graph of the dependencies of the requested assets, then traverses this graph in [topological order](https://en.wikipedia.org/wiki/Topological_sorting).
+Currently, there is one concrete scheduler: the [topological scheduler][mecfs_bio.build_system.scheduler.topological_scheduler].  The topological scheduler constructs a[ directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the dependencies of the requested assets, then traverses this graph in [topological order](https://en.wikipedia.org/wiki/Topological_sorting).
 
 

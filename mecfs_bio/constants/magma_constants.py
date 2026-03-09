@@ -1,3 +1,7 @@
+"""
+Constants for use with MAGMA (https://cncr.nl/research/magma/).
+"""
+
 MAGMA_VARIABLE_COLUMN = "VARIABLE"
 MAGMA_MODEL_COLUMN = "MODEL"
 MAGMA_P_COLUMN = "P"

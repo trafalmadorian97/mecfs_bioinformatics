@@ -218,7 +218,7 @@ class SusieRFinemapTask(Task):
         # Force Python GC
         gc.collect()
 
-        # Force R GC
+        # Force R GC.  There may be some memory leaks that can cause OOM errors when repeatedly calling an R library through rpy2.
         ro.r("gc()")
         return DirectoryAsset(scratch_dir)
 

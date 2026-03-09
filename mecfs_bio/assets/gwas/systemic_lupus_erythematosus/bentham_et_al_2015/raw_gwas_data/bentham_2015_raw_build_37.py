@@ -1,3 +1,15 @@
+"""
+See: https://www.ebi.ac.uk/gwas/publications/26502338
+for the gwas catalog entry for this publication
+
+Summary statistics linked from here: https://www.ebi.ac.uk/gwas/studies/GCST003156
+According to the Gwas catalog metadata, the sample size is 14267
+
+Citation: Bentham, James, et al. "Genetic association analyses implicate aberrant regulation of innate and adaptive
+ immunity genes in the pathogenesis of systemic lupus erythematosus." Nature genetics 47.12 (2015): 1457-1464.
+
+"""
+
 import polars as pl
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -8,10 +20,6 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 )
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
-"""
-See: https://www.ebi.ac.uk/gwas/publications/26502338
-for the gwas catalog entry for this publication
-"""
 BENTHAM_2015_RAW_BUILD_37 = DownloadFileTask(
     meta=GWASSummaryDataFileMeta(
         id=AssetId("bentham_2015_raw_build_37"),
