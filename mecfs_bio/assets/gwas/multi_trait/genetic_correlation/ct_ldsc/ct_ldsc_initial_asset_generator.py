@@ -15,6 +15,9 @@ from mecfs_bio.assets.gwas.asthma.han_et_al_2022.auxiliary.prevalence_info impor
 from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_standard_analysis import (
     KEATON_DBP_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
+    EBV_DNA_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
     LEE_ET_AL_2018_COMBINED_MAGMA_TASKS,
 )
@@ -172,6 +175,14 @@ CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
                 [SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN, 14267)]
             ),
             sample_info=BENTHAM_LUPUS_PREVALENCE_INFO,
+        ),
+        SumstatsSource(
+            EBV_DNA_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+            alias="EBV_DNA",
+            sample_info=QuantPhenotype(),
+            pipe=CompositePipe(
+                [SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN, 490_560)]
+            ),
         ),
     ],
     ld_ref_task=THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
