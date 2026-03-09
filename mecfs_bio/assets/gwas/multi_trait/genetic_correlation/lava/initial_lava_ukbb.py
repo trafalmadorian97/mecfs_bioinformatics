@@ -14,12 +14,9 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initi
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.reference_data.lava_ld_reference.g1000_eur.processed.lava_thousand_geomes_eur_ld_ref_extracted import (
-    LAVA_G100_EUR_LD_REF_EXTRACTED,
+from mecfs_bio.assets.reference_data.lava_ld_reference.ukbb.processed.ukbb_lava_ld_ref_extracted import (
+    LAVA_UKBB_LD_REF_EXTRACTED,
 )
-from mecfs_bio.assets.reference_data.lava_ld_reference.ukbb.processed.ukbb_lava_ld_ref_extracted import \
-    LAVA_UKBB_LD_REF_EXTRACTED
-from mecfs_bio.assets.reference_data.lava_ld_reference.ukbb.raw.ukbb_lava_ld_ref import LAVA_UKBB_LD_REF
 from mecfs_bio.assets.reference_data.lava_locus_file.default.raw.default_lava_locus_file import (
     DEFAULT_LAVA_LOCUS_FILE,
 )
@@ -60,5 +57,5 @@ BASIC_UKBB_LAVA_ANALYSIS = LavaTask.create(
     lava_locus_definitions_task=DEFAULT_LAVA_LOCUS_FILE,
     ct_ldsc_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task,
     heritability_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
-    max_loci=10,
+    max_loci=None,
 )
