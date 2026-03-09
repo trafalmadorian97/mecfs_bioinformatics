@@ -26,7 +26,7 @@ def info_purge(info: VerifyingTraceInfo, tasks: SimpleTasks) -> VerifyingTraceIn
             actual_deps = set([item.asset_id for item in task.deps])
             if not (recorded_deps <= actual_deps):
                 logger.debug(
-                    f"Dependencies of asset {task.asset_id} appear to be outdated.\n Recorded deps:{recorded_deps}.  Actual deps: {actual_deps}.  Puring from info store."
+                    f"Dependencies of asset {task.asset_id} appear to be outdated.\n Recorded deps:{recorded_deps}.  Actual deps: {actual_deps}.  Purging from info store."
                 )
                 info_dict.pop(task.asset_id)
     logger.debug("Done search for invalid dependencies")
