@@ -3,9 +3,8 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc_initial_asset_generator import \
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initial_asset_generator import \
     CT_LDSC_INITIAL_ASSET_GENERATOR
-from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc_plot import CT_LDSC_INITIAL_PLOT
 
 
 def run_initial_decode_me_analysis():

@@ -104,6 +104,7 @@ class BinaryPhenotypeSampleInfo:
 
     sample_prevalence: float
     estimated_population_prevalence: float
+    total_sample_size: int | None = None
 
 
 @frozen
@@ -112,7 +113,7 @@ class QuantPhenotype:
     Marker class to indicate that a phenotype is quantitative, not binary, and so does not need to be converted to the liability scale.
     """
 
-    pass
+    total_sample_size: int | None = None
 
 
 PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
@@ -126,8 +127,8 @@ class SumstatsSource:
 
     task: Task
     alias: str
+    sample_info: PhenotypeInfo
     pipe: DataProcessingPipe = IdentityPipe()
-    sample_info: PhenotypeInfo | None = None
 
     @property
     def asset_id(self) -> AssetId:

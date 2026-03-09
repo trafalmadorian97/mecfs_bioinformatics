@@ -3,7 +3,7 @@ Task to combine the results of multiple Tasks, each of which produces a datafram
 """
 
 from pathlib import Path
-from typing import Sequence, Mapping
+from typing import Mapping, Sequence
 
 import narwhals
 from attrs import frozen
@@ -36,8 +36,8 @@ class ConcatFramesTask(Task):
     _meta: Meta
     frames_tasks: Sequence[Task]
     out_format: OutFormat
-    frames_pipes: Sequence[DataProcessingPipe] | None = None,
-    column_type_override: Mapping[str, narwhals.dtypes.DType]= frozendict()
+    frames_pipes: Sequence[DataProcessingPipe] | None = None
+    column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict()
 
     def __attrs_post_init__(self):
         if self.frames_pipes is not None:
@@ -53,13 +53,18 @@ class ConcatFramesTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         frames = []
-        for i,task in enumerate(self.frames_tasks):
+        for i, task in enumerate(self.frames_tasks):
             asset = fetch(task.asset_id)
-            frame= scan_dataframe_asset(asset, meta=task.meta).with_columns(
-                *[narwhals.col(col).cast(t) for col, t in self.column_type_override.items()]
-            )
+            frame = scan_dataframe_asset(asset, meta=task.meta)
+            if len(self.column_type_override) > 0:
+                frame = frame.with_columns(
+                    *[
+                        narwhals.col(col).cast(t)
+                        for col, t in self.column_type_override.items()
+                    ]
+                )
             if self.frames_pipes is not None:
-                frame= self.frames_pipes[i].process(frame)
+                frame = self.frames_pipes[i].process(frame)
             frames.append(frame)
         result = narwhals.concat(frames, how="vertical")
         out_path = scratch_dir / f"{self.meta.asset_id}"
@@ -77,17 +82,21 @@ class ConcatFramesTask(Task):
         asset_id: str,
         frames_tasks: Sequence[Task],
         out_format: OutFormat,
-        override_trait: str|None=None,
-        override_project : str|None=None,
-            column_type_override: Mapping[str, narwhals.dtypes.DType]=frozendict(),
-            frames_pipes: Sequence[DataProcessingPipe] | None = None,
+        override_trait: str | None = None,
+        override_project: str | None = None,
+        column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict(),
+        frames_pipes: Sequence[DataProcessingPipe] | None = None,
     ):
         extension, spec = get_extension_and_read_spec_from_format(out_format)
         assert len(frames_tasks) > 0
         source_meta = frames_tasks[0].meta
-        trait = override_trait if override_trait is not None else source_meta.trait
-        project = override_project if override_project is not None else source_meta.project
         if isinstance(source_meta, ResultTableMeta):
+            trait = override_trait if override_trait is not None else source_meta.trait
+            project = (
+                override_project
+                if override_project is not None
+                else source_meta.project
+            )
             meta = ResultTableMeta(
                 id=AssetId(asset_id),
                 trait=trait,

@@ -5,7 +5,7 @@ This file contains a list of figures to be exported for use in documentation
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc_plot import (
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import (
     CT_LDSC_INITIAL_PLOT,
 )
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (

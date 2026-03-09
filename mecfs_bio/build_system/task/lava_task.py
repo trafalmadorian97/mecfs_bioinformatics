@@ -39,6 +39,9 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    BinaryPhenotypeSampleInfo,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -78,12 +81,21 @@ class LavaBinarySampleInfo:
     controls: int
     prevalence: float | None = None
 
+    @classmethod
+    def from_ct_ldsc_sample_info(cls, data: BinaryPhenotypeSampleInfo):
+        assert data.total_sample_size is not None
+        return cls(
+            cases=int(data.sample_prevalence * data.total_sample_size),
+            controls=int((1 - data.sample_prevalence) * data.total_sample_size),
+            prevalence=data.estimated_population_prevalence,
+        )
+
 
 @frozen
 class LavaContinuousSampleInfo:
     """Marker indicating a continuous (quantitative) phenotype."""
 
-    pass
+    total_sample_size: int | None = None
 
 
 LavaSampleInfo = LavaBinarySampleInfo | LavaContinuousSampleInfo
@@ -142,7 +154,9 @@ class LavaTask(Task):
     ct_ldsc_task_for_overlap: Task | None = None
     heritability_task_for_overlap: Task | None = None
     univ_p_threshold: float = 0.05
-    max_loci: int | None = None
+    max_loci: int | None = (
+        None  # useful for debugging/testing, since LAVA can be quite slow
+    )
 
     @property
     def meta(self) -> Meta:
@@ -155,6 +169,8 @@ class LavaTask(Task):
         result.append(self.lava_locus_definitions_task)
         if self.ct_ldsc_task_for_overlap is not None:
             result.append(self.ct_ldsc_task_for_overlap)
+        if self.heritability_task_for_overlap is not None:
+            result.append(self.heritability_task_for_overlap)
         return result
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -192,7 +208,11 @@ class LavaTask(Task):
 
             # Build sample overlap matrix from CT-LDSC results if available
             sample_overlap_path = _get_sample_overlap_path(
-                self.ct_ldsc_task_for_overlap, fetch, pheno_names, tmp_path
+                ct_ldsc_task=self.ct_ldsc_task_for_overlap,
+                fetch=fetch,
+                pheno_names=pheno_names,
+                tmp_dir=tmp_path,
+                heritability_task=self.heritability_task_for_overlap,
             )
 
             # Process input through LAVA
@@ -268,7 +288,9 @@ class LavaTask(Task):
         ld_reference_info: LDReferenceInfo,
         lava_locus_definitions_task: Task,
         ct_ldsc_task_for_overlap: Task | None = None,
+        heritability_task_for_overlap: Task | None = None,
         univ_p_threshold: float = 0.05,
+        max_loci: int | None = None,
     ) -> "LavaTask":
         meta = ResultDirectoryMeta(
             id=asset_id,
@@ -283,6 +305,8 @@ class LavaTask(Task):
             lava_locus_definitions_task=lava_locus_definitions_task,
             ct_ldsc_task_for_overlap=ct_ldsc_task_for_overlap,
             univ_p_threshold=univ_p_threshold,
+            heritability_task_for_overlap=heritability_task_for_overlap,
+            max_loci=max_loci,
         )
 
 
@@ -319,6 +343,7 @@ def _write_lava_sumstats(
         .collect()
         .to_polars()
     )
+    df = add_sample_size_if_missing(df, phenotype_info=source.sample_info)
 
     required_cols = [
         GWASLAB_RSID_COL,
@@ -377,7 +402,7 @@ def _get_sample_overlap_path(
     fetch: Fetch,
     pheno_names: list[str],
     tmp_dir: Path,
-    set_diag_to_1: bool=False,
+    set_diag_to_1: bool = False,
 ) -> str | None:
     """Build a sample overlap file from CT-LDSC results for LAVA.
 
@@ -426,14 +451,18 @@ def _get_sample_overlap_path(
                     mat[idx, idx] = float(row["h2_int"])
 
         if heritability_task is not None:
-            heritability_asset  = fetch(heritability_task.asset_id)
-            heritability_df = scan_dataframe_asset(heritability_asset, heritability_task.meta).collect().to_pandas()
+            heritability_asset = fetch(heritability_task.asset_id)
+            heritability_df = (
+                scan_dataframe_asset(heritability_asset, heritability_task.meta)
+                .collect()
+                .to_pandas()
+            )
             for _, row in heritability_df.iterrows():
                 nm = str(row["p"])
-                idx = name_to_idx[nm]
-                if np.isnan(mat[idx, idx]):
-                    mat[idx, idx] = float(row["Intercept"])
-
+                if nm in name_to_idx:
+                    idx = name_to_idx[nm]
+                    if np.isnan(mat[idx, idx]):
+                        mat[idx, idx] = float(row["Intercept"])
 
     # Symmetrise (prefer upper-triangle values)
     for i in range(n):
@@ -477,3 +506,22 @@ def _write_output(
     else:
         logger.debug("No bivariate results produced")
         pd.DataFrame().to_csv(scratch_dir / BIVAR_RESULTS_FILENAME, index=False)
+
+
+def add_sample_size_if_missing(
+    df: pl.DataFrame, phenotype_info: LavaSampleInfo
+) -> pl.DataFrame:
+    if GWASLAB_SAMPLE_SIZE_COLUMN in df.columns:
+        return df
+    if isinstance(phenotype_info, LavaBinarySampleInfo):
+        return df.with_columns(
+            pl.lit(phenotype_info.controls + phenotype_info.cases).alias(
+                GWASLAB_SAMPLE_SIZE_COLUMN
+            )
+        )
+    if isinstance(phenotype_info, LavaContinuousSampleInfo):
+        assert phenotype_info.total_sample_size is not None
+        return df.with_columns(
+            pl.lit(phenotype_info.total_sample_size).alias(GWASLAB_SAMPLE_SIZE_COLUMN)
+        )
+    raise ValueError(f"Unknown phenotype type {phenotype_info}")

@@ -21,7 +21,9 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
     GeneticCorrelationByCTLDSCTask,
     SumstatsSource,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import SNPHeritabilityByLDSCTask
+from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
+    SNPHeritabilityByLDSCTask,
+)
 from mecfs_bio.build_system.task.pipe_dataframe_task import CSVOutFormat
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 
@@ -32,7 +34,8 @@ class GeneticCorrTasks:
     aggregation_task: Task
     heritability_tasks: Sequence[Task]
     heritability_aggregation_task: Task
-    def terminal_tasks(self)->list[Task]:
+
+    def terminal_tasks(self) -> list[Task]:
         return [self.aggregation_task, self.heritability_aggregation_task]
 
 
@@ -67,7 +70,7 @@ def genetic_corr_by_ct_ldsc_asset_generator(
     )
     heritability_tasks = [
         SNPHeritabilityByLDSCTask.create(
-            asset_id=base_name+"_heritability_"+source.alias,
+            asset_id=base_name + "_heritability_" + source.alias,
             source_sumstats_task=source.task,
             phenotype_info=source.sample_info,
             pipe=source.pipe,
@@ -77,8 +80,8 @@ def genetic_corr_by_ct_ldsc_asset_generator(
         )
         for source in sources
     ]
-    heritability_agg= ConcatFramesTask.create(
-        asset_id=base_name+"_heritability_aggregation",
+    heritability_agg = ConcatFramesTask.create(
+        asset_id=base_name + "_heritability_aggregation",
         frames_tasks=heritability_tasks,
         out_format=CSVOutFormat(","),
         override_trait="multi_trait",
@@ -88,9 +91,9 @@ def genetic_corr_by_ct_ldsc_asset_generator(
             "Ratio_se": narwhals.dtypes.String(),
         },
         frames_pipes=[
-            SetColToConstantPipe(col_name="p", constant=source.alias) for source in sources
-        ]
-
+            SetColToConstantPipe(col_name="p", constant=source.alias)
+            for source in sources
+        ],
     )
 
     return GeneticCorrTasks(
@@ -98,24 +101,23 @@ def genetic_corr_by_ct_ldsc_asset_generator(
         aggregation_task=aggregation,
         heritability_tasks=heritability_tasks,
         heritability_aggregation_task=heritability_agg,
-
     )
 
 
 def _create_task_for_source_pair(
     sorted_sources: Sequence[SumstatsSource],
-        base_name:str,
-        ld_ref_task: Task,
-        build:GenomeBuild ,
-        ld_file_filename_pattern: str
-    )-> tuple[Task,str]:
+    base_name: str,
+    ld_ref_task: Task,
+    build: GenomeBuild,
+    ld_file_filename_pattern: str,
+) -> tuple[Task, str]:
     assert len(sorted_sources) == 2
     task_name = (
-            base_name
-            + "_ct_ldsc_corr_"
-            + sorted_sources[0].alias
-            + "__"
-            + sorted_sources[1].alias
+        base_name
+        + "_ct_ldsc_corr_"
+        + sorted_sources[0].alias
+        + "__"
+        + sorted_sources[1].alias
     ).lower()
     task = GeneticCorrelationByCTLDSCTask.create(
         asset_id=task_name,
