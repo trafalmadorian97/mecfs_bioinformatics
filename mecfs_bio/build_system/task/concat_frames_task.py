@@ -3,10 +3,11 @@ Task to combine the results of multiple Tasks, each of which produces a datafram
 """
 
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 
 import narwhals
 from attrs import frozen
+from frozendict import frozendict
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -22,6 +23,7 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
     ParquetOutFormat,
     get_extension_and_read_spec_from_format,
 )
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
@@ -34,6 +36,12 @@ class ConcatFramesTask(Task):
     _meta: Meta
     frames_tasks: Sequence[Task]
     out_format: OutFormat
+    frames_pipes: Sequence[DataProcessingPipe] | None = None
+    column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict()
+
+    def __attrs_post_init__(self):
+        if self.frames_pipes is not None:
+            assert len(self.frames_pipes) == len(self.frames_tasks)
 
     @property
     def meta(self) -> Meta:
@@ -45,9 +53,19 @@ class ConcatFramesTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         frames = []
-        for task in self.frames_tasks:
+        for i, task in enumerate(self.frames_tasks):
             asset = fetch(task.asset_id)
-            frames.append(scan_dataframe_asset(asset, meta=task.meta))
+            frame = scan_dataframe_asset(asset, meta=task.meta)
+            if len(self.column_type_override) > 0:
+                frame = frame.with_columns(
+                    *[
+                        narwhals.col(col).cast(t)
+                        for col, t in self.column_type_override.items()
+                    ]
+                )
+            if self.frames_pipes is not None:
+                frame = self.frames_pipes[i].process(frame)
+            frames.append(frame)
         result = narwhals.concat(frames, how="vertical")
         out_path = scratch_dir / f"{self.meta.asset_id}"
         if isinstance(self.out_format, CSVOutFormat):
@@ -64,15 +82,25 @@ class ConcatFramesTask(Task):
         asset_id: str,
         frames_tasks: Sequence[Task],
         out_format: OutFormat,
+        override_trait: str | None = None,
+        override_project: str | None = None,
+        column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict(),
+        frames_pipes: Sequence[DataProcessingPipe] | None = None,
     ):
         extension, spec = get_extension_and_read_spec_from_format(out_format)
         assert len(frames_tasks) > 0
         source_meta = frames_tasks[0].meta
         if isinstance(source_meta, ResultTableMeta):
+            trait = override_trait if override_trait is not None else source_meta.trait
+            project = (
+                override_project
+                if override_project is not None
+                else source_meta.project
+            )
             meta = ResultTableMeta(
                 id=AssetId(asset_id),
-                trait=source_meta.trait,
-                project=source_meta.project,
+                trait=trait,
+                project=project,
                 extension=extension,
                 read_spec=spec,
                 sub_dir=source_meta.sub_dir,
@@ -84,4 +112,6 @@ class ConcatFramesTask(Task):
             meta=meta,
             frames_tasks=frames_tasks,
             out_format=out_format,
+            column_type_override=column_type_override,
+            frames_pipes=frames_pipes,
         )

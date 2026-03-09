@@ -187,9 +187,13 @@ def concrete_standard_analysis_generator_no_rsid(
     fmt: ValidGwaslabFormat,
     sample_size: int,
     sample_size_for_sldsc: int | None = None,
-    pre_pipe: DataProcessingPipe = IdentityPipe(),
+    pre_pipe_after_rsid_assignment: DataProcessingPipe = IdentityPipe(),
+    pre_pipe_before_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
+    drop_palindromic_in_harmonized: bool = True,
+    include_hba_magma_tasks: bool = False,
+    include_independent_cluster_plot_in_hba: bool = False,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
@@ -204,22 +208,25 @@ def concrete_standard_analysis_generator_no_rsid(
         genome_build="infer",
         liftover_to="19",
         fmt=fmt,
-        pre_pipe=pre_pipe,
+        pre_pipe=pre_pipe_before_rsid_assignment,
     )
     rsids_assigned_task_group = annovar_37_basic_rsid_assignment(
         sumstats_task=sumstats_37_task,
         base_name=base_name,
         use_gwaslab_rsids_convention=True,
+        drop_palindromic_ambiguous=drop_palindromic_in_harmonized,
     )
     standard_tasks = concrete_standard_analysis_generator_assume_already_has_rsid(
         base_name=base_name,
         raw_gwas_data_task=rsids_assigned_task_group.join_task,
         fmt="gwaslab",
         sample_size=sample_size,
-        pre_pipe=pre_pipe,
+        pre_pipe=pre_pipe_after_rsid_assignment,
         pre_sldsc_pipe=pre_sldsc_pipe,
         sample_size_for_sldsc=sample_size_for_sldsc,
         include_master_gene_lists=include_master_gene_lists,
+        include_hba_magma_tasks=include_hba_magma_tasks,
+        include_independent_cluster_plot_in_hba=include_independent_cluster_plot_in_hba,
     )
     return StandardAnalysisTaskGroupAddRSIDS(
         tasks=standard_tasks,
