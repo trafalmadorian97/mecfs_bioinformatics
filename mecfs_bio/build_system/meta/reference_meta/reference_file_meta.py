@@ -12,9 +12,9 @@ class ReferenceFileMeta(FileMeta):
     group: str
     sub_group: str
     sub_folder: PurePath
+    extension: str
     id: AssetId = field(converter=AssetId)
     filename: str | None = None
-    extension: str = ".zip"
     _read_spec: ReadSpec | None = None
 
     def __attrs_post_init__(self):

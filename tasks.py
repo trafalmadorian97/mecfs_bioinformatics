@@ -218,9 +218,10 @@ def green(c):
 @task
 def install_r_packages(c):
     """
-    Install R packages such as TwoSampleMR
+    Install R packages such as TwoSampleMR and LAVA
     """
     c.run("pixi r install-mr", pty=True)
+    c.run("pixi r install-lava", pty=True)
 
 
 ### Figures and Documentation
