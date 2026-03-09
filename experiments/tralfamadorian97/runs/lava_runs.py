@@ -11,11 +11,11 @@ from mecfs_bio.assets.reference_data.lava_locus_file.default.raw.default_lava_lo
 def run_lava():
     DEFAULT_RUNNER.run(
         [
-            # LAVA_UKBB_LD_REF
+            LAVA_UKBB_LD_REF,
             # LAVA_G100_EUR_LD_REF_EXTRACTED,
             # LAVA_G1000_EUR_REF_LD,
             # DEFAULT_LAVA_LOCUS_FILE
-            BASIC_G100_LAVA_ANALYSIS
+            # BASIC_G100_LAVA_ANALYSIS
         ],
         incremental_save=True,
         must_rebuild_transitive=[
