@@ -1,5 +1,6 @@
 """
 LAVA vignette data: small sample data bundled with the LAVA R package.
+Added by copilot
 
 These are used for fast system tests that don't require downloading
 the full g1000 EUR LD reference (~300MB+).

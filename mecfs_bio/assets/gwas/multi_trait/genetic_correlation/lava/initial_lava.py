@@ -1,3 +1,7 @@
+"""
+Initial exploratory LAVA run.  Will add more comprehensive LAVA runs later.
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
     DECODE_ME_PREVALENCE_INFO,
 )

@@ -1,3 +1,7 @@
+"""
+Download the default LAVA partitioning of the genome into loci.
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
