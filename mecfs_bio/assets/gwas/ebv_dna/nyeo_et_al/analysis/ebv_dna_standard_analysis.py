@@ -9,6 +9,7 @@ from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.raw.ebv_dna import NYEO_EBV_DNA_SU
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
 )
+from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.compute_p_pipe import ComputePPipe
 
@@ -30,4 +31,5 @@ EBV_DNA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
     drop_palindromic_in_harmonized=False,
     include_hba_magma_tasks=True,
     include_independent_cluster_plot_in_hba=True,
+    hbp_plot_settings=PlotSettings("plotly_white"),
 )

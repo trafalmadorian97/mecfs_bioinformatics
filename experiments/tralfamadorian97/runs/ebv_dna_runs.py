@@ -5,8 +5,9 @@ from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.raw.ebv_dna import NYEO_EBV_DNA_SU
 
 def run_initial_ebv_analysis():
     DEFAULT_RUNNER.run(
-        EBV_DNA_STANDARD_ANALYSIS.terminal_tasks(),
+        [EBV_DNA_STANDARD_ANALYSIS.tasks.hba_magma_tasks.extracted_plot_task],
         must_rebuild_transitive=[
+            EBV_DNA_STANDARD_ANALYSIS.tasks.hba_magma_tasks.magma_hba_result_plot_task,
         ],
         incremental_save=True
     )

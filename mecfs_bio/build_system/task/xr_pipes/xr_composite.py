@@ -4,7 +4,7 @@ import structlog
 import xarray as xr
 from attrs import frozen
 
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_data_pipe import (
+from mecfs_bio.build_system.task.xr_pipes.xr_data_pipe import (
     XRDataPipe,
 )
 
