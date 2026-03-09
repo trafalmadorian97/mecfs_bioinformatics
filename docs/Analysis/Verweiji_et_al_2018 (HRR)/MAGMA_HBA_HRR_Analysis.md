@@ -11,7 +11,7 @@ I applied MAGMA to the heart rate recovery GWAS of Verweiji et al.[@verweij2018g
 
 
 
-In the plot below, the x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while the y-axis corresponds to the $-\log_{10}(p)$ score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.  I used a conditional analysis approach based on the one described in Wanatabe et al.[@watanabe2019genetic] to identify independent clusters.   A single independent cluster was found, which is labeled in the plot, and listed in detail the table below.
+In the plot below, the x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while the y-axis corresponds to the $-\log_{10}(p)$ score produced by MAGMA.  Clusters are colored according to their HBA supercluster. The dotted line denotes the Bonferroni significance threshold.  I used a conditional analysis approach based on the one described in Wanatabe et al.[@watanabe2019genetic] to identify independent clusters.   A single independent cluster was found, which is labeled in the plot and listed in detail the table below.
 
 
 

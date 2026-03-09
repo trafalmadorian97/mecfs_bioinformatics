@@ -19,13 +19,6 @@ from plotly.graph_objs import Figure
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_cluster import XRCluster
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_composite import (
-    XRCompositePipe,
-)
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_data_pipe import (
-    XRDataPipe,
-)
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
@@ -35,6 +28,13 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.xr_pipes.xr_cluster import XRCluster
+from mecfs_bio.build_system.task.xr_pipes.xr_composite import (
+    XRCompositePipe,
+)
+from mecfs_bio.build_system.task.xr_pipes.xr_data_pipe import (
+    XRDataPipe,
+)
 from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.get_logger()
