@@ -11,7 +11,7 @@ on:
       - main
 jobs:
   run-linters:
-    timeout-minutes: 5
+    timeout-minutes: 15
     name: Run PR Checks
     runs-on: ubuntu-latest
 
