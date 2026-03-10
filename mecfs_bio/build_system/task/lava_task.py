@@ -182,6 +182,7 @@ class LavaTask(Task):
         ld_ref_asset = fetch(self.ld_reference_info.ld_ref_task.asset_id)
         assert isinstance(ld_ref_asset, DirectoryAsset)
         ref_prefix = str(ld_ref_asset.path / self.ld_reference_info.filename_prefix)
+        logger.debug(f"LD reference prefix is :{ref_prefix}")
 
         # Fetch locus definitions
         locus_asset = fetch(self.lava_locus_definitions_task.asset_id)
@@ -227,6 +228,7 @@ class LavaTask(Task):
             )
 
             # Read loci
+            logger.debug(f"Reading loci from {locus_asset.path}")
             loci_r = lava.read_loci(str(locus_asset.path))
             ro.globalenv["lava_loci"] = loci_r
             n_loci = int(ro.r("nrow(lava_loci)")[0])  # type: ignore
@@ -271,6 +273,17 @@ class LavaTask(Task):
                     for key, val in loc_info.items():
                         bivar_df[key] = val
                     bivar_results.append(bivar_df)
+                if i % 10 == 0:
+                    if len(bivar_results) > 0:
+                        to_print_bivar = pd.concat(bivar_results[-20:], ignore_index=True)
+                    else:
+                        to_print_bivar= []
+                    if len(univ_results) > 0:
+                        to_print_univ = pd.concat(univ_results[-20:], ignore_index=True)
+                    else:
+                        to_print_univ = []
+                    logger.debug(f"Recent univariate results\n {to_print_univ}\n"
+                                 f" Recent bivariate results:\n {to_print_bivar}\n ")
 
         _write_output(scratch_dir, univ_results, bivar_results)
 
@@ -481,7 +494,7 @@ def _get_sample_overlap_path(
     overlap_path = tmp_dir / "sample_overlap.txt"
     overlap_df = pd.DataFrame(mat_cor, index=pheno_names, columns=pheno_names)
     overlap_df.to_csv(overlap_path, sep=" ")
-    logger.debug(f"Sample overlap matrix:\n{overlap_df}")
+    logger.debug(f"Sampling correlation matrix:\n{overlap_df}")
     return str(overlap_path)
 
 

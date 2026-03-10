@@ -7,6 +7,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED_KEEP_AMBIGUOUS,
+    DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initial_asset_generator import (
     CT_LDSC_INITIAL_ASSET_GENERATOR,
@@ -17,6 +18,8 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_stand
 from mecfs_bio.assets.reference_data.lava_ld_reference.ukbb.processed.ukbb_lava_ld_ref_extracted import (
     LAVA_UKBB_LD_REF_EXTRACTED,
 )
+from mecfs_bio.assets.reference_data.lava_locus_file.default.processed.default_lava_locus_file_fused import \
+    DEFAULT_LAVA_LOCUS_FUSED
 from mecfs_bio.assets.reference_data.lava_locus_file.default.raw.default_lava_locus_file import (
     DEFAULT_LAVA_LOCUS_FILE,
 )
@@ -37,7 +40,7 @@ BASIC_UKBB_LAVA_ANALYSIS = LavaTask.create(
     asset_id="initial_ukbb_lava_analysis",
     sources=[
         LavaPhenotypeDataSource(
-            task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED_KEEP_AMBIGUOUS.join_task,
+            task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
             alias="DecodeME",
             sample_info=LavaBinarySampleInfo.from_ct_ldsc_sample_info(
                 DECODE_ME_PREVALENCE_INFO
@@ -54,7 +57,7 @@ BASIC_UKBB_LAVA_ANALYSIS = LavaTask.create(
         ld_ref_task=LAVA_UKBB_LD_REF_EXTRACTED,
         filename_prefix="lava-ukb-v1.1",
     ),
-    lava_locus_definitions_task=DEFAULT_LAVA_LOCUS_FILE,
+    lava_locus_definitions_task=DEFAULT_LAVA_LOCUS_FUSED,
     ct_ldsc_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task,
     heritability_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
     max_loci=None,

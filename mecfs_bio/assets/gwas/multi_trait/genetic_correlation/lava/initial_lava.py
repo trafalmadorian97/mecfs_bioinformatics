@@ -7,6 +7,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED_KEEP_AMBIGUOUS,
+    DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initial_asset_generator import (
     CT_LDSC_INITIAL_ASSET_GENERATOR,
@@ -37,7 +38,7 @@ BASIC_G100_LAVA_ANALYSIS = LavaTask.create(
     asset_id="initial_g1000_lava_analysis",
     sources=[
         LavaPhenotypeDataSource(
-            task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED_KEEP_AMBIGUOUS.join_task,
+            task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
             alias="DecodeME",
             sample_info=LavaBinarySampleInfo.from_ct_ldsc_sample_info(
                 DECODE_ME_PREVALENCE_INFO
@@ -57,5 +58,5 @@ BASIC_G100_LAVA_ANALYSIS = LavaTask.create(
     lava_locus_definitions_task=DEFAULT_LAVA_LOCUS_FILE,
     ct_ldsc_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task,
     heritability_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
-    max_loci=10,
+    max_loci=None,
 )
