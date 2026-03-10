@@ -106,6 +106,22 @@ class BinaryPhenotypeSampleInfo:
     estimated_population_prevalence: float
     total_sample_size: int | None = None
 
+    @property
+    def ncases(self) ->int:
+        assert self.total_sample_size is not None
+        return int(self.sample_prevalence * self.total_sample_size)
+
+    @property
+    def ncontrols(self) ->int:
+        assert self.total_sample_size is not None
+        return int((1-self.sample_prevalence) * self.total_sample_size )
+
+    @property
+    def effective_sample_size(self)->int:
+        return int(  4/ (1/self.ncases  +1/self.ncontrols  )   )
+
+
+
 
 @frozen
 class QuantPhenotype:
