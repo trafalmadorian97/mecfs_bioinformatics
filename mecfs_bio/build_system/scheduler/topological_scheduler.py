@@ -26,6 +26,9 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 
 def get_dependency_graph_from_tasks(tasks: Tasks) -> nx.DiGraph:
+    """
+    Convert a set of Tasks into a DAG according to their dependency structure.
+    """
     G: nx.DiGraph = nx.DiGraph()
     for asset_id, task in tasks.items():
         G.add_node(asset_id)

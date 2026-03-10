@@ -9,7 +9,7 @@ For instance, see this plot generated from the [DecodeME](../Data_Sources/Decode
 
 ![decode_me_manahattan](https://github.com/user-attachments/assets/149ea85f-c71b-47ea-b208-4dcfc70fa195)
 
-One of the primary purposes of a GWAS is to identify genetic variants that are causal for the phenotype of interest.  These causal variants can provide insights into the biological processes underlying the phenotype.
+One of the primary purposes of a GWAS is to identify genetic variants that are causal for the phenotype of interest.  These causal variants can inform us about the biological processes underlying the phenotype.
 
 It would be natural to take the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") and conclude that they are causal.  This approach omits a key consideration: linkage disequilibrium.
 
@@ -18,7 +18,7 @@ It would be natural to take the most significant genetic variants  (i.e. the hig
 
 Some facts about LD:
 
-- LD decays as the distance between variants increases, because the odds of an intervening recombination event correspondingly increase. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are highly non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant.
+- LD decays as the distance between variants increases, because the odds of an intervening [recombination event](https://en.wikipedia.org/wiki/Genetic_recombination) correspondingly increase. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant.
 - Genetic variants that are relatively recent tend to have low frequency in the population, and thus low LD with all other variants, regardless of distance.
 
 
