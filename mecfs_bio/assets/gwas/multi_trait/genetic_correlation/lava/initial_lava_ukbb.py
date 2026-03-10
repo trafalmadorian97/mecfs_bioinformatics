@@ -15,9 +15,11 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initi
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.reference_data.lava_ld_reference.g1000_eur.processed.lava_thousand_geomes_eur_ld_ref_extracted import (
-    LAVA_G100_EUR_LD_REF_EXTRACTED,
+from mecfs_bio.assets.reference_data.lava_ld_reference.ukbb.processed.ukbb_lava_ld_ref_extracted import (
+    LAVA_UKBB_LD_REF_EXTRACTED,
 )
+from mecfs_bio.assets.reference_data.lava_locus_file.default.processed.default_lava_locus_file_fused import \
+    DEFAULT_LAVA_LOCUS_FUSED
 from mecfs_bio.assets.reference_data.lava_locus_file.default.raw.default_lava_locus_file import (
     DEFAULT_LAVA_LOCUS_FILE,
 )
@@ -34,8 +36,8 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
 
-BASIC_G100_LAVA_ANALYSIS = LavaTask.create(
-    asset_id="initial_g1000_lava_analysis",
+BASIC_UKBB_LAVA_ANALYSIS = LavaTask.create(
+    asset_id="initial_ukbb_lava_analysis",
     sources=[
         LavaPhenotypeDataSource(
             task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
@@ -52,10 +54,10 @@ BASIC_G100_LAVA_ANALYSIS = LavaTask.create(
         ),
     ],
     ld_reference_info=LDReferenceInfo(
-        ld_ref_task=LAVA_G100_EUR_LD_REF_EXTRACTED,
-        filename_prefix="g1000_eur",
+        ld_ref_task=LAVA_UKBB_LD_REF_EXTRACTED,
+        filename_prefix="lava-ukb-v1.1",
     ),
-    lava_locus_definitions_task=DEFAULT_LAVA_LOCUS_FILE,
+    lava_locus_definitions_task=DEFAULT_LAVA_LOCUS_FUSED,
     ct_ldsc_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task,
     heritability_task_for_overlap=CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
     max_loci=None,
