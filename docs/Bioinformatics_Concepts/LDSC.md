@@ -243,6 +243,7 @@ Thus we have
 $$
 \begin{align}
 &\mathbb{E} \tilde{r}_{jk}^2 \\
+&=\frac{N-1}{N}r_{jk}^2 +\frac{1}{N}(1+2r_{jk}^2+\nu)\\ 
 &=r_{jk}^2 + \frac{1}{N}(1+r_{jk^2}^2+\nu)\\
 &=r_{jk}^2+ \frac{1}{N}(2r_{jk}^2+\nu)+ \frac{1}{N}(1-r_{jk}^2)
 \end{align}
