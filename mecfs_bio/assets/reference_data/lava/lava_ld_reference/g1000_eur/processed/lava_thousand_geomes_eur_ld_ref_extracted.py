@@ -1,4 +1,4 @@
-from mecfs_bio.assets.reference_data.lava_ld_reference.g1000_eur.raw.thousand_genomes_eur_ld_ref import (
+from mecfs_bio.assets.reference_data.lava.lava_ld_reference.g1000_eur.raw import (
     LAVA_G1000_EUR_REF_LD,
 )
 from mecfs_bio.build_system.task.extract_all_from_zip_task import ExtractAllFromZipTask

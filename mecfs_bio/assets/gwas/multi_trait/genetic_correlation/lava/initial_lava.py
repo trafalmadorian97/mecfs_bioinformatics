@@ -14,10 +14,10 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initi
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.reference_data.lava_ld_reference.g1000_eur.processed.lava_thousand_geomes_eur_ld_ref_extracted import (
+from mecfs_bio.assets.reference_data.lava.lava_ld_reference.g1000_eur.processed.lava_thousand_geomes_eur_ld_ref_extracted import (
     LAVA_G100_EUR_LD_REF_EXTRACTED,
 )
-from mecfs_bio.assets.reference_data.lava_locus_file.default.raw.default_lava_locus_file import (
+from mecfs_bio.assets.reference_data.lava.lava_locus_file.default.raw.default_lava_locus_file import (
     DEFAULT_LAVA_LOCUS_FILE,
 )
 from mecfs_bio.build_system.task.lava_task import (

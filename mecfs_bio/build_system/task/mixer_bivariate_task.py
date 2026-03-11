@@ -54,6 +54,12 @@ class MixerBivariateTask(Task):
     _meta: Meta
     trait_1_source: MixerDataSource
     trait_2_source: MixerDataSource
+    reference_data_directory_task: Task
+    ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld"
+    bim_file_pattern:str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
+    rep_file_pattern:str = r"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.{}.snps"
+    threads: int=4
+    num_reps: int=20
 
 
     def __attrs_post_init__(self):
@@ -66,7 +72,7 @@ class MixerBivariateTask(Task):
     @property
     def deps(self) -> list["Task"]:
         return [
-            self.trait_1_source.task,self.trait_2_source.task,
+            self.trait_1_source.task,self.trait_2_source.task,self.reference_data_directory_task
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -88,6 +94,16 @@ class MixerBivariateTask(Task):
                 name=self.trait_2_source.alias,
                 temp_dir=tmp_path,
             )
+            common_args =  ["--ld-file", self.ld_file_pattern, "--bim-file", self.bim_file_pattern, "--threads", str(self.threads)]
+
+            for rep in range(1, self.num_reps + 1):
+                extract_args = ["--extract",self.rep_file_pattern.format(rep)]
+                _invoke_mixer(
+                    common_args + extract_args+ ["--trait1-file", trait1_path,
+                                                 "--out",
+                                                 f"trait1.fit.{rep}"
+                                                 ],
+                )
 
 
 def _prep_summary_statistics_for_mixer(
