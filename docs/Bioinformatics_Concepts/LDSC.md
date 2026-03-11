@@ -283,7 +283,7 @@ $$
 &= N \mathbb{E} ( \frac{h^2}{M}\sum_k \tilde{r}^2_{jk} + \frac{1}{N}  (1-h^2) ) &\text{def of }\tilde{r}^2_{jk} \label{hstep}\\
 &= \frac{h^2}{M}(Nl_j + M-l_j) + 1 - h^2\\
 &= \frac{h^2}{M}l_j(N-1)+1\\
-&\approx \frac{h^2}{M}l_jN+1\\
+&\approx \frac{h^2}{M}l_jN+1 \label{main_ld_eq} \\
 \end{align}
 $$
 
@@ -340,13 +340,58 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 [//]: # (To discuss: Plietotopy an important fact from GWAS.  But not all variants equally likely.  e.g. HLA-> autoimmune disease)
 
 
-## Usage
-LDSC in its original form has two main usages
+## Population structure and LDSC
 
-1. Estimation of the parameter $h^2$, the [heritability](Heritability.md) of phenotype of interest.  An estimate of this parameter can be directly read from the LDSC regression.
-2. Detection of population stratification.
+Besides being the most widely used method for the estimation of heritability from GWAS summary statistics, LDSC is also used in the detection of population structure. In the next section, I will explain this use case.
 
 
+### A model of a mixed population
+
+Let's begin by constructing a model of a mixed population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
+
+- Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$
+- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix are still independent.
+- We assume that $f\sim N(0, F_{ST}V)$, where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
+- We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
+- Similarly, we assume that variance of each genotype is constant within each subpopulation. $\mathbb{Var}(X_{i,j}|i\in\mathcal{P_1})=\mathbb{Var}(X_{i,j}|i\in\mathcal{P_2})=1$ for all $j$.
+
+
+Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score regression equation, for this case of an equal mixture of two subpopulations.
+
+
+We start by computing the conditional expectation of the product of two variants:
+
+
+$$
+\begin{align}
+\mathbb{E}(X_{i,j}X_{i,k}|f)&=0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_1) + 0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_2)\\
+&=0.5(r_{j,k} + f_{j}f_{k}) + 0.5(r_{j,k} + (-f_{j}) (-f_{k})  )\\
+&=r_{j,k} + f_jf_k. \label{cond_prod_eq}
+\end{align}
+$$
+
+
+
+
+
+We next compute $\mathbb{E} \tilde{r}_{j,k}$, the expectation of the sample correlation between variant $j$ and variant $k$.  This quantity will be key to computing LD scores.
+
+We have
+
+
+$$
+\begin{align}
+&\mathbb{E}  \tilde{r}_{j,k}^2\\
+&=\mathbb{E} \mathbb{E} \left( \tilde{r}_{j,k}^2 |f  \right) \text{ (by Tower Law)}  \\
+&= \mathbb{E} \mathbb{E}     \left(\frac{1}{N^2}\sum_i \sum_q X_{i,j}X_{i,k}X_{q,j}X_{q,k}|f\right)\\
+&=\frac{1}{N^2}\mathbb{E} \mathbb{E}     \left(\sum_{i\ne q} X_{i,j}X_{i,k}X_{q,j}X_{q,k} + \sum_i X_{i,j}^2X_{i,k}^2|f\right)\\
+&=\frac{1}{N^2}\mathbb{E}\left(\sum_{i\ne q}\mathbb{E}(X_{i,j}X_{i,k}|f)\mathbb{E}(X_{q,j}X_{q,k}|f)+ \sum_i \mathbb{E} (X_{i,j}^2 X_{i,k}^2|f) \right) \text{ (Conditional indep)}\\
+&\mathbb{E}\left( \frac{N-1}{N} (f_jf_k+r_{j,k})^2 +\frac{1}{N^2}\mathbb{E} (X_{i,j}^2 X_{i,k}^2|f)  \right) \text{ (by (\ref{cond_prod_eq}) )}\\
+&=\mathbb{E}\left( \frac{N-1}{N}\left(f_j^2 f_k^2+2r_{j,k}f_j f_k +r_{j,k}^2 \right) +\frac{1}{N}(1+2(f_jf_k+r_{j,k})^2+\nu) \right) \text{ (Isserlis theorem)}\\
+\end{align}
+$$
+
+To be continued
 
 [//]: # ()
 [//]: # ([//]: # Notes: Pleiotropy is key assumption.  Basically heritability is distributed more-or-less evening across the genome.  Contrast: MHC for inflammatory diseases.  Monogenic diseases.)
