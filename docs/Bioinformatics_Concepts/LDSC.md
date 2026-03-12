@@ -384,7 +384,7 @@ $$
 \begin{align}
 &\mathbb{Var}(X_{i,j})\\
 &= \mathbb{Var}( \mathbb{E}(X_{i,j}|f) ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f)) & \text{ By law of total variance}\\
-&=0\\
+&=0+1\\
 &=1
 \end{align}
 $$
