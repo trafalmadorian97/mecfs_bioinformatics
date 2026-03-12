@@ -2,7 +2,7 @@ import os
 
 from tqdm import tqdm
 import tempfile
-from typing import Sequence
+from typing import Sequence, Mapping
 
 import narwhals
 import polars as pl
@@ -72,7 +72,7 @@ class MixerBivariateTask(Task):
 
 
     def __attrs_post_init__(self):
-        _invoke_mixer("--version")
+        _invoke_mixer("--version",{})
 
     @property
     def meta(self) -> Meta:
@@ -85,6 +85,8 @@ class MixerBivariateTask(Task):
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
+        reference_dir_asset = fetch(self.reference_data_directory_task.asset_id)
+        assert isinstance(reference_dir_asset, DirectoryAsset)
         with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmpdir:
             tmp_path = Path(tmpdir).relative_to(os.getcwd())
             trait1_path = _prep_summary_statistics_for_mixer(
@@ -103,17 +105,22 @@ class MixerBivariateTask(Task):
                 name=self.trait_2_source.alias,
                 temp_dir=tmp_path,
             )
-            common_args =  ["--ld-file", self.ld_file_pattern, "--bim-file", self.bim_file_pattern, "--threads", str(self.threads)]
+            common_args =  ["--ld-file", str(reference_dir_asset.path/self.ld_file_pattern), "--bim-file",
+                            str(reference_dir_asset.path/self.bim_file_pattern),
+                            "--threads", str(self.threads)]
 
             for rep in tqdm(range(1, self.num_reps + 1)):
 
-                extract_args = ["--extract",self.rep_file_pattern.format(rep)]
+                extract_args = ["--extract",str(reference_dir_asset.path/self.rep_file_pattern.format(rep))]
                 fit1_trait1_out_path = tmp_path/f"trait1.fit.{rep}"
                 _invoke_mixer(
                   ["fit1"]+  common_args + extract_args+ ["--trait1-file", str(trait1_path),
                                                  "--out",
                                                  str(fit1_trait1_out_path)
                                                  ],
+                    extra_mounts={
+                        # reference_dir_asset.path: reference_dir_asset.path
+                    }
                 )
                 fit1_trait1_out_path.rename(scratch_dir/f"trait1.fit.{rep}")
             return DirectoryAsset(scratch_dir)
@@ -190,21 +197,30 @@ def _prep_summary_statistics_for_mixer(
     return out_path
 
 
-SETUP_DOCKER_COMMAND = [
-    'export','DOCKER_RUN="docker run -v $PWD:/home -w /home";'
-]
+# SETUP_DOCKER_COMMAND = [
+#     'export','DOCKER_RUN="docker run -v $PWD:/home -w /home"'
+# ]
 SETUP_MIXER_DOCKER = [
     'export',f'MIXER_PY="$DOCKER_RUN ghcr.io/precimed/gsa-mixer:{MIXER_VERSION} python /tools/mixer/precimed/mixer.py";'
 ]
 
+def _get_docker_command(extra_mounts:Mapping[Path, Path])->list[str]:
+    inner_docker_command = "docker run -v $PWD:/home"
+    for key, value in extra_mounts.items():
+        inner_docker_command+= f" -v {str(key)}:{str(value)}"
+    inner_docker_command+=" -w /home"
+    return[
+        f'export',f'DOCKER_RUN="{inner_docker_command}";'
+    ]
 
 
 def _invoke_mixer(
         args: Sequence[str]|str,
+        extra_mounts:Mapping[Path, Path],
 ):
     if isinstance(args, str):
         args = [args]
     execute_command(
-       SETUP_DOCKER_COMMAND+SETUP_MIXER_DOCKER+["${MIXER_PY}"] +list(args)
+       _get_docker_command(extra_mounts=extra_mounts)+SETUP_MIXER_DOCKER+["${MIXER_PY}"] +list(args)
     )
 
