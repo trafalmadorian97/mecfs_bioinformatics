@@ -349,17 +349,56 @@ Besides being the most widely used method for the estimation of heritability fro
 
 Let's begin by constructing a model of a mixed population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
 
-- Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$
+- Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
+- Let $\mathcal{Q}\in\mathbb{R}^N$ be the random vector of assignments of individuals to the two subpopulations.
 - Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix are still independent.
 - We assume that $f\sim N(0, F_{ST}V)$, where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
 - We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
-- Similarly, we assume that variance of each genotype is constant within each subpopulation. $\mathbb{Var}(X_{i,j}|i\in\mathcal{P_1})=\mathbb{Var}(X_{i,j}|i\in\mathcal{P_2})=1$ for all $j$.
+- As above, we assume that the unconditional variance of each entry of the genotype matrix is 1: $\mathbb{Var}(X_{i,j}=1)$
+- We assume that for any individual and any variant $i$, 
+
+$$
+\begin{align}
+\mathbb{Var}(X_{i,j}|f, \mathcal{Q})=1-f_j^2 \label{sub_var}
+\end{align}
+$$
+
+Note that this implies that
+
+
+$$
+\begin{align}
+&\mathbb{Var}(X_{i,j}|f)\\
+&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f,\mathcal{Q}) |f ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f,\mathcal{Q}) |f ) & \text{ By law of total variance}\\
+&= \mathbb{Var} (\pm f_j  |f) + \mathbb{E} (1-f_j^2|f) & \text{by (\ref{sub_var})}\\
+&= f_j^2 + 1-f_j^2\\
+&= 1
+\end{align}
+$$
+
+
+and also
+
+
+$$
+\begin{align}
+&\mathbb{Var}(X_{i,j})\\
+&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f) ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f)) & \text{ By law of total variance}\\
+&=0+1\\
+&=1
+\end{align}
+$$
+
+So the variance of the genotypes in the subpopulations is consistent with the variance of the genotypes in the mixed population.
 
 
 Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score regression equation, for this case of an equal mixture of two subpopulations.
 
 
-We start by computing the conditional expectation of the product of two variants:
+
+
+
+We next compute the conditional expectation of the product of two variants (_fix this to account fo subpopulatoon variance_):
 
 
 $$
