@@ -371,6 +371,7 @@ $$
 &\mathbb{Var}(X_{i,j}|f)\\
 &= \mathbb{Var}( \mathbb{E}(X_{i,j}|f,\mathcal{Q}) |f ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f,\mathcal{Q}) |f ) & \text{ By law of total variance}\\
 &= \mathbb{Var} (\pm f_j  |f) + \mathbb{E} (1-f_j^2|f) & \text{by (\ref{sub_var})}\\
+&= f_j^2 + 1-f_j^2\\
 &= 1
 \end{align}
 $$
@@ -381,7 +382,6 @@ and also
 
 $$
 \begin{align}
-
 &\mathbb{Var}(X_{i,j})\\
 &= \mathbb{Var}( \mathbb{E}(X_{i,j}|f) ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f)) & \text{ By law of total variance}\\
 &=0\\
@@ -396,18 +396,9 @@ Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score reg
 
 
 
-$$
-\begin{align}
-\mathbb{Cov}(X_{i,j},X_{k,j})&=r_{j,k} \sqrt{\mathbb{Var}(X_{i,j}|f,i\in\mathcal{P}_1)   mathbb{Var}(X_{i,j}|f,i\in\mathcal{P}_2) }\\
-&=r_{j,k}(1)(1)\\
-&=r_{j,k}
-\end{align}
-
-$$
 
 
-
-We next compute the conditional expectation of the product of two variants:
+We next compute the conditional expectation of the product of two variants (_fix this to account fo subpopulatoon variance_):
 
 
 $$
