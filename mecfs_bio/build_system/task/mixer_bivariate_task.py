@@ -107,8 +107,7 @@ class MixerTask(Task):
     bim_file_pattern:str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
     chr_to_use_arg:str|None=None
     threads: int=4
-    num_reps: int=20
-    run_test: bool=False
+    reps_to_perform: Sequence[int]=tuple(range(1,21))
 
 
     def __attrs_post_init__(self):
@@ -150,7 +149,7 @@ class MixerTask(Task):
                 "--threads", str(self.threads),
             ]
 
-            for rep in tqdm(range(1, self.num_reps + 1)):
+            for rep in tqdm(self.reps_to_perform):
 
                 if self.extract_file_pattern_gen is not None:
                     extract_file = reference_dir_asset.path / self.extract_file_pattern_gen(rep)
@@ -163,15 +162,16 @@ class MixerTask(Task):
                 else:
                     chr_args=[]
                 fit1_trait1_out_path_prefix = str(tmp_path/f"trait1.fit.{rep}")
-                _invoke_mixer(
-                  ["fit1"]+  common_args + extract_args+ chr_args+list(self.extra_args)+ ["--trait1-file", str(trait1_path),
-                                                 "--out",
-                                                 str(fit1_trait1_out_path_prefix)
-                                                 ],
-                    extra_mounts=ref_mounts,
-                )
+                assert isinstance(self.mixer_mode, UnivariateMode) # other modes not implemented
+                if isinstance(self.mixer_mode, UnivariateMode):
+                    _invoke_mixer(
+                      ["fit1"]+  common_args + extract_args+ chr_args+list(self.extra_args)+ ["--trait1-file", str(trait1_path),
+                                                     "--out",
+                                                     str(fit1_trait1_out_path_prefix)
+                                                     ],
+                        extra_mounts=ref_mounts,
+                    )
 
-                if self.run_test:
                     test1_out_path_prefix = str(tmp_path/f"trait1.test.{rep}")
                     _invoke_mixer(
                         ["test1"] + common_args + extract_args + chr_args + [
@@ -184,16 +184,11 @@ class MixerTask(Task):
                     Path(test1_out_path_prefix + ".json").rename(scratch_dir/f"trait1.test.{rep}.json")
                     Path(test1_out_path_prefix + ".log").rename(scratch_dir/f"trait1.test.{rep}.log")
 
-                fit1_trait1_out_json = Path(fit1_trait1_out_path_prefix + ".json")
-                fit1_trait1_out_log = Path(fit1_trait1_out_path_prefix + ".log")
-                fit1_trait1_out_json.rename(scratch_dir/f"trait1.fit.{rep}.json")
-                fit1_trait1_out_log.rename(scratch_dir/f"trait1.fit.{rep}.log")
-
-                # to add later: handling of bivariate case if mixer mode is bivariate
-
-
+                    Path(fit1_trait1_out_path_prefix + ".json").rename(scratch_dir/f"trait1.fit.{rep}.json")
+                    Path(fit1_trait1_out_path_prefix + ".log").rename(scratch_dir/f"trait1.fit.{rep}.log")
 
             return DirectoryAsset(scratch_dir)
+
     @classmethod
     def create(cls,
                asset_id:str,
@@ -206,9 +201,8 @@ class MixerTask(Task):
     bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
     extract_file_pattern_gen: Callable[[int],str]|None = _default_extract_file_pattern_gen ,
     threads: int = 4,
-    num_reps: int = 20,
+    reps_to_perform: Sequence[int]= tuple(range(1,21)),
                chr_args: str|None=None,
-               run_test: bool=False,
     ):
         meta =  ResultDirectoryMeta(
             id=asset_id,
@@ -225,10 +219,9 @@ class MixerTask(Task):
             bim_file_pattern=bim_file_pattern,
             extract_file_pattern_gen=extract_file_pattern_gen,
             threads=threads,
-            num_reps=num_reps,
+            reps_to_perform=reps_to_perform,
             chr_to_use_arg=chr_args,
             extra_args=extra_args,
-            run_test=run_test,
         )
 
 

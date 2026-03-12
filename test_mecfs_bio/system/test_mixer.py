@@ -54,8 +54,7 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
             "--diffevo-fast-repeats", "2",
             "--seed", "123",
         ),
-        num_reps=1,
-        run_test=True,
+        reps_to_perform=[1],
     )
 
     with log_on_error(info_store):
