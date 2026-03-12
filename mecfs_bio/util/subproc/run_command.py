@@ -12,6 +12,8 @@ def execute_command(cmd: list[str]) -> str:
     Execute and watch shell command, and return its output
     Source: https://stackoverflow.com/questions/29558074/output-of-subprocess-both-to-pipe-and-directly-to-stdout/77111541#77111541
     """
+    for item in cmd:
+        assert isinstance(item, str), f"{item} is not a string"
     output = ""
     str_cmd = " ".join(cmd)
     logger.debug(f"Running {str_cmd}")

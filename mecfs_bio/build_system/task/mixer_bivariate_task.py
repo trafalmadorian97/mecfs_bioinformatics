@@ -1,17 +1,22 @@
+import os
+
+from tqdm import tqdm
 import tempfile
 from typing import Sequence
 
 import narwhals
 import polars as pl
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import narwhals as nw
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import PhenotypeInfo, QuantPhenotype, \
@@ -23,6 +28,8 @@ from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL, GWASLAB_CHRO
     GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL, GWASLAB_BETA_COL, GWASLAB_SE_COL
 from mecfs_bio.util.subproc.run_command import execute_command
 
+from structlog import get_logger
+
 MIXER_RSID_COL  ="RSID"
 MIXER_CHROM_COL = "CHR"
 MIXER_POS_COL = "POS"
@@ -33,6 +40,8 @@ MIXER_Z_SCORE_COL = "Z"
 
 
 MIXER_VERSION = "2.2.1"
+
+logger = get_logger()
 
 @frozen
 class MixerDataSource:
@@ -76,8 +85,8 @@ class MixerBivariateTask(Task):
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        with tempfile.TemporaryDirectory() as tmpdir:
-            tmp_path = Path(tmpdir)
+        with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmpdir:
+            tmp_path = Path(tmpdir).relative_to(os.getcwd())
             trait1_path = _prep_summary_statistics_for_mixer(
                 sumstats_dataframe_task=self.trait_1_source.task,
                 fetch=fetch,
@@ -96,14 +105,49 @@ class MixerBivariateTask(Task):
             )
             common_args =  ["--ld-file", self.ld_file_pattern, "--bim-file", self.bim_file_pattern, "--threads", str(self.threads)]
 
-            for rep in range(1, self.num_reps + 1):
+            for rep in tqdm(range(1, self.num_reps + 1)):
+
                 extract_args = ["--extract",self.rep_file_pattern.format(rep)]
+                fit1_trait1_out_path = tmp_path/f"trait1.fit.{rep}"
                 _invoke_mixer(
-                    common_args + extract_args+ ["--trait1-file", trait1_path,
+                  ["fit1"]+  common_args + extract_args+ ["--trait1-file", str(trait1_path),
                                                  "--out",
-                                                 f"trait1.fit.{rep}"
+                                                 str(fit1_trait1_out_path)
                                                  ],
                 )
+                fit1_trait1_out_path.rename(scratch_dir/f"trait1.fit.{rep}")
+            return DirectoryAsset(scratch_dir)
+    @classmethod
+    def create(cls,
+               asset_id:str,
+               trait_1_source: MixerDataSource,
+               trait_2_source: MixerDataSource,
+
+               ce_data_directory_task: Task,
+        ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
+
+    bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
+    rep_file_pattern: str = r"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.{}.snps",
+    threads: int = 4,
+    num_reps: int = 20
+    ):
+        meta =  ResultDirectoryMeta(
+            id=asset_id,
+            trait = "multi_trait",
+            project="polygenic_overlap",
+            sub_dir=PurePath("mixer")
+        )
+        return cls(
+            meta=meta,
+            trait_1_source=trait_1_source,
+            trait_2_source=trait_2_source,
+            reference_data_directory_task=ce_data_directory_task,
+            ld_file_pattern=ld_file_pattern,
+            bim_file_pattern=bim_file_pattern,
+            rep_file_pattern=rep_file_pattern,
+            threads=threads,
+            num_reps=num_reps,
+        )
 
 
 def _prep_summary_statistics_for_mixer(
@@ -142,7 +186,7 @@ def _prep_summary_statistics_for_mixer(
             ).alias(MIXER_EFFECTIVE_SAMPLE_SIZE)
         )
     out_path = temp_dir/name
-    frame.collect().to_pandas().to_csv(out_path, index=False)
+    frame.collect().to_pandas().to_csv(out_path, index=False, sep="\t")
     return out_path
 
 
