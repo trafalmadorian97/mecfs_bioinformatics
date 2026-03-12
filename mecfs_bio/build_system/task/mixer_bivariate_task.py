@@ -2,7 +2,7 @@ import os
 
 from tqdm import tqdm
 import tempfile
-from typing import Sequence, Mapping
+from typing import Sequence, Mapping, Callable
 
 import narwhals
 import polars as pl
@@ -43,6 +43,10 @@ MIXER_VERSION = "2.2.1"
 
 logger = get_logger()
 
+
+def _default_extract_file_pattern_gen(rep: int)->str:
+    return "1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.rep{}.snps".format(rep)
+
 @frozen
 class MixerDataSource:
     """
@@ -59,14 +63,26 @@ class MixerDataSource:
         return self.task.asset_id
 
 @frozen
-class MixerBivariateTask(Task):
+class BivariateMode:
+    trait_2_source:MixerDataSource
+
+@frozen
+class UnivariateMode:
+    pass
+
+MixerMode = BivariateMode | UnivariateMode
+
+@frozen
+class MixerTask(Task):
     _meta: Meta
     trait_1_source: MixerDataSource
-    trait_2_source: MixerDataSource
+    # trait_2_source: MixerDataSource
+    mixer_mode: MixerMode
     reference_data_directory_task: Task
+    extract_file_pattern_gen:Callable[[int],str] | None
     ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld"
     bim_file_pattern:str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
-    rep_file_pattern:str = r"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.{}.snps"
+    chr_to_use_arg:str|None=None
     threads: int=4
     num_reps: int=20
 
@@ -80,9 +96,12 @@ class MixerBivariateTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [
-            self.trait_1_source.task,self.trait_2_source.task,self.reference_data_directory_task
+        result= [
+            self.trait_1_source.task,self.reference_data_directory_task
         ]
+        if isinstance(self.mixer_mode, BivariateMode):
+            result.append(self.mixer_mode.trait_2_source.task)
+        return result
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         reference_dir_asset = fetch(self.reference_data_directory_task.asset_id)
@@ -97,32 +116,53 @@ class MixerBivariateTask(Task):
                 name=self.trait_1_source.alias,
                 temp_dir=tmp_path,
             )
-            trait2_path = _prep_summary_statistics_for_mixer(
-                sumstats_dataframe_task=self.trait_2_source.task,
-                fetch=fetch,
-                pipe=self.trait_2_source.pipe,
-                phenotype=self.trait_2_source.sample_info,
-                name=self.trait_2_source.alias,
-                temp_dir=tmp_path,
-            )
+            assert trait1_path.is_file()
+            if isinstance(self.mixer_mode, BivariateMode):
+                trait2_path = _prep_summary_statistics_for_mixer(
+                    sumstats_dataframe_task=self.mixer_mode.trait_2_source.task,
+                    fetch=fetch,
+                    pipe=self.mixer_mode.trait_2_source.pipe,
+                    phenotype=self.mixer_mode.trait_2_source.sample_info,
+                    name=self.mixer_mode.trait_2_source.alias,
+                    temp_dir=tmp_path,
+                )
+                assert trait2_path.is_file()
+            else:
+                trait2_path = None
             common_args =  ["--ld-file", str(reference_dir_asset.path/self.ld_file_pattern), "--bim-file",
                             str(reference_dir_asset.path/self.bim_file_pattern),
                             "--threads", str(self.threads)]
 
             for rep in tqdm(range(1, self.num_reps + 1)):
 
-                extract_args = ["--extract",str(reference_dir_asset.path/self.rep_file_pattern.format(rep))]
-                fit1_trait1_out_path = tmp_path/f"trait1.fit.{rep}"
+                if self.extract_file_pattern_gen is not None:
+                    extract_file = reference_dir_asset.path / self.extract_file_pattern_gen(rep)
+                    assert extract_file.is_file()
+                    extract_args = ["--extract", str(extract_file)]
+                else:
+                    extract_args=[]
+                if self.chr_to_use_arg is not None:
+                    chr_args=["--chr2use", self.chr_to_use_arg]
+                else:
+                    chr_args=[]
+                fit1_trait1_out_path_prefix = str(tmp_path/f"trait1.fit.{rep}")
                 _invoke_mixer(
-                  ["fit1"]+  common_args + extract_args+ ["--trait1-file", str(trait1_path),
+                  ["fit1"]+  common_args + extract_args+ chr_args+ ["--trait1-file", str(trait1_path),
                                                  "--out",
-                                                 str(fit1_trait1_out_path)
+                                                 str(fit1_trait1_out_path_prefix)
                                                  ],
                     extra_mounts={
-                        # reference_dir_asset.path: reference_dir_asset.path
                     }
                 )
-                fit1_trait1_out_path.rename(scratch_dir/f"trait1.fit.{rep}")
+                fit1_trait1_out_json = Path(fit1_trait1_out_path_prefix + ".json")
+                fit1_trait1_out_log = Path(fit1_trait1_out_path_prefix + ".log")
+                fit1_trait1_out_json.rename(scratch_dir/f"trait1.fit.{rep}.json")
+                fit1_trait1_out_log.rename(scratch_dir/f"trait1.fit.{rep}.log")
+
+                # to add later: handling of bivariate case
+
+
+
             return DirectoryAsset(scratch_dir)
     @classmethod
     def create(cls,
@@ -134,9 +174,10 @@ class MixerBivariateTask(Task):
         ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
 
     bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
-    rep_file_pattern: str = r"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.{}.snps",
+    extract_file_pattern_gen: Callable[[int],str]|None = _default_extract_file_pattern_gen ,
     threads: int = 4,
-    num_reps: int = 20
+    num_reps: int = 20,
+               chr_args: str|None=None
     ):
         meta =  ResultDirectoryMeta(
             id=asset_id,
@@ -151,9 +192,10 @@ class MixerBivariateTask(Task):
             reference_data_directory_task=ce_data_directory_task,
             ld_file_pattern=ld_file_pattern,
             bim_file_pattern=bim_file_pattern,
-            rep_file_pattern=rep_file_pattern,
+            extract_file_pattern_gen=extract_file_pattern_gen,
             threads=threads,
             num_reps=num_reps,
+            chr_to_use_arg=chr_args,
         )
 
 
@@ -197,15 +239,12 @@ def _prep_summary_statistics_for_mixer(
     return out_path
 
 
-# SETUP_DOCKER_COMMAND = [
-#     'export','DOCKER_RUN="docker run -v $PWD:/home -w /home"'
-# ]
 SETUP_MIXER_DOCKER = [
     'export',f'MIXER_PY="$DOCKER_RUN ghcr.io/precimed/gsa-mixer:{MIXER_VERSION} python /tools/mixer/precimed/mixer.py";'
 ]
 
 def _get_docker_command(extra_mounts:Mapping[Path, Path])->list[str]:
-    inner_docker_command = "docker run -v $PWD:/home"
+    inner_docker_command = "docker run --shm-size=2g -v $PWD:/home"
     for key, value in extra_mounts.items():
         inner_docker_command+= f" -v {str(key)}:{str(value)}"
     inner_docker_command+=" -w /home"
