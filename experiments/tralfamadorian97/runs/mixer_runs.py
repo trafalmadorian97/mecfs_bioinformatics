@@ -1,7 +1,5 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.initial_mixer_run import MULTISITE_PAIN_DECODE_ME_INITIAL_MIXER
-from mecfs_bio.assets.reference_data.mixer.processed.mixer_g1000_plink_eur_extracted import MIXER_G1000_PLINK_EXTRACTED
-from mecfs_bio.assets.reference_data.mixer.raw.mixer_g1000_plink_eur_raw import MIXER_RAW_G1000_PLINK_DATA
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.univariate_mixer import DECODE_ME_UNIVARIATE_MIXER
 
 
 def run_mixer():
@@ -14,8 +12,8 @@ def run_mixer():
             # BASIC_G100_LAVA_ANALYSIS
             # MIXER_RAW_G1000_PLINK_DATA,
             # MIXER_G1000_PLINK_EXTRACTED
-            MULTISITE_PAIN_DECODE_ME_INITIAL_MIXER
-        ],
+            # MULTISITE_PAIN_DECODE_ME_INITIAL_MIXER
+        ]+DECODE_ME_UNIVARIATE_MIXER.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
         ]

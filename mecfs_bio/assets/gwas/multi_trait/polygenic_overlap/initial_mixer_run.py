@@ -24,7 +24,7 @@ MULTISITE_PAIN_DECODE_ME_INITIAL_MIXER=MixerTask.create(
         alias="Multisite_pain",
         sample_info=JONHSTON_ET_AL_SAMPLE_INFO
     ),
-    ce_data_directory_task=MIXER_G1000_PLINK_EXTRACTED,
+    ref_data_directory_task=MIXER_G1000_PLINK_EXTRACTED,
     # rep_file_pattern=None,
     num_reps=1,
     chr_args="1-4"

@@ -111,7 +111,8 @@ class MixerTask(Task):
 
 
     def __attrs_post_init__(self):
-        _invoke_mixer("--version",{})
+        pass
+        # _invoke_mixer("--version",{})
 
     @property
     def meta(self) -> Meta:
@@ -193,17 +194,17 @@ class MixerTask(Task):
     def create(cls,
                asset_id:str,
                trait_1_source: MixerDataSource | PreformattedMixerDataSource,
-                mixer_mode: MixerMode,
-               ce_data_directory_task: Task,
+               mixer_mode: MixerMode,
+               ref_data_directory_task: Task,
                extra_args: Sequence[str]=tuple(),
-        ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
+               ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
 
-    bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
-    extract_file_pattern_gen: Callable[[int],str]|None = _default_extract_file_pattern_gen ,
-    threads: int = 4,
-    reps_to_perform: Sequence[int]= tuple(range(1,21)),
+               bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
+               extract_file_pattern_gen: Callable[[int],str]|None = _default_extract_file_pattern_gen,
+               threads: int = 4,
+               reps_to_perform: Sequence[int]= tuple(range(1,21)),
                chr_args: str|None=None,
-    ):
+               ):
         meta =  ResultDirectoryMeta(
             id=asset_id,
             trait = "multi_trait",
@@ -214,7 +215,7 @@ class MixerTask(Task):
             meta=meta,
             trait_1_source=trait_1_source,
             mixer_mode=mixer_mode,
-            reference_data_directory_task=ce_data_directory_task,
+            reference_data_directory_task=ref_data_directory_task,
             ld_file_pattern=ld_file_pattern,
             bim_file_pattern=bim_file_pattern,
             extract_file_pattern_gen=extract_file_pattern_gen,
@@ -374,3 +375,4 @@ def _invoke_mixer(
        _get_docker_command(extra_mounts=extra_mounts)+SETUP_MIXER_DOCKER+["${MIXER_PY}"] +list(args)
     )
 
+_invoke_mixer("--version",{})

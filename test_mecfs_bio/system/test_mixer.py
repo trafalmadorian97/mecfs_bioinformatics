@@ -1,5 +1,8 @@
 """
+Added by Claude
+
 System tests for MixerTask: univariate and bivariate MiXeR analysis.
+
 
 Uses the small hello-world data from the comorment/mixer repository
 (chr21 and chr22 only, ~35K SNPs). Downloads a few MB and runs in
@@ -44,7 +47,7 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
             alias="trait1",
         ),
         mixer_mode=UnivariateMode(),
-        ce_data_directory_task=MIXER_HELLO_WORLD_PREPARED,
+        ref_data_directory_task=MIXER_HELLO_WORLD_PREPARED,
         ld_file_pattern="g1000_eur_hm3_chr@.ld",
         bim_file_pattern="g1000_eur_hm3_chr@.bim",
         extract_file_pattern_gen=None,
