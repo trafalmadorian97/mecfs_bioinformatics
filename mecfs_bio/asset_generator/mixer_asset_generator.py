@@ -42,6 +42,7 @@ def univariate_mixer_asset_generator(
                 rep=num
             ) for num, task in tasks.items()
         ],
+        trait_name=name_in_plot,
     )
     plot_task=MixerUnivariatePlot.create(
         asset_id=base_name+"_univariate_mixer_plot",

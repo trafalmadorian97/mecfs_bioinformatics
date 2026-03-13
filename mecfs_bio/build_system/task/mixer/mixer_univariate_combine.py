@@ -1,3 +1,4 @@
+import json
 import shutil
 import tempfile
 from pathlib import Path
@@ -34,6 +35,7 @@ class MixerRunSource:
 class MixerUnivariateCombine(Task):
     mixer_source_runs: Sequence[MixerRunSource]
     _meta: Meta
+    trait_name:str
     @property
     def meta(self) -> Meta:
         return self._meta
@@ -51,6 +53,9 @@ class MixerUnivariateCombine(Task):
                 source_asset = fetch(source_run.task.asset_id)
                 assert isinstance(source_asset, DirectoryAsset)
                 shutil.copytree(source_asset.path, tmp_path, dirs_exist_ok=True)
+                _edit_json_to_fix_trait_path(tmp_path/MIXER_FIT_JSON_PATTERN.replace("@", str(source_run.rep)), trait_name=self.trait_name )
+                _edit_json_to_fix_trait_path(tmp_path/MIXER_TEST_JSON_PATTERN.replace("@", str(source_run.rep)), trait_name=self.trait_name )
+
 
             invoke_mixer_figures(
                 args=[
@@ -82,6 +87,7 @@ class MixerUnivariateCombine(Task):
         cls,
             asset_id: str,
         mixer_source_runs: Sequence[MixerRunSource],
+            trait_name:str
     ):
         assert len(mixer_source_runs)>= 1
         source_meta =mixer_source_runs[0].task.meta
@@ -101,5 +107,18 @@ class MixerUnivariateCombine(Task):
         return cls(
             mixer_source_runs=mixer_source_runs,
             meta=meta,
+            trait_name=trait_name,
         )
 
+
+
+def _edit_json_to_fix_trait_path(json_path: Path, trait_name:str):
+    with open(json_path, 'r') as f:
+        data = json.load(f)
+
+    # Overwrite the dynamic path with a single, static dummy path
+    # this is needed, because MIXER's combine functionality checks that trait1_file is the same among inputs
+    assert "trait1_file" in data["options"]
+    data["options"]["trait1_file"] = f"standardized_path/{trait_name}"
+    with open(json_path, 'w') as f:
+        json.dump(data, f, indent=4)

@@ -26,7 +26,8 @@ from mecfs_bio.build_system.task.mixer.mixer_task import (
     UnivariateMode,
 )
 from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import MixerUnivariateCombine, MixerRunSource, \
-    COMBINED_FIT_FILENAME_PREFIX
+    COMBINED_FIT_FILENAME_PREFIX, COMBINED_TEST_FILENAME_PREFIX
+from mecfs_bio.build_system.task.mixer.mixer_univariate_plot import MixerUnivariatePlot, PLOT_TEST_OUTPUT_PREFIX
 from test_mecfs_bio.system.util import log_on_error
 
 
@@ -67,8 +68,15 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         mixer_source_runs=[MixerRunSource(
           task=mixer_task,
             rep=1
-        )]
+        )],
+        trait_name="dummy_trait"
     )
+    plot_task =MixerUnivariatePlot.create(
+        asset_id="mixer_univariate_hello_world_test_plot",
+        combine_task=combine_task,
+        trait_name="dummy_trait"
+    )
+
 
     with log_on_error(info_store):
         asset_root.mkdir(parents=True, exist_ok=True)
@@ -78,7 +86,7 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
             asset_root=asset_root,
         )
         result = test_runner.run(
-            [mixer_task, combine_task],
+            [mixer_task, combine_task, plot_task],
             incremental_save=True,
         )
         assert result is not None
@@ -95,7 +103,6 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         assert "pi" in fit_data or "params" in fit_data, (
             f"fit1 JSON missing expected keys, got: {list(fit_data.keys())}"
         )
-        import pdb; pdb.set_trace()
         # Verify test1 output
         test_json_path = output_dir / "trait1.test.1.json"
         assert test_json_path.exists(), f"test1 output not found at {test_json_path}"
@@ -106,5 +113,13 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         combine_output = result[combine_task.asset_id]
         assert isinstance(combine_output, DirectoryAsset)
         combine_output_dir = combine_output.path
-        fit_file_path = combine_output_dir/(COMBINED_FIT_FILENAME_PREFIX+".json")
-        assert fit_file_path.exists(), f"combined fit file not found at {fit_file_path}"
+        combined_fit_file_path = combine_output_dir/(COMBINED_FIT_FILENAME_PREFIX+".json")
+        combined_test_file_path = combine_output_dir/(COMBINED_TEST_FILENAME_PREFIX+".json")
+        assert combined_fit_file_path.exists(), f"combined fit file not found at {combined_fit_file_path}"
+        assert combined_test_file_path.exists(), f"combined test file not found at {combined_test_file_path}"
+
+
+        plot_output = result[plot_task.asset_id]
+        assert isinstance(plot_output, DirectoryAsset)
+        plot_output_dir = plot_output.path
+        assert (plot_output_dir/f"{PLOT_TEST_OUTPUT_PREFIX}.power.png").exists()
