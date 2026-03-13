@@ -3,7 +3,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import DEC
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import \
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED
 from mecfs_bio.assets.reference_data.mixer.processed.mixer_g1000_plink_eur_extracted import MIXER_G1000_PLINK_EXTRACTED
-from mecfs_bio.build_system.task.mixer_bivariate_task import MixerDataSource
+from mecfs_bio.build_system.task.mixer.mixer_task import MixerDataSource
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 

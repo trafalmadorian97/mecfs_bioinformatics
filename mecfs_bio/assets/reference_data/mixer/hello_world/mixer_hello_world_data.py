@@ -17,7 +17,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import Refer
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 from mecfs_bio.build_system.task.extract_tar_gzip_task import ExtractTarGzipTask
-from mecfs_bio.build_system.task.mixer_bivariate_task import MixerLDGenerationTask
+from mecfs_bio.build_system.task.mixer.mixer_task import MixerLDGenerationTask
 
 _HELLO_WORLD_TARBALL_URL = (
     "https://raw.githubusercontent.com/comorment/mixer/"

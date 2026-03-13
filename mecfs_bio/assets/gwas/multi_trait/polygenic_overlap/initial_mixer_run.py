@@ -5,8 +5,7 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_stand
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.auxiliary.sample_info import JONHSTON_ET_AL_SAMPLE_INFO
 from mecfs_bio.assets.reference_data.mixer.processed.mixer_g1000_plink_eur_extracted import MIXER_G1000_PLINK_EXTRACTED
-from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import QuantPhenotype
-from mecfs_bio.build_system.task.mixer_bivariate_task import MixerTask, MixerDataSource
+from mecfs_bio.build_system.task.mixer.mixer_task import MixerTask, MixerDataSource
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 

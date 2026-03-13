@@ -3,10 +3,9 @@ import shutil
 
 from tqdm import tqdm
 import tempfile
-from typing import Sequence, Mapping, Callable
+from typing import Sequence, Callable
 
 import narwhals
-import polars as pl
 from pathlib import Path, PurePath
 
 import narwhals as nw
@@ -16,19 +15,21 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
+from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import PhenotypeInfo, QuantPhenotype, \
     BinaryPhenotypeSampleInfo
+from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL, GWASLAB_CHROM_COL, GWASLAB_POS_COL, \
     GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL, GWASLAB_BETA_COL, GWASLAB_SE_COL
-from mecfs_bio.util.subproc.run_command import execute_command
 
 from structlog import get_logger
 
@@ -40,14 +41,16 @@ MIXER_NON_EFFECT_ALLELE_COL = "OtherAllele"
 MIXER_EFFECTIVE_SAMPLE_SIZE = "N"
 MIXER_Z_SCORE_COL = "Z"
 
-
-MIXER_VERSION = "2.2.1"
-
 logger = get_logger()
 
 
 def _default_extract_file_pattern_gen(rep: int)->str:
     return "1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.rep{}.snps".format(rep)
+
+def _get_fit_filename_prefix(rep: int)-> str:
+   return f"trait1.fit.{rep}"
+
+MIXER_FIT_JSON_PATTERN = "trait1.fit.@.json"
 
 @frozen
 class MixerDataSource:
@@ -165,7 +168,7 @@ class MixerTask(Task):
                 fit1_trait1_out_path_prefix = str(tmp_path/f"trait1.fit.{rep}")
                 assert isinstance(self.mixer_mode, UnivariateMode) # other modes not implemented
                 if isinstance(self.mixer_mode, UnivariateMode):
-                    _invoke_mixer(
+                    invoke_mixer(
                       ["fit1"]+  common_args + extract_args+ chr_args+list(self.extra_args)+ ["--trait1-file", str(trait1_path),
                                                      "--out",
                                                      str(fit1_trait1_out_path_prefix)
@@ -174,7 +177,7 @@ class MixerTask(Task):
                     )
 
                     test1_out_path_prefix = str(tmp_path/f"trait1.test.{rep}")
-                    _invoke_mixer(
+                    invoke_mixer(
                         ["test1"] + common_args + extract_args + chr_args + [
                             "--trait1-file", str(trait1_path),
                             "--load-params", fit1_trait1_out_path_prefix + ".json",
@@ -185,8 +188,8 @@ class MixerTask(Task):
                     Path(test1_out_path_prefix + ".json").rename(scratch_dir/f"trait1.test.{rep}.json")
                     Path(test1_out_path_prefix + ".log").rename(scratch_dir/f"trait1.test.{rep}.log")
 
-                    Path(fit1_trait1_out_path_prefix + ".json").rename(scratch_dir/f"trait1.fit.{rep}.json")
-                    Path(fit1_trait1_out_path_prefix + ".log").rename(scratch_dir/f"trait1.fit.{rep}.log")
+                    Path(fit1_trait1_out_path_prefix + ".json").rename(scratch_dir/f"{_get_fit_filename_prefix(rep)}.json")
+                    Path(fit1_trait1_out_path_prefix + ".log").rename(scratch_dir/f"{_get_fit_filename_prefix(rep)}.log")
 
             return DirectoryAsset(scratch_dir)
 
@@ -205,12 +208,21 @@ class MixerTask(Task):
                reps_to_perform: Sequence[int]= tuple(range(1,21)),
                chr_args: str|None=None,
                ):
-        meta =  ResultDirectoryMeta(
-            id=asset_id,
-            trait = "multi_trait",
-            project="polygenic_overlap",
-            sub_dir=PurePath("mixer")
-        )
+        assert isinstance(mixer_mode,UnivariateMode ) # only univ implemented
+        source_meta = trait_1_source.task.meta
+        if isinstance(source_meta,  FilteredGWASDataMeta):
+            meta =  ResultDirectoryMeta(
+                id=asset_id,
+                trait = source_meta.trait,
+                project=source_meta.project,
+                sub_dir=PurePath("analysis")/"mixer"
+            )
+        elif isinstance(source_meta, SimpleDirectoryMeta):
+            meta= SimpleDirectoryMeta(
+                id=AssetId(asset_id),
+            )
+        else:
+            raise ValueError(f"Unknown meta {source_meta}")
         return cls(
             meta=meta,
             trait_1_source=trait_1_source,
@@ -335,7 +347,7 @@ class MixerLDGenerationTask(Task):
             for chri in self.chromosomes:
                 bfile_prefix = self.bfile_prefix_pattern.format(chr=chri)
                 ld_out = str(tmp_path / f"{bfile_prefix}.ld")
-                _invoke_mixer(
+                invoke_mixer(
                     ["ld",
                      "--bfile", str(CONTAINER_REF_DIR / bfile_prefix),
                      "--r2min", self.r2min,
@@ -351,28 +363,3 @@ class MixerLDGenerationTask(Task):
         return DirectoryAsset(scratch_dir)
 
 
-SETUP_MIXER_DOCKER = [
-    'export',f'MIXER_PY="$DOCKER_RUN ghcr.io/precimed/gsa-mixer:{MIXER_VERSION} python /tools/mixer/precimed/mixer.py";'
-]
-
-def _get_docker_command(extra_mounts:Mapping[Path, Path])->list[str]:
-    inner_docker_command = "docker run --shm-size=2g -v $PWD:/home"
-    for key, value in extra_mounts.items():
-        inner_docker_command+= f" -v {str(key)}:{str(value)}"
-    inner_docker_command+=" -w /home"
-    return[
-        f'export',f'DOCKER_RUN="{inner_docker_command}";'
-    ]
-
-
-def _invoke_mixer(
-        args: Sequence[str]|str,
-        extra_mounts:Mapping[Path, Path],
-):
-    if isinstance(args, str):
-        args = [args]
-    execute_command(
-       _get_docker_command(extra_mounts=extra_mounts)+SETUP_MIXER_DOCKER+["${MIXER_PY}"] +list(args)
-    )
-
-_invoke_mixer("--version",{})

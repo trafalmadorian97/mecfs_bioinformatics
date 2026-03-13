@@ -15,15 +15,18 @@ from pathlib import Path
 from mecfs_bio.assets.reference_data.mixer.hello_world.mixer_hello_world_data import (
     MIXER_HELLO_WORLD_PREPARED,
 )
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
-from mecfs_bio.build_system.task.mixer_bivariate_task import (
+from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerTask,
     PreformattedMixerDataSource,
     UnivariateMode,
 )
+from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import MixerUnivariateCombine, MixerRunSource, \
+    COMBINED_FIT_FILENAME_PREFIX
 from test_mecfs_bio.system.util import log_on_error
 
 
@@ -59,6 +62,13 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         ),
         reps_to_perform=[1],
     )
+    combine_task = MixerUnivariateCombine.create(
+        asset_id="mixer_univariate_hello_world_test_combine",
+        mixer_source_runs=[MixerRunSource(
+          task=mixer_task,
+            rep=1
+        )]
+    )
 
     with log_on_error(info_store):
         asset_root.mkdir(parents=True, exist_ok=True)
@@ -68,12 +78,13 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
             asset_root=asset_root,
         )
         result = test_runner.run(
-            [mixer_task],
+            [mixer_task, combine_task],
             incremental_save=True,
         )
         assert result is not None
 
         output = result[mixer_task.asset_id]
+        assert isinstance(output, DirectoryAsset)
         output_dir = output.path
 
         # Verify fit1 output
@@ -84,10 +95,16 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         assert "pi" in fit_data or "params" in fit_data, (
             f"fit1 JSON missing expected keys, got: {list(fit_data.keys())}"
         )
-
+        import pdb; pdb.set_trace()
         # Verify test1 output
         test_json_path = output_dir / "trait1.test.1.json"
         assert test_json_path.exists(), f"test1 output not found at {test_json_path}"
         with open(test_json_path) as f:
             test_data = json.load(f)
         assert len(test_data) > 0, "test1 JSON should not be empty"
+
+        combine_output = result[combine_task.asset_id]
+        assert isinstance(combine_output, DirectoryAsset)
+        combine_output_dir = combine_output.path
+        fit_file_path = combine_output_dir/(COMBINED_FIT_FILENAME_PREFIX+".json")
+        assert fit_file_path.exists(), f"combined fit file not found at {fit_file_path}"

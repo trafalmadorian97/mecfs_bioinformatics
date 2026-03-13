@@ -3,7 +3,7 @@ from typing import Mapping
 from attrs import frozen
 
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.mixer_bivariate_task import MixerDataSource, MixerTask, UnivariateMode
+from mecfs_bio.build_system.task.mixer.mixer_task import MixerDataSource, MixerTask, UnivariateMode
 
 
 @frozen
