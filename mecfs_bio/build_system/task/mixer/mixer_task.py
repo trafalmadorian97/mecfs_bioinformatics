@@ -51,6 +51,7 @@ def _get_fit_filename_prefix(rep: int)-> str:
    return f"trait1.fit.{rep}"
 
 MIXER_FIT_JSON_PATTERN = "trait1.fit.@.json"
+MIXER_TEST_JSON_PATTERN = "trait1.test.@.json"
 
 @frozen
 class MixerDataSource:

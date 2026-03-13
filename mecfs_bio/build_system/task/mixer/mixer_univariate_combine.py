@@ -14,7 +14,7 @@ from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMet
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.mixer.mixer_task import MIXER_FIT_JSON_PATTERN
+from mecfs_bio.build_system.task.mixer.mixer_task import MIXER_FIT_JSON_PATTERN, MIXER_TEST_JSON_PATTERN
 from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer_figures
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -22,6 +22,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 _CONTAINER_AGGREGATION_DIR = Path("/container_agg")
 
 COMBINED_FIT_FILENAME_PREFIX = "trait1.fit"
+COMBINED_TEST_FILENAME_PREFIX = "trait1.test"
 
 
 @frozen
@@ -61,7 +62,19 @@ class MixerUnivariateCombine(Task):
                 ],
                 extra_mounts=agg_mounts,
             )
+
+            invoke_mixer_figures(
+                args=[
+                    "combine",
+                    "--json",
+                    str(_CONTAINER_AGGREGATION_DIR/MIXER_TEST_JSON_PATTERN),
+                    "--out",
+                    str(_CONTAINER_AGGREGATION_DIR / COMBINED_TEST_FILENAME_PREFIX),
+                ],
+                extra_mounts=agg_mounts,
+            )
             Path(tmp_path / (COMBINED_FIT_FILENAME_PREFIX + ".json")).rename(scratch_dir / (COMBINED_FIT_FILENAME_PREFIX + ".json"))
+            Path(tmp_path / (COMBINED_TEST_FILENAME_PREFIX + ".json")).rename(scratch_dir / (COMBINED_TEST_FILENAME_PREFIX + ".json"))
             return DirectoryAsset(scratch_dir)
 
     @classmethod

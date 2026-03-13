@@ -16,7 +16,7 @@ SETUP_MIXER_FIGURES_DOCKER = [
 
 
 def _get_docker_command(extra_mounts:Mapping[Path, Path])->list[str]:
-    inner_docker_command = "docker run --shm-size=2g -v $PWD:/home"
+    inner_docker_command = "docker run --rm --shm-size=2g -v $PWD:/home"
     for key, value in extra_mounts.items():
         inner_docker_command+= f" -v {str(key)}:{str(value)}"
     inner_docker_command+=" -w /home"
