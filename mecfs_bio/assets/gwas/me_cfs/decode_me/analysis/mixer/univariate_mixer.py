@@ -17,6 +17,8 @@ DECODE_ME_UNIVARIATE_MIXER =univariate_mixer_asset_generator (
         sample_info=DECODE_ME_PREVALENCE_INFO
     ),
     reference_data_directory_task=MIXER_G1000_PLINK_EXTRACTED,
-    reps=list(range(1,7)),
-    name_in_plot="DecodeME"
+    # reps=list(range(1,7)),
+    name_in_plot="DecodeME",
+    threads=6
+
 )

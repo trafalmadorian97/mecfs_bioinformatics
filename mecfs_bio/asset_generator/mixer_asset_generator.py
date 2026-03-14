@@ -24,6 +24,7 @@ def univariate_mixer_asset_generator(
         trait_1_source: MixerDataSource,
         reference_data_directory_task: Task,
         reps:Sequence[int]=tuple(range(1,21)),
+        threads: int=4
 ):
     tasks= {}
     for rep in reps:
@@ -33,6 +34,7 @@ def univariate_mixer_asset_generator(
             mixer_mode=UnivariateMode(),
             ref_data_directory_task=reference_data_directory_task,
             reps_to_perform=[rep],
+            threads=threads,
         )
     combine_task = MixerUnivariateCombine.create(
         asset_id=base_name+"_univariate_mixer_combine",
