@@ -185,7 +185,7 @@ We have assumed that $M$ is large, that columns of $X$ are not too similar, and 
 
 $$
 \begin{align}
-&\lVert\phi- \frac{1}{N}\phi^T X_{:,j} X_{:,j} \rVert^2\\
+&\lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2\\
 &\approx \lVert\phi\rVert^2    \\
 &\approx \mathrm{trace}\left( \mathbb{Var} (\phi) \right)\\
 &= N  \label{residuals}
@@ -202,7 +202,7 @@ The standard error of the $j$th GWAS regression coefficient is
 $$
 \begin{align}
 &\mathrm{SE}(\hat{\beta}_j) \\
-&\approx \sqrt{\frac{\frac{1}{N}\lVert\phi- \frac{1}{N}\phi^T X_{:,j} X_{:,j} \rVert^2}{(X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,ij} )}}} & \text{Formula for OLS SE}\\
+&\approx \sqrt{\frac{\frac{1}{N}\lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2}{(X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,j} })}} & \text{Formula for OLS SE}\\
 &=\sqrt{\frac{1}{N}} & (\text{\ref{residuals}) + Normalization of $X$} \label{sebeta}
 \end{align}
 $$
