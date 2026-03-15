@@ -13,7 +13,9 @@ Source: https://github.com/comorment/mixer/tree/main/reference/mixer_hello_world
 
 from pathlib import PurePath
 
-from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import ReferenceFileMeta
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 from mecfs_bio.build_system.task.extract_tar_gzip_task import ExtractTarGzipTask

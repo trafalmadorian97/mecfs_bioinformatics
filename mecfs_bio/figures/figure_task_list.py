@@ -5,6 +5,9 @@ This file contains a list of figures to be exported for use in documentation
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.univariate_mixer import (
+    DECODE_ME_UNIVARIATE_MIXER,
+)
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import (
     CT_LDSC_INITIAL_PLOT,
 )
@@ -31,4 +34,6 @@ ALL_FIGURE_TASKS = [
     EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_CHROMATIN_REF
     ].plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
 ]

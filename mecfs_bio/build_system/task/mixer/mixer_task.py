@@ -1,15 +1,14 @@
 import os
 import shutil
-
-from tqdm import tqdm
 import tempfile
-from typing import Sequence, Callable
+from pathlib import Path, PurePath
+from typing import Callable, Sequence
 
 import narwhals
-from pathlib import Path, PurePath
-
 import narwhals as nw
 from attrs import frozen
+from structlog import get_logger
+from tqdm import tqdm
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -22,18 +21,26 @@ from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMet
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import PhenotypeInfo, QuantPhenotype, \
-    BinaryPhenotypeSampleInfo
+from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    BinaryPhenotypeSampleInfo,
+    PhenotypeInfo,
+    QuantPhenotype,
+)
 from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL, GWASLAB_CHROM_COL, GWASLAB_POS_COL, \
-    GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL, GWASLAB_BETA_COL, GWASLAB_SE_COL
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_BETA_COL,
+    GWASLAB_CHROM_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
+    GWASLAB_RSID_COL,
+    GWASLAB_SE_COL,
+)
 
-from structlog import get_logger
-
-MIXER_RSID_COL  ="RSID"
+MIXER_RSID_COL = "RSID"
 MIXER_CHROM_COL = "CHR"
 MIXER_POS_COL = "POS"
 MIXER_EFFECT_ALLELE_COL = "EffectAllele"
@@ -44,14 +51,19 @@ MIXER_Z_SCORE_COL = "Z"
 logger = get_logger()
 
 
-def _default_extract_file_pattern_gen(rep: int)->str:
-    return "1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.rep{}.snps".format(rep)
+def _default_extract_file_pattern_gen(rep: int) -> str:
+    return (
+        f"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.rep{rep}.snps"
+    )
 
-def _get_fit_filename_prefix(rep: int)-> str:
-   return f"trait1.fit.{rep}"
+
+def _get_fit_filename_prefix(rep: int) -> str:
+    return f"trait1.fit.{rep}"
+
 
 MIXER_FIT_JSON_PATTERN = "trait1.fit.@.json"
 MIXER_TEST_JSON_PATTERN = "trait1.test.@.json"
+
 
 @frozen
 class MixerDataSource:
@@ -70,6 +82,7 @@ class MixerDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
+
 @frozen
 class PreformattedMixerDataSource:
     """
@@ -87,17 +100,21 @@ class PreformattedMixerDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
+
 @frozen
 class BivariateMode:
-    trait_2_source:MixerDataSource
+    trait_2_source: MixerDataSource
+
 
 @frozen
 class UnivariateMode:
     pass
 
+
 MixerMode = BivariateMode | UnivariateMode
 
 CONTAINER_REF_DIR = Path("/ref_data")
+
 
 @frozen
 class MixerTask(Task):
@@ -105,14 +122,13 @@ class MixerTask(Task):
     trait_1_source: MixerDataSource | PreformattedMixerDataSource
     mixer_mode: MixerMode
     reference_data_directory_task: Task
-    extract_file_pattern_gen:Callable[[int],str] | None
-    extra_args: Sequence[str]=tuple()
+    extract_file_pattern_gen: Callable[[int], str] | None
+    extra_args: Sequence[str] = tuple()
     ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld"
-    bim_file_pattern:str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
-    chr_to_use_arg:str|None=None
-    threads: int=4
-    reps_to_perform: Sequence[int]=tuple(range(1,21))
-
+    bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
+    chr_to_use_arg: str | None = None
+    threads: int = 4
+    reps_to_perform: Sequence[int] = tuple(range(1, 21))
 
     def __attrs_post_init__(self):
         pass
@@ -125,7 +141,8 @@ class MixerTask(Task):
     @property
     def deps(self) -> list["Task"]:
         result: list[Task] = [
-            self.trait_1_source.task, self.reference_data_directory_task
+            self.trait_1_source.task,
+            self.reference_data_directory_task,
         ]
         if isinstance(self.mixer_mode, BivariateMode):
             result.append(self.mixer_mode.trait_2_source.task)
@@ -138,88 +155,125 @@ class MixerTask(Task):
         with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmpdir:
             tmp_path = Path(tmpdir).relative_to(os.getcwd())
             trait1_path = _prepare_trait_file(
-                source=self.trait_1_source, fetch=fetch, temp_dir=tmp_path,
+                source=self.trait_1_source,
+                fetch=fetch,
+                temp_dir=tmp_path,
             )
             assert trait1_path.is_file()
             if isinstance(self.mixer_mode, BivariateMode):
                 trait2_path = _prepare_trait_file(
-                    source=self.mixer_mode.trait_2_source, fetch=fetch, temp_dir=tmp_path,
+                    source=self.mixer_mode.trait_2_source,
+                    fetch=fetch,
+                    temp_dir=tmp_path,
                 )
                 assert trait2_path.is_file()
             else:
                 trait2_path = None
             common_args = [
-                "--ld-file", str(CONTAINER_REF_DIR/self.ld_file_pattern),
-                "--bim-file", str(CONTAINER_REF_DIR/self.bim_file_pattern),
-                "--threads", str(self.threads),
+                "--ld-file",
+                str(CONTAINER_REF_DIR / self.ld_file_pattern),
+                "--bim-file",
+                str(CONTAINER_REF_DIR / self.bim_file_pattern),
+                "--threads",
+                str(self.threads),
             ]
 
             for rep in tqdm(self.reps_to_perform):
-
                 if self.extract_file_pattern_gen is not None:
-                    extract_file = reference_dir_asset.path / self.extract_file_pattern_gen(rep)
+                    extract_file = (
+                        reference_dir_asset.path / self.extract_file_pattern_gen(rep)
+                    )
                     assert extract_file.is_file()
-                    extract_args = ["--extract", str(CONTAINER_REF_DIR / self.extract_file_pattern_gen(rep))]
+                    extract_args = [
+                        "--extract",
+                        str(CONTAINER_REF_DIR / self.extract_file_pattern_gen(rep)),
+                    ]
                 else:
-                    extract_args=[]
+                    extract_args = []
                 if self.chr_to_use_arg is not None:
-                    chr_args=["--chr2use", self.chr_to_use_arg]
+                    chr_args = ["--chr2use", self.chr_to_use_arg]
                 else:
-                    chr_args=[]
-                fit1_trait1_out_path_prefix = str(tmp_path/f"trait1.fit.{rep}")
-                assert isinstance(self.mixer_mode, UnivariateMode) # other modes not implemented
+                    chr_args = []
+                fit1_trait1_out_path_prefix = str(tmp_path / f"trait1.fit.{rep}")
+                assert isinstance(
+                    self.mixer_mode, UnivariateMode
+                )  # other modes not implemented
                 if isinstance(self.mixer_mode, UnivariateMode):
                     invoke_mixer(
-                      ["fit1"]+  common_args + extract_args+ chr_args+list(self.extra_args)+ ["--trait1-file", str(trait1_path),
-                                                     "--out",
-                                                     str(fit1_trait1_out_path_prefix)
-                                                     ],
-                        extra_mounts=ref_mounts,
-                    )
-
-                    test1_out_path_prefix = str(tmp_path/f"trait1.test.{rep}")
-                    invoke_mixer(
-                        ["test1"] + common_args + extract_args + chr_args + [
-                            "--trait1-file", str(trait1_path),
-                            "--load-params", fit1_trait1_out_path_prefix + ".json",
-                            "--out", test1_out_path_prefix,
+                        ["fit1"]
+                        + common_args
+                        + extract_args
+                        + chr_args
+                        + list(self.extra_args)
+                        + [
+                            "--trait1-file",
+                            str(trait1_path),
+                            "--out",
+                            str(fit1_trait1_out_path_prefix),
                         ],
                         extra_mounts=ref_mounts,
                     )
-                    Path(test1_out_path_prefix + ".json").rename(scratch_dir/f"trait1.test.{rep}.json")
-                    Path(test1_out_path_prefix + ".log").rename(scratch_dir/f"trait1.test.{rep}.log")
 
-                    Path(fit1_trait1_out_path_prefix + ".json").rename(scratch_dir/f"{_get_fit_filename_prefix(rep)}.json")
-                    Path(fit1_trait1_out_path_prefix + ".log").rename(scratch_dir/f"{_get_fit_filename_prefix(rep)}.log")
+                    test1_out_path_prefix = str(tmp_path / f"trait1.test.{rep}")
+                    invoke_mixer(
+                        ["test1"]
+                        + common_args
+                        + extract_args
+                        + chr_args
+                        + [
+                            "--trait1-file",
+                            str(trait1_path),
+                            "--load-params",
+                            fit1_trait1_out_path_prefix + ".json",
+                            "--out",
+                            test1_out_path_prefix,
+                        ],
+                        extra_mounts=ref_mounts,
+                    )
+                    Path(test1_out_path_prefix + ".json").rename(
+                        scratch_dir / f"trait1.test.{rep}.json"
+                    )
+                    Path(test1_out_path_prefix + ".log").rename(
+                        scratch_dir / f"trait1.test.{rep}.log"
+                    )
+
+                    Path(fit1_trait1_out_path_prefix + ".json").rename(
+                        scratch_dir / f"{_get_fit_filename_prefix(rep)}.json"
+                    )
+                    Path(fit1_trait1_out_path_prefix + ".log").rename(
+                        scratch_dir / f"{_get_fit_filename_prefix(rep)}.log"
+                    )
 
             return DirectoryAsset(scratch_dir)
 
     @classmethod
-    def create(cls,
-               asset_id:str,
-               trait_1_source: MixerDataSource | PreformattedMixerDataSource,
-               mixer_mode: MixerMode,
-               ref_data_directory_task: Task,
-               extra_args: Sequence[str]=tuple(),
-               ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
-
-               bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
-               extract_file_pattern_gen: Callable[[int],str]|None = _default_extract_file_pattern_gen,
-               threads: int = 4,
-               reps_to_perform: Sequence[int]= tuple(range(1,21)),
-               chr_args: str|None=None,
-               ):
-        assert isinstance(mixer_mode,UnivariateMode ) # only univ implemented
+    def create(
+        cls,
+        asset_id: str,
+        trait_1_source: MixerDataSource | PreformattedMixerDataSource,
+        mixer_mode: MixerMode,
+        ref_data_directory_task: Task,
+        extra_args: Sequence[str] = tuple(),
+        ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
+        bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
+        extract_file_pattern_gen: Callable[[int], str]
+        | None = _default_extract_file_pattern_gen,
+        threads: int = 4,
+        reps_to_perform: Sequence[int] = tuple(range(1, 21)),
+        chr_args: str | None = None,
+    ):
+        assert isinstance(mixer_mode, UnivariateMode)  # only univ implemented
         source_meta = trait_1_source.task.meta
-        if isinstance(source_meta,  FilteredGWASDataMeta):
-            meta =  ResultDirectoryMeta(
+        meta: Meta
+        if isinstance(source_meta, FilteredGWASDataMeta):
+            meta = ResultDirectoryMeta(
                 id=asset_id,
-                trait = source_meta.trait,
+                trait=source_meta.trait,
                 project=source_meta.project,
-                sub_dir=PurePath("analysis")/"mixer"
+                sub_dir=PurePath("analysis") / "mixer",
             )
         elif isinstance(source_meta, SimpleDirectoryMeta):
-            meta= SimpleDirectoryMeta(
+            meta = SimpleDirectoryMeta(
                 id=AssetId(asset_id),
             )
         else:
@@ -271,41 +325,44 @@ def _prepare_trait_file(
 
 
 def _prep_summary_statistics_for_mixer(
-    sumstats_dataframe_task:    Task,
+    sumstats_dataframe_task: Task,
     fetch: Fetch,
     temp_dir: Path,
     pipe: DataProcessingPipe,
     phenotype: PhenotypeInfo,
-    name:str) -> Path:
+    name: str,
+) -> Path:
     asset = fetch(sumstats_dataframe_task.asset_id)
-    frame= pipe.process(scan_dataframe_asset(asset, meta=sumstats_dataframe_task.meta))
+    frame = pipe.process(scan_dataframe_asset(asset, meta=sumstats_dataframe_task.meta))
     frame = frame.with_columns(
         nw.col(GWASLAB_RSID_COL).alias(MIXER_RSID_COL),
         nw.col(GWASLAB_CHROM_COL).alias(MIXER_CHROM_COL),
         nw.col(GWASLAB_POS_COL).alias(MIXER_POS_COL),
-        nw.col( GWASLAB_EFFECT_ALLELE_COL).alias(MIXER_EFFECT_ALLELE_COL),
+        nw.col(GWASLAB_EFFECT_ALLELE_COL).alias(MIXER_EFFECT_ALLELE_COL),
         nw.col(GWASLAB_NON_EFFECT_ALLELE_COL).alias(MIXER_NON_EFFECT_ALLELE_COL),
-        (nw.col(GWASLAB_BETA_COL)/   nw.col(GWASLAB_SE_COL)  ).alias(MIXER_Z_SCORE_COL)
+        (nw.col(GWASLAB_BETA_COL) / nw.col(GWASLAB_SE_COL)).alias(MIXER_Z_SCORE_COL),
     ).select(
         MIXER_RSID_COL,
         MIXER_CHROM_COL,
         MIXER_POS_COL,
         MIXER_EFFECT_ALLELE_COL,
         MIXER_NON_EFFECT_ALLELE_COL,
-        MIXER_Z_SCORE_COL
+        MIXER_Z_SCORE_COL,
     )
     if isinstance(phenotype, QuantPhenotype):
         assert phenotype.total_sample_size is not None
         frame = frame.with_columns(
-            narwhals.lit(phenotype.total_sample_size).alias(MIXER_EFFECTIVE_SAMPLE_SIZE),
+            narwhals.lit(phenotype.total_sample_size).alias(
+                MIXER_EFFECTIVE_SAMPLE_SIZE
+            ),
         )
     elif isinstance(phenotype, BinaryPhenotypeSampleInfo):
         frame = frame.with_columns(
-            narwhals.lit(
-                phenotype.effective_sample_size
-            ).alias(MIXER_EFFECTIVE_SAMPLE_SIZE)
+            narwhals.lit(phenotype.effective_sample_size).alias(
+                MIXER_EFFECTIVE_SAMPLE_SIZE
+            )
         )
-    out_path = temp_dir/name
+    out_path = temp_dir / name
     frame.collect().to_pandas().to_csv(out_path, index=False, sep="\t")
     return out_path
 
@@ -316,6 +373,7 @@ class MixerLDGenerationTask(Task):
     Generates .ld files from PLINK .bed/.bim/.fam files using mixer ld command.
     Copies all source files plus generated .ld files to the output directory.
     """
+
     _meta: Meta
     plink_data_task: Task
     chromosomes: tuple[int, ...]
@@ -349,12 +407,19 @@ class MixerLDGenerationTask(Task):
                 bfile_prefix = self.bfile_prefix_pattern.format(chr=chri)
                 ld_out = str(tmp_path / f"{bfile_prefix}.ld")
                 invoke_mixer(
-                    ["ld",
-                     "--bfile", str(CONTAINER_REF_DIR / bfile_prefix),
-                     "--r2min", self.r2min,
-                     "--ldscore-r2min", self.ldscore_r2min,
-                     "--out", ld_out,
-                     "--ld-window-kb", self.ld_window_kb],
+                    [
+                        "ld",
+                        "--bfile",
+                        str(CONTAINER_REF_DIR / bfile_prefix),
+                        "--r2min",
+                        self.r2min,
+                        "--ldscore-r2min",
+                        self.ldscore_r2min,
+                        "--out",
+                        ld_out,
+                        "--ld-window-kb",
+                        self.ld_window_kb,
+                    ],
                     extra_mounts=src_mounts,
                 )
                 ld_file = Path(ld_out)
@@ -362,5 +427,3 @@ class MixerLDGenerationTask(Task):
                 shutil.copy2(str(ld_file), str(scratch_dir / ld_file.name))
 
         return DirectoryAsset(scratch_dir)
-
-
