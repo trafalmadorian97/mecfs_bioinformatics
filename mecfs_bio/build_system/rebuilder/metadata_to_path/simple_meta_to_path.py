@@ -17,6 +17,7 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_region_plots_meta import (
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
     GWASLabSumStatsMeta,
 )
+from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
@@ -65,6 +66,11 @@ class SimpleMetaToPath(MetaToPath):
                 / m.project
                 / m.sub_dir
                 / str(m.id + m.extension)
+            )
+            return pth
+        if isinstance(m, MarkdownFileMeta):
+            pth = (
+                self.root / "gwas" / m.trait / m.project / m.sub_dir / str(m.id + ".md")
             )
             return pth
         if isinstance(m, ProcessedGwasDataDirectoryMeta):

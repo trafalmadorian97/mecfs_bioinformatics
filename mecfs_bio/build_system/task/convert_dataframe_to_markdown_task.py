@@ -11,7 +11,7 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
@@ -72,12 +72,11 @@ class ConvertDataFrameToMarkdownTask(Task):
     ):
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
-        meta = FilteredGWASDataMeta(
+        meta = MarkdownFileMeta(
             id=AssetId(asset_id),
             trait=source_meta.trait,
             project=source_meta.project,
             sub_dir=source_meta.sub_dir,
-            extension=".md",
         )
         return cls(meta=meta, df_task=source_task, pipe=pipe)
 
