@@ -1,3 +1,8 @@
+"""
+Utilities for interacting with the MiXeR docker images
+Based on documentation here: https://github.com/precimed/mixer
+"""
+
 from pathlib import Path
 from typing import Mapping, Sequence
 

@@ -33,7 +33,7 @@ from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import (
 )
 from mecfs_bio.build_system.task.mixer.mixer_univariate_results import (
     TEST_OUTPUT_PREFIX,
-    MixerUnivariateResults,
+    MixerUnivariateSummarizeResultsTask,
 )
 from test_mecfs_bio.system.util import log_on_error
 
@@ -79,7 +79,7 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         mixer_source_runs=[MixerRunSource(task=mixer_task, rep=1)],
         trait_name="dummy_trait",
     )
-    plot_task = MixerUnivariateResults.create(
+    plot_task = MixerUnivariateSummarizeResultsTask.create(
         asset_id="mixer_univariate_hello_world_test_plot",
         combine_task=combine_task,
         trait_name="dummy_trait",

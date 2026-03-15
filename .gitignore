@@ -251,7 +251,3 @@ r-libs
 *.html
 *.png
 docs/_figs
-
-# Gwas repostitory token
-#
-.ieugwaspy.json

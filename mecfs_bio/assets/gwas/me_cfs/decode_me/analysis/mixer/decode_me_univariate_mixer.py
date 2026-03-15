@@ -1,3 +1,7 @@
+"""
+Asset generator to model the genetic architecture of ME/CFS using univariate MiXeR.
+"""
+
 from mecfs_bio.asset_generator.mixer_asset_generator import (
     univariate_mixer_asset_generator,
 )

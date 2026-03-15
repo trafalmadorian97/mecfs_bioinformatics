@@ -1,3 +1,7 @@
+"""
+Task to take the results of a MiXeR run and produce tables and plots.
+"""
+
 from pathlib import Path, PurePath
 
 from attrs import frozen
@@ -23,7 +27,11 @@ TEST_OUTPUT_PREFIX = "trait_plot_test"
 
 
 @frozen
-class MixerUnivariateResults(Task):
+class MixerUnivariateSummarizeResultsTask(Task):
+    """
+    Task to take the results of a MiXeR run and produce tables and plots.
+    """
+
     _meta: Meta
     combine_task: Task
     trait_name: str

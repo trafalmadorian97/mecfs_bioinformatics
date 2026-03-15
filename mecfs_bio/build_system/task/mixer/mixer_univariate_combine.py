@@ -1,3 +1,7 @@
+"""
+Task to combine MiXeR run outputs to produce a single result.
+"""
+
 import json
 import shutil
 import tempfile
@@ -35,6 +39,15 @@ class MixerRunSource:
 
 @frozen
 class MixerUnivariateCombine(Task):
+    """
+    Task to combine MiXeR run outputs to produce a single result.
+
+    The MiXeR authors have split up the genetic variants in their reference panel into 20 random subsets.
+    The recommended MiXeR workflow is to run MiXeR on your GWAS data using each of these 20 random subsets, then combine the results.
+
+    Use this task to combine the results of these runs
+    """
+
     mixer_source_runs: Sequence[MixerRunSource]
     _meta: Meta
     trait_name: str

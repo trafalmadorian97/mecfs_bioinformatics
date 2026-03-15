@@ -21,12 +21,6 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.util.subproc.run_command import execute_command
-
-
-@frozen
-class UseCommandLineTool:
-    pass
 
 
 @frozen
@@ -37,7 +31,6 @@ class ExtractAllFromZipTask(Task):
 
     _meta: Meta
     source_file_task: Task
-    use_command_line: UseCommandLineTool | None = None
 
     @property
     def meta(self) -> Meta:
@@ -60,28 +53,15 @@ class ExtractAllFromZipTask(Task):
         assert isinstance(source_asset, FileAsset)
         target_dir = scratch_dir / "extracted"
         target_dir.mkdir(parents=True, exist_ok=True)
-        if self.use_command_line:
-            execute_command(
-                [
-                    "unzip",
-                    str(source_asset.path),
-                    "-d",
-                    str(target_dir),
-                ]
+        with ZipFile(source_asset.path, "r") as zip_file:
+            zip_file.extractall(
+                target_dir,
             )
-        else:
-            with ZipFile(source_asset.path, "r") as zip_file:
-                zip_file.extractall(
-                    target_dir,
-                )
         return DirectoryAsset(target_dir)
 
     @classmethod
     def create_from_zipped_reference_file(
-        cls,
-        source_task: Task,
-        asset_id: str,
-        use_command_line: UseCommandLineTool | None = None,
+        cls, source_task: Task, asset_id: str
     ) -> Task:
         src_meta = source_task.meta
         assert isinstance(src_meta, ReferenceFileMeta)
@@ -95,5 +75,4 @@ class ExtractAllFromZipTask(Task):
         return cls(
             meta=meta,
             source_file_task=source_task,
-            use_command_line=use_command_line,
         )

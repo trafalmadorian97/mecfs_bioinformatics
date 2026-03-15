@@ -1,3 +1,8 @@
+"""
+Task to download European 1000 genomes reference data for use as an LD reference for MiXeR.
+
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (

@@ -1,7 +1,7 @@
-name: system_test_lava
+name: system_test_mixer
 on:
   schedule:
-    - cron: "0 4 * * 3"   #Run Wednesday at 4 UTC
+    - cron: "0 4 * * 4"   #Run Tbursday at 4 UTC
   workflow_dispatch: {}
 
 jobs:
@@ -21,6 +21,6 @@ jobs:
         run: pixi r invoke install-r-packages
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      - name: Run lava integration test
-        run:  pixi r python -m pytest test_mecfs_bio/system/test_lava.py::test_lava_vignette_data  # run  test using lava example data
+      - name: Run mixer integration test
+        run:  pixi r python -m pytest test_mecfs_bio/system/test_mixer.py  # run  test using mixer example data
 

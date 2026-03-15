@@ -1,5 +1,5 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.univariate_mixer import DECODE_ME_UNIVARIATE_MIXER
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import DECODE_ME_UNIVARIATE_MIXER
 
 
 def run_mixer():

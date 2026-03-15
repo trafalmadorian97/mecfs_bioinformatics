@@ -1,3 +1,8 @@
+"""
+Core task for fitting the MiXeR Gaussian mixture model to GWAS data
+
+"""
+
 import os
 import shutil
 import tempfile
@@ -118,6 +123,22 @@ CONTAINER_REF_DIR = Path("/ref_data")
 
 @frozen
 class MixerTask(Task):
+    """
+    Core task to fit the MiXeR Gaussian mixture model to GWAS data
+
+    See:
+    Holland, Dominic, et al. "Beyond SNP heritability: Polygenicity and discoverability of phenotypes
+    estimated with a univariate Gaussian mixture model." PLoS Genetics 16.5 (2020): e1008612.
+
+    The MiXeR software is distributed via Docker image.  Before running MixerTask, verify that you have installed Docker
+    and added yourself to the Docker user group.
+
+    The MiXeR authors have split up the genetic variants in their reference panel into 20 random subsets.
+    The recommended MiXeR workflow is to run MiXeR on your GWAS data using each of these 20 random subsets, then combine the results.
+    Specify which of these random subsets to run using the reps_to_perform attribute.
+
+    """
+
     _meta: Meta
     trait_1_source: MixerDataSource | PreformattedMixerDataSource
     mixer_mode: MixerMode
@@ -129,10 +150,6 @@ class MixerTask(Task):
     chr_to_use_arg: str | None = None
     threads: int = 4
     reps_to_perform: Sequence[int] = tuple(range(1, 21))
-
-    def __attrs_post_init__(self):
-        pass
-        # _invoke_mixer("--version",{})
 
     @property
     def meta(self) -> Meta:
@@ -160,15 +177,7 @@ class MixerTask(Task):
                 temp_dir=tmp_path,
             )
             assert trait1_path.is_file()
-            if isinstance(self.mixer_mode, BivariateMode):
-                trait2_path = _prepare_trait_file(
-                    source=self.mixer_mode.trait_2_source,
-                    fetch=fetch,
-                    temp_dir=tmp_path,
-                )
-                assert trait2_path.is_file()
-            else:
-                trait2_path = None
+
             common_args = [
                 "--ld-file",
                 str(CONTAINER_REF_DIR / self.ld_file_pattern),
@@ -179,21 +188,16 @@ class MixerTask(Task):
             ]
 
             for rep in tqdm(self.reps_to_perform):
-                if self.extract_file_pattern_gen is not None:
-                    extract_file = (
-                        reference_dir_asset.path / self.extract_file_pattern_gen(rep)
-                    )
-                    assert extract_file.is_file()
-                    extract_args = [
-                        "--extract",
-                        str(CONTAINER_REF_DIR / self.extract_file_pattern_gen(rep)),
-                    ]
-                else:
-                    extract_args = []
-                if self.chr_to_use_arg is not None:
-                    chr_args = ["--chr2use", self.chr_to_use_arg]
-                else:
-                    chr_args = []
+                extract_args = _get_extract_args(
+                    extract_file_pattern_gen=self.extract_file_pattern_gen,
+                    rep=rep,
+                    reference_dir_path=reference_dir_asset.path,
+                )
+                chr_args = (
+                    ["--chr2use", self.chr_to_use_arg]
+                    if self.chr_to_use_arg is not None
+                    else []
+                )
                 fit1_trait1_out_path_prefix = str(tmp_path / f"trait1.fit.{rep}")
                 assert isinstance(
                     self.mixer_mode, UnivariateMode
@@ -370,6 +374,7 @@ def _prep_summary_statistics_for_mixer(
 @frozen
 class MixerLDGenerationTask(Task):
     """
+    Implemented by Claude to facilitate testing.
     Generates .ld files from PLINK .bed/.bim/.fam files using mixer ld command.
     Copies all source files plus generated .ld files to the output directory.
     """
@@ -427,3 +432,19 @@ class MixerLDGenerationTask(Task):
                 shutil.copy2(str(ld_file), str(scratch_dir / ld_file.name))
 
         return DirectoryAsset(scratch_dir)
+
+
+def _get_extract_args(
+    extract_file_pattern_gen: Callable[[int], str] | None,
+    rep: int,
+    reference_dir_path: Path,
+) -> list[str]:
+    if extract_file_pattern_gen is not None:
+        extract_file = reference_dir_path / extract_file_pattern_gen(rep)
+        assert extract_file.is_file()
+        extract_args = [
+            "--extract",
+            str(CONTAINER_REF_DIR / extract_file_pattern_gen(rep)),
+        ]
+        return extract_args
+    return []

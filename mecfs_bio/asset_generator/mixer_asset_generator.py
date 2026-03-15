@@ -1,3 +1,7 @@
+"""
+Asset generator to use the MiXeR Gaussian mixture to model the genetic architecture of a trait.
+"""
+
 from pathlib import PurePath
 from typing import Mapping, Sequence
 
@@ -25,7 +29,7 @@ from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import (
 )
 from mecfs_bio.build_system.task.mixer.mixer_univariate_results import (
     TEST_OUTPUT_PREFIX,
-    MixerUnivariateResults,
+    MixerUnivariateSummarizeResultsTask,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
@@ -63,6 +67,13 @@ def univariate_mixer_asset_generator(
     reps: Sequence[int] = tuple(range(1, 21)),
     threads: int = 4,
 ):
+    """
+    Asset generator to apply univariate MiXeR to GWAS summary statistics.
+
+    See:
+    Holland, Dominic, et al. "Beyond SNP heritability: Polygenicity and discoverability of phenotypes
+    estimated with a univariate Gaussian mixture model." PLoS Genetics 16.5 (2020): e1008612.
+    """
     tasks = {}
     for rep in reps:
         tasks[rep] = MixerTask.create(
@@ -80,7 +91,7 @@ def univariate_mixer_asset_generator(
         ],
         trait_name=name_in_plot,
     )
-    result_task = MixerUnivariateResults.create(
+    result_task = MixerUnivariateSummarizeResultsTask.create(
         asset_id=base_name + "_univariate_mixer_results_dir",
         combine_task=combine_task,
         trait_name=name_in_plot,
