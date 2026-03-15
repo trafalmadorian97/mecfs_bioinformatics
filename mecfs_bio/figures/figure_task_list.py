@@ -36,4 +36,5 @@ ALL_FIGURE_TASKS = [
     ].plot_task,
     DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
     DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
 ]

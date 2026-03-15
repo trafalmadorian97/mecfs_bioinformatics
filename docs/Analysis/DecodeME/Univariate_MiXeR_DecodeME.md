@@ -3,27 +3,15 @@
 
 Using [software provided by the authors](https://github.com/precimed/mixer), I ran univariate [MiXeR](../../Bioinformatics_Concepts/Mixer.md)[@holland2020beyond] on the DecodeME summary statistics.  
 
-The MiXeR authors recommend running MiXeR 20 times using 20 different random subsets of their standard reference panel of genetic variants.  Here I report my results after 12 runs, since MiXeR runs are quite slow.  I will update this document when the remaining runs finish.
+The MiXeR authors recommend running MiXeR 20 times using 20 different subsets of their standard reference panel of genetic variants. This serves as a form of [bootstrapping](https://en.wikipedia.org/wiki/Bootstrapping_(statistics)). Means and standard deviations reported are over these 20 runs.
 
-First, here are the key MiXeR output parameters:
-
-| Metric           |          Value |
-|:-----------------|---------------:|
-| pi (mean)        |    0.00191312  |
-| pi (std)         |    0.000173958 |
-| sig2_beta (mean) |    4.13238e-05 |
-| sig2_beta (std)  |    3.2857e-06  |
-| sig2_zero (mean) |    0.966305    |
-| sig2_zero (std)  |    0.00339404  |
-| h2 (mean)        |    0.162873    |
-| h2 (std)         |    0.00432129  |
-| nc@p9 (mean)     | 6101.18        |
-| nc@p9 (std)      |  554.772       |
-| AIC              |   26.5712      |
-| BIC              |   36.1355      |
+First, the table below lists the key MiXeR output parameters:
 
 
-Using Table 2 from the original MiXeR paper[@holland2020beyond] as a reference, we observe that $\pi = 0.0019$ marks ME/CFS as a trait that is more polygenic than average.
+
+--8<-- "docs/_figs/decode_me_univariate_mixer_results_table_as_markdown.mdx"
+
+By comparing $\pi \approx 0.0019$ to the values in Table 2 from the original MiXeR paper[@holland2020beyond],  we observe that ME/CFS is more polygenic than average.
 
 Next, consider the power plot generated from the MiXeR model:
 
