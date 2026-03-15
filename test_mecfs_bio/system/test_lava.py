@@ -25,13 +25,13 @@ from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_g
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_gwas_1_build_37_with_rsid import (
     DECODE_ME_GWAS_1_LIFTOVER_TO_37_WITH_RSID,
 )
-from mecfs_bio.assets.reference_data.lava_ld_reference.g1000_eur.processed.lava_thousand_geomes_eur_ld_ref_extracted import (
+from mecfs_bio.assets.reference_data.lava.lava_ld_reference.g1000_eur.processed.lava_thousand_geomes_eur_ld_ref_extracted import (
     LAVA_G100_EUR_LD_REF_EXTRACTED,
 )
-from mecfs_bio.assets.reference_data.lava_locus_file.default.raw.default_lava_locus_file import (
+from mecfs_bio.assets.reference_data.lava.lava_locus_file.default.raw.default_lava_locus_file import (
     DEFAULT_LAVA_LOCUS_FILE,
 )
-from mecfs_bio.assets.reference_data.lava_vignette_data.lava_vignette_data import (
+from mecfs_bio.assets.reference_data.lava.lava_vignette_data.lava_vignette_data import (
     LAVA_VIGNETTE_BMI_SUMSTATS,
     LAVA_VIGNETTE_LD_REF,
     LAVA_VIGNETTE_LOCI,
