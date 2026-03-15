@@ -56,4 +56,3 @@ def invoke_mixer_figures(
     )
 
 
-invoke_mixer("--version", {})  # verify the mixer docker image works correctly
