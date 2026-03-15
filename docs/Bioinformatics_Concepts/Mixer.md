@@ -1,6 +1,6 @@
 # MiXeR
 
-MiXeR[@holland2020beyond;@frei2019bivariateMkd] is a family of parametric probabilistic models for the distribution of variant effect sizes in one or more GWAS.  Authors will often fit MiXeR models to summary statistics from traits of interest, then inspect the resulting model parameters to understand the genetic architecture of these traits.
+MiXeR[@holland2020beyond;@frei2019bivariate] is a family of parametric probabilistic models for the distribution of variant effect sizes in one or more GWAS.  Authors will often fit MiXeR models to summary statistics from traits of interest, then inspect the resulting model parameters to understand the genetic architecture of these traits.
 
 The authors of MiXeR have published numerous papers proposing variants of the core MiXeR model, each of which is suitable for slightly different circumstances.
 
