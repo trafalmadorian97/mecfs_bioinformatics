@@ -7,7 +7,7 @@ on:
 jobs:
   lead_variants:
     timeout-minutes: 600
-    name: Run Harmonization
+    name: Run Mixer
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
