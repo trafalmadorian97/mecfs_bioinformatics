@@ -22,5 +22,5 @@ jobs:
         env:
           GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run mixer integration test
-        run:  pixi r python -m pytest test_mecfs_bio/system/test_mixer.py  # run  test using mixer example data
+        run:  pixi r python -m pytest -s test_mecfs_bio/system/test_mixer.py  # run  test using mixer example data
 
