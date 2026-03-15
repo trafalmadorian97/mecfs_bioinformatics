@@ -146,5 +146,5 @@ def univariate_mixer_asset_generator(
         power_plot_task=power_plot_task,
         qq_plot_task=qq_plot_task,
         qq_bin_plot_task=qq_bin_plot_task,
-        result_markdown_table_Task=result_table_as_markdown_task,
+        result_markdown_table_task=result_table_as_markdown_task,
     )

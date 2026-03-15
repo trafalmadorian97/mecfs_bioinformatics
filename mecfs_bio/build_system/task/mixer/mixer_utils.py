@@ -54,5 +54,3 @@ def invoke_mixer_figures(
         + ["${MIXER_FIGURES_PY}"]
         + list(args)
     )
-
-
