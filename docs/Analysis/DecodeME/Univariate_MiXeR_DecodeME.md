@@ -23,13 +23,13 @@ First, here are the key MiXeR output parameters:
 | BIC              |   36.1355      |
 
 
-Using Table 2 from the original MiXeR pape[@holland2020beyond] as a reference, we observe that $\pi = 0.0019$ marks ME/CFS as a highly polygenic trait.
+Using Table 2 from the original MiXeR pape[@holland2020beyond] as a reference, we observe that $\pi = 0.0019$ marks ME/CFS as a trait that is more polygenic than average.
 
 Next, consider the power plot generated from the MiXeR model:
 
 ![decode_me_mixer_power](../../_figs/decode_me_univariate_mixer_power_plot.png)
 
-MiXeR predicts that an effective sample size of one million would be required to explain slightly more than 20 percent of ME/CFS's heritability with genome-wide significant SNPs.  This conclusion is consistent with ME/CFS being a highly polygenic trait: Since ME/CFS risk is conferred by a large number of weak genetic effects, large statistical power is required to make these weak genetic effects statistically significant.
+MiXeR predicts that an effective sample size of one million would be required to explain slightly more than 20 percent of ME/CFS's heritability with genome-wide significant SNPs.  This conclusion is consistent with ME/CFS being a polygenic trait: Since ME/CFS risk is conferred by a large number of weak genetic effects, large statistical power is required to make these weak genetic effects statistically significant.
 
 
 
