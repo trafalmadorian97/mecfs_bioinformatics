@@ -1,16 +1,11 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import DECODE_ME_UNIVARIATE_MIXER
+from mecfs_bio.assets.reference_data.mixer.raw.mixer_g1000_plink_eur_raw import MIXER_RAW_G1000_PLINK_DATA
 
 
 def run_mixer():
     DEFAULT_RUNNER.run(
         [
-            # LAVA_UKBB_LD_REF
-            # LAVA_G100_EUR_LD_REF_EXTRACTED,
-            # LAVA_G1000_EUR_REF_LD,
-            # DEFAULT_LAVA_LOCUS_FILE
-            # BASIC_G100_LAVA_ANALYSIS
-            # MIXER_RAW_G1000_PLINK_DATA,
             # MIXER_G1000_PLINK_EXTRACTED
             # MULTISITE_PAIN_DECODE_ME_INITIAL_MIXER
         ]+DECODE_ME_UNIVARIATE_MIXER.terminal_tasks(),
