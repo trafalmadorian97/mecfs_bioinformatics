@@ -6,12 +6,10 @@ from mecfs_bio.assets.reference_data.mixer.raw.mixer_g1000_plink_eur_raw import 
 def run_mixer():
     DEFAULT_RUNNER.run(
         [
-            # MIXER_G1000_PLINK_EXTRACTED
-            # MULTISITE_PAIN_DECODE_ME_INITIAL_MIXER
         ]+DECODE_ME_UNIVARIATE_MIXER.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            # DECODE_ME_UNIVARIATE_MIXER.combine_task
+            DECODE_ME_UNIVARIATE_MIXER.combine_task
         ]
     )
 
