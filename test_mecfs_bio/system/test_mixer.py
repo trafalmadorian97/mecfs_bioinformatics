@@ -25,9 +25,16 @@ from mecfs_bio.build_system.task.mixer.mixer_task import (
     PreformattedMixerDataSource,
     UnivariateMode,
 )
-from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import MixerUnivariateCombine, MixerRunSource, \
-    COMBINED_FIT_FILENAME_PREFIX, COMBINED_TEST_FILENAME_PREFIX
-from mecfs_bio.build_system.task.mixer.mixer_univariate_plot import MixerUnivariatePlot, PLOT_TEST_OUTPUT_PREFIX
+from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import (
+    COMBINED_FIT_FILENAME_PREFIX,
+    COMBINED_TEST_FILENAME_PREFIX,
+    MixerRunSource,
+    MixerUnivariateCombine,
+)
+from mecfs_bio.build_system.task.mixer.mixer_univariate_results import (
+    TEST_OUTPUT_PREFIX,
+    MixerUnivariateResults,
+)
 from test_mecfs_bio.system.util import log_on_error
 
 
@@ -57,26 +64,26 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         extract_file_pattern_gen=None,
         chr_args="21-22",
         extra_args=(
-            "--fit-sequence", "diffevo-fast", "neldermead-fast",
-            "--diffevo-fast-repeats", "2",
-            "--seed", "123",
+            "--fit-sequence",
+            "diffevo-fast",
+            "neldermead-fast",
+            "--diffevo-fast-repeats",
+            "2",
+            "--seed",
+            "123",
         ),
         reps_to_perform=[1],
     )
     combine_task = MixerUnivariateCombine.create(
         asset_id="mixer_univariate_hello_world_test_combine",
-        mixer_source_runs=[MixerRunSource(
-          task=mixer_task,
-            rep=1
-        )],
-        trait_name="dummy_trait"
+        mixer_source_runs=[MixerRunSource(task=mixer_task, rep=1)],
+        trait_name="dummy_trait",
     )
-    plot_task =MixerUnivariatePlot.create(
+    plot_task = MixerUnivariateResults.create(
         asset_id="mixer_univariate_hello_world_test_plot",
         combine_task=combine_task,
-        trait_name="dummy_trait"
+        trait_name="dummy_trait",
     )
-
 
     with log_on_error(info_store):
         asset_root.mkdir(parents=True, exist_ok=True)
@@ -113,13 +120,20 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
         combine_output = result[combine_task.asset_id]
         assert isinstance(combine_output, DirectoryAsset)
         combine_output_dir = combine_output.path
-        combined_fit_file_path = combine_output_dir/(COMBINED_FIT_FILENAME_PREFIX+".json")
-        combined_test_file_path = combine_output_dir/(COMBINED_TEST_FILENAME_PREFIX+".json")
-        assert combined_fit_file_path.exists(), f"combined fit file not found at {combined_fit_file_path}"
-        assert combined_test_file_path.exists(), f"combined test file not found at {combined_test_file_path}"
-
+        combined_fit_file_path = combine_output_dir / (
+            COMBINED_FIT_FILENAME_PREFIX + ".json"
+        )
+        combined_test_file_path = combine_output_dir / (
+            COMBINED_TEST_FILENAME_PREFIX + ".json"
+        )
+        assert combined_fit_file_path.exists(), (
+            f"combined fit file not found at {combined_fit_file_path}"
+        )
+        assert combined_test_file_path.exists(), (
+            f"combined test file not found at {combined_test_file_path}"
+        )
 
         plot_output = result[plot_task.asset_id]
         assert isinstance(plot_output, DirectoryAsset)
         plot_output_dir = plot_output.path
-        assert (plot_output_dir/f"{PLOT_TEST_OUTPUT_PREFIX}.power.png").exists()
+        assert (plot_output_dir / f"{TEST_OUTPUT_PREFIX}.power.png").exists()
