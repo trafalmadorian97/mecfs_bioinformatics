@@ -9,7 +9,6 @@ import tempfile
 from pathlib import Path, PurePath
 from typing import Callable, Sequence
 
-import narwhals
 import narwhals as nw
 from attrs import frozen
 from structlog import get_logger
@@ -356,15 +355,11 @@ def _prep_summary_statistics_for_mixer(
     if isinstance(phenotype, QuantPhenotype):
         assert phenotype.total_sample_size is not None
         frame = frame.with_columns(
-            narwhals.lit(phenotype.total_sample_size).alias(
-                MIXER_EFFECTIVE_SAMPLE_SIZE
-            ),
+            nw.lit(phenotype.total_sample_size).alias(MIXER_EFFECTIVE_SAMPLE_SIZE),
         )
     elif isinstance(phenotype, BinaryPhenotypeSampleInfo):
         frame = frame.with_columns(
-            narwhals.lit(phenotype.effective_sample_size).alias(
-                MIXER_EFFECTIVE_SAMPLE_SIZE
-            )
+            nw.lit(phenotype.effective_sample_size).alias(MIXER_EFFECTIVE_SAMPLE_SIZE)
         )
     out_path = temp_dir / name
     frame.collect().to_pandas().to_csv(out_path, index=False, sep="\t")
