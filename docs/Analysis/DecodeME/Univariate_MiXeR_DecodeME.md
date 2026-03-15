@@ -23,7 +23,7 @@ First, here are the key MiXeR output parameters:
 | BIC              |   36.1355      |
 
 
-Using Table 2 from the original MiXeR pape[@holland2020beyond] as a reference, we observe that $\pi = 0.0019$ marks ME/CFS as a trait that is more polygenic than average.
+Using Table 2 from the original MiXeR paper[@holland2020beyond] as a reference, we observe that $\pi = 0.0019$ marks ME/CFS as a trait that is more polygenic than average.
 
 Next, consider the power plot generated from the MiXeR model:
 

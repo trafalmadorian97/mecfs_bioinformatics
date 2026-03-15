@@ -47,7 +47,7 @@ class UnivariateMixerTasks:
     power_plot_task: Task
     qq_plot_task: Task
     qq_bin_plot_task: Task
-    result_markdown_table_Task: Task
+    result_markdown_table_task: Task
 
     def terminal_tasks(self) -> list[Task]:
         return [
@@ -55,7 +55,7 @@ class UnivariateMixerTasks:
             self.power_plot_task,
             self.qq_plot_task,
             self.qq_bin_plot_task,
-            self.result_markdown_table_Task,
+            self.result_markdown_table_task,
         ]
 
 
