@@ -1,13 +1,13 @@
 name: system_test_mixer
 on:
   schedule:
-    - cron: "0 4 * * 4"   #Run Tbursday at 4 UTC
+    - cron: "0 4 * * 4"   #Run Thursday at 4 UTC
   workflow_dispatch: {}
 
 jobs:
-  lead_variants:
+  mixer_system_test:
     timeout-minutes: 600
-    name: Run Mixer
+    name: Run MiXeR system test
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
