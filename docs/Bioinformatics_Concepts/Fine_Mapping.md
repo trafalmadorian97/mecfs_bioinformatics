@@ -4,17 +4,17 @@
 
 ## GWAS and Causal Variants
 
-In a GWAS, one runs a single univariate regression per genetic variant.  The results are visualized as a Manhattan plot, which shows the profile of p values across the genome. 
-For instance, see this plot generated from the [DecodeME](../Data_Sources/DecodeME.md)[@genetics2025initial] summary statistics:
+We typically visualize the results of a GWAS as a Manhattan plot, which shows the profile of univariate-regression p values across the genome. 
+This plot generated from the [DecodeME](../Data_Sources/DecodeME.md)[@genetics2025initial] summary statistics provides an example:
 
 ![decode_me_manahattan](https://github.com/user-attachments/assets/149ea85f-c71b-47ea-b208-4dcfc70fa195)
 
-One of the primary purposes of a GWAS is to identify genetic variants that are causal for the phenotype of interest.  These causal variants can inform us about the biological processes underlying the phenotype.
+A primary purposes of a GWAS is identification of causal genetic variants.  These causal variants can inform us about the biological processes underlying the phenotype we are studying.
 
-It would be natural to take the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") and conclude that they are causal.  This approach omits a key consideration: linkage disequilibrium.
+The naive approach is to label the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") as causal.  This approach omits a key consideration: linkage disequilibrium.
 
 ## Linkage Disequilibrium
-"Linkage disequilibrium" (LD) refers to statistical dependence between genetic variants. LD is central to nearly every aspect of statistical genomics.
+_Linkage disequilibrium_ (LD) refers to statistical dependence between genetic variants. LD is central to statistical genomics.
 
 Some facts about LD:
 
@@ -27,7 +27,7 @@ As an illustrative example, here is a plot of the absolute value of the correlat
 
 ![ld_example_plot](https://github.com/user-attachments/assets/a05681d5-91f3-4b89-8023-d3d50a22b8bd)
 
-Consistent with the facts above, we observe irregularly-spaced blocks of high LD.  Moreover, the high LD blocks are not uniform, but contain low-correlation genetic variants, perhaps the result of recent mutations.
+Consistent with the facts above, we observe irregularly spaced LD blocks. 
 
 
 ## Effect of LD on Significance
@@ -37,15 +37,15 @@ LD patterns can obscure the true causal variant. To illustrate the point, Wang a
 
 ![gwas_wrong_causal_variant](https://github.com/user-attachments/assets/db71a06f-68b5-4410-bc18-3fb3c34c67c9)
 
-In the example, the left and right variants are causal, while the central variant is not.  The left and right variants are correlated with the central variant, but not one another.  As a result, the GWAS signal is misleading: if we were to select the candidate causal variants according to p value, we would select the central variant.
+In the example, the left and right variants are causal, while the central variant is not.  The left and right variants are correlated with the central variant, but not one another.  As a result, the raw GWAS signal is misleading: if we were to select the candidate causal variant according to p value, we would select the central variant.
 
-Wang and Huang's example is not a purely theoretical construction.  It reflects a phenomenon seen in real GWAS.  For instance, in a large scale UK Biobank fine-mapping study of 49 traits, Weisbrod et al.[@weissbrod2020functionally] report that "Only 39% of the 2,225 \[likely-causal\] SNPs were also lead GWAS SNPs".
+Wang and Huang's example reflects a phenomenon seen in real GWAS.  For instance, in a large scale UK Biobank fine-mapping study of 49 traits, Weisbrod et al.[@weissbrod2020functionally] report that "Only 39% of the 2,225 \[likely-causal\] SNPs were also lead GWAS SNPs".
 
 
 
 ## Fine Mapping
 
-Wang and Huang[@wang2022methods] note that fine mapping can be thought of as "an exercise to disentangle the effect of LD from the GWAS data".  The goal is to identify the true variants by reversing the effect of LD.
+Wang and Huang[@wang2022methods] point out that fine mapping can be thought of as "an exercise to disentangle the effect of LD from the GWAS data".  The goal is to de-convolve the GWAS signal to find the true causal variants.
 
 ### Fine Mapping as Bayesian Regression
 
@@ -63,10 +63,10 @@ where
 - $\beta_j$ is the effect of variant $j$ on the phenotype,
 - $\epsilon$ accounts for the part of the phenotype not attributable to genetic variants at the locus.
 
-We state a Bayesian prior over the vector $\beta\in\mathbb{R}^J$, and then estimate a posterior over $\beta$ conditional on GWAS data.
+We assume a Bayesian prior over the vector $\beta\in\mathbb{R}^J$, and then estimate a posterior over $\beta$ conditional on GWAS data.
 
 
-Roughly speaking, fine mapping methods will conclude that a SNP is causal if there is a high posterior probability that $\beta_i$ is significantly different from zero.  That is:
+Roughly speaking, fine mapping methods conclude that a SNP is causal if there is a high posterior probability that $\beta_i$ is significantly different from zero.  That is:
 
 $$
 P(\lvert\beta_i\rvert\gg 0 |D) \approx 1.
