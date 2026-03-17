@@ -5,7 +5,7 @@
 ## GWAS and Causal Variants
 
 We typically visualize the results of a GWAS as a Manhattan plot, which shows the profile of univariate-regression p values across the genome. 
-This plot generated from the [DecodeME](../Data_Sources/DecodeME.md)[@genetics2025initial] summary statistics provides an example:
+The plot below generated from the [DecodeME](../Data_Sources/DecodeME.md)[@genetics2025initial] summary statistics provides an example:
 
 ![decode_me_manahattan](https://github.com/user-attachments/assets/149ea85f-c71b-47ea-b208-4dcfc70fa195)
 
