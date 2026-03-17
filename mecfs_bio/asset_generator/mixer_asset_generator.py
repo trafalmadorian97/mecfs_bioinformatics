@@ -33,6 +33,7 @@ from mecfs_bio.build_system.task.mixer.mixer_univariate_results import (
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
+from mecfs_bio.build_system.task.pipes.heritability_conversion_pipe import HeritabilityConversionPipe
 from mecfs_bio.build_system.task.pipes.rename_col_by_position_pipe import (
     RenameColByPositionPipe,
 )
@@ -132,9 +133,17 @@ def univariate_mixer_asset_generator(
             pipe=CompositePipe(
                 [
                     DropColPipe(["fname"]),
+                    HeritabilityConversionPipe(
+                    observed_heritability_column="h2 (mean)",
+                        liability_heritability_column="h2 (liability, mean)",
+                        sample_info=trait_1_source.sample_info,
+                        assume_even_sample=True
+                    ),
+
                     TransposePipe(),
                     RenameColByPositionPipe(col_position=0, col_new_name="Parameter"),
                     RenameColByPositionPipe(col_position=1, col_new_name="Value"),
+
                 ]
             ),
         )
