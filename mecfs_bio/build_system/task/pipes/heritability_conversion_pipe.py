@@ -40,6 +40,7 @@ class HeritabilityConversionPipe(DataProcessingPipe):
             sample_prev = 0.5
         else:
             sample_prev = self.sample_info.sample_prevalence
+        pop_prev = self.sample_info.estimated_population_prevalence
         df[self.liability_heritability_column] = df[
             self.observed_heritability_column
         ].apply(
