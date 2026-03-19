@@ -34,6 +34,7 @@ class HeritabilityConversionPipe(DataProcessingPipe):
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         if isinstance(self.sample_info, QuantPhenotype):
             return x
+        pop_prev = self.sample_info.estimated_population_prevalence
         df = x.collect().to_pandas()
         if self.assume_even_sample:
             sample_prev = 0.5
