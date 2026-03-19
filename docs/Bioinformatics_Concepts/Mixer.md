@@ -31,25 +31,48 @@ where
 
 Furthermore,
  
+- Define the population variance of genetic variant $i$:
+
+$$
+\begin{align}
+H_i&:= \mathrm{Var}(g_{j,i})
+\end{align}
+$$
+for any individual $j$, 
+
 - Define 
 
 $$
 \begin{align}
-H_i = \frac{\lVert g \rVert^2}{N}, \label{mixer_h_def}
+\hat H_i := \frac{\lVert g \rVert^2}{N}, \label{mixer_h_def}
 \end{align}
 $$
 
 the sample variance of genetic variant $i$.
+
+- Define the population correlation between variants $i$ and $j$
+
+$$
+\begin{align}
+r_{i,j}:=\mathrm{Corr}(g_{k,i}g_{k,j})
+\end{align}
+$$
+
+for any individual $k$.
+
+
+
+
 - Define 
 
 $$
 \begin{align}
-r_{i,j}&= \frac{g_i^T g_j}{\lVert g_i \rVert \lVert g_j \rVert  }\\
-&=\frac{g_i^Tg_j}{N \sqrt{H_i H_j} } \label{corr_def}
+\hat r_{i,j}&:= \frac{g_i^T g_j}{\lVert g_i \rVert \lVert g_j \rVert  }\\
+&=\frac{g_i^Tg_j}{N \sqrt{H_i H_j} } \label{corr_def},
 \end{align}
 $$
 
-The sample correlation of variants $i$ and $j$.
+the sample correlation of variants $i$ and $j$.
 
 
 MiXeR models the true causal effect sizes via a mixture distribution.  For any variant $i$, we have
@@ -95,7 +118,7 @@ Next, we compute the standard error of $\hat{\beta_i}$.
 
 $$
 \begin{align}
-\mathrm{SE}(\hat\beta)&\approx \sqrt{\frac{\frac{1}{N}\lVert y- \hat{\beta}_i g_i \rVert^2}{g_i^T g_i}} & \text{ OLS SE formula}\\
+\mathrm{SE}(\hat\beta_i)&\approx \sqrt{\frac{\frac{1}{N}\lVert y- \hat{\beta}_i g_i \rVert^2}{g_i^T g_i}} & \text{ OLS SE formula}\\
 &\approx \sqrt{\frac{\lVert y \rVert^2/N}{g_i^T g}} \label{se_step}\\
 &= \sqrt{\frac{1}{g_i^T g}}& \text{ Normalization}\\
 &=\frac{1}{\sqrt{N H_i}} & \text{ By (\ref{mixer_h_def})}
