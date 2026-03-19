@@ -23,7 +23,6 @@ from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
 from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerTask,
     PreformattedMixerDataSource,
-    UnivariateMode,
 )
 from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import (
     COMBINED_FIT_FILENAME_PREFIX,
@@ -57,7 +56,6 @@ def test_mixer_univariate_hello_world(tmp_path: Path):
             filename="trait1.sumstats.gz",
             alias="trait1",
         ),
-        mixer_mode=UnivariateMode(),
         ref_data_directory_task=MIXER_HELLO_WORLD_PREPARED,
         ld_file_pattern="g1000_eur_hm3_chr@.ld",
         bim_file_pattern="g1000_eur_hm3_chr@.bim",

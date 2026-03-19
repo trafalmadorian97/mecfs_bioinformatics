@@ -21,7 +21,6 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
 from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerDataSource,
     MixerTask,
-    UnivariateMode,
 )
 from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import (
     MixerRunSource,
@@ -82,7 +81,6 @@ def univariate_mixer_asset_generator(
         tasks[rep] = MixerTask.create(
             asset_id=base_name + f"_standard_mixer_rep_{rep}",
             trait_1_source=trait_1_source,
-            mixer_mode=UnivariateMode(),
             ref_data_directory_task=reference_data_directory_task,
             reps_to_perform=[rep],
             threads=threads,

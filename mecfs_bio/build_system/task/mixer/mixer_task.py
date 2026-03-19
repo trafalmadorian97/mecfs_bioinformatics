@@ -140,7 +140,6 @@ class MixerTask(Task):
 
     _meta: Meta
     trait_1_source: MixerDataSource | PreformattedMixerDataSource
-    mixer_mode: MixerMode
     reference_data_directory_task: Task
     extract_file_pattern_gen: Callable[[int], str] | None
     extra_args: Sequence[str] = tuple()
@@ -160,8 +159,6 @@ class MixerTask(Task):
             self.trait_1_source.task,
             self.reference_data_directory_task,
         ]
-        if isinstance(self.mixer_mode, BivariateMode):
-            result.append(self.mixer_mode.trait_2_source.task)
         return result
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -170,7 +167,7 @@ class MixerTask(Task):
         ref_mounts = {reference_dir_asset.path.resolve(): CONTAINER_REF_DIR}
         with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmpdir:
             tmp_path = Path(tmpdir).relative_to(os.getcwd())
-            trait1_path = _prepare_trait_file(
+            trait1_path = prepare_mixer_trait_input_file(
                 source=self.trait_1_source,
                 fetch=fetch,
                 temp_dir=tmp_path,
@@ -187,7 +184,7 @@ class MixerTask(Task):
             ]
 
             for rep in tqdm(self.reps_to_perform):
-                extract_args = _get_extract_args(
+                extract_args = get_mixer_extract_args(
                     extract_file_pattern_gen=self.extract_file_pattern_gen,
                     rep=rep,
                     reference_dir_path=reference_dir_asset.path,
@@ -198,54 +195,50 @@ class MixerTask(Task):
                     else []
                 )
                 fit1_trait1_out_path_prefix = str(tmp_path / f"trait1.fit.{rep}")
-                assert isinstance(
-                    self.mixer_mode, UnivariateMode
-                )  # other modes not implemented
-                if isinstance(self.mixer_mode, UnivariateMode):
-                    invoke_mixer(
-                        ["fit1"]
-                        + common_args
-                        + extract_args
-                        + chr_args
-                        + list(self.extra_args)
-                        + [
-                            "--trait1-file",
-                            str(trait1_path),
-                            "--out",
-                            str(fit1_trait1_out_path_prefix),
-                        ],
-                        extra_mounts=ref_mounts,
-                    )
+                invoke_mixer(
+                    ["fit1"]
+                    + common_args
+                    + extract_args
+                    + chr_args
+                    + list(self.extra_args)
+                    + [
+                        "--trait1-file",
+                        str(trait1_path),
+                        "--out",
+                        str(fit1_trait1_out_path_prefix),
+                    ],
+                    extra_mounts=ref_mounts,
+                )
 
-                    test1_out_path_prefix = str(tmp_path / f"trait1.test.{rep}")
-                    invoke_mixer(
-                        ["test1"]
-                        + common_args
-                        + extract_args
-                        + chr_args
-                        + [
-                            "--trait1-file",
-                            str(trait1_path),
-                            "--load-params",
-                            fit1_trait1_out_path_prefix + ".json",
-                            "--out",
-                            test1_out_path_prefix,
-                        ],
-                        extra_mounts=ref_mounts,
-                    )
-                    Path(test1_out_path_prefix + ".json").rename(
-                        scratch_dir / f"trait1.test.{rep}.json"
-                    )
-                    Path(test1_out_path_prefix + ".log").rename(
-                        scratch_dir / f"trait1.test.{rep}.log"
-                    )
+                test1_out_path_prefix = str(tmp_path / f"trait1.test.{rep}")
+                invoke_mixer(
+                    ["test1"]
+                    + common_args
+                    + extract_args
+                    + chr_args
+                    + [
+                        "--trait1-file",
+                        str(trait1_path),
+                        "--load-params",
+                        fit1_trait1_out_path_prefix + ".json",
+                        "--out",
+                        test1_out_path_prefix,
+                    ],
+                    extra_mounts=ref_mounts,
+                )
+                Path(test1_out_path_prefix + ".json").rename(
+                    scratch_dir / f"trait1.test.{rep}.json"
+                )
+                Path(test1_out_path_prefix + ".log").rename(
+                    scratch_dir / f"trait1.test.{rep}.log"
+                )
 
-                    Path(fit1_trait1_out_path_prefix + ".json").rename(
-                        scratch_dir / f"{_get_fit_filename_prefix(rep)}.json"
-                    )
-                    Path(fit1_trait1_out_path_prefix + ".log").rename(
-                        scratch_dir / f"{_get_fit_filename_prefix(rep)}.log"
-                    )
+                Path(fit1_trait1_out_path_prefix + ".json").rename(
+                    scratch_dir / f"{_get_fit_filename_prefix(rep)}.json"
+                )
+                Path(fit1_trait1_out_path_prefix + ".log").rename(
+                    scratch_dir / f"{_get_fit_filename_prefix(rep)}.log"
+                )
 
             return DirectoryAsset(scratch_dir)
 
@@ -254,7 +247,6 @@ class MixerTask(Task):
         cls,
         asset_id: str,
         trait_1_source: MixerDataSource | PreformattedMixerDataSource,
-        mixer_mode: MixerMode,
         ref_data_directory_task: Task,
         extra_args: Sequence[str] = tuple(),
         ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
@@ -265,7 +257,6 @@ class MixerTask(Task):
         reps_to_perform: Sequence[int] = tuple(range(1, 21)),
         chr_args: str | None = None,
     ):
-        assert isinstance(mixer_mode, UnivariateMode)  # only univ implemented
         source_meta = trait_1_source.task.meta
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
@@ -284,7 +275,6 @@ class MixerTask(Task):
         return cls(
             meta=meta,
             trait_1_source=trait_1_source,
-            mixer_mode=mixer_mode,
             reference_data_directory_task=ref_data_directory_task,
             ld_file_pattern=ld_file_pattern,
             bim_file_pattern=bim_file_pattern,
@@ -296,7 +286,7 @@ class MixerTask(Task):
         )
 
 
-def _prepare_trait_file(
+def prepare_mixer_trait_input_file(
     source: MixerDataSource | PreformattedMixerDataSource,
     fetch: Fetch,
     temp_dir: Path,
@@ -429,7 +419,7 @@ class MixerLDGenerationTask(Task):
         return DirectoryAsset(scratch_dir)
 
 
-def _get_extract_args(
+def get_mixer_extract_args(
     extract_file_pattern_gen: Callable[[int], str] | None,
     rep: int,
     reference_dir_path: Path,
