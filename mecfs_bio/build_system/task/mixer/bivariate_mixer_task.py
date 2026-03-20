@@ -173,7 +173,8 @@ class BivariateMixerTask(Task):
                 ],
                 extra_mounts=ref_mounts,
             )
-
+            bivar_fit_json = (tmp_path / (bivar_fit_out+".json"))
+            assert bivar_fit_json.exists()
             bivar_test_out = str(tmp_path / test_prefix)
             invoke_mixer(
                 ["test2"]
@@ -185,7 +186,7 @@ class BivariateMixerTask(Task):
                     "--trait2-file",
                     str(trait_2_stats_path),
                     "--load-params",
-                    bivar_fit_out + ".json",
+                    bivar_fit_json,
                     "--out",
                     bivar_test_out,
                 ],
