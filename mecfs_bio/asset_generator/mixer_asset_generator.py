@@ -176,6 +176,14 @@ def bivariate_mixer_asset_generator(
     reps: Sequence[int] = tuple(range(1, 21)),
     apply_extract_to_test: bool = False,
 ) -> BivariateMixerTasks:
+    """
+    Asset generator to run bivariate mixer tasks on two traits.  Requires the output of univariate mixer to run.
+
+    Analogously to univariate MiXeR, runs 20 times on 20 different random subsets of the reference panel of genetic variants.
+
+    setting apply_extract_to_test will evaluate the MiXeR models on the full reference panel.  This will use a very large amount of RAM,
+    but result in more accurate output parameters.
+    """
     tasks = {}
     base_name = (
         base_name
