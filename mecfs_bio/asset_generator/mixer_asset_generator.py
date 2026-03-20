@@ -181,7 +181,7 @@ def bivariate_mixer_asset_generator(
 
     Analogously to univariate MiXeR, runs 20 times on 20 different random subsets of the reference panel of genetic variants.
 
-    setting apply_extract_to_test will evaluate the MiXeR models on the full reference panel.  This will use a very large amount of RAM,
+    Setting apply_extract_to_test to False will evaluate the MiXeR models on the full reference panel.  This will use a very large amount of RAM,
     but result in more accurate output parameters.
     """
     tasks = {}
