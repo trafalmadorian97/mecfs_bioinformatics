@@ -62,6 +62,7 @@ class BivariateMixerTask(Task):
     ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld"
     bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
     threads: int = 4
+    apply_extract_to_test: bool = False
 
     def __attrs_post_init__(self):
         assert len(self.trait_1_univariate_task.reps_to_perform) == 1
@@ -173,12 +174,16 @@ class BivariateMixerTask(Task):
                 ],
                 extra_mounts=ref_mounts,
             )
+            extra_test_args = []
+            if self.apply_extract_to_test:
+                extra_test_args.extend(extract_args)
 
             bivar_test_out = str(tmp_path / test_prefix)
             invoke_mixer(
                 ["test2"]
                 + common_args
                 + chr_args
+                + extra_test_args
                 + [
                     "--trait1-file",
                     str(trait_1_stats_path),
@@ -218,6 +223,7 @@ class BivariateMixerTask(Task):
         ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
         bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
         threads: int = 4,
+        apply_extract_to_test: bool = False,
     ):
         source_meta = trait_1_source.task.meta
         meta: Meta
@@ -247,4 +253,5 @@ class BivariateMixerTask(Task):
             chr_to_use_arg=chr_args,
             extra_args=extra_args,
             threads=threads,
+            apply_extract_to_test=apply_extract_to_test,
         )
