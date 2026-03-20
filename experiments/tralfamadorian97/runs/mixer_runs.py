@@ -1,6 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import DECODE_ME_UNIVARIATE_MIXER
-from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.pain_mecfs_bivariate_mixer import \
+from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import \
     MECFS_PAIN_BIVARIATE_MIXER
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import \
     JOHNSTON_ET_AL_UNIVARIATE_MIXER

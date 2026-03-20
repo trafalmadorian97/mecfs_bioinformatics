@@ -158,28 +158,32 @@ def univariate_mixer_asset_generator(
     )
 
 
-
 @frozen
 class BivariateMixerTasks:
     trait_1_tasks: UnivariateMixerTasks
     trait_2_task: UnivariateMixerTasks
     bivariate_run_tasks: Mapping[int, Task]
-    def terminal_tasks(self) ->list[Task]:
+
+    def terminal_tasks(self) -> list[Task]:
         return list(self.bivariate_run_tasks.values())
 
-def bivariate_mixer_asset_generator(
-        base_name: str,
-        trait_1_tasks: UnivariateMixerTasks,
-        trait_2_tasks: UnivariateMixerTasks,
-        reps: Sequence[int] = tuple(range(1, 21)),
-        apply_extract_to_test: bool = False,
-) -> BivariateMixerTasks:
 
+def bivariate_mixer_asset_generator(
+    base_name: str,
+    trait_1_tasks: UnivariateMixerTasks,
+    trait_2_tasks: UnivariateMixerTasks,
+    extra_fit_args: Sequence[str] = tuple(),
+    reps: Sequence[int] = tuple(range(1, 21)),
+    apply_extract_to_test: bool = False,
+) -> BivariateMixerTasks:
     tasks = {}
-    base_name = base_name + f"_{trait_1_tasks.results_task.trait_name}_{trait_2_tasks.results_task.trait_name}"
+    base_name = (
+        base_name
+        + f"_{trait_1_tasks.results_task.trait_name}_{trait_2_tasks.results_task.trait_name}"
+    )
     for rep in reps:
-        trait_1_task=trait_1_tasks.run_tasks[rep]
-        trait_2_task=trait_2_tasks.run_tasks[rep]
+        trait_1_task = trait_1_tasks.run_tasks[rep]
+        trait_2_task = trait_2_tasks.run_tasks[rep]
         tasks[rep] = BivariateMixerTask.create(
             asset_id=base_name + f"_bivariate_mixer_{rep}",
             trait_1_source=trait_1_task.trait_1_source,
@@ -188,6 +192,7 @@ def bivariate_mixer_asset_generator(
             trait_1_univariate_task=trait_1_task,
             trait_2_univariate_task=trait_2_task,
             apply_extract_to_test=apply_extract_to_test,
+            extra_args=list(extra_fit_args),
         )
 
     return BivariateMixerTasks(

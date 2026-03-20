@@ -22,8 +22,9 @@ from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerDataSource,
     MixerTask,
     PreformattedMixerDataSource,
+    default_mixer_extract_file_pattern_gen,
     get_mixer_extract_args,
-    prepare_mixer_trait_input_file, default_mixer_extract_file_pattern_gen,
+    prepare_mixer_trait_input_file,
 )
 from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -174,7 +175,7 @@ class BivariateMixerTask(Task):
                 ],
                 extra_mounts=ref_mounts,
             )
-            bivar_fit_json = (tmp_path / (bivar_fit_out+".json"))
+            bivar_fit_json = tmp_path / (fit_prefix + ".json")
             assert bivar_fit_json.exists()
             extra_test_args = []
             if self.apply_extract_to_test:
@@ -192,7 +193,7 @@ class BivariateMixerTask(Task):
                     "--trait2-file",
                     str(trait_2_stats_path),
                     "--load-params",
-                    bivar_fit_json,
+                    str(bivar_fit_json),
                     "--out",
                     bivar_test_out,
                 ],
@@ -219,7 +220,8 @@ class BivariateMixerTask(Task):
         ref_data_directory_task: Task,
         trait_1_univariate_task: MixerTask,
         trait_2_univariate_task: MixerTask,
-        extract_file_pattern_gen: Callable[[int], str] | None= default_mixer_extract_file_pattern_gen,
+        extract_file_pattern_gen: Callable[[int], str]
+        | None = default_mixer_extract_file_pattern_gen,
         extra_args: Sequence[str] = tuple(),
         chr_args: str | None = None,
         ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",

@@ -181,7 +181,7 @@ def _make_univariate_task(
     ["apply_extract_to_test"],
     [
         [True],
-    ]
+    ],
 )
 def test_mixer_bivariate_hello_world(tmp_path: Path, apply_extract_to_test: bool):
     """
