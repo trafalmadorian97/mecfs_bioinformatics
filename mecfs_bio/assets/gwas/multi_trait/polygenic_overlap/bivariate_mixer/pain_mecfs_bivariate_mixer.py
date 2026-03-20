@@ -7,6 +7,5 @@ MECFS_PAIN_BIVARIATE_MIXER=bivariate_mixer_asset_generator(
     base_name="initial_bivariate_mixer",
 trait_1_tasks=DECODE_ME_UNIVARIATE_MIXER,
     trait_2_tasks=JOHNSTON_ET_AL_UNIVARIATE_MIXER,
-
-
+    apply_extract_to_test=True,  # Avoid using too much memory
 )

@@ -172,6 +172,7 @@ def bivariate_mixer_asset_generator(
         trait_1_tasks: UnivariateMixerTasks,
         trait_2_tasks: UnivariateMixerTasks,
         reps: Sequence[int] = tuple(range(1, 21)),
+        apply_extract_to_test: bool = False,
 ) -> BivariateMixerTasks:
 
     tasks = {}
@@ -186,6 +187,7 @@ def bivariate_mixer_asset_generator(
             ref_data_directory_task=trait_1_task.reference_data_directory_task,
             trait_1_univariate_task=trait_1_task,
             trait_2_univariate_task=trait_2_task,
+            apply_extract_to_test=apply_extract_to_test,
         )
 
     return BivariateMixerTasks(
