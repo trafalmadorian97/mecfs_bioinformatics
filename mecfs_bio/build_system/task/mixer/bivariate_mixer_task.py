@@ -224,9 +224,9 @@ class BivariateMixerTask(Task):
         if isinstance(source_meta, FilteredGWASDataMeta):
             meta = ResultDirectoryMeta(
                 id=asset_id,
-                trait=source_meta.trait,
-                project=source_meta.project,
-                sub_dir=PurePath("analysis") / "mixer_bivariate",
+                trait="multi_trait",
+                project="polygenic_overlap",
+                sub_dir=PurePath("analysis") / "bivariate_mixer",
             )
         elif isinstance(source_meta, SimpleDirectoryMeta):
             meta = SimpleDirectoryMeta(
