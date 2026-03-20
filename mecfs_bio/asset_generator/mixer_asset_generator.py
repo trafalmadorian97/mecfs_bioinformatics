@@ -155,3 +155,17 @@ def univariate_mixer_asset_generator(
         qq_bin_plot_task=qq_bin_plot_task,
         result_markdown_table_task=result_table_as_markdown_task,
     )
+
+
+
+@frozen
+class BivariateMixerTasks:
+    trait_1_tasks: UnivariateMixerTasks
+    trait_2_task: UnivariateMixerTasks
+    bivariate_run_tasks: Mapping[int, Task]
+
+def bivariate_mixer_asset_generator(
+        base_name: str,
+        trait_1_tasks: UnivariateMixerTasks,
+        trait_2_task: UnivariateMixerTasks,
+) -> BivariateMixerTasks:
