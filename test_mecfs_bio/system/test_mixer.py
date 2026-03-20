@@ -11,6 +11,8 @@ under 2 minutes with fast-run arguments in the univariate case and under 7 minut
 import json
 from pathlib import Path
 
+import pytest
+
 from mecfs_bio.assets.reference_data.mixer.hello_world.mixer_hello_world_data import (
     MIXER_HELLO_WORLD_PREPARED,
 )
@@ -175,7 +177,13 @@ def _make_univariate_task(
     )
 
 
-def test_mixer_bivariate_hello_world(tmp_path: Path):
+@pytest.mark.parametrize(
+    ["apply_extract_to_test"],
+    [
+        [True],
+    ]
+)
+def test_mixer_bivariate_hello_world(tmp_path: Path, apply_extract_to_test: bool):
     """
     Fast system test: runs bivariate (cross-trait) MiXeR on trait1 and trait2
     from the hello-world example.
@@ -217,6 +225,7 @@ def test_mixer_bivariate_hello_world(tmp_path: Path):
         extra_args=FAST_RUN_EXTRA_ARGS,
         ld_file_pattern="g1000_eur_hm3_chr@.ld",
         bim_file_pattern="g1000_eur_hm3_chr@.bim",
+        apply_extract_to_test=apply_extract_to_test,
     )
 
     with log_on_error(info_store):
