@@ -18,6 +18,7 @@ from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
+from mecfs_bio.build_system.task.mixer.bivariate_mixer_task import BivariateMixerTask
 from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerDataSource,
     MixerTask,
@@ -43,9 +44,9 @@ from mecfs_bio.build_system.task.pipes.transpose_pipe import TransposePipe
 
 @frozen
 class UnivariateMixerTasks:
-    run_tasks: Mapping[int, Task]
+    run_tasks: Mapping[int, MixerTask]
     combine_task: Task
-    results_task: Task
+    results_task: MixerUnivariateSummarizeResultsTask
     power_plot_task: Task
     qq_plot_task: Task
     qq_bin_plot_task: Task
@@ -154,4 +155,56 @@ def univariate_mixer_asset_generator(
         qq_plot_task=qq_plot_task,
         qq_bin_plot_task=qq_bin_plot_task,
         result_markdown_table_task=result_table_as_markdown_task,
+    )
+
+
+@frozen
+class BivariateMixerTasks:
+    trait_1_tasks: UnivariateMixerTasks
+    trait_2_task: UnivariateMixerTasks
+    bivariate_run_tasks: Mapping[int, Task]
+
+    def terminal_tasks(self) -> list[Task]:
+        return list(self.bivariate_run_tasks.values())
+
+
+def bivariate_mixer_asset_generator(
+    base_name: str,
+    trait_1_tasks: UnivariateMixerTasks,
+    trait_2_tasks: UnivariateMixerTasks,
+    extra_fit_args: Sequence[str] = tuple(),
+    reps: Sequence[int] = tuple(range(1, 21)),
+    apply_extract_to_test: bool = False,
+) -> BivariateMixerTasks:
+    """
+    Asset generator to run bivariate mixer tasks on two traits.  Requires the output of univariate mixer to run.
+
+    Analogously to univariate MiXeR, runs 20 times on 20 different random subsets of the reference panel of genetic variants.
+
+    Setting apply_extract_to_test to False will evaluate the MiXeR models on the full reference panel.  This will use a very large amount of RAM,
+    but result in more accurate output parameters.
+    """
+    tasks = {}
+    base_name = (
+        base_name
+        + f"_{trait_1_tasks.results_task.trait_name}_{trait_2_tasks.results_task.trait_name}"
+    )
+    for rep in reps:
+        trait_1_task = trait_1_tasks.run_tasks[rep]
+        trait_2_task = trait_2_tasks.run_tasks[rep]
+        tasks[rep] = BivariateMixerTask.create(
+            asset_id=base_name + f"_bivariate_mixer_{rep}",
+            trait_1_source=trait_1_task.trait_1_source,
+            trait_2_source=trait_2_task.trait_1_source,
+            ref_data_directory_task=trait_1_task.reference_data_directory_task,
+            trait_1_univariate_task=trait_1_task,
+            trait_2_univariate_task=trait_2_task,
+            apply_extract_to_test=apply_extract_to_test,
+            extra_args=list(extra_fit_args),
+        )
+
+    return BivariateMixerTasks(
+        trait_1_tasks=trait_1_tasks,
+        trait_2_task=trait_2_tasks,
+        bivariate_run_tasks=tasks,
     )

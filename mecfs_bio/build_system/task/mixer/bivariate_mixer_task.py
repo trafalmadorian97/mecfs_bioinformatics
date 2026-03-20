@@ -22,6 +22,7 @@ from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerDataSource,
     MixerTask,
     PreformattedMixerDataSource,
+    default_mixer_extract_file_pattern_gen,
     get_mixer_extract_args,
     prepare_mixer_trait_input_file,
 )
@@ -62,6 +63,7 @@ class BivariateMixerTask(Task):
     ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld"
     bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
     threads: int = 4
+    apply_extract_to_test: bool = False
 
     def __attrs_post_init__(self):
         assert len(self.trait_1_univariate_task.reps_to_perform) == 1
@@ -173,19 +175,25 @@ class BivariateMixerTask(Task):
                 ],
                 extra_mounts=ref_mounts,
             )
+            bivar_fit_json = tmp_path / (fit_prefix + ".json")
+            assert bivar_fit_json.exists()
+            extra_test_args = []
+            if self.apply_extract_to_test:
+                extra_test_args.extend(extract_args)
 
             bivar_test_out = str(tmp_path / test_prefix)
             invoke_mixer(
                 ["test2"]
                 + common_args
                 + chr_args
+                + extra_test_args
                 + [
                     "--trait1-file",
                     str(trait_1_stats_path),
                     "--trait2-file",
                     str(trait_2_stats_path),
                     "--load-params",
-                    bivar_fit_out + ".json",
+                    str(bivar_fit_json),
                     "--out",
                     bivar_test_out,
                 ],
@@ -212,12 +220,14 @@ class BivariateMixerTask(Task):
         ref_data_directory_task: Task,
         trait_1_univariate_task: MixerTask,
         trait_2_univariate_task: MixerTask,
-        extract_file_pattern_gen: Callable[[int], str] | None,
+        extract_file_pattern_gen: Callable[[int], str]
+        | None = default_mixer_extract_file_pattern_gen,
         extra_args: Sequence[str] = tuple(),
         chr_args: str | None = None,
         ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
         bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
         threads: int = 4,
+        apply_extract_to_test: bool = False,
     ):
         source_meta = trait_1_source.task.meta
         meta: Meta
@@ -247,4 +257,5 @@ class BivariateMixerTask(Task):
             chr_to_use_arg=chr_args,
             extra_args=extra_args,
             threads=threads,
+            apply_extract_to_test=apply_extract_to_test,
         )

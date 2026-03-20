@@ -55,7 +55,7 @@ MIXER_Z_SCORE_COL = "Z"
 logger = get_logger()
 
 
-def _default_extract_file_pattern_gen(rep: int) -> str:
+def default_mixer_extract_file_pattern_gen(rep: int) -> str:
     return (
         f"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.rep{rep}.snps"
     )
@@ -252,7 +252,7 @@ class MixerTask(Task):
         ld_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.run4.ld",
         bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
         extract_file_pattern_gen: Callable[[int], str]
-        | None = _default_extract_file_pattern_gen,
+        | None = default_mixer_extract_file_pattern_gen,
         threads: int = 4,
         reps_to_perform: Sequence[int] = tuple(range(1, 21)),
         chr_args: str | None = None,
