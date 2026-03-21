@@ -117,7 +117,7 @@ By allowing some variants to have no effect, $(\ref{uni_mixer_core})$ is more ge
 $(\ref{mixer_dgm})$ and $(\ref{uni_mixer_core})$ specify the core univariate MiXeR model. We now need a strategy to fit this model to data. The next steps are:
 
 - Write this model as a probability distribution over observed GWAS $z$-scores of genetic variants.
-- Using this probability distribution, derive an efficient algorithm to fit the MiXeR model by maximum likelihood, given GWAS $z$-scores.
+- Using this probability distribution, derive an efficient algorithm to fit the MiXeR model by maximum likelihood.
 
 
 ###  Distribution of $z$-scores
@@ -162,7 +162,7 @@ $$
 
 $(\ref{mixer_zscore_eq})$ can be used to relate the distribution of $z$-scores (observed) to the distribution of the $\beta_i$ (implied by model parameters).
 
-It can be useful to re-group the terms in $(\ref{mixer_zscore_eq})$. Define:
+It is useful to re-group the terms in $(\ref{mixer_zscore_eq})$. Define:
 
 $$
 \mathrm{LD}(i):=\{ j: r_{i,j}\ne 0 \}
@@ -209,8 +209,8 @@ $$
 &\approx \mathrm{Var}\left( \frac{\epsilon^T g_i}{\sqrt{N H_i}}  \right) \\ 
 &= \mathrm{E} \mathrm{Var} \left( \frac{\epsilon^T g_i}{\sqrt{N H_i}}|G  \right)     + \mathrm{Var}\mathrm{E}  \left( \frac{\epsilon^T g_i}{\sqrt{N H_i}}|G  \right) & \text{ Law of total variance} \\ 
 &=\mathrm{E} \mathrm{Var} \left( \frac{\epsilon^T g_i}{\sqrt{N H_i}}|G  \right)  + 0\\
-&=\frac{1}{NH_i}\mathrm{E} \mathrm{E}\left( g_i^T \epislon \epsilon^T g_i | G  \right)\\
-&=\frac{1}{NH_i}(1-h^2)\mathrm{E} g_i^T g_i & \text{ By (\ref{mixer_var_epsilon} ).}   \\
+&=\frac{1}{NH_i}\mathrm{E} \mathrm{E}\left( g_i^T \epsilon \epsilon^T g_i | G  \right)\\
+&=\frac{1}{NH_i}(1-h^2)\mathrm{E} (g_i^T g_i) & \text{ By (\ref{mixer_var_epsilon} ).}   \\
 &= \frac{N \hat H_i}{N H_i} (1-h^2)& \text{ By (\ref{mixer_h_def})}\\
 & \approx (1-h^2)
 \end{align}
