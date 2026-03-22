@@ -18,11 +18,10 @@ from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMet
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.mixer.bivariate_mixer_task import BivariateMixerTask, MIXER_BIVARIATE_FIT_JSON_PATTERN, \
-    MIXER_BIVARIATE_TEST_JSON_PATTERN
-from mecfs_bio.build_system.task.mixer.mixer_task import (
-    MIXER_FIT_JSON_PATTERN,
-    MIXER_TEST_JSON_PATTERN,
+from mecfs_bio.build_system.task.mixer.bivariate_mixer_task import (
+    MIXER_BIVARIATE_FIT_JSON_PATTERN,
+    MIXER_BIVARIATE_TEST_JSON_PATTERN,
+    BivariateMixerTask,
 )
 from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer_figures
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -53,13 +52,12 @@ class MixerBivariateCombine(Task):
     mixer_source_runs: Sequence[BivariateMixerRunSource]
     _meta: Meta
 
-
     @property
-    def trait_1_name(self)->str:
+    def trait_1_name(self) -> str:
         return self.mixer_source_runs[0].task.trait_1_source.alias
 
     @property
-    def trait_2_name(self)->str:
+    def trait_2_name(self) -> str:
         return self.mixer_source_runs[0].task.trait_2_source.alias
 
     @property
@@ -73,9 +71,14 @@ class MixerBivariateCombine(Task):
     def __attrs_post_init__(self):
         assert len(self.mixer_source_runs) >= 1
         for run in self.mixer_source_runs:
-            assert run.task.trait_1_source.alias==self.mixer_source_runs[0].task.trait_1_source.alias
-            assert run.task.trait_2_source.alias==self.mixer_source_runs[0].task.trait_2_source.alias
-
+            assert (
+                run.task.trait_1_source.alias
+                == self.mixer_source_runs[0].task.trait_1_source.alias
+            )
+            assert (
+                run.task.trait_2_source.alias
+                == self.mixer_source_runs[0].task.trait_2_source.alias
+            )
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         with tempfile.TemporaryDirectory() as tmpdir_name:
@@ -85,25 +88,33 @@ class MixerBivariateCombine(Task):
                 source_asset = fetch(source_run.task.asset_id)
                 assert isinstance(source_asset, DirectoryAsset)
                 shutil.copytree(source_asset.path, tmp_path, dirs_exist_ok=True)
-                # _edit_json_to_fix_trait_path(
-                #     tmp_path / MIXER_FIT_JSON_PATTERN.replace("@", str(source_run.rep)),
-                #     trait_1_name=self.trait_1_name,
-                #     trait_2_name=self.trait_2_name,
-                # )
-                # _edit_json_to_fix_trait_path(
-                #     tmp_path
-                #     / MIXER_TEST_JSON_PATTERN.replace("@", str(source_run.rep)),
-                #     trait_1_name=self.trait_1_name,
-                #     trait_2_name=self.trait_2_name,
-                # )
+                _edit_json_to_fix_trait_path(
+                    tmp_path
+                    / MIXER_BIVARIATE_FIT_JSON_PATTERN.replace(
+                        "@", str(source_run.rep)
+                    ),
+                    trait_1_name=self.trait_1_name,
+                    trait_2_name=self.trait_2_name,
+                )
+                _edit_json_to_fix_trait_path(
+                    tmp_path
+                    / MIXER_BIVARIATE_TEST_JSON_PATTERN.replace(
+                        "@", str(source_run.rep)
+                    ),
+                    trait_1_name=self.trait_1_name,
+                    trait_2_name=self.trait_2_name,
+                )
 
             invoke_mixer_figures(
                 args=[
                     "combine",
                     "--json",
-                    str(_CONTAINER_AGGREGATION_DIR /MIXER_BIVARIATE_FIT_JSON_PATTERN ),
+                    str(_CONTAINER_AGGREGATION_DIR / MIXER_BIVARIATE_FIT_JSON_PATTERN),
                     "--out",
-                    str(_CONTAINER_AGGREGATION_DIR / BIVARIATE_COMBINED_FIT_FILENAME_PREFIX),
+                    str(
+                        _CONTAINER_AGGREGATION_DIR
+                        / BIVARIATE_COMBINED_FIT_FILENAME_PREFIX
+                    ),
                 ],
                 extra_mounts=agg_mounts,
             )
@@ -112,9 +123,12 @@ class MixerBivariateCombine(Task):
                 args=[
                     "combine",
                     "--json",
-                    str(_CONTAINER_AGGREGATION_DIR / MIXER_BIVARIATE_TEST_JSON_PATTERN  ),
+                    str(_CONTAINER_AGGREGATION_DIR / MIXER_BIVARIATE_TEST_JSON_PATTERN),
                     "--out",
-                    str(_CONTAINER_AGGREGATION_DIR / BIVARIATE_COMBINED_TEST_FILENAME_PREFIX),
+                    str(
+                        _CONTAINER_AGGREGATION_DIR
+                        / BIVARIATE_COMBINED_TEST_FILENAME_PREFIX
+                    ),
                 ],
                 extra_mounts=agg_mounts,
             )
@@ -128,7 +142,9 @@ class MixerBivariateCombine(Task):
 
     @classmethod
     def create(
-        cls, asset_id: str, mixer_source_runs: Sequence[BivariateMixerRunSource],
+        cls,
+        asset_id: str,
+        mixer_source_runs: Sequence[BivariateMixerRunSource],
     ):
         assert len(mixer_source_runs) >= 1
         source_meta = mixer_source_runs[0].task.meta

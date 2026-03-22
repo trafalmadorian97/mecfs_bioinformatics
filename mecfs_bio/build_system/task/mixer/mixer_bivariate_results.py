@@ -10,8 +10,11 @@ from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMet
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.mixer.mixer_bivariate_combine import MixerBivariateCombine, \
-    BIVARIATE_COMBINED_TEST_FILENAME_PREFIX, BIVARIATE_COMBINED_FIT_FILENAME_PREFIX
+from mecfs_bio.build_system.task.mixer.mixer_bivariate_combine import (
+    BIVARIATE_COMBINED_FIT_FILENAME_PREFIX,
+    BIVARIATE_COMBINED_TEST_FILENAME_PREFIX,
+    MixerBivariateCombine,
+)
 from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer_figures
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -19,6 +22,7 @@ _CONTAINER_PLOT_DIR = Path("/container_plot")
 _CONTAINER_COMBINED_DIR = Path("/container_combine")
 
 _BIVARIATE_OUTPUT_PREFIX = "bivariate_results"
+
 
 @frozen
 class MixerBivariateSummarizeResultsTask(Task):
@@ -30,12 +34,11 @@ class MixerBivariateSummarizeResultsTask(Task):
     combine_task: MixerBivariateCombine
 
     @property
-    def trait_1_name(self)->str:
+    def trait_1_name(self) -> str:
         return self.combine_task.trait_1_name
 
-
     @property
-    def trait_2_name(self)->str:
+    def trait_2_name(self) -> str:
         return self.combine_task.trait_2_name
 
     @property
@@ -59,11 +62,13 @@ class MixerBivariateSummarizeResultsTask(Task):
                 "two",
                 "--json-test",
                 str(
-                    _CONTAINER_COMBINED_DIR / (BIVARIATE_COMBINED_TEST_FILENAME_PREFIX + ".json")
+                    _CONTAINER_COMBINED_DIR
+                    / (BIVARIATE_COMBINED_TEST_FILENAME_PREFIX + ".json")
                 ),
                 "--json-fit",
                 str(
-                    _CONTAINER_COMBINED_DIR / (BIVARIATE_COMBINED_FIT_FILENAME_PREFIX + ".json")
+                    _CONTAINER_COMBINED_DIR
+                    / (BIVARIATE_COMBINED_FIT_FILENAME_PREFIX + ".json")
                 ),
                 "--out",
                 str(_CONTAINER_PLOT_DIR / (_BIVARIATE_OUTPUT_PREFIX)),
@@ -81,7 +86,7 @@ class MixerBivariateSummarizeResultsTask(Task):
         return DirectoryAsset(scratch_dir)
 
     @classmethod
-    def create(cls, asset_id: str, combine_task:MixerBivariateCombine):
+    def create(cls, asset_id: str, combine_task: MixerBivariateCombine):
         source_meta = combine_task.meta
         meta: Meta
         if isinstance(source_meta, ResultDirectoryMeta):
