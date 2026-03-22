@@ -1,4 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.myocardial_infarction.analysis.mi_standard_analysis import \
+    MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.myocardial_infarction.raw.raw_mi_data import MILLION_VETERAN_MI_EUR_DATA_RAW
 from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import GENE_THESAURUS
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_cepo_specificity_matrix import \
@@ -31,7 +33,7 @@ from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_raw_counts_r
 
 def run_mi_analysis():
     DEFAULT_RUNNER.run(
-        [MILLION_VETERAN_MI_EUR_DATA_RAW],
+        [MILLION_VETERAN_MI_EUR_DATA_RAW]+MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.get_terminal_tasks(),
         incremental_save=True,
 
     )
