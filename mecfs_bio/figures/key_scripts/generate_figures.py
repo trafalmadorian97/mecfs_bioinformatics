@@ -13,7 +13,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash i
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.figures.fig_constants import FIGURE_DIRECTORY
 from mecfs_bio.figures.figure_exporter import FigureExporter
-from mecfs_bio.figures.figure_tasks import ALL_FIGURE_TASKS
+from mecfs_bio.figures.figure_task_list import ALL_FIGURE_TASKS
 
 _imo_hasher_128 = ImoHasher.with_xxhash_128()
 

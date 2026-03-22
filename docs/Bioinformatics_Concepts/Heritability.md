@@ -99,12 +99,12 @@ Todo[@leia2025heritability]
 
 
 
-# Links
+## Links
 
 [Broad Institute Primer Talk on Heritability](https://www.youtube.com/watch?v=wM7yxJlvwe8)
 
 
-# References
+## References
 
 - Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019. (Chapter 15)
 

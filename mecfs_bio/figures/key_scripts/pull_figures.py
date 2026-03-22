@@ -34,7 +34,8 @@ def pull_figures(
     Download figures from Github, merging them with contents of the local figure directory.
     """
     fig_dir.mkdir(parents=True, exist_ok=True)
-    if not does_release_exist(repo_name=repo_name, release_tag=tag):
+
+    if use_gh_cli and not does_release_exist(repo_name=repo_name, release_tag=tag):
         logger.debug(
             f"No release with the tag '{tag}' exists in repository {repo_name}.  Nothing to download."
         )

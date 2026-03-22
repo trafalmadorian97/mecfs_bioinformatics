@@ -1,7 +1,6 @@
 ---
 hide:
-  - navigation
-  - toc
+- toc
 ---
 
 # S-LDSC Analysis of RVEF

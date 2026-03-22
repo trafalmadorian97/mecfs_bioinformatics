@@ -7,19 +7,6 @@ from typing import Sequence
 import seaborn as sns
 import structlog
 
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_cluster import XRCluster
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_composite import (
-    XRCompositePipe,
-)
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_data_pipe import (
-    XRDataPipe,
-)
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_most_significant import (
-    XRMostSignificant,
-)
-from mecfs_bio.build_system.data_manipulation.xr_data.pipes.xr_significance_filter import (
-    XRSignificanceFilter,
-)
 from mecfs_bio.build_system.data_manipulation.xr_data.xr_gene_dataset_load import (
     GeneInfoSource,
     SpecificityMatrixSource,
@@ -34,6 +21,19 @@ from mecfs_bio.build_system.data_manipulation.xr_data.xr_gene_specificity_heatma
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
+from mecfs_bio.build_system.task.xr_pipes.xr_cluster import XRCluster
+from mecfs_bio.build_system.task.xr_pipes.xr_composite import (
+    XRCompositePipe,
+)
+from mecfs_bio.build_system.task.xr_pipes.xr_data_pipe import (
+    XRDataPipe,
+)
+from mecfs_bio.build_system.task.xr_pipes.xr_most_significant import (
+    XRMostSignificant,
+)
+from mecfs_bio.build_system.task.xr_pipes.xr_significance_filter import (
+    XRSignificanceFilter,
+)
 from mecfs_bio.constants.magma_constants import MAGMA_P_COLUMN, MAGMA_Z_COLUMN
 from mecfs_bio.constants.xr_constants import (
     XR_GENE_DIMENSION,

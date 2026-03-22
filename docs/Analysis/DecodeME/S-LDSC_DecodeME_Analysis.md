@@ -1,11 +1,10 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # S-LDSC Analysis of DecodeME
 
-[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) was applied to summary statistics from GWAS-1 of [DecodeME](../../Data_Sources/DecodeME.md)[genetics2025initial].
+[Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] was applied to summary statistics from GWAS-1 of [DecodeME](../../Data_Sources/DecodeME.md)[@genetics2025initial].
 
 ## Reference Data Sources
 
@@ -182,7 +181,7 @@ When we apply the S-LDSC using the GTEx brain dataset, we find the the cortex ti
 | Brain_Cerebellar_Hemisphere             |   2.45686e-10 |           0.39188     | False         
 
 
-# Reproducing Analysis
+## How to Reproduce This
 
 To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
 

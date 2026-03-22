@@ -1,3 +1,7 @@
+"""
+Constants for interacting with gwaslab (https://github.com/Cloufield/gwaslab/tree/main/src/gwaslab).
+"""
+
 from typing import Literal
 
 GWASLAB_CHROM_COL = "CHR"
@@ -29,3 +33,5 @@ GWASLAB_HUMAN_GENOME_NAME_38 = "ucsc_genome_hg38"
 
 GWASLAB_EUR_1K_GENOMES_NAME_19 = "1kg_eur_hg19"
 GWASLAB_HUMAN_GENOME_NAME_19 = "ucsc_genome_hg19"
+
+GWASLAB_EFFECTIVE_SAMPLE_SIZE = "N_EFF"

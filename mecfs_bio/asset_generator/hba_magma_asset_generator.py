@@ -58,6 +58,7 @@ from mecfs_bio.build_system.task.magma.magma_subset_specificity_matrix_using_top
     MagmaSubsetSpecificityMatrixWithTopLabels,
 )
 from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import (
+    BRAIN_ATLAS_PLOT_NAME,
     KEY_HBA_ANNOTATION_COLUMNS,
     PlotMagmaBrainAtlasResultTask,
     PlotSettings,
@@ -80,6 +81,7 @@ class HBAMagmaTasks:
     magma_hba_result_annotated_task: JoinDataFramesTask
     magma_hba_multiple_testing_task: MultipleTestingTableTask
     magma_hba_result_plot_task: PlotMagmaBrainAtlasResultTask
+    extracted_plot_task: CopyFileFromDirectoryTask
     magma_hba_filtered_spec_matrix: MagmaSubsetSpecificityMatrixWithTopLabels | None = (
         None
     )
@@ -92,7 +94,7 @@ class HBAMagmaTasks:
     magma_independent_clusters_csv: JoinDataFramesTask | None = None
 
     def terminal_tasks(self) -> list[Task]:
-        result: list = [self.magma_hba_result_plot_task]
+        result: list = [self.extracted_plot_task]
         if self.magma_independent_cluster_plot is not None:
             result += [self.magma_independent_cluster_plot]
         if self.independent_clusters_markdown_task is not None:
@@ -179,6 +181,13 @@ def generate_human_brain_atlas_magma_tasks(
         asset_id=base_name + "_hba_atlas_magma_plot",
         plot_settings=plot_settings,
     )
+    extracted_plot_task = CopyFileFromDirectoryTask.create_result_table(
+        asset_id=base_name + "_hba_magma_plot_extracted",
+        source_directory_task=plot_task,
+        path_inside_directory=PurePath(BRAIN_ATLAS_PLOT_NAME + ".html"),
+        extension=".html",
+        read_spec=None,
+    )
     if include_independent_cluster_plot:
         magma_hba_filtered_spec_matrix = (
             MagmaSubsetSpecificityMatrixWithTopLabels.create(
@@ -256,4 +265,5 @@ def generate_human_brain_atlas_magma_tasks(
         magma_independent_cluster_plot=magma_independent_cluster_plot,
         independent_clusters_markdown_task=independent_clusters_markdown,
         magma_independent_clusters_csv=magma_independent_clusters_labeled_labeled,
+        extracted_plot_task=extracted_plot_task,
     )

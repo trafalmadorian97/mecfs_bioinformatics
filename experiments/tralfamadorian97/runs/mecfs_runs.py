@@ -3,33 +3,9 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import GENE_THESAURUS
-from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_cepo_specificity_matrix import \
-    YU_DRG_CEPO_SPECIFICITY_MATRIX
-from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long import YU_DRG_COUNTS_LONG
-from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long_with_cell_type import \
-    YU_DRG_COUNTS_LONG_WITH_CELL_TYPE
-from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_extracted_counts_data import \
-    YU_DRG_EXTRACTED_COUNTS
-from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_frac_specificity_matrix import \
-    YU_DRG_FRAC_SPECIFICITY_MATRIX
-from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_metadata_table import YU_DRG_METADATA_TABLE
-# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr15_54_925_638_locus_plalindindromes import \
-#     DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES
-# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr17_50_237_377_locus_palindromes import \
-#     DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES
-# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import \
-#     DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES
-# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr20_47_653_230_locus_palindromes import \
-#     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES
-# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_26_215_000_locus_palindromes import \
-#     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP_PALINDROMES
-# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus_palindromes import \
-#     DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES
-#
-# from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.without_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus import \
-#     DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP
-from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_raw_counts_rdata import YU_DRG_SRC1_RDATA
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initial_asset_generator import \
+    CT_LDSC_INITIAL_ASSET_GENERATOR
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import CT_LDSC_INITIAL_PLOT
 
 
 def run_initial_decode_me_analysis():
@@ -44,9 +20,15 @@ def run_initial_decode_me_analysis():
         (
             # [YU_DRG_SRC1_RDATA]
             [
+
+                CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
+
+                CT_LDSC_INITIAL_PLOT
                 # YU_DRG_FRAC_SPECIFICITY_MATRIX
-                JOHNSON_DRG_MAGMA_CEPO_BAR_PLOT,
-                JOHNSON_DRG_MAGMA_FRAC_BAR_PLOT
+                # CT_LDSC_INITIAL_PLOT
+                # CT_LDSC_INITIAL
+                # JOHNSON_DRG_MAGMA_CEPO_BAR_PLOT,
+                # JOHNSON_DRG_MAGMA_FRAC_BAR_PLOT
                 # JOHNSON_DRG_MAGMA_FRAC_BAR_PLOT
                 # YU_DRG_CEPO_SPECIFICITY_MATRIX
                 # YU_DRG_EXTRACTED_COUNTS,
@@ -85,6 +67,12 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
+
+            CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task
+            # CT_LDSC_INITIAL_PLOT.genetic_corr_source.task
+            # CT_LDSC_INITIAL,
+            # CT_LDSC_INITIAL_PLOT
+            # CT_LDSC_INITIAL
             # YU_DRG_CEPO_SPECIFICITY_MATRIX
             # YU_DRG_FRAC_SPECIFICITY_MATRIX
 

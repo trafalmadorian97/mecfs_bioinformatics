@@ -1,3 +1,4 @@
+import sys
 from pathlib import Path
 
 from invoke import task
@@ -11,6 +12,7 @@ USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
 PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
 
 FIGS_PATH = Path("docs/_figs/")
+FIGS_PATTERN = "_figs"
 
 
 # dev tasks
@@ -114,8 +116,75 @@ def check_all_links(c):
     """
     print("Checking links with lychee...")
     c.run(
-        f"pixi r lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+        f"pixi r lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --exclude {FIGS_PATTERN} --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
     )
+
+
+@task
+def check_table_trailing_newlines(c):
+    """
+    Added by Claude:
+    Check that markdown docs ending with a table have at least one blank line after the table.
+
+    The mkdocs-bibtex plugin breaks bibliography footnotes when a page ends with a
+    markdown table and no trailing blank lines.
+    """
+    print(
+        "Checking for markdown files ending with a table but missing trailing newlines..."
+    )
+    violations = []
+
+    for md_file in sorted(DOCS_PATH.rglob("*.md")):
+        content = md_file.read_text(encoding="utf-8")
+        if not content:
+            continue
+        last_nonempty = next(
+            (line for line in reversed(content.splitlines()) if line.strip()), None
+        )
+        if last_nonempty and last_nonempty.strip().startswith("|"):
+            if not content.endswith("\n\n"):
+                violations.append(md_file)
+
+    if violations:
+        print(
+            "ERROR: The following markdown files end with a table but lack a trailing blank line.\n"
+            "This breaks mkdocs-bibtex bibliography rendering. Add a blank line after the final table row."
+        )
+        for f in violations:
+            print(f"  {f}")
+        sys.exit(1)
+    else:
+        print("OK: all markdown files pass the table-trailing-newline check.")
+
+
+@task
+def fix_table_trailing_newlines(c):
+    """
+    Added by Claude:
+    Autofix markdown files that end with a table but lack a trailing blank line.
+    See check_table_trailing_newlines for why this is needed.
+    """
+    print("Fixing markdown files ending with a table but missing trailing newlines...")
+    fixed = []
+
+    for md_file in sorted(DOCS_PATH.rglob("*.md")):
+        content = md_file.read_text(encoding="utf-8")
+        if not content:
+            continue
+        last_nonempty = next(
+            (line for line in reversed(content.splitlines()) if line.strip()), None
+        )
+        if last_nonempty and last_nonempty.strip().startswith("|"):
+            if not content.endswith("\n\n"):
+                md_file.write_text(content.rstrip("\n") + "\n\n", encoding="utf-8")
+                fixed.append(md_file)
+
+    if fixed:
+        print(f"Fixed {len(fixed)} file(s):")
+        for f in fixed:
+            print(f"  {f}")
+    else:
+        print("No files needed fixing.")
 
 
 @task
@@ -124,7 +193,7 @@ def check_local_links(c):
     Check local links with lychee
     """
     print("Checking offline links with lychee...")
-    cmd = f"pixi r lychee --exclude {FIGS_PATH}  --offline {SRC_PATH} {DOCS_PATH}"
+    cmd = f"pixi r lychee --exclude {FIGS_PATTERN}  --offline {SRC_PATH} {DOCS_PATH}"
     print(f"running {cmd}")
     c.run(cmd)
 
@@ -136,6 +205,7 @@ def check_local_links(c):
         spellcheck_docs,
         spellcheck_src,
         check_local_links,
+        fix_table_trailing_newlines,
         checkimports,
         typecheck,
         test,
@@ -148,9 +218,10 @@ def green(c):
 @task
 def install_r_packages(c):
     """
-    Install R packages such as TwoSampleMR
+    Install R packages such as TwoSampleMR and LAVA
     """
     c.run("pixi r install-mr", pty=True)
+    c.run("pixi r install-lava", pty=True)
 
 
 ### Figures and Documentation

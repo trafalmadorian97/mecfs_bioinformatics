@@ -11,7 +11,7 @@ on:
       - main
 jobs:
   run-linters:
-    timeout-minutes: 5
+    timeout-minutes: 15
     name: Run PR Checks
     runs-on: ubuntu-latest
 
@@ -49,9 +49,11 @@ jobs:
         with:
          path: r-libs
          key: ${{ runner.os }}-r-libs-${{ hashFiles('pixi.lock') }}-v1
-      - name: Install TwoSampleMR
+      - name: Install R packages
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke install-r-packages
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Download figures
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke pfig
@@ -63,6 +65,9 @@ jobs:
       - name: Check formatting with ruff
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke formatcheck
+      - name: Check that markdown files ending in tables have trailing newlines
+        if: steps.changes.outputs.nonmark == 'true'
+        run: pixi r invoke check-table-trailing-newlines
       - name: Lint using ruff
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke lintcheck

@@ -4,7 +4,7 @@ You may find that the analysis you would like to perform requires access to a so
 
 ## Adding PyPi Packages
 
-If your software package is available on PyPi, you can add it with 
+If your software package is available on [PyPi](https://pypi.org/), you can add it with 
 
 ```bash
 pixi add --pypi <your_package_name> --feature analysis

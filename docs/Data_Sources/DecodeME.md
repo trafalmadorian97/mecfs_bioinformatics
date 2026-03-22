@@ -5,6 +5,7 @@ DecodeME is a genome-wide association study of people with ME/CFS.  It is the la
 - [Link to study home page](https://institute-genetics-cancer.ed.ac.uk/decodeme)
 - [Link to preprint](https://www.research.ed.ac.uk/en/publications/initial-findings-from-the-decodeme-genome-wide-association-study-/)
 - [Interview of Chris Ponting by David Tuller](https://www.youtube.com/watch?v=CGUmcB_YIaA)
+- [Home page of SequenceME](https://www.actionforme.org.uk/sequenceme-first-of-a-kind-genetic-study/), a follow-up whole-genome sequencing study that is currently fundraising. 
 
 ## Tasks
 

@@ -1,6 +1,5 @@
 ---
 hide:
-- navigation
 - toc
 ---
 # cis-pQTL MR Analysis

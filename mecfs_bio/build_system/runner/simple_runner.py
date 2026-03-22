@@ -6,6 +6,7 @@ from rich.pretty import pprint
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.runner.info_purge import info_purge
 
 logger = structlog.get_logger()
 import attrs
@@ -60,7 +61,7 @@ class SimpleRunner:
         self,
         targets: list[Task],
         must_rebuild_transitive: Sequence[Task] = tuple(),
-        incremental_save: bool = False,
+        incremental_save: bool = True,
     ) -> Mapping[AssetId, Asset]:
         """
         Targets: the ultimate targets we aim to produce.  All transitive dependencies of these targets will either be rebuilt, or fetched (determined according to that status of their trace)
@@ -85,6 +86,7 @@ class SimpleRunner:
             targets=[task.asset_id for task in must_rebuild_transitive],
         )
         info = attrs.evolve(info, must_rebuild=set(must_rebuild_graph.nodes))
+        info = info_purge(info, tasks=tasks)
         incremental_save_path = self.info_store if incremental_save else None
         store, info = topological(
             rebuilder=rebuilder,
