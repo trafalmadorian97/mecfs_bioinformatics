@@ -15,6 +15,7 @@ from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMet
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.mixer.mixer_univariate_combine import (
+    COMBINED_FIT_FILENAME_PREFIX,
     COMBINED_TEST_FILENAME_PREFIX,
 )
 from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer_figures
@@ -24,6 +25,7 @@ _CONTAINER_PLOT_DIR = Path("/container_plot")
 _CONTAINER_COMBINED_DIR = Path("/container_combine")
 
 TEST_OUTPUT_PREFIX = "trait_plot_test"
+FIT_OUTPUT_PREFIX = "trait_plot_fit"
 
 
 @frozen
@@ -52,6 +54,24 @@ class MixerUnivariateSummarizeResultsTask(Task):
             scratch_dir.resolve(): _CONTAINER_PLOT_DIR,
             source_asset.path.resolve(): _CONTAINER_COMBINED_DIR,
         }
+
+        invoke_mixer_figures(
+            args=[
+                "one",
+                "--json",
+                str(_CONTAINER_COMBINED_DIR / (COMBINED_FIT_FILENAME_PREFIX + ".json")),
+                "--out",
+                str(_CONTAINER_PLOT_DIR / (FIT_OUTPUT_PREFIX)),
+                "--statistic",
+                "mean std",
+                "--ext",
+                "png",
+                "--trait1",
+                self.trait_name,
+            ],
+            extra_mounts=plots_mounts,
+        )
+
         invoke_mixer_figures(
             args=[
                 "one",
