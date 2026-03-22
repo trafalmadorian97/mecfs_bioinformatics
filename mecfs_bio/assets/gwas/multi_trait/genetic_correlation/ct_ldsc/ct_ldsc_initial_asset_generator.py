@@ -184,6 +184,14 @@ CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
                 [SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN, 490_560)]
             ),
         ),
+        # SumstatsSource(
+        #     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+        #     alias="HHV7_DNA",
+        #     sample_info=QuantPhenotype(),
+        #     pipe=CompositePipe(
+        #         [SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN,  490_401)]
+        #     ),
+        # ),
     ],
     ld_ref_task=THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
     build="19",
