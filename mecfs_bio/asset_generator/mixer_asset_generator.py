@@ -212,6 +212,7 @@ def bivariate_mixer_asset_generator(
             trait_2_univariate_task=trait_2_task,
             apply_extract_to_test=apply_extract_to_test,
             extra_args=list(extra_fit_args),
+            include_test=False
         )
     combine = MixerBivariateCombine.create(
         asset_id=base_name + "_bivariate_mixer_combine",

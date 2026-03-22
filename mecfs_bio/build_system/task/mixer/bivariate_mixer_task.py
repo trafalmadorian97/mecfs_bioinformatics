@@ -181,8 +181,8 @@ class BivariateMixerTask(Task):
             extra_test_args = []
             if self.apply_extract_to_test:
                 extra_test_args.extend(extract_args)
+            bivar_test_out = str(tmp_path / test_prefix)
             if self.include_test:
-                bivar_test_out = str(tmp_path / test_prefix)
                 invoke_mixer(
                     ["test2"]
                     + common_args
