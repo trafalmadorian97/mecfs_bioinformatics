@@ -19,6 +19,13 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.mixer.bivariate_mixer_task import BivariateMixerTask
+from mecfs_bio.build_system.task.mixer.mixer_bivariate_combine import (
+    BivariateMixerRunSource,
+    MixerBivariateCombine,
+)
+from mecfs_bio.build_system.task.mixer.mixer_bivariate_results import (
+    MixerBivariateSummarizeResultsTask,
+)
 from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerDataSource,
     MixerTask,
@@ -163,9 +170,13 @@ class BivariateMixerTasks:
     trait_1_tasks: UnivariateMixerTasks
     trait_2_task: UnivariateMixerTasks
     bivariate_run_tasks: Mapping[int, Task]
+    combined: MixerBivariateCombine
+    results: MixerBivariateSummarizeResultsTask
 
     def terminal_tasks(self) -> list[Task]:
-        return list(self.bivariate_run_tasks.values())
+        return (
+            list(self.bivariate_run_tasks.values()) + [self.combined] + [self.results]
+        )
 
 
 def bivariate_mixer_asset_generator(
@@ -202,9 +213,21 @@ def bivariate_mixer_asset_generator(
             apply_extract_to_test=apply_extract_to_test,
             extra_args=list(extra_fit_args),
         )
+    combine = MixerBivariateCombine.create(
+        asset_id=base_name + "_bivariate_mixer_combine",
+        mixer_source_runs=[
+            BivariateMixerRunSource(task=tsk, rep=rep) for rep, tsk in tasks.items()
+        ],
+    )
+    results = MixerBivariateSummarizeResultsTask.create(
+        asset_id=base_name + "_bivariate_mixer_results",
+        combine_task=combine,
+    )
 
     return BivariateMixerTasks(
         trait_1_tasks=trait_1_tasks,
         trait_2_task=trait_2_tasks,
         bivariate_run_tasks=tasks,
+        combined=combine,
+        results=results,
     )

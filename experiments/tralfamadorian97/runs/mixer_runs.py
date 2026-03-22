@@ -15,6 +15,7 @@ def run_mixer():
         MECFS_PAIN_BIVARIATE_MIXER.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
+            MECFS_PAIN_BIVARIATE_MIXER.combined
             # DECODE_ME_UNIVARIATE_MIXER.combine_task
         ]
     )
