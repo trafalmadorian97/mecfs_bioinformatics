@@ -29,16 +29,18 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
     ValidGwaslabFormat,
 )
+from mecfs_bio.build_system.task.gwaslab.gwaslab_manhattan_and_qq_plot_task import GWASLabManhattanAndQQPlotTask
 from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import (
     HBAIndepPlotOptions,
 )
 from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.compute_mlog10p_pipe import ComputeMlog10pIfNeededPipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
-    MagmaTaskGeneratorFromRaw,
+    MagmaTaskGeneratorFromRaw, GGetSettings,
 )
 from mecfs_bio.build_system.task_generator.master_gene_list_task_generator import (
     MasterGeneListTasks,
@@ -63,6 +65,7 @@ class StandardAnalysisTaskGroup:
     labeled_lead_variant_tasks: LabelLeadVariantsTasks
     master_gene_list_tasks: MasterGeneListTasks | None
     hba_magma_tasks: HBAMagmaTasks | None = None
+    manhattan_task: Task|None=None
 
     def get_terminal_tasks(self) -> list[Task]:
         result = (
@@ -74,6 +77,8 @@ class StandardAnalysisTaskGroup:
             result = result + self.master_gene_list_tasks.terminal_tasks()
         if self.hba_magma_tasks is not None:
             result.extend(self.hba_magma_tasks.terminal_tasks())
+        if self.manhattan_task is not None:
+            result.append(self.manhattan_task)
         return result
 
 
@@ -91,6 +96,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     hba_plot_settings: PlotSettings = PlotSettings(),
     gtex_magma_number_of_bars: int = 20,
     hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
+        gget_settins: GGetSettings|None= GGetSettings(limit_genes=20),
+    include_manhattan_task:bool=False
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -110,6 +117,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         sample_size=sample_size,
         pre_pipe=pre_pipe,
         number_of_bars=gtex_magma_number_of_bars,
+        gget_settings=gget_settins
+
     )
     sldsc_ss = (
         sample_size_for_sldsc if sample_size_for_sldsc is not None else sample_size
@@ -146,6 +155,14 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         )
     else:
         master_gene_list_tasks = None
+    if include_manhattan_task:
+        manhattan_task =GWASLabManhattanAndQQPlotTask.create(
+            sumstats_task=magma_tasks.sumstats_task,
+            asset_id=base_name+"_manhattan_37",
+            pipe=ComputeMlog10pIfNeededPipe()
+        )
+    else:
+        manhattan_task = None
     if include_hba_magma_tasks:
         hba_magma = generate_human_brain_atlas_magma_tasks(
             base_name=base_name,
@@ -164,6 +181,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         labeled_lead_variant_tasks=labeled_lead_variant_task_group,
         master_gene_list_tasks=master_gene_list_tasks,
         hba_magma_tasks=hba_magma,
+        manhattan_task=manhattan_task,
     )
 
 

@@ -25,6 +25,9 @@ MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS=concrete_standard_analysis_generator_as
     include_hba_magma_tasks=True,
     hba_plot_settings=PlotSettings("plotly_white"),
     include_independent_cluster_plot_in_hba=True,
-    pre_sldsc_pipe=CompositePipe([ComputeBetaPipe(), ComputeSEPipe()])
+    pre_sldsc_pipe=CompositePipe([ComputeBetaPipe(), ComputeSEPipe()]),
+    include_master_gene_lists=False,
+    gget_settins=None,
+    include_manhattan_task=True
 )
 

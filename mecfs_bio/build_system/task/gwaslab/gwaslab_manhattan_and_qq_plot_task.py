@@ -19,6 +19,8 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
 )
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
@@ -31,11 +33,13 @@ class GWASLabManhattanAndQQPlotTask(Task):
     see: https://cloufield.github.io/gwaslab/Visualization/
     """
 
-    _sumstats_task: GWASLabCreateSumstatsTask
+    _sumstats_task: Task
     _meta: GWASLabManhattanQQPlotMeta
     sig_level: float = 5e-8
     top_cut: int = 12  # upper bound of graph
     plot_setting: str = "mqq"  # passed to gwaslab to decide which plots to create
+    pipe: DataProcessingPipe= IdentityPipe()
+    plot_dims: tuple[int, int] =(12,14)
 
     @property
     def meta(self) -> GWASLabManhattanQQPlotMeta:
@@ -58,11 +62,12 @@ class GWASLabManhattanAndQQPlotTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         sumstats_asset = fetch(self._input_asset_id)
         sumstats: gl.Sumstats = read_sumstats(sumstats_asset)
+        sumstats.data = self.pipe.process_pandas(sumstats.data)
         if self.plot_setting == "mqq":
-            fig, (ax1, ax2) = plt.subplots(figsize=(12, 14), ncols=2, nrows=1)
+            fig, (ax1, ax2) = plt.subplots(figsize=self.plot_dims, ncols=2, nrows=1)
             figax = [fig, ax1, ax2]
         else:
-            fig, ax1 = plt.subplots(figsize=(12, 14), ncols=1, nrows=1)
+            fig, ax1 = plt.subplots(figsize=self.plot_dims, ncols=1, nrows=1)
             figax = [
                 fig,
                 ax1,
@@ -86,10 +91,11 @@ class GWASLabManhattanAndQQPlotTask(Task):
     @classmethod
     def create(
         cls,
-        sumstats_task: GWASLabCreateSumstatsTask,
+        sumstats_task: Task,
         asset_id: str,
         sig_level: float = 5e-8,
         plot_setting: str = "mqq",
+            pipe: DataProcessingPipe = IdentityPipe(),
     ):
         input_meta = sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
@@ -103,4 +109,5 @@ class GWASLabManhattanAndQQPlotTask(Task):
             meta=meta,
             sig_level=sig_level,
             plot_setting=plot_setting,
+            pipe=pipe,
         )
