@@ -5,6 +5,9 @@ This file contains a list of figures to be exported for use in documentation
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.human_herpesvirus_7_dna.kamitaki_et_al_2025.analysis.kamitaki_et_al_2025_standard_analysis import (
+    KAMITAKI_ET_AL_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
@@ -43,4 +46,9 @@ ALL_FIGURE_TASKS = [
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.power_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.qq_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.result_markdown_table_task,
+    unwrap(KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks).extracted_plot_task,
+    unwrap(
+        KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks
+    ).independent_clusters_markdown_task,
+    KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
 ]

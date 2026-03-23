@@ -209,10 +209,10 @@ def concrete_standard_analysis_generator_no_rsid(
     pre_pipe_before_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
-    drop_palindromic_in_harmonized: bool = True,
-    include_hba_magma_tasks: bool = False,
-    include_independent_cluster_plot_in_hba: bool = False,
-    hbp_plot_settings: PlotSettings = PlotSettings(),
+    drop_palindromic_in_harmonized: bool = False,
+    include_hba_magma_tasks: bool = True,
+    include_independent_cluster_plot_in_hba: bool = True,
+    hbp_plot_settings: PlotSettings = PlotSettings("plotly_white"),
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
