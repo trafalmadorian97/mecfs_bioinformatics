@@ -34,9 +34,12 @@ from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_raw_counts_r
 
 def run_mi_analysis():
     DEFAULT_RUNNER.run(
-        [MILLION_VETERAN_MI_EUR_DATA_RAW]+MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.get_terminal_tasks(),
+        # [MILLION_VETERAN_MI_EUR_DATA_RAW]+MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.get_terminal_tasks(),
+        # [MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.manhattan_task],
+        [MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.heritability_task],
         # [MI_EUR_MANHATTAN],
         incremental_save=True,
+        # must_rebuild_transitive=[MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.manhattan_task]
 
 
     )
