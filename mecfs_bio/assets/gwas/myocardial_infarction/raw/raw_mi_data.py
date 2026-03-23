@@ -1,11 +1,14 @@
 """
-Raw Summary Statistics from the [Million Veterans Program](https://www.science.org/doi/abs/10.1126/science.adj1182) GWAS of myocardial infractio
+Raw Summary Statistics from the [Million Veterans Program](https://www.science.org/doi/abs/10.1126/science.adj1182) GWAS of myocardial infraction
 
 
 See here for the ftp download page: https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90475001-GCST90476000/GCST90475932/harmonised/
 
 See the GWAS catalog page here: https://www.ebi.ac.uk/gwas/studies/GCST90475932
 
+The causal chain LDL -> Atherosclerosis -> Myocardial Infarction is well-established, and thus can serve as
+a positive control for the detection of causal pathways.  That is, any causal pathway detection method should
+be able to detect this pathway.
 
 
 """
