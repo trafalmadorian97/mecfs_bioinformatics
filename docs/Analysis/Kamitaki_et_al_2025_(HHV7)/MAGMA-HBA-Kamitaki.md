@@ -22,3 +22,7 @@ I also used a conditional analysis approach based on the one described in Watana
 HHV7 infections are highly prevalent.  As is the case with [EBV DNA levels](../Nyeo_et_al_2025_(EBV)/MAGMA-HBA-EBV.md), it is likely that HHV7 DNA levels are primarily a function of the extent to which a person's immune system is able to contain their infection, and maintain it in a dormant state.  For this reason, it makes sense that T-cells are a key cell type determining HHV7 DNA levels.
 
 The other independent cluster is a microglial cell type.  The interpretation of this cluster is less clear.  Rather than reflecting a true role for microglia in determining HHV7 DNA levels, it may reflect shared transcriptional programs between key innate immune cells and microglia.
+
+## Reproducing Analysis
+
+To reproduce the above, run the [HHV7 Analysis Script][mecfs_bio.analysis.hhv7_analysis].
