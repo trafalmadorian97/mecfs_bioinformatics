@@ -1,3 +1,12 @@
+"""
+Script to download summary statistics from kamitaki et al'2 GWAS of Human Herpesvirus 7 DNA
+
+Citation:
+Kamitaki, Nolan, et al. "Genes and environment profoundly affect the human virome." bioRxiv (2025): 2025-09.
+
+link:https://www.biorxiv.org/content/10.1101/2025.09.08.674901
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
@@ -17,5 +26,5 @@ KAMITAKI_ET_AL_HHV7_DNA_RAW = DownloadFileTask(
         read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
     ),
     url="https://data.broadinstitute.org/lohlab/virome_summary_statistics/blood/HHV7_invnorm.bgen.MAF.stats.gz",
-    md5_hash=None,
+    md5_hash="e4a7a0b36f23413d9de7da4bb2b66c18",
 )

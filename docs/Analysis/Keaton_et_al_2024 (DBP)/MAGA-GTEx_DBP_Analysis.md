@@ -1,4 +1,7 @@
-
+---
+hide:
+- toc
+---
 # MAGMA-GTEx Analysis
 
 
