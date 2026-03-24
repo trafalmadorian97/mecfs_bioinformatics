@@ -15,5 +15,5 @@ MECFS_PAIN_BIVARIATE_MIXER = bivariate_mixer_asset_generator(
     apply_extract_to_test=True,  # Avoid using too much memory
     extra_fit_args=[],
     # reps=list(range(1, 9)),
-    reps=[1],
+    # reps=[1],
 )
