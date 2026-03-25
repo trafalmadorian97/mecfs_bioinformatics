@@ -6,7 +6,7 @@ hide:
 
 
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from Keaton et al.'s meta-GWAS of blood pressure[@keaton2024genome].  Here I focused on diastolic blood pressure (DBP).
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from Keaton et al.'s meta-GWAS of blood pressure[@keaton2024genome].  Here I focused on diastolic blood pressure (DBP).
 
 
 
