@@ -2,7 +2,7 @@
 hide:
   - toc
 ---
-# S-LDSCAnalysis
+# S-LDSC Analysis
 
 
 
@@ -59,7 +59,7 @@ The following graph and table show the results:
 | Brain_Dorsolateral_Prefrontal_Cortex__H3K4me3                            |   4.77128e-07 |           0.00213604  | False         |
 | Brain_Cingulate_Gyrus__H3K27ac                                           |   1.61001e-07 |           0.00248331  | False         |
 
-As might be expected, the significant cell/tissue types are all central nervous system related.  Interestingly, a number of these significant cell/tissue types are related to brain development.  Examples include  Fetal_Brain_Female__H3K4me3,  Brain_Germinal_Matrix__H3K4me3, and primary_cultured_neurospheres.  This may suggest that the key transcriptional programs affecting absolute brainstem volume are active early in development.
+As might be expected, the significant cell/tissue types are all central nervous system related.  Interestingly, a number of these significant cell/tissue types are related to brain development.  Examples include  _Fetal_Brain_Female__H3K4me3,  Brain_Germinal_Matrix__H3K4me3_, and _primary_cultured_neurospheres_.  This may suggest that the key transcriptional programs affecting absolute brainstem volume are active early in development.
 
 ### ImmGen data
 
