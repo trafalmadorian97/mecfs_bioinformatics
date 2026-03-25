@@ -2,6 +2,9 @@
 This file contains a list of figures to be exported for use in documentation
 """
 
+from mecfs_bio.assets.gwas.brainstem.whole_brainstem.xue_et_al.analysis.xue_whole_brainstem_standard_analysis import (
+    XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
 )
@@ -51,4 +54,19 @@ ALL_FIGURE_TASKS = [
         KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks
     ).independent_clusters_markdown_task,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
+    XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    unwrap(XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.hba_magma_tasks).extracted_plot_task,
+    unwrap(
+        unwrap(
+            XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.hba_magma_tasks
+        ).independent_clusters_markdown_task
+    ),
+    unwrap(
+        unwrap(
+            XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.hba_magma_tasks
+        ).magma_independent_cluster_plot
+    ),
+    XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF
+    ].plot_task,
 ]

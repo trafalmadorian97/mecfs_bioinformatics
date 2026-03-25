@@ -4,7 +4,7 @@ hide:
 ---
 # MAGMA HBA Analysis
 
-I applied MAGMA to the GWAS of Human Herpesvirus 7 of Kamitaki et al.[@kamitaki2025genes] using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] as a reference.
+I applied [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to the GWAS of Human Herpesvirus 7 of Kamitaki et al.[@kamitaki2025genes] using scRNAseq data from the [Human Brain Atlas](../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] as a reference.
 
 
 The results are plotted below:

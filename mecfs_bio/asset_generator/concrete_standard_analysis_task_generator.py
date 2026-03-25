@@ -114,7 +114,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     include_master_gene_lists: bool = True,
     include_hba_magma_tasks: bool = False,
     include_independent_cluster_plot_in_hba: bool = False,
-    hba_plot_settings: PlotSettings = PlotSettings(),
+    hba_plot_settings: PlotSettings = PlotSettings(plot_mode="plotly_white"),
     gtex_magma_number_of_bars: int = 20,
     hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
     gget_settings: GGetSettings | None = GGetSettings(limit_genes=20),
