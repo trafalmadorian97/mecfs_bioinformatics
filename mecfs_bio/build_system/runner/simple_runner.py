@@ -30,6 +30,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_
     VerifyingTraceRebuilder,
 )
 from mecfs_bio.build_system.scheduler.topological_scheduler import (
+    TopologicalSchedulerSettings,
     dependees_of_targets_from_tasks,
     topological,
 )
@@ -62,6 +63,7 @@ class SimpleRunner:
         targets: list[Task],
         must_rebuild_transitive: Sequence[Task] = tuple(),
         incremental_save: bool = True,
+        settings: TopologicalSchedulerSettings = TopologicalSchedulerSettings(),
     ) -> Mapping[AssetId, Asset]:
         """
         Targets: the ultimate targets we aim to produce.  All transitive dependencies of these targets will either be rebuilt, or fetched (determined according to that status of their trace)
@@ -96,6 +98,7 @@ class SimpleRunner:
             meta_to_path=meta_to_path,
             targets=[target.asset_id for target in targets],
             incremental_save_path=incremental_save_path,
+            settings=settings,
         )
         info.serialize(self.info_store)
         _print_target_locs(store, targets=targets)
