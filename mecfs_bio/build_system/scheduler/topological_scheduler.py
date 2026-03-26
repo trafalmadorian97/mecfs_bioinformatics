@@ -9,6 +9,7 @@ from typing import Mapping, Sequence
 import emoji
 import networkx as nx
 import structlog
+from attrs import frozen
 from loguru import logger
 
 logger = structlog.get_logger()
@@ -117,6 +118,19 @@ def _get_progress_list(todo: Sequence[AssetId], done: set[AssetId]) -> str:
     return s
 
 
+def _print_progress(
+    todo: Sequence[AssetId], done: set[AssetId], print_progress_list: bool
+):
+    if not print_progress_list:
+        return
+    logger.info(_get_progress_list(todo=todo, done=done))
+
+
+@frozen
+class TopologicalSchedulerSettings:
+    print_progress: bool = True
+
+
 def topological[
     Info,
 ](
@@ -127,6 +141,7 @@ def topological[
     info: Info,
     meta_to_path: MetaToPath,
     incremental_save_path: Path | None = None,
+    settings: TopologicalSchedulerSettings = TopologicalSchedulerSettings(),
 ) -> tuple[Mapping[AssetId, Asset], Info]:
     """
     A scheduler that builds a dependency graph of tasks, and executes them in topological order.
@@ -140,7 +155,11 @@ def topological[
     store: dict[AssetId, Asset] = {}
     frontier = _get_initial_frontier(G)
     while len(G) > 0:
-        logger.info(_get_progress_list(todo=todo, done=done))
+        _print_progress(
+            todo=todo,
+            done=done,
+            print_progress_list=settings.print_progress,
+        )
         node = frontier[0]
         task = tasks[node]
         maybe_asset = get_asset_if_exists(
