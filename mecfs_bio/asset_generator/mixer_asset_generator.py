@@ -192,6 +192,8 @@ def bivariate_mixer_asset_generator(
     extra_fit_args: Sequence[str] = tuple(),
     reps: Sequence[int] = tuple(range(1, 21)),
     apply_extract_to_test: bool = False,
+    plot_override_trait_1_name: str | None = None,
+    plot_override_trait_2_name: str | None = None,
 ) -> BivariateMixerTasks:
     """
     Asset generator to run bivariate mixer tasks on two traits.  Requires the output of univariate mixer to run.
@@ -229,6 +231,8 @@ def bivariate_mixer_asset_generator(
     results = MixerBivariateSummarizeResultsTask.create(
         asset_id=base_name + "_bivariate_mixer_results",
         combine_task=combine,
+        override_trait_1_name=plot_override_trait_1_name,
+        override_trait_2_name=plot_override_trait_2_name,
     )
 
     result_table_task = CopyFileFromDirectoryTask.create_result_table(

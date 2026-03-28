@@ -32,6 +32,8 @@ class MixerBivariateSummarizeResultsTask(Task):
 
     _meta: Meta
     combine_task: MixerBivariateCombine
+    override_trait_1_name: str | None = None
+    override_trait_2_name: str | None = None
 
     @property
     def trait_1_name(self) -> str:
@@ -57,6 +59,8 @@ class MixerBivariateSummarizeResultsTask(Task):
             scratch_dir.resolve(): _CONTAINER_PLOT_DIR,
             source_asset.path.resolve(): _CONTAINER_COMBINED_DIR,
         }
+        trait_1_name = self.override_trait_1_name or self.trait_1_name
+        trait_2_name = self.override_trait_2_name or self.trait_2_name
         invoke_mixer_figures(
             args=[
                 "two",
@@ -77,16 +81,22 @@ class MixerBivariateSummarizeResultsTask(Task):
                 "--ext",
                 "png",
                 "--trait1",
-                self.trait_1_name,
+                _normalize_name(trait_1_name),
                 "--trait2",
-                self.trait_2_name,
+                _normalize_name(trait_2_name),
             ],
             extra_mounts=plots_mounts,
         )
         return DirectoryAsset(scratch_dir)
 
     @classmethod
-    def create(cls, asset_id: str, combine_task: MixerBivariateCombine):
+    def create(
+        cls,
+        asset_id: str,
+        combine_task: MixerBivariateCombine,
+        override_trait_1_name: str | None = None,
+        override_trait_2_name: str | None = None,
+    ):
         source_meta = combine_task.meta
         meta: Meta
         if isinstance(source_meta, ResultDirectoryMeta):
@@ -102,4 +112,13 @@ class MixerBivariateSummarizeResultsTask(Task):
             )
         else:
             raise ValueError(f"Unknown meta {source_meta}")
-        return cls(meta=meta, combine_task=combine_task)
+        return cls(
+            meta=meta,
+            combine_task=combine_task,
+            override_trait_1_name=override_trait_1_name,
+            override_trait_2_name=override_trait_2_name,
+        )
+
+
+def _normalize_name(name: str) -> str:
+    return name.replace("_", "-")

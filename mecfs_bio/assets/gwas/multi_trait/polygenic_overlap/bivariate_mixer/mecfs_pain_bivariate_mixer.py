@@ -14,6 +14,8 @@ MECFS_PAIN_BIVARIATE_MIXER = bivariate_mixer_asset_generator(
     trait_2_tasks=JOHNSTON_ET_AL_UNIVARIATE_MIXER,
     apply_extract_to_test=True,  # Avoid using too much memory
     extra_fit_args=[],
+    plot_override_trait_1_name="mecfs",
+    plot_override_trait_2_name="pain",
     # reps=list(range(1, 9)),
     # reps=[1],
 )
