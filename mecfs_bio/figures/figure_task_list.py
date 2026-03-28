@@ -17,6 +17,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import (
     CT_LDSC_INITIAL_PLOT,
 )
+from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import (
+    MECFS_PAIN_BIVARIATE_MIXER,
+)
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import (
     JOHNSTON_ET_AL_UNIVARIATE_MIXER,
 )
@@ -69,4 +72,5 @@ ALL_FIGURE_TASKS = [
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_CHROMATIN_REF
     ].plot_task,
+    MECFS_PAIN_BIVARIATE_MIXER.result_table_markdown_task,
 ]
