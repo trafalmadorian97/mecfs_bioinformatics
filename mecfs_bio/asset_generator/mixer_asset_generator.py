@@ -19,6 +19,14 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.mixer.bivariate_mixer_task import BivariateMixerTask
+from mecfs_bio.build_system.task.mixer.mixer_bivariate_combine import (
+    BivariateMixerRunSource,
+    MixerBivariateCombine,
+)
+from mecfs_bio.build_system.task.mixer.mixer_bivariate_results import (
+    BIVARIATE_OUTPUT_PREFIX,
+    MixerBivariateSummarizeResultsTask,
+)
 from mecfs_bio.build_system.task.mixer.mixer_task import (
     MixerDataSource,
     MixerTask,
@@ -39,6 +47,7 @@ from mecfs_bio.build_system.task.pipes.heritability_conversion_pipe import (
 from mecfs_bio.build_system.task.pipes.rename_col_by_position_pipe import (
     RenameColByPositionPipe,
 )
+from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.transpose_pipe import TransposePipe
 
 
@@ -163,9 +172,17 @@ class BivariateMixerTasks:
     trait_1_tasks: UnivariateMixerTasks
     trait_2_task: UnivariateMixerTasks
     bivariate_run_tasks: Mapping[int, Task]
+    combined: MixerBivariateCombine
+    results: MixerBivariateSummarizeResultsTask
+    result_table_markdown_task: Task
 
     def terminal_tasks(self) -> list[Task]:
-        return list(self.bivariate_run_tasks.values())
+        return (
+            list(self.bivariate_run_tasks.values())
+            + [self.combined]
+            + [self.results]
+            + [self.result_table_markdown_task]
+        )
 
 
 def bivariate_mixer_asset_generator(
@@ -175,6 +192,8 @@ def bivariate_mixer_asset_generator(
     extra_fit_args: Sequence[str] = tuple(),
     reps: Sequence[int] = tuple(range(1, 21)),
     apply_extract_to_test: bool = False,
+    plot_override_trait_1_name: str | None = None,
+    plot_override_trait_2_name: str | None = None,
 ) -> BivariateMixerTasks:
     """
     Asset generator to run bivariate mixer tasks on two traits.  Requires the output of univariate mixer to run.
@@ -201,10 +220,50 @@ def bivariate_mixer_asset_generator(
             trait_2_univariate_task=trait_2_task,
             apply_extract_to_test=apply_extract_to_test,
             extra_args=list(extra_fit_args),
+            # include_test=False
         )
+    combine = MixerBivariateCombine.create(
+        asset_id=base_name + "_bivariate_mixer_combine",
+        mixer_source_runs=[
+            BivariateMixerRunSource(task=tsk, rep=rep) for rep, tsk in tasks.items()
+        ],
+    )
+    results = MixerBivariateSummarizeResultsTask.create(
+        asset_id=base_name + "_bivariate_mixer_results",
+        combine_task=combine,
+        override_trait_1_name=plot_override_trait_1_name,
+        override_trait_2_name=plot_override_trait_2_name,
+    )
+
+    result_table_task = CopyFileFromDirectoryTask.create_result_table(
+        asset_id=base_name + "_bivariate_mixer_results_table",
+        source_directory_task=results,
+        path_inside_directory=PurePath(BIVARIATE_OUTPUT_PREFIX + ".csv"),
+        extension=".csv",
+        read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
+    )
+
+    result_table_as_markdown_task = (
+        ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+            source_task=result_table_task,
+            asset_id=base_name + "_bivariate_mixer_results_table_as_markdown",
+            pipe=CompositePipe(
+                [
+                    DropColPipe(["fname"]),
+                    TransposePipe(),
+                    RenameColByPositionPipe(col_position=0, col_new_name="Parameter"),
+                    RenameColByPositionPipe(col_position=1, col_new_name="Value"),
+                    SelectColPipe(["Parameter", "Value"]),
+                ]
+            ),
+        )
+    )
 
     return BivariateMixerTasks(
         trait_1_tasks=trait_1_tasks,
         trait_2_task=trait_2_tasks,
         bivariate_run_tasks=tasks,
+        combined=combine,
+        results=results,
+        result_table_markdown_task=result_table_as_markdown_task,
     )

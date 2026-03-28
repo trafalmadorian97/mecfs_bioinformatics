@@ -42,7 +42,7 @@ class BivariateMixerTask(Task):
     """
     Bivariate (cross-trait) MiXeR analysis.
 
-    Runs fit2 and test2 steps, which require completed univariate fit1 results
+    Runs fit2 and (optionally) test2 steps, which require completed univariate fit1 results
     for both traits. Each BivariateMixerTask handles a single rep.
 
     See: O.Frei et al., Bivariate causal mixture model quantifies polygenic overlap
@@ -64,6 +64,7 @@ class BivariateMixerTask(Task):
     bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim"
     threads: int = 4
     apply_extract_to_test: bool = False
+    include_test: bool = True
 
     def __attrs_post_init__(self):
         assert len(self.trait_1_univariate_task.reps_to_perform) == 1
@@ -180,25 +181,25 @@ class BivariateMixerTask(Task):
             extra_test_args = []
             if self.apply_extract_to_test:
                 extra_test_args.extend(extract_args)
-
             bivar_test_out = str(tmp_path / test_prefix)
-            invoke_mixer(
-                ["test2"]
-                + common_args
-                + chr_args
-                + extra_test_args
-                + [
-                    "--trait1-file",
-                    str(trait_1_stats_path),
-                    "--trait2-file",
-                    str(trait_2_stats_path),
-                    "--load-params",
-                    str(bivar_fit_json),
-                    "--out",
-                    bivar_test_out,
-                ],
-                extra_mounts=ref_mounts,
-            )
+            if self.include_test:
+                invoke_mixer(
+                    ["test2"]
+                    + common_args
+                    + chr_args
+                    + extra_test_args
+                    + [
+                        "--trait1-file",
+                        str(trait_1_stats_path),
+                        "--trait2-file",
+                        str(trait_2_stats_path),
+                        "--load-params",
+                        str(bivar_fit_json),
+                        "--out",
+                        bivar_test_out,
+                    ],
+                    extra_mounts=ref_mounts,
+                )
 
             # Move outputs to scratch_dir
             for suffix in (".json", ".log"):
@@ -228,6 +229,7 @@ class BivariateMixerTask(Task):
         bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
         threads: int = 4,
         apply_extract_to_test: bool = False,
+        include_test: bool = True,
     ):
         source_meta = trait_1_source.task.meta
         meta: Meta
@@ -258,4 +260,5 @@ class BivariateMixerTask(Task):
             extra_args=extra_args,
             threads=threads,
             apply_extract_to_test=apply_extract_to_test,
+            include_test=include_test,
         )

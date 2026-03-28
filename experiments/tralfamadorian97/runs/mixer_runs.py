@@ -5,6 +5,7 @@ from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_p
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import \
     JOHNSTON_ET_AL_UNIVARIATE_MIXER
 from mecfs_bio.assets.reference_data.mixer.raw.mixer_g1000_plink_eur_raw import MIXER_RAW_G1000_PLINK_DATA
+from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
 def run_mixer():
@@ -15,8 +16,12 @@ def run_mixer():
         MECFS_PAIN_BIVARIATE_MIXER.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
+            MECFS_PAIN_BIVARIATE_MIXER.results
             # DECODE_ME_UNIVARIATE_MIXER.combine_task
-        ]
+        ],
+        settings=TopologicalSchedulerSettings(
+            print_progress=False
+        )
     )
 
 
