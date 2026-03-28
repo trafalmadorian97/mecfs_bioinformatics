@@ -21,7 +21,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 _CONTAINER_PLOT_DIR = Path("/container_plot")
 _CONTAINER_COMBINED_DIR = Path("/container_combine")
 
-_BIVARIATE_OUTPUT_PREFIX = "bivariate_results"
+BIVARIATE_OUTPUT_PREFIX = "bivariate_results"
 
 
 @frozen
@@ -71,7 +71,7 @@ class MixerBivariateSummarizeResultsTask(Task):
                     / (BIVARIATE_COMBINED_FIT_FILENAME_PREFIX + ".json")
                 ),
                 "--out",
-                str(_CONTAINER_PLOT_DIR / (_BIVARIATE_OUTPUT_PREFIX)),
+                str(_CONTAINER_PLOT_DIR / (BIVARIATE_OUTPUT_PREFIX)),
                 "--statistic",
                 "mean std",
                 "--ext",

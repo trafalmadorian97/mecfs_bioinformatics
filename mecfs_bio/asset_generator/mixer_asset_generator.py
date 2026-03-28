@@ -24,6 +24,7 @@ from mecfs_bio.build_system.task.mixer.mixer_bivariate_combine import (
     MixerBivariateCombine,
 )
 from mecfs_bio.build_system.task.mixer.mixer_bivariate_results import (
+    BIVARIATE_OUTPUT_PREFIX,
     MixerBivariateSummarizeResultsTask,
 )
 from mecfs_bio.build_system.task.mixer.mixer_task import (
@@ -46,6 +47,7 @@ from mecfs_bio.build_system.task.pipes.heritability_conversion_pipe import (
 from mecfs_bio.build_system.task.pipes.rename_col_by_position_pipe import (
     RenameColByPositionPipe,
 )
+from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.transpose_pipe import TransposePipe
 
 
@@ -172,10 +174,14 @@ class BivariateMixerTasks:
     bivariate_run_tasks: Mapping[int, Task]
     combined: MixerBivariateCombine
     results: MixerBivariateSummarizeResultsTask
+    result_table_markdown_task: Task
 
     def terminal_tasks(self) -> list[Task]:
         return (
-            list(self.bivariate_run_tasks.values()) + [self.combined] + [self.results]
+            list(self.bivariate_run_tasks.values())
+            + [self.combined]
+            + [self.results]
+            + [self.result_table_markdown_task]
         )
 
 
@@ -225,10 +231,35 @@ def bivariate_mixer_asset_generator(
         combine_task=combine,
     )
 
+    result_table_task = CopyFileFromDirectoryTask.create_result_table(
+        asset_id=base_name + "_bivariate_mixer_results_table",
+        source_directory_task=results,
+        path_inside_directory=PurePath(BIVARIATE_OUTPUT_PREFIX + ".csv"),
+        extension=".csv",
+        read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
+    )
+
+    result_table_as_markdown_task = (
+        ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+            source_task=result_table_task,
+            asset_id=base_name + "_bivariate_mixer_results_table_as_markdown",
+            pipe=CompositePipe(
+                [
+                    DropColPipe(["fname"]),
+                    TransposePipe(),
+                    RenameColByPositionPipe(col_position=0, col_new_name="Parameter"),
+                    RenameColByPositionPipe(col_position=1, col_new_name="Value"),
+                    SelectColPipe(["Parameter", "Value"]),
+                ]
+            ),
+        )
+    )
+
     return BivariateMixerTasks(
         trait_1_tasks=trait_1_tasks,
         trait_2_task=trait_2_tasks,
         bivariate_run_tasks=tasks,
         combined=combine,
         results=results,
+        result_table_markdown_task=result_table_as_markdown_task,
     )
