@@ -10,13 +10,15 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSc
 
 def run_mixer():
     DEFAULT_RUNNER.run(
-        # [
-        # ]+DECODE_ME_UNIVARIATE_MIXER.terminal_tasks()
-        #  JOHNSTON_ET_AL_UNIVARIATE_MIXER.terminal_tasks(),
-        MECFS_PAIN_BIVARIATE_MIXER.terminal_tasks(),
+        [
+        ]+DECODE_ME_UNIVARIATE_MIXER.terminal_tasks()
+         +JOHNSTON_ET_AL_UNIVARIATE_MIXER.terminal_tasks()
+        +MECFS_PAIN_BIVARIATE_MIXER.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            MECFS_PAIN_BIVARIATE_MIXER.results
+            MECFS_PAIN_BIVARIATE_MIXER.results,
+            JOHNSTON_ET_AL_UNIVARIATE_MIXER.results_task,
+            DECODE_ME_UNIVARIATE_MIXER.results_task
             # DECODE_ME_UNIVARIATE_MIXER.combine_task
         ],
         settings=TopologicalSchedulerSettings(
