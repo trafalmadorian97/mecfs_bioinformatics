@@ -41,6 +41,7 @@ from mecfs_bio.build_system.task.mixer.mixer_univariate_results import (
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
+from mecfs_bio.build_system.task.pipes.format_numbers_pipe import FormatFloatNumbersPipe
 from mecfs_bio.build_system.task.pipes.heritability_conversion_pipe import (
     HeritabilityConversionPipe,
 )
@@ -152,6 +153,7 @@ def univariate_mixer_asset_generator(
                     TransposePipe(),
                     RenameColByPositionPipe(col_position=0, col_new_name="Parameter"),
                     RenameColByPositionPipe(col_position=1, col_new_name="Value"),
+                    FormatFloatNumbersPipe(col="Value", format_str=".4g"),
                 ]
             ),
         )
@@ -254,6 +256,7 @@ def bivariate_mixer_asset_generator(
                     RenameColByPositionPipe(col_position=0, col_new_name="Parameter"),
                     RenameColByPositionPipe(col_position=1, col_new_name="Value"),
                     SelectColPipe(["Parameter", "Value"]),
+                    FormatFloatNumbersPipe(col="Value", format_str=".4g"),
                 ]
             ),
         )
