@@ -11,6 +11,12 @@ plugins:
 - glightbox
 - bibtex:
     bib_file: "docs/refs.bib"
+- git-committers:
+    repository: trafalmadorian97/mecfs_bioinformatics
+    enabled: !ENV [HAVE_GH_TOKEN, false]
+    token: !ENV [GH_TOKEN, "none"]
+    branch: main
+
 - mkdocstrings:
    handlers:
       python:
