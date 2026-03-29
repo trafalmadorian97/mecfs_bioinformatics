@@ -2,7 +2,10 @@
 Code implementing the LCV method from
 O’Connor, Luke J., and Alkes L. Price. "Distinguishing genetic correlation
 from causation across 52 diseases and complex traits."Nature genetics" 50.12 (2018): 1728-1734.
+
+Translated from the original R code using chatgpt, then tweaked
 """
+import polars as pl
 import pandas as pd
 from attrs import frozen
 import math
@@ -72,12 +75,26 @@ class MomentEstimate:
     intercept1: float
     intercept2: float
 
+    def as_df(self)-> pl.DataFrame:
+        return pl.DataFrame(
+            {
+                "rho_g":[self.rho_g],
+                "mixed_fourth_trait_1":[self.mixed_fourth_trait1],
+                "mixed_fourth_trait_2": [self.mixed_fourth_trait2],
+                "cross_intercept":[self.cross_intercept],
+                "scale1":[self.scale1],
+                "scale2":[self.scale2],
+                "intercept1":[self.intercept1],
+                "intercept2":[self.intercept2],
+            }
+        )
+
 @frozen
 class JackknifeSummary:
     """
     Block jackknife matrix and the summary quantities derived from it.
     """
-    estimates: pd.DataFrame
+    estimates: pl.DataFrame
     rho_est: float
     rho_se: float
 
@@ -312,7 +329,6 @@ def estimate_lcv_moments(
     *,
     significance_threshold: float ,
     weights: ArrayLike1D | None = None,
-    fixed_cross_intercept: float = 0.0,
 ) -> MomentEstimate:
     """
     One-shot estimation of all LCV moments on a given SNP set.
@@ -405,3 +421,69 @@ def leave_one_block_out_indices(n_snps: int, n_blocks: int) -> Iterable[FloatArr
             left = np.arange(0, block * block_size)
             right = np.arange((block + 1) * block_size, n_snps)
             yield np.concatenate([left, right])
+
+
+def compute_jackknife_summary(
+    ld_scores: ArrayLike1D,
+    z1: ArrayLike1D,
+    z2: ArrayLike1D,
+    *,
+    significance_threshold: float ,
+    n_blocks: int = 100,
+    weights: ArrayLike1D | None = None,
+) -> JackknifeSummary:
+    """
+    Compute leave-one-block-out estimates of the eight LCV moment quantities.
+    """
+    ld_arr = as_1d_float_array(ld_scores)
+    z1_arr = as_1d_float_array(z1)
+    z2_arr = as_1d_float_array(z2)
+    validate_equal_length(ld_scores=ld_arr, z1=z1_arr, z2=z2_arr)
+
+    w = default_ld_weights(ld_arr) if weights is None else as_1d_float_array(weights)
+    validate_equal_length(ld_scores=ld_arr, weights=w)
+
+    estimates = []
+
+    for i, keep_idx in enumerate(leave_one_block_out_indices(len(ld_arr), n_blocks)):
+        estimate = estimate_lcv_moments(
+            ld_arr[keep_idx],
+            z1_arr[keep_idx],
+            z2_arr[keep_idx],
+            weights=w[keep_idx],
+            significance_threshold=significance_threshold,
+        )
+        estimates.append(estimate.as_df())
+
+    if np.isnan(estimates).any():
+        raise ValueError(
+            "NaNs produced during jackknife estimation. "
+            "This often indicates negative/unstable heritability estimates or misordered SNPs."
+        )
+    estimates_df =pl.concat(estimates,how="vertical").collect()
+
+    rho_est = float(np.mean(estimates_df["rho_g"].to_numpy()))
+    rho_se = float(np.std(estimates_df["rho_g"].to_numpy(), ddof=1) * math.sqrt(n_blocks + 1))
+
+    return JackknifeSummary(estimates=estimates_df, rho_est=rho_est, rho_se=rho_se)
+
+
+def compute_kappas(jackknife_estimates: pl.DataFrame) -> tuple[FloatArray, FloatArray, FloatArray]:
+    """
+    Extract rho, kappa1, kappa2 and subtract the Gaussian null term 3*rho
+    from the fourth moments, matching the original implementation.
+
+    My notes:
+    From the equation at the top of page 11
+    E(\alpha_1^3\alpha_2)=q_1^3q_2*(kurtosis_1) + 3q_1q_2
+    =q_1^3q_2*(kurtosis_pi) + 3*rho_g
+
+    The key step of this function is to subtract 3*rho_g so return the kappas, which are
+    estimates of q_1^3q_2*(kurtosis_pi)
+    """
+    rho = jackknife_estimates["rho_g"].to_numpy()
+    kappa1 = jackknife_estimates["mixed_fourth_trait_1"].to_numpy() - 3.0 * rho
+    kappa2 = jackknife_estimates["mixed_fourth_trait_2"].to_numpy() - 3.0 * rho
+    return rho, kappa1, kappa2
+
+
