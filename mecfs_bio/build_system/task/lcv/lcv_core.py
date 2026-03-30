@@ -514,6 +514,11 @@ def gcp_score_for_value(
     - Thus the numerator of the standardized discrepancy constructed by this function should be close to zero if x=gcp
     - The denominator of the standardized discrepancy is chosen just to stabilize the numerator
 
+    The statistics is computed by calculating the standardized discrepancy across all jacknife, computing the sample mean of these
+    values, then dividing by estimated standard deviation of the sample mean (the standard deviation of the discrepancy )*sqrt(num blocks)
+
+    This should result in a draw of a random variable with standard deviation 1
+
 
 
     """
@@ -532,3 +537,153 @@ def gcp_score_for_value(
         / math.sqrt(n_blocks + 1)
     )
     return float(statistic), standardized_discrepancy
+
+
+def estimate_gcp_posterior(
+    jackknife: JackknifeSummary,
+    *,
+    grid: FloatArray | None = None,
+) -> tuple[float, float, float, float, FloatArray, FloatArray]:
+    """
+    Evaluate the LCV grid posterior/weight function over candidate gcp values.
+
+
+    Justification:
+    \begin{align}
+    P(\text{gcp}=x|D)&=\frac{P(D|\text{gcp}=x)P(\text{gcp}=x)}{P(D)}\\
+    &\approx\frac{P(T_x=\tau_x |\text{gcp}=x) P(\text{gcp}=x) }{P(D)}\\
+    &\propto P(T_x=\tau_x |\text{gcp}=x) P(\text{gcp}=x)
+    \end{align}
+
+
+    Where T_x is the random test statistic when gcp=x, and \tau_x is the actual observed value of this test statistic
+    We are approximating by assuming that all information in the data is contained in the value of random variable T_x
+
+    Under this approximation and the assumption of a uniform prior on gcp, this functon computes a posterior mean.
+
+    """
+    if grid is None:
+        grid = np.arange(-100, 101, dtype=np.float64) / 100.0
+
+    rho, kappa1, kappa2 = compute_kappas(jackknife.estimates)
+    n_blocks = jackknife.estimates.shape[0]
+    rho_sign = float(np.sign(jackknife.rho_est))
+
+    weight = np.zeros_like(grid)
+    zscore_gcp_zero = np.nan
+    pvalue_gcp_plus_one = np.nan
+    pvalue_gcp_minus_one = np.nan
+
+    for i, gcp in enumerate(grid):
+        statistic, _ = gcp_score_for_value(
+            gcp,
+            rho=rho,
+            kappa1=kappa1,
+            kappa2=kappa2,
+            n_blocks=n_blocks,
+        )
+        weight[i] = t.pdf(statistic, df=n_blocks - 2)
+
+        if gcp == 0.0:
+            zscore_gcp_zero = rho_sign * statistic
+        elif gcp == 1.0:
+            pvalue_gcp_plus_one = float(t.cdf(rho_sign * statistic, df=n_blocks - 2))
+        elif gcp == -1.0:
+            pvalue_gcp_minus_one = float(t.cdf(-rho_sign * statistic, df=n_blocks - 2))
+
+    pvalue_gcp_zero_two_sided = float(2.0 * t.cdf(-abs(zscore_gcp_zero), df=n_blocks - 1))
+    return (
+        zscore_gcp_zero,
+        pvalue_gcp_zero_two_sided,
+        pvalue_gcp_plus_one,
+        pvalue_gcp_minus_one,
+        grid,
+        weight,
+    )
+
+
+
+def run_lcv(
+    ld_scores: ArrayLike1D,
+    z1: ArrayLike1D,
+    z2: ArrayLike1D,
+    *,
+    significance_threshold: float,
+    n_blocks: int = 100,
+    weights: ArrayLike1D | None = None,
+) -> LCVResult:
+    """
+    Run the LCV procedure on two vectors of signed summary statistics and LD scores.
+
+    Notes
+    -----
+    SNPs should be ordered by genomic position because the standard errors rely on a
+    block jackknife over contiguous segments.
+
+    Produces warnings if the normalization factors used to standardize effect sizes are detected to be noisy.
+
+    """
+    jackknife = compute_jackknife_summary(
+        ld_scores,
+        z1,
+        z2,
+        n_blocks=n_blocks,
+        weights=weights,
+        significance_threshold=significance_threshold,
+    )
+
+    (
+        zscore_gcp_zero,
+        pvalue_gcp_zero_two_sided,
+        pvalue_gcp_plus_one,
+        pvalue_gcp_minus_one,
+        grid,
+        weight,
+    ) = estimate_gcp_posterior(jackknife)
+
+    posterior_mean_gcp = weighted_mean(grid, weight)
+    posterior_second_moment = weighted_mean(grid**2, weight)
+    posterior_se_gcp = math.sqrt(posterior_second_moment - posterior_mean_gcp**2)
+
+    normalization_factor_zscore_1 = float(
+        np.mean(jackknife.estimates[:, 4])
+        / np.std(jackknife.estimates[:, 4], ddof=1)
+        / math.sqrt(n_blocks + 1)
+    )
+    normalization_factor_zscore_2 = float(
+        np.mean(jackknife.estimates[:, 5])
+        / np.std(jackknife.estimates[:, 5], ddof=1)
+        / math.sqrt(n_blocks + 1)
+    )
+
+    if normalization_factor_zscore_1 < 4 or normalization_factor_zscore_2 < 4:
+        warnings.warn(
+            "Very noisy normalization factors; LCV may produce false positives.",
+            stacklevel=2,
+        )
+    elif normalization_factor_zscore_1 < 7 or normalization_factor_zscore_2 < 7:
+        warnings.warn(
+            "Borderline noisy normalization factors; interpret LCV cautiously.",
+            stacklevel=2,
+        )
+
+    if abs(jackknife.rho_est / jackknife.rho_se) < 2:
+        warnings.warn(
+            "No clearly nonzero genetic correlation; LCV p-values may be conservative.",
+            stacklevel=2,
+        )
+
+    return LCVResult(
+        zscore_gcp_zero=zscore_gcp_zero,
+        pvalue_gcp_zero_two_sided=pvalue_gcp_zero_two_sided,
+        posterior_mean_gcp=posterior_mean_gcp,
+        posterior_se_gcp=posterior_se_gcp,
+        rho_est=jackknife.rho_est,
+        rho_se=jackknife.rho_se,
+        pvalue_gcp_plus_one=pvalue_gcp_plus_one,
+        pvalue_gcp_minus_one=pvalue_gcp_minus_one,
+        h2_zscore_trait1=normalization_factor_zscore_1,
+        h2_zscore_trait2=normalization_factor_zscore_2,
+        gcp_grid=grid,
+        gcp_weight=weight,
+    )
