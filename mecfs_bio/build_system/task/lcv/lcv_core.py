@@ -478,8 +478,8 @@ def compute_kappas(jackknife_estimates: pl.DataFrame) -> tuple[FloatArray, Float
     E(\alpha_1^3\alpha_2)=q_1^3q_2*(kurtosis_1) + 3q_1q_2
     =q_1^3q_2*(kurtosis_pi) + 3*rho_g
 
-    The key step of this function is to subtract 3*rho_g so return the kappas, which are
-    estimates of q_1^3q_2*(kurtosis_pi)
+    The key step of this function is to subtract 3*rho_g from estimates of E(\alpha_1^3\alpha_2)  and so return
+    the kappas, which are estimates of q_1^3q_2*(kurtosis_pi)
     """
     rho = jackknife_estimates["rho_g"].to_numpy()
     kappa1 = jackknife_estimates["mixed_fourth_trait_1"].to_numpy() - 3.0 * rho
@@ -487,3 +487,34 @@ def compute_kappas(jackknife_estimates: pl.DataFrame) -> tuple[FloatArray, Float
     return rho, kappa1, kappa2
 
 
+def gcp_score_for_value(
+    gcp: float,
+    *,
+    rho: FloatArray,
+    kappa1: FloatArray,
+    kappa2: FloatArray,
+    n_blocks: int,
+) -> tuple[float, FloatArray]:
+    """
+    Compute the jackknife-based discrepancy statistic for a candidate gcp value.
+
+    This is a direct but renamed version of the inner loop in RunLCV.R.
+
+    My note:Need to investigate this.  I think the idea is that for the true gcp, numerator=0.  But how do we show this?
+
+    """
+    scale_factor = np.abs(rho) ** (-gcp)
+
+    numerator = kappa1 / scale_factor - scale_factor * kappa2
+    denominator = np.maximum(
+        1.0 / np.abs(rho),
+        np.sqrt(kappa1**2 / scale_factor**2 + kappa2**2 * scale_factor**2),
+    )
+    standardized_discrepancy = numerator / denominator
+
+    statistic = (
+        np.mean(standardized_discrepancy)
+        / np.std(standardized_discrepancy, ddof=1)
+        / math.sqrt(n_blocks + 1)
+    )
+    return float(statistic), standardized_discrepancy
