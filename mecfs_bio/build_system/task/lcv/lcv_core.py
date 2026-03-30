@@ -488,7 +488,7 @@ def compute_kappas(jackknife_estimates: pl.DataFrame) -> tuple[FloatArray, Float
 
 
 def gcp_score_for_value(
-    gcp: float,
+    x: float,
     *,
     rho: FloatArray,
     kappa1: FloatArray,
@@ -500,10 +500,24 @@ def gcp_score_for_value(
 
     This is a direct but renamed version of the inner loop in RunLCV.R.
 
-    My note:Need to investigate this.  I think the idea is that for the true gcp, numerator=0.  But how do we show this?
+    Justification:
+    A key property of gcp is that if x is gcp then |\rho_g|^x=\frac{q_2}{q_1}
+
+    Thus:
+    \begin{align}
+    \kappa_1/f+\kappa_2f\\
+    &=q_1^3q_2 \rho^x-q_1q_2^3\rho^{-x}\\
+    &=q_1^2q_2^2-q_1^2q_2^2\\
+    &=0
+    \end{align}
+
+    - Thus the numerator of the standardized discrepancy constructed by this function should be close to zero if x=gcp
+    - The denominator of the standardized discrepancy is chosen just to stabilize the numerator
+
+
 
     """
-    scale_factor = np.abs(rho) ** (-gcp)
+    scale_factor = np.abs(rho) ** (-x)
 
     numerator = kappa1 / scale_factor - scale_factor * kappa2
     denominator = np.maximum(
