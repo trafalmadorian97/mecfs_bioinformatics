@@ -21,14 +21,6 @@ FloatArray = npt.NDArray[np.float64]
 ArrayLike1D = npt.ArrayLike
 
 @frozen
-class TraitLDScoreResult:
-    """
-    Result of the univariate LDSC-style regression for a single trait.
-    """
-    h2_slope: float
-    intercept: float
-
-@frozen
 class CrossTraitLDScoreResult:
     """
     Result of the cross-trait LDSC-style regression.
@@ -44,21 +36,6 @@ class TraitLDScoreResult:
     """
     h2_slope: float
     intercept: float
-
-
-@frozen
-class MomentEstimate:
-    """
-    Quantities estimated from one dataset (or one jackknife leave-block-out subset).
-    """
-    rho_g: float
-    mixed_fourth_trait1: float
-    mixed_fourth_trait2: float
-    cross_intercept: float
-    scale1: float
-    scale2: float
-    intercept1: float
-    intercept2: float
 
 
 @frozen
@@ -200,7 +177,7 @@ def estimate_trait_ldsc(
     keep = chisq <= significance_threshold * mean_chisq
     chisq_keep = chisq[keep]
 
-    ld_score_and_constant_keep = np.concat([ld[keep].reshape((-1,1)), np.ones(np.sum(keep), dtype=np.float64).reshape((-1,1))], axis=1)
+    ld_score_and_constant_keep = np.concatenate([ld[keep].reshape((-1,1)), np.ones((np.sum(keep), 1), dtype=np.float64)], axis=1)
     regression_results = weighted_least_squares(ld_score_and_constant_keep, chisq_keep, w[keep])
     intercept = float(regression_results[1])
 
@@ -237,7 +214,7 @@ def estimate_cross_trait_ldsc(
         & (z2_arr**2 < significance_threshold * mean_chisq2)
     )
 
-    ld_score_and_constant_keep = np.concat([ld_arr[keep].reshape(-1,1), np.ones(np.sum(keep).reshape(-1,1), dtype=np.float64)], axis=1)
+    ld_score_and_constant_keep = np.concatenate([ld_arr[keep].reshape(-1,1), np.ones((np.sum(keep), 1), dtype=np.float64)], axis=1)
     regression_results = weighted_least_squares(ld_score_and_constant_keep, z1_arr[keep] * z2_arr[keep], w_arr[keep])
     cross_intercept = float(regression_results[1])
 
@@ -455,12 +432,13 @@ def compute_jackknife_summary(
         )
         estimates.append(estimate.as_df())
 
-    if np.isnan(estimates).any():
+    estimates_df = pl.concat(estimates, how="vertical")
+
+    if estimates_df.select(pl.all().is_nan().any()).row(0).count(True) > 0:
         raise ValueError(
             "NaNs produced during jackknife estimation. "
             "This often indicates negative/unstable heritability estimates or misordered SNPs."
         )
-    estimates_df =pl.concat(estimates,how="vertical").collect()
 
     rho_est = float(np.mean(estimates_df["rho_g"].to_numpy()))
     rho_se = float(np.std(estimates_df["rho_g"].to_numpy(), ddof=1) * math.sqrt(n_blocks + 1))
@@ -503,10 +481,14 @@ def gcp_score_for_value(
     Justification:
     A key property of gcp is that if x is gcp then |\rho_g|^x=\frac{q_2}{q_1}
 
+
+    Thus if we define f=|\rho_g|^{-x},
+    then f= \frac{q_1}{q_2}
+
     Thus:
     \begin{align}
     \kappa_1/f+\kappa_2f\\
-    &=q_1^3q_2 \rho^x-q_1q_2^3\rho^{-x}\\
+    &=q_1^3q_2 /f - q_1q_2^3 f \\
     &=q_1^2q_2^2-q_1^2q_2^2\\
     &=0
     \end{align}
@@ -515,10 +497,16 @@ def gcp_score_for_value(
     - The denominator of the standardized discrepancy is chosen just to stabilize the numerator
 
     The statistics is computed by calculating the standardized discrepancy across all jacknife, computing the sample mean of these
-    values, then dividing by estimated standard deviation of the sample mean (the standard deviation of the discrepancy )*sqrt(num blocks)
+    values, then dividing by estimated standard deviation of the sample mean
 
     This should result in a draw of a random variable with standard deviation 1
 
+    Note:
+        - Technically speaking, to compute the standard error of the jacknife mean, you should multiply the standard deviation
+          by (n_blocks-1)/(sqrt{n_blocks}).
+        - Instead, here we multiply by sqrt{n_blocks}.  This is consistent with the original R code, but inconsistent with
+          the standard formula
+        - for 100 blocks, the difference between these two factors is small.
 
 
     """
@@ -645,14 +633,16 @@ def run_lcv(
     posterior_second_moment = weighted_mean(grid**2, weight)
     posterior_se_gcp = math.sqrt(posterior_second_moment - posterior_mean_gcp**2)
 
+    scale1_arr = jackknife.estimates["scale1"].to_numpy()
+    scale2_arr = jackknife.estimates["scale2"].to_numpy()
     normalization_factor_zscore_1 = float(
-        np.mean(jackknife.estimates[:, 4])
-        / np.std(jackknife.estimates[:, 4], ddof=1)
+        np.mean(scale1_arr)
+        / np.std(scale1_arr, ddof=1)
         / math.sqrt(n_blocks + 1)
     )
     normalization_factor_zscore_2 = float(
-        np.mean(jackknife.estimates[:, 5])
-        / np.std(jackknife.estimates[:, 5], ddof=1)
+        np.mean(scale2_arr)
+        / np.std(scale2_arr, ddof=1)
         / math.sqrt(n_blocks + 1)
     )
 
