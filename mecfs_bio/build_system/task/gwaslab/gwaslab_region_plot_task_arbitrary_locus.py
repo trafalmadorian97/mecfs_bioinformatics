@@ -30,7 +30,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLabVCFRefFile,
 )
 
-
 @frozen
 class GwasLabRegionPlotTargetLocusTask(Task):
     """
@@ -42,20 +41,16 @@ class GwasLabRegionPlotTargetLocusTask(Task):
     (vcf_name_for_lead_variants).  Doing this at a reasonable speed requires the installation of the "tabix" binary.
     """
 
-    _meta: Meta
-    _sumstats_task: GWASLabCreateSumstatsTask
+    meta: Meta
+    sumstats_task: GWASLabCreateSumstatsTask
     vcf_name_for_ld: GWASLabVCFRefFile | None
     chrom: int
     pos: int
     buffer: int = 500_000
 
     @property
-    def meta(self) -> Meta:
-        return self._meta
-
-    @property
     def _sumstats_meta(self) -> GWASLabSumStatsMeta:
-        meta = self._sumstats_task.meta
+        meta = self.sumstats_task.meta
         assert isinstance(meta, GWASLabSumStatsMeta)
         return meta
 
@@ -65,7 +60,7 @@ class GwasLabRegionPlotTargetLocusTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._sumstats_task]
+        return [self.sumstats_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:
         target_path = scratch_dir / "plot_dir"

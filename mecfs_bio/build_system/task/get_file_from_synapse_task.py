@@ -18,7 +18,6 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.getLogger()
 
-
 @frozen
 class GetFileFromSynapseTask(Task):
     """
@@ -26,13 +25,9 @@ class GetFileFromSynapseTask(Task):
     May require authentication.  See Getting Started.
     """
 
-    _meta: Meta
+    meta: Meta
     synid: str
     expected_filename: str
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

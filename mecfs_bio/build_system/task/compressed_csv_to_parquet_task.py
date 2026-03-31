@@ -30,7 +30,6 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class CompressedCSVToParquetTask(Task):
     """
@@ -38,7 +37,7 @@ class CompressedCSVToParquetTask(Task):
     Main use is for processing the SNP151 SNP database files
     """
 
-    _meta: Meta
+    meta: Meta
     csv_task: Task
     source_compression: str | None = "gzip"
     target_compression: str = "zstd"
@@ -56,10 +55,6 @@ class CompressedCSVToParquetTask(Task):
         return self.csv_task.meta.asset_id
 
     @property
-    def meta(self) -> Meta:
-        return self._meta
-
-    @property
     def deps(self) -> list["Task"]:
         return [self.csv_task]
 
@@ -67,7 +62,7 @@ class CompressedCSVToParquetTask(Task):
         source_asset = fetch(self._source_id)
         assert isinstance(source_asset, FileAsset)
         source_path = source_asset.path
-        read_spec = self._source_meta.read_spec()
+        read_spec = self._source_meta.read_spec
         format = _get_format(read_spec)
         assert format.null_values is None
         delim = _get_sep(format)
@@ -134,17 +129,14 @@ class CompressedCSVToParquetTask(Task):
             )
         raise ValueError("Unknown Meta")
 
-
 def _get_sep(format: DataFrameTextFormat) -> str:
     return format.separator
-
 
 def _get_format(spec: DataFrameReadSpec | None) -> DataFrameTextFormat:
     assert spec is not None
     format = spec.format
     assert isinstance(format, DataFrameTextFormat)
     return format
-
 
 def _get_column_names(format: DataFrameTextFormat) -> list[str]:
     cols = format.column_names

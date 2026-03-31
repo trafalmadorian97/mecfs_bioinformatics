@@ -22,23 +22,18 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ExtractGzipTextFileTask(Task):
-    _meta: Meta
-    _source_file_task: Task
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
+    meta: Meta
+    source_file_task: Task
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._source_file_task]
+        return [self.source_file_task]
 
     @property
     def _source_file_id(self) -> AssetId:
-        return self._source_file_task.asset_id
+        return self.source_file_task.asset_id
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         out_path = scratch_dir / "extracted_file"
@@ -74,7 +69,7 @@ class ExtractGzipTextFileTask(Task):
         src_meta = source_file_task.meta
         assert isinstance(src_meta, GWASSummaryDataFileMeta)
         if readspec is None:
-            readspec = src_meta.read_spec()
+            readspec = src_meta.read_spec
         meta = GWASSummaryDataFileMeta(
             id=AssetId(asset_id),
             trait=src_meta.trait,
@@ -88,7 +83,6 @@ class ExtractGzipTextFileTask(Task):
             meta=meta,
             source_file_task=source_file_task,
         )
-
 
 def apply_gzip(src: Path, dst: Path):
     with gzip.open(src, "rb") as f_in:

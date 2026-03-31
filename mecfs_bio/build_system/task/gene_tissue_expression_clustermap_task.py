@@ -55,7 +55,6 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ExpressionMatrixClusterMapTaskV2(Task):
     """
@@ -64,16 +63,12 @@ class ExpressionMatrixClusterMapTaskV2(Task):
 
     """
 
-    _meta: Meta
+    meta: Meta
     specificity_matrix_source: SpecificityMatrixSource
     gene_info_sources: Sequence[GeneInfoSource]
     tissue_info_sources: Sequence[TissueInfoSource]
     xr_pipe: XRDataPipe
     plot_spec: XRHeatmapPlotSpec
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

@@ -42,21 +42,16 @@ DEFAULT_FIELDS = [
     "xref_reactome",
 ]
 
-
 @frozen
 class GetUniProtReferenceDataTask(Task):
     """
     Task to download reference data about proteins from UniProt
     """
 
-    _meta: Meta
+    meta: Meta
     field_list: list[str] = (
         DEFAULT_FIELDS  # see: https://david-araripe.github.io/UniProtMapper/stable/field_reference.html
     )
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

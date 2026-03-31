@@ -26,14 +26,13 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ConcatFramesTask(Task):
     """
     Task to concatenate multiple DataFrames, each produces by a separate task.
     """
 
-    _meta: Meta
+    meta: Meta
     frames_tasks: Sequence[Task]
     out_format: OutFormat
     frames_pipes: Sequence[DataProcessingPipe] | None = None
@@ -42,10 +41,6 @@ class ConcatFramesTask(Task):
     def __attrs_post_init__(self):
         if self.frames_pipes is not None:
             assert len(self.frames_pipes) == len(self.frames_tasks)
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

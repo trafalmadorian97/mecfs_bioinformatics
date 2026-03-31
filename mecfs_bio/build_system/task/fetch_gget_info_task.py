@@ -52,7 +52,6 @@ PROTEIN_NAMES_COL = "protein_names"
 PRIMARY_GENE_NAME = "primary_gene_name"
 SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
 
-
 @frozen
 class FetchGGetInfoTask(Task):
     """
@@ -70,7 +69,7 @@ class FetchGGetInfoTask(Task):
 
     source_df_task: Task
     ensembl_id_col: str
-    _meta: Meta
+    meta: Meta
     genes_to_use: int | None = None
     out_format: OutFormat = CSVOutFormat(",")
     post_pipe: DataProcessingPipe = IdentityPipe()
@@ -82,10 +81,6 @@ class FetchGGetInfoTask(Task):
     @property
     def source_id(self) -> AssetId:
         return self.source_df_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -170,7 +165,6 @@ class FetchGGetInfoTask(Task):
             out_format=out_format,
         )
 
-
 def _preprocess_columns(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     if UNIPROT_ID_COL in df.columns:
@@ -192,16 +186,13 @@ def _preprocess_columns(df: pd.DataFrame) -> pd.DataFrame:
 
     return df
 
-
 def _wrap_col_in_list(ser: pd.Series) -> pd.Series:
     return ser.apply(
         lambda x: [x] if ((not isinstance(x, list)) and (x is not None)) else x
     )
 
-
 def _array_to_list(ser: pd.Series) -> pd.Series:
     return ser.apply(lambda x: list(x) if isinstance(x, np.ndarray) else x)
-
 
 def _clear_lists(ser: pd.Series) -> pd.Series:
     def _clean(r: list) -> list:
@@ -209,12 +200,10 @@ def _clear_lists(ser: pd.Series) -> pd.Series:
 
     return ser.apply(lambda x: _clean(x) if isinstance(x, list) else x)
 
-
 def _is_all_nan(l) -> bool:
     if not isinstance(l, list):
         return False
     return all(math.isnan(x) for x in l)
-
 
 def _unnest_list(s: pd.Series) -> pd.Series:
     def _unest(x):

@@ -243,8 +243,8 @@ class GWASLabCreateSumstatsTask(Task):
 
     """
 
-    _df_source_task: Task
-    _asset_id: AssetId
+    df_source_task: Task
+    target_asset_id: AssetId
     basic_check: bool
     genome_build: GenomeBuildMode
     filter_hapmap3: bool = False
@@ -263,13 +263,13 @@ class GWASLabCreateSumstatsTask(Task):
 
     @property
     def _source_id(self) -> AssetId:
-        return self._df_source_task.meta.asset_id
+        return self.df_source_task.meta.asset_id
 
     @property
     def _source_meta(
         self,
     ) -> FilteredGWASDataMeta | GWASSummaryDataFileMeta | ReferenceFileMeta:
-        meta = self._df_source_task.meta
+        meta = self.df_source_task.meta
         assert isinstance(
             meta, (FilteredGWASDataMeta, GWASSummaryDataFileMeta, ReferenceFileMeta)
         )
@@ -279,12 +279,12 @@ class GWASLabCreateSumstatsTask(Task):
     def meta(self) -> Meta:
         if isinstance(self._source_meta, ReferenceFileMeta):
             return GWASLabSumStatsMeta(
-                id=self._asset_id,
+                id=self.target_asset_id,
                 trait="reference_data_gwas",
                 project=self._source_meta.group,
             )
         return GWASLabSumStatsMeta(
-            id=self._asset_id,
+            id=self.target_asset_id,
             trait=self._source_meta.trait,
             project=self._source_meta.project,
             sub_dir="gwaslab_sumstats",
@@ -292,7 +292,7 @@ class GWASLabCreateSumstatsTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._df_source_task]
+        return [self.df_source_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         df = scan_dataframe_asset(asset=fetch(self._source_id), meta=self._source_meta)

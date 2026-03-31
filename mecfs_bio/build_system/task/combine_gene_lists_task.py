@@ -29,14 +29,12 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 ENSEMBL_ID_LABEL = "Ensembl ID"
 
-
 @frozen
 class SrcGeneList:
     task: Task
     name: str
     ensemble_id_column: str
     pipe: DataProcessingPipe = IdentityPipe()
-
 
 @frozen
 class CombineGeneListsTask(Task):
@@ -47,7 +45,7 @@ class CombineGeneListsTask(Task):
     to create master gene list for the trait of interest.
     """
 
-    _meta: Meta
+    meta: Meta
     src_gene_lists: Sequence[SrcGeneList]
     out_format: OutFormat = CSVOutFormat(sep=",")
     out_pipe: DataProcessingPipe = IdentityPipe()
@@ -56,10 +54,6 @@ class CombineGeneListsTask(Task):
         assert len(self.src_gene_lists) > 0
         names = set([gl.name for gl in self.src_gene_lists])
         assert len(names) == len(self.src_gene_lists)
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -91,7 +85,7 @@ class CombineGeneListsTask(Task):
             .collect()
             .to_pandas()
         )
-        out_path = scratch_dir / (self._meta.asset_id + ".csv")
+        out_path = scratch_dir / (self.meta.asset_id + ".csv")
         if isinstance(self.out_format, CSVOutFormat):
             result_df.to_csv(out_path, index=False, sep=self.out_format.sep)
         elif isinstance(self.out_format, ParquetOutFormat):
@@ -127,12 +121,10 @@ class CombineGeneListsTask(Task):
             out_pipe=out_pipe,
         )
 
-
 def _get_gene_dict_from_df(
     df: pd.DataFrame, name_col: str, method_name: str
 ) -> dict[str, list[str]]:
     return {item: [method_name] for item in df[name_col]}
-
 
 def _combine_gene_dicts(gd1: dict[str, list[str]], gd2: dict[str, list[str]]):
     gd1 = dict(gd1)

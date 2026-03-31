@@ -25,21 +25,16 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class GWASLabTransformSumstatsTask(Task):
     """
     Task to read a pickled GWASlab sumstats object, apply transformations to it, write it out as a new GWASLab sumstats object.
     """
 
-    _meta: Meta
+    meta: Meta
     source_sumstats_task: Task
     transform_spec: GwasLabTransformSpec
     post_pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def source_meta(self) -> Meta:

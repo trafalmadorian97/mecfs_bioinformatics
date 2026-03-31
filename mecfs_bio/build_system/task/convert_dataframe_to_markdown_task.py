@@ -21,7 +21,6 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ConvertDataFrameToMarkdownTask(Task):
     """
@@ -29,28 +28,24 @@ class ConvertDataFrameToMarkdownTask(Task):
     Useful for writing up results
     """
 
-    _meta: Meta
-    _df_task: Task
+    meta: Meta
+    df_task: Task
     pipe: DataProcessingPipe = IdentityPipe()
 
     def __attrs_post_init__(self):
-        assert self._source_meta.read_spec() is not None
+        assert self._source_meta.read_spec is not None
 
     @property
     def _source_meta(self) -> Meta:
-        return self._df_task.meta
+        return self.df_task.meta
 
     @property
     def _source_id(self) -> AssetId:
         return self._source_meta.asset_id
 
     @property
-    def meta(self) -> Meta:
-        return self._meta
-
-    @property
     def deps(self) -> list["Task"]:
-        return [self._df_task]
+        return [self.df_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         source_asset = fetch(self._source_id)
@@ -79,7 +74,6 @@ class ConvertDataFrameToMarkdownTask(Task):
             sub_dir=source_meta.sub_dir,
         )
         return cls(meta=meta, df_task=source_task, pipe=pipe)
-
 
 def _array_to_list(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()

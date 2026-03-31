@@ -60,36 +60,36 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
     (vcf_name_for_lead_variants).  Doing this at a reasonable speed requires the installation of the "tabix" binary.
     """
 
-    _lead_variants_task: GwasLabLeadVariantsTask
-    _sumstats_task: GWASLabCreateSumstatsTask
+    lead_variants_task: GwasLabLeadVariantsTask
+    sumstats_task: GWASLabCreateSumstatsTask
     vcf_name_for_ld: GWASLabVCFRefFile | None
     short_id: AssetId = field(converter=AssetId)
     plot_top: int | None = None
 
     def __attrs_post_init__(self):
         # might remove these checks if we end up wanting to explore lead variants from one project in the data of another
-        assert self._lead_variants_task_meta.trait == self._sumstats_meta.trait
-        assert self._lead_variants_task_meta.project == self._sumstats_meta.project
+        assert self.lead_variants_task_meta.trait == self._sumstats_meta.trait
+        assert self.lead_variants_task_meta.project == self._sumstats_meta.project
 
     @property
     def meta(self) -> GWASLabRegionPlotsMeta:
         return GWASLabRegionPlotsMeta(
-            trait=self._lead_variants_task_meta.trait,
-            project=self._lead_variants_task_meta.project,
+            trait=self.lead_variants_task_meta.trait,
+            project=self.lead_variants_task_meta.project,
             id=self.short_id,
         )
 
     @property
     def _lead_variants_task_meta(self) -> GWASLabLeadVariantsMeta:
-        return self._lead_variants_task.meta
+        return self.lead_variants_task.meta
 
     @property
     def _lead_variants_id(self) -> AssetId:
-        return self._lead_variants_task_meta.asset_id
+        return self.lead_variants_task_meta.asset_id
 
     @property
     def _sumstats_meta(self) -> GWASLabSumStatsMeta:
-        meta = self._sumstats_task.meta
+        meta = self.sumstats_task.meta
         assert isinstance(meta, GWASLabSumStatsMeta)
         return meta
 
@@ -99,7 +99,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._lead_variants_task, self._sumstats_task]
+        return [self.lead_variants_task, self.sumstats_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:
         target_path = scratch_dir / "plot_dir"
@@ -107,7 +107,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
         sumstats = read_sumstats(fetch(self._sumstats_id))
         variant_df = (
             scan_dataframe_asset(
-                asset=fetch(self._lead_variants_id), meta=self._lead_variants_task_meta
+                asset=fetch(self._lead_variants_id), meta=self.lead_variants_task_meta
             )
             .collect()
             .to_pandas()

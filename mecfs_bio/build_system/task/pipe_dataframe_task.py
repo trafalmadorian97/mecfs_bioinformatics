@@ -31,34 +31,26 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 class ParquetOutFormat:
     pass
-
 
 @frozen
 class CSVOutFormat:
     sep: str
 
-
 OutFormat = ParquetOutFormat | CSVOutFormat
-
 
 @frozen
 class PipeDataFrameTask(Task):
     source_data_task: Task
     pipes: Sequence[DataProcessingPipe]
-    _meta: Meta
+    meta: Meta
     out_format: OutFormat
     backend: ValidBackend = "ibis"
 
     def __attrs_post_init__(self):
-        if isinstance(self._source_meta.read_spec().format, DataFrameTextFormat):
+        if isinstance(self._source_meta.read_spec.format, DataFrameTextFormat):
             assert self.backend in ("polars",), "Can only read text data with polars"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -145,7 +137,6 @@ class PipeDataFrameTask(Task):
             out_format=out_format,
             backend=backend,
         )
-
 
 def get_extension_and_read_spec_from_format(
     out_format: OutFormat,

@@ -34,14 +34,12 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 logger = structlog.get_logger()
 
-
 @frozen
 class FileSetSource:
     name: str
     task: Task
     col_name: str
     pipe: DataProcessingPipe = IdentityPipe()
-
 
 @frozen
 class DirSetSource:
@@ -52,9 +50,7 @@ class DirSetSource:
     col_name: str
     pipe: DataProcessingPipe = IdentityPipe()
 
-
 SetSource = FileSetSource | DirSetSource
-
 
 def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
     if isinstance(set_source, FileSetSource):
@@ -83,7 +79,6 @@ def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
     else:
         raise ValueError("Unknown set source")
 
-
 @frozen
 class UpSetPlotTask(Task):
     """
@@ -91,12 +86,8 @@ class UpSetPlotTask(Task):
     See: https://en.wikipedia.org/wiki/UpSet_plot
     """
 
-    _meta: Meta
+    meta: Meta
     set_sources: Sequence[SetSource]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -144,7 +135,6 @@ class UpSetPlotTask(Task):
                 set_sources=set_sources,
             )
         raise ValueError(f"Unknown source meta {source_meta}")
-
 
 def write_blank_png(pth: Path):
     width = 200

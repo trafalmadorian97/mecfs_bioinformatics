@@ -60,11 +60,9 @@ TSM_N_CONTROL = "ncontrol"
 TSM_UNITS_COL = "units"
 TSM_SAMPLE_SIZE_COL = "samplesize"
 
-
 from rpy2.robjects.vectors import DataFrame as RDataFrame  # type: ignore
 
 IgnoreOrRaise = typing.Literal["ignore", "raise"]
-
 
 @frozen
 class MRInputColSpec:
@@ -111,7 +109,6 @@ class MRInputColSpec:
             base[self.sample_size_col] = TSM_SAMPLE_SIZE_COL
         return base
 
-
 GWASLAB_MR_INPUT_COL_SPEC = MRInputColSpec(
     rsid_col=GWASLAB_RSID_COL,
     beta_col=GWASLAB_BETA_COL,
@@ -141,9 +138,7 @@ SUN_ET_AL_MR_INPUT_COL_SPEC_hg37 = MRInputColSpec(
     pval_col=GWASLAB_P_COL,
 )
 
-
 RPackageType = typing.Union[InstalledSTPackage, InstalledPackage]
-
 
 TSM_OUTPUT_METHOD_COL = "method"
 TSM_OUTPUT_NSNP_COL = "nsnp"
@@ -155,28 +150,23 @@ TSM_OUTPUT_EXPOSURE_COL = "exposure"
 TSM_OUTPUT_STEIGER_DIR_COL = "steiger_dir"
 TSM_OUTPUT_STEIGER_P_COL = "steiger_pval"
 
-
 MAIN_RESULT_DF_PATH = "mr_result.csv"
 
 REPORT_SUBDIR_PATH = PurePath("reports")
 STEIGER_RESULT_PATH = PurePath("steiger_result.csv")
 
-
 @frozen
 class ClumpOptions:
     pass
-
 
 @frozen
 class MRReportOptions:
     pass
 
-
 @frozen
 class SteigerFilteringOptions:
     drop_failures: bool
     p_value_thresh: float | None = None
-
 
 @frozen
 class TwoSampleMRConfig:
@@ -185,16 +175,13 @@ class TwoSampleMRConfig:
     pre_filter_outcome_variants: bool = False
     steiger_filter: SteigerFilteringOptions | None = None
 
-
 # TODO: Finish this two-sample-MR-task
 # TODO: - Add A directionality test.
 # Add F test option.
 # Add cochranes Q test
 # Add report output
 
-
 NEEDED_COLS = [TSM_RSID_COL, TSM_BETA_COL, TSM_SE_COL, TSM_EFFECT_ALLELE_COL]
-
 
 @frozen
 class TwoSampleMRTask(Task):
@@ -210,7 +197,7 @@ class TwoSampleMRTask(Task):
 
     """
 
-    _meta: Meta
+    meta: Meta
     outcome_data_task: Task
     exposure_data_task: Task
     config: TwoSampleMRConfig
@@ -235,10 +222,6 @@ class TwoSampleMRTask(Task):
     @property
     def outcome_meta(self) -> Meta:
         return self.outcome_data_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -366,7 +349,6 @@ class TwoSampleMRTask(Task):
             mr_method_list=method_list,
         )
 
-
 def steiger_filtering_write_output(
     harmonized: RDataFrame,
     options: SteigerFilteringOptions | None,
@@ -397,11 +379,9 @@ def steiger_filtering_write_output(
         )
         return harmonized
 
-
 @frozen
 class TwoSampleMRResult:
     result: pd.DataFrame
-
 
 def run_two_sample_mr(
     exposure_df: pd.DataFrame,
@@ -416,7 +396,6 @@ def run_two_sample_mr(
     return run_tsmr_on_formatted_data(
         formatted_exposure, formatted_outcome, config, tsmr=tsmr
     )
-
 
 def format_data_no_conversion(
     exposure_rdf: RDataFrame,
@@ -433,7 +412,6 @@ def format_data_no_conversion(
     formatted_outcome = tsmr.format_data(outcome_rdf, type="outcome")
     return formatted_exposure, formatted_outcome
 
-
 def convert_outcome_and_exposure_to_r(
     exposure_df: pd.DataFrame,
     outcome_df: pd.DataFrame,
@@ -446,7 +424,6 @@ def convert_outcome_and_exposure_to_r(
         logger.debug("converting outcome to r...")
         outcome_rdf = ro.conversion.get_conversion().py2rpy(outcome_df)
     return exposure_rdf, outcome_rdf
-
 
 def format_data(
     exposure_df: pd.DataFrame,
@@ -466,7 +443,6 @@ def format_data(
         formatted_outcome = tsmr.format_data(outcome_df, type="outcome")
         return formatted_exposure, formatted_outcome
 
-
 def harmonize_data(
     formatted_exposure: pd.DataFrame,
     formatted_outcome: pd.DataFrame,
@@ -478,7 +454,6 @@ def harmonize_data(
         harmonized = tsmr.harmonise_data(formatted_exposure, formatted_outcome)
         return harmonized
 
-
 def harmonize_data_no_conversion(
     formatted_exposure: RDataFrame,
     formatted_outcome: RDataFrame,
@@ -487,7 +462,6 @@ def harmonize_data_no_conversion(
     logger.debug("Harmonizing outcome and exposure...")
     harmonized = tsmr.harmonise_data(formatted_exposure, formatted_outcome)
     return harmonized
-
 
 def optionally_clump_exposure_data(
     formatted_exposure: pd.DataFrame,
@@ -505,7 +479,6 @@ def optionally_clump_exposure_data(
     logger.debug(f"shape of exposure df after clumping:{formatted_exposure.shape}")
     return formatted_exposure
 
-
 def optionally_clump_exposure_data_no_conversion(
     formatted_exposure: RDataFrame,
     clump_options: ClumpOptions | None,
@@ -521,7 +494,6 @@ def optionally_clump_exposure_data_no_conversion(
     logger.debug(" done clumping")
 
     return formatted_exposure
-
 
 def run_tsmr_on_formatted_data(
     formatted_exposure: pd.DataFrame,
@@ -539,7 +511,6 @@ def run_tsmr_on_formatted_data(
         harmonized = tsmr.harmonise_data(formatted_exposure, formatted_outcome)
         return run_tsmr_on_harmonized_data(harmonized=harmonized, tsmr=tsmr)
 
-
 def run_tsmr_on_harmonized_data(
     harmonized: pd.DataFrame,
     tsmr: RPackageType,
@@ -549,7 +520,6 @@ def run_tsmr_on_harmonized_data(
         logger.debug("performing Mendelian randomization...")
         output = tsmr.mr(harmonized)
         return TwoSampleMRResult(output)
-
 
 def run_tsmr_on_harmonized_data_no_conversion(
     harmonized: RDataFrame,
@@ -564,7 +534,6 @@ def run_tsmr_on_harmonized_data_no_conversion(
     output = tsmr.mr(harmonized, **method_dict)
     return output
 
-
 def gen_mr_report(
     harmonized: RDataFrame,
     options: MRReportOptions | None,
@@ -574,7 +543,6 @@ def gen_mr_report(
     if options is None:
         return
     tsmr.mr_report(harmonized, str(target_dir))
-
 
 def pre_filter_outcome_variants(
     exposure_df: pd.DataFrame, outcome_df: pd.DataFrame, config: TwoSampleMRConfig

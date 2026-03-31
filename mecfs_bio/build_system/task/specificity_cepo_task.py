@@ -27,7 +27,6 @@ from mecfs_bio.build_system.task.specificity_frac_task import (
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class PrepareSpecificityCepo(Task):
     """
@@ -40,7 +39,7 @@ class PrepareSpecificityCepo(Task):
     Kim, Hani Jieun, et al. "Cepo uncovers cell identity through differential stability." bioRxiv (2021): 2021-01.
     """
 
-    _meta: Meta
+    meta: Meta
     long_count_df_task: Task
     cell_type_col: str
     count_col: str
@@ -51,10 +50,6 @@ class PrepareSpecificityCepo(Task):
     out_format: OutFormat = ParquetOutFormat()
     pre_pipe: DataProcessingPipe = IdentityPipe()
     post_pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -150,7 +145,6 @@ class PrepareSpecificityCepo(Task):
             min_cells_per_type=min_cells_per_type,
         )
 
-
 _count_mean = "__count_mean__"
 _count_std = "__count_std__"
 _inv_coef = "__count_inv_coef_var__"
@@ -161,7 +155,6 @@ _zero_rank = "__zero_rank__"
 
 _stability = "__stability__"
 DIFFERENTIAL_STABILITY = "differential_stability"
-
 
 def _compute_inv_coef_prop_zero(
     df: narwhals.LazyFrame,
@@ -184,7 +177,6 @@ def _compute_inv_coef_prop_zero(
     )
     return df
 
-
 def _compute_ranks(
     df: narwhals.LazyFrame,
     cell_type_col: str,
@@ -203,7 +195,6 @@ def _compute_ranks(
         .alias(_zero_rank),
     )
 
-
 def _compute_stability(df: narwhals.LazyFrame, num_genes: int) -> narwhals.LazyFrame:
     return df.with_columns(
         (
@@ -216,7 +207,6 @@ def _compute_stability(df: narwhals.LazyFrame, num_genes: int) -> narwhals.LazyF
         ).alias(_stability)
     )
 
-
 def _compute_differential_stability(
     df: narwhals.LazyFrame, cell_type_col: str, gene_col: str
 ) -> narwhals.LazyFrame:
@@ -225,7 +215,6 @@ def _compute_differential_stability(
             narwhals.col(_stability) - narwhals.col(_stability).mean().over(gene_col)
         ).alias(DIFFERENTIAL_STABILITY)
     )
-
 
 def _check_not_sparse(df: narwhals.LazyFrame, cell_col: str, gene_col: str):
     """

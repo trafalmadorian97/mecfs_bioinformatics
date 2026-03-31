@@ -27,17 +27,12 @@ logger = structlog.get_logger()
 
 MAGMA_GENE_SET_PLOT_NAME = "magma_gene_set_plot"
 
-
 @frozen
 class MAGMAPlotGeneSetResult(Task):
-    _meta: Meta
+    meta: Meta
     gene_set_analysis_task: Task
     number_of_bars: int = 20
     label_col: str = "FULL_NAME"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def _source_id(self) -> AssetId:

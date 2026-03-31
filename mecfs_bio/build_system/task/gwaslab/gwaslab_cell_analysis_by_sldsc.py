@@ -40,7 +40,6 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.get_logger()
 
-
 @frozen
 class CellAnalysisByLDSCTask(Task):
     """
@@ -57,10 +56,9 @@ class CellAnalysisByLDSCTask(Task):
         ref_ld_chr_inner_pattern: string pattern appended to the path to the above directory to select all chromosome files.  Should be in a special glob format, where the @ character is replaced by chromosome number
         w_ld_chr_task: File containing un-partitioned regression weights for the regression SNPS.  these are typically the hapmap3 variants excluding the HLA/MHC region
 
-
     """
 
-    _meta: Meta
+    meta: Meta
     source_sumstats_task: Task
     ref_ld_chr_cts_task: Task
     ref_ld_chr_cts_index_filename: str
@@ -69,10 +67,6 @@ class CellAnalysisByLDSCTask(Task):
     w_ld_chr_task: Task
     w_ld_chr_inner_pattern: str
     pre_pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -190,7 +184,6 @@ class CellAnalysisByLDSCTask(Task):
             pre_pipe=pre_pipe,
         )
 
-
 @frozen
 class LDCTSFileEntry:
     label: str
@@ -226,14 +219,11 @@ class LDCTSFileEntry:
             control_gene_data_path=Path(control),
         )
 
-
 def ldcts_raw_to_processed(contents: str) -> list[LDCTSFileEntry]:
     return [LDCTSFileEntry.from_text(line) for line in contents.splitlines()]
 
-
 def ldcts_processed_to_raw(processed: list[LDCTSFileEntry]) -> str:
     return "\n".join([item.to_text() for item in processed])
-
 
 def prepend_path_to_ldcts_file(input_path: Path, prefix_path: Path, output_path: Path):
     with open(input_path) as f:

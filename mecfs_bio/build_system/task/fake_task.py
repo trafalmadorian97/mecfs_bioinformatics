@@ -4,7 +4,7 @@ A Task that does nothing, which can be used for testing.
 
 from pathlib import Path
 
-from attrs import frozen
+from attrs import Factory, frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -14,22 +14,13 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class FakeTask(Task):
-    _meta: Meta
-    _deps: tuple[Task, ...] = tuple()
+    meta: Meta
+    deps: list[Task] = Factory(list)
     """
     For testing
     """
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
-
-    @property
-    def deps(self) -> list["Task"]:
-        return list(self._deps)
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         raise NotImplementedError()

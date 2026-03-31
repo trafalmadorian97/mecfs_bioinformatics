@@ -22,8 +22,6 @@ class GWASSummaryDataFileMeta(FileMeta):
     project: str
     sub_dir: str
     project_path: PurePath | None
-    _read_spec: ReadSpec | None = None
+    read_spec: ReadSpec | None = None
     extension: str | None = None
 
-    def read_spec(self) -> ReadSpec | None:
-        return self._read_spec

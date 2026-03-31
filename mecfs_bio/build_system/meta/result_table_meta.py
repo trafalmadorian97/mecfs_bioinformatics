@@ -18,11 +18,8 @@ class ResultTableMeta(FileMeta):
     trait: str
     project: str
     extension: str
-    _read_spec: DataFrameReadSpec | None = None
+    read_spec: DataFrameReadSpec | None = None
     sub_dir: PurePath = PurePath("analysis")
-
-    def read_spec(self) -> ReadSpec | None:
-        return self._read_spec
 
     @property
     def asset_id(self) -> AssetId:

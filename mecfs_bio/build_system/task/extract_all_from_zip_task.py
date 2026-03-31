@@ -22,19 +22,14 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ExtractAllFromZipTask(Task):
     """
     Task to extract the entire contents of a zip archive
     """
 
-    _meta: Meta
+    meta: Meta
     source_file_task: Task
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def _source_meta(self) -> Meta:

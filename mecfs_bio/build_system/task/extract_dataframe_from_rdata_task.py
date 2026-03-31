@@ -26,21 +26,16 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ExtractDataFrameFromRDataTask(Task):
     """
     RData files can bundle together many R objects.  This is a Task to extract a single dataframe from such a file.
     """
 
-    _meta: Meta
+    meta: Meta
     rdata_file_task: Task
     r_dataframe_name: str
     r_package_list: Sequence[str]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

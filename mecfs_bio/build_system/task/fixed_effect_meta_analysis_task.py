@@ -37,7 +37,6 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 logger = structlog.get_logger()
 
-
 @frozen
 class CaseControlSampleInfo:
     """
@@ -50,9 +49,7 @@ class CaseControlSampleInfo:
     def effective_sample_size(self) -> int:
         return int(4 / (1 / self.cases + 1 / self.controls))
 
-
 SampleInfo = CaseControlSampleInfo  # add other types of sample info later
-
 
 @frozen
 class GwasSource:
@@ -64,7 +61,6 @@ class GwasSource:
     sample_info: SampleInfo
     pipe: DataProcessingPipe = IdentityPipe()
 
-
 @frozen
 class FixedEffectsMetaAnalysisTask(Task):
     """
@@ -73,21 +69,16 @@ class FixedEffectsMetaAnalysisTask(Task):
 
     The variants present in the output dataframe will be equal to the intersection of the variants in the studies
 
-
     For more information on fixed effects meta analysis, see:
     Chapter 22 of
     Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019.
     """
 
-    _meta: Meta
+    meta: Meta
     sources: Sequence[GwasSource]
 
     def __attrs_post_init__(self):
         assert len(self.sources) > 1
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -204,7 +195,6 @@ class FixedEffectsMetaAnalysisTask(Task):
             sources=sources,
         )
 
-
 def _fixed_effects_beta_se_cols(
     beta_cols: list[str], se_cols: list[str]
 ) -> tuple[narwhals.Expr, narwhals.Expr]:
@@ -214,7 +204,6 @@ def _fixed_effects_beta_se_cols(
         numerator += narwhals.col(beta) / narwhals.col(std) ** 2
         denominator += 1 / narwhals.col(std) ** 2
     return numerator / denominator, (1 / denominator).sqrt()
-
 
 def _select_df_1_columns(
     df: narwhals.LazyFrame,
@@ -232,7 +221,6 @@ def _select_df_1_columns(
         cols.append(GWASLAB_RSID_COL)
     return df.select(cols)
 
-
 def add_effective_sample_size_column(
     out_df: narwhals.LazyFrame,
     sample_info: list[SampleInfo],
@@ -242,14 +230,12 @@ def add_effective_sample_size_column(
         narwhals.lit(effective_sample_size).alias(GWASLAB_EFFECTIVE_SAMPLE_SIZE)
     )
 
-
 def get_reversed(df: narwhals.LazyFrame, beta_col: str) -> narwhals.LazyFrame:
     return df.with_columns(
         narwhals.col(GWASLAB_EFFECT_ALLELE_COL).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
         narwhals.col(GWASLAB_NON_EFFECT_ALLELE_COL).alias(GWASLAB_EFFECT_ALLELE_COL),
         (-1 * narwhals.col(beta_col)).alias(beta_col),
     )
-
 
 def report_flips(df: narwhals.LazyFrame, num_sources: int):
     sum_cols = [
@@ -261,13 +247,11 @@ def report_flips(df: narwhals.LazyFrame, num_sources: int):
     ).collect()
     logger.debug(f"Flipped alleles:\n{result}")
 
-
 def report_output_size(
     df: narwhals.LazyFrame,
 ):
     l = df.select(narwhals.len()).collect().item()
     logger.debug(f"Final meta-analysis has {l} variants")
-
 
 def _check_unique_variants(df: narwhals.LazyFrame):
     assert (
@@ -285,7 +269,6 @@ def _check_unique_variants(df: narwhals.LazyFrame):
         .item()
         == df.select(narwhals.len()).collect().item()
     )
-
 
 def _check_nonzero_se(
     df: narwhals.LazyFrame,

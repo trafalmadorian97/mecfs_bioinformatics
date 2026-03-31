@@ -56,11 +56,9 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
-
 @frozen
 class BinOptions:
     num_bins: int
-
 
 logger = structlog.get_logger()
 
@@ -78,21 +76,17 @@ seaborn_rocket_cmap = sns.color_palette("rocket", n_colors=256)
 
 _matplotlib_rocket_cmap = ListedColormap(seaborn_rocket_cmap)
 
-
 @frozen
 class RegionSelectOverride:
     chrom: int
     start: int
     end: int
 
-
 @frozen
 class RegionSelectDefault:
     pass
 
-
 RegionSelect = RegionSelectOverride | RegionSelectDefault
-
 
 def get_region(mode: RegionSelect, susie_output_path: Path) -> tuple[int, int, int]:
     """
@@ -111,16 +105,13 @@ def get_region(mode: RegionSelect, susie_output_path: Path) -> tuple[int, int, i
         end,
     )
 
-
 HeatMapPlotMode = Literal["ld2", "ld_abs"]
-
 
 @frozen
 class HeatmapOptions:
     heatmap_bin_options: BinOptions | None
     mode: HeatMapPlotMode
     cmap: str | ListedColormap = "plasma"
-
 
 @frozen
 class SusieStackPlotTask(Task):
@@ -133,16 +124,12 @@ class SusieStackPlotTask(Task):
     - Genes
     """
 
-    _meta: Meta
+    meta: Meta
     susie_task: Task
     gene_info_task: Task
     gene_info_pipe: DataProcessingPipe
     region_mode: RegionSelect
     heatmap_options: HeatmapOptions
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -220,7 +207,6 @@ class SusieStackPlotTask(Task):
             region_mode=region_mode,
             heatmap_options=heatmap_options,
         )
-
 
 def plot_locus_tracks_matplotlib(
     gwas_df: pl.DataFrame,
@@ -365,7 +351,6 @@ def plot_locus_tracks_matplotlib(
 
     return fig
 
-
 def get_array_and_edges_for_ld_heatmap(
     ld_abs: np.ndarray,
     pos: np.ndarray,
@@ -404,7 +389,6 @@ def get_array_and_edges_for_ld_heatmap(
     last = new_pos[-1] + (new_pos[-1] - mid[-1])
     edges = np.concatenate([[first], mid, [last]])
     return da.to_numpy(), edges
-
 
 def plot_gene_tracks(
     ax,
@@ -530,7 +514,6 @@ def plot_gene_tracks(
 
     ax.set_yticks([])
     ax.invert_yaxis()
-
 
 def draw_manhattan_track(
     fig,
@@ -682,7 +665,6 @@ def draw_manhattan_track(
     cbar.set_label(r"$r^2$ with lead")
     return ax  # Return the single axis for x-linking later
 
-
 def plot_susie_track(
     susie_cs_df: pl.DataFrame | None,
     ax_pip,
@@ -723,7 +705,6 @@ def plot_susie_track(
             fontsize=9,
         )
     ax_pip.set_ylabel("PIP (SUSIE)")
-
 
 def plot_ld_heatmap(
     ld_np: np.ndarray,

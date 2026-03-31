@@ -31,12 +31,10 @@ _CONTAINER_AGGREGATION_DIR = Path("/container_agg")
 BIVARIATE_COMBINED_FIT_FILENAME_PREFIX = "mixer_bivariate.fit"
 BIVARIATE_COMBINED_TEST_FILENAME_PREFIX = "mixer_bivariate.test"
 
-
 @frozen
 class BivariateMixerRunSource:
     task: BivariateMixerTask
     rep: int
-
 
 @frozen
 class MixerBivariateCombine(Task):
@@ -50,7 +48,7 @@ class MixerBivariateCombine(Task):
     """
 
     mixer_source_runs: Sequence[BivariateMixerRunSource]
-    _meta: Meta
+    meta: Meta
 
     @property
     def trait_1_name(self) -> str:
@@ -59,10 +57,6 @@ class MixerBivariateCombine(Task):
     @property
     def trait_2_name(self) -> str:
         return self.mixer_source_runs[0].task.trait_2_source.alias
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -166,7 +160,6 @@ class MixerBivariateCombine(Task):
             mixer_source_runs=mixer_source_runs,
             meta=meta,
         )
-
 
 def _edit_json_to_fix_trait_path(json_path: Path, trait_1_name: str, trait_2_name: str):
     with open(json_path) as f:

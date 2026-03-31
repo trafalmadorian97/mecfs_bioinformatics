@@ -29,7 +29,7 @@ class GwasLabLeadVariantsTask(Task):
     see: https://cloufield.github.io/gwaslab/utility_get_lead_novel/
     """
 
-    _sumstats_task: GWASLabCreateSumstatsTask
+    sumstats_task: GWASLabCreateSumstatsTask
     short_id: AssetId = field(converter=AssetId)
     sig_level: float = 5e-8
 
@@ -43,7 +43,7 @@ class GwasLabLeadVariantsTask(Task):
 
     @property
     def _input_meta(self) -> GWASLabSumStatsMeta:
-        input_meta = self._sumstats_task.meta
+        input_meta = self.sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
         return input_meta
 
@@ -53,7 +53,7 @@ class GwasLabLeadVariantsTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._sumstats_task]
+        return [self.sumstats_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         sumstats_asset = fetch(self._input_asset_id)

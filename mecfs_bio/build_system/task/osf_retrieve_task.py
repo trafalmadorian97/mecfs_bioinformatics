@@ -15,20 +15,15 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.download.verify import verify_hash
 
-
 @frozen
 class OSFRetrievalTask(GeneratingTask):
     """
     A task that fetches GWAS data from the Open Science data store
     """
 
-    _meta: GWASSummaryDataFileMeta
+    meta: GWASSummaryDataFileMeta
     osf_project_id: str
     md5_hash: str | None = None
-
-    @property
-    def meta(self) -> GWASSummaryDataFileMeta:
-        return self._meta
 
     @property
     def deps(self) -> list[Task]:
@@ -40,7 +35,7 @@ class OSFRetrievalTask(GeneratingTask):
         @invoke.task
         def fetch_osf(c):
             c.run(
-                f"pixi r osf -p {self.osf_project_id} fetch {str(shlex.quote(str(self._meta.project_path)))} {str(tmp_dst)}"
+                f"pixi r osf -p {self.osf_project_id} fetch {str(shlex.quote(str(self.meta.project_path)))} {str(tmp_dst)}"
             )
 
         fetch_osf(invoke.Context())

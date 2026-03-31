@@ -19,7 +19,6 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
-
 @frozen
 class SLDSCScatterPlotTask(Task):
     """
@@ -31,7 +30,7 @@ class SLDSCScatterPlotTask(Task):
     Nature genetics 50.4 (2018): 621-629.
     """
 
-    _meta: Meta
+    meta: Meta
     df_source_task: Task
 
     @property
@@ -41,10 +40,6 @@ class SLDSCScatterPlotTask(Task):
     @property
     def _source_meta(self) -> Meta:
         return self.df_source_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

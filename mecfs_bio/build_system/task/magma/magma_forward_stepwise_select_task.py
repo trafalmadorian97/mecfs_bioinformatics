@@ -39,7 +39,6 @@ RETAINED_CLUSTERS_COLUMN = "Retained_clusters"
 
 logger = structlog.get_logger()
 
-
 @frozen
 class MagmaForwardStepwiseSelectTask(Task):
     """
@@ -50,7 +49,7 @@ class MagmaForwardStepwiseSelectTask(Task):
     This is loosely based on: https://github.com/Integrative-Mental-Health-Lab/linking_cell_types_to_brain_phenotypes/blob/675b5c9b58b8762934183a3ca61ae49ad587934a/MAGMA/5.forward_selection_condition_results.md
     """
 
-    _meta: Meta
+    meta: Meta
     magma_marginal_output_task: Task
     magma_conditional_output_task: Task
     min_prop_sig: float = 0.5
@@ -63,10 +62,6 @@ class MagmaForwardStepwiseSelectTask(Task):
     @property
     def conditional_asset_id(self) -> AssetId:
         return self.magma_conditional_output_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -157,7 +152,6 @@ class MagmaForwardStepwiseSelectTask(Task):
             significance_threshold=significance_threshold,
         )
 
-
 def get_retained_clusters(
     all_cluster_list: Sequence[str],
     prop_sig_dict: dict[tuple[str, str], float],
@@ -175,7 +169,6 @@ def get_retained_clusters(
             to_retain.append(cluster)
     return to_retain
 
-
 def pairwise_independent(
     cluster1: str,
     clusters_to_retain: list[str],
@@ -192,7 +185,6 @@ def pairwise_independent(
             return False
     return True
 
-
 def independent(
     cluster1: str,
     cluster2: str,
@@ -205,7 +197,6 @@ def independent(
     ):
         return True
     return False
-
 
 def generate_wide_dataframe(
     df_cond: pd.DataFrame, df_marg: pd.DataFrame
@@ -243,7 +234,6 @@ def generate_wide_dataframe(
 
     assert (df_wide["P_MARG_a"] <= df_wide["P_MARG_b"]).all()
     return df_wide
-
 
 def generate_mappers_from_wide_dataframe(
     df_wide: pd.DataFrame,

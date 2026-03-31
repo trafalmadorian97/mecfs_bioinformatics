@@ -27,7 +27,6 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ExtractSheetFromExelFileTask(Task):
     """
@@ -35,7 +34,7 @@ class ExtractSheetFromExelFileTask(Task):
     Useful for working with supplementary material to research papers, which is often in excel format
     """
 
-    _meta: Meta
+    meta: Meta
     excel_file_task: Task
     sheet_name: str
     out_format: OutFormat
@@ -46,10 +45,6 @@ class ExtractSheetFromExelFileTask(Task):
     @property
     def source_asset_id(self) -> AssetId:
         return self.excel_file_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

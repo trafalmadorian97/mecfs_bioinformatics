@@ -1,7 +1,6 @@
 """
 Compute local genetic correlation using LAVA (Local Analysis of [co]Variant Association).
 
-
 Implemented by Github copilot
 
 See: Werme et al. "An integrated framework for local genetic correlation analysis"
@@ -67,7 +66,6 @@ LAVA_Z_COL = "Z"
 UNIV_RESULTS_FILENAME = "lava_univariate.csv"
 BIVAR_RESULTS_FILENAME = "lava_bivariate.csv"
 
-
 @frozen
 class LavaBinarySampleInfo:
     """
@@ -90,16 +88,13 @@ class LavaBinarySampleInfo:
             prevalence=data.estimated_population_prevalence,
         )
 
-
 @frozen
 class LavaContinuousSampleInfo:
     """Marker indicating a continuous (quantitative) phenotype."""
 
     total_sample_size: int | None = None
 
-
 LavaSampleInfo = LavaBinarySampleInfo | LavaContinuousSampleInfo
-
 
 @frozen
 class LavaPhenotypeDataSource:
@@ -120,7 +115,6 @@ class LavaPhenotypeDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
-
 @frozen
 class LDReferenceInfo:
     """
@@ -132,7 +126,6 @@ class LDReferenceInfo:
 
     ld_ref_task: Task
     filename_prefix: str
-
 
 @frozen
 class LavaTask(Task):
@@ -147,7 +140,7 @@ class LavaTask(Task):
     - lava_bivariate.csv: genetic correlation estimates per phenotype pair per locus
     """
 
-    _meta: Meta
+    meta: Meta
     sources: Sequence[LavaPhenotypeDataSource]
     ld_reference_info: LDReferenceInfo
     lava_locus_definitions_task: Task
@@ -157,10 +150,6 @@ class LavaTask(Task):
     max_loci: int | None = (
         None  # useful for debugging/testing, since LAVA can be quite slow
     )
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -309,7 +298,6 @@ class LavaTask(Task):
             max_loci=max_loci,
         )
 
-
 def _extract_locus_info(locus: ro.RObject) -> dict:
     """Extract locus metadata from a processed LAVA locus object.
 
@@ -325,7 +313,6 @@ def _extract_locus_info(locus: ro.RObject) -> dict:
         "n.snps": int(locus["n.snps"][0]),  # type: ignore
         "n.pcs": int(locus["K"][0]),  # type: ignore
     }
-
 
 def _write_lava_sumstats(
     source: LavaPhenotypeDataSource, fetch: Fetch, tmp_dir: Path
@@ -375,7 +362,6 @@ def _write_lava_sumstats(
     )
     return output_path
 
-
 def _make_info_row(source: LavaPhenotypeDataSource, sumstats_path: Path) -> dict:
     """Create a row for the LAVA input info file."""
     info = source.sample_info
@@ -394,7 +380,6 @@ def _make_info_row(source: LavaPhenotypeDataSource, sumstats_path: Path) -> dict
         "prevalence": "NA",
         "filename": str(sumstats_path),
     }
-
 
 def _get_sample_overlap_path(
     ct_ldsc_task: Task | None,
@@ -484,7 +469,6 @@ def _get_sample_overlap_path(
     logger.debug(f"Sample overlap matrix:\n{overlap_df}")
     return str(overlap_path)
 
-
 def _write_output(
     scratch_dir: Path,
     univ_results: list[pd.DataFrame],
@@ -506,7 +490,6 @@ def _write_output(
     else:
         logger.debug("No bivariate results produced")
         pd.DataFrame().to_csv(scratch_dir / BIVAR_RESULTS_FILENAME, index=False)
-
 
 def add_sample_size_if_missing(
     df: pl.DataFrame, phenotype_info: LavaSampleInfo

@@ -69,7 +69,7 @@ def scan_dataframe(
 def _scan_dataframe_asset(
     asset: FileAsset, meta: FileMeta, parquet_backend: ValidBackend
 ) -> nw.LazyFrame:
-    read_spec = meta.read_spec()
+    read_spec = meta.read_spec
     assert read_spec is not None
     return scan_dataframe(asset.path, read_spec, parquet_backend)
 

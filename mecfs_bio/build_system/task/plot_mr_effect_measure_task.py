@@ -21,7 +21,6 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class EffectMeasurePlotConfig:
     y_label_col: str
@@ -34,7 +33,6 @@ class EffectMeasurePlotConfig:
     title: str | None = None
     figsize: tuple[float, float] = (7, 3)
 
-
 @frozen
 class PlotMREffectMeasure(Task):
     """
@@ -45,7 +43,7 @@ class PlotMREffectMeasure(Task):
     https://zepid.readthedocs.io/en/latest/Reference/Graphics.html?highlight=effectmeasureplot
     """
 
-    _meta: Meta
+    meta: Meta
     source_df_task: Task
     config: EffectMeasurePlotConfig
     pre_pipe: DataProcessingPipe = IdentityPipe()
@@ -57,10 +55,6 @@ class PlotMREffectMeasure(Task):
     @property
     def source_meta(self) -> Meta:
         return self.source_df_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

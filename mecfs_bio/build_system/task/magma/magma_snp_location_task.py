@@ -27,17 +27,12 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
 )
 
-
 @frozen
 class MagmaSNPFileTask(Task):
     gwas_parquet_with_rsid_task: Task
     extra_columns_to_output: list[str]
-    _meta: Meta
+    meta: Meta
     pipes: Sequence[DataProcessingPipe]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def source_meta(self) -> Meta:

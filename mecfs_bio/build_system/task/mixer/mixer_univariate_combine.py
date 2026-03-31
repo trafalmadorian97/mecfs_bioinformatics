@@ -30,12 +30,10 @@ _CONTAINER_AGGREGATION_DIR = Path("/container_agg")
 COMBINED_FIT_FILENAME_PREFIX = "trait1.fit"
 COMBINED_TEST_FILENAME_PREFIX = "trait1.test"
 
-
 @frozen
 class MixerRunSource:
     task: Task
     rep: int
-
 
 @frozen
 class MixerUnivariateCombine(Task):
@@ -49,12 +47,8 @@ class MixerUnivariateCombine(Task):
     """
 
     mixer_source_runs: Sequence[MixerRunSource]
-    _meta: Meta
+    meta: Meta
     trait_name: str
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -132,7 +126,6 @@ class MixerUnivariateCombine(Task):
             meta=meta,
             trait_name=trait_name,
         )
-
 
 def _edit_json_to_fix_trait_path(json_path: Path, trait_name: str):
     with open(json_path) as f:

@@ -54,20 +54,16 @@ MIXER_Z_SCORE_COL = "Z"
 
 logger = get_logger()
 
-
 def default_mixer_extract_file_pattern_gen(rep: int) -> str:
     return (
         f"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.rep{rep}.snps"
     )
 
-
 def _get_fit_filename_prefix(rep: int) -> str:
     return f"trait1.fit.{rep}"
 
-
 MIXER_FIT_JSON_PATTERN = "trait1.fit.@.json"
 MIXER_TEST_JSON_PATTERN = "trait1.test.@.json"
-
 
 @frozen
 class MixerDataSource:
@@ -86,7 +82,6 @@ class MixerDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
-
 @frozen
 class PreformattedMixerDataSource:
     """
@@ -104,21 +99,17 @@ class PreformattedMixerDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
-
 @frozen
 class BivariateMode:
     trait_2_source: MixerDataSource
-
 
 @frozen
 class UnivariateMode:
     pass
 
-
 MixerMode = BivariateMode | UnivariateMode
 
 CONTAINER_REF_DIR = Path("/ref_data")
-
 
 @frozen
 class MixerTask(Task):
@@ -138,7 +129,7 @@ class MixerTask(Task):
 
     """
 
-    _meta: Meta
+    meta: Meta
     trait_1_source: MixerDataSource | PreformattedMixerDataSource
     reference_data_directory_task: Task
     extract_file_pattern_gen: Callable[[int], str] | None
@@ -148,10 +139,6 @@ class MixerTask(Task):
     chr_to_use_arg: str | None = None
     threads: int = 4
     reps_to_perform: Sequence[int] = tuple(range(1, 21))
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -285,7 +272,6 @@ class MixerTask(Task):
             extra_args=extra_args,
         )
 
-
 def prepare_mixer_trait_input_file(
     source: MixerDataSource | PreformattedMixerDataSource,
     fetch: Fetch,
@@ -315,7 +301,6 @@ def prepare_mixer_trait_input_file(
         )
     else:
         raise ValueError(f"Unexpected source type: {type(source)}")
-
 
 def _prep_summary_statistics_for_mixer(
     sumstats_dataframe_task: Task,
@@ -355,7 +340,6 @@ def _prep_summary_statistics_for_mixer(
     frame.collect().to_pandas().to_csv(out_path, index=False, sep="\t")
     return out_path
 
-
 @frozen
 class MixerLDGenerationTask(Task):
     """
@@ -364,17 +348,13 @@ class MixerLDGenerationTask(Task):
     Copies all source files plus generated .ld files to the output directory.
     """
 
-    _meta: Meta
+    meta: Meta
     plink_data_task: Task
     chromosomes: tuple[int, ...]
     bfile_prefix_pattern: str = "g1000_eur_hm3_chr{chr}"
     r2min: str = "0.05"
     ldscore_r2min: str = "0.01"
     ld_window_kb: str = "10000"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -417,7 +397,6 @@ class MixerLDGenerationTask(Task):
                 shutil.copy2(str(ld_file), str(scratch_dir / ld_file.name))
 
         return DirectoryAsset(scratch_dir)
-
 
 def get_mixer_extract_args(
     extract_file_pattern_gen: Callable[[int], str] | None,

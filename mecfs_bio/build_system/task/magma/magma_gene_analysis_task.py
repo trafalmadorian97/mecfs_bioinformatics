@@ -30,10 +30,9 @@ GENE_ANALYSIS_OUTPUT_STEM_NAME = "gene_analysis_output"
 SynonymMode = Literal["skip", "drop", "drop-dup"]
 DuplicateMode = Literal["first", "last", "error"]
 
-
 @frozen
 class MagmaGeneAnalysisTask(Task):
-    _meta: Meta
+    meta: Meta
     magma_binary_task: Task
     magma_annotation_task: Task
     magma_p_value_task: Task
@@ -42,10 +41,6 @@ class MagmaGeneAnalysisTask(Task):
     sample_size: int
     synonym_mode: SynonymMode = "drop-dup"
     duplicate_mode: DuplicateMode | None = "first"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def p_value_meta(self) -> Meta:
@@ -139,7 +134,6 @@ class MagmaGeneAnalysisTask(Task):
             sample_size=sample_size,
             meta=meta,
         )
-
 
 def read_magma_gene_analysis_result(result_dir: Path) -> pd.DataFrame:
     return (

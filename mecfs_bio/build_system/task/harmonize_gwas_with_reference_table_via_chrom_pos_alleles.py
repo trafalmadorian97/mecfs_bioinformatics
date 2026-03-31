@@ -47,20 +47,17 @@ from .harmonize_gwas_with_reference_table_via_rsid import (
 
 logger = structlog.get_logger()
 
-
 _REF_COLS_ALLELE_MATCH = [
     IS_PALINDROMIC,
     MATCH_REFERENCE,
     MATCH_REFERENCE_FLIPPED,
 ]
 
-
 @frozen
 class ChromRange:
     chrom: int
     start: int
     end: int
-
 
 @frozen
 class HarmonizeGWASWithReferenceViaAlleles(Task):
@@ -78,10 +75,9 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     - drop if we lack frequency information
     - Else, can try to use frequency info to resolve
 
-
     """
 
-    _meta: Meta
+    meta: Meta
     gwas_data_task: Task
     reference_task: Task
     palindrome_strategy: PalindromeStrategy
@@ -104,10 +100,6 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     @property
     def reference_meta(self) -> Meta:
         return self.reference_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -279,7 +271,6 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
             chrom_range_filter=chrom_range_filter,
         )
 
-
 def _report_matches(df: pl.DataFrame) -> None:
     num_matches = df[MATCH_REFERENCE].sum()
     flip_matches = df[MATCH_REFERENCE_FLIPPED].sum()
@@ -287,7 +278,6 @@ def _report_matches(df: pl.DataFrame) -> None:
         f"Found {num_matches} variants matching the reference in their base orientation\n\n"
         f"Found {flip_matches} variants matching the reference when effect and non-effect alleles are flipped"
     )
-
 
 def _filter_chrom_range(
     gwas_data: pl.DataFrame, chrom_range: ChromRange | None

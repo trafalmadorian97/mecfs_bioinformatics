@@ -24,7 +24,6 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 AnnoMode = Literal["GENENAME"] | None
 
-
 @attrs.frozen
 class GWASLabManhattanAndQQPlotTask(Task):
     """
@@ -33,8 +32,8 @@ class GWASLabManhattanAndQQPlotTask(Task):
     see: https://cloufield.github.io/gwaslab/Visualization/
     """
 
-    _sumstats_task: Task
-    _meta: GWASLabManhattanQQPlotMeta
+    sumstats_task: Task
+    meta: GWASLabManhattanQQPlotMeta
     sig_level: float = 5e-8
     top_cut: int = 12  # upper bound of graph
     plot_setting: str = "mqq"  # passed to gwaslab to decide which plots to create
@@ -43,16 +42,12 @@ class GWASLabManhattanAndQQPlotTask(Task):
     anno_mode: AnnoMode = "GENENAME"
 
     @property
-    def meta(self) -> GWASLabManhattanQQPlotMeta:
-        return self._meta
-
-    @property
     def deps(self) -> list["Task"]:
-        return [self._sumstats_task]
+        return [self.sumstats_task]
 
     @property
     def _input_meta(self) -> GWASLabSumStatsMeta:
-        input_meta = self._sumstats_task.meta
+        input_meta = self.sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
         return input_meta
 

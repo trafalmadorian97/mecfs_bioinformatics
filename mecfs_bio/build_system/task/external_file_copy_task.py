@@ -13,7 +13,6 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
-
 @frozen
 class ExternalFileCopyTask(GeneratingTask):
     """
@@ -21,15 +20,11 @@ class ExternalFileCopyTask(GeneratingTask):
     Used for testing
     """
 
-    _meta: SimpleFileMeta
+    meta: SimpleFileMeta
     external_path: Path
 
     def __attrs_post_init__(self):
         assert self.external_path.is_file()
-
-    @property
-    def meta(self) -> SimpleFileMeta:
-        return self._meta
 
     @property
     def deps(self) -> list[Task]:

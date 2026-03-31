@@ -9,27 +9,27 @@ from mecfs_bio.build_system.tasks.base_tasks import Tasks
 
 @frozen
 class SimpleTasks(Tasks):
-    _tasks: Mapping[AssetId, Task]
+    tasks: Mapping[AssetId, Task]
 
     def __attrs_post_init__(self):
-        for asset_id, task in self._tasks.items():
+        for asset_id, task in self.tasks.items():
             assert task.asset_id == asset_id
 
     def __getitem__(self, asset_id: AssetId) -> Task:
-        return self._tasks[asset_id]
+        return self.tasks[asset_id]
 
     def __len__(self) -> int:
-        return len(self._tasks)
+        return len(self.tasks)
 
     def __iter__(self) -> Iterator[AssetId]:
-        yield from self._tasks
+        yield from self.tasks
 
 
 def find_tasks(target_tasks: list[Task]) -> SimpleTasks:
     """
     Build a SimpleTasks object by walking the task graph
     """
-    _tasks: dict[AssetId, Task] = {}
+    tasks: dict[AssetId, Task] = {}
     visited = set()
 
     def explore_task(t: Task):

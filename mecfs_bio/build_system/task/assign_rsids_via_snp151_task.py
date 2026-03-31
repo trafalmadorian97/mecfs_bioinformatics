@@ -32,7 +32,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
 )
 
-
 @frozen
 class AssignRSIDSToSNPsViaSNP151Task(Task):
     """
@@ -45,17 +44,17 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
     This operates exclusively on SNPs
     """
 
-    _meta: Meta
+    meta: Meta
     snp151_database_file_task: Task
     raw_snp_data_task: Task
     valid_chroms: list[str]
     chrom_replace_rules: Mapping[str, int]
 
     def __attrs_post_init__(self):
-        db_readspec = self.database_meta.read_spec()
+        db_readspec = self.database_meta.read_spec
         assert db_readspec is not None
         assert isinstance(db_readspec.format, DataFrameParquetFormat)
-        snp_readspec = self.snp_data_meta.read_spec()
+        snp_readspec = self.snp_data_meta.read_spec
         assert snp_readspec is not None
         assert isinstance(snp_readspec.format, DataFrameParquetFormat)
 
@@ -74,10 +73,6 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
     @property
     def snp_data_id(self) -> AssetId:
         return self.snp_data_meta.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -143,7 +138,6 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
             valid_chroms=valid_chroms,
             chrom_replace_rules=chrom_replace_rules,
         )
-
 
 def create_new_meta(
     source_meta: Meta,
