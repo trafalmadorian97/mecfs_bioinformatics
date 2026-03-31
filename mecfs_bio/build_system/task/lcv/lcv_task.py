@@ -14,9 +14,11 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
+
 
 
 @frozen
@@ -42,4 +44,11 @@ class LCVTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         trait_1_asset = fetch(self.trait_1_data.asset_id)
         trait_2_asset = fetch(self.trait_2_data.asset_id)
-        #wip
+        df_1=scan_dataframe_asset(asset=trait_1_asset,meta=self.trait_1_data.meta)
+        df_2 = scan_dataframe_asset(asset=trait_2_asset,meta=self.trait_2_data.meta)
+
+
+
+
+
+def
