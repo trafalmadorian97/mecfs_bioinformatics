@@ -59,6 +59,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 logger = structlog.get_logger()
+MULTI_TRAIT= "multi_trait"
 
 
 @frozen
@@ -253,7 +254,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(
             id=asset_id,
-            trait="multi_trait",
+            trait=MULTI_TRAIT,
             project="genetic_correlation",
             sub_dir=PurePath("ct_ldsc"),
             extension=".csv",

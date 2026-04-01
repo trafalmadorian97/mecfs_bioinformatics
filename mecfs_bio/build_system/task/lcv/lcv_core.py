@@ -5,6 +5,7 @@ from causation across 52 diseases and complex traits."Nature genetics" 50.12 (20
 
 Translated from the original R code using chatgpt, then tweaked
 """
+from tqdm import tqdm
 import polars as pl
 import pandas as pd
 from attrs import frozen
@@ -94,6 +95,24 @@ class LCVResult:
     gcp_weight: FloatArray
 
 
+    def to_df(self)-> pl.DataFrame:
+        return pl.DataFrame(
+            {
+               "zscore_gcp_zero": self.zscore_gcp_zero,
+               "pvalue_gcp_zero_two_sides":self.pvalue_gcp_zero_two_sided,
+               "poserior_mean_gcp":self.posterior_mean_gcp,
+               "rho_est":self.rho_est,
+                "rho_se":self.rho_se,
+                "pvalue_gcp_plus_one": self.pvalue_gcp_plus_one,
+                "pvalue_gcp_minus_one": self.pvalue_gcp_minus_one,
+                "h2_zscore_trait1": self.h2_zscore_trait1,
+                "h2_zscore_trait2": self.h2_zscore_trait2,
+                "gcp_grid": self.gcp_grid,
+                "gcp_weight": self.gcp_weight,
+            }
+        )
+
+
 def as_1d_float_array(x: ArrayLike1D) -> FloatArray:
     arr = np.asarray(x, dtype=np.float64)
     if arr.ndim != 1:
@@ -160,7 +179,7 @@ def estimate_trait_ldsc(
     z_scores: ArrayLike1D,
     *,
     weights: ArrayLike1D,
-    significance_threshold: float,
+    chisq_exclude_factor_threshold: float,
 ) -> TraitLDScoreResult:
     """
     Estimate the trait-specific LDSC-style slope/intercept from z^2 ~ ld.
@@ -174,7 +193,7 @@ def estimate_trait_ldsc(
 
     chisq = z**2
     mean_chisq = float(np.mean(chisq))
-    keep = chisq <= significance_threshold * mean_chisq
+    keep = chisq <= chisq_exclude_factor_threshold * mean_chisq
     chisq_keep = chisq[keep]
 
     ld_score_and_constant_keep = np.concatenate([ld[keep].reshape((-1,1)), np.ones((np.sum(keep), 1), dtype=np.float64)], axis=1)
@@ -304,7 +323,7 @@ def estimate_lcv_moments(
     z1: ArrayLike1D,
     z2: ArrayLike1D,
     *,
-    significance_threshold: float ,
+    chisq_exclude_factor_threshold: float ,
     weights: ArrayLike1D | None = None,
 ) -> MomentEstimate:
     """
@@ -324,13 +343,13 @@ def estimate_lcv_moments(
         ld_arr,
         z1_arr,
         weights=w,
-        significance_threshold=significance_threshold,
+        chisq_exclude_factor_threshold=chisq_exclude_factor_threshold,
     )
     trait2 = estimate_trait_ldsc(
         ld_arr,
         z2_arr,
         weights=w,
-        significance_threshold=significance_threshold,
+        chisq_exclude_factor_threshold=chisq_exclude_factor_threshold,
     )
 
     cross = estimate_cross_trait_ldsc(
@@ -338,7 +357,7 @@ def estimate_lcv_moments(
         z1_arr,
         z2_arr,
         weights=w,
-        significance_threshold=significance_threshold,
+        significance_threshold=chisq_exclude_factor_threshold,
         h2_slope1=trait1.h2_slope,
         h2_slope2=trait2.h2_slope,
     )
@@ -405,7 +424,7 @@ def compute_jackknife_summary(
     z1: ArrayLike1D,
     z2: ArrayLike1D,
     *,
-    significance_threshold: float ,
+    chisq_exclude_factor_threshold: float ,
     n_blocks: int = 100,
     weights: ArrayLike1D | None = None,
 ) -> JackknifeSummary:
@@ -422,13 +441,13 @@ def compute_jackknife_summary(
 
     estimates = []
 
-    for i, keep_idx in enumerate(leave_one_block_out_indices(len(ld_arr), n_blocks)):
+    for i, keep_idx in tqdm(enumerate(leave_one_block_out_indices(len(ld_arr), n_blocks))):
         estimate = estimate_lcv_moments(
             ld_arr[keep_idx],
             z1_arr[keep_idx],
             z2_arr[keep_idx],
             weights=w[keep_idx],
-            significance_threshold=significance_threshold,
+            chisq_exclude_factor_threshold=chisq_exclude_factor_threshold,
         )
         estimates.append(estimate.as_df())
 
@@ -562,7 +581,7 @@ def estimate_gcp_posterior(
     pvalue_gcp_plus_one = np.nan
     pvalue_gcp_minus_one = np.nan
 
-    for i, gcp in enumerate(grid):
+    for i, gcp in tqdm(enumerate(grid)):
         statistic, _ = gcp_score_for_value(
             gcp,
             rho=rho,
@@ -596,7 +615,7 @@ def run_lcv(
     z1: ArrayLike1D,
     z2: ArrayLike1D,
     *,
-    significance_threshold: float,
+    chisq_exclude_factor_threshold: float,
     n_blocks: int = 100,
     weights: ArrayLike1D | None = None,
 ) -> LCVResult:
@@ -617,7 +636,7 @@ def run_lcv(
         z2,
         n_blocks=n_blocks,
         weights=weights,
-        significance_threshold=significance_threshold,
+        chisq_exclude_factor_threshold=chisq_exclude_factor_threshold,
     )
 
     (

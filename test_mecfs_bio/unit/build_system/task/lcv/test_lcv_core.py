@@ -119,7 +119,7 @@ def test_estimate_trait_ldsc_known_slope():
     z = np.sqrt(chisq) * rng.choice([-1, 1], size=n)
     w = default_ld_weights(ld)
 
-    result = estimate_trait_ldsc(ld, z, weights=w, significance_threshold=30)
+    result = estimate_trait_ldsc(ld, z, weights=w, chisq_exclude_factor_threshold=30)
     assert result.h2_slope == pytest.approx(true_slope, rel=0.05)
     assert result.intercept == pytest.approx(true_intercept, rel=0.1)
 
