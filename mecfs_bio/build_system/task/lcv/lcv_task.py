@@ -39,6 +39,8 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
     MULTI_TRAIT,
 )
 from mecfs_bio.build_system.task.lcv.lcv_core import run_lcv
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -77,20 +79,22 @@ class LCVTask(Task):
     trait_2_data: Task
     consolidated_ld_scores: Task
     config: LCVConfig
+    trait_1_pipe: DataProcessingPipe=IdentityPipe()
+    trait_2_pipe: DataProcessingPipe=IdentityPipe()
 
     @property
     def deps(self) -> list["Task"]:
-        return [self.trait_1_data, self.trait_2_data]
+        return [self.trait_1_data, self.trait_2_data, self.consolidated_ld_scores]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         trait_1_asset = fetch(self.trait_1_data.asset_id)
         trait_2_asset = fetch(self.trait_2_data.asset_id)
         ld_scores_asset = fetch(self.consolidated_ld_scores.asset_id)
         df_trait_1 = make_z_score_frame(
-            scan_dataframe_asset(asset=trait_1_asset, meta=self.trait_1_data.meta)
+           self.trait_1_pipe.process( scan_dataframe_asset(asset=trait_1_asset, meta=self.trait_1_data.meta))
         )
         df_trait_2 = make_z_score_frame(
-            scan_dataframe_asset(asset=trait_2_asset, meta=self.trait_2_data.meta)
+         self.trait_2_pipe.process(   scan_dataframe_asset(asset=trait_2_asset, meta=self.trait_2_data.meta))
         )
         df_ld_scores = scan_dataframe_asset(
             asset=ld_scores_asset, meta=self.consolidated_ld_scores.meta
@@ -122,6 +126,8 @@ class LCVTask(Task):
         trait_2_data: Task,
         consolidated_ld_scores: Task,
         config: LCVConfig,
+            trait_1_pipe: DataProcessingPipe=IdentityPipe(),
+            trait_2_pipe: DataProcessingPipe=IdentityPipe(),
     ):
         meta = ResultTableMeta(
             id=AssetId(asset_id),
@@ -137,6 +143,8 @@ class LCVTask(Task):
             consolidated_ld_scores=consolidated_ld_scores,
             config=config,
             meta=meta,
+            trait_1_pipe=trait_1_pipe,
+            trait_2_pipe=trait_2_pipe,
         )
 
 
