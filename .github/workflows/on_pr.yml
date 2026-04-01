@@ -83,7 +83,7 @@ jobs:
       - name: Check links
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke check-local-links
-      - name: Check types with mypy
+      - name: Check types with ty
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke typecheck
       - name: Run tests
