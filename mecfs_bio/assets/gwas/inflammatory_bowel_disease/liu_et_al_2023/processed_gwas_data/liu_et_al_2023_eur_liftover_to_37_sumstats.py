@@ -9,7 +9,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 
 LIU_ET_AL_2023_IBD_EUR_LIFTOVER_37_SUMSTATS = GWASLabCreateSumstatsTask(
     df_source_task=LIU_ET_AL_2023_IBD_META_EUR_ONLY,
-    asset_id=AssetId("liu_et_al_2023_ibd_sumstats_liftover_to_37"),
+    target_asset_id=AssetId("liu_et_al_2023_ibd_sumstats_liftover_to_37"),
     basic_check=True,
     genome_build="infer",
     liftover_to="19",

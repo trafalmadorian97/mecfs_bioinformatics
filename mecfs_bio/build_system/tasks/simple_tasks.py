@@ -37,12 +37,12 @@ def find_tasks(target_tasks: list[Task]) -> SimpleTasks:
         for dep in t.deps:
             if dep.asset_id not in visited:
                 explore_task(dep)
-        if t.asset_id in _tasks and (t != _tasks[t.asset_id]):
+        if t.asset_id in tasks and (t != tasks[t.asset_id]):
             raise ValueError(
-                f"Found two tasks with asset id  {t.asset_id}.  tasks are {t} and {_tasks[t.asset_id]}"
+                f"Found two tasks with asset id  {t.asset_id}.  tasks are {t} and {tasks[t.asset_id]}"
             )
-        _tasks[t.asset_id] = t
+        tasks[t.asset_id] = t
 
     for task in target_tasks:
         explore_task(task)
-    return SimpleTasks(_tasks)
+    return SimpleTasks(tasks)

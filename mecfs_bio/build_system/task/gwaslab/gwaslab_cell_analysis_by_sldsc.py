@@ -142,7 +142,7 @@ class CellAnalysisByLDSCTask(Task):
                 ref_ld_chr_cts=str(new_loc_chr_cts_index_path),
                 w_ld_chr=str(w_ld_chr_full_pattern),
             )
-            ldsc_h2_cts: pd.DataFrame = sumstats.ldsc_h2_cts
+            ldsc_h2_cts: pd.DataFrame = sumstats.ldsc_h2_cts  # type: ignore[assignment]
             logger.debug(f"cell type specific s-LDSC results: \n \n {ldsc_h2_cts}\n")
 
             out_path = scratch_dir / "ldsc_h2_cts.csv"

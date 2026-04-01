@@ -9,10 +9,10 @@ from mecfs_bio.build_system.tasks.simple_tasks import SimpleTasks
 
 
 def test_info_purge():
-    task_1 = FakeTask(SimpleFileMeta("asset_1"), tuple())
+    task_1 = FakeTask(SimpleFileMeta("asset_1"), [])
 
-    task_2 = FakeTask(SimpleFileMeta("asset_2"), (task_1,))
-    task_3 = FakeTask(SimpleFileMeta("asset_3"), (task_1,))
+    task_2 = FakeTask(SimpleFileMeta("asset_2"), [task_1])
+    task_3 = FakeTask(SimpleFileMeta("asset_3"), [task_1])
 
     tasks = SimpleTasks(
         {
@@ -24,8 +24,8 @@ def test_info_purge():
     info = VerifyingTraceInfo(
         trace_store={
             AssetId("asset_1"): ("abc", []),
-            AssetId("asset_2"): ("def", [("asset_1", "abc")]),
-            AssetId("asset_3"): ("hij", [("asset_2", "def"), ("asset_1", "abc")]),
+            AssetId("asset_2"): ("def", [(AssetId("asset_1"), "abc")]),
+            AssetId("asset_3"): ("hij", [(AssetId("asset_2"), "def"), (AssetId("asset_1"), "abc")]),
         }
     )
     new_info = info_purge(info=info, tasks=tasks)

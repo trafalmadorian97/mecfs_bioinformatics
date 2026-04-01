@@ -48,8 +48,8 @@ class ExtractDataFrameFromRDataTask(Task):
         rdata_asset = fetch(self.rdata_file_task.asset_id)
         assert isinstance(rdata_asset, FileAsset)
         pth = rdata_asset.path
-        load: Any = robjects.r["load"]
-        load(str(pth))
+        load = robjects.r["load"]
+        load(str(pth))  # type: ignore[operator]
         r_dataframe = robjects.r[self.r_dataframe_name]
         with localconverter(conv):
             py_dataframe: pd.DataFrame = ro.conversion.get_conversion().rpy2py(

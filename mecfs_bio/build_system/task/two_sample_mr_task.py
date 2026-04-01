@@ -6,12 +6,12 @@ import typing
 from pathlib import Path, PurePath
 
 import pandas as pd
-import rpy2.robjects as ro  # type: ignore
+import rpy2.robjects as ro  # type: ignore  # ty: ignore[unresolved-reference]
 import structlog
 from attrs import frozen
-from rpy2.robjects import pandas2ri  # type: ignore
-from rpy2.robjects.conversion import localconverter  # type: ignore
-from rpy2.robjects.packages import (  # type: ignore
+from rpy2.robjects import pandas2ri  # type: ignore  # ty: ignore[unresolved-reference]
+from rpy2.robjects.conversion import localconverter  # type: ignore  # ty: ignore[unresolved-reference]
+from rpy2.robjects.packages import (  # type: ignore  # ty: ignore[unresolved-reference]
     InstalledPackage,
     InstalledSTPackage,
     importr,
@@ -60,7 +60,7 @@ TSM_N_CONTROL = "ncontrol"
 TSM_UNITS_COL = "units"
 TSM_SAMPLE_SIZE_COL = "samplesize"
 
-from rpy2.robjects.vectors import DataFrame as RDataFrame  # type: ignore
+from rpy2.robjects.vectors import DataFrame as RDataFrame  # type: ignore  # ty: ignore[unresolved-reference]
 
 IgnoreOrRaise = typing.Literal["ignore", "raise"]
 

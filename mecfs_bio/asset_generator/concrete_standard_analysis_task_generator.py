@@ -258,7 +258,7 @@ def concrete_standard_analysis_generator_no_rsid(
     """
     sumstats_37_task = GWASLabCreateSumstatsTask(
         df_source_task=raw_gwas_data_task,
-        asset_id=AssetId(base_name + "_initial_sumstats_37"),
+        target_asset_id=AssetId(base_name + "_initial_sumstats_37"),
         basic_check=True,
         genome_build="infer",
         liftover_to="19",

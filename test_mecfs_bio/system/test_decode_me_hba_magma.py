@@ -4,6 +4,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_hba_magma_a
     DECODE_ME_HBA_MAGMA_TASKS,
 )
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.util.type_related.unwrap import unwrap
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
@@ -29,18 +30,19 @@ def test_run_hba_magma(tmp_path: Path):
             info_store=info_store,
             asset_root=asset_root,
         )
+        magma_independent_clusters_csv = unwrap(DECODE_ME_HBA_MAGMA_TASKS.magma_independent_clusters_csv)
         result = test_runner.run(
             DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks()
-            + [DECODE_ME_HBA_MAGMA_TASKS.magma_independent_clusters_csv],
+            + [magma_independent_clusters_csv],
             incremental_save=True,
         )
         assert result is not None
         df = (
             scan_dataframe_asset(
                 result[
-                    DECODE_ME_HBA_MAGMA_TASKS.magma_independent_clusters_csv.asset_id
+                    magma_independent_clusters_csv.asset_id
                 ],
-                meta=DECODE_ME_HBA_MAGMA_TASKS.magma_independent_clusters_csv.meta,
+                meta=magma_independent_clusters_csv.meta,
             )
             .collect()
             .to_polars()

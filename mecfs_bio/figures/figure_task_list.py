@@ -26,12 +26,13 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
 )
+from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 MULTI_TISSUE_CHROMATIN_REF = "multi_tissue_chromatin"
 MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
 
-ALL_FIGURE_TASKS = [
+ALL_FIGURE_TASKS: list[Task] = [
     CT_LDSC_INITIAL_PLOT,
     unwrap(BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks).extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,

@@ -25,7 +25,7 @@ def run_ldl_analysis():
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.bar_plot_task,
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.labeled_filtered_gene_analysis_task,
         ]
-        + LDL_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks(),
+        + list(LDL_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks()),
         incremental_save=True,
         must_rebuild_transitive=[
             LDL_STANDARD_SLDSC_TASK_GROUP.partitioned_tasks[

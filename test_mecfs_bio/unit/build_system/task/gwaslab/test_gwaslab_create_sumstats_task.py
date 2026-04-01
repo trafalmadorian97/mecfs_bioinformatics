@@ -28,7 +28,7 @@ def test_gwaslab_sumstats(
     scratch_loc = tmp_path / "scratch"
     scratch_loc.mkdir(exist_ok=True, parents=True)
     task = GWASLabCreateSumstatsTask(
-        asset_id=AssetId("sumstats_task"),
+        target_asset_id=AssetId("sumstats_task"),
         basic_check=True,
         df_source_task=FakeTask(
             meta=FilteredGWASDataMeta(

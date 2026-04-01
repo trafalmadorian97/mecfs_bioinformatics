@@ -132,5 +132,5 @@ def get_spec_matrix_filtered(
     filtered_covar_result = filtered_covar_result.sort_values(by=["P"])
     sig_list = filtered_covar_result["VARIABLE"].tolist()
     cols = ["GENE"] + sig_list
-    spec_matrix_filtered: pd.DataFrame = spec_matrix.loc[:, cols]
+    spec_matrix_filtered = pd.DataFrame(spec_matrix.loc[:, cols])
     return spec_matrix_filtered

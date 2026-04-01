@@ -61,5 +61,9 @@ def test_prepare_specificity_frac(tmp_path: Path):
     pivoted: Any = result_df.pivot(
         index="cell_type", columns="gene", values=NORMALIZED_MEAN
     )
-    assert float(pivoted.loc["A", "X"]) < float(pivoted.loc["B", "X"])
-    assert float(pivoted.loc["A", "Y"]) > float(pivoted.loc["B", "Y"])
+    val_ax: Any = pivoted.loc["A", "X"]
+    val_bx: Any = pivoted.loc["B", "X"]
+    val_ay: Any = pivoted.loc["A", "Y"]
+    val_by: Any = pivoted.loc["B", "Y"]
+    assert float(val_ax) < float(val_bx)
+    assert float(val_ay) > float(val_by)

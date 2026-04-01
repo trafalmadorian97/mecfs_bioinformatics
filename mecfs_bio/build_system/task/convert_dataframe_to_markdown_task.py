@@ -12,6 +12,7 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
+from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
@@ -33,7 +34,9 @@ class ConvertDataFrameToMarkdownTask(Task):
     pipe: DataProcessingPipe = IdentityPipe()
 
     def __attrs_post_init__(self):
-        assert self._source_meta.read_spec is not None
+        source_meta = self._source_meta
+        assert isinstance(source_meta, FileMeta)
+        assert source_meta.read_spec is not None
 
     @property
     def _source_meta(self) -> Meta:

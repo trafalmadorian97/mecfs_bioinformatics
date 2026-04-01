@@ -75,7 +75,13 @@ def test_prepare_specificity_cepo(tmp_path: Path):
     pivoted: Any = result_df.pivot(
         index="cell_type", columns="gene", values=DIFFERENTIAL_STABILITY
     )
-    assert pivoted.loc["A", "X"] > pivoted.loc["B", "X"]
-    assert pivoted.loc["B", "X"] >= pivoted.loc["C", "X"]
-    assert pivoted.loc["A", "Y"] < pivoted.loc["B", "Y"]
-    assert pivoted.loc["A", "Y"] >= pivoted.loc["C", "Y"]
+    val_ax: Any = pivoted.loc["A", "X"]
+    val_bx: Any = pivoted.loc["B", "X"]
+    val_cx: Any = pivoted.loc["C", "X"]
+    val_ay: Any = pivoted.loc["A", "Y"]
+    val_by: Any = pivoted.loc["B", "Y"]
+    val_cy: Any = pivoted.loc["C", "Y"]
+    assert float(val_ax) > float(val_bx)
+    assert float(val_bx) >= float(val_cx)
+    assert float(val_ay) < float(val_by)
+    assert float(val_ay) >= float(val_cy)

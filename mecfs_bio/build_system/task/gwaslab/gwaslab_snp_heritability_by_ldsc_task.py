@@ -87,7 +87,7 @@ class SNPHeritabilityByLDSCTask(Task):
             w_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
             **_get_prev_params(self.phenotype_info),
         )
-        out_df: pd.DataFrame = sumstats.ldsc_h2
+        out_df: pd.DataFrame = sumstats.ldsc_h2  # type: ignore[assignment]
         logger.debug(
             f"ldsc_h2_results:\n{out_df}",
         )
