@@ -47,7 +47,6 @@ from .harmonize_gwas_with_reference_table_via_rsid import (
 
 logger = structlog.get_logger()
 
-
 _REF_COLS_ALLELE_MATCH = [
     IS_PALINDROMIC,
     MATCH_REFERENCE,
@@ -78,10 +77,9 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     - drop if we lack frequency information
     - Else, can try to use frequency info to resolve
 
-
     """
 
-    _meta: Meta
+    meta: Meta
     gwas_data_task: Task
     reference_task: Task
     palindrome_strategy: PalindromeStrategy
@@ -104,10 +102,6 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     @property
     def reference_meta(self) -> Meta:
         return self.reference_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

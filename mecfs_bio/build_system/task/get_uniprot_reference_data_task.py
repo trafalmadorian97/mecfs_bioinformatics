@@ -49,21 +49,17 @@ class GetUniProtReferenceDataTask(Task):
     Task to download reference data about proteins from UniProt
     """
 
-    _meta: Meta
+    meta: Meta
     field_list: list[str] = (
         DEFAULT_FIELDS  # see: https://david-araripe.github.io/UniProtMapper/stable/field_reference.html
     )
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
         return []
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        query = reviewed(True) & organism_name("human")
+        query = reviewed(True) & organism_name("human")  # type: ignore[operator] # ty: ignore[unsupported-operator]
         result = protkb.get(query, fields=self.field_list)
         out_path = scratch_dir / "uniprot.parquet"
         result.to_parquet(out_path)

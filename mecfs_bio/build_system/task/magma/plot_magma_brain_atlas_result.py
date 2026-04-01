@@ -61,7 +61,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
 
     result_table_task: Task
     cluster_annotation_task: Task
-    _meta: Meta
+    meta: Meta
     plot_mode: PlotMode = "plotly_dark"
 
     @property
@@ -79,10 +79,6 @@ class PlotMagmaBrainAtlasResultTask(Task):
     @property
     def source_meta(self) -> Meta:
         return self.result_table_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

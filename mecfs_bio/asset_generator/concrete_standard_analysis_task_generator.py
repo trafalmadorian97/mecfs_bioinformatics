@@ -67,6 +67,7 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 
 @frozen
@@ -87,6 +88,14 @@ class StandardAnalysisTaskGroup:
     hba_magma_tasks: HBAMagmaTasks | None = None
     manhattan_task: Task | None = None
     heritability_task: Task | None = None
+
+    @property
+    def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
+        return unwrap(self.hba_magma_tasks)
+
+    @property
+    def master_gene_list_tasks_unwrap(self) -> MasterGeneListTasks:
+        return unwrap(self.master_gene_list_tasks)
 
     def get_terminal_tasks(self) -> list[Task]:
         result = (
@@ -258,7 +267,7 @@ def concrete_standard_analysis_generator_no_rsid(
     """
     sumstats_37_task = GWASLabCreateSumstatsTask(
         df_source_task=raw_gwas_data_task,
-        asset_id=AssetId(base_name + "_initial_sumstats_37"),
+        target_asset_id=AssetId(base_name + "_initial_sumstats_37"),
         basic_check=True,
         genome_build="infer",
         liftover_to="19",

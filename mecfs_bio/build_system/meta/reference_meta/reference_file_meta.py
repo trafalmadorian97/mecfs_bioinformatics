@@ -15,13 +15,10 @@ class ReferenceFileMeta(FileMeta):
     extension: str
     id: AssetId = field(converter=AssetId)
     filename: str | None = None
-    _read_spec: ReadSpec | None = None
+    read_spec: ReadSpec | None = None
 
     def __attrs_post_init__(self):
         assert self.extension.startswith(".")
-
-    def read_spec(self) -> ReadSpec | None:
-        return self._read_spec
 
     @property
     def asset_id(self) -> AssetId:

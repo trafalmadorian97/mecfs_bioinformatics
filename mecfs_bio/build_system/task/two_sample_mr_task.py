@@ -6,12 +6,12 @@ import typing
 from pathlib import Path, PurePath
 
 import pandas as pd
-import rpy2.robjects as ro  # type: ignore
+import rpy2.robjects as ro
 import structlog
 from attrs import frozen
-from rpy2.robjects import pandas2ri  # type: ignore
-from rpy2.robjects.conversion import localconverter  # type: ignore
-from rpy2.robjects.packages import (  # type: ignore
+from rpy2.robjects import pandas2ri
+from rpy2.robjects.conversion import localconverter
+from rpy2.robjects.packages import (
     InstalledPackage,
     InstalledSTPackage,
     importr,
@@ -60,8 +60,7 @@ TSM_N_CONTROL = "ncontrol"
 TSM_UNITS_COL = "units"
 TSM_SAMPLE_SIZE_COL = "samplesize"
 
-
-from rpy2.robjects.vectors import DataFrame as RDataFrame  # type: ignore
+from rpy2.robjects.vectors import DataFrame as RDataFrame
 
 IgnoreOrRaise = typing.Literal["ignore", "raise"]
 
@@ -141,9 +140,7 @@ SUN_ET_AL_MR_INPUT_COL_SPEC_hg37 = MRInputColSpec(
     pval_col=GWASLAB_P_COL,
 )
 
-
 RPackageType = typing.Union[InstalledSTPackage, InstalledPackage]
-
 
 TSM_OUTPUT_METHOD_COL = "method"
 TSM_OUTPUT_NSNP_COL = "nsnp"
@@ -154,7 +151,6 @@ TSM_OUTPUT_EXPOSURE_COL = "exposure"
 
 TSM_OUTPUT_STEIGER_DIR_COL = "steiger_dir"
 TSM_OUTPUT_STEIGER_P_COL = "steiger_pval"
-
 
 MAIN_RESULT_DF_PATH = "mr_result.csv"
 
@@ -192,7 +188,6 @@ class TwoSampleMRConfig:
 # Add cochranes Q test
 # Add report output
 
-
 NEEDED_COLS = [TSM_RSID_COL, TSM_BETA_COL, TSM_SE_COL, TSM_EFFECT_ALLELE_COL]
 
 
@@ -210,7 +205,7 @@ class TwoSampleMRTask(Task):
 
     """
 
-    _meta: Meta
+    meta: Meta
     outcome_data_task: Task
     exposure_data_task: Task
     config: TwoSampleMRConfig
@@ -235,10 +230,6 @@ class TwoSampleMRTask(Task):
     @property
     def outcome_meta(self) -> Meta:
         return self.outcome_data_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

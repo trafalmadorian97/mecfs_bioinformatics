@@ -37,12 +37,8 @@ class ConsolidateLDScoresTask(Task):
     and write them out as a parquet file
     """
 
-    _meta: Meta
+    meta: Meta
     extracted_ld_scores_task: Task
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

@@ -17,12 +17,8 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class DownloadFromGoogleDriveTask(Task):
-    _meta: Meta
+    meta: Meta
     file_id: str
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

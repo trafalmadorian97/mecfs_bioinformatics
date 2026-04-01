@@ -22,5 +22,6 @@ class MarkdownFileMeta(FileMeta):
     project: str
     sub_dir: str | PurePath
 
+    @property
     def read_spec(self) -> ReadSpec | None:
         return None

@@ -50,7 +50,7 @@ class MixerBivariateCombine(Task):
     """
 
     mixer_source_runs: Sequence[BivariateMixerRunSource]
-    _meta: Meta
+    meta: Meta
 
     @property
     def trait_1_name(self) -> str:
@@ -59,10 +59,6 @@ class MixerBivariateCombine(Task):
     @property
     def trait_2_name(self) -> str:
         return self.mixer_source_runs[0].task.trait_2_source.alias
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

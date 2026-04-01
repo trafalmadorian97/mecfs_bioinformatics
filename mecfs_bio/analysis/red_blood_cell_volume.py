@@ -27,7 +27,7 @@ def run_red_blood_cell_volume_analysis():
             MILLION_VETERANS_EUR_RBC_VOLUME_MAGMA_TASKS.inner.gene_analysis_task,
             MILLION_VETERANS_EUR_RBC_VOLUME_MAGMA_TASKS.inner.labeled_filtered_gene_analysis_task,
         ]
-        + MILLION_VETERANS_EUR_RBC_VOL_S_LDSC_TASKS.get_terminal_tasks(),
+        + list(MILLION_VETERANS_EUR_RBC_VOL_S_LDSC_TASKS.get_terminal_tasks()),
         incremental_save=True,
     )
 

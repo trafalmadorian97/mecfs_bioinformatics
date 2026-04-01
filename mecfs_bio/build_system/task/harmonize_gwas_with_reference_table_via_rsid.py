@@ -56,7 +56,6 @@ _MISMATCH_POS_CHROM = "__MISMATCH_POS_CHROM__"
 MATCH_REFERENCE = "__MATCH_REFERENCE__"
 MATCH_REFERENCE_FLIPPED = "__MATCH_REFERENCE_FLIPPED__"
 
-
 _REF_COLS = [
     REFERENCE_EFFECT_ALLELE,
     REFERENCE_NON_EFFECT_ALLELE,
@@ -83,10 +82,9 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
     - drop if we lack frequency information
     - Else, can try to use frequency info to resolve
 
-
     """
 
-    _meta: Meta
+    meta: Meta
     gwas_data_task: Task
     reference_task: Task
     palindrome_strategy: PalindromeStrategy
@@ -110,10 +108,6 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
     @property
     def reference_meta(self) -> Meta:
         return self.reference_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

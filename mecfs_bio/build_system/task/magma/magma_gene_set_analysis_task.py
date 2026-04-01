@@ -64,7 +64,7 @@ class MagmaGeneSetAnalysisTask(Task):
     See page 18 of the manual here: https://vu.data.surfsara.nl/s/MUiv3y1SFRePnyG?dir=/&editing=false&openfile=true
     """
 
-    _meta: Meta
+    meta: Meta
     magma_binary_task: Task
     magma_gene_analysis_task: Task
     gene_set_or_covar_task: Task | DirectoryGeneSetSpec
@@ -83,10 +83,6 @@ class MagmaGeneSetAnalysisTask(Task):
         if isinstance(self.gene_set_or_covar_task, Task):
             return self.gene_set_or_covar_task.asset_id
         return self.gene_set_or_covar_task.gene_set_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

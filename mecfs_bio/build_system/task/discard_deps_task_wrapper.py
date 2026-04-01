@@ -28,12 +28,12 @@ class DiscardDepsWrapper(Task):
     Save disk space materializing dependencies of the wrapped task in a temporary directory.
     """
 
-    _inner: Task
+    inner: Task
 
     @property
     def meta(self) -> Meta:
         return attrs.evolve(
-            self._inner.meta, id=AssetId(self._inner.meta.id + "_wrapped_remove_deps")
+            self.inner.meta, id=AssetId(self.inner.meta.id + "_wrapped_remove_deps")
         )
 
     @property
@@ -52,8 +52,8 @@ class DiscardDepsWrapper(Task):
                 info_store=info_store,
                 asset_root=asset_root,
             )
-            result = runner.run([self._inner])
-            result_asset = result[self._inner.asset_id]
+            result = runner.run([self.inner])
+            result_asset = result[self.inner.asset_id]
             if isinstance(result_asset, FileAsset):
                 is_file = True
             else:

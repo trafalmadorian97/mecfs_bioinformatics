@@ -48,12 +48,8 @@ class DownloadFilesIntoDirectoryTask(Task):
     A directory consisting of one or more downloaded files
     """
 
-    _meta: Meta
+    meta: Meta
     entries: Sequence[DownloadEntry]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
