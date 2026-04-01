@@ -5,27 +5,28 @@ from causation across 52 diseases and complex traits."Nature genetics" 50.12 (20
 
 Translated from the original R code using chatgpt, then tweaked
 """
-from tqdm import tqdm
-import polars as pl
-import pandas as pd
-from attrs import frozen
+
 import math
 import warnings
-from typing import Iterable, Sequence
+from typing import Iterable
 
 import numpy as np
 import numpy.typing as npt
+import polars as pl
+from attrs import frozen
 from scipy.stats import t
-
+from tqdm import tqdm
 
 FloatArray = npt.NDArray[np.float64]
 ArrayLike1D = npt.ArrayLike
+
 
 @frozen
 class CrossTraitLDScoreResult:
     """
     Result of the cross-trait LDSC-style regression.
     """
+
     genetic_correlation: float
     intercept: float
 
@@ -35,6 +36,7 @@ class TraitLDScoreResult:
     """
     Result of the univariate LDSC-style regression for a single trait.
     """
+
     h2_slope: float
     intercept: float
 
@@ -44,6 +46,7 @@ class MomentEstimate:
     """
     Quantities estimated from one dataset (or one jackknife leave-block-out subset).
     """
+
     rho_g: float
     mixed_fourth_trait1: float
     mixed_fourth_trait2: float
@@ -53,34 +56,38 @@ class MomentEstimate:
     intercept1: float
     intercept2: float
 
-    def as_df(self)-> pl.DataFrame:
+    def as_df(self) -> pl.DataFrame:
         return pl.DataFrame(
             {
-                "rho_g":[self.rho_g],
-                "mixed_fourth_trait_1":[self.mixed_fourth_trait1],
+                "rho_g": [self.rho_g],
+                "mixed_fourth_trait_1": [self.mixed_fourth_trait1],
                 "mixed_fourth_trait_2": [self.mixed_fourth_trait2],
-                "cross_intercept":[self.cross_intercept],
-                "scale1":[self.scale1],
-                "scale2":[self.scale2],
-                "intercept1":[self.intercept1],
-                "intercept2":[self.intercept2],
+                "cross_intercept": [self.cross_intercept],
+                "scale1": [self.scale1],
+                "scale2": [self.scale2],
+                "intercept1": [self.intercept1],
+                "intercept2": [self.intercept2],
             }
         )
+
 
 @frozen
 class JackknifeSummary:
     """
     Block jackknife matrix and the summary quantities derived from it.
     """
+
     estimates: pl.DataFrame
     rho_est: float
     rho_se: float
+
 
 @frozen
 class LCVResult:
     """
     Final LCV output.
     """
+
     zscore_gcp_zero: float
     pvalue_gcp_zero_two_sided: float
     posterior_mean_gcp: float
@@ -94,15 +101,14 @@ class LCVResult:
     gcp_grid: FloatArray
     gcp_weight: FloatArray
 
-
-    def to_df(self)-> pl.DataFrame:
+    def to_df(self) -> pl.DataFrame:
         return pl.DataFrame(
             {
-               "zscore_gcp_zero": self.zscore_gcp_zero,
-               "pvalue_gcp_zero_two_sides":self.pvalue_gcp_zero_two_sided,
-               "poserior_mean_gcp":self.posterior_mean_gcp,
-               "rho_est":self.rho_est,
-                "rho_se":self.rho_se,
+                "zscore_gcp_zero": self.zscore_gcp_zero,
+                "pvalue_gcp_zero_two_sides": self.pvalue_gcp_zero_two_sided,
+                "poserior_mean_gcp": self.posterior_mean_gcp,
+                "rho_est": self.rho_est,
+                "rho_se": self.rho_se,
                 "pvalue_gcp_plus_one": self.pvalue_gcp_plus_one,
                 "pvalue_gcp_minus_one": self.pvalue_gcp_minus_one,
                 "h2_zscore_trait1": self.h2_zscore_trait1,
@@ -116,8 +122,9 @@ class LCVResult:
 def as_1d_float_array(x: ArrayLike1D) -> FloatArray:
     arr = np.asarray(x, dtype=np.float64)
     if arr.ndim != 1:
-        raise ValueError(f"array must be one-dimensional")
+        raise ValueError("array must be one-dimensional")
     return arr
+
 
 def validate_equal_length(**arrays: FloatArray) -> None:
     lengths = {name: len(arr) for name, arr in arrays.items()}
@@ -136,7 +143,10 @@ def weighted_mean(values: ArrayLike1D, weights: ArrayLike1D) -> float:
     validate_equal_length(values=x, weights=w)
     return float(np.sum(w * x) / np.sum(w))
 
-def weighted_least_squares(design: npt.ArrayLike, response: ArrayLike1D, weights: ArrayLike1D) -> FloatArray:
+
+def weighted_least_squares(
+    design: npt.ArrayLike, response: ArrayLike1D, weights: ArrayLike1D
+) -> FloatArray:
     """
     Solve the weighted least squares normal equations:
 
@@ -190,14 +200,18 @@ def estimate_trait_ldsc(
     w = as_1d_float_array(weights)
     validate_equal_length(ld_scores=ld, z_scores=z, weights=w)
 
-
     chisq = z**2
     mean_chisq = float(np.mean(chisq))
     keep = chisq <= chisq_exclude_factor_threshold * mean_chisq
     chisq_keep = chisq[keep]
 
-    ld_score_and_constant_keep = np.concatenate([ld[keep].reshape((-1,1)), np.ones((np.sum(keep), 1), dtype=np.float64)], axis=1)
-    regression_results = weighted_least_squares(ld_score_and_constant_keep, chisq_keep, w[keep])
+    ld_score_and_constant_keep = np.concatenate(
+        [ld[keep].reshape((-1, 1)), np.ones((int(np.sum(keep)), 1), dtype=np.float64)],
+        axis=1,
+    )
+    regression_results = weighted_least_squares(
+        ld_score_and_constant_keep, chisq_keep, w[keep]
+    )
     intercept = float(regression_results[1])
 
     slope = float(weighted_least_squares(ld, chisq - intercept, w)[0])
@@ -225,21 +239,30 @@ def estimate_cross_trait_ldsc(
     w_arr = as_1d_float_array(weights)
     validate_equal_length(ld_scores=ld_arr, z1=z1_arr, z2=z2_arr, weights=w_arr)
 
-
     mean_chisq1 = float(np.mean(z1_arr**2))
     mean_chisq2 = float(np.mean(z2_arr**2))
-    keep = (
-        (z1_arr**2 < significance_threshold * mean_chisq1)
-        & (z2_arr**2 < significance_threshold * mean_chisq2)
+    keep = (z1_arr**2 < significance_threshold * mean_chisq1) & (
+        z2_arr**2 < significance_threshold * mean_chisq2
     )
 
-    ld_score_and_constant_keep = np.concatenate([ld_arr[keep].reshape(-1,1), np.ones((np.sum(keep), 1), dtype=np.float64)], axis=1)
-    regression_results = weighted_least_squares(ld_score_and_constant_keep, z1_arr[keep] * z2_arr[keep], w_arr[keep])
+    ld_score_and_constant_keep = np.concatenate(
+        [
+            ld_arr[keep].reshape(-1, 1),
+            np.ones((int(np.sum(keep)), 1), dtype=np.float64),
+        ],
+        axis=1,
+    )
+    regression_results = weighted_least_squares(
+        ld_score_and_constant_keep, z1_arr[keep] * z2_arr[keep], w_arr[keep]
+    )
     cross_intercept = float(regression_results[1])
 
-    slope = float(weighted_least_squares(ld_arr, z1_arr * z2_arr - cross_intercept, w_arr)[0])
+    slope = float(
+        weighted_least_squares(ld_arr, z1_arr * z2_arr - cross_intercept, w_arr)[0]
+    )
     rho = slope / math.sqrt(h2_slope1 * h2_slope2)
     return CrossTraitLDScoreResult(genetic_correlation=rho, intercept=cross_intercept)
+
 
 def estimate_normalized_scales(
     z1: ArrayLike1D,
@@ -317,13 +340,12 @@ def estimate_mixed_fourth_moments(
     return kappa1, kappa2
 
 
-
 def estimate_lcv_moments(
     ld_scores: ArrayLike1D,
     z1: ArrayLike1D,
     z2: ArrayLike1D,
     *,
-    chisq_exclude_factor_threshold: float ,
+    chisq_exclude_factor_threshold: float,
     weights: ArrayLike1D | None = None,
 ) -> MomentEstimate:
     """
@@ -424,7 +446,7 @@ def compute_jackknife_summary(
     z1: ArrayLike1D,
     z2: ArrayLike1D,
     *,
-    chisq_exclude_factor_threshold: float ,
+    chisq_exclude_factor_threshold: float,
     n_blocks: int = 100,
     weights: ArrayLike1D | None = None,
 ) -> JackknifeSummary:
@@ -441,7 +463,9 @@ def compute_jackknife_summary(
 
     estimates = []
 
-    for i, keep_idx in tqdm(enumerate(leave_one_block_out_indices(len(ld_arr), n_blocks))):
+    for i, keep_idx in tqdm(
+        enumerate(leave_one_block_out_indices(len(ld_arr), n_blocks))
+    ):
         estimate = estimate_lcv_moments(
             ld_arr[keep_idx],
             z1_arr[keep_idx],
@@ -460,12 +484,16 @@ def compute_jackknife_summary(
         )
 
     rho_est = float(np.mean(estimates_df["rho_g"].to_numpy()))
-    rho_se = float(np.std(estimates_df["rho_g"].to_numpy(), ddof=1) * math.sqrt(n_blocks + 1))
+    rho_se = float(
+        np.std(estimates_df["rho_g"].to_numpy(), ddof=1) * math.sqrt(n_blocks + 1)
+    )
 
     return JackknifeSummary(estimates=estimates_df, rho_est=rho_est, rho_se=rho_se)
 
 
-def compute_kappas(jackknife_estimates: pl.DataFrame) -> tuple[FloatArray, FloatArray, FloatArray]:
+def compute_kappas(
+    jackknife_estimates: pl.DataFrame,
+) -> tuple[FloatArray, FloatArray, FloatArray]:
     """
     Extract rho, kappa1, kappa2 and subtract the Gaussian null term 3*rho
     from the fourth moments, matching the original implementation.
@@ -506,11 +534,11 @@ def gcp_score_for_value(
 
     Thus:
     \begin{align}
-    \kappa_1/f+\kappa_2f\\
+    \\kappa_1/f+\\kappa_2f\\
     &=q_1^3q_2 /f - q_1q_2^3 f \\
     &=q_1^2q_2^2-q_1^2q_2^2\\
     &=0
-    \end{align}
+    \\end{align}
 
     - Thus the numerator of the standardized discrepancy constructed by this function should be close to zero if x=gcp
     - The denominator of the standardized discrepancy is chosen just to stabilize the numerator
@@ -559,14 +587,14 @@ def estimate_gcp_posterior(
     \begin{align}
     P(\text{gcp}=x|D)&=\frac{P(D|\text{gcp}=x)P(\text{gcp}=x)}{P(D)}\\
     &\approx\frac{P(T_x=\tau_x |\text{gcp}=x) P(\text{gcp}=x) }{P(D)}\\
-    &\propto P(T_x=\tau_x |\text{gcp}=x) P(\text{gcp}=x)
-    \end{align}
+    &\\propto P(T_x=\tau_x |\text{gcp}=x) P(\text{gcp}=x)
+    \\end{align}
 
 
     Where T_x is the random test statistic when gcp=x, and \tau_x is the actual observed value of this test statistic
     We are approximating by assuming that all information in the data is contained in the value of random variable T_x
 
-    Under this approximation and the assumption of a uniform prior on gcp, this functon computes a posterior mean.
+    Under this approximation and the assumption of a uniform prior on gcp, this function computes a posterior mean.
 
     """
     if grid is None:
@@ -598,7 +626,9 @@ def estimate_gcp_posterior(
         elif gcp == -1.0:
             pvalue_gcp_minus_one = float(t.cdf(-rho_sign * statistic, df=n_blocks - 2))
 
-    pvalue_gcp_zero_two_sided = float(2.0 * t.cdf(-abs(zscore_gcp_zero), df=n_blocks - 1))
+    pvalue_gcp_zero_two_sided = float(
+        2.0 * t.cdf(-abs(zscore_gcp_zero), df=n_blocks - 1)
+    )
     return (
         zscore_gcp_zero,
         pvalue_gcp_zero_two_sided,
@@ -607,7 +637,6 @@ def estimate_gcp_posterior(
         grid,
         weight,
     )
-
 
 
 def run_lcv(
@@ -655,14 +684,10 @@ def run_lcv(
     scale1_arr = jackknife.estimates["scale1"].to_numpy()
     scale2_arr = jackknife.estimates["scale2"].to_numpy()
     normalization_factor_zscore_1 = float(
-        np.mean(scale1_arr)
-        / np.std(scale1_arr, ddof=1)
-        / math.sqrt(n_blocks + 1)
+        np.mean(scale1_arr) / np.std(scale1_arr, ddof=1) / math.sqrt(n_blocks + 1)
     )
     normalization_factor_zscore_2 = float(
-        np.mean(scale2_arr)
-        / np.std(scale2_arr, ddof=1)
-        / math.sqrt(n_blocks + 1)
+        np.mean(scale2_arr) / np.std(scale2_arr, ddof=1) / math.sqrt(n_blocks + 1)
     )
 
     if normalization_factor_zscore_1 < 4 or normalization_factor_zscore_2 < 4:

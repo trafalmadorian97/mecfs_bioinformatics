@@ -75,7 +75,7 @@ def ubbb_ppp_gwas_prep(
     )
     sumstats_37_task = GWASLabCreateSumstatsTask(
         df_source_task=stack_task,
-        asset_id=AssetId(base_name + "_37_sumstats"),
+        target_asset_id=AssetId(base_name + "_37_sumstats"),
         basic_check=True,
         genome_build="infer",
         liftover_to="19",

@@ -138,7 +138,7 @@ class MixerTask(Task):
 
     """
 
-    _meta: Meta
+    meta: Meta
     trait_1_source: MixerDataSource | PreformattedMixerDataSource
     reference_data_directory_task: Task
     extract_file_pattern_gen: Callable[[int], str] | None
@@ -148,10 +148,6 @@ class MixerTask(Task):
     chr_to_use_arg: str | None = None
     threads: int = 4
     reps_to_perform: Sequence[int] = tuple(range(1, 21))
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -364,17 +360,13 @@ class MixerLDGenerationTask(Task):
     Copies all source files plus generated .ld files to the output directory.
     """
 
-    _meta: Meta
+    meta: Meta
     plink_data_task: Task
     chromosomes: tuple[int, ...]
     bfile_prefix_pattern: str = "g1000_eur_hm3_chr{chr}"
     r2min: str = "0.05"
     ldscore_r2min: str = "0.01"
     ld_window_kb: str = "10000"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

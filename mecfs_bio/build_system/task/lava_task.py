@@ -1,7 +1,6 @@
 """
 Compute local genetic correlation using LAVA (Local Analysis of [co]Variant Association).
 
-
 Implemented by Github copilot
 
 See: Werme et al. "An integrated framework for local genetic correlation analysis"
@@ -147,7 +146,7 @@ class LavaTask(Task):
     - lava_bivariate.csv: genetic correlation estimates per phenotype pair per locus
     """
 
-    _meta: Meta
+    meta: Meta
     sources: Sequence[LavaPhenotypeDataSource]
     ld_reference_info: LDReferenceInfo
     lava_locus_definitions_task: Task
@@ -157,10 +156,6 @@ class LavaTask(Task):
     max_loci: int | None = (
         None  # useful for debugging/testing, since LAVA can be quite slow
     )
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

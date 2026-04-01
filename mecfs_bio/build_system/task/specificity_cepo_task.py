@@ -40,7 +40,7 @@ class PrepareSpecificityCepo(Task):
     Kim, Hani Jieun, et al. "Cepo uncovers cell identity through differential stability." bioRxiv (2021): 2021-01.
     """
 
-    _meta: Meta
+    meta: Meta
     long_count_df_task: Task
     cell_type_col: str
     count_col: str
@@ -51,10 +51,6 @@ class PrepareSpecificityCepo(Task):
     out_format: OutFormat = ParquetOutFormat()
     pre_pipe: DataProcessingPipe = IdentityPipe()
     post_pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

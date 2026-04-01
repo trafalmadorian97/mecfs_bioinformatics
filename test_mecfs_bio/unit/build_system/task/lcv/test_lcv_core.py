@@ -5,23 +5,23 @@ import polars as pl
 import pytest
 
 from mecfs_bio.build_system.task.lcv.lcv_core import (
+    MomentEstimate,
     as_1d_float_array,
     compute_kappas,
     default_ld_weights,
+    estimate_cross_trait_ldsc,
     estimate_mixed_fourth_moments,
     estimate_normalized_scales,
     estimate_trait_ldsc,
-    estimate_cross_trait_ldsc,
     gcp_score_for_value,
     leave_one_block_out_indices,
     validate_equal_length,
     weighted_least_squares,
     weighted_mean,
-    MomentEstimate,
 )
 
-
 # --- as_1d_float_array ---
+
 
 def test_as_1d_float_array_converts_list():
     result = as_1d_float_array([1, 2, 3])
@@ -36,6 +36,7 @@ def test_as_1d_float_array_rejects_2d():
 
 # --- validate_equal_length ---
 
+
 def test_validate_equal_length_passes():
     validate_equal_length(a=np.array([1, 2]), b=np.array([3, 4]))
 
@@ -46,6 +47,7 @@ def test_validate_equal_length_raises():
 
 
 # --- weighted_mean ---
+
 
 def test_weighted_mean_uniform_weights():
     assert weighted_mean([1.0, 2.0, 3.0], [1.0, 1.0, 1.0]) == pytest.approx(2.0)
@@ -61,6 +63,7 @@ def test_weighted_mean_single_element():
 
 
 # --- weighted_least_squares ---
+
 
 def test_wls_recovers_slope_through_origin():
     x = np.array([1.0, 2.0, 3.0, 4.0])
@@ -100,6 +103,7 @@ def test_wls_rejects_mismatched_lengths():
 
 # --- default_ld_weights ---
 
+
 def test_default_ld_weights():
     ld = np.array([0.5, 1.0, 2.0, 10.0])
     w = default_ld_weights(ld)
@@ -108,6 +112,7 @@ def test_default_ld_weights():
 
 
 # --- estimate_trait_ldsc ---
+
 
 def test_estimate_trait_ldsc_known_slope():
     rng = np.random.default_rng(42)
@@ -126,6 +131,7 @@ def test_estimate_trait_ldsc_known_slope():
 
 # --- estimate_cross_trait_ldsc ---
 
+
 def test_estimate_cross_trait_ldsc_runs():
     rng = np.random.default_rng(99)
     n = 3000
@@ -135,7 +141,9 @@ def test_estimate_cross_trait_ldsc_runs():
     w = default_ld_weights(ld)
 
     result = estimate_cross_trait_ldsc(
-        ld, z1, z2,
+        ld,
+        z1,
+        z2,
         weights=w,
         significance_threshold=30,
         h2_slope1=0.3,
@@ -147,11 +155,14 @@ def test_estimate_cross_trait_ldsc_runs():
 
 # --- estimate_normalized_scales ---
 
+
 def test_estimate_normalized_scales_positive():
     z1 = np.array([2.0, 3.0, 4.0])
     z2 = np.array([1.5, 2.5, 3.5])
     w = np.ones(3)
-    s1, s2 = estimate_normalized_scales(z1, z2, weights=w, intercept1=0.0, intercept2=0.0)
+    s1, s2 = estimate_normalized_scales(
+        z1, z2, weights=w, intercept1=0.0, intercept2=0.0
+    )
     assert s1 == pytest.approx(math.sqrt(29.0 / 3.0))
     assert s2 > 0
 
@@ -166,6 +177,7 @@ def test_estimate_normalized_scales_raises_on_negative():
 
 # --- estimate_mixed_fourth_moments ---
 
+
 def test_estimate_mixed_fourth_moments_finite():
     rng = np.random.default_rng(7)
     n = 500
@@ -173,10 +185,13 @@ def test_estimate_mixed_fourth_moments_finite():
     z2 = rng.standard_normal(n) * 2.0
     w = np.ones(n)
     k1, k2 = estimate_mixed_fourth_moments(
-        z1, z2,
+        z1,
+        z2,
         weights=w,
-        scale1=3.0, scale2=2.0,
-        intercept1=1.0, intercept2=1.0,
+        scale1=3.0,
+        scale2=2.0,
+        intercept1=1.0,
+        intercept2=1.0,
         cross_intercept=0.0,
     )
     assert np.isfinite(k1)
@@ -184,6 +199,7 @@ def test_estimate_mixed_fourth_moments_finite():
 
 
 # --- leave_one_block_out_indices ---
+
 
 def test_leave_one_block_out_correct_count():
     blocks = list(leave_one_block_out_indices(100, 5))
@@ -218,12 +234,15 @@ def test_leave_one_block_out_rejects_single_block():
 
 # --- compute_kappas ---
 
+
 def test_compute_kappas_subtracts_3_rho():
-    df = pl.DataFrame({
-        "rho_g": [0.5, 0.6],
-        "mixed_fourth_trait_1": [10.0, 12.0],
-        "mixed_fourth_trait_2": [20.0, 22.0],
-    })
+    df = pl.DataFrame(
+        {
+            "rho_g": [0.5, 0.6],
+            "mixed_fourth_trait_1": [10.0, 12.0],
+            "mixed_fourth_trait_2": [20.0, 22.0],
+        }
+    )
     rho, k1, k2 = compute_kappas(df)
     np.testing.assert_allclose(rho, [0.5, 0.6])
     np.testing.assert_allclose(k1, [10.0 - 1.5, 12.0 - 1.8])
@@ -232,6 +251,7 @@ def test_compute_kappas_subtracts_3_rho():
 
 # --- gcp_score_for_value ---
 
+
 def test_gcp_score_returns_finite():
     rng = np.random.default_rng(11)
     n = 50
@@ -239,7 +259,11 @@ def test_gcp_score_returns_finite():
     kappa1 = rng.standard_normal(n) * 0.1
     kappa2 = rng.standard_normal(n) * 0.1
     stat, discrepancy = gcp_score_for_value(
-        0.0, rho=rho, kappa1=kappa1, kappa2=kappa2, n_blocks=n,
+        0.0,
+        rho=rho,
+        kappa1=kappa1,
+        kappa2=kappa2,
+        n_blocks=n,
     )
     assert np.isfinite(stat)
     assert discrepancy.shape == (n,)
@@ -257,12 +281,17 @@ def test_gcp_score_near_zero_at_true_gcp():
     kappa1 = np.full(n, c * f) + rng.normal(0, 1e-10, n)
     kappa2 = np.full(n, c / f) + rng.normal(0, 1e-10, n)
     stat, _ = gcp_score_for_value(
-        gcp_true, rho=rho, kappa1=kappa1, kappa2=kappa2, n_blocks=n,
+        gcp_true,
+        rho=rho,
+        kappa1=kappa1,
+        kappa2=kappa2,
+        n_blocks=n,
     )
     assert abs(stat) < 1.0
 
 
 # --- MomentEstimate.as_df ---
+
 
 def test_moment_estimate_as_df():
     m = MomentEstimate(

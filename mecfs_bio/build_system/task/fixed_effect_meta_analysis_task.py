@@ -73,21 +73,16 @@ class FixedEffectsMetaAnalysisTask(Task):
 
     The variants present in the output dataframe will be equal to the intersection of the variants in the studies
 
-
     For more information on fixed effects meta analysis, see:
     Chapter 22 of
     Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019.
     """
 
-    _meta: Meta
+    meta: Meta
     sources: Sequence[GwasSource]
 
     def __attrs_post_init__(self):
         assert len(self.sources) > 1
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

@@ -51,7 +51,7 @@ class BivariateMixerTask(Task):
     Added with help from Claude
     """
 
-    _meta: Meta
+    meta: Meta
     trait_1_source: MixerDataSource | PreformattedMixerDataSource
     trait_2_source: MixerDataSource | PreformattedMixerDataSource
     reference_data_directory_task: Task
@@ -77,10 +77,6 @@ class BivariateMixerTask(Task):
     @property
     def rep(self) -> int:
         return self.trait_1_univariate_task.reps_to_perform[0]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

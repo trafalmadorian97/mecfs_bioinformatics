@@ -18,18 +18,18 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class MakeExecutableWrapperTask(Task):
-    _inner: Task
+    inner: Task
 
     @property
     def meta(self) -> Meta:
-        return self._inner.meta
+        return self.inner.meta
 
     @property
     def deps(self) -> list["Task"]:
-        return self._inner.deps
+        return self.inner.deps
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        asset = self._inner.execute(scratch_dir=scratch_dir, fetch=fetch, wf=wf)
+        asset = self.inner.execute(scratch_dir=scratch_dir, fetch=fetch, wf=wf)
         assert isinstance(asset, FileAsset)
         current_permissions = asset.path.stat().st_mode
         new_permissions = (

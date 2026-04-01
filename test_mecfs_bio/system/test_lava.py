@@ -37,6 +37,7 @@ from mecfs_bio.assets.reference_data.lava.lava_vignette_data.lava_vignette_data 
     LAVA_VIGNETTE_LOCI,
     LAVA_VIGNETTE_NEURO_SUMSTATS,
 )
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
@@ -163,6 +164,7 @@ def test_lava_local_genetic_correlation(tmp_path: Path):
         assert result is not None
 
         lava_output = result[LAVA_SYSTEM_TEST_TASK.asset_id]
+        assert isinstance(lava_output, DirectoryAsset)
         output_dir = lava_output.path
 
         # Verify univariate results file exists and has expected columns
@@ -218,6 +220,7 @@ def test_lava_vignette_data(tmp_path: Path):
         assert result is not None
 
         lava_output = result[LAVA_VIGNETTE_TEST_TASK.asset_id]
+        assert isinstance(lava_output, DirectoryAsset)
         output_dir = lava_output.path
 
         # Verify univariate results

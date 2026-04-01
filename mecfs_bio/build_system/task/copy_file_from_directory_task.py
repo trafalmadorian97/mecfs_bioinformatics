@@ -31,13 +31,9 @@ class CopyFileFromDirectoryTask(Task):
     Copy a file within a DirectoryAsset to create a FileAsset.  Useful when downstream tasks require FileAssets.
     """
 
-    _meta: Meta
+    meta: Meta
     source_directory_task: Task
     path_inside_directory: PurePath
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

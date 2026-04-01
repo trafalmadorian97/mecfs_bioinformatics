@@ -35,7 +35,7 @@ class BivariateMixerTestTask(Task):
     Task to run bivariate MiXeR test evaluation on a model produced by bivariate MiXeR fit
     """
 
-    _meta: Meta
+    meta: Meta
     trait_1_source: MixerDataSource | PreformattedMixerDataSource
     trait_2_source: MixerDataSource | PreformattedMixerDataSource
     reference_data_directory_task: Task
@@ -50,10 +50,6 @@ class BivariateMixerTestTask(Task):
     @property
     def rep(self) -> int:
         return self.fit_task.rep
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
