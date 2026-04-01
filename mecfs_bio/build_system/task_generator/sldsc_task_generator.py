@@ -52,6 +52,10 @@ class CellAnalysisTaskGroup:
     def plot_task_unwrap(self) -> Task:
         return unwrap(self.plot_task)
 
+    @property
+    def add_categories_task_unwrap(self) -> Task:
+        return unwrap(self.add_categories_task)
+
     def terminal_tasks(self) -> list[Task]:
         result = [self.multiple_testing_task_markdown]
         if self.plot_task is not None:

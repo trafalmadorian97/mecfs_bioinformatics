@@ -9,7 +9,6 @@ from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.analysis.ma
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.analysis.magma.liu_et_al_2023_eur_37_specific_tissue_bar_plot import (
     LIU_ET_AL_IBD_EUR_37_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
 )
-from mecfs_bio.util.type_related.unwrap import unwrap
 
 
 def run_ibd_analysis():
@@ -29,7 +28,7 @@ def run_ibd_analysis():
         # + LIU_ET_AL_S_LSDC_FROM_SNP_150.get_terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            unwrap(IBD_HBA_MAGMA_TASKS.magma_independent_cluster_plot)
+            IBD_HBA_MAGMA_TASKS.magma_independent_cluster_plot_unwrap
         ],
     )
 

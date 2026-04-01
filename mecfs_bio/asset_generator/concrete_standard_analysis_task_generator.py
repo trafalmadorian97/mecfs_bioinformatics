@@ -93,6 +93,10 @@ class StandardAnalysisTaskGroup:
     def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
         return unwrap(self.hba_magma_tasks)
 
+    @property
+    def master_gene_list_tasks_unwrap(self) -> MasterGeneListTasks:
+        return unwrap(self.master_gene_list_tasks)
+
     def get_terminal_tasks(self) -> list[Task]:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())

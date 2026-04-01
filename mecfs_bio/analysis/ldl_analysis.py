@@ -9,7 +9,6 @@ from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_standard_sldsc impo
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.million_veterans_ldl_eur_magma_task_generator import (
     MILLION_VETERANS_EUR_LDL_MAGMA_TASKS,
 )
-from mecfs_bio.util.type_related.unwrap import unwrap
 
 
 def run_ldl_analysis() -> None:
@@ -26,11 +25,9 @@ def run_ldl_analysis() -> None:
         + list(LDL_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks()),
         incremental_save=True,
         must_rebuild_transitive=[
-            unwrap(
-                LDL_STANDARD_SLDSC_TASK_GROUP.partitioned_tasks[
-                    "multi_tissue_gene_expression"
-                ].add_categories_task
-            )
+            LDL_STANDARD_SLDSC_TASK_GROUP.partitioned_tasks[
+                "multi_tissue_gene_expression"
+            ].add_categories_task_unwrap
         ],
     )
 
