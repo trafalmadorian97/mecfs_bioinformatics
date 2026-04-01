@@ -43,6 +43,7 @@ logger = structlog.get_logger()
 Method = Literal["fdr_bh", "fdr_by", "bonferroni"]
 REJECT_NULL_LABEL = "Reject Null"
 
+
 @frozen
 class MultipleTestingTableTask(Task):
     """
@@ -182,5 +183,6 @@ class MultipleTestingTableTask(Task):
             method=method,
             apply_filter=apply_filter,
         )
+
 
 CORRECTED_COL_LABEL = "_Corrected P Value_"

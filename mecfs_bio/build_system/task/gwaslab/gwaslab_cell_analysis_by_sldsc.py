@@ -40,6 +40,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.get_logger()
 
+
 @frozen
 class CellAnalysisByLDSCTask(Task):
     """
@@ -142,7 +143,7 @@ class CellAnalysisByLDSCTask(Task):
                 ref_ld_chr_cts=str(new_loc_chr_cts_index_path),
                 w_ld_chr=str(w_ld_chr_full_pattern),
             )
-            ldsc_h2_cts: pd.DataFrame = sumstats.ldsc_h2_cts  # type: ignore[assignment]
+            ldsc_h2_cts: pd.DataFrame = unwrap(sumstats.ldsc_h2_cts)  # type: ignore[assignment]
             logger.debug(f"cell type specific s-LDSC results: \n \n {ldsc_h2_cts}\n")
 
             out_path = scratch_dir / "ldsc_h2_cts.csv"
@@ -184,6 +185,7 @@ class CellAnalysisByLDSCTask(Task):
             pre_pipe=pre_pipe,
         )
 
+
 @frozen
 class LDCTSFileEntry:
     label: str
@@ -219,11 +221,17 @@ class LDCTSFileEntry:
             control_gene_data_path=Path(control),
         )
 
+
 def ldcts_raw_to_processed(contents: str) -> list[LDCTSFileEntry]:
     return [LDCTSFileEntry.from_text(line) for line in contents.splitlines()]
 
+
 def ldcts_processed_to_raw(processed: list[LDCTSFileEntry]) -> str:
     return "\n".join([item.to_text() for item in processed])
+
+
+from mecfs_bio.util.type_related.unwrap import unwrap
+
 
 def prepend_path_to_ldcts_file(input_path: Path, prefix_path: Path, output_path: Path):
     with open(input_path) as f:

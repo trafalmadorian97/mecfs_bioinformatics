@@ -23,6 +23,7 @@ _CONTAINER_COMBINED_DIR = Path("/container_combine")
 
 BIVARIATE_OUTPUT_PREFIX = "bivariate_results"
 
+
 @frozen
 class MixerBivariateSummarizeResultsTask(Task):
     """
@@ -113,6 +114,7 @@ class MixerBivariateSummarizeResultsTask(Task):
             override_trait_1_name=override_trait_1_name,
             override_trait_2_name=override_trait_2_name,
         )
+
 
 def _normalize_name(name: str) -> str:
     return name.replace("_", "-")

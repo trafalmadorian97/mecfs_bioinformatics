@@ -26,6 +26,7 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class ConcatFramesTask(Task):
     """

@@ -20,6 +20,7 @@ from mecfs_bio.build_system.task.make_executable_wrapper_task import (
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class ExtractFromZipTask(Task):
     """
@@ -107,6 +108,7 @@ class ExtractFromZipTask(Task):
         )
         result_path = scratch_dir / self.file_to_extract
         return FileAsset(result_path)
+
 
 def extract_single_file_from_zip(
     zip_path: Path, file_to_extract: str, destination_dir: Path

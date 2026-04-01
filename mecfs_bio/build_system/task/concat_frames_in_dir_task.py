@@ -34,6 +34,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.getLogger()
 
+
 @frozen
 class ConcatFramesInDirTask(Task):
     """

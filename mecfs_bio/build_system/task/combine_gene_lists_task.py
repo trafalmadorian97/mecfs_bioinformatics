@@ -29,12 +29,14 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 ENSEMBL_ID_LABEL = "Ensembl ID"
 
+
 @frozen
 class SrcGeneList:
     task: Task
     name: str
     ensemble_id_column: str
     pipe: DataProcessingPipe = IdentityPipe()
+
 
 @frozen
 class CombineGeneListsTask(Task):
@@ -121,10 +123,12 @@ class CombineGeneListsTask(Task):
             out_pipe=out_pipe,
         )
 
+
 def _get_gene_dict_from_df(
     df: pd.DataFrame, name_col: str, method_name: str
 ) -> dict[str, list[str]]:
     return {item: [method_name] for item in df[name_col]}
+
 
 def _combine_gene_dicts(gd1: dict[str, list[str]], gd2: dict[str, list[str]]):
     gd1 = dict(gd1)

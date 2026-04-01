@@ -57,7 +57,7 @@ def scan_dataframe(
             extra_options = extra_options | {"names": spec.format.col_names}
         return nw.from_native(
             pl.from_pandas(
-                pd.read_csv(  # type: ignore[call-overload]
+                pd.read_csv(  # type: ignore[call-overload] # ty: ignore[no-matching-overload]
                     path, sep=r"\s+", comment=spec.format.comment_code, **extra_options
                 )
             )

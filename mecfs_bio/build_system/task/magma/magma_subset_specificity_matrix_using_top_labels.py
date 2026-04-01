@@ -29,6 +29,7 @@ from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
     """
@@ -121,6 +122,7 @@ class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
             magma_gene_covar_analysis_task=magma_gene_covar_analysis_task,
             nominal_sig_level=nominal_sig_level,
         )
+
 
 def get_spec_matrix_filtered(
     covar_result: pd.DataFrame,

@@ -27,6 +27,7 @@ _CONTAINER_COMBINED_DIR = Path("/container_combine")
 TEST_OUTPUT_PREFIX = "trait_plot_test"
 FIT_OUTPUT_PREFIX = "trait_plot_fit"
 
+
 @frozen
 class MixerUnivariateSummarizeResultsTask(Task):
     """

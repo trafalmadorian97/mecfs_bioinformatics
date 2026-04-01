@@ -54,16 +54,20 @@ MIXER_Z_SCORE_COL = "Z"
 
 logger = get_logger()
 
+
 def default_mixer_extract_file_pattern_gen(rep: int) -> str:
     return (
         f"1000G_EUR_Phase3_plink/1000G.EUR.QC.prune_maf0p05_rand2M_r2p8.rep{rep}.snps"
     )
 
+
 def _get_fit_filename_prefix(rep: int) -> str:
     return f"trait1.fit.{rep}"
 
+
 MIXER_FIT_JSON_PATTERN = "trait1.fit.@.json"
 MIXER_TEST_JSON_PATTERN = "trait1.test.@.json"
+
 
 @frozen
 class MixerDataSource:
@@ -82,6 +86,7 @@ class MixerDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
+
 @frozen
 class PreformattedMixerDataSource:
     """
@@ -99,17 +104,21 @@ class PreformattedMixerDataSource:
     def asset_id(self) -> AssetId:
         return self.task.asset_id
 
+
 @frozen
 class BivariateMode:
     trait_2_source: MixerDataSource
+
 
 @frozen
 class UnivariateMode:
     pass
 
+
 MixerMode = BivariateMode | UnivariateMode
 
 CONTAINER_REF_DIR = Path("/ref_data")
+
 
 @frozen
 class MixerTask(Task):
@@ -272,6 +281,7 @@ class MixerTask(Task):
             extra_args=extra_args,
         )
 
+
 def prepare_mixer_trait_input_file(
     source: MixerDataSource | PreformattedMixerDataSource,
     fetch: Fetch,
@@ -301,6 +311,7 @@ def prepare_mixer_trait_input_file(
         )
     else:
         raise ValueError(f"Unexpected source type: {type(source)}")
+
 
 def _prep_summary_statistics_for_mixer(
     sumstats_dataframe_task: Task,
@@ -339,6 +350,7 @@ def _prep_summary_statistics_for_mixer(
     out_path = temp_dir / name
     frame.collect().to_pandas().to_csv(out_path, index=False, sep="\t")
     return out_path
+
 
 @frozen
 class MixerLDGenerationTask(Task):
@@ -397,6 +409,7 @@ class MixerLDGenerationTask(Task):
                 shutil.copy2(str(ld_file), str(scratch_dir / ld_file.name))
 
         return DirectoryAsset(scratch_dir)
+
 
 def get_mixer_extract_args(
     extract_file_pattern_gen: Callable[[int], str] | None,

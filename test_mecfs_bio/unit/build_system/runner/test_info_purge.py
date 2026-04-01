@@ -25,7 +25,10 @@ def test_info_purge():
         trace_store={
             AssetId("asset_1"): ("abc", []),
             AssetId("asset_2"): ("def", [(AssetId("asset_1"), "abc")]),
-            AssetId("asset_3"): ("hij", [(AssetId("asset_2"), "def"), (AssetId("asset_1"), "abc")]),
+            AssetId("asset_3"): (
+                "hij",
+                [(AssetId("asset_2"), "def"), (AssetId("asset_1"), "abc")],
+            ),
         }
     )
     new_info = info_purge(info=info, tasks=tasks)

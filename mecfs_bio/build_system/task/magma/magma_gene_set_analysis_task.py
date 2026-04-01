@@ -26,12 +26,15 @@ logger = structlog.get_logger()
 
 GENE_SET_ANALYSIS_OUTPUT_STEM_NAME = "gene_set_analysis_output"
 
+
 @frozen
 class DirectoryGeneSetSpec:
     gene_set_task: Task
     path_in_dir: PurePath
 
+
 SetOrCovar = Literal["set", "covar"]
+
 
 @frozen()
 class ModelParams:
@@ -52,6 +55,7 @@ class ModelParams:
             result += ["condition-hide=" + ",".join(self.condition_hide)]
 
         return result
+
 
 @frozen
 class MagmaGeneSetAnalysisTask(Task):
@@ -170,6 +174,7 @@ class MagmaGeneSetAnalysisTask(Task):
             set_or_covar=set_or_covar,
             model_params=model_params,
         )
+
 
 def _empty_gene_set_file(
     gene_set_file_path: Path, model_params: ModelParams | None

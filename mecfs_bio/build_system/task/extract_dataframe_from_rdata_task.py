@@ -1,5 +1,5 @@
 from pathlib import Path, PurePath
-from typing import Any, Sequence
+from typing import Sequence
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -26,6 +26,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class ExtractDataFrameFromRDataTask(Task):
     """
@@ -49,7 +50,7 @@ class ExtractDataFrameFromRDataTask(Task):
         assert isinstance(rdata_asset, FileAsset)
         pth = rdata_asset.path
         load = robjects.r["load"]
-        load(str(pth))  # type: ignore[operator]
+        load(str(pth))  # type: ignore[operator] # ty: ignore[call-non-callable]
         r_dataframe = robjects.r[self.r_dataframe_name]
         with localconverter(conv):
             py_dataframe: pd.DataFrame = ro.conversion.get_conversion().rpy2py(

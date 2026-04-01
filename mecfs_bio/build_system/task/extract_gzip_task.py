@@ -22,6 +22,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class ExtractGzipTextFileTask(Task):
     meta: Meta
@@ -83,6 +84,7 @@ class ExtractGzipTextFileTask(Task):
             meta=meta,
             source_file_task=source_file_task,
         )
+
 
 def apply_gzip(src: Path, dst: Path):
     with gzip.open(src, "rb") as f_in:

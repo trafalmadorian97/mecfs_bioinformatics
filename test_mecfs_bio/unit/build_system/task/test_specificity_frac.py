@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 
@@ -17,6 +17,7 @@ from mecfs_bio.build_system.task.specificity_frac_task import (
     PrepareSpecificityFraction,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 _dummy_df = pd.DataFrame(  # According to the fractional metric, Y is specific for A, while X is specifific for V
     {
@@ -61,9 +62,9 @@ def test_prepare_specificity_frac(tmp_path: Path):
     pivoted: Any = result_df.pivot(
         index="cell_type", columns="gene", values=NORMALIZED_MEAN
     )
-    val_ax: Any = pivoted.loc["A", "X"]
-    val_bx: Any = pivoted.loc["B", "X"]
-    val_ay: Any = pivoted.loc["A", "Y"]
-    val_by: Any = pivoted.loc["B", "Y"]
+    val_ax: Any = unwrap(cast(Any, pivoted.loc["A", "X"]))
+    val_bx: Any = unwrap(cast(Any, pivoted.loc["B", "X"]))
+    val_ay: Any = unwrap(cast(Any, pivoted.loc["A", "Y"]))
+    val_by: Any = unwrap(cast(Any, pivoted.loc["B", "Y"]))
     assert float(val_ax) < float(val_bx)
     assert float(val_ay) > float(val_by)

@@ -30,6 +30,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class CompressedCSVToParquetTask(Task):
     """
@@ -129,14 +130,17 @@ class CompressedCSVToParquetTask(Task):
             )
         raise ValueError("Unknown Meta")
 
+
 def _get_sep(format: DataFrameTextFormat) -> str:
     return format.separator
+
 
 def _get_format(spec: DataFrameReadSpec | None) -> DataFrameTextFormat:
     assert spec is not None
     format = spec.format
     assert isinstance(format, DataFrameTextFormat)
     return format
+
 
 def _get_column_names(format: DataFrameTextFormat) -> list[str]:
     cols = format.column_names

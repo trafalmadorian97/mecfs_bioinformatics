@@ -19,7 +19,9 @@ def run_initial_right_heart_analysis():
         RVEF_STANDARD_ANALYSIS_ASSIGN_RSID.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            unwrap(RVEF_STANDARD_ANALYSIS_ASSIGN_RSID.tasks.master_gene_list_tasks).markdown_task
+            unwrap(
+                RVEF_STANDARD_ANALYSIS_ASSIGN_RSID.tasks.master_gene_list_tasks
+            ).markdown_task
         ],
     )
 

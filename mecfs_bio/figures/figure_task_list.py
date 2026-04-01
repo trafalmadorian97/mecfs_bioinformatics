@@ -36,17 +36,23 @@ ALL_FIGURE_TASKS: list[Task] = [
     CT_LDSC_INITIAL_PLOT,
     unwrap(BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks).extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
-    BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_CHROMATIN_REF
-    ].plot_task,
-    BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_GENE_EXPRESSION_REF
-    ].plot_task,
+    unwrap(
+        BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+            MULTI_TISSUE_CHROMATIN_REF
+        ].plot_task
+    ),
+    unwrap(
+        BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+            MULTI_TISSUE_GENE_EXPRESSION_REF
+        ].plot_task
+    ),
     unwrap(EBV_DNA_STANDARD_ANALYSIS.tasks.hba_magma_tasks).extracted_plot_task,
     EBV_DNA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
-    EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_CHROMATIN_REF
-    ].plot_task,
+    unwrap(
+        EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+            MULTI_TISSUE_CHROMATIN_REF
+        ].plot_task
+    ),
     DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
     DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
     DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
@@ -55,8 +61,10 @@ ALL_FIGURE_TASKS: list[Task] = [
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.result_markdown_table_task,
     unwrap(KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks).extracted_plot_task,
     unwrap(
-        KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks
-    ).independent_clusters_markdown_task,
+        unwrap(
+            KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks
+        ).independent_clusters_markdown_task
+    ),
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
     unwrap(XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.hba_magma_tasks).extracted_plot_task,
@@ -70,8 +78,10 @@ ALL_FIGURE_TASKS: list[Task] = [
             XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.hba_magma_tasks
         ).magma_independent_cluster_plot
     ),
-    XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_CHROMATIN_REF
-    ].plot_task,
+    unwrap(
+        XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+            MULTI_TISSUE_CHROMATIN_REF
+        ].plot_task
+    ),
     MECFS_PAIN_BIVARIATE_MIXER.result_table_markdown_task,
 ]

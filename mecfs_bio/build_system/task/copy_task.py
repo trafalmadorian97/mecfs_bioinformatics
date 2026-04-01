@@ -8,11 +8,11 @@ from pathlib import Path
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.file_asset import FileAsset
-from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
+
 
 @frozen
 class CopyTask(GeneratingTask):

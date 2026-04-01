@@ -30,6 +30,7 @@ GENE_ANALYSIS_OUTPUT_STEM_NAME = "gene_analysis_output"
 SynonymMode = Literal["skip", "drop", "drop-dup"]
 DuplicateMode = Literal["first", "last", "error"]
 
+
 @frozen
 class MagmaGeneAnalysisTask(Task):
     meta: Meta
@@ -134,6 +135,7 @@ class MagmaGeneAnalysisTask(Task):
             sample_size=sample_size,
             meta=meta,
         )
+
 
 def read_magma_gene_analysis_result(result_dir: Path) -> pd.DataFrame:
     return (

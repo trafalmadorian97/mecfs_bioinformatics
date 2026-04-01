@@ -24,6 +24,7 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 AnnoMode = Literal["GENENAME"] | None
 
+
 @attrs.frozen
 class GWASLabManhattanAndQQPlotTask(Task):
     """

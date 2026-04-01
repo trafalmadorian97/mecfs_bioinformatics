@@ -11,8 +11,8 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.base_meta import FileMeta
+from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
@@ -21,6 +21,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+
 
 @frozen
 class ConvertDataFrameToMarkdownTask(Task):
@@ -77,6 +78,7 @@ class ConvertDataFrameToMarkdownTask(Task):
             sub_dir=source_meta.sub_dir,
         )
         return cls(meta=meta, df_task=source_task, pipe=pipe)
+
 
 def _array_to_list(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()

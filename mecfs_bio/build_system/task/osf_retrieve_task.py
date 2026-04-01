@@ -15,6 +15,7 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.download.verify import verify_hash
 
+
 @frozen
 class OSFRetrievalTask(GeneratingTask):
     """

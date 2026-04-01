@@ -66,6 +66,7 @@ _REF_COLS = [
     _MISMATCH_POS_CHROM,
 ]
 
+
 @frozen
 class HarmonizeGWASWithReferenceViaRSIDTask(Task):
     """
@@ -239,6 +240,7 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
             ref_pipe=ref_pipe,
         )
 
+
 def complement_reverse_expr(col_name: str) -> pl.Expr:
     return (
         pl.col(col_name)
@@ -251,11 +253,13 @@ def complement_reverse_expr(col_name: str) -> pl.Expr:
         .str.reverse()
     )
 
+
 def is_palindromic_expr(ea_col: str, nea_col: str) -> pl.Expr:
     """
     Check if a variant is palindromic.
     """
     return pl.col(ea_col) == complement_reverse_expr(nea_col)
+
 
 def _mismatch_pos_or_chrom_expr(
     pos_col: str,
@@ -267,6 +271,7 @@ def _mismatch_pos_or_chrom_expr(
         pl.col(chrom_col) != pl.col(ref_chrom_col)
     )
 
+
 def match_reference_expr(
     ea_col: str,
     nea_col: str,
@@ -276,6 +281,7 @@ def match_reference_expr(
     return (pl.col(ea_col) == pl.col(ref_ea_col)) & (
         pl.col(nea_col) == pl.col(ref_nea_col)
     )
+
 
 def match_flipped_reference_expr(
     ea_col: str,
@@ -287,6 +293,7 @@ def match_flipped_reference_expr(
         pl.col(nea_col) == pl.col(ref_ea_col)
     )
 
+
 def _handle_chrom_pos(df: pl.DataFrame, strategy: ChromPosStrategy) -> pl.DataFrame:
     num_mismatch = df[_MISMATCH_POS_CHROM].sum()
     msg = f"Found {num_mismatch} variants with matching rsid but mismatched chromosome or position"
@@ -296,6 +303,7 @@ def _handle_chrom_pos(df: pl.DataFrame, strategy: ChromPosStrategy) -> pl.DataFr
         logger.debug(msg)
         df = df.filter(~pl.col(_MISMATCH_POS_CHROM))
     return df
+
 
 def handle_flipped(
     df: pl.DataFrame,
@@ -332,6 +340,7 @@ def handle_flipped(
         )
     return df
 
+
 def handle_mismatched_alleles(
     df: pl.DataFrame, strategy: MismatchedAllelesStrategy
 ) -> pl.DataFrame:
@@ -344,6 +353,7 @@ def handle_mismatched_alleles(
         logger.debug(msg)
         df = df.filter(~mismatched)
     return df
+
 
 def _report_matches(df: pl.DataFrame) -> None:
     num_matches = df[MATCH_REFERENCE].sum()

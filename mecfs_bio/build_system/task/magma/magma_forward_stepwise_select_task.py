@@ -39,6 +39,7 @@ RETAINED_CLUSTERS_COLUMN = "Retained_clusters"
 
 logger = structlog.get_logger()
 
+
 @frozen
 class MagmaForwardStepwiseSelectTask(Task):
     """
@@ -152,6 +153,7 @@ class MagmaForwardStepwiseSelectTask(Task):
             significance_threshold=significance_threshold,
         )
 
+
 def get_retained_clusters(
     all_cluster_list: Sequence[str],
     prop_sig_dict: dict[tuple[str, str], float],
@@ -169,6 +171,7 @@ def get_retained_clusters(
             to_retain.append(cluster)
     return to_retain
 
+
 def pairwise_independent(
     cluster1: str,
     clusters_to_retain: list[str],
@@ -185,6 +188,7 @@ def pairwise_independent(
             return False
     return True
 
+
 def independent(
     cluster1: str,
     cluster2: str,
@@ -197,6 +201,7 @@ def independent(
     ):
         return True
     return False
+
 
 def generate_wide_dataframe(
     df_cond: pd.DataFrame, df_marg: pd.DataFrame
@@ -234,6 +239,7 @@ def generate_wide_dataframe(
 
     assert (df_wide["P_MARG_a"] <= df_wide["P_MARG_b"]).all()
     return df_wide
+
 
 def generate_mappers_from_wide_dataframe(
     df_wide: pd.DataFrame,

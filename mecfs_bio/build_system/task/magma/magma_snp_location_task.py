@@ -27,6 +27,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
 )
 
+
 @frozen
 class MagmaSNPFileTask(Task):
     gwas_parquet_with_rsid_task: Task

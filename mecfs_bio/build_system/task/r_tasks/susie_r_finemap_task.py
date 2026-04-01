@@ -45,6 +45,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 logger = structlog.get_logger()
 
+
 @frozen
 class BroadInstituteFormatLDMatrix:
     """
@@ -54,6 +55,7 @@ class BroadInstituteFormatLDMatrix:
     """
 
     task: Task
+
 
 LDMatrixSource = BroadInstituteFormatLDMatrix
 
@@ -81,6 +83,7 @@ ALPHA_COLUMN_NAME = "alpha"
 MU_COLUMN_NAME = "mu"
 MU2_COLUMN_NAME = "mu2"
 CS_COLUMN = "cs"
+
 
 @frozen
 class SusieRFinemapTask(Task):
@@ -255,6 +258,7 @@ class SusieRFinemapTask(Task):
             z_score_filtering_threshold=z_score_filtering_threshold,
         )
 
+
 def align_gwas_and_ld(
     gwas: pl.DataFrame, ld_labels: pl.DataFrame, partial_ld_matrix_sparse: csr_matrix
 ) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
@@ -291,6 +295,7 @@ def align_gwas_and_ld(
         ld_matrix,
     )
 
+
 def make_psd_corr(matrix: np.ndarray, tol: float = 1e-4) -> np.ndarray:
     """
     Make a correlation matrix positive semidefinite
@@ -310,6 +315,7 @@ def make_psd_corr(matrix: np.ndarray, tol: float = 1e-4) -> np.ndarray:
     assert abs(np.diag(reconstructed) - 1).max() <= 1e-5
     return reconstructed
 
+
 def apply_subsample(
     gwas_table: pl.DataFrame,
     ld_labels: pl.DataFrame,
@@ -328,8 +334,10 @@ def apply_subsample(
         ld_matrix[::subsample, ::subsample],
     )
 
+
 def convert_r_named_list_to_python_dict(rdata) -> dict:
     return dict(zip(rdata.names, list(rdata)))
+
 
 def r_to_py_recursive(r_obj):
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
@@ -356,6 +364,7 @@ def r_to_py_recursive(r_obj):
 
     return r_obj
 
+
 def _check_converged(py_result: dict):
     conv = ro.default_converter
     with localconverter(conv):
@@ -363,6 +372,7 @@ def _check_converged(py_result: dict):
 
     logger.debug(f"Convergence: {converged}")
     assert bool(converged), "SUSIE failed to converge"
+
 
 def write_result(
     directory: Path,
@@ -460,6 +470,7 @@ def write_result(
             pl.exclude(CS_COLUMN),  # bring credible set column to front
         ).write_parquet(directory / COMBINED_CS_FILENAME)
 
+
 def extract_cs_data_tables(
     alpha: np.ndarray,
     mu: np.ndarray,
@@ -490,8 +501,10 @@ def extract_cs_data_tables(
         )
     return cs_data_tables
 
+
 def check_symmetric(array: np.ndarray, tol=1e-6):
     assert np.max(np.abs(array - array.T)) <= tol
+
 
 def _save_adjustment(adjustment: float, scratch_dir: Path):
     adjustment_df = pd.DataFrame(
@@ -499,12 +512,14 @@ def _save_adjustment(adjustment: float, scratch_dir: Path):
     )
     adjustment_df.to_parquet(scratch_dir / ADJUSTMENT_VALUE_FILENAME)
 
+
 def _load_partial_ld_matrix(path: Path) -> csr_matrix:
     logger.debug(f"loading partial ld matrix from {path}")
     partial_ld_matrix = scipy.sparse.load_npz(path)
     logger.debug("done loading partial ld matrix")
 
     return csr_matrix(partial_ld_matrix)
+
 
 def _make_diagnostic_plot_and_table(
     zscores_r,
@@ -534,6 +549,7 @@ def _make_diagnostic_plot_and_table(
         device="png",
     )
     return pl.from_pandas(py_table)
+
 
 def filter_variants_based_on_diagnostics(
     gwas_table: pl.DataFrame,

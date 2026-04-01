@@ -12,8 +12,8 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.base_meta import FileMeta
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameFormat,
@@ -32,6 +32,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
 )
+
 
 @frozen
 class AssignRSIDSToSNPsViaSNP151Task(Task):
@@ -143,6 +144,7 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
             valid_chroms=valid_chroms,
             chrom_replace_rules=chrom_replace_rules,
         )
+
 
 def create_new_meta(
     source_meta: Meta,

@@ -46,8 +46,10 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 logger = structlog.get_logger()
+
 
 @frozen
 class SNPHeritabilityByLDSCTask(Task):
@@ -87,7 +89,7 @@ class SNPHeritabilityByLDSCTask(Task):
             w_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
             **_get_prev_params(self.phenotype_info),
         )
-        out_df: pd.DataFrame = sumstats.ldsc_h2  # type: ignore[assignment]
+        out_df: pd.DataFrame = unwrap(sumstats.ldsc_h2)  # type: ignore[assignment]
         logger.debug(
             f"ldsc_h2_results:\n{out_df}",
         )
@@ -127,6 +129,7 @@ class SNPHeritabilityByLDSCTask(Task):
             pipe=pipe,
             build=build,
         )
+
 
 def _get_prev_params(phenotype_info: PhenotypeInfo) -> dict:
     if isinstance(phenotype_info, QuantPhenotype):

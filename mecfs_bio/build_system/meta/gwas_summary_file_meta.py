@@ -24,4 +24,3 @@ class GWASSummaryDataFileMeta(FileMeta):
     project_path: PurePath | None
     read_spec: ReadSpec | None = None
     extension: str | None = None
-

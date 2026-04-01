@@ -53,11 +53,13 @@ _REF_COLS_ALLELE_MATCH = [
     MATCH_REFERENCE_FLIPPED,
 ]
 
+
 @frozen
 class ChromRange:
     chrom: int
     start: int
     end: int
+
 
 @frozen
 class HarmonizeGWASWithReferenceViaAlleles(Task):
@@ -271,6 +273,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
             chrom_range_filter=chrom_range_filter,
         )
 
+
 def _report_matches(df: pl.DataFrame) -> None:
     num_matches = df[MATCH_REFERENCE].sum()
     flip_matches = df[MATCH_REFERENCE_FLIPPED].sum()
@@ -278,6 +281,7 @@ def _report_matches(df: pl.DataFrame) -> None:
         f"Found {num_matches} variants matching the reference in their base orientation\n\n"
         f"Found {flip_matches} variants matching the reference when effect and non-effect alleles are flipped"
     )
+
 
 def _filter_chrom_range(
     gwas_data: pl.DataFrame, chrom_range: ChromRange | None

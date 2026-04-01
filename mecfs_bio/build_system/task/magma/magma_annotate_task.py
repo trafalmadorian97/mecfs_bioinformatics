@@ -15,6 +15,7 @@ from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
 
+
 @frozen
 class MagmaAnnotateTask(Task):
     """

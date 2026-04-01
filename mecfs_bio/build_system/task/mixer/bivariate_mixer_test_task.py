@@ -28,6 +28,7 @@ from mecfs_bio.build_system.task.mixer.mixer_task import (
 from mecfs_bio.build_system.task.mixer.mixer_utils import invoke_mixer
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class BivariateMixerTestTask(Task):
     """

@@ -53,7 +53,9 @@ _decode_me_select_first_rows = PipeDataFrameTask.create(
 
 _decode_me_liftover_to_37_first_rows = GWASLabCreateSumstatsTask(
     df_source_task=_decode_me_select_first_rows,
-    target_asset_id=AssetId("testing_first_rows_decode_me_gwas_1_sumstats_liftover_to_37"),
+    target_asset_id=AssetId(
+        "testing_first_rows_decode_me_gwas_1_sumstats_liftover_to_37"
+    ),
     basic_check=True,
     genome_build="infer",
     liftover_to="19",

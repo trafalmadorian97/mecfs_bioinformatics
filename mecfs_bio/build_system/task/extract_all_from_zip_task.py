@@ -22,6 +22,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class ExtractAllFromZipTask(Task):
     """

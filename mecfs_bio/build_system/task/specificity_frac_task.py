@@ -23,6 +23,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class PrepareSpecificityFraction(Task):
     """
@@ -125,8 +126,10 @@ class PrepareSpecificityFraction(Task):
             min_cells_per_type=min_cells_per_type,
         )
 
+
 _mean_col = "__mean__"
 NORMALIZED_MEAN = "normalized_mean"
+
 
 def filter_missing_genes(
     df: narwhals.LazyFrame,
@@ -139,6 +142,7 @@ def filter_missing_genes(
     nz = nz.filter(narwhals.col("nonzero_count") > 0)
     return df.join(nz, on=gene_col)
 
+
 def filter_by_cell_count(
     df: narwhals.LazyFrame, cell_type_col: str, cell_col: str, min_cells: int
 ) -> narwhals.LazyFrame:
@@ -147,6 +151,7 @@ def filter_by_cell_count(
     )
     cc = cc.filter(narwhals.col("__cell_count") >= min_cells)
     return df.join(cc, on=cell_type_col)
+
 
 def _compute_cell_type_means(
     df: narwhals.LazyFrame,
@@ -157,6 +162,7 @@ def _compute_cell_type_means(
     return df.group_by(
         [cell_type_col, gene_col],
     ).agg(narwhals.col(count_col).mean().alias(_mean_col))
+
 
 def _compute_normalized_mean(
     df: narwhals.LazyFrame,

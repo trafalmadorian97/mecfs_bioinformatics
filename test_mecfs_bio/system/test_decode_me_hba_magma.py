@@ -4,7 +4,6 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_hba_magma_a
     DECODE_ME_HBA_MAGMA_TASKS,
 )
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
-from mecfs_bio.util.type_related.unwrap import unwrap
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
@@ -12,6 +11,7 @@ from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
 from mecfs_bio.build_system.task.magma.magma_forward_stepwise_select_task import (
     RETAINED_CLUSTERS_COLUMN,
 )
+from mecfs_bio.util.type_related.unwrap import unwrap
 from test_mecfs_bio.system.util import log_on_error
 
 
@@ -30,7 +30,9 @@ def test_run_hba_magma(tmp_path: Path):
             info_store=info_store,
             asset_root=asset_root,
         )
-        magma_independent_clusters_csv = unwrap(DECODE_ME_HBA_MAGMA_TASKS.magma_independent_clusters_csv)
+        magma_independent_clusters_csv = unwrap(
+            DECODE_ME_HBA_MAGMA_TASKS.magma_independent_clusters_csv
+        )
         result = test_runner.run(
             DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks()
             + [magma_independent_clusters_csv],
@@ -39,9 +41,7 @@ def test_run_hba_magma(tmp_path: Path):
         assert result is not None
         df = (
             scan_dataframe_asset(
-                result[
-                    magma_independent_clusters_csv.asset_id
-                ],
+                result[magma_independent_clusters_csv.asset_id],
                 meta=magma_independent_clusters_csv.meta,
             )
             .collect()

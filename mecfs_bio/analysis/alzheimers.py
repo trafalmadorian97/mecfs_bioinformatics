@@ -18,7 +18,13 @@ def run_initial_alzheimers_analysis():
     """
     DEFAULT_RUNNER.run(
         list(BELLENGUEZ_STANDARD_ANALYSIS.get_terminal_tasks())
-        + [unwrap(unwrap(BELLENGUEZ_STANDARD_ANALYSIS.hba_magma_tasks).magma_independent_cluster_plot)],
+        + [
+            unwrap(
+                unwrap(
+                    BELLENGUEZ_STANDARD_ANALYSIS.hba_magma_tasks
+                ).magma_independent_cluster_plot
+            )
+        ],
         incremental_save=True,
     )
 

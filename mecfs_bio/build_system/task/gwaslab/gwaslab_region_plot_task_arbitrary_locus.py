@@ -30,6 +30,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLabVCFRefFile,
 )
 
+
 @frozen
 class GwasLabRegionPlotTargetLocusTask(Task):
     """

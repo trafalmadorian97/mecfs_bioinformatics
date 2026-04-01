@@ -44,6 +44,7 @@ XR_TRAIT_1_DIM = "trait_1"
 XR_TRAIT_2_DIM = "trait_2"
 NUM_PAIRS = "num_pairs"
 
+
 @frozen
 class GeneticCorrSource:
     """
@@ -57,6 +58,7 @@ class GeneticCorrSource:
     p_col: str = "p"
     df_pipe: DataProcessingPipe = IdentityPipe()
 
+
 def _count_unique_pairs(df: narwhals.DataFrame, col1: str, col2: str) -> int:
     pairs = set(
         [
@@ -66,6 +68,7 @@ def _count_unique_pairs(df: narwhals.DataFrame, col1: str, col2: str) -> int:
         ]
     )
     return len(pairs)
+
 
 def fill_out_corr_df(
     df_nw: narwhals.DataFrame,
@@ -92,6 +95,7 @@ def fill_out_corr_df(
     )  # fill out diagonal of correlation matrix
     df_nw = narwhals.concat([df_nw, df_diag], how="vertical").unique()
     return df_nw
+
 
 def load_xr_corr_dataset(
     src: GeneticCorrSource,
@@ -136,22 +140,28 @@ def load_xr_corr_dataset(
     ds[NUM_PAIRS] = num_pairs
     return ds
 
+
 @frozen
 class BonferoniSig:
     alpha: float = 0.05
 
+
 SigMode = BonferoniSig
+
 
 @frozen
 class RGWithAsterisk:
     sig_mode: SigMode = BonferoniSig()
     color_scale: str = "RdBu_r"
 
+
 @frozen
 class RGHideNonSig:
     pass
 
+
 GeneticCorrPlotMode = RGWithAsterisk | RGHideNonSig
+
 
 def get_sig(
     p_value_matrix: np.ndarray,
@@ -168,6 +178,7 @@ def get_sig(
         )
         return p_value_matrix <= thresh
     raise ValueError(f"Invalid mode {sig_mode}")
+
 
 def rg_plot(ds: xr.Dataset, plot_mode: GeneticCorrPlotMode) -> Figure:
     """
@@ -209,6 +220,7 @@ def rg_plot(ds: xr.Dataset, plot_mode: GeneticCorrPlotMode) -> Figure:
         fig.update_yaxes(autorange="reversed")  # want the origin in top left corner
         return fig
     raise NotImplementedError()
+
 
 @frozen
 class GeneticCorrelationClustermapTask(Task):

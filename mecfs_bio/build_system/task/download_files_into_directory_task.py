@@ -19,6 +19,7 @@ from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
 
+
 @frozen
 class DownloadEntry:
     """
@@ -39,6 +40,7 @@ class DownloadEntry:
             md5hash=md5hash,
             post_download_command=build_bcftools_index_command,
         )
+
 
 @frozen
 class DownloadFilesIntoDirectoryTask(Task):

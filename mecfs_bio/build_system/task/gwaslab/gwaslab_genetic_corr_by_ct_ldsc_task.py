@@ -56,6 +56,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 logger = structlog.get_logger()
 
+
 @frozen
 class FilterSettings:
     """
@@ -66,6 +67,7 @@ class FilterSettings:
     remove_palindromic: bool = True
     remove_hla: bool = True
     keep_only_hapmap: bool = True
+
 
 def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build: str):
     """
@@ -87,6 +89,7 @@ def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build:
     sumstats.data = sumstats.data.drop_duplicates(subset=[GWASLAB_RSID_COL], keep=False)
     len_after = len(sumstats.data)
     logger.debug(f"dropped {len_before - len_after} variants with identical rsids")
+
 
 @frozen
 class BinaryPhenotypeSampleInfo:
@@ -113,6 +116,7 @@ class BinaryPhenotypeSampleInfo:
     def effective_sample_size(self) -> int:
         return int(4 / (1 / self.ncases + 1 / self.ncontrols))
 
+
 @frozen
 class QuantPhenotype:
     """
@@ -121,7 +125,9 @@ class QuantPhenotype:
 
     total_sample_size: int | None = None
 
+
 PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
+
 
 @frozen
 class SumstatsSource:
@@ -137,6 +143,7 @@ class SumstatsSource:
     @property
     def asset_id(self) -> AssetId:
         return self.task.asset_id
+
 
 @frozen
 class GeneticCorrelationByCTLDSCTask(Task):
@@ -252,6 +259,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
             build=build,
         )
 
+
 def get_prev_options(
     trait_1_prev: PhenotypeInfo | None, trait_2_prev: PhenotypeInfo | None
 ) -> dict:
@@ -285,6 +293,7 @@ def get_prev_options(
     logger.debug(f"Prevalence Options: {options}")
     return options
 
+
 def load_and_preprocess_sumstats(
     source: SumstatsSource, fetch: Fetch, settings: FilterSettings, build: GenomeBuild
 ) -> tuple[gwaslab.Sumstats, str, PhenotypeInfo | None]:
@@ -296,6 +305,7 @@ def load_and_preprocess_sumstats(
     sumstats.data = source.pipe.process_pandas(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)
     return sumstats, name, source.sample_info
+
 
 def get_compatible_snps_polars(df_i: pd.DataFrame, df_j: pd.DataFrame) -> pd.DataFrame:
     """

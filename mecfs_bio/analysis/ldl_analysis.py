@@ -9,14 +9,12 @@ from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.ldl_standard_sldsc impo
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.million_veterans_ldl_eur_magma_task_generator import (
     MILLION_VETERANS_EUR_LDL_MAGMA_TASKS,
 )
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 
-def run_ldl_analysis():
+def run_ldl_analysis() -> None:
     """
-    This script runs a basic analysis of the LDL GWAS from the Million Veterans Program
-
-    This includes:
-
+    Apply standard LDL analysis:
     - Using MAGMA to combine the LDL GWAS summary statistics with tissue-specific expression data from GTEx to identify key tissues involved in control of LDL levels.
     - Using S-LDSC to identify key tissues and cell types via a heritability model
     """
@@ -28,9 +26,11 @@ def run_ldl_analysis():
         + list(LDL_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks()),
         incremental_save=True,
         must_rebuild_transitive=[
-            LDL_STANDARD_SLDSC_TASK_GROUP.partitioned_tasks[
-                "multi_tissue_gene_expression"
-            ].add_categories_task
+            unwrap(
+                LDL_STANDARD_SLDSC_TASK_GROUP.partitioned_tasks[
+                    "multi_tissue_gene_expression"
+                ].add_categories_task
+            )
         ],
     )
 

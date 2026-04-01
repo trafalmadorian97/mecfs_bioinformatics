@@ -26,9 +26,11 @@ from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import (
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
+
 @frozen
 class HBAIndepPlotOptions:
     annotation_text_size: int | None = None
+
 
 @frozen
 class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
@@ -180,6 +182,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             stepwise_cluster_list_task=stepwise_cluster_list_task,
             plot_options=plot_options,
         )
+
 
 def _get_text_size(options: HBAIndepPlotOptions, num_clusters: int) -> int:
     if options.annotation_text_size is not None:

@@ -23,4 +23,3 @@ class FilteredGWASDataMeta(FileMeta):
     sub_dir: str | PurePath
     read_spec: ReadSpec | None = None
     extension: str = ".parquet"
-

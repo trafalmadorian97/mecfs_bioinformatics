@@ -19,6 +19,7 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
+
 @frozen
 class SLDSCScatterPlotTask(Task):
     """

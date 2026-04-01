@@ -30,6 +30,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 ReadMode = Literal["r", "r:gz"]
 
+
 @frozen
 class ExtractTarGzipTask(Task):
     """

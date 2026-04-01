@@ -9,13 +9,13 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
-from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
     scan_dataframe_asset,
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
+
 
 @frozen
 class FilterSNPsTask(Task):

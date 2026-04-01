@@ -21,6 +21,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
+
 @frozen
 class EffectMeasurePlotConfig:
     y_label_col: str
@@ -32,6 +33,7 @@ class EffectMeasurePlotConfig:
     t_adjust: float
     title: str | None = None
     figsize: tuple[float, float] = (7, 3)
+
 
 @frozen
 class PlotMREffectMeasure(Task):

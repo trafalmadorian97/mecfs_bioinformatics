@@ -41,9 +41,11 @@ KEY_HBA_ANNOTATION_COLUMNS = [
     "Top Enriched Genes",
 ]
 
+
 @frozen
 class PlotSettings:
     plot_mode: PlotMode = "plotly_dark"
+
 
 @frozen
 class PlotMagmaBrainAtlasResultTask(Task):
@@ -197,6 +199,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
             plot_mode=plot_settings.plot_mode,
         )
 
+
 def add_cluster_column_to_metadata_df(metadata_df: pd.DataFrame) -> pd.DataFrame:
     # filter to get only clusters
     cluster_df = metadata_df.loc[
@@ -206,6 +209,7 @@ def add_cluster_column_to_metadata_df(metadata_df: pd.DataFrame) -> pd.DataFrame
         cluster_df["description"].str.extract("cluster ([0-9]+)").astype(int)
     )
     return cluster_df
+
 
 """
 Colormap from Duncan et al. paper.
@@ -247,6 +251,7 @@ DUNCAN_ET_AL_2025_COLORMAP = {
     "Thalamic.excitatory": "#FF1493",
     "Midbrain-derived.inhibitory": "#E31A1C",
 }
+
 
 def get_condensed_hba_cluster_label(cluster_info: pd.Series) -> str:
     """
