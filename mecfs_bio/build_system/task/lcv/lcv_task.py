@@ -31,13 +31,16 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_BETA_COL, GWASLAB_SE_COL, GWASLAB_CHROM_COL, GWASLAB_POS_COL, \
     GWASLAB_RSID_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
 
+import structlog
+logger = structlog.get_logger()
+
 Z_SCORE_COL = "_z_score_"
 Z_SCORE_1 = "_z_score_1_"
 Z_SCORE_2 = "_z_score_2_"
 
 @frozen
 class LCVConfig:
-    chisq_exclude_factor_threshold:float
+    chisq_exclude_factor_threshold:float=50
 
 
 @frozen
@@ -70,11 +73,14 @@ class LCVTask(Task):
         df_trait_1 = make_z_score_frame( scan_dataframe_asset(asset=trait_1_asset,meta=self.trait_1_data.meta))
         df_trait_2 = make_z_score_frame(scan_dataframe_asset(asset=trait_2_asset,meta=self.trait_2_data.meta))
         df_ld_scores = scan_dataframe_asset(asset=ld_scores_asset,meta=self.consolidated_ld_scores.meta)
+        logger.debug("Aligning data for LCV")
         aligned = align_traits_and_ld(
             df_trait_1=df_trait_1,
             df_trait_2=df_trait_2,
             ld_scores=df_ld_scores,
         )
+        logger.debug(f"Done. Aligned data covers {len(aligned)} genetic variants")
+        logger.debug("Running LCV")
         lcv_result = run_lcv(
             ld_scores=aligned[LD_SCORE_LD_SCORE_COL].to_numpy(),
             z1=aligned[Z_SCORE_1].to_numpy(),
@@ -119,6 +125,7 @@ class LCVTask(Task):
 def make_z_score_frame(
         df: narwhals.LazyFrame,
 )->nw.LazyFrame:
+    _check_required_columns(df)
     return df.with_columns(
         (nw.col(GWASLAB_BETA_COL)/ nw.col(GWASLAB_SE_COL)).alias(Z_SCORE_COL),
     ).select(
@@ -127,6 +134,12 @@ def make_z_score_frame(
         GWASLAB_RSID_COL,
         Z_SCORE_COL
     )
+
+def _check_required_columns(df: nw.LazyFrame):
+    schema= df.collect_schema()
+    expected_cols= set([GWASLAB_CHROM_COL, GWASLAB_POS_COL, GWASLAB_RSID_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL, GWASLAB_SE_COL, GWASLAB_BETA_COL])
+    assert expected_cols<=set(schema), f"Frame is missing {expected_cols-set(schema)}"
+    assert (df.select(GWASLAB_SE_COL)>0).all()
 
 def align_traits_and_ld(
         df_trait_1: narwhals.LazyFrame,
