@@ -20,6 +20,7 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 
 @frozen
@@ -46,6 +47,10 @@ class CellAnalysisTaskGroup:
     multiple_testing_task_markdown: Task
     add_categories_task: Task | None
     plot_task: Task | None
+
+    @property
+    def plot_task_unwrap(self) -> Task:
+        return unwrap(self.plot_task)
 
     def terminal_tasks(self) -> list[Task]:
         result = [self.multiple_testing_task_markdown]

@@ -67,6 +67,7 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 
 @frozen
@@ -87,6 +88,10 @@ class StandardAnalysisTaskGroup:
     hba_magma_tasks: HBAMagmaTasks | None = None
     manhattan_task: Task | None = None
     heritability_task: Task | None = None
+
+    @property
+    def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
+        return unwrap(self.hba_magma_tasks)
 
     def get_terminal_tasks(self) -> list[Task]:
         result = (
