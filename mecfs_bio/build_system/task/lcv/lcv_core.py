@@ -180,6 +180,9 @@ def weighted_least_squares(
 
 
 def default_ld_weights(ld_scores: ArrayLike1D) -> FloatArray:
+    """
+    See equation 5 in the LCV paper
+    """
     ell = as_1d_float_array(ld_scores)
     return 1.0 / np.maximum(1.0, ell)
 
@@ -351,7 +354,6 @@ def estimate_lcv_moments(
     """
     One-shot estimation of all LCV moments on a given SNP set.
 
-    This is the refactored counterpart of EstimateK4(..., nargout=8).
     """
     ld_arr = as_1d_float_array(ld_scores)
     z1_arr = as_1d_float_array(z1)
