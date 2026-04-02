@@ -14,6 +14,8 @@ Chapter authors are S. Burgess, C.N. Foley and V. Zuber
 
 """
 
+MULTI_TRAIT = "multi_trait"
+
 from pathlib import Path, PurePath
 from typing import Sequence
 
@@ -245,7 +247,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(
             id=asset_id,
-            trait="multi_trait",
+            trait=MULTI_TRAIT,
             project="genetic_correlation",
             sub_dir=PurePath("ct_ldsc"),
             extension=".csv",
