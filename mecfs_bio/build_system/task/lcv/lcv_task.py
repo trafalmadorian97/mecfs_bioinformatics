@@ -79,8 +79,8 @@ class LCVTask(Task):
     trait_2_data: Task
     consolidated_ld_scores: Task
     config: LCVConfig
-    trait_1_pipe: DataProcessingPipe=IdentityPipe()
-    trait_2_pipe: DataProcessingPipe=IdentityPipe()
+    trait_1_pipe: DataProcessingPipe = IdentityPipe()
+    trait_2_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def deps(self) -> list["Task"]:
@@ -91,11 +91,18 @@ class LCVTask(Task):
         trait_2_asset = fetch(self.trait_2_data.asset_id)
         ld_scores_asset = fetch(self.consolidated_ld_scores.asset_id)
         df_trait_1 = make_z_score_frame(
-           self.trait_1_pipe.process( scan_dataframe_asset(asset=trait_1_asset, meta=self.trait_1_data.meta))
+            self.trait_1_pipe.process(
+                scan_dataframe_asset(asset=trait_1_asset, meta=self.trait_1_data.meta)
+            )
         )
+        df_trait_1 = convert_ea_nea_to_str(df_trait_1)
+
         df_trait_2 = make_z_score_frame(
-         self.trait_2_pipe.process(   scan_dataframe_asset(asset=trait_2_asset, meta=self.trait_2_data.meta))
+            self.trait_2_pipe.process(
+                scan_dataframe_asset(asset=trait_2_asset, meta=self.trait_2_data.meta)
+            )
         )
+        df_trait_2 = convert_ea_nea_to_str(df_trait_2)
         df_ld_scores = scan_dataframe_asset(
             asset=ld_scores_asset, meta=self.consolidated_ld_scores.meta
         )
@@ -126,8 +133,8 @@ class LCVTask(Task):
         trait_2_data: Task,
         consolidated_ld_scores: Task,
         config: LCVConfig,
-            trait_1_pipe: DataProcessingPipe=IdentityPipe(),
-            trait_2_pipe: DataProcessingPipe=IdentityPipe(),
+        trait_1_pipe: DataProcessingPipe = IdentityPipe(),
+        trait_2_pipe: DataProcessingPipe = IdentityPipe(),
     ):
         meta = ResultTableMeta(
             id=AssetId(asset_id),
@@ -154,7 +161,14 @@ def make_z_score_frame(
     _check_required_columns(df)
     return df.with_columns(
         (nw.col(GWASLAB_BETA_COL) / nw.col(GWASLAB_SE_COL)).alias(Z_SCORE_COL),
-    ).select(GWASLAB_CHROM_COL, GWASLAB_POS_COL, GWASLAB_RSID_COL, Z_SCORE_COL)
+    ).select(
+        GWASLAB_CHROM_COL,
+        GWASLAB_POS_COL,
+        GWASLAB_RSID_COL,
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+        Z_SCORE_COL,
+    )
 
 
 def _check_required_columns(df: nw.LazyFrame):
@@ -183,6 +197,43 @@ def align_traits_and_ld(
 ) -> nw.DataFrame:
     df_trait_1 = df_trait_1.rename({Z_SCORE_COL: Z_SCORE_1})
     df_trait_2 = df_trait_2.rename({Z_SCORE_COL: Z_SCORE_2})
+    join_1_2 = df_trait_1.join(
+        df_trait_2,
+        on=[
+            GWASLAB_CHROM_COL,
+            GWASLAB_POS_COL,
+            GWASLAB_RSID_COL,
+            GWASLAB_EFFECT_ALLELE_COL,
+            GWASLAB_NON_EFFECT_ALLELE_COL,
+        ],
+    ).collect()
+
+    join_1_ld = df_trait_1.join(
+        ld_scores,
+        left_on=[
+            GWASLAB_CHROM_COL,
+            GWASLAB_POS_COL,
+            GWASLAB_RSID_COL,
+        ],
+        right_on=[LD_SCORE_CHROM_COL, LD_SCORE_POS_COL, LD_SCORE_RSID_COL],
+    ).collect()
+    join_2_ld = df_trait_2.join(
+        ld_scores,
+        left_on=[
+            GWASLAB_CHROM_COL,
+            GWASLAB_POS_COL,
+            GWASLAB_RSID_COL,
+        ],
+        right_on=[LD_SCORE_CHROM_COL, LD_SCORE_POS_COL, LD_SCORE_RSID_COL],
+    ).collect()
+    join_1_2_no_a = df_trait_1.join(
+        df_trait_2,
+        on=[
+            GWASLAB_CHROM_COL,
+            GWASLAB_POS_COL,
+            GWASLAB_RSID_COL,
+        ],
+    )
     joined = (
         df_trait_1.join(
             df_trait_2,
@@ -209,4 +260,16 @@ def align_traits_and_ld(
             by=[GWASLAB_CHROM_COL, GWASLAB_POS_COL, GWASLAB_RSID_COL],
         )
     )
+    assert len(joined) > 100
     return joined
+
+
+def convert_ea_nea_to_str(df: nw.LazyFrame) -> nw.LazyFrame:
+    return df.with_columns(
+        narwhals.col(GWASLAB_EFFECT_ALLELE_COL)
+        .cast(narwhals.dtypes.String())
+        .alias(GWASLAB_EFFECT_ALLELE_COL),
+        narwhals.col(GWASLAB_NON_EFFECT_ALLELE_COL)
+        .cast(narwhals.dtypes.String())
+        .alias(GWASLAB_NON_EFFECT_ALLELE_COL),
+    )

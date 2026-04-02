@@ -104,17 +104,17 @@ class LCVResult:
     def to_df(self) -> pl.DataFrame:
         return pl.DataFrame(
             {
-                "zscore_gcp_zero": self.zscore_gcp_zero,
-                "pvalue_gcp_zero_two_sides": self.pvalue_gcp_zero_two_sided,
-                "poserior_mean_gcp": self.posterior_mean_gcp,
-                "rho_est": self.rho_est,
-                "rho_se": self.rho_se,
-                "pvalue_gcp_plus_one": self.pvalue_gcp_plus_one,
-                "pvalue_gcp_minus_one": self.pvalue_gcp_minus_one,
-                "h2_zscore_trait1": self.h2_zscore_trait1,
-                "h2_zscore_trait2": self.h2_zscore_trait2,
-                "gcp_grid": self.gcp_grid,
-                "gcp_weight": self.gcp_weight,
+                "zscore_gcp_zero": [self.zscore_gcp_zero],
+                "pvalue_gcp_zero_two_sides": [self.pvalue_gcp_zero_two_sided],
+                "poserior_mean_gcp": [self.posterior_mean_gcp],
+                "rho_est": [self.rho_est],
+                "rho_se": [self.rho_se],
+                "pvalue_gcp_plus_one": [self.pvalue_gcp_plus_one],
+                "pvalue_gcp_minus_one": [self.pvalue_gcp_minus_one],
+                "h2_zscore_trait1": [self.h2_zscore_trait1],
+                "h2_zscore_trait2": [self.h2_zscore_trait2],
+                "gcp_grid": [self.gcp_grid.tolist()],
+                "gcp_weight": [self.gcp_weight.tolist()],
             }
         )
 

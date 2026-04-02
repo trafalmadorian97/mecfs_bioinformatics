@@ -116,6 +116,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
             .collect()
             .to_polars()
         )
+        gwas_data = _convert_ea_nea_to_str(gwas_data)
 
         reference_asset = fetch(self.reference_asset_id)
         reference = (
@@ -125,6 +126,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
             .collect()
             .to_polars()
         )
+        reference = _convert_ea_nea_to_str(reference)
 
         assert len(
             gwas_data.unique(
@@ -293,4 +295,15 @@ def _filter_chrom_range(
         (pl.col(GWASLAB_POS_COL) >= chrom_range.start)
         & (pl.col(GWASLAB_POS_COL) <= chrom_range.end)
         & (pl.col(GWASLAB_CHROM_COL) == chrom_range.chrom),
+    )
+
+
+def _convert_ea_nea_to_str(df: pl.DataFrame) -> pl.DataFrame:
+    return df.with_columns(
+        pl.col(GWASLAB_EFFECT_ALLELE_COL)
+        .cast(pl.String())
+        .alias(GWASLAB_EFFECT_ALLELE_COL),
+        pl.col(GWASLAB_NON_EFFECT_ALLELE_COL)
+        .cast(pl.String())
+        .alias(GWASLAB_NON_EFFECT_ALLELE_COL),
     )
