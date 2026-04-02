@@ -29,6 +29,11 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
+LD_SCORE_CHROM_COL = "CHR"
+LD_SCORE_POS_COL = "BP"
+LD_SCORE_RSID_COL = "SNP"
+LD_SCORE_LD_SCORE_COL = "L2"
+
 
 @frozen
 class ConsolidateLDScoresTask(Task):
@@ -55,7 +60,9 @@ class ConsolidateLDScoresTask(Task):
                     DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
                 )
             )
-        result = narwhals.concat(frames, how="vertical").sort(by=["CHR", "BP"])
+        result = narwhals.concat(frames, how="vertical").sort(
+            by=[LD_SCORE_CHROM_COL, LD_SCORE_POS_COL]
+        )
         out_path = scratch_dir / "out.parquet"
         result.sink_parquet(out_path)
         return FileAsset(out_path)
