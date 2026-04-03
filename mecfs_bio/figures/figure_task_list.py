@@ -11,6 +11,9 @@ from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis
 from mecfs_bio.assets.gwas.human_herpesvirus_7_dna.kamitaki_et_al_2025.analysis.kamitaki_et_al_2025_standard_analysis import (
     KAMITAKI_ET_AL_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_task import (
+    MV_LDL_LDSC_RESULTS_MARKDOWN,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
@@ -63,4 +66,5 @@ ALL_FIGURE_TASKS: list[Task] = [
         MULTI_TISSUE_CHROMATIN_REF
     ].plot_task_unwrap,
     MECFS_PAIN_BIVARIATE_MIXER.result_table_markdown_task,
+    MV_LDL_LDSC_RESULTS_MARKDOWN,
 ]
