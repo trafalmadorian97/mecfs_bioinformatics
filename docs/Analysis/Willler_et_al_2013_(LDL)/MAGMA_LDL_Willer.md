@@ -1,3 +1,7 @@
+---
+hide:
+- toc
+---
 # MAGMA 
 
 I applied the [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] pipeline to summary statistics from a GWAS of LDL from WIller at el.[@global2013discovery].

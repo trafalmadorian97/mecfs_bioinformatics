@@ -6,14 +6,21 @@ from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_p
     MECFS_PAIN_BIVARIATE_MIXER
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import \
     JOHNSTON_ET_AL_UNIVARIATE_MIXER
+from mecfs_bio.figures.figure_task_list import MULTI_TISSUE_GENE_EXPRESSION_REF, MULTI_TISSUE_CHROMATIN_REF
 from mecfs_bio.figures.key_scripts.generate_figures import generate_figures
 
 
 def go():
     generate_figures([
         WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
-        WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task
-                      ])
+        WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+        WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+            MULTI_TISSUE_GENE_EXPRESSION_REF].plot_task_unwrap,
+
+        WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+            MULTI_TISSUE_CHROMATIN_REF].plot_task_unwrap,
+
+    ])
 
 
 if __name__ == '__main__':
