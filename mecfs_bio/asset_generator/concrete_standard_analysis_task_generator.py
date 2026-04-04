@@ -107,6 +107,10 @@ class StandardAnalysisTaskGroup:
     def master_gene_list_tasks_unwrap(self) -> MasterGeneListTasks:
         return unwrap(self.master_gene_list_tasks)
 
+    @property
+    def heritability_markdown_task_unwrap(self) -> Task:
+        return unwrap(self.heritability_task)
+
     def get_terminal_tasks(self) -> list[Task]:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())
@@ -133,8 +137,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
-    include_hba_magma_tasks: bool = False,
-    include_independent_cluster_plot_in_hba: bool = False,
+    include_hba_magma_tasks: bool = True,
+    include_independent_cluster_plot_in_hba: bool = True,
     hba_plot_settings: PlotSettings = PlotSettings(plot_mode="plotly_white"),
     gtex_magma_number_of_bars: int = 20,
     hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
