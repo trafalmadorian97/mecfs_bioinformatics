@@ -12,8 +12,11 @@ WILLER_LDL_EUR_DATA_RAW = DownloadFileTask(
         project="willer_et_al_2013",
         sub_dir="raw",
         project_path=PurePath("24097068-GCST002222-EFO_0004611.h.tsv.gz"),
-        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
+        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t",
+                                                               null_values=["NA"]
+                                                               )),
     ),
     url="https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST002001-GCST003000/GCST002222/harmonised/24097068-GCST002222-EFO_0004611.h.tsv.gz",
     md5_hash="260072772c7a1c9ddebad23ff3a74677",
+
 )
