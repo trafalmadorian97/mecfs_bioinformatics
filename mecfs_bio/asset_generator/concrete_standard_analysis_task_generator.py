@@ -108,7 +108,7 @@ class StandardAnalysisTaskGroup:
         return unwrap(self.master_gene_list_tasks)
 
     @property
-    def heritability_markdown_task_unwrap(self)->Task:
+    def heritability_markdown_task_unwrap(self) -> Task:
         return unwrap(self.heritability_task)
 
     def get_terminal_tasks(self) -> list[Task]:
