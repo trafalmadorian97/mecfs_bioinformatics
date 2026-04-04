@@ -34,13 +34,9 @@ class MixerUnivariateSummarizeResultsTask(Task):
     Task to take the results of a MiXeR run and produce tables and plots.
     """
 
-    _meta: Meta
+    meta: Meta
     combine_task: Task
     trait_name: str
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

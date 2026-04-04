@@ -37,26 +37,21 @@ class ExtractTarGzipTask(Task):
     Task to extract the contents of a (possibly gzipped) tar file to a target directory
     Set subdir_name to extract only the contents of one subfolder within the tar file
 
-
     read_mode: use r to only untar, and not ungzip.
     """
 
-    _meta: Meta
-    _source_file_task: Task
-    _subdir_name: str | None
-    _read_mode: ReadMode = "r:gz"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
+    meta: Meta
+    source_file_task: Task
+    subdir_name: str | None
+    read_mode: ReadMode = "r:gz"
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._source_file_task]
+        return [self.source_file_task]
 
     @property
     def _source_asset_id(self) -> AssetId:
-        return self._source_file_task.asset_id
+        return self.source_file_task.asset_id
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:
         source_asset = fetch(self._source_asset_id)
@@ -64,16 +59,16 @@ class ExtractTarGzipTask(Task):
         src_path = source_asset.path
 
         logger.debug(f"Extracting from tar/gzip file : {self._source_asset_id}...")
-        with tarfile.open(src_path, self._read_mode) as tar_object:
-            if self._subdir_name is None:
+        with tarfile.open(src_path, self.read_mode) as tar_object:
+            if self.subdir_name is None:
                 tar_object.extractall(scratch_dir)
             else:
                 with tempfile.TemporaryDirectory() as tmpdir_name:
                     tmpdir_path = Path(tmpdir_name)
                     for member in tar_object.getmembers():
-                        if member.name.startswith(self._subdir_name):
+                        if member.name.startswith(self.subdir_name):
                             tar_object.extract(member=member, path=tmpdir_path)
-                    (tmpdir_path / self._subdir_name).rename(scratch_dir)
+                    (tmpdir_path / self.subdir_name).rename(scratch_dir)
         logger.debug("Extraction complete.")
         return DirectoryAsset(scratch_dir)
 

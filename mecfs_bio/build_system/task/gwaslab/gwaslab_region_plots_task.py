@@ -60,8 +60,8 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
     (vcf_name_for_lead_variants).  Doing this at a reasonable speed requires the installation of the "tabix" binary.
     """
 
-    _lead_variants_task: GwasLabLeadVariantsTask
-    _sumstats_task: GWASLabCreateSumstatsTask
+    lead_variants_task: GwasLabLeadVariantsTask
+    sumstats_task: GWASLabCreateSumstatsTask
     vcf_name_for_ld: GWASLabVCFRefFile | None
     short_id: AssetId = field(converter=AssetId)
     plot_top: int | None = None
@@ -81,7 +81,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
 
     @property
     def _lead_variants_task_meta(self) -> GWASLabLeadVariantsMeta:
-        return self._lead_variants_task.meta
+        return self.lead_variants_task.meta
 
     @property
     def _lead_variants_id(self) -> AssetId:
@@ -89,7 +89,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
 
     @property
     def _sumstats_meta(self) -> GWASLabSumStatsMeta:
-        meta = self._sumstats_task.meta
+        meta = self.sumstats_task.meta
         assert isinstance(meta, GWASLabSumStatsMeta)
         return meta
 
@@ -99,7 +99,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._lead_variants_task, self._sumstats_task]
+        return [self.lead_variants_task, self.sumstats_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:
         target_path = scratch_dir / "plot_dir"

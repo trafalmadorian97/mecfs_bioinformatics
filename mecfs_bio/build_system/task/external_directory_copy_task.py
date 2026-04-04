@@ -24,15 +24,11 @@ class ExternalDirectoryCopyTask(GeneratingTask):
     Used for testing.
     """
 
-    _meta: SimpleDirectoryMeta
+    meta: SimpleDirectoryMeta
     external_path: Path
 
     def __attrs_post_init__(self):
         assert self.external_path.is_file()
-
-    @property
-    def meta(self) -> SimpleDirectoryMeta:
-        return self._meta
 
     @property
     def deps(self) -> list[Task]:

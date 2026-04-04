@@ -30,7 +30,7 @@ class MixerBivariateSummarizeResultsTask(Task):
     Task to take the results of a Bivarirate MiXeR run and produce tables and plots.
     """
 
-    _meta: Meta
+    meta: Meta
     combine_task: MixerBivariateCombine
     override_trait_1_name: str | None = None
     override_trait_2_name: str | None = None
@@ -42,10 +42,6 @@ class MixerBivariateSummarizeResultsTask(Task):
     @property
     def trait_2_name(self) -> str:
         return self.combine_task.trait_2_name
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

@@ -48,12 +48,12 @@ class JoinDataFramesTask(Task):
     By default, writes as csv.
     """
 
-    _df_1_task: Task
-    _df_2_task: Task
+    df_1_task: Task
+    df_2_task: Task
     how: JoinStrategy
     left_on: Sequence[str]
     right_on: Sequence[str]
-    _meta: Meta
+    meta: Meta
 
     out_format: OutFormat = CSVOutFormat(sep=",")
     df_1_pipe: DataProcessingPipe = IdentityPipe()
@@ -63,27 +63,23 @@ class JoinDataFramesTask(Task):
 
     @property
     def _df_1_id(self) -> AssetId:
-        return self._df_1_task.asset_id
+        return self.df_1_task.asset_id
 
     @property
     def _df_12_id(self) -> AssetId:
-        return self._df_2_task.asset_id
+        return self.df_2_task.asset_id
 
     @property
     def _df_1_meta(self) -> Meta:
-        return self._df_1_task.meta
+        return self.df_1_task.meta
 
     @property
     def _df_2_meta(self) -> Meta:
-        return self._df_2_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
+        return self.df_2_task.meta
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._df_1_task, self._df_2_task]
+        return [self.df_1_task, self.df_2_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         result_path = scratch_dir / "result.csv"

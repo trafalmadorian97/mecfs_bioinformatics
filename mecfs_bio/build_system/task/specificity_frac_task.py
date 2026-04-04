@@ -33,7 +33,7 @@ class PrepareSpecificityFraction(Task):
     (mean expression in cell type)/(sum over all cell types of mean expression in those cell types)
     """
 
-    _meta: Meta
+    meta: Meta
     long_count_df_task: Task
     cell_type_col: str
     count_col: str
@@ -43,10 +43,6 @@ class PrepareSpecificityFraction(Task):
     out_format: OutFormat = ParquetOutFormat()
     pre_pipe: DataProcessingPipe = IdentityPipe()
     post_pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

@@ -33,7 +33,7 @@ class ConcatFramesTask(Task):
     Task to concatenate multiple DataFrames, each produces by a separate task.
     """
 
-    _meta: Meta
+    meta: Meta
     frames_tasks: Sequence[Task]
     out_format: OutFormat
     frames_pipes: Sequence[DataProcessingPipe] | None = None
@@ -42,10 +42,6 @@ class ConcatFramesTask(Task):
     def __attrs_post_init__(self):
         if self.frames_pipes is not None:
             assert len(self.frames_pipes) == len(self.frames_tasks)
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

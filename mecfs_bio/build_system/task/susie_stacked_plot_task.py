@@ -133,16 +133,12 @@ class SusieStackPlotTask(Task):
     - Genes
     """
 
-    _meta: Meta
+    meta: Meta
     susie_task: Task
     gene_info_task: Task
     gene_info_pipe: DataProcessingPipe
     region_mode: RegionSelect
     heatmap_options: HeatmapOptions
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

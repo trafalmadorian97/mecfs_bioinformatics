@@ -49,12 +49,8 @@ class MixerUnivariateCombine(Task):
     """
 
     mixer_source_runs: Sequence[MixerRunSource]
-    _meta: Meta
+    meta: Meta
     trait_name: str
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

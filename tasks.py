@@ -70,8 +70,8 @@ def typecheck(c):
     """
     Check for type errors
     """
-    print("Typechecking with mypy...")
-    c.run(f"pixi r  mypy {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
+    print("Typechecking with ty...")
+    c.run(f"pixi r  ty check {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
 
 
 @task

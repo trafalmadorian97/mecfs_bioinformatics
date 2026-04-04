@@ -28,6 +28,9 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.combine_gene_lists_task import SrcGeneList
+from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
+    ConvertDataFrameToMarkdownTask,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
     ValidGwaslabFormat,
@@ -51,8 +54,15 @@ from mecfs_bio.build_system.task.pipes.compute_mlog10p_pipe import (
     ComputeMlog10pIfNeededPipe,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
+from mecfs_bio.build_system.task.pipes.format_numbers_pipe import FormatFloatNumbersPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.pipes.rename_col_by_position_pipe import (
+    RenameColByPositionPipe,
+)
+from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
+from mecfs_bio.build_system.task.pipes.transpose_pipe import TransposePipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
     GGetSettings,
     MagmaTaskGeneratorFromRaw,
@@ -67,6 +77,7 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 
 @frozen
@@ -88,6 +99,18 @@ class StandardAnalysisTaskGroup:
     manhattan_task: Task | None = None
     heritability_task: Task | None = None
 
+    @property
+    def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
+        return unwrap(self.hba_magma_tasks)
+
+    @property
+    def master_gene_list_tasks_unwrap(self) -> MasterGeneListTasks:
+        return unwrap(self.master_gene_list_tasks)
+
+    @property
+    def heritability_markdown_task_unwrap(self) -> Task:
+        return unwrap(self.heritability_task)
+
     def get_terminal_tasks(self) -> list[Task]:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())
@@ -100,6 +123,8 @@ class StandardAnalysisTaskGroup:
             result.extend(self.hba_magma_tasks.terminal_tasks())
         if self.manhattan_task is not None:
             result.append(self.manhattan_task)
+        if self.heritability_task is not None:
+            result.append(self.heritability_task)
         return result
 
 
@@ -112,8 +137,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
-    include_hba_magma_tasks: bool = False,
-    include_independent_cluster_plot_in_hba: bool = False,
+    include_hba_magma_tasks: bool = True,
+    include_independent_cluster_plot_in_hba: bool = True,
     hba_plot_settings: PlotSettings = PlotSettings(plot_mode="plotly_white"),
     gtex_magma_number_of_bars: int = 20,
     hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
@@ -196,8 +221,26 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             source_sumstats_task=magma_tasks.sumstats_task,
             ld_ref_task=THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
         )
+        heritability_md_task = (
+            ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+                asset_id=base_name + "_ldsc_heritability_markdown",
+                source_task=ldsc_task,
+                pipe=CompositePipe(
+                    [
+                        DropColPipe(["Catagories"]),
+                        TransposePipe(),
+                        RenameColByPositionPipe(
+                            col_position=0, col_new_name="Parameter"
+                        ),
+                        RenameColByPositionPipe(col_position=1, col_new_name="Value"),
+                        SelectColPipe(["Parameter", "Value"]),
+                        FormatFloatNumbersPipe(col="Value", format_str=".4g"),
+                    ]
+                ),
+            )
+        )
     else:
-        ldsc_task = None
+        heritability_md_task = None
     if include_hba_magma_tasks:
         hba_magma = generate_human_brain_atlas_magma_tasks(
             base_name=base_name,
@@ -217,7 +260,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         master_gene_list_tasks=master_gene_list_tasks,
         hba_magma_tasks=hba_magma,
         manhattan_task=manhattan_task,
-        heritability_task=ldsc_task,
+        heritability_task=heritability_md_task,
     )
 
 
@@ -258,7 +301,7 @@ def concrete_standard_analysis_generator_no_rsid(
     """
     sumstats_37_task = GWASLabCreateSumstatsTask(
         df_source_task=raw_gwas_data_task,
-        asset_id=AssetId(base_name + "_initial_sumstats_37"),
+        target_asset_id=AssetId(base_name + "_initial_sumstats_37"),
         basic_check=True,
         genome_build="infer",
         liftover_to="19",

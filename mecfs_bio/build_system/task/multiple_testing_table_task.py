@@ -56,8 +56,8 @@ class MultipleTestingTableTask(Task):
     For information on multiple testing procedures, see: https://www.statsmodels.org/dev/generated/statsmodels.stats.multitest.multipletests.html
     """
 
-    _meta: Meta
-    _table_source_task: Task
+    meta: Meta
+    table_source_task: Task
     p_value_column: str
     alpha: float  # uncorrected error rate
     method: Method
@@ -74,19 +74,15 @@ class MultipleTestingTableTask(Task):
 
     @property
     def _table_source_id(self) -> AssetId:
-        return self._table_source_task.asset_id
+        return self.table_source_task.asset_id
 
     @property
     def _table_source_meta(self) -> Meta:
-        return self._table_source_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
+        return self.table_source_task.meta
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._table_source_task]
+        return [self.table_source_task]
 
     def _get_frame_from_source_asset(self, asset: Asset) -> pd.DataFrame:
         if isinstance(asset, FileAsset):

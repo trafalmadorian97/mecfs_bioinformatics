@@ -12,6 +12,7 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -45,17 +46,21 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
     This operates exclusively on SNPs
     """
 
-    _meta: Meta
+    meta: Meta
     snp151_database_file_task: Task
     raw_snp_data_task: Task
     valid_chroms: list[str]
     chrom_replace_rules: Mapping[str, int]
 
     def __attrs_post_init__(self):
-        db_readspec = self.database_meta.read_spec()
+        db_meta = self.database_meta
+        assert isinstance(db_meta, FileMeta)
+        db_readspec = db_meta.read_spec
         assert db_readspec is not None
         assert isinstance(db_readspec.format, DataFrameParquetFormat)
-        snp_readspec = self.snp_data_meta.read_spec()
+        snp_meta = self.snp_data_meta
+        assert isinstance(snp_meta, FileMeta)
+        snp_readspec = snp_meta.read_spec
         assert snp_readspec is not None
         assert isinstance(snp_readspec.format, DataFrameParquetFormat)
 
@@ -74,10 +79,6 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
     @property
     def snp_data_id(self) -> AssetId:
         return self.snp_data_meta.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

@@ -21,6 +21,7 @@ class FileMeta(ABC):
         """
         pass
 
+    @property
     def read_spec(self) -> ReadSpec | None:
         """
         A specifier describing how the data should be read

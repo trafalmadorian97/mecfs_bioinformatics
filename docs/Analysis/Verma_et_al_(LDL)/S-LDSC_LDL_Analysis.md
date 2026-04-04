@@ -4,11 +4,11 @@ hide:
 ---
 # S-LDSC LDL Analysis
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC) to summary statistics from a GWAS of LDL from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program.md) to identify possible key tissue and cell types affecting LDL levels.
+I applied [Stratified Linkage Disequilibrium Score Regression](../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] (S-LDSC) to summary statistics from a GWAS of LDL from the [Million Veterans Program](../../Data_Sources/Million_Veterans_Program.md) to identify possible key tissue and cell types affecting LDL levels.
 
 ## Reference Data Sources
 
-I used the reference datasets recommended and preprocessed by the authors of the S-LSDC method.  These reference datasets are ultimately drawn from the following data sources:
+I used the reference datasets recommended and preprocessed by the authors of the S-LSDC method[@finucane2018heritability].  These reference datasets are ultimately drawn from the following data sources:
 
 
 

@@ -9,7 +9,6 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
-from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
     scan_dataframe_asset,
 )
@@ -20,29 +19,25 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 @frozen
 class FilterSNPsTask(Task):
-    _raw_gwas_task: Task
-    _snp_list_task: Task
-    _meta: FilteredGWASDataMeta
-    _col_in_raw_data: str = "ID"
-    _col_in_filter_data: str = "ID"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
+    raw_gwas_task: Task
+    snp_list_task: Task
+    meta: FilteredGWASDataMeta
+    col_in_raw_data: str = "ID"
+    col_in_filter_data: str = "ID"
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._raw_gwas_task, self._snp_list_task]
+        return [self.raw_gwas_task, self.snp_list_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         df_1 = scan_dataframe_asset(
-            asset=fetch(self._raw_gwas_task.asset_id), meta=self._raw_gwas_task.meta
+            asset=fetch(self.raw_gwas_task.asset_id), meta=self.raw_gwas_task.meta
         )
         df_2 = scan_dataframe_asset(
-            asset=fetch(self._snp_list_task.asset_id), meta=self._snp_list_task.meta
+            asset=fetch(self.snp_list_task.asset_id), meta=self.snp_list_task.meta
         )
         result = df_1.join(
-            df_2, left_on=self._col_in_raw_data, right_on=self._col_in_filter_data
+            df_2, left_on=self.col_in_raw_data, right_on=self.col_in_filter_data
         )
         target_path = scratch_dir / "tmp.parqet"
         result.sink_parquet(target_path)

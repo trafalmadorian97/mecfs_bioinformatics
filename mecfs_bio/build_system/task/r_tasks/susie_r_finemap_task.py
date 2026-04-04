@@ -92,7 +92,7 @@ class SusieRFinemapTask(Task):
     It requires an LD matrix from a closely matched reference panel
     """
 
-    _meta: Meta
+    meta: Meta
     gwas_data_task: Task
     ld_labels_task: Task
     ld_matrix_source: LDMatrixSource
@@ -103,10 +103,6 @@ class SusieRFinemapTask(Task):
     max_credible_sets: int = 10
     log_lr_filtering_threshold: float = 2.0
     z_score_filtering_threshold: float = 2.0
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

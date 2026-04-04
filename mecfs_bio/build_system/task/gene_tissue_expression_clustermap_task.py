@@ -64,16 +64,12 @@ class ExpressionMatrixClusterMapTaskV2(Task):
 
     """
 
-    _meta: Meta
+    meta: Meta
     specificity_matrix_source: SpecificityMatrixSource
     gene_info_sources: Sequence[GeneInfoSource]
     tissue_info_sources: Sequence[TissueInfoSource]
     xr_pipe: XRDataPipe
     plot_spec: XRHeatmapPlotSpec
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

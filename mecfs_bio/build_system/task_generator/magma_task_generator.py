@@ -251,7 +251,7 @@ class MagmaTaskGeneratorFromRaw:
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
-            asset_id=AssetId(base_name + "_sumstats_37"),
+            target_asset_id=AssetId(base_name + "_sumstats_37"),
             basic_check=True,
             genome_build=genome_build,
             liftover_to="19",
@@ -316,7 +316,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
     ):
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
-            asset_id=AssetId(base_name + "_sumstats_37"),
+            target_asset_id=AssetId(base_name + "_sumstats_37"),
             basic_check=True,
             genome_build=genome_build,
             liftover_to="19",

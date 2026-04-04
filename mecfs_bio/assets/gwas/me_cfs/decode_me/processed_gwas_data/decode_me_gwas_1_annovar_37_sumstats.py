@@ -14,7 +14,7 @@ from mecfs_bio.constants import gwaslab_constants
 
 DECODE_ME_GWAS_1_37_ANNOVAR_RSIDS_SUMSTATS = GWASLabCreateSumstatsTask(
     df_source_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
-    asset_id=AssetId("decode_me_gwas_1_37_sumstats_rsids_from_annovar"),
+    target_asset_id=AssetId("decode_me_gwas_1_37_sumstats_rsids_from_annovar"),
     basic_check=True,
     genome_build="infer",
     liftover_to="19",

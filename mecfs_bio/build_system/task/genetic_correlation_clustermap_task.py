@@ -228,15 +228,11 @@ class GeneticCorrelationClustermapTask(Task):
     Task to generate a heatmap of genetic correlation
     """
 
-    _meta: Meta
+    meta: Meta
     xr_pipe: XRDataPipe
     genetic_corr_source: GeneticCorrSource
     plot_options: GeneticCorrPlotMode
     save_mode: bool | str = "cdn"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

@@ -25,7 +25,7 @@ def run_initial_schizophrenia_analysis():
             # MAGMA_PGC2022_SCH_HUMAN_BRAIN_ATLAS_CONDITIONAL_ANALYSIS
             # MAGMA_PGC2022_HBA_FORWARD_STEPWISE_CLUSTER_SELECT,
             # PGC2022_HBA_MAGMA_STEPWISE_PLOT
-            SCH_PGC_2022_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot
+            SCH_PGC_2022_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap
         ],
         # ]+ SCH_PGC_2022_STANDARD_ANALYSIS.get_terminal_tasks(),
         # must_rebuild_transitive=[PGC2022_SCH_MAGMA_ENTREZ_ANNOTATIONS]
@@ -35,7 +35,7 @@ def run_initial_schizophrenia_analysis():
         #     MAGMA_PGC2022_HBA_FORWARD_STEPWISE_CLUSTER_SELECT,
         # ],
         must_rebuild_transitive=[
-            SCH_PGC_2022_STANDARD_ANALYSIS.hba_magma_tasks.magma_independent_cluster_plot
+            SCH_PGC_2022_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap
         ],
     )
 
