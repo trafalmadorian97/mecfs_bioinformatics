@@ -19,4 +19,4 @@ The 4 most-significant tissues found by MAGMA are all in liver.  This is very co
 
 
 
-[^biology_ldl_note]: See for instance Chapters 4 and 5 of Steinberg's book[@steinberg2011cholesterol]
+[^biology_ldl_note]: See for instance Chapters 4 and 5 of Steinberg's book[@steinberg2011cholesterol].

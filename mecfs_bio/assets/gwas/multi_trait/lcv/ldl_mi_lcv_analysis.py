@@ -1,3 +1,8 @@
+"""
+Task to use the latent causal variable method to estimate the causal direction between LDL (as measured
+in Willer et al.'s GWAS) and myocardial infarction.
+"""
+
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )

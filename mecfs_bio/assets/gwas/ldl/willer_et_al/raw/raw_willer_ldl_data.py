@@ -1,3 +1,17 @@
+"""
+Task to download summary statistics of Willer et al.'s GWAS of LDL cholesterol.
+
+A key difference between this LDL GWAS and the Million Veterans LDL GWAS is that this GWAS
+excludes users of lipid-lowering drugs.
+
+GWAS catalog study page: https://www.ebi.ac.uk/gwas/publications/24097068
+
+GWAS catalog ftp: https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST002001-GCST003000/GCST002222/
+
+Citation: "Discovery and refinement of loci associated with lipid levels." Nature genetics 45, no. 11 (2013): 1274-1283.
+
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId

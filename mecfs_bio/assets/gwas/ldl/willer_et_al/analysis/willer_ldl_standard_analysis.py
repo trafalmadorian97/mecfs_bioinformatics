@@ -1,3 +1,7 @@
+"""
+Asset generator to apply standard analysis to Willer et al.'s GWAS of LDL.
+"""
+
 from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import (
     concrete_standard_analysis_generator_assume_already_has_rsid,
 )

@@ -1,3 +1,8 @@
+"""
+Task to use CT-LDSC to compute the genetic correlation between LDL levels (as measured in Willer et al.'s GWAS)
+and myocardial infarction (as measured in the Million Veterans GWAS)
+"""
+
 from mecfs_bio.asset_generator.genetic_correlation_asset_generator import (
     genetic_corr_by_ct_ldsc_asset_generator,
 )
