@@ -14,6 +14,8 @@ from mecfs_bio.assets.gwas.human_herpesvirus_7_dna.kamitaki_et_al_2025.analysis.
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_task import (
     MV_LDL_LDSC_RESULTS_MARKDOWN,
 )
+from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import \
+    WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
@@ -67,4 +69,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     ].plot_task_unwrap,
     MECFS_PAIN_BIVARIATE_MIXER.result_table_markdown_task,
     MV_LDL_LDSC_RESULTS_MARKDOWN,
+    WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+
 ]
