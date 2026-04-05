@@ -16,6 +16,8 @@ plugins:
     enabled: !ENV [HAVE_GH_TOKEN, false]
     token: !ENV [GH_TOKEN, "none"]
     branch: main
+    exclude_committers:
+      - web-flow
 
 - mkdocstrings:
    handlers:

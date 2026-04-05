@@ -1,6 +1,8 @@
+import os
 import sys
 from pathlib import Path
 
+import yaml
 from invoke import task
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
@@ -13,6 +15,25 @@ PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
 
 FIGS_PATH = Path("docs/_figs/")
 FIGS_PATTERN = "_figs"
+
+GITHUB_TOKEN_CONFIG = Path("gh_token_config.yaml")
+
+# helper
+
+
+def _set_gh_token() -> None:
+    if not GITHUB_TOKEN_CONFIG.exists():
+        print(f"No github token file found at {GITHUB_TOKEN_CONFIG}")
+        return
+    with open(GITHUB_TOKEN_CONFIG) as infile:
+        loaded = yaml.load(infile, Loader=yaml.FullLoader)
+    assert "GH_TOKEN" in loaded
+    print("setting github token environment variable")
+    os.environ["GH_TOKEN"] = loaded["GH_TOKEN"]
+
+
+def _set_use_gh_token() -> None:
+    os.environ["HAVE_GH_TOKEN"] = "True"
 
 
 # dev tasks
@@ -236,10 +257,13 @@ def pfig(c):
 
 
 @task
-def serve_docs(c, strict: bool = True):
+def serve_docs(c, strict: bool = True, include_authors: bool = False):
     """
     Use mkdocs to serve documentation
     """
+    if include_authors:
+        _set_gh_token()
+        _set_use_gh_token()
     cmd = "pixi r mkdocs serve"
     if strict:
         cmd += " --strict"
@@ -248,11 +272,16 @@ def serve_docs(c, strict: bool = True):
     c.run(cmd, pty=True)
 
 
-@task(pre=[pfig, serve_docs])
-def sdocs(c):
+@task(
+    pre=[
+        pfig,
+    ]
+)
+def sdocs(c, include_authors: bool = False):
     """
     Retrieve figures, then serve docs
     """
+    serve_docs(c, include_authors=include_authors)
 
 
 # initialization

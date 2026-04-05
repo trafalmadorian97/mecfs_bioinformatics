@@ -251,3 +251,6 @@ r-libs
 *.html
 *.png
 docs/_figs
+
+# config file for storing github token
+gh_token_config.yaml
