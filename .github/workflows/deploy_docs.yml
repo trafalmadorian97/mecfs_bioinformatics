@@ -36,3 +36,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HAVE_GH_TOKEN: "True"
       - run: pixi r mkdocs gh-deploy --force
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAVE_GH_TOKEN: "True"
