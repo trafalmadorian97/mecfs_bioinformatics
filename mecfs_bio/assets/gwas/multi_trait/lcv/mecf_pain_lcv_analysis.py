@@ -1,6 +1,5 @@
 """
-Task to use the latent causal variable method to estimate the causal direction between LDL (as measured
-in Willer et al.'s GWAS) and myocardial infarction.
+Task to use the latent causal variable method to estimate the causal direction multisite pain and ME/CFS
 """
 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
