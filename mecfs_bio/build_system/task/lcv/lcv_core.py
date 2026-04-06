@@ -8,14 +8,18 @@ Translated from the original R code using chatgpt, then tweaked
 
 import math
 import warnings
-from typing import Iterable
+from typing import Iterable, Literal
 
+import narwhals
 import numpy as np
 import numpy.typing as npt
 import polars as pl
 from attrs import frozen
 from scipy.stats import t
 from tqdm import tqdm
+
+from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL
 
 FloatArray = npt.NDArray[np.float64]
 ArrayLike1D = npt.ArrayLike
@@ -723,3 +727,21 @@ def run_lcv(
         gcp_grid=grid,
         gcp_weight=weight,
     )
+
+
+MHCRegion = Literal["classical","extended"]
+
+def exclude_mhc(
+        df: narwhals.LazyFrame,
+        build: GenomeBuild,
+        region:MHCRegion|None,
+)-> narwhals.LazyFrame:
+    if region is None:
+        return df
+    if region == "extended" and "build"=="19":
+        return df.filter(
+
+            ~(
+                narwhals.col(GWASLAB_CHROM_COL)
+            )
+        )
