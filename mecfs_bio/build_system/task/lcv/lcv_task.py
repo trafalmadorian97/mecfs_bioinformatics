@@ -10,6 +10,7 @@ from causation across 52 diseases and complex traits." Nature genetics 50.12 (20
 """
 
 from pathlib import Path, PurePath
+from typing import Literal
 
 import narwhals
 import narwhals as nw
@@ -35,6 +36,7 @@ from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
     LD_SCORE_POS_COL,
     LD_SCORE_RSID_COL,
 )
+from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     MULTI_TRAIT,
 )
@@ -273,3 +275,20 @@ def convert_ea_nea_to_str(df: nw.LazyFrame) -> nw.LazyFrame:
         .cast(narwhals.dtypes.String())
         .alias(GWASLAB_NON_EFFECT_ALLELE_COL),
     )
+MHCRegion = Literal["classical","extended"]
+
+def exclude_mhc(
+        df: narwhals.LazyFrame,
+        build: GenomeBuild,
+        region:MHCRegion|None,
+)-> narwhals.LazyFrame:
+    """
+    According to the paper: GENE MAP OF THE EXTENDED HUMAN MHC,
+    The extended MHC region goes from HIST1H2AA to RPL12P1.
+    I have used genecards and Ensembl data to find the coordiantes of these genes and so find the mhc region
+    """
+    if region is None:
+        return df
+    if region == "extended" and "build"=="19":
+        lower = 25726291
+        upper = 33368421  #

@@ -728,20 +728,3 @@ def run_lcv(
         gcp_weight=weight,
     )
 
-
-MHCRegion = Literal["classical","extended"]
-
-def exclude_mhc(
-        df: narwhals.LazyFrame,
-        build: GenomeBuild,
-        region:MHCRegion|None,
-)-> narwhals.LazyFrame:
-    if region is None:
-        return df
-    if region == "extended" and "build"=="19":
-        return df.filter(
-
-            ~(
-                narwhals.col(GWASLAB_CHROM_COL)
-            )
-        )
