@@ -8,6 +8,9 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.mi_willer_ldl
     MI_LDL_WILLER_CORRELATION
 from mecfs_bio.assets.gwas.multi_trait.lcv.ldl_mi_lcv_analysis import LDL_MI_LCV_ANALYSIS
 from mecfs_bio.assets.gwas.multi_trait.lcv.mecf_pain_lcv_analysis import MECFS_PAIN_LCV_ANALYSIS
+from mecfs_bio.assets.gwas.triglycerides.analysis.triglycide_standard_analysis import \
+    WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS
+from mecfs_bio.assets.gwas.triglycerides.raw.willer_et_al.raw_triglyceride_data import WILLER_TG_EUR_DATA_RAW
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -18,11 +21,12 @@ def run_miscl_analysis():
             # MV_LDL_LDSC_RESULTS_MARKDOWN
         # MV_LDL_HERITABILITY_TASK
         #     MI_LDL_WILLER_CORRELATION.terminal_tasks()
-    [
+    # [
         # LDL_MI_LCV_ANALYSIS,
-
-     MECFS_PAIN_LCV_ANALYSIS
-     ]
+        WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.get_terminal_tasks()
+        # WILLER_TG_EUR_DATA_RAW
+     # MECFS_PAIN_LCV_ANALYSIS
+     # ]
             ,
         # +WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.get_terminal_tasks(),
         # [MILLION_VETERAN_MI_EUR_DATA_RAW]+MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.get_terminal_tasks(),
