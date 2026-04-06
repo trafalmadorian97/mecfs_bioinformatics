@@ -1,10 +1,13 @@
 site_name: ME/CFS Biostatistics Home
 repo_url: https://github.com/trafalmadorian97/mecfs_bioinformatics
+edit_uri: edit/main/docs/
 theme:
   name: material
   features:
     - navigation.indexes
     - content.footnote.tooltips
+    - content.action.edit
+    - content.action.view
 plugins:
 - search
 - macros
