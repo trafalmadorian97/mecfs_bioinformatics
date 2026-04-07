@@ -5,7 +5,6 @@ Asset generator to automatically determine the optimal UKBB LD matrix to use for
 from pathlib import Path, PurePath
 
 import pandas as pd
-from attrs import frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -17,6 +16,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 BROAD_UKBB_FILE_LIST = Path("mecfs_bio/vend_files/broad_ukbb_ld_matrix_file_list.txt")
 
@@ -33,13 +33,6 @@ def get_broad_ukbb_ld_matrix_file_info() -> pd.DataFrame:
     intervals["start"] = intervals["start"].astype(int)
     intervals["end"] = intervals["end"].astype(int)
     return intervals
-
-
-@frozen
-class GenomicInterval:
-    chrom: int
-    start: int
-    end: int
 
 
 def get_optimal_ukbb_ld_interval(chrom: int, pos: int) -> GenomicInterval:
