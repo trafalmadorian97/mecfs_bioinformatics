@@ -16,6 +16,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_util import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 logger = structlog.get_logger()
 from pathlib import Path
@@ -44,7 +45,6 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 GenomeBuildMode = Literal["infer", "19", "38"]
-GenomeBuild = Literal["19", "38"]
 
 
 @frozen
