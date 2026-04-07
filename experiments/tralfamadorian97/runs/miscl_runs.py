@@ -1,4 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.c_reactive_protein.said_et_al.analysis.said_crp_standard_analysis import \
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.c_reactive_protein.said_et_al.raw.raw_crp_gwas_data import SAID_CRP_EUR_DATA_RAW
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_task import MV_LDL_HERITABILITY_TASK, \
     MV_LDL_LDSC_RESULTS_MARKDOWN
@@ -19,12 +21,12 @@ def run_miscl_analysis():
             # MV_LDL_LDSC_RESULTS_MARKDOWN
         # MV_LDL_HERITABILITY_TASK
         #     MI_LDL_WILLER_CORRELATION.terminal_tasks()
-    [
+
         # LDL_MI_LCV_ANALYSIS,
-        SAID_CRP_EUR_DATA_RAW
      # MECFS_PAIN_LCV_ANALYSIS
-     ]
-            ,
+
+        SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.get_terminal_tasks()
+    ,
         # +WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.get_terminal_tasks(),
         # [MILLION_VETERAN_MI_EUR_DATA_RAW]+MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.get_terminal_tasks(),
         # [MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.manhattan_task],
