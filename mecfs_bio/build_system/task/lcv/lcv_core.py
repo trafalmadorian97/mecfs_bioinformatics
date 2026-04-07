@@ -8,18 +8,14 @@ Translated from the original R code using chatgpt, then tweaked
 
 import math
 import warnings
-from typing import Iterable, Literal
+from typing import Iterable
 
-import narwhals
 import numpy as np
 import numpy.typing as npt
 import polars as pl
 from attrs import frozen
 from scipy.stats import t
 from tqdm import tqdm
-
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL
 
 FloatArray = npt.NDArray[np.float64]
 ArrayLike1D = npt.ArrayLike
@@ -470,7 +466,7 @@ def compute_jackknife_summary(
     estimates = []
 
     for i, keep_idx in tqdm(
-        enumerate(leave_one_block_out_indices(len(ld_arr), n_blocks))
+        enumerate(list(leave_one_block_out_indices(len(ld_arr), n_blocks)))
     ):
         estimate = estimate_lcv_moments(
             ld_arr[keep_idx],
@@ -727,4 +723,3 @@ def run_lcv(
         gcp_grid=grid,
         gcp_weight=weight,
     )
-

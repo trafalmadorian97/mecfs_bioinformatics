@@ -41,7 +41,6 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     complement_reverse_expr,
     match_flipped_reference_expr,
@@ -50,6 +49,7 @@ from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid im
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,

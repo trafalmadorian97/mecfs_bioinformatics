@@ -10,7 +10,6 @@ from causation across 52 diseases and complex traits." Nature genetics 50.12 (20
 """
 
 from pathlib import Path, PurePath
-from typing import Literal
 
 import narwhals
 import narwhals as nw
@@ -36,7 +35,6 @@ from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
     LD_SCORE_POS_COL,
     LD_SCORE_RSID_COL,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     MULTI_TRAIT,
 )
@@ -44,6 +42,7 @@ from mecfs_bio.build_system.task.lcv.lcv_core import run_lcv
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild, MHCRegion
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -53,6 +52,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.util.genomic_data_processing.genomic_interval_ops import exclude_mhc
 
 logger = structlog.get_logger()
 
@@ -64,6 +64,8 @@ Z_SCORE_2 = "_z_score_2_"
 @frozen
 class LCVConfig:
     chisq_exclude_factor_threshold: float = 50
+    build: GenomeBuild = "19"
+    exclude_mhc_region: MHCRegion | None = "extended"
 
 
 @frozen
@@ -92,10 +94,14 @@ class LCVTask(Task):
         trait_1_asset = fetch(self.trait_1_data.asset_id)
         trait_2_asset = fetch(self.trait_2_data.asset_id)
         ld_scores_asset = fetch(self.consolidated_ld_scores.asset_id)
+
         df_trait_1 = make_z_score_frame(
             self.trait_1_pipe.process(
                 scan_dataframe_asset(asset=trait_1_asset, meta=self.trait_1_data.meta)
             )
+        )
+        df_trait_1 = exclude_mhc(
+            df_trait_1, build=self.config.build, region=self.config.exclude_mhc_region
         )
         df_trait_1 = convert_ea_nea_to_str(df_trait_1)
 
@@ -104,7 +110,11 @@ class LCVTask(Task):
                 scan_dataframe_asset(asset=trait_2_asset, meta=self.trait_2_data.meta)
             )
         )
+        df_trait_2 = exclude_mhc(
+            df_trait_2, build=self.config.build, region=self.config.exclude_mhc_region
+        )
         df_trait_2 = convert_ea_nea_to_str(df_trait_2)
+
         df_ld_scores = scan_dataframe_asset(
             asset=ld_scores_asset, meta=self.consolidated_ld_scores.meta
         )
@@ -123,6 +133,7 @@ class LCVTask(Task):
             chisq_exclude_factor_threshold=self.config.chisq_exclude_factor_threshold,
         )
         result_df = lcv_result.to_df()
+        logger.debug(f"LCV results : \n {result_df}")
         out_path = scratch_dir / "result.parquet"
         result_df.write_parquet(out_path)
         return FileAsset(out_path)
@@ -275,20 +286,3 @@ def convert_ea_nea_to_str(df: nw.LazyFrame) -> nw.LazyFrame:
         .cast(narwhals.dtypes.String())
         .alias(GWASLAB_NON_EFFECT_ALLELE_COL),
     )
-MHCRegion = Literal["classical","extended"]
-
-def exclude_mhc(
-        df: narwhals.LazyFrame,
-        build: GenomeBuild,
-        region:MHCRegion|None,
-)-> narwhals.LazyFrame:
-    """
-    According to the paper: GENE MAP OF THE EXTENDED HUMAN MHC,
-    The extended MHC region goes from HIST1H2AA to RPL12P1.
-    I have used genecards and Ensembl data to find the coordiantes of these genes and so find the mhc region
-    """
-    if region is None:
-        return df
-    if region == "extended" and "build"=="19":
-        lower = 25726291
-        upper = 33368421  #
