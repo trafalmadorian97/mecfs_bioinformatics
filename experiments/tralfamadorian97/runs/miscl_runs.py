@@ -1,16 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_task import MV_LDL_HERITABILITY_TASK, \
-    MV_LDL_LDSC_RESULTS_MARKDOWN
-from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import \
-    WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS
-from mecfs_bio.assets.gwas.ldl.willer_et_al.raw.raw_willer_ldl_data import WILLER_LDL_EUR_DATA_RAW
-from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.mi_willer_ldl_correlation import \
-    MI_LDL_WILLER_CORRELATION
-from mecfs_bio.assets.gwas.multi_trait.lcv.ldl_mi_lcv_analysis import LDL_MI_LCV_ANALYSIS
-from mecfs_bio.assets.gwas.multi_trait.lcv.mecf_pain_lcv_analysis import MECFS_PAIN_LCV_ANALYSIS
-from mecfs_bio.assets.gwas.triglycerides.analysis.triglycide_standard_analysis import \
+from mecfs_bio.assets.gwas.triglycerides.willer_et_al import \
     WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS
-from mecfs_bio.assets.gwas.triglycerides.raw.willer_et_al.raw_triglyceride_data import WILLER_TG_EUR_DATA_RAW
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 

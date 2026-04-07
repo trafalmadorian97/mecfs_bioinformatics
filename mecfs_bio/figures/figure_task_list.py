@@ -32,7 +32,7 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.gwas.triglycerides.analysis.triglycide_standard_analysis import (
+from mecfs_bio.assets.gwas.triglycerides.willer_et_al.analysis.triglycide_standard_analysis import (
     WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS,
 )
 from mecfs_bio.build_system.task.base_task import Task
