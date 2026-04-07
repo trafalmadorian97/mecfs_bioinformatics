@@ -1,8 +1,15 @@
-from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import \
-    concrete_standard_analysis_generator_assume_already_has_rsid
-from mecfs_bio.assets.gwas.triglycerides.raw.willer_et_al.raw_triglyceride_data import WILLER_TG_EUR_DATA_RAW
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GWASLabColumnSpecifiers
-from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import QuantPhenotype
+from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import (
+    concrete_standard_analysis_generator_assume_already_has_rsid,
+)
+from mecfs_bio.assets.gwas.triglycerides.raw.willer_et_al.raw_triglyceride_data import (
+    WILLER_TG_EUR_DATA_RAW,
+)
+from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
+    GWASLabColumnSpecifiers,
+)
+from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    QuantPhenotype,
+)
 
 WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS = (
     concrete_standard_analysis_generator_assume_already_has_rsid(
@@ -22,5 +29,4 @@ WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS = (
         sample_size=89138,
         phenotype_info_for_ldsc=QuantPhenotype(),
     )
-
 )
