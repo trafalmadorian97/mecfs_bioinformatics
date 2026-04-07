@@ -466,7 +466,7 @@ def compute_jackknife_summary(
     estimates = []
 
     for i, keep_idx in tqdm(
-        enumerate(leave_one_block_out_indices(len(ld_arr), n_blocks))
+        enumerate(list(leave_one_block_out_indices(len(ld_arr), n_blocks)))
     ):
         estimate = estimate_lcv_moments(
             ld_arr[keep_idx],

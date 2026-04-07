@@ -16,7 +16,6 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     GeneticCorrelationByCTLDSCTask,
     SumstatsSource,
@@ -26,6 +25,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task i
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import CSVOutFormat
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 
 @frozen

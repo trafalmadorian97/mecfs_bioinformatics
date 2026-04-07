@@ -20,8 +20,8 @@ def run_miscl_analysis():
         #     MI_LDL_WILLER_CORRELATION.terminal_tasks()
     [
         # LDL_MI_LCV_ANALYSIS,
-
-     MECFS_PAIN_LCV_ANALYSIS
+LDL_MI_LCV_ANALYSIS
+     # MECFS_PAIN_LCV_ANALYSIS
      ]
             ,
         # +WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.get_terminal_tasks(),
@@ -31,7 +31,7 @@ def run_miscl_analysis():
 
         incremental_save=True,
         must_rebuild_transitive=[
-
+LDL_MI_LCV_ANALYSIS
             # MV_LDL_LDSC_RESULTS_MARKDOWN
         ],
         settings=TopologicalSchedulerSettings(
