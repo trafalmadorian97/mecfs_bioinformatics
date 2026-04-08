@@ -4,7 +4,7 @@ hide:
 ---
 # MAGMA
 
-I applied the [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] pipeline to summary statistics from a GWAS of triglycerides from WIller at el.[@global2013discovery].
+I applied the [MAGMA](../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] pipeline to summary statistics from a GWAS of triglycerides from Willer at el.[@global2013discovery].
 
 
 In the gene set analysis step, I incorporated [tissue-specific RNAseq data from GTEx](../../Data_Sources/GTEx_RNAseq_Data.md)[@gtex2020gtex] to try to link genes associated with LDL to specific tissues.
