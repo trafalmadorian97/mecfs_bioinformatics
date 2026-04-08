@@ -59,7 +59,7 @@ These results unambiguously point to the nervous system as a major site of ME/CF
 
 
 ## Reproducing
-To reproduce this analysis, run the [DecodeME Initial Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
+To reproduce this analysis, run the {{ api_link("DecodeME Initial Analysis Script", "mecfs_bio.analysis.decode_me_initial_analysis") }}.
 
 ## Follow-Up Questions
 1. Do other approaches to identify significant tissues from GWAS-summary statistics produce concordant or discordant results?

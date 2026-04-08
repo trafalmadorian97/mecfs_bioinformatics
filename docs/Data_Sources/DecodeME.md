@@ -9,4 +9,4 @@ DecodeME is a genome-wide association study of people with ME/CFS.  It is the la
 
 ## Tasks
 
-See [here][mecfs_bio.assets.gwas.me_cfs.decode_me] for tasks pertaining to DecodeME.
+See {{ api_link("here", "mecfs_bio.assets.gwas.me_cfs.decode_me") }} for tasks pertaining to DecodeME.

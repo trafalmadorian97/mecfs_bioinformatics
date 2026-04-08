@@ -8,4 +8,4 @@ Several studies have also noted a high rate of pain in individuals with ME/CFS.[
 
 To potentially gain further insights into both chronic pain and ME/CFS, the `mecfs_bioinformatics` repo was used to further analyze Johnston et al.'s MCP study.
 
-To reproduce this analysis run the [Multisite Chronic Pain GWAS Analysis Script][mecfs_bio.analysis.johnston_multisite_pain_analysis].
+To reproduce this analysis run the {{ api_link("Multisite Chronic Pain GWAS Analysis Script", "mecfs_bio.analysis.johnston_multisite_pain_analysis") }}.
