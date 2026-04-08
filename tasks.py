@@ -1,3 +1,11 @@
+"""
+Repo-level commands.  Run with
+
+pixi r invoke <task>
+
+Note that when running tasks this way, underscores (_) in task names should be replaced with dashes (-)
+"""
+
 import os
 import sys
 from pathlib import Path
@@ -15,6 +23,7 @@ PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
 
 FIGS_PATH = Path("docs/_figs/")
 FIGS_PATTERN = "_figs"
+
 
 GITHUB_TOKEN_CONFIG = Path("gh_token_config.yaml")
 
@@ -34,6 +43,10 @@ def _set_gh_token() -> None:
 
 def _set_use_gh_token() -> None:
     os.environ["HAVE_GH_TOKEN"] = "True"
+
+
+def _set_enable_api_autonav() -> None:
+    os.environ["ENABLE_API_AUTONAV"] = "True"
 
 
 # dev tasks
@@ -257,13 +270,20 @@ def pfig(c):
 
 
 @task
-def serve_docs(c, strict: bool = True, include_authors: bool = False):
+def serve_docs(
+    c,
+    strict: bool = True,
+    include_authors: bool = False,
+    enable_api_autonav: bool = False,
+):
     """
     Use mkdocs to serve documentation
     """
     if include_authors:
         _set_gh_token()
         _set_use_gh_token()
+    if enable_api_autonav:
+        _set_enable_api_autonav()
     cmd = "pixi r mkdocs serve"
     if strict:
         cmd += " --strict"
@@ -277,11 +297,13 @@ def serve_docs(c, strict: bool = True, include_authors: bool = False):
         pfig,
     ]
 )
-def sdocs(c, include_authors: bool = False):
+def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
     """
     Retrieve figures, then serve docs
     """
-    serve_docs(c, include_authors=include_authors)
+    serve_docs(
+        c, include_authors=include_authors, enable_api_autonav=enable_api_autonav
+    )
 
 
 # initialization

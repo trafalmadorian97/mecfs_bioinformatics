@@ -42,6 +42,7 @@ from mecfs_bio.build_system.task.lcv.lcv_core import run_lcv
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild, MHCRegion
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -51,6 +52,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.util.genomic_data_processing.genomic_interval_ops import exclude_mhc
 
 logger = structlog.get_logger()
 
@@ -62,6 +64,8 @@ Z_SCORE_2 = "_z_score_2_"
 @frozen
 class LCVConfig:
     chisq_exclude_factor_threshold: float = 50
+    build: GenomeBuild = "19"
+    exclude_mhc_region: MHCRegion | None = "extended"
 
 
 @frozen
@@ -90,10 +94,14 @@ class LCVTask(Task):
         trait_1_asset = fetch(self.trait_1_data.asset_id)
         trait_2_asset = fetch(self.trait_2_data.asset_id)
         ld_scores_asset = fetch(self.consolidated_ld_scores.asset_id)
+
         df_trait_1 = make_z_score_frame(
             self.trait_1_pipe.process(
                 scan_dataframe_asset(asset=trait_1_asset, meta=self.trait_1_data.meta)
             )
+        )
+        df_trait_1 = exclude_mhc(
+            df_trait_1, build=self.config.build, region=self.config.exclude_mhc_region
         )
         df_trait_1 = convert_ea_nea_to_str(df_trait_1)
 
@@ -102,7 +110,11 @@ class LCVTask(Task):
                 scan_dataframe_asset(asset=trait_2_asset, meta=self.trait_2_data.meta)
             )
         )
+        df_trait_2 = exclude_mhc(
+            df_trait_2, build=self.config.build, region=self.config.exclude_mhc_region
+        )
         df_trait_2 = convert_ea_nea_to_str(df_trait_2)
+
         df_ld_scores = scan_dataframe_asset(
             asset=ld_scores_asset, meta=self.consolidated_ld_scores.meta
         )
@@ -121,6 +133,7 @@ class LCVTask(Task):
             chisq_exclude_factor_threshold=self.config.chisq_exclude_factor_threshold,
         )
         result_df = lcv_result.to_df()
+        logger.debug(f"LCV results : \n {result_df}")
         out_path = scratch_dir / "result.parquet"
         result_df.write_parquet(out_path)
         return FileAsset(out_path)

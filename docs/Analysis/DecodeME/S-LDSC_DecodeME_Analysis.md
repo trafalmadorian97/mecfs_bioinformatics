@@ -183,5 +183,5 @@ When we apply the S-LDSC using the GTEx brain dataset, we find the the cortex ti
 
 ## How to Reproduce This
 
-To reproduce, run the [DecodeME Analysis Script][mecfs_bio.analysis.decode_me_initial_analysis].
+To reproduce, run the {{ api_link("DecodeME Analysis Script", "mecfs_bio.analysis.decode_me_initial_analysis") }}.
 

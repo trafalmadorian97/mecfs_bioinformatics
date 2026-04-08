@@ -149,4 +149,4 @@ This is perhaps to be expected, given the lack of significant hits on any CNS-re
 
 ## Reproducing Analysis
 
-To reproduce this analysis, run the [LDL GWAS Analysis Script][mecfs_bio.analysis.ldl_analysis].
+To reproduce this analysis, run the {{ api_link("LDL GWAS Analysis Script", "mecfs_bio.analysis.ldl_analysis") }}.

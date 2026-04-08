@@ -30,7 +30,7 @@ pixi r invoke init
 This will install additional required packages, then run linters and tests.
 
 
-A natural next step is to run the basic analysis of the [Decode ME](../Data_Sources/DecodeME.md) data using the script [here][mecfs_bio.analysis.decode_me_initial_analysis].
+A natural next step is to run the basic analysis of the [Decode ME](../Data_Sources/DecodeME.md) data using the script {{ api_link("here", "mecfs_bio.analysis.decode_me_initial_analysis") }}.
 
 You can use pixi to run this or another script via the command:
 

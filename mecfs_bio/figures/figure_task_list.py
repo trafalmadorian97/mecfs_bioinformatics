@@ -32,6 +32,9 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.triglycerides.willer_et_al.analysis.triglycide_standard_analysis import (
+    WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS,
+)
 from mecfs_bio.build_system.task.base_task import Task
 
 MULTI_TISSUE_CHROMATIN_REF = "multi_tissue_chromatin"
@@ -77,5 +80,10 @@ ALL_FIGURE_TASKS: list[Task] = [
     ].plot_task_unwrap,
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_CHROMATIN_REF
+    ].plot_task_unwrap,
+    WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
 ]

@@ -45,6 +45,7 @@ plugins:
 - api-autonav:
     modules: ['mecfs_bio']
     exclude: ['mecfs_bio.util']
+    enabled: !ENV [ENABLE_API_AUTONAV, false]
 
 extra_javascript:
   - javascripts/mathjax.js

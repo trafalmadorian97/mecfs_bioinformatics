@@ -50,7 +50,7 @@ The next step is to use the S-LDSC reference data derived from the ImmGen projec
 
 ### Corces ATAC-seq data
 
-The next step is the use the Coreces ATAX-seq data as a reference.  There were no significant cell types with this dataset
+The next step is the use the Coreces ATAC-seq data as a reference.  There were no significant cell types with this dataset
 
 
 ### Cahoy and GTEx-Brain data

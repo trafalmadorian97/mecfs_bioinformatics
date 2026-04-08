@@ -13,4 +13,4 @@ Consistent with the role of the immune system of maintaining HHV7 in a dormant s
 
 ## Reproducing Analysis
 
-To reproduce the above, run the [HHV7 Analysis Script][mecfs_bio.analysis.hhv7_analysis].
+To reproduce the above, run the {{ api_link("HHV7 Analysis Script", "mecfs_bio.analysis.hhv7_analysis") }}.

@@ -202,6 +202,6 @@ None of the neurological cell types in these datasets are significant. This is c
 
 ## Reproducing
 
-To reproduce these results, run the analysis script [here][mecfs_bio.analysis.red_blood_cell_volume].
+To reproduce these results, run the analysis script {{ api_link("here", "mecfs_bio.analysis.red_blood_cell_volume") }}.
 
 
