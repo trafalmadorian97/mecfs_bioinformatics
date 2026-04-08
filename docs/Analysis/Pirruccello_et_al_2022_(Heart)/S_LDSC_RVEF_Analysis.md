@@ -144,4 +144,4 @@ No cell types were significant in the Cahoy or GTEx brain datasets, indicating t
 
 ### Reproducing
 
-To reproduce this analysis, use the [right heart analysis script][mecfs_bio.analysis.right_heart_analysis].
+To reproduce this analysis, use the {{ api_link("right heart analysis script", "mecfs_bio.analysis.right_heart_analysis") }}.

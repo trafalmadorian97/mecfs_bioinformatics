@@ -20,4 +20,4 @@ The significant tissues identified by MAGMA lie exclusively in the brain, consis
 
 ## How to Reproduce this
 
-To reproduce this analysis run the [Educational Attainment GWAS Analysis Script][mecfs_bio.analysis.lee_educational_attainment_analysis].
+To reproduce this analysis run the {{ api_link("Educational Attainment GWAS Analysis Script", "mecfs_bio.analysis.lee_educational_attainment_analysis") }}.

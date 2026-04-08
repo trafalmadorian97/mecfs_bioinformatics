@@ -21,4 +21,4 @@ indicating that genes that increase LDL tend to be expressed in the liver. This 
 
 ## Reproducing Analysis
 
-To reproduce this analysis, run the [LDL GWAS Analysis Script][mecfs_bio.analysis.ldl_analysis].
+To reproduce this analysis, run the {{ api_link("LDL GWAS Analysis Script", "mecfs_bio.analysis.ldl_analysis") }}.

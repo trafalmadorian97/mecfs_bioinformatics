@@ -42,7 +42,7 @@ Here is the source code for the `Task` base class:
 - The key method is `execute`. Subclasses override this method to specify how to construct their assets.  The `fetch` parameter is a special callback passed to `execute` by the build system.  Instead of directly accessing its dependencies, `execute` should `fetch` its dependencies from the build system
 
 
-Concrete Task subclasses are defined [here][mecfs_bio.build_system.task].
+Concrete Task subclasses are defined {{ api_link("here", "mecfs_bio.build_system.task") }}.
 
 
 ### Rebuilder
@@ -56,13 +56,13 @@ Here is source code for the `Rebuilder` base class:
 ```
 
 
-Currently, there is one concrete implementation of `Rebuilder`, called the [VerifyingTraceRebuilder][mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core].  It uses file hashes to decide whether an `Asset` is up-to-date.
+Currently, there is one concrete implementation of `Rebuilder`, called the {{ api_link("VerifyingTraceRebuilder", "mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core") }}.  It uses file hashes to decide whether an `Asset` is up-to-date.
 
 
 ### Scheduler
 
 Given one or more target assets requested by the user, it is the job of the scheduler to determine which tasks need to be run in what order to produce those assets.  The scheduler delegates the actual running of these tasks to the Rebuilder.
 
-Currently, there is one concrete scheduler: the [topological scheduler][mecfs_bio.build_system.scheduler.topological_scheduler].  The topological scheduler constructs a[ directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the dependencies of the requested assets, then traverses this graph in [topological order](https://en.wikipedia.org/wiki/Topological_sorting).
+Currently, there is one concrete scheduler: the {{ api_link("topological scheduler", "mecfs_bio.build_system.scheduler.topological_scheduler") }}.  The topological scheduler constructs a[ directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) of the dependencies of the requested assets, then traverses this graph in [topological order](https://en.wikipedia.org/wiki/Topological_sorting).
 
 

@@ -38,7 +38,7 @@ The traits are:
 
 ## Reproducing
 
-To reproduce these results, use [this script][mecfs_bio.analysis.ct_ldsc_analysis].
+To reproduce these results, use {{ api_link("this script", "mecfs_bio.analysis.ct_ldsc_analysis") }}.
 
 
 [^sch_note]:  See _"Identification of Genes for Schizophrenia Highlights the Interplay of Rare and Common Risk Variants_" in Chapter 1 of Kandel et al.[@kandel2021principles] and also the [S-LDSC analysis of schizophrenia](../../PGC_2022_(SCH)/S-LDSC_SCH_Analysis.md) in this repo.

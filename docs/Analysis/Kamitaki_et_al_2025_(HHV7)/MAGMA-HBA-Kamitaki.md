@@ -25,4 +25,4 @@ The other independent cluster is a microglial cell type.  The interpretation of 
 
 ## Reproducing Analysis
 
-To reproduce the above, run the [HHV7 Analysis Script][mecfs_bio.analysis.hhv7_analysis].
+To reproduce the above, run the {{ api_link("HHV7 Analysis Script", "mecfs_bio.analysis.hhv7_analysis") }}.

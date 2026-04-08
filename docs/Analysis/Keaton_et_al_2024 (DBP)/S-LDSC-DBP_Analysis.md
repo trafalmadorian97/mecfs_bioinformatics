@@ -208,7 +208,7 @@ I see two interpretations:
 
 ## How to reproduce
 
-Use [this script][mecfs_bio.analysis.dbp_analysis] to reproduce the above analysis.
+Use {{ api_link("this script", "mecfs_bio.analysis.dbp_analysis") }} to reproduce the above analysis.
 
 
 

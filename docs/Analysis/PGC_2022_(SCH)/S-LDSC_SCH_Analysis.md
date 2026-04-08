@@ -222,4 +222,4 @@ The GTEx brain dataset points to the cortex as a key site of disease activity. H
 
 ## Reproducing
 
-Reproduce these results using the [Schizophrenia Analysis Script][mecfs_bio.analysis.schizophrenia_analysis].
+Reproduce these results using the {{ api_link("Schizophrenia Analysis Script", "mecfs_bio.analysis.schizophrenia_analysis") }}.

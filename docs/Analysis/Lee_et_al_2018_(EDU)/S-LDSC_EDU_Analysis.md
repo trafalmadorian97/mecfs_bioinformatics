@@ -224,6 +224,6 @@ The strong contrast between these results (which are highly specific to the cort
 
 ## Reproducing Analysis
 
-To reproduce this analysis, run the script [here][mecfs_bio.analysis.lee_educational_attainment_analysis].
+To reproduce this analysis, run the script {{ api_link("here", "mecfs_bio.analysis.lee_educational_attainment_analysis") }}.
 
 
