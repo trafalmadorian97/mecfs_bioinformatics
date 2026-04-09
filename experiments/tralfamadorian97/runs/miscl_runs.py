@@ -11,6 +11,7 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.mi_willer_ldl
     MI_LDL_WILLER_CORRELATION
 from mecfs_bio.assets.gwas.multi_trait.lcv.ldl_mi_lcv_analysis import LDL_MI_LCV_ANALYSIS
 from mecfs_bio.assets.gwas.multi_trait.lcv.mecf_pain_lcv_analysis import MECFS_PAIN_LCV_ANALYSIS
+from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GROUP
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -24,8 +25,9 @@ def run_miscl_analysis():
 
         # LDL_MI_LCV_ANALYSIS,
      # MECFS_PAIN_LCV_ANALYSIS
+        MI_LCV_TASK_GROUP.terminal_tasks()
 
-        SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.get_terminal_tasks()
+        # SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.get_terminal_tasks()
     ,
         # +WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.get_terminal_tasks(),
         # [MILLION_VETERAN_MI_EUR_DATA_RAW]+MILLION_VETERAN_MI_EUR_STANDARD_ANALYSIS.get_terminal_tasks(),
@@ -34,7 +36,7 @@ def run_miscl_analysis():
 
         incremental_save=True,
         must_rebuild_transitive=[
-
+            MI_LCV_TASK_GROUP.agg_task
             # MV_LDL_LDSC_RESULTS_MARKDOWN
         ],
         settings=TopologicalSchedulerSettings(
