@@ -1,3 +1,9 @@
+"""
+Apply LCV to a list of a candidate upstream causal traits against the downstream trait Myocardial Infarction.
+
+The goal here is mainly to make sure my LCV implementation is correct by testing for well known causal factors like LDL.
+"""
+
 from mecfs_bio.asset_generator.lcv_asset_generator import (
     LCVSourceTraitInfo,
     lcv_generate,
