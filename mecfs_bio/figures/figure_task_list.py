@@ -5,6 +5,8 @@ This file contains a list of figures to be exported for use in documentation
 from mecfs_bio.assets.gwas.brainstem.whole_brainstem.xue_et_al.analysis.xue_whole_brainstem_standard_analysis import (
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.c_reactive_protein.said_et_al.analysis.said_crp_standard_analysis import \
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
 )
@@ -86,4 +88,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
 ]
