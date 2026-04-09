@@ -24,7 +24,7 @@ WILLER_TG_EUR_DATA_RAW = DownloadFileTask(
         id=AssetId("willer_tg_eur_raw"),
         trait="triglycerides",
         project="willer_et_al_2013",
-        sub_dir="",
+        sub_dir="raw",
         project_path=PurePath("24097068-GCST002216-EFO_0004530.h.tsv.gz"),
         read_spec=DataFrameReadSpec(
             format=DataFrameTextFormat(separator="\t", null_values=["NA"])
