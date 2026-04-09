@@ -8,7 +8,7 @@ In the [standard workflow suggested by authors](https://github.com/precimed/mixe
 The key output parameters from my bivariate MiXeR runs are shown below:
 
 
---8<--  "docs/_figs/initial_bivariate_mixer_DecodeME_Multisite_pain_bivariate_mixer_results_table_as_markdown.mdx"
+{{ include_file("docs/_figs/initial_bivariate_mixer_DecodeME_Multisite_pain_bivariate_mixer_results_table_as_markdown.mdx") }}
 
 The most important observation from these output parameters is that _best_vs_min_AIC_ and _best_vs_max_AIC_ are both slightly negative.  According to the [README provided by the authors](https://github.com/precimed/mixer/blob/master/README.md#aic-bic-interpretation)  this indicates that there is not strong statistical support for the full bivariate MiXeR model over simpler statistical models. I assume that this finding is a consequence of noise in the DecodeME summary statistics due to the relatively small sample size of the DecodeME study[^aic_training_note].
 

@@ -9,7 +9,7 @@ First, the table below lists the key MiXeR output parameters:
 
 
 
---8<-- "docs/_figs/decode_me_univariate_mixer_results_table_as_markdown.mdx"
+{{ include_file("docs/_figs/decode_me_univariate_mixer_results_table_as_markdown.mdx") }}
 
 By comparing $\pi \approx 0.0019$ to the values in Table 2 from the original MiXeR paper[@holland2020beyond],  we observe that ME/CFS is more polygenic than average.
 

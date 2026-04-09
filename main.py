@@ -39,6 +39,22 @@ def define_env(env):
         return text
 
     @env.macro
+    def include_file(path):
+        """Include the contents of an external file, raising an error if it does not exist.
+
+        Parameters
+        ----------
+        path : str
+            Path to the file to include, relative to the project root.
+        """
+        file_path = Path(path)
+        if not file_path.is_file():
+            raise FileNotFoundError(
+                f"include_file: '{path}' does not exist"
+            )
+        return file_path.read_text()
+
+    @env.macro
     def plotly_embed(src, id, height="775px", caption=""):
         """
         This is a macro function added by Claude to allow the embedding of plotly plots which can be expanded to full screen.
