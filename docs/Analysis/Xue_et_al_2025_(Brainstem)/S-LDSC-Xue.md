@@ -35,7 +35,7 @@ I next applied S-LDSC to the brainstem volume GWAS using reference data generate
 
 The following graph and table show the results:
 
-{{ plotly_embed("../../../_figs/xue_whole_brainstem_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="xue-sldsc-chromatin", caption="Results of application of S-LDSC to Xue et al.'s Brainstem volume GWAS using the epigenetics reference dataset. Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01.") }}
+{{ plotly_embed("docs/_figs/xue_whole_brainstem_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="xue-sldsc-chromatin", caption="Results of application of S-LDSC to Xue et al.'s Brainstem volume GWAS using the epigenetics reference dataset. Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01.") }}
 
 
 | Name                                                                     |   Coefficient |   Coefficient_P_value | Reject Null   |

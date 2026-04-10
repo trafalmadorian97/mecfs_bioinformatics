@@ -12,7 +12,7 @@ The results are shown below:
 
 
 
-{{ plotly_embed("../../../_figs/willer_et_al_2023_ldl_eur_magma_bar_plot/magma_gene_set_plot.html", id="willer-ldl-gtex-magma", caption="Result of MAGMA GTEx applied to Willer et al.'s LDL GWAS. The x axis corresponds to tissue type, while the y axis measures MAGMA significance level.") }}
+{{ plotly_embed("docs/_figs/willer_et_al_2023_ldl_eur_magma_bar_plot/magma_gene_set_plot.html", id="willer-ldl-gtex-magma", caption="Result of MAGMA GTEx applied to Willer et al.'s LDL GWAS. The x axis corresponds to tissue type, while the y axis measures MAGMA significance level.") }}
 
 
 The 4 most-significant tissues found by MAGMA are all in liver.  This is very consistent with the known biology of LDL[^biology_ldl_note] which is both synthesized and disposed of by liver cells.

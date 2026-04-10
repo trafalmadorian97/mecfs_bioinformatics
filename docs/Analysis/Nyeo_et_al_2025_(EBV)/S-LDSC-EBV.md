@@ -32,7 +32,7 @@ I first applied S-LDSC using the GTEx/Franke lab dataset as a reference.  At a f
 
 I next applied S-LDSC using the reference dataset derived from the Roadmap epigenetic project.  The results are in the plot below:
 
-{{ plotly_embed("../../../_figs/nyeo_ebv_dna_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="ebv-sldsc-chromatin", caption="Results of application of S-LDSC to Nyeo et al.'s EBV DNA GWAS using the epigenetics reference dataset. Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01.") }}
+{{ plotly_embed("docs/_figs/nyeo_ebv_dna_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="ebv-sldsc-chromatin", caption="Results of application of S-LDSC to Nyeo et al.'s EBV DNA GWAS using the epigenetics reference dataset. Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01.") }}
 
 At a false discovery rate of 0.01, there are a large number of significant cell types, most of which are T-cells or natural killer cells.  This is consistent with the idea that the key determinant of levels of EBV DNA is the ability of the immune system to contain a person's EBV infection, keeping it dormant.  
 

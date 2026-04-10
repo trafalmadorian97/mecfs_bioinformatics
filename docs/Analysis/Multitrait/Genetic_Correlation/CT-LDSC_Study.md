@@ -10,7 +10,7 @@ I applied [cross-trait linkage disequilibrium score regression](../../../Bioinfo
 
 
 
-{{ plotly_embed("../../../../_figs/initial_genetic_correlation_by_ct_ldsc_plot.html", id="ct-ldsc-plot") }}
+{{ plotly_embed("docs/_figs/initial_genetic_correlation_by_ct_ldsc_plot.html", id="ct-ldsc-plot") }}
 
 
 The traits are:

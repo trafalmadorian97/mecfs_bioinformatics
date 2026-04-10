@@ -26,7 +26,7 @@ I used the reference datasets recommended and preprocessed by the authors of the
 I first applied S-LDSC to Willer et al.'s triglyceride GWAS using the Franke lab and GTEx datasets as a reference.  This produced  two hits, both in liver cells, which is consistent with the liver's known role as a hub of lipid metabolism. The results are shown below:
 
 
-{{ plotly_embed("../../../_figs/willer_et_al_2023_tg_eur_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="ldl-willer-sldsc-gtex", caption="Results of application of S-LDSC to Willer et al.'s triglyceride GWAS using the Franke lab/ GTEx dataset. Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01.") }}
+{{ plotly_embed("docs/_figs/willer_et_al_2023_tg_eur_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="ldl-willer-sldsc-gtex", caption="Results of application of S-LDSC to Willer et al.'s triglyceride GWAS using the Franke lab/ GTEx dataset. Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01.") }}
 
 ### Roadmap Chromatin data
 
