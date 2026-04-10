@@ -27,6 +27,8 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
 )
 
+UPSTREAM_TRAIT_COL = "upstream_trait"
+DOWNSTREAM_TRAIT_COL = "downstream_trait"
 
 @frozen
 class LCVRun:
@@ -107,7 +109,7 @@ def lcv_generate(
             )
 
             lcv_task = LCVTask.create(
-                base_name + "_lcv_" + us.name + "_ " + ds.name,
+                base_name + "_lcv_" + us.name + "_" + ds.name,
                 trait_1_data=harmonization_task,
                 trait_2_data=ds.df_task,
                 consolidated_ld_scores=consolidated_ld_scores_task,
@@ -123,10 +125,10 @@ def lcv_generate(
                 CompositePipe(
                     [
                         SetColToConstantPipe(
-                            col_name="upstream_trait", constant=us.name
+                            col_name=UPSTREAM_TRAIT_COL, constant=us.name
                         ),
                         SetColToConstantPipe(
-                            col_name="downstream_trait", constant=ds.name
+                            col_name=DOWNSTREAM_TRAIT_COL, constant=ds.name
                         ),
                     ]
                 )
