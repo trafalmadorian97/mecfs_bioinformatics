@@ -5,7 +5,7 @@ I applied [Linkage Disequilibrium Score Regression](../../Bioinformatics_Concept
 
 The results are shown in the table below:
 
---8<--  "docs/_figs/million_veterans_ldl_ldsc_heritability_markdown.mdx"
+{{ include_file("docs/_figs/million_veterans_ldl_ldsc_heritability_markdown.mdx") }}
 
 
 The heritability of 0.1145 is low-to-moderate.  The LD score regression intercept of 1.586 is large, and indicates possible confounding or population stratification. This finding may be grounds to take any results that build on the Verma et al. summary statistics with a grain of salt.  At minimum, we should compare with other LDL GWAS.

@@ -28,7 +28,8 @@ plugins:
         inventories:
           - https://docs.python.org/3/objects.inv
         options:
-          paths: [.]
+          extra:
+            paths: [.]
           docstring_section_style: list # or "table"
           docstring_style: "numpy"
           filters: [ "!^_" ]

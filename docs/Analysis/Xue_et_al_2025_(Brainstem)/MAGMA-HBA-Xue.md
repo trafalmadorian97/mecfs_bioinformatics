@@ -16,7 +16,7 @@ The results are plotted below:
 I also used a conditional analysis approach based on the one described in Watanabe et al.[@watanabe2019genetic] to identify independent clusters.  These clusters are shown in the table and plot below.
 
 
---8<-- "docs/_figs/xue_whole_brainstem_hba_magma_independent_clusters_markdown.mdx"
+{{ include_file("docs/_figs/xue_whole_brainstem_hba_magma_independent_clusters_markdown.mdx") }}
 
 
 ![xue_indep_cluster_plot](../../_figs/xue_whole_brainstem_hba_magma_independent_cluster_plot/hba_magma_fig.png)
