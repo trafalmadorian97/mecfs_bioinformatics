@@ -90,4 +90,6 @@ ALL_FIGURE_TASKS: list[Task] = [
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
 ]
