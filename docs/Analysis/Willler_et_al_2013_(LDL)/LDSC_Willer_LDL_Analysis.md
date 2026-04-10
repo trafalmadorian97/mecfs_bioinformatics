@@ -7,7 +7,7 @@ The results are below:
 
 
 
---8<--  "docs/_figs/willer_et_al_2023_ldl_eur_ldsc_heritability_markdown.mdx"
+{{ include_file("docs/_figs/willer_et_al_2023_ldl_eur_ldsc_heritability_markdown.mdx") }}
 
 
 In is interesting to contrast these results with those of the [Million Veterans Program GWAS of LDL](../Verma_et_al_(LDL)/LDSC_LDL_Analysis.md).  The most notable difference is in the LDSC intercept.  While the Million Veterans GWAS yields an LDSC intercept of 1.586, which strongly suggests population stratification or confounding, the Willer et al. GWAS yields an intercept of 0.9984, which does not suggest stratification or confounding. It is unclear exactly what explains this difference, but it does indicate that the Willer GWAS should be treated as more trustworthy than the Million Veterans GWAS.

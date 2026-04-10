@@ -8,7 +8,7 @@ The results are below:
 
 
 
---8<--  "docs/_figs/willer_et_al_2023_tg_eur_ldsc_heritability_markdown.mdx"
+{{ include_file("docs/_figs/willer_et_al_2023_tg_eur_ldsc_heritability_markdown.mdx") }}
 
 The LDSC intercept of 1.014 suggests minimal evidence for population stratification.
 

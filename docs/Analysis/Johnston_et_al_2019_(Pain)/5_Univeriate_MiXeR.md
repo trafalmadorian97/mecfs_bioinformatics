@@ -9,7 +9,7 @@ The table below lists the key MiXeR output parameters:
 
 
 
---8<-- "docs/_figs/johnston_et_al_pain_univariate_mixer_results_table_as_markdown.mdx"
+{{ include_file("docs/_figs/johnston_et_al_pain_univariate_mixer_results_table_as_markdown.mdx") }}
 
 
 A polygenicity score of $\pi \approx 0.004$ indicates a very polygenic trait.  A discoverability score of $\sigma^2_\beta \approx 8.85\times 10^{-6}$ indicates very small individual genetic effects.  Compared to ME/CFS, multisite pain appears to be determined by more genetic variants, each of which has a smaller genetic effect.
