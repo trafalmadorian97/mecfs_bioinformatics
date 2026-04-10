@@ -49,9 +49,7 @@ def define_env(env):
         """
         file_path = Path(path)
         if not file_path.is_file():
-            raise FileNotFoundError(
-                f"include_file: '{path}' does not exist"
-            )
+            raise FileNotFoundError(f"include_file: '{path}' does not exist")
         return file_path.read_text()
 
     @env.macro
@@ -74,6 +72,18 @@ def define_env(env):
             Supports inline HTML. When provided the whole embed is wrapped in
             a <figure> with width:100% so the iframe is never squished.
         """
+        # src is relative to the served page URL, which under use_directory_urls
+        # has an extra directory level (e.g. page.md -> page/index.html).
+        # Using dest_uri (which reflects the served path) to resolve correctly.
+        page_dir = Path(env.page.file.dest_uri).parent
+        docs_dir = Path(env.conf["docs_dir"])
+        resolved = (docs_dir / page_dir / src).resolve()
+        if not resolved.is_file():
+            raise FileNotFoundError(
+                f"plotly_embed: '{src}' resolved to '{resolved}' "
+                f"which does not exist (referenced from page '{env.page.file.src_uri}')"
+            )
+
         button = (
             f'<div style="display:flex; justify-content:flex-end; margin:.25rem 0;">\n'
             f"<button onclick=\"document.getElementById('{id}').requestFullscreen()\"\n"
