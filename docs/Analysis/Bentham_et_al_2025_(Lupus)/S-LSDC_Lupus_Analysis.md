@@ -29,7 +29,7 @@ The plot below shows the results of the application of S-LDSC to Bentham et al.'
 
 
 
-{{ plotly_embed("../../../_figs/bentham_2015_lupus_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="lupus-sldsc-gtex", caption="") }}
+{{ plotly_embed("docs/_figs/bentham_2015_lupus_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="lupus-sldsc-gtex", caption="") }}
 
 
 As would be expected from an immunological disease like lupus, the top tissue types are all immune-related.
@@ -39,7 +39,7 @@ As would be expected from an immunological disease like lupus, the top tissue ty
 
 I next applied S-LDSC using the reference dataset derived from the Roadmap epigenetic project.  The results are in the plot below:
 
-{{ plotly_embed("../../../_figs/bentham_2015_lupus_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="lupus-sldsc-chromatin", caption="") }}
+{{ plotly_embed("docs/_figs/bentham_2015_lupus_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="lupus-sldsc-chromatin", caption="") }}
 
 
 Again, as would be expected of an immune condition, immune-related cell types rank highly.  Somewhat surprisingly, the signal for T-cells is stronger than the B-cell signal, despite lupus being considered a primarily immunoglobulin-driven disease.

@@ -11,7 +11,7 @@ In the gene set analysis step, I incorporated [tissue-specific RNAseq data from 
 
 The results are shown below:
 
-{{ plotly_embed("../../../_figs/willer_et_al_2023_tg_eur_magma_bar_plot/magma_gene_set_plot.html", id="willer-tg-gtex-magma", caption="Result of MAGMA GTEx applied to Willer et al.'s triglyceride GWAS. The x axis corresponds to tissue type, while the y axis measures MAGMA significance level.") }}
+{{ plotly_embed("docs/_figs/willer_et_al_2023_tg_eur_magma_bar_plot/magma_gene_set_plot.html", id="willer-tg-gtex-magma", caption="Result of MAGMA GTEx applied to Willer et al.'s triglyceride GWAS. The x axis corresponds to tissue type, while the y axis measures MAGMA significance level.") }}
 
 
 All the significant tissue are liver-related.  This is consistent with the liver's role as a central site of lipid metabolism.

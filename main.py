@@ -62,7 +62,8 @@ def define_env(env):
         Parameters
         ----------
         src : str
-            Path to the Plotly HTML file (relative to the page).
+            Path to the Plotly HTML file, relative to the project root
+            (e.g. "docs/_figs/my_plot.html").
         id : str
             A unique HTML id for the iframe (must be unique per page).
         height : str
@@ -72,17 +73,18 @@ def define_env(env):
             Supports inline HTML. When provided the whole embed is wrapped in
             a <figure> with width:100% so the iframe is never squished.
         """
-        # src is relative to the served page URL, which under use_directory_urls
-        # has an extra directory level (e.g. page.md -> page/index.html).
-        # Using dest_uri (which reflects the served path) to resolve correctly.
-        page_dir = Path(env.page.file.dest_uri).parent
-        docs_dir = Path(env.conf["docs_dir"])
-        resolved = (docs_dir / page_dir / src).resolve()
-        if not resolved.is_file():
+        if not Path(src).is_file():
             raise FileNotFoundError(
-                f"plotly_embed: '{src}' resolved to '{resolved}' "
-                f"which does not exist (referenced from page '{env.page.file.src_uri}')"
+                f"plotly_embed: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
             )
+
+        # Convert project-root-relative path to a URL relative to the served page.
+        # Files under docs/ are served from the site root, so strip the docs_dir prefix.
+        docs_dir = Path(env.conf["docs_dir"])
+        site_path = Path(src).resolve().relative_to(docs_dir.resolve())
+        page_dir = Path(env.page.file.dest_uri).parent
+        relative_url = os.path.relpath(site_path, page_dir)
 
         button = (
             f'<div style="display:flex; justify-content:flex-end; margin:.25rem 0;">\n'
@@ -95,7 +97,7 @@ def define_env(env):
         iframe = (
             f"<iframe\n"
             f'  id="{id}"\n'
-            f'  src="{src}"\n'
+            f'  src="{relative_url}"\n'
             f'  style="width:100%; height:{height}; border:none;"\n'
             f"  allowfullscreen></iframe>"
         )
