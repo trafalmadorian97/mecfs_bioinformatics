@@ -8,6 +8,12 @@ from mecfs_bio.asset_generator.lcv_asset_generator import (
     LCVSourceTraitInfo,
     lcv_generate,
 )
+from mecfs_bio.assets.gwas.c_reactive_protein.said_et_al.analysis.said_crp_standard_analysis import (
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
+    LEE_ET_AL_2018_COMBINED_MAGMA_TASKS,
+)
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )
@@ -41,6 +47,16 @@ MI_LCV_TASK_GROUP = lcv_generate(
         LCVSourceTraitInfo(
             name="Triglycerides",
             df_task=WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.magma_tasks.parquet_file_task,
+            pipe=CompositePipe([FilterRowsByMinInCol(1e-15, col=GWASLAB_SE_COL)]),
+        ),
+        LCVSourceTraitInfo(
+            name="CRP",
+            df_task=SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.parquet_file_task,
+            pipe=CompositePipe([FilterRowsByMinInCol(1e-15, col=GWASLAB_SE_COL)]),
+        ),
+        LCVSourceTraitInfo(
+            name="Educational_Attainment",
+            df_task=LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.parquet_file_task,
             pipe=CompositePipe([FilterRowsByMinInCol(1e-15, col=GWASLAB_SE_COL)]),
         ),
     ],
