@@ -20,10 +20,6 @@ import xarray as xr
 from attrs import frozen
 from plotly.graph_objs import Figure
 
-from mecfs_bio.asset_generator.lcv_asset_generator import (
-    DOWNSTREAM_TRAIT_COL,
-    UPSTREAM_TRAIT_COL,
-)
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -37,6 +33,10 @@ from mecfs_bio.build_system.task.lcv.lcv_core import (
     LCV_MEAN_GCP_COL,
     LCV_PVAL_ZERO_COL,
     LCV_RHO_EST_COL,
+)
+from mecfs_bio.build_system.task.lcv.lcv_task import (
+    DOWNSTREAM_TRAIT_COL,
+    UPSTREAM_TRAIT_COL,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe

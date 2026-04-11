@@ -28,7 +28,7 @@ class XRCluster(XRDataPipe):
 
     def process(self, ds: xr.Dataset) -> xr.Dataset:
         array = ds[self.array_name]
-        if array.sizes[self.dim]<=1:
+        if array.sizes[self.dim] <= 1:
             return ds
         array = array.transpose(self.dim, ...)
         X = array.values

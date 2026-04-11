@@ -2,10 +2,6 @@ from pathlib import Path
 
 import pandas as pd
 
-from mecfs_bio.asset_generator.lcv_asset_generator import (
-    DOWNSTREAM_TRAIT_COL,
-    UPSTREAM_TRAIT_COL,
-)
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -24,6 +20,10 @@ from mecfs_bio.build_system.task.lcv.lcv_core import (
     LCV_MEAN_GCP_COL,
     LCV_PVAL_ZERO_COL,
     LCV_RHO_EST_COL,
+)
+from mecfs_bio.build_system.task.lcv.lcv_task import (
+    DOWNSTREAM_TRAIT_COL,
+    UPSTREAM_TRAIT_COL,
 )
 from mecfs_bio.build_system.task.xr_pipes.xr_identity import XRIdentityPipe
 from mecfs_bio.build_system.wf.base_wf import SimpleWF

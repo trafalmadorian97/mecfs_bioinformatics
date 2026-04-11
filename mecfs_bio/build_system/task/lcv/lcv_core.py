@@ -83,9 +83,10 @@ class JackknifeSummary:
 
 
 LCV_RHO_EST_COL = "rho_est"
-LCV_RHO_SE_COL = "rho_Se"
-LCV_PVAL_ZERO_COL =  "pvalue_gcp_zero_two_sides"
+LCV_RHO_SE_COL = "rho_se"
+LCV_PVAL_ZERO_COL = "pvalue_gcp_zero_two_sides"
 LCV_MEAN_GCP_COL = "posterior_mean_gcp"
+
 
 @frozen
 class LCVResult:
@@ -110,7 +111,7 @@ class LCVResult:
         return pl.DataFrame(
             {
                 "zscore_gcp_zero": [self.zscore_gcp_zero],
-               LCV_PVAL_ZERO_COL : [self.pvalue_gcp_zero_two_sided],
+                LCV_PVAL_ZERO_COL: [self.pvalue_gcp_zero_two_sided],
                 LCV_MEAN_GCP_COL: [self.posterior_mean_gcp],
                 LCV_RHO_EST_COL: [self.rho_est],
                 LCV_RHO_SE_COL: [self.rho_se],
