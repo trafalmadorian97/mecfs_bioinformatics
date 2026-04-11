@@ -19,6 +19,9 @@ import xarray as xr
 
 XR_UPSTREAM_TRAIT_DIM = "upstream_trait"
 XR_DOWNSTREAM_TRAIT_DIM = "downstream_trait"
+XR_GCP_ARRAY = "gcp"
+XR_LCV_P_VALUE_ARRAY = "lcv_p_value"
+XR_LCV_RHO_ARRAY ="lcv_rho"
 
 @frozen
 class LCVSource:
@@ -44,7 +47,7 @@ class LCVSource:
 
 
 
-def load_xr_corr_dataset(
+def load_xr_lcv_dataset(
         src: LCVSource,
         fetch: Fetch,
 ) -> xr.Dataset:
@@ -64,7 +67,6 @@ def load_xr_corr_dataset(
         )
         .collect()
     )
-    # num_pairs = _count_unique_pairs(df_nw_stacked, src.trait_1_col, src.trait_2_col)
     df = df_nw.to_pandas()
 
     pivoted_gcp = df.pivot(
@@ -86,9 +88,8 @@ def load_xr_corr_dataset(
     gcp_da = xr.DataArray(pivoted_gcp, dims=(XR_UPSTREAM_TRAIT_DIM   , XR_DOWNSTREAM_TRAIT_DIM))
     p_da = xr.DataArray(pivoted_p, dims=(XR_UPSTREAM_TRAIT_DIM   , XR_DOWNSTREAM_TRAIT_DIM))
     rho_da = xr.DataArray(pivoted_rho, dims=(XR_UPSTREAM_TRAIT_DIM   , XR_DOWNSTREAM_TRAIT_DIM))
-    
-    ds = xr.Dataset({XR_GENETIC_CORR_ARRAY: rg_da, XR_GENETIC_CORR_P_VALUE_ARRAY: p_da})
-    # ds[NUM_PAIRS] = num_pairs
+
+    ds = xr.Dataset({XR_GCP_ARRAY: gcp_da, XR_LCV_P_VALUE_ARRAY: p_da, XR_LCV_RHO_ARRAY: rho_da})
     return ds
 
 
@@ -113,15 +114,11 @@ class LCVClustermapTask(Task):
 
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        # ds = load_xr_corr_dataset(
-        #     src=self.genetic_corr_source,
-        #     fetch=fetch,
-        # )
-        # ds = self.xr_pipe.process(ds)
-        # fig = rg_plot(
-        #     ds=ds,
-        #     plot_mode=self.plot_options,
-        # )
-        # out_path = scratch_dirtch_dir / "result.html"
+        ds =load_xr_lcv_dataset(
+            src=self.source,
+            fetch=fetch,
+        )
+        ds= self.xr_pipe.process(ds)
+
         fig.write_html(out_path, include_plotlyjs=self.save_mode)
         return FileAsset(out_path)
