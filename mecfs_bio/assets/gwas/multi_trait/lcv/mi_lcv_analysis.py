@@ -43,6 +43,11 @@ MI_LCV_TASK_GROUP = lcv_generate(
             df_task=WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.magma_tasks.parquet_file_task,
             pipe=CompositePipe([FilterRowsByMinInCol(1e-15, col=GWASLAB_SE_COL)]),
         ),
+        LCVSourceTraitInfo(
+            "CRP",
+            df_task=
+        )
+
     ],
     downstream_traits=[
         LCVSourceTraitInfo(
