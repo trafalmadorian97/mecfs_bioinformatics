@@ -9,15 +9,32 @@ from attrs import frozen
 
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
+from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
+    ConvertDataFrameToMarkdownTask,
+)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     HarmonizeGWASWithReferenceViaAlleles,
 )
-from mecfs_bio.build_system.task.lcv.lcv_task import LCVConfig, LCVTask
+from mecfs_bio.build_system.task.lcv.lcv_core import (
+    LCV_MEAN_GCP_COL,
+    LCV_PVAL_ZERO_COL,
+    LCV_RHO_EST_COL,
+    LCV_RHO_SE_COL,
+)
+from mecfs_bio.build_system.task.lcv.lcv_task import (
+    DOWNSTREAM_TRAIT_COL,
+    UPSTREAM_TRAIT_COL,
+    LCVConfig,
+    LCVTask,
+)
 from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
+from mecfs_bio.build_system.task.pipes.sort_pipe import SortPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
@@ -46,9 +63,18 @@ class LCVTaskGroup:
 
     lcv_run_mapping: Mapping[tuple[str, str], LCVRun]
     agg_task: Task
+    downstream_trait_tables: Mapping[str, Task]
 
     def terminal_tasks(self) -> list[Task]:
-        return [self.agg_task]
+        return [self.agg_task] + list(self.downstream_trait_tables.values())
+
+    def all_tasks(self) -> list[Task]:
+        return (
+            [self.agg_task]
+            + list(self.downstream_trait_tables.values())
+            + list(item.harmonization_task for item in self.lcv_run_mapping.values())
+            + list(item.lcv_task for item in self.lcv_run_mapping.values())
+        )
 
 
 @frozen
@@ -107,7 +133,7 @@ def lcv_generate(
             )
 
             lcv_task = LCVTask.create(
-                base_name + "_lcv_" + us.name + "_ " + ds.name,
+                base_name + "_lcv_" + us.name + "_" + ds.name,
                 trait_1_data=harmonization_task,
                 trait_2_data=ds.df_task,
                 consolidated_ld_scores=consolidated_ld_scores_task,
@@ -123,10 +149,10 @@ def lcv_generate(
                 CompositePipe(
                     [
                         SetColToConstantPipe(
-                            col_name="upstream_trait", constant=us.name
+                            col_name=UPSTREAM_TRAIT_COL, constant=us.name
                         ),
                         SetColToConstantPipe(
-                            col_name="downstream_trait", constant=ds.name
+                            col_name=DOWNSTREAM_TRAIT_COL, constant=ds.name
                         ),
                     ]
                 )
@@ -141,4 +167,38 @@ def lcv_generate(
         out_format=ParquetOutFormat(),
         frames_pipes=pre_agg_pipes,
     )
-    return LCVTaskGroup(lcv_run_mapping=run_mapping, agg_task=agg_task)
+    downstream_trait_markdown_tables = {}
+    for ds in downstream_traits:
+        downstream_trait_markdown_tables[ds.name] = (
+            ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+                source_task=agg_task,
+                asset_id=f"{base_name}_lcv_table_downstream_{ds.name}",
+                pipe=CompositePipe(
+                    [
+                        FilterRowsByValue(
+                            target_column=DOWNSTREAM_TRAIT_COL, valid_values=[ds.name]
+                        ),
+                        SelectColPipe(
+                            [
+                                UPSTREAM_TRAIT_COL,
+                                LCV_MEAN_GCP_COL,
+                                LCV_PVAL_ZERO_COL,
+                                LCV_RHO_EST_COL,
+                                LCV_RHO_SE_COL,
+                            ]
+                        ),
+                        SortPipe(
+                            by=[
+                                LCV_MEAN_GCP_COL,
+                            ],
+                            desc=True,
+                        ),
+                    ]
+                ),
+            )
+        )
+    return LCVTaskGroup(
+        lcv_run_mapping=run_mapping,
+        agg_task=agg_task,
+        downstream_trait_tables=downstream_trait_markdown_tables,
+    )

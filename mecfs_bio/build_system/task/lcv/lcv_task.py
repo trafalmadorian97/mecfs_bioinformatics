@@ -286,3 +286,7 @@ def convert_ea_nea_to_str(df: nw.LazyFrame) -> nw.LazyFrame:
         .cast(narwhals.dtypes.String())
         .alias(GWASLAB_NON_EFFECT_ALLELE_COL),
     )
+
+
+UPSTREAM_TRAIT_COL = "upstream_trait"
+DOWNSTREAM_TRAIT_COL = "downstream_trait"
