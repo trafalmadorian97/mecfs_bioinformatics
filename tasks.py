@@ -53,7 +53,7 @@ def _set_enable_api_autonav() -> None:
 @task
 def test(c):
     print("Running unit and integration tests with pytest...")
-    cmd = f"pixi r python   -m pytest --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    cmd = f" python   -m pytest --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
     print(cmd)
     c.run(cmd, pty=True)
 
@@ -64,7 +64,7 @@ def test_debug(c):
     Run tests with extra information printed.  Useful for debugging.
     """
     print("Running unit and integration tests with pytest...")
-    cmd = f"pixi r python   -m pytest -s --typeguard-debug-instrumentation --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    cmd = f" python   -m pytest -s --typeguard-debug-instrumentation --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
     print(cmd)
     c.run(cmd, pty=True)
 
@@ -75,7 +75,7 @@ def format(c):
     Format code
     """
     print("Formatting with ruff...")
-    c.run("pixi r  ruff format", pty=True)
+    c.run(" ruff format", pty=True)
 
 
 @task
@@ -84,19 +84,19 @@ def formatcheck(c):
     Check for format errors
     """
     print("Checking format with black...")
-    c.run("pixi r ruff format --check .")
+    c.run(" ruff format --check .")
 
 
 @task
 def lintfix(c):
     print("linting and applying lint auto-fixes using ruff...")
-    c.run(" pixi r  ruff check --fix --unsafe-fixes")
+    c.run("  ruff check --fix --unsafe-fixes")
 
 
 @task
 def lintcheck(c):
     print("linting using ruff...")
-    c.run("pixi r ruff check")
+    c.run("ruff check")
 
 
 @task
@@ -105,7 +105,7 @@ def typecheck(c):
     Check for type errors
     """
     print("Typechecking with ty...")
-    c.run(f"pixi r  ty check {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
+    c.run(f"ty check {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
 
 
 @task
@@ -117,7 +117,7 @@ def spellcheck_docs(c):
     print(
         f"Checking documentation spelling using typos... (Add exceptions to {DOCS_PATH}/_typos.toml)"
     )
-    c.run(f"pixi r  typos {DOCS_PATH}", pty=True)
+    c.run(f"typos {DOCS_PATH}", pty=True)
 
 
 @task
@@ -129,7 +129,7 @@ def spellcheck_src(c):
     print(
         f"Checking source spelling using typos... (Add exceptions to {SRC_PATH}/_typos.toml)"
     )
-    c.run(f"pixi r  typos {SRC_PATH}", pty=True)
+    c.run(f"typos {SRC_PATH}", pty=True)
 
 
 @task
@@ -138,7 +138,7 @@ def checkimports(c):
     Use import linter to enforce architectural constraints
     """
     print("Checking architectural constraints using import-linter...")
-    c.run("pixi r lint-imports", pty=True)
+    c.run("lint-imports", pty=True)
 
 
 @task
@@ -150,7 +150,7 @@ def check_all_links(c):
     """
     print("Checking links with lychee...")
     c.run(
-        f"pixi r lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --exclude {FIGS_PATTERN} --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+        f"lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --exclude {FIGS_PATTERN} --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
     )
 
 
@@ -227,7 +227,7 @@ def check_local_links(c):
     Check local links with lychee
     """
     print("Checking offline links with lychee...")
-    cmd = f"pixi r lychee --exclude {FIGS_PATTERN}  --offline {SRC_PATH} {DOCS_PATH}"
+    cmd = f"lychee --exclude {FIGS_PATTERN}  --offline {SRC_PATH} {DOCS_PATH}"
     print(f"running {cmd}")
     c.run(cmd)
 
@@ -266,7 +266,7 @@ def pfig(c):
     """
     Pull figures from github to populate the _figs directory
     """
-    c.run(f"pixi r python {PULL_FIGURE_SCRIPT_PATH}")
+    c.run(f"python {PULL_FIGURE_SCRIPT_PATH}")
 
 
 @task
@@ -284,7 +284,7 @@ def serve_docs(
         _set_use_gh_token()
     if enable_api_autonav:
         _set_enable_api_autonav()
-    cmd = "pixi r mkdocs serve"
+    cmd = " mkdocs serve"
     if strict:
         cmd += " --strict"
     print("Serving documentation...")
