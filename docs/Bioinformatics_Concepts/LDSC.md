@@ -327,7 +327,7 @@ So, in a rough sense, assuming that the heritability of a trait is distributed a
 
 ### Arguments that assumption is implausible
 
-On the other hand, the assumption of perfectly uniform polygenicity strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region.
+On the other hand, the assumption of perfectly uniform polygenicity strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region[^MHC_Note].
 
 
 ### Extensions to make assumption more plausible
@@ -342,7 +342,7 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 
 ## Population structure and LDSC
 
-Besides being the most widely used method for the estimation of heritability from GWAS summary statistics, LDSC is also used in the detection of population structure. In the next section, I will explain this use case.
+Besides being the most widely used method for the estimation of heritability from GWAS summary statistics, LDSC is also used in the detection of population structure. In this section, I explain this use case.
 
 
 ### A model of a mixed population
@@ -350,7 +350,7 @@ Besides being the most widely used method for the estimation of heritability fro
 Let's begin by constructing a model of a mixed population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
 
 - Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
-- Let $\mathcal{Q}\in\mathbb{R}^N$ be the random vector of assignments of individuals to the two subpopulations.
+- Let $\mathcal{Q}\in\{1.-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
 - Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix are still independent.
 - We assume that $f\sim N(0, F_{ST}V)$, where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
 - We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
@@ -370,7 +370,7 @@ $$
 \begin{align}
 &\mathbb{Var}(X_{i,j}|f)\\
 &= \mathbb{Var}( \mathbb{E}(X_{i,j}|f,\mathcal{Q}) |f ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f,\mathcal{Q}) |f ) & \text{ By law of total variance}\\
-&= \mathbb{Var} (\pm f_j  |f) + \mathbb{E} (1-f_j^2|f) & \text{by (\ref{sub_var})}\\
+&= \mathbb{Var} ( f_j Q_j |f) + \mathbb{E} (1-f_j^2|f) & \text{by (\ref{sub_var})}\\
 &= f_j^2 + 1-f_j^2\\
 &= 1
 \end{align}
@@ -398,14 +398,15 @@ Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score reg
 
 
 
-We next compute the conditional expectation of the product of two variants (_fix this to account fo subpopulatoon variance_):
+We next compute the conditional expectation of the product of two variants:
 
 
 $$
 \begin{align}
 \mathbb{E}(X_{i,j}X_{i,k}|f)&=0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_1) + 0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_2)\\
-&=0.5(r_{j,k} + f_{j}f_{k}) + 0.5(r_{j,k} + (-f_{j}) (-f_{k})  )\\
-&=r_{j,k} + f_jf_k. \label{cond_prod_eq}
+&=0.5(r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + f_{j}f_{k}) + 0.5(r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + (-f_{j}) (-f_{k})  )\\
+&=r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + f_jf_k. \label{cond_prod_eq}
+&\approx r_{j,k} + f_jf_k
 \end{align}
 $$
 
@@ -425,18 +426,45 @@ $$
 &= \mathbb{E} \mathbb{E}     \left(\frac{1}{N^2}\sum_i \sum_q X_{i,j}X_{i,k}X_{q,j}X_{q,k}|f\right)\\
 &=\frac{1}{N^2}\mathbb{E} \mathbb{E}     \left(\sum_{i\ne q} X_{i,j}X_{i,k}X_{q,j}X_{q,k} + \sum_i X_{i,j}^2X_{i,k}^2|f\right)\\
 &=\frac{1}{N^2}\mathbb{E}\left(\sum_{i\ne q}\mathbb{E}(X_{i,j}X_{i,k}|f)\mathbb{E}(X_{q,j}X_{q,k}|f)+ \sum_i \mathbb{E} (X_{i,j}^2 X_{i,k}^2|f) \right) \text{ (Conditional indep)}\\
-&\mathbb{E}\left( \frac{N-1}{N} (f_jf_k+r_{j,k})^2 +\frac{1}{N^2}\mathbb{E} (X_{i,j}^2 X_{i,k}^2|f)  \right) \text{ (by (\ref{cond_prod_eq}) )}\\
+&\approx\mathbb{E}\left( \frac{N-1}{N} (f_jf_k+r_{j,k})^2 +\frac{1}{N^2}\mathbb{E} (X_{i,j}^2 X_{i,k}^2|f)  \right) \text{ (by (\ref{cond_prod_eq}) )}\\
 &=\mathbb{E}\left( \frac{N-1}{N}\left(f_j^2 f_k^2+2r_{j,k}f_j f_k +r_{j,k}^2 \right) +\frac{1}{N}(1+2(f_jf_k+r_{j,k})^2+\nu) \right) \text{ (Isserlis theorem)}\\
+&= \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N}(1+  2F_{ST}^2(1+2V_{jk})  + 2r_{j,k}^2 +4r_{jk}F_{ST}V_{j,k} +\nu) \\
+&\approx \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N} \label{drop_small}
 \end{align}
 $$
 
-To be continued
 
-[//]: # ()
-[//]: # ([//]: # Notes: Pleiotropy is key assumption.  Basically heritability is distributed more-or-less evening across the genome.  Contrast: MHC for inflammatory diseases.  Monogenic diseases.)
+Where in $(\ref{drop_small})$ we neglect non-leading terms, since we assume $F_{S,T}, V_{j,k}, r_{j,k}$ are small, and $N$ is large.
+
+
+
+Now sum across $j$ to get the empirical LD score
+
+
+$$
+\begin{align}
+\tilde{l}_{j}&= \sum_k\tilde{r}_{j,k}^2\\
+&=\sum_k  \frac{N-1}{N}\left( F_{ST}^2+2F_{ST}^2V_{jk}  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N}
+\end{align}
+$$
+
+
+Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^2$ all of which will be zero for more SNPs $k$, since most SNPs are uncorrelated. If we assume that when these terms are nonzero $F_{ST}$, $V_{j,k}$ and $r_{j,k}$ are approximately the same magnitude, then the first two terms are order of magnitude smaller than the third.  This justifies neglecting them. We have
+
+
+
+$$
+\begin{align}
+\tilde{l}_{j}&\approx\sum_k  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\\
+&\approx MF_{ST}^2 + l_j^2 + \frac{M}{N}
+\end{align}
+$$
+
+
+[^MHC_Note]: LDSC implementations usually exclude the MHC region, partially for this reason.
+
+
+
 
 \bibliography
 
-[//]: # (Main Reference:)
-
-[//]: # (Bulik-Sullivan, Brendan K., et al. "LD Score regression distinguishes confounding from polygenicity in genome-wide association studies." Nature genetics 47.3 &#40;2015&#41;: 291-295.)
