@@ -11,6 +11,9 @@ from mecfs_bio.assets.gwas.c_reactive_protein.said_et_al.analysis.said_crp_stand
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.height.yengo_2022.analysis.yengo_standard_analysis import (
+    YENGO_HEIGHT_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.human_herpesvirus_7_dna.kamitaki_et_al_2025.analysis.kamitaki_et_al_2025_standard_analysis import (
     KAMITAKI_ET_AL_STANDARD_ANALYSIS,
 )
@@ -94,4 +97,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
     MI_LCV_TASK_GROUP.downstream_trait_tables["MI"],
+    YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
 ]
