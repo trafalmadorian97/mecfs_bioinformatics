@@ -434,7 +434,7 @@ $$
 $$
 
 
-Where in $(\ref{iserlis2})$ we apply the exact verson of Isserlis's theorem, and where in $(\ref{drop_small})$ we neglect non-leading $O(\frac{1}{N})$ terms, since we assume $F_{S,T}, V_{j,k}, r_{j,k}$ are small, and $N$ is large.
+Where in $(\ref{iserlis2})$ we apply the exact version of Isserlis's theorem, and where in $(\ref{drop_small})$ we neglect non-leading $O(\frac{1}{N})$ terms, since we assume $F_{S,T}, V_{j,k}, r_{j,k}$ are small, and $N$ is large.
 
 
 
