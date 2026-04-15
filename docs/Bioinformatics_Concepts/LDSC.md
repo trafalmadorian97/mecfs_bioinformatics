@@ -350,7 +350,7 @@ Besides being the most widely used method for the estimation of heritability fro
 Let's begin by constructing a model of a mixed population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
 
 - Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
-- Let $\mathcal{Q}\in\{1.-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
+- Let $\mathcal{Q}\in\{1,-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
 - Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix are still independent.
 - We assume that $f\sim N(0, F_{ST}V)$, where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
 - We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
@@ -405,7 +405,7 @@ $$
 \begin{align}
 \mathbb{E}(X_{i,j}X_{i,k}|f)&=0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_1) + 0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_2)\\
 &=0.5(r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + f_{j}f_{k}) + 0.5(r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + (-f_{j}) (-f_{k})  )\\
-&=r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + f_jf_k. \label{cond_prod_eq}
+&=r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + f_jf_k. \label{cond_prod_eq}\\
 &\approx r_{j,k} + f_jf_k
 \end{align}
 $$
@@ -428,13 +428,13 @@ $$
 &=\frac{1}{N^2}\mathbb{E}\left(\sum_{i\ne q}\mathbb{E}(X_{i,j}X_{i,k}|f)\mathbb{E}(X_{q,j}X_{q,k}|f)+ \sum_i \mathbb{E} (X_{i,j}^2 X_{i,k}^2|f) \right) \text{ (Conditional indep)}\\
 &\approx\mathbb{E}\left( \frac{N-1}{N} (f_jf_k+r_{j,k})^2 +\frac{1}{N^2}\mathbb{E} (X_{i,j}^2 X_{i,k}^2|f)  \right) \text{ (by (\ref{cond_prod_eq}) )}\\
 &=\mathbb{E}\left( \frac{N-1}{N}\left(f_j^2 f_k^2+2r_{j,k}f_j f_k +r_{j,k}^2 \right) +\frac{1}{N}(1+2(f_jf_k+r_{j,k})^2+\nu) \right) \text{ (Isserlis theorem)}\\
-&= \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N}(1+  2F_{ST}^2(1+2V_{jk})  + 2r_{j,k}^2 +4r_{jk}F_{ST}V_{j,k} +\nu) \\
+&= \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N}(1+  2F_{ST}^2(1+2V_{jk})  + 2r_{j,k}^2 +4r_{jk}F_{ST}V_{j,k} +\nu) \label{iserlis2} \\
 &\approx \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N} \label{drop_small}
 \end{align}
 $$
 
 
-Where in $(\ref{drop_small})$ we neglect non-leading terms, since we assume $F_{S,T}, V_{j,k}, r_{j,k}$ are small, and $N$ is large.
+Where in $(\ref{iserlis2})$ we apply the exact verson of Isserlis's theorem, and where in $(\ref{drop_small})$ we neglect non-leading $O(\frac{1}{N})$ terms, since we assume $F_{S,T}, V_{j,k}, r_{j,k}$ are small, and $N$ is large.
 
 
 
@@ -449,14 +449,14 @@ $$
 $$
 
 
-Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^2$ all of which will be zero for more SNPs $k$, since most SNPs are uncorrelated. If we assume that when these terms are nonzero $F_{ST}$, $V_{j,k}$ and $r_{j,k}$ are approximately the same magnitude, then the first two terms are order of magnitude smaller than the third.  This justifies neglecting them. We have
+Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^2$ all of which will be zero for most SNPs $k$, since most SNPs are uncorrelated. If we assume that when these terms are nonzero and that $F_{ST}$, $V_{j,k}$ and $r_{j,k}$ are all small and all approximately the same magnitude, then $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$ are much smaller than the $r_{j,k}^2$.  This justifies neglecting $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$. We have
 
 
 
 $$
 \begin{align}
 \tilde{l}_{j}&\approx\sum_k  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\\
-&\approx MF_{ST}^2 + l_j^2 + \frac{M}{N}
+&\approx MF_{ST}^2 + l_j^2 + \frac{M}{N}.
 \end{align}
 $$
 
