@@ -4,7 +4,8 @@ edit_uri: edit/main/docs/
 theme:
   name: material
   features:
-    - navigation.indexes
+#    - navigation.indexes
+    - toc.integrate
     - content.footnote.tooltips
     - content.action.edit
     - content.action.view
