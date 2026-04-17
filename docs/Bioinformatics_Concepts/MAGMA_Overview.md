@@ -1,6 +1,6 @@
 # MAGMA
 ## MAGMA Overview
-[MAGMA](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219) is a tool for the analysis of GWAS results. MAGMA can operate on GWAS summary statistics and does not require raw GWAS data.
+[MAGMA](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219)[@de2015magma] is a tool for the analysis of GWAS results. MAGMA can operate on GWAS summary statistics and does not require raw GWAS data.
 
 
 [MAGMA](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219) performs two main steps:
@@ -51,13 +51,13 @@ MAGMA converts the test-statistic to a p value via a[ numerical-integration proc
 While knowing which genes are associated with the phenotype is of independent interest, understanding a phenotype requires knowing the biological systems that underlie it. To facilitate this, MAGMA provides a gene property module, which aims to answer the question: "are genes 
 associated with the phenotype over-represented in particular biological systems?"
 
-## Requirements
+### Requirements
 The gene property analysis module requires:
 
 1. The output of the gene analysis step, assigning p values to genes.
 2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data from [GTEx](../Data_Sources/GTEx_RNAseq_Data.md) could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
  
-## Mathematical Overview
+### Mathematical Overview
 - Let $Z_i$ be the $z$-score of the association of gene $i$ with the phenotype.
 - Let $E_{i,j}$ be the measure of the participation of gene $i$ in biological system $j$.
 - Let $m$ be a vector of control covariates. 
