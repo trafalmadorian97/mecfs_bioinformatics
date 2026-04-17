@@ -352,7 +352,14 @@ Let's begin by constructing a model of a mixed population. For illustrative simp
 - Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
 - Let $\mathcal{Q}\in\{1,-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
 - Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix are still independent.
-- We assume that $f\sim N(0, F_{ST}V)$, where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
+- We assume that 
+
+$$
+\begin{align}
+f\sim N(0, F_{ST}V), \label{f_dist}
+\end{align}
+$$ 
+where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
 - We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
 - As above, we assume that the unconditional variance of each entry of the genotype matrix is 1: $\mathbb{Var}(X_{i,j}=1)$
 - We assume that for any individual and any variant $i$, 
@@ -524,7 +531,7 @@ $$
 \end{align}
 $$
 
-We need to compute the variance of the $\phi$ (not the unconditional variance, which is 1 but construction).
+We need to compute the variance of the $\phi$ (not the unconditional variance, which is 1 by construction).
 
 
 $$
@@ -537,10 +544,114 @@ $$
 \end{align}
 $$
 
+Thus
+
+$$
+\begin{align}
+&\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f)\\
+&=\frac{1}{N^2}\underbrace{\mathrm{E}\frac{h^2}{M}X_{:,j}^TXX^TX_{:,j}}_{\approx\sum_h\sum_i(X_{i,j}X_{i,h})^2=N^2\hat l_j} + \frac{1}{N^2}(1-h^2-\sigma_s^2/4)\underbrace{\mathrm{E}X_{:,j}^TX_{:,j}}_{\approx N}\\
+&=\frac{h^2}{M}\hat l_j + \frac{1}{N}(1-h^2-\sigma_s^2/4)\\
+&=h^2F_{ST}^2+\frac{h^2}{M}l_j+\frac{h^2}{N} + \frac{1}{N}(1-h^2-\sigma_s^2/4)\\
+&=h^2F_{ST}^2+\frac{h^2}{M}l_j+ \frac{1}{N}(1-\sigma_s^2/4)\\
+\end{align}
+$$
 
 
 
+Now focusing on the second term in $(\ref{strat_var_decomposition})$,
 
+$$
+\begin{align}
+& \mathrm{Var}\mathrm{E}(\hat{\beta}_j|X,f))\\
+&= \mathrm{Var}(\mathrm{E}\frac{1}{N}X_{:,j}^T\phi|X,f)\\
+&=\mathrm{Var}(\frac{1}{N}X_{:,j}^T\mathrm{E}(\phi|X,f))\\
+&=\mathrm{Var}(\frac{1}{N}X_{:,j}^T\mathrm{E}(X\beta+\epsilon+S|X,f) )\\
+&=\mathrm{Var}(\frac{1}{N}X_{:,j}^T\frac{\sigma_s}{2}Q )\\
+&=\frac{1}{N^2}\frac{\sigma_s^2}{4}\mathrm{Var}(\sum_i X_{i,j}Q_i)\\
+&=\frac{1}{N^2}\frac{\sigma_s^2}{4}\mathrm{Var}(\underbrace{\sum_{i\in P_1} X_{i,j} -\sum_{i\in P_2} X_{i,j}}_{=:A_j})\\
+&= \frac{1}{N^2}\frac{\sigma_s^2}{4}\left(\mathrm{Var}\mathrm{E}(A_j|f) + \mathrm{E}\mathrm{Var}(A_j|f) \right)
+\end{align}
+$$
+
+By the law of total variance.
+
+We have 
+$$
+\begin{align}
+&\mathrm{E}\mathrm{Var}(A_j|f)\\
+&=\mathrm{E}N(1-f_j^2) &  \text{by (\ref{sub_var}) and conditional independence} \\
+&=N(1-F_{ST}) & \text{by  (\ref{f_dist}) }
+\end{align}
+$$
+
+
+and
+
+
+$$
+\begin{align}
+&\mathrm{Var}\mathrm{E}(A_j|f)\\
+&= \mathrm{Var} (\frac{N}{2}f_j - \frac{N}{2} (-f_j)  )\\
+&=\mathrm{Var}(Nf_j)\\
+&=N^2 F_{ST}
+\end{align}
+$$
+
+
+Thus the second second term in $(\ref{strat_var_decomposition})$ is
+
+$$
+\begin{align}
+&\frac{1}{N^2}\frac{\sigma_s^2}{4}\left(\mathrm{Var}\mathrm{E}(A_j|f) + \mathrm{E}\mathrm{Var}(A_j|f) \right)\\
+&= \frac{1}{N^2}\frac{\sigma_s^2}{4}N^2 F_{ST}+\frac{1}{N^2}\frac{\sigma_s^2}{4} N(1-F_{ST})  \\
+&= \frac{\sigma^2_s}{4}F_{ST}+ \frac{\sigma^2_s}{4N}(1-F_{ST}) \\
+&\approx\frac{\sigma^2_s}{4}F_{ST}+ \frac{\sigma^2_s}{4N} 
+\end{align}
+$$
+
+
+[//]: # (&\approx\frac{\sigma_s^2}{4} \frac{1}{N^2} \mathrm{Var} &#40;N f_j&#41;\\)
+
+[//]: # (&=\frac{\sigma_2^2}{4}F_{ST})
+
+
+
+Combining these results, we have
+
+$$
+\begin{align}
+&\mathrm{Var}(\hat \beta_j)\\
+&=\frac{h^2}{M}l_j+h^2F_{ST}^2+ \frac{1}{N}(1-\sigma_s^2/4)+ \frac{\sigma_2^2}{4}F_{ST}+\frac{\sigma^2_s}{4N}\\
+&=\frac{h^2}{M}l_j+h^2F_{ST}^2+ \frac{1}{N}+ \frac{\sigma_2^2}{4}F_{ST}
+\end{align}
+$$
+
+Multiply by N to get the expected chi-squared statistic.
+
+
+$$
+\begin{align}
+&\mathrm{E} \chi^2\\
+&=\frac{Nh^2}{M}l_j+ Nh^2F_{ST}^2+1+ \frac{N\sigma_s^2}{4}F_{ST}
+&=:\frac{Nh^2}{M}l_j+ \psi \label{strat_eq}
+\end{align}
+$$
+Thus genetic stratification, alone or in combination with environmental stratification, can be expected to inflate the LDSC intercept.
+
+
+### The attenuation ratio
+
+
+How is LDSC uses to measure stratification from GWAS in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{strat_eq}$) exceeds 1.
+
+
+In general, a quantity called the attenuation ratio is computed:
+
+$$
+\begin{align}
+R:= \frac{\psi-1}{\chi^2_{text{mean}}-1}
+\end{align}
+$$
 
 
 
