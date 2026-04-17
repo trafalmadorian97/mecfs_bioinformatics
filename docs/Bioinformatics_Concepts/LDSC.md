@@ -113,7 +113,7 @@ Furthermore, define the following quantities related to Linkage Disequilibrium (
 
 
 
-### Properties of $\hat{\beta}_j$ and $\chi^2_j$
+### Properties of Wald statistics
 We begin by computing the variance matrix of the genetic effects $X\beta$:
 
 
@@ -345,7 +345,7 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 Besides being the most widely used method for the estimation of heritability from GWAS summary statistics, LDSC is also used in the detection of population structure. In this section, I explain this use case.
 
 
-### A model of a mixed population
+### Genetically stratified populations
 
 Let's begin by constructing a model of a mixed population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
 
@@ -456,9 +456,92 @@ Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^
 $$
 \begin{align}
 \tilde{l}_{j}&\approx\sum_k  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\\
-&\approx MF_{ST}^2 + l_j^2 + \frac{M}{N}.
+&\approx MF_{ST}^2 + l_j + \frac{M}{N}.
 \end{align}
 $$
+
+
+### Environmentally stratified populations
+
+
+We extend the model above to include environmental stratification in addition to genetic stratification.
+
+
+
+$$
+\begin{align}
+\phi = X\beta + S + \epsilon
+\end{align}
+$$
+
+Where $S\in\mathbb{R}^n$ is defined by
+
+$$
+\begin{align}
+S_i := \begin{cases}
+\frac{\sigma_s}{2} & \text{if $i\in P_1$}\\
+-\frac{\sigma_s}{2} & \text{if $i\in P_1$}\\
+\end{cases}
+\end{align}
+$$
+
+
+Thus $S$ represents a differing environmental contribution to the phenotype in the two subpopulations.
+
+
+We also modify the variance of $\epsilon$:
+
+$$
+\begin{align}
+\mathrm{Var}(\epsilon)=1-h^2-\frac{\sigma_s^2}{4}
+\end{align}
+$$
+
+By construction, this means that $\mathrm{Var}(\epsilon)=1$.
+
+Our goal is to derive a modified version of the core LDSC equation $(\ref{main_ld_eq})$ for this stratified population.
+
+We begin by applying the law of total variance to $\mathrm{Var}(\hat\beta_j)$:
+
+
+$$
+\begin{align}
+\mathrm{Var}(\hat{\beta}_j)
+&=\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f) + \mathrm{E} \mathrm{Var}(\hat{\beta}_j|X,f)) \text{ (Total variance)} \label{strat_var_decomposition}
+\end{align}
+$$
+
+
+Focusing on the first term in $(\ref{strat_var_decomposition})$,
+
+
+
+$$
+\begin{align}
+&\mathrm{Var}(\hat\beta_j|X,j)\\
+&=\mathrm{Var}(\frac{1}{N}\phi^TX_{:,j}|X,f)\\
+&=\frac{1}{N^2}X_{:,j}^T\mathrm{Var}(\phi|X,f)X_{:,j}\\
+\end{align}
+$$
+
+We need to compute the variance of the $\phi$ (not the unconditional variance, which is 1 but construction).
+
+
+$$
+\begin{align}
+&\mathrm{Var}(\phi|X,f)\\
+&=\mathrm{Var}(X\beta+\epsilon+S|X,f)\\
+&=\mathrm{Var}(X\beta|X,f)+\mathrm{Var}(\epsilon|X,f)\\
+&=X\mathrm{Var}(\beta|X,f)X^T+(1-h^2-\frac{\sigma_s^2}{4})I &\text{$S$ const cond on $f$}\\
+&=\frac{h^2}{M}XX^T + (1-h^2-\sigma_s^2/4)I
+\end{align}
+$$
+
+
+
+
+
+
 
 
 [^MHC_Note]: LDSC implementations usually exclude the MHC region, partially for this reason.
