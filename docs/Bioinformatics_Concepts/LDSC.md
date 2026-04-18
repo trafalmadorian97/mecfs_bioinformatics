@@ -5,7 +5,7 @@ hide:
 # LDSC
 Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
 
-## Intuition and High-level summary
+## Intuition and high-level summary
 
 The core idea of LDSC is illustrated below:
 
@@ -67,7 +67,7 @@ Using these two insights, we can estimate heritability from the slope of regress
 
 
 
-## Detailed Derivation of Method
+## Detailed derivation of method
 ### Data-generating model
 
 LDSC assumes the following data generating equation:
@@ -265,7 +265,7 @@ $$
 \mathbb{E}\sum_k \tilde{r}_{jk}^2 \approx l_j + \frac{1}{N}(M-l_j)
 $$
 
-### The LDSC Equation
+### The LDSC equation
 
 With the preliminaries out of the way, now compute the expectation of the chi squared statistic of the $j$th SNP
 
@@ -359,7 +359,11 @@ $$
 f\sim N(0, F_{ST}V), \label{f_dist}
 \end{align}
 $$ 
+
+
 where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
+
+
 - We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
 - As above, we assume that the unconditional variance of each entry of the genotype matrix is 1: $\mathbb{Var}(X_{i,j}=1)$
 - We assume that for any individual and any variant $i$, 
@@ -463,7 +467,7 @@ Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^
 $$
 \begin{align}
 \tilde{l}_{j}&\approx\sum_k  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\\
-&\approx MF_{ST}^2 + l_j + \frac{M}{N}.
+&\approx MF_{ST}^2 + l_j + \frac{M}{N}. \label{strat_ld_score}
 \end{align}
 $$
 
@@ -471,7 +475,7 @@ $$
 ### Environmentally stratified populations
 
 
-We extend the model above to include environmental stratification in addition to genetic stratification.
+We extend the model above to include environmental stratification in addition to genetic stratification:
 
 
 
@@ -503,8 +507,8 @@ $$
 \mathrm{Var}(\epsilon)=1-h^2-\frac{\sigma_s^2}{4}
 \end{align}
 $$
-
-By construction, this means that $\mathrm{Var}(\epsilon)=1$.
+ 
+so that $\mathrm{Var}(\phi)=1$.
 
 Our goal is to derive a modified version of the core LDSC equation $(\ref{main_ld_eq})$ for this stratified population.
 
@@ -514,7 +518,7 @@ We begin by applying the law of total variance to $\mathrm{Var}(\hat\beta_j)$:
 $$
 \begin{align}
 \mathrm{Var}(\hat{\beta}_j)
-&=\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f) + \mathrm{E} \mathrm{Var}(\hat{\beta}_j|X,f)) \text{ (Total variance)} \label{strat_var_decomposition}
+&=\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f) +  \mathrm{Var}\mathrm{E}(\hat{\beta}_j|X,f)) \text{ (Total variance)} \label{strat_var_decomposition}
 \end{align}
 $$
 
@@ -525,22 +529,22 @@ Focusing on the first term in $(\ref{strat_var_decomposition})$,
 
 $$
 \begin{align}
-&\mathrm{Var}(\hat\beta_j|X,j)\\
+&\mathrm{Var}(\hat\beta_j|X,f)\\
 &=\mathrm{Var}(\frac{1}{N}\phi^TX_{:,j}|X,f)\\
 &=\frac{1}{N^2}X_{:,j}^T\mathrm{Var}(\phi|X,f)X_{:,j}\\
 \end{align}
 $$
 
-We need to compute the variance of the $\phi$ (not the unconditional variance, which is 1 by construction).
+We compute the conditional variance of the $\phi$:
 
 
 $$
 \begin{align}
 &\mathrm{Var}(\phi|X,f)\\
 &=\mathrm{Var}(X\beta+\epsilon+S|X,f)\\
-&=\mathrm{Var}(X\beta|X,f)+\mathrm{Var}(\epsilon|X,f)\\
-&=X\mathrm{Var}(\beta|X,f)X^T+(1-h^2-\frac{\sigma_s^2}{4})I &\text{$S$ const cond on $f$}\\
-&=\frac{h^2}{M}XX^T + (1-h^2-\sigma_s^2/4)I
+&=\mathrm{Var}(X\beta|X,f)+\mathrm{Var}(\epsilon|X,f)&\text{$S$ is constant conditional on $f$}\\
+&=X\mathrm{Var}(\beta|X,f)X^T+(1-h^2-\frac{\sigma_s^2}{4})I \\
+&=\frac{h^2}{M}XX^T + (1-h^2-\sigma_s^2/4)I & \text{By (\ref{betavar})}
 \end{align}
 $$
 
@@ -549,9 +553,9 @@ Thus
 $$
 \begin{align}
 &\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f)\\
-&=\frac{1}{N^2}\underbrace{\mathrm{E}\frac{h^2}{M}X_{:,j}^TXX^TX_{:,j}}_{\approx\sum_h\sum_i(X_{i,j}X_{i,h})^2=N^2\hat l_j} + \frac{1}{N^2}(1-h^2-\sigma_s^2/4)\underbrace{\mathrm{E}X_{:,j}^TX_{:,j}}_{\approx N}\\
+&=\frac{1}{N^2}\frac{h^2}{M}\underbrace{\mathrm{E}X_{:,j}^TXX^TX_{:,j}}_{\approx\sum_h\sum_i(X_{i,j}X_{i,h})^2=N^2\hat l_j} + \frac{1}{N^2}(1-h^2-\sigma_s^2/4)\underbrace{\mathrm{E}X_{:,j}^TX_{:,j}}_{\approx N}\\
 &=\frac{h^2}{M}\hat l_j + \frac{1}{N}(1-h^2-\sigma_s^2/4)\\
-&=h^2F_{ST}^2+\frac{h^2}{M}l_j+\frac{h^2}{N} + \frac{1}{N}(1-h^2-\sigma_s^2/4)\\
+&=h^2F_{ST}^2+\frac{h^2}{M}l_j+\frac{h^2}{N} + \frac{1}{N}(1-h^2-\sigma_s^2/4) &\text{By (\ref{strat_ld_score})}\\
 &=h^2F_{ST}^2+\frac{h^2}{M}l_j+ \frac{1}{N}(1-\sigma_s^2/4)\\
 \end{align}
 $$
@@ -569,18 +573,19 @@ $$
 &=\mathrm{Var}(\frac{1}{N}X_{:,j}^T\frac{\sigma_s}{2}Q )\\
 &=\frac{1}{N^2}\frac{\sigma_s^2}{4}\mathrm{Var}(\sum_i X_{i,j}Q_i)\\
 &=\frac{1}{N^2}\frac{\sigma_s^2}{4}\mathrm{Var}(\underbrace{\sum_{i\in P_1} X_{i,j} -\sum_{i\in P_2} X_{i,j}}_{=:A_j})\\
-&= \frac{1}{N^2}\frac{\sigma_s^2}{4}\left(\mathrm{Var}\mathrm{E}(A_j|f) + \mathrm{E}\mathrm{Var}(A_j|f) \right)
+&= \frac{1}{N^2}\frac{\sigma_s^2}{4}\left(\mathrm{Var}\mathrm{E}(A_j|f) + \mathrm{E}\mathrm{Var}(A_j|f) \right) & \text{By the law of total variance}
 \end{align}
 $$
 
-By the law of total variance.
 
 We have 
+
+
 $$
 \begin{align}
 &\mathrm{E}\mathrm{Var}(A_j|f)\\
-&=\mathrm{E}N(1-f_j^2) &  \text{by (\ref{sub_var}) and conditional independence} \\
-&=N(1-F_{ST}) & \text{by  (\ref{f_dist}) }
+&=\mathrm{E}N(1-f_j^2) &  \text{By (\ref{sub_var}) and conditional independence} \\
+&=N(1-F_{ST}) & \text{By (\ref{f_dist}) }
 \end{align}
 $$
 
@@ -598,7 +603,7 @@ $$
 $$
 
 
-Thus the second second term in $(\ref{strat_var_decomposition})$ is
+Thus the second term in $(\ref{strat_var_decomposition})$ is
 
 $$
 \begin{align}
@@ -631,21 +636,22 @@ Multiply by N to get the expected chi-squared statistic.
 
 $$
 \begin{align}
-&\mathrm{E} \chi^2\\
-&=\frac{Nh^2}{M}l_j+ Nh^2F_{ST}^2+1+ \frac{N\sigma_s^2}{4}F_{ST}
+\mathrm{E} \chi^2&=\frac{Nh^2}{M}l_j+ Nh^2F_{ST}^2+1+ \frac{N\sigma_s^2}{4}F_{ST}\\
 &=:\frac{Nh^2}{M}l_j+ \psi \label{strat_eq}
 \end{align}
 $$
+
+
 Thus genetic stratification, alone or in combination with environmental stratification, can be expected to inflate the LDSC intercept.
 
 
 ### The attenuation ratio
 
 
-How is LDSC uses to measure stratification from GWAS in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{strat_eq}$) exceeds 1.
+How is LDSC used to detect stratification in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{strat_eq}$) significantly exceeds 1. The problem with this approach is that it can be misleading for highly polygenic traits studied investigated by GWAS with large sample sizes.  For such traits, many variants will have very large Wald $\chi^2$ statistics. In this circumstance, even a small amount of model misspecification error can produce an intercept that exceeds 1.
 
 
-In general, a quantity called the attenuation ratio is computed:
+It is more useful to consider the fraction of a typical $\chi^2$ statistic that is explained by the intercept, rather the LD term in $(\ref{strat_eq})$.  For this purpose, a quantity called the attenuation ratio is computed:
 
 $$
 \begin{align}
