@@ -467,7 +467,7 @@ Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^
 $$
 \begin{align}
 \tilde{l}_{j}&\approx\sum_k  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\\
-&\approx MF_{ST}^2 + l_j + \frac{M}{N}. \label{strat_ld_score}
+&\approx MF_{ST}^2 + l_j + \frac{M}{N}. \label{stratified_ld_score}
 \end{align}
 $$
 
@@ -518,12 +518,12 @@ We begin by applying the law of total variance to $\mathrm{Var}(\hat\beta_j)$:
 $$
 \begin{align}
 \mathrm{Var}(\hat{\beta}_j)
-&=\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f) +  \mathrm{Var}\mathrm{E}(\hat{\beta}_j|X,f)) \text{ (Total variance)} \label{strat_var_decomposition}
+&=\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f) +  \mathrm{Var}\mathrm{E}(\hat{\beta}_j|X,f)) \text{ (Total variance)} \label{stratified_var_decomposition}
 \end{align}
 $$
 
 
-Focusing on the first term in $(\ref{strat_var_decomposition})$,
+Focusing on the first term in $(\ref{stratified_var_decomposition})$,
 
 
 
@@ -555,14 +555,14 @@ $$
 &\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f)\\
 &=\frac{1}{N^2}\frac{h^2}{M}\underbrace{\mathrm{E}X_{:,j}^TXX^TX_{:,j}}_{\approx\sum_h\sum_i(X_{i,j}X_{i,h})^2=N^2\hat l_j} + \frac{1}{N^2}(1-h^2-\sigma_s^2/4)\underbrace{\mathrm{E}X_{:,j}^TX_{:,j}}_{\approx N}\\
 &=\frac{h^2}{M}\hat l_j + \frac{1}{N}(1-h^2-\sigma_s^2/4)\\
-&=h^2F_{ST}^2+\frac{h^2}{M}l_j+\frac{h^2}{N} + \frac{1}{N}(1-h^2-\sigma_s^2/4) &\text{By (\ref{strat_ld_score})}\\
+&=h^2F_{ST}^2+\frac{h^2}{M}l_j+\frac{h^2}{N} + \frac{1}{N}(1-h^2-\sigma_s^2/4) &\text{By (\ref{stratified_ld_score})}\\
 &=h^2F_{ST}^2+\frac{h^2}{M}l_j+ \frac{1}{N}(1-\sigma_s^2/4)\\
 \end{align}
 $$
 
 
 
-Now focusing on the second term in $(\ref{strat_var_decomposition})$,
+Now focusing on the second term in $(\ref{stratified_var_decomposition})$,
 
 $$
 \begin{align}
@@ -603,7 +603,7 @@ $$
 $$
 
 
-Thus the second term in $(\ref{strat_var_decomposition})$ is
+Thus the second term in $(\ref{stratified_var_decomposition})$ is
 
 $$
 \begin{align}
@@ -637,7 +637,7 @@ Multiply by N to get the expected chi-squared statistic.
 $$
 \begin{align}
 \mathrm{E} \chi^2&=\frac{Nh^2}{M}l_j+ Nh^2F_{ST}^2+1+ \frac{N\sigma_s^2}{4}F_{ST}\\
-&=:\frac{Nh^2}{M}l_j+ \psi \label{strat_eq}
+&=:\frac{Nh^2}{M}l_j+ \psi \label{stratified_eq}
 \end{align}
 $$
 
@@ -648,10 +648,10 @@ Thus genetic stratification, alone or in combination with environmental stratifi
 ### The attenuation ratio
 
 
-How is LDSC used to detect stratification in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{strat_eq}$) significantly exceeds 1. The problem with this approach is that it can be misleading for highly polygenic traits studied investigated by GWAS with large sample sizes.  For such traits, many variants will have very large Wald $\chi^2$ statistics. In this circumstance, even a small amount of model misspecification error can produce an intercept that exceeds 1.
+How is LDSC used to detect stratification in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{stratified_eq}$) significantly exceeds 1. The problem with this approach is that it can be misleading for highly polygenic traits studied investigated by GWAS with large sample sizes.  For such traits, many variants will have very large Wald $\chi^2$ statistics. In this circumstance, even a small amount of model misspecification error can produce an intercept that exceeds 1.
 
 
-It is more useful to consider the fraction of a typical $\chi^2$ statistic that is explained by the intercept, rather the LD term in $(\ref{strat_eq})$.  For this purpose, a quantity called the attenuation ratio is computed:
+It is more useful to consider the fraction of a typical $\chi^2$ statistic that is explained by the intercept, rather the LD term in $(\ref{stratified_eq})$.  For this purpose, a quantity called the attenuation ratio is computed:
 
 $$
 \begin{align}
