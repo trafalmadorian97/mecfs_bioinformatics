@@ -1,6 +1,10 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.height.yengo_2022.analysis.yengo_standard_analysis import YENGO_HEIGHT_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.height.yengo_2022.raw.yengo_height_raw import YENGO_ET_AL_RAW
+from mecfs_bio.assets.gwas.migraine.million_veterans.analysis.million_veterans_migraine_standard_analysis import \
+    MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS
+from mecfs_bio.assets.gwas.migraine.million_veterans.raw.million_veterans_migraine_raw import \
+    MILLION_VETERAN_MIGRAINE_EUR_DATA_RAW
 from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GROUP
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
@@ -15,7 +19,13 @@ def run_miscl_analysis():
     # [
         # LDL_MI_LCV_ANALYSIS,
         # [MI_LCV_PLOT]
-        [YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap]
+        # [
+
+            # YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap
+            # MILLION_VETERAN_MIGRAINE_EUR_DATA_RAW,
+            MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.get_terminal_tasks()
+
+        # ]
          # YENGO_STANDARD_ANALYSIS.get_terminal_tasks()
         # WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.get_terminal_tasks()
         # WILLER_TG_EUR_DATA_RAW
