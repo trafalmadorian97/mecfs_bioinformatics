@@ -342,16 +342,26 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 
 ## Population structure and LDSC
 
-Besides being the most widely used method for the estimation of heritability from GWAS summary statistics, LDSC is also used in the detection of population structure. In this section, I explain this use case.
+In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by population structure. In this section, I explain this use case.
+
+
+### Overview
+
+We are interested in two kinds of population structure:
+
+- _Genetic population stratification_, in which the population is divided into subpopulations with different allele frequencies
+- _Environmental population stratification_, in which the population is divided into subpopulations with different phenotype-impacting environmental exposures.
+
+Genetic stratification can confound GWAS results it is not accounted for.  Environmental stratification does not confound GWAS results on its own, but can amplify existing confounding due to genetic stratification.
 
 
 ### Genetically stratified populations
 
-Let's begin by constructing a model of a mixed population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
+Let's begin by constructing a model of a genetically stratified population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
 
 - Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
 - Let $\mathcal{Q}\in\{1,-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
-- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix are still independent.
+- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix remain independent.
 - We assume that 
 
 $$
@@ -365,12 +375,12 @@ where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to 
 
 
 - We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
-- As above, we assume that the unconditional variance of each entry of the genotype matrix is 1: $\mathbb{Var}(X_{i,j}=1)$
-- We assume that for any individual and any variant $i$, 
+
+- We assume that the conditional genotype variances are given by:
 
 $$
 \begin{align}
-\mathbb{Var}(X_{i,j}|f, \mathcal{Q})=1-f_j^2 \label{sub_var}
+\mathbb{Var}(X_{i,j}|f, \mathcal{Q})=1-f_j^2. \label{sub_var}
 \end{align}
 $$
 
@@ -400,7 +410,6 @@ $$
 \end{align}
 $$
 
-So the variance of the genotypes in the subpopulations is consistent with the variance of the genotypes in the mixed population.
 
 
 Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score regression equation, for this case of an equal mixture of two subpopulations.
@@ -409,7 +418,7 @@ Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score reg
 
 
 
-We next compute the conditional expectation of the product of two variants:
+We next compute the conditional expectation of the product of two genotypes:
 
 
 $$
@@ -433,11 +442,11 @@ We have
 $$
 \begin{align}
 &\mathbb{E}  \tilde{r}_{j,k}^2\\
-&=\mathbb{E} \mathbb{E} \left( \tilde{r}_{j,k}^2 |f  \right) \text{ (by Tower Law)}  \\
-&= \mathbb{E} \mathbb{E}     \left(\frac{1}{N^2}\sum_i \sum_q X_{i,j}X_{i,k}X_{q,j}X_{q,k}|f\right)\\
-&=\frac{1}{N^2}\mathbb{E} \mathbb{E}     \left(\sum_{i\ne q} X_{i,j}X_{i,k}X_{q,j}X_{q,k} + \sum_i X_{i,j}^2X_{i,k}^2|f\right)\\
-&=\frac{1}{N^2}\mathbb{E}\left(\sum_{i\ne q}\mathbb{E}(X_{i,j}X_{i,k}|f)\mathbb{E}(X_{q,j}X_{q,k}|f)+ \sum_i \mathbb{E} (X_{i,j}^2 X_{i,k}^2|f) \right) \text{ (Conditional indep)}\\
-&\approx\mathbb{E}\left( \frac{N-1}{N} (f_jf_k+r_{j,k})^2 +\frac{1}{N^2}\mathbb{E} (X_{i,j}^2 X_{i,k}^2|f)  \right) \text{ (by (\ref{cond_prod_eq}) )}\\
+&=\mathbb{E} \mathbb{E} \left( \tilde{r}_{j,k}^2 \middle| f  \right) \text{ (by Tower Law)}  \\
+&= \mathbb{E} \mathbb{E}     \left(\frac{1}{N^2}\sum_i \sum_q X_{i,j}X_{i,k}X_{q,j}X_{q,k}\middle| f\right)\\
+&=\frac{1}{N^2}\mathbb{E} \mathbb{E}     \left(\sum_{i\ne q} X_{i,j}X_{i,k}X_{q,j}X_{q,k} + \sum_i X_{i,j}^2X_{i,k}^2\middle| f\right)\\
+&=\frac{1}{N^2}\mathbb{E}\left(\sum_{i\ne q}\mathbb{E}\left( X_{i,j}X_{i,k}\middle| f\right)\mathbb{E}\left( X_{q,j}X_{q,k}\middle| f\right)+ \sum_i \mathbb{E} \left( X_{i,j}^2 X_{i,k}^2\middle| f\right) \right) \text{ (Conditional independence)}\\
+&\approx\mathbb{E}\left( \frac{N-1}{N} (f_jf_k+r_{j,k})^2 +\frac{1}{N^2}\mathbb{E} \left( X_{i,j}^2 X_{i,k}^2\middle| f\right)  \right) \text{ (by (\ref{cond_prod_eq}) )}\\
 &=\mathbb{E}\left( \frac{N-1}{N}\left(f_j^2 f_k^2+2r_{j,k}f_j f_k +r_{j,k}^2 \right) +\frac{1}{N}(1+2(f_jf_k+r_{j,k})^2+\nu) \right) \text{ (Isserlis theorem)}\\
 &= \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N}(1+  2F_{ST}^2(1+2V_{jk})  + 2r_{j,k}^2 +4r_{jk}F_{ST}V_{j,k} +\nu) \label{iserlis2} \\
 &\approx \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N} \label{drop_small}
@@ -455,18 +464,18 @@ Now sum across $j$ to get the empirical LD score
 $$
 \begin{align}
 \tilde{l}_{j}&= \sum_k\tilde{r}_{j,k}^2\\
-&=\sum_k  \frac{N-1}{N}\left( F_{ST}^2+2F_{ST}^2V_{jk}  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N}
+&=\sum_k \left( \frac{N-1}{N}\left( F_{ST}^2+2F_{ST}^2V_{jk}  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N} \right)
 \end{align}
 $$
 
 
-Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^2$ all of which will be zero for most SNPs $k$, since most SNPs are uncorrelated. If we assume that when these terms are nonzero and that $F_{ST}$, $V_{j,k}$ and $r_{j,k}$ are all small and all approximately the same magnitude, then $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$ are much smaller than the $r_{j,k}^2$.  This justifies neglecting $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$. We have
+Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^2$ all of which will be zero for most SNPs $k$, since most SNPs are unlinked. If we assume that when these terms are nonzero and that $F_{ST}$, $V_{j,k}$ and $r_{j,k}$ are all small and all approximately the same magnitude, then $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$ are much smaller than the $r_{j,k}^2$.  This justifies neglecting $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$. We have
 
 
 
 $$
 \begin{align}
-\tilde{l}_{j}&\approx\sum_k  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\\
+\tilde{l}_{j}&\approx\sum_k\left(  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\right) \\
 &\approx MF_{ST}^2 + l_j + \frac{M}{N}. \label{stratified_ld_score}
 \end{align}
 $$
