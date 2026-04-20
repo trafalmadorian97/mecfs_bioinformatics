@@ -26,7 +26,7 @@ MSIGDB_JSON_GENE_SETS_PARQUET = JsonToParquetTask.create(
     asset_id="msigdb_full_json_parquet",
 )
 
-MSIGDB_GENE_SETS_TABLE_UNPACKED = UnpackMapParquetTask.create(
+MSIGDB_GENE_SETS_PARQUET_UNPACKED = UnpackMapParquetTask.create(
     source_task=MSIGDB_JSON_GENE_SETS_PARQUET,
-    asset_id="msigdb_gene_sets_table_unpacked",
+    asset_id="msigdb_gene_sets_parquet_unpacked",
 )
