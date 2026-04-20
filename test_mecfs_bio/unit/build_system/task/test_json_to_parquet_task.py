@@ -45,7 +45,9 @@ def test_json_to_parquet_task_executes(tmp_path: Path):
     scratch.mkdir()
 
     task = JsonToParquetTask.create(json_task=json_task, asset_id="test_parquet")
-    result = task.execute(scratch_dir=scratch, fetch=_FileFetch(json_path), wf=SimpleWF())
+    result = task.execute(
+        scratch_dir=scratch, fetch=_FileFetch(json_path), wf=SimpleWF()
+    )
 
     assert isinstance(result, FileAsset)
     df = pd.read_parquet(result.path)

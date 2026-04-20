@@ -61,7 +61,9 @@ def test_unpack_map_parquet_task_executes(tmp_path: Path):
         map_column="data",
         name_column="name",
     )
-    result = task.execute(scratch_dir=scratch, fetch=_FileFetch(parquet_path), wf=SimpleWF())
+    result = task.execute(
+        scratch_dir=scratch, fetch=_FileFetch(parquet_path), wf=SimpleWF()
+    )
 
     assert isinstance(result, FileAsset)
     df = pd.read_parquet(result.path)
@@ -83,7 +85,10 @@ def test_unpack_map_parquet_task_gene_symbols_are_lists(tmp_path: Path):
         asset_id="unpacked",
         map_column="data",
     )
-    result = task.execute(scratch_dir=scratch, fetch=_FileFetch(parquet_path), wf=SimpleWF())
+    result = task.execute(
+        scratch_dir=scratch, fetch=_FileFetch(parquet_path), wf=SimpleWF()
+    )
+    assert isinstance(result, FileAsset)
     df = pd.read_parquet(result.path)
     row_a = df[df["name"] == "gene_set_A"].iloc[0]
     assert list(row_a["geneSymbols"]) == ["BRCA1", "TP53"]

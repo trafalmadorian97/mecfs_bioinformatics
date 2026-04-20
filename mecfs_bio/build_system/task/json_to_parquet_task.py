@@ -1,5 +1,6 @@
 """
 Task to convert a JSON file to parquet using duckdb.
+Implemented by claude
 """
 
 from pathlib import Path

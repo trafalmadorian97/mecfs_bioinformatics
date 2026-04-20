@@ -1,5 +1,6 @@
 """
 Task to unpack a parquet file with a MAP(VARCHAR, STRUCT) column into a flat table.
+Implemented by Claude
 """
 
 from pathlib import Path
@@ -40,9 +41,13 @@ class UnpackMapParquetTask(Task):
     map_column: str = "json"
     name_column: str = "name"
     target_compression: str = "zstd"
+
     def __attrs_post_init__(self):
+        assert hasattr(self.source_task.meta, "read_spec")
         assert isinstance(self.source_task.meta.read_spec, DataFrameReadSpec)
-        assert isinstance(self.source_task.meta.read_spec.format, DataFrameParquetFormat)
+        assert isinstance(
+            self.source_task.meta.read_spec.format, DataFrameParquetFormat
+        )
 
     @property
     def deps(self) -> list["Task"]:
