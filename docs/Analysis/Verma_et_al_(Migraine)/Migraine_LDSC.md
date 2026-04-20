@@ -6,7 +6,7 @@ The results are below:
 
 
 
-{{ include_file("docs/_figs/million_veterans_migraine_eur_ldsc_heritability_markdown.mdx.") }}
+{{ include_file("docs/_figs/million_veterans_migraine_eur_ldsc_heritability_markdown.mdx") }}
 
 
 A heritability of 0.1005 is low-to-moderate.
