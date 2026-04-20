@@ -1,3 +1,16 @@
+"""
+This Task downloads the raw summary statistics data for the million-veterans GWAS of migraines from
+GWAS catalog.
+
+For GWAS catalog study info see: https://www.ebi.ac.uk/gwas/studies/GCST90475837
+
+
+Citation: Verma, Anurag, et al. "Diversity and scale:
+Genetic architecture of 2068 traits in the VA Million Veteran Program." Science 385.6706 (2024): eadj1182.
+
+
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
