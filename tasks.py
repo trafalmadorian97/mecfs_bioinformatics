@@ -141,6 +141,46 @@ def checkimports(c):
     c.run("lint-imports", pty=True)
 
 
+def _missing_init_dirs() -> list[Path]:
+    return [
+        d
+        for d in sorted(SRC_PATH.rglob("*"))
+        if d.is_dir() and d.name != "__pycache__" and not (d / "__init__.py").exists()
+    ]
+
+
+@task
+def check_init_files(c):
+    """
+    Verify that every directory under mecfs_bio/ contains an __init__.py.
+    """
+    print(f"Checking that every directory under {SRC_PATH}/ has an __init__.py...")
+    missing = _missing_init_dirs()
+    if missing:
+        print("ERROR: The following directories are missing __init__.py:")
+        for d in missing:
+            print(f"  {d}")
+        sys.exit(1)
+    else:
+        print("OK: all directories have __init__.py.")
+
+
+@task
+def fix_init_files(c):
+    """
+    Add a blank __init__.py to any directory under mecfs_bio/ that is missing one.
+    """
+    print(f"Adding missing __init__.py files under {SRC_PATH}/...")
+    missing = _missing_init_dirs()
+    if missing:
+        for d in missing:
+            (d / "__init__.py").touch()
+            print(f"  created {d / '__init__.py'}")
+        print(f"Created {len(missing)} file(s).")
+    else:
+        print("Nothing to fix.")
+
+
 @task
 def check_all_links(c):
     """
@@ -241,6 +281,7 @@ def check_local_links(c):
         check_local_links,
         fix_table_trailing_newlines,
         checkimports,
+        fix_init_files,
         typecheck,
         test,
     ]
