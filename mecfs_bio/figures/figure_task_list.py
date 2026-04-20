@@ -26,6 +26,9 @@ from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysi
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
+from mecfs_bio.assets.gwas.migraine.million_veterans.analysis.million_veterans_migraine_standard_analysis import (
+    MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import (
     CT_LDSC_INITIAL_PLOT,
 )
@@ -98,4 +101,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
     MI_LCV_TASK_GROUP.downstream_trait_tables["MI"],
     YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
 ]
