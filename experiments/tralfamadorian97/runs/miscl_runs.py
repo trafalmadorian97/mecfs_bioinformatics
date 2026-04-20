@@ -6,6 +6,8 @@ from mecfs_bio.assets.gwas.migraine.million_veterans.analysis.million_veterans_m
 from mecfs_bio.assets.gwas.migraine.million_veterans.raw.million_veterans_migraine_raw import \
     MILLION_VETERAN_MIGRAINE_EUR_DATA_RAW
 from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GROUP
+from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.json_all_msigdb_gene_sets import \
+    MSIGDB_JSON_GENE_SETS, MSIGDB_JSON_GENE_SETS_PARQUET, MSIGDB_GENE_SETS_TABLE
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -23,7 +25,12 @@ def run_miscl_analysis():
 
             # YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap
             # MILLION_VETERAN_MIGRAINE_EUR_DATA_RAW,
-            MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.get_terminal_tasks()
+            # MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.get_terminal_tasks()
+        [
+            MSIGDB_GENE_SETS_TABLE
+            # MSIGDB_JSON_GENE_SETS_PARQUET
+            # MSIGDB_JSON_GENE_SETS
+        ]
 
         # ]
          # YENGO_STANDARD_ANALYSIS.get_terminal_tasks()
