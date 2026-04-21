@@ -1,4 +1,4 @@
-from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.gsea_entrez_human_gene_set_2025_v1 import (
+from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.raw.gsea_entrez_human_gene_set_2025_v1 import (
     GSEA_HUMAN_GENE_SET_2025_V1,
 )
 from mecfs_bio.build_system.task.extract_all_from_zip_task import ExtractAllFromZipTask

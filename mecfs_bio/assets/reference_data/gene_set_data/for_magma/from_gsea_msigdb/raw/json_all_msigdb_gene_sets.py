@@ -3,6 +3,7 @@ Tasks to download the full set of MSIG_DB Gene sets and convert them to a table 
 
 
 """
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -20,7 +21,7 @@ MSIGDB_JSON_GENE_SETS = DownloadFileTask(
         id=AssetId("msigdb_full_json"),
         group="gene_set_data",
         sub_group="msigdb",
-        sub_folder=PurePath("raw"),
+        sub_folder=PurePath(""),
         filename="msigdb.v2026.1.Hs",
         extension=".txt",
     ),
