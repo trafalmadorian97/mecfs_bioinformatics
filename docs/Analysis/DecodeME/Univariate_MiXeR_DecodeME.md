@@ -27,7 +27,7 @@ To assess the goodness of fit of the MiXeR model, we can use a Q-Q plot.
 
 
 /// caption
-Q-Q plot of DecodeME MiXeR model.  The x axis corresponds to the negative log of the nominal $p$ values, while the y axis corresponds to the negative log the proportion of variants with p values beyond that threshold.  The dotted line is what would be expected under the null hypothesis.  The blue line corresponds to what is actually observed in DecodeME, while the orange line is the predictions of the MiXeR model.
+Q-Q plot of DecodeME MiXeR model.  The x axis corresponds to the negative log of the nominal $p$ values, while the y axis corresponds to the negative log of the proportion of variants with p values beyond that threshold.  The dotted line is what would be expected under the null hypothesis.  The blue line corresponds to what is actually observed in DecodeME, while the orange line is the predictions of the MiXeR model.
 ///
 
 This plot suggests that the fitted MiXeR model is a good match for the DecodeME summary statistics.
