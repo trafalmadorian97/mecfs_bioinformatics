@@ -6,6 +6,10 @@ import pandas as pd
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -37,6 +41,7 @@ def _make_source_task() -> FakeTask:
             sub_folder=PurePath("raw"),
             id=AssetId("map_parquet"),
             extension=".parquet.zstd",
+            read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
         )
     )
 

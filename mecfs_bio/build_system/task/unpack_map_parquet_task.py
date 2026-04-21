@@ -26,6 +26,8 @@ from mecfs_bio.build_system.wf.base_wf import WF
 
 logger = structlog.get_logger()
 
+_ValidDepMetas = ReferenceFileMeta
+
 
 @frozen
 class UnpackMapParquetTask(Task):
@@ -43,7 +45,7 @@ class UnpackMapParquetTask(Task):
     target_compression: str = "zstd"
 
     def __attrs_post_init__(self):
-        assert hasattr(self.source_task.meta, "read_spec")
+        assert isinstance(self.source_task.meta, _ValidDepMetas)
         assert isinstance(self.source_task.meta.read_spec, DataFrameReadSpec)
         assert isinstance(
             self.source_task.meta.read_spec.format, DataFrameParquetFormat
