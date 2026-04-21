@@ -18,7 +18,7 @@ class ReferenceFileMeta(FileMeta):
     read_spec: ReadSpec | None = None
 
     def __attrs_post_init__(self):
-        assert self.extension.startswith(".")
+        assert self.extension.startswith(".") or self.extension==""
 
     @property
     def asset_id(self) -> AssetId:

@@ -1,3 +1,8 @@
+"""
+Tasks to download the full set of MSIG_DB Gene sets and convert them to a table parquet.
+
+
+"""
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
