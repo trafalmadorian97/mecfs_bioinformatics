@@ -1,3 +1,10 @@
+"""
+Task to download sqlite database representation of msigdb,
+a comprehensive collection of gene sets from numerous sources..
+
+Re-hosted on dropbox.
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
