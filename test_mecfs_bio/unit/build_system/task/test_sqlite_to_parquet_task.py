@@ -1,6 +1,7 @@
 """
 Tests implemented by Claude
 """
+
 import sqlite3
 from pathlib import Path, PurePath
 
