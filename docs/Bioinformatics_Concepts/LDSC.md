@@ -657,7 +657,7 @@ Thus genetic stratification, alone or in combination with environmental stratifi
 ### The attenuation ratio
 
 
-How is LDSC used to detect stratification in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{stratified_eq}$) significantly exceeds 1. The problem with this approach is that it can be misleading for highly polygenic traits studied investigated by GWAS with large sample sizes.  For such traits, many variants will have very large Wald $\chi^2$ statistics. In this circumstance, even a small amount of model misspecification error can produce an intercept that exceeds 1.
+How is LDSC used to detect stratification in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{stratified_eq}$) significantly exceeds 1. The problem with this approach is that it can be misleading for highly polygenic traits investigated by GWAS with large sample sizes.  For such traits, many variants will have very large Wald $\chi^2$ statistics. In this circumstance, even a small amount of model misspecification error can produce an intercept that exceeds 1.
 
 
 It is more useful to consider the fraction of a typical $\chi^2$ statistic that is explained by the intercept, rather the LD term in $(\ref{stratified_eq})$.  For this purpose, a quantity called the attenuation ratio is computed:
