@@ -1,3 +1,9 @@
+"""
+This file contains a selection of gene sets chosen because they relate to theories of the pathogensis
+of ME/CFS that have been put forward.  The idea is to use them for a targeted gene set analysis.
+
+"""
+
 from attrs import frozen
 
 
