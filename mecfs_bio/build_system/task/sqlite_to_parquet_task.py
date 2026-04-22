@@ -1,5 +1,6 @@
 """
 Task to query a SQLite database with duckdb and write the result as parquet.
+Initial version written by Claude
 """
 
 from pathlib import Path
