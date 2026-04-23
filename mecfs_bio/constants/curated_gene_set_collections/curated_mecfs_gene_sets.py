@@ -26,7 +26,7 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_AUTONOMIC = [
         exact_source="GO:0048484",  #  url: http://amigo.geneontology.org/amigo/term/GO:0048484
         standard_name="GOBP_ENTERIC_NERVOUS_SYSTEM_DEVELOPMENT",
         comment="Justification: ME/CFS is hypothesized by some authors to be related to the autonomic nervous system. "
-        " The enteric nervous system is a branch of the autonomic nervous system",
+        "The enteric nervous system is a branch of the autonomic nervous system",
     ),  #
     MSigDBGeneSetSpec(
         exact_source="GO:0048485",
@@ -93,10 +93,40 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_VASCULAR_SMOOTH_MUSCLE = [
         "control prevents the appropriate direction of oxygenated blood to exercising muscle",
     ),
     MSigDBGeneSetSpec(
-        exact_source="GO:0045906",
-        systematic_name="M23756",
-        standard_name="GOBP_NEGATIVE_REGULATION_OF_VASOCONSTRICTION",
-        comment="Conceivable, peripheral shunting could be caused by a disruption of the vasoconstriction system",
+        exact_source="GO:0019229",
+        systematic_name="M14342",
+        standard_name="GOBP_REGULATION_OF_VASOCONSTRICTION",
+        comment="Peripheral shunting could be caused by a disruption of the vasoconstriction system",
+    ),
+    MSigDBGeneSetSpec(
+        exact_source="GO:0008217",
+        systematic_name="M10469",
+        standard_name="GOBP_REGULATION_OF_BLOOD_PRESSURE",
+        comment="constriction and dilation of blood vessels is key to the control of blood pressure",
+    ),
+]
+
+CURATED_POTENTIAL_MECFS_GENE_SETS_ENDOTHELIAL = [
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_ENDOTHELIAL_CELL_ACTIVATION",
+        exact_source="GO:0042118",
+        systematic_name="M23506",
+        comment="The Wirth-Scheibenbogen theory postulates that endothelial damage is a key driver",
+    )
+]
+
+CURATED_POTENTIAL_MECFS_GENE_SETS_ANGIOGENSIS = [
+    MSigDBGeneSetSpec(
+        standard_name="HALLMARK_ANGIOGENESIS",
+        systematic_name="M5944",
+        exact_source=None,
+        comment="Some long covid researchers report elevation of angiogensis factors in early stages of long covid",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="HALLMARK_HYPOXIA",
+        systematic_name="M5891",
+        exact_source=None,
+        comment="hypoxia is a primary driver of angiogensis",
     ),
 ]
 
@@ -181,31 +211,55 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_MITOCHONDRIA = [
         standard_name="HALLMARK_OXIDATIVE_PHOSPHORYLATION",
         systematic_name="M5936",
         exact_source=None,
+        comment="Several authors have postulated a role for mitochondrial dysfunction in ME/CFS, though the"
+        "evidence for this has been patchy.  Oxidative phosphorylation is the major energy producing action of mitochondria.",
     ),
     MSigDBGeneSetSpec(
         standard_name="HP_MITOCHONDRIAL_RESPIRATORY_CHAIN_DEFECTS",
         exact_source="HP:0200125",
         systematic_name="M38933",
-    ),
-    MSigDBGeneSetSpec(
-        standard_name="WP_ELECTRON_TRANSPORT_CHAIN_OXPHOS_SYSTEM_IN_MITOCHONDRIA",
-        exact_source="WP111",
-        systematic_name="M39417",
-    ),
-    MSigDBGeneSetSpec(
-        standard_name="GOBP_MITOCHONDRIAL_ELECTRON_TRANSPORT_UBIQUINOL_TO_CYTOCHROME_C",
-        exact_source="GO:0006122",
-        systematic_name="M12278",
+        comment="see above",
     ),
     MSigDBGeneSetSpec(
         standard_name="GOBP_CELLULAR_RESPONSE_TO_OXYGEN_CONTAINING_COMPOUND",
         exact_source="GO:1901701",
         systematic_name="M11609",
+        comment="see above",
     ),
     MSigDBGeneSetSpec(
         standard_name="KEGG_ARACHIDONIC_ACID_METABOLISM",
         systematic_name="M5410",
         exact_source="hsa00590",
+        comment="see above",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="HALLMARK_GLYCOLYSIS",
+        systematic_name="M5937",
+        exact_source=None,
+        comment="Glycolysis is the less-efficient but anaerobic alternative to the glycolysis pathway",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="KEGG_CITRATE_CYCLE_TCA_CYCLE",
+        systematic_name="M3985",
+        exact_source="hsa00020",
+        comment="The citric acid cycle is an immediate precursor step to oxidative phosphorylation",
+    ),
+]
+
+CURATED_POTENTIAL_MECFS_GENE_SETS_NEUROINFLAMMATION = [
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_MICROGLIAL_CELL_ACTIVATION_INVOLVED_IN_IMMUNE_RESPONSE",
+        systematic_name="M45050",
+        exact_source="GO:0002282",
+        comment="Researchers like Jarred Younger have hypothesis that some form of immune activation in the central nervous "
+        "system could drive ME/CFS",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_ASTROCYTE_ACTIVATION",
+        systematic_name="M23832",
+        exact_source="GO:0048143",
+        comment="Researchers like Jarred Younger have hypothesis that some form of immune activation in the central nervous "
+        "system could drive ME/CFS",
     ),
 ]
 
@@ -216,11 +270,6 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_INFLAMMATION = [
         systematic_name="M1063",
     ),
     MSigDBGeneSetSpec(
-        standard_name="GOBP_INFLAMMASOME_MEDIATED_SIGNALING_PATHWAY",
-        exact_source="GO:0141084",
-        systematic_name="M46883",
-    ),
-    MSigDBGeneSetSpec(
         standard_name="PID_TRAIL_PATHWAY",
         systematic_name="M79",
         exact_source=None,
@@ -228,4 +277,102 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_INFLAMMATION = [
     ),
 ]
 
-CURATED_POTENTIAL_MECFS_GENE_SETS_RESPONSE_TO_VIRUS = []
+CURATED_POTENTIAL_MECFS_GENE_SETS_ADAPTIVE_IMMUNITY = [
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_ANTIGEN_PROCESSING_AND_PRESENTATION",
+        systematic_name="M12794",
+        exact_source="GO:0019882",
+        comment="Several theories classify ME/CFS as an unusual form of autoimmune disease."
+        " This broad gene set captures captures the process wby which antigens are prepared are presented to T cells,"
+        "which is altered in some autoimmune conditions.",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="REACTOME_MHC_CLASS_II_ANTIGEN_PRESENTATION",
+        systematic_name="M705",
+        exact_source="R-HSA-2132295",
+        comment="This is a more granular antigen presentation gene set focused on presentation by MHC 2, which is found"
+        "primarily on antigen-presenting cells",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="REACTOME_TCR_SIGNALING",
+        systematic_name="M15381",
+        exact_source="R-HSA-202403",
+        comment="A finer-grained autoimmune gene set, focusing on the T cell axis.  Some authors have noted that "
+        "post-infectious autoimmune conditions like reactive arthritis are often T-cell driven.  Thus, given that "
+        "ME/CFS is seen as post-infectious, it may make sense to look for T cell signal",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="REACTOME_SIGNALING_BY_THE_B_CELL_RECEPTOR_BCR",
+        systematic_name="M608",
+        exact_source="R-HSA-983705",
+        comment="Alternatively, a group of researchers has theorized that autoantibodies to G-Protein-Coupled receptors"
+        "may be central to ME/CFS pathogeneisis.  If this is correct, we might expect to see signals related to B-cell activation,"
+        " as are found in this B-cell receptor gene set",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="REACTOME_REGULATION_OF_T_CELL_ACTIVATION_BY_CD28_FAMILY",
+        systematic_name="M17386",
+        exact_source="R-HSA-388841",
+        comment="T cells require co-stimulatory signals in addition to activation of their TCR. "
+        "This requirement for a costimulatory check that maintains self tolerance.  Failure on this pathway "
+        "can lead to autoimmunity",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="WP_TH17_CELL_DIFFERENTIATION_PATHWAY",
+        systematic_name="M45541",
+        exact_source="WP5130",
+        comment="Thss is a narrower pathway that is important so some autoimmune diseases (seronegative spondylo-arthritis) but not others"
+        "(e.g. rheumatoid arthritis).  If do find autoimmune signal, it will be interested to see on which side of the divide it lies",
+    ),
+]
+
+CURATED_POTENTIAL_MECFS_GENE_SETS_RESPONSE_TO_VIRUS = [
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_RESPONSE_TO_VIRUS",
+        systematic_name="M16779",
+        exact_source="GO:0009615",
+        comment="ME/CS is often described as a post-viral condition, and many patients report an onset after a severe infection.",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="HALLMARK_INTERFERON_GAMMA_RESPONSE",
+        systematic_name="M5913",
+        exact_source=None,
+        comment="Certain authors have observed that ME/CFS is often post-viral, that interferon gamma is part of the anti-viral response, "
+        "And that interferon gamma induces severe fatigue",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="HALLMARK_INTERFERON_ALPHA_RESPONSE",
+        systematic_name="M5911",
+        exact_source=None,
+        comment="Interferon alpha is another branch of the anti-viral response",
+    ),
+]
+CURATED_POTENTIAL_MECFS_GENE_SETS_HPA_AXIS = [
+    MSigDBGeneSetSpec(
+        standard_name="WP_GLUCOCORTICOID_RECEPTOR_PATHWAY",
+        systematic_name="M40042",
+        exact_source="WP2880",
+        comment="Some author argue MECFS involves a blunted HPA axis",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="WP_CORTICOTROPINRELEASING_HORMONE_SIGNALING",
+        systematic_name="M39441",
+        exact_source="WP2355",
+        comment="A Dutch autopsy study of the brains of ME/CFS patients reports reported highly depleted "
+        "CRH neurons",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_POSITIVE_REGULATION_OF_CORTICOSTEROID_HORMONE_SECRETION",
+        systematic_name="systematic_name",
+        exact_source="GO:2000848",
+    ),
+]
+
+CURRATED_POTENTIAL_MECFS_GENE_SETS_CLOTTING = [
+    MSigDBGeneSetSpec(
+        standard_name="HALLMARK_COAGULATION",
+        systematic_name="M5946",
+        exact_source=None,
+        comment="Pretorius argues for an important role for microclots",
+    )
+]
