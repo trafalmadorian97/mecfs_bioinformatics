@@ -9,13 +9,13 @@ from pathlib import Path
 import pandas as pd
 from attrs import frozen
 
-from mecfs_bio.constants.vocabulary_classes.gene_set import MSigDBGeneSetSpec
-from mecfs_bio.util.gene_set.msigdb_columns import (
+from mecfs_bio.constants.msigdb_columns import (
     EXACT_SOURCE,
     NCBI_IDS,
     STANDARD_NAME,
     SYSTEMATIC_NAME,
 )
+from mecfs_bio.constants.vocabulary_classes.gene_set import MSigDBGeneSetSpec
 
 # Output column names for gene_set_jaccard_index
 JACCARD_COL_SET_1 = "standard_name_1"
@@ -79,7 +79,7 @@ def gene_set_jaccard_index(
     specs: list[MSigDBGeneSetSpec],
 ) -> pd.DataFrame:
     """
-    Compute the Jaccard index of gene-symbol overlap for every pair of gene sets.
+    Compute the Jaccard index of gene overlap for every pair of gene sets.
 
     Each spec must match exactly one row in the parquet (same rules as
     verify_gene_set_specs).  Returns a DataFrame with columns

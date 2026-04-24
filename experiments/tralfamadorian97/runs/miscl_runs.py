@@ -1,5 +1,5 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.extracted.full_msigdb_parquet_from_sqlite import MSIGDB_GENE_SETS_PARQUET
+from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.processed.full_msigdb_parquet_from_sqlite import MSIGDB_GENE_SETS_PARQUET
 from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.raw.json_all_msigdb_gene_sets import \
     MSIGDB_GENE_SETS_PARQUET_UNPACKED_FROM_JSON
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
