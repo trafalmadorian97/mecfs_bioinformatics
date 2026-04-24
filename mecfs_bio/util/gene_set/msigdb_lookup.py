@@ -25,7 +25,7 @@ JACCARD_COL_N_INTERSECTION = "n_intersection"
 JACCARD_COL_N_UNION = "n_union"
 
 
-def _apply_spec_mask(df: pd.DataFrame, spec: MSigDBGeneSetSpec) -> "pd.Series[bool]":
+def _apply_spec_mask(df: pd.DataFrame, spec: MSigDBGeneSetSpec) -> pd.Series:
     mask = df[STANDARD_NAME] == spec.standard_name
     if spec.exact_source is not None:
         mask &= df[EXACT_SOURCE] == spec.exact_source
