@@ -8,6 +8,8 @@ gene_set_gene_symbol / gene_symbol join tables.
 SQL query from Claude
 """
 
+from pathlib import PurePath
+
 from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.extracted.full_msigdb_sqlite_extracted import (
     MSIGDB_SQLLITE_EXTRACTED,
 )
@@ -56,4 +58,5 @@ MSIGDB_GENE_SETS_PARQUET = SqliteToParquetTask.create(
     source_task=MSIGDB_SQLLITE_EXTRACTED,
     asset_id="msigdb_human_gene_sets_table_parquet_from_sqllite",
     query=_MSIGDB_HUMAN_GENE_SETS_QUERY,
+    override_subfolder=PurePath("processed"),
 )
