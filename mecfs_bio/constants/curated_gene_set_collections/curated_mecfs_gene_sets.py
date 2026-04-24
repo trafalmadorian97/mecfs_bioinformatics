@@ -275,6 +275,12 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_INFLAMMATION = [
         exact_source=None,
         comment="David Systrom reported a trend to higher levels of TRAIL during exercise in ME/CFS patients",
     ),
+    MSigDBGeneSetSpec(
+        standard_name="HALLMARK_COMPLEMENT",
+        systematic_name="M5921",
+        exact_source=None,
+        comment="Akiko Iwasaki argues for a role of the complement system in long covid."
+    )
 ]
 
 CURATED_POTENTIAL_MECFS_GENE_SETS_ADAPTIVE_IMMUNITY = [
@@ -368,11 +374,42 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_HPA_AXIS = [
     ),
 ]
 
-CURRATED_POTENTIAL_MECFS_GENE_SETS_CLOTTING = [
+CURATED_POTENTIAL_MECFS_GENE_SETS_CLOTTING = [
     MSigDBGeneSetSpec(
         standard_name="HALLMARK_COAGULATION",
         systematic_name="M5946",
         exact_source=None,
         comment="Pretorius argues for an important role for microclots",
+    )
+]
+
+
+CURATED_POTENTIAL_MECFS_GENE_SETS_METABOLIC_TRAP =[
+    MSigDBGeneSetSpec(
+        standard_name="KEGG_TRYPTOPHAN_METABOLISM",
+        systematic_name="M980",
+        exact_source="hsa00380",
+        comment="I don't understand the details of the metabolic trap hypothesis, but according to a cursory search,"
+                "it relates to tryptophan metabolism"
+    ),
+
+]
+
+CURATED_POTENTIAL_MECFS_GENE_SETS_MAST_CELL_ACTIVATION =[
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_MAST_CELL_ACTIVATION",
+        systematic_name="M12306",
+        exact_source="GO:0002279",
+        comment="There is a long history of speculation that ME/CFS is linked to mast cell activation, though the evidence for this "
+                "is generally low quality"
+    )
+]
+
+CURATED_POTENTIAL_MECFS_GENE_SETS_SLEEP_DISTURBANCE =[
+    MSigDBGeneSetSpec(
+        standard_name="KEGG_CIRCADIAN_RHYTHM_MAMMAL",
+        systematic_name="M18009",
+        exact_source="hsa04710",
+        comment="Sleep disturbance is a core part of ME/CFS"
     )
 ]
