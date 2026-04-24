@@ -3,7 +3,7 @@ Task to query a SQLite database with duckdb and write the result as parquet.
 Initial version written by Claude
 """
 
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import duckdb
 import structlog
@@ -72,13 +72,16 @@ class SqliteToParquetTask(Task):
         asset_id: str,
         query: str,
         target_compression: str = "zstd",
+        override_subfolder: PurePath | None = None,
     ) -> "SqliteToParquetTask":
         source_meta = source_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
+            if override_subfolder is None:
+                override_subfolder = source_meta.sub_folder
             meta = ReferenceFileMeta(
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
-                sub_folder=source_meta.sub_folder,
+                sub_folder=override_subfolder,
                 id=AssetId(asset_id),
                 extension=f".parquet.{target_compression}",
                 read_spec=DataFrameReadSpec(format=DataFrameParquetFormat()),
