@@ -1980,7 +1980,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: be7715b1a3d49a4a06722f694e01e44350cf88be17bee5beeff3303605cf60a2
+  sha256: e5541515d7eec30c015afa37d09fe9369f2a7227d4fcd1068fdb220137e88841
   requires_python: ==3.12
   editable: true
 - pypi: https://files.pythonhosted.org/packages/7f/ad/ed66f7dd3d5e595a8bf1e115a54f77a185b616eb49ea94fe052c7fd4259e/blosc2-4.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
