@@ -53,7 +53,7 @@ def _set_enable_api_autonav() -> None:
 @task
 def test(c):
     print("Running unit and integration tests with pytest...")
-    cmd = f" python   -m pytest --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    cmd = f" python   -m pytest  --testmon --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
     print(cmd)
     c.run(cmd, pty=True)
 
