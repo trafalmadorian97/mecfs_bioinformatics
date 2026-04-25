@@ -97,10 +97,15 @@ jobs:
         if: steps.changes.outputs.nonmark == 'true'
         uses: actions/cache@v4
         with:
-          path: .testmondata
-          key: testmon-v2-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-${{ steps.cache-date.outputs.date }}
+          # SQLite runs in WAL mode on CI; the actual data lives in .testmondata-wal
+          # until checkpointed, so we must cache the WAL/SHM sidecars too.
+          path: |
+            .testmondata
+            .testmondata-wal
+            .testmondata-shm
+          key: testmon-v3-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-${{ steps.cache-date.outputs.date }}
           restore-keys: |
-            testmon-v2-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-
+            testmon-v3-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-
       - name: Run tests
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke test # run unit and integration tests
