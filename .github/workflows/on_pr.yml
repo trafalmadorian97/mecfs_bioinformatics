@@ -93,7 +93,7 @@ jobs:
         if: steps.changes.outputs.nonmark == 'true'
         id: cache-date
         run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
-      - name: Restore testmon cache # testmon cache can be used to skip tests if their dependencies have ot changed
+      - name: Restore testmon cache # testmon cache can be used to skip tests if their dependencies have not changed
         if: steps.changes.outputs.nonmark == 'true'
         uses: actions/cache@v4
         with:
