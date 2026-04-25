@@ -98,9 +98,20 @@ jobs:
         uses: actions/cache@v4
         with:
           path: .testmondata
-          key: testmon-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-${{ steps.cache-date.outputs.date }}
+          key: testmon-v2-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-${{ steps.cache-date.outputs.date }}
           restore-keys: |
-            testmon-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-
+            testmon-v2-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-
       - name: Run tests
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke test # run unit and integration tests
+      - name: Inspect testmon artifacts
+        if: always() && steps.changes.outputs.nonmark == 'true'
+        run: |
+          echo "github.workspace: ${{ github.workspace }}"
+          echo "PWD during this step: $(pwd)"
+          echo "--- workspace .testmondata* ---"
+          ls -la .testmondata* 2>/dev/null || echo "no .testmondata in workspace"
+          echo "--- find under /home/runner ---"
+          find /home/runner -name '.testmondata*' 2>/dev/null
+          echo "--- pixi shell view ---"
+          pixi r bash -c 'echo "pixi pwd: $(pwd)"; ls -la .testmondata* 2>/dev/null || echo "no .testmondata in pixi cwd"'
