@@ -89,6 +89,18 @@ jobs:
       - name: Check types with ty
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke typecheck
+      - name: Compute cache date
+        if: steps.changes.outputs.nonmark == 'true'
+        id: cache-date
+        run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
+      - name: Restore testmon cache # testmon cache can be used to skip tests if their dependencies have ot changed
+        if: steps.changes.outputs.nonmark == 'true'
+        uses: actions/cache@v4
+        with:
+          path: .testmondata
+          key: testmon-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-${{ steps.cache-date.outputs.date }}
+          restore-keys: |
+            testmon-${{ runner.os }}-${{ hashFiles('pyproject.toml', 'pixi.lock') }}-
       - name: Run tests
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke test # run unit and integration tests
