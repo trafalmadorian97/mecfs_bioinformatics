@@ -237,6 +237,29 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_MITOCHONDRIA = [
     ),
 ]
 
+CURATED_POTENTIAL_MECFS_GENE_SETS_SYNAPSE = [
+    MSigDBGeneSetSpec(
+        standard_name="REACTOME_NEUREXINS_AND_NEUROLIGINS",
+        systematic_name="M27616",
+        exact_source="R-HSA-6794361",
+        comment="As noted by on github (https://github.com/trafalmadorian97/mecfs_bioinformatics/issues/639#issuecomment-4323195925),"
+        " the DecodeME paper reported at a hit at CA10, which binds to neurexins at synapses",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="GOMF_NEUREXIN_FAMILY_PROTEIN_BINDING",
+        systematic_name="M18776",
+        exact_source="GO:0042043",
+        comment="see above",
+    ),
+    MSigDBGeneSetSpec(
+        standard_name="GOBP_SYNAPTIC_SIGNALING",
+        systematic_name="M14034",
+        exact_source="GO:0099536",
+        comment="See above",
+    ),
+]
+
+
 CURATED_POTENTIAL_MECFS_GENE_SETS_NEUROINFLAMMATION = [
     MSigDBGeneSetSpec(
         standard_name="GOBP_MICROGLIAL_CELL_ACTIVATION_INVOLVED_IN_IMMUNE_RESPONSE",
@@ -423,4 +446,5 @@ CURATED_POTENTIAL_MECFS_GENE_SETS_ALL = (
     + CURATED_POTENTIAL_MECFS_GENE_SETS_METABOLIC_TRAP
     + CURATED_POTENTIAL_MECFS_GENE_SETS_MAST_CELL_ACTIVATION
     + CURATED_POTENTIAL_MECFS_GENE_SETS_SLEEP_DISTURBANCE
+    + CURATED_POTENTIAL_MECFS_GENE_SETS_SYNAPSE
 )
