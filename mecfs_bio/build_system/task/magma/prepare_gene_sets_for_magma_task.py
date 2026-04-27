@@ -42,8 +42,7 @@ class PrepareGeneSetsForMagmaTask(Task):
 
     The output is a tab-separated text file with a leading GENE column
     (Entrez IDs) followed by one binary (0/1) column per gene set.  This
-    format is consumed by MagmaGeneSetAnalysisTask with set_or_covar="set"
-    (--set-annot) or set_or_covar="covar" (--gene-covar).
+    format is consumed by MagmaGeneSetAnalysisTask with set_or_covar="covar" (--gene-covar).
 
     All genes present anywhere in the MSigDB parquet are included as rows
     (required for competitive gene set analysis).  NCBI IDs that are None
