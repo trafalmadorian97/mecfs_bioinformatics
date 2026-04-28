@@ -3,6 +3,8 @@ from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.pr
 
 from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix import \
     CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX
+from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix_reduced import \
+    CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -22,7 +24,7 @@ def run_miscl_analysis():
             # MILLION_VETERAN_MIGRAINE_EUR_DATA_RAW,
             # MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.get_terminal_tasks()
         [
-            CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX
+            CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
             # MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE,
             # MSIGDB_SQLLITE_EXTRACTED
             # MSIGDB_GENE_SETS_PARQUET_UNPACKED
