@@ -1,7 +1,10 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.processed.full_msigdb_parquet_from_sqlite import MSIGDB_GENE_SETS_PARQUET
-from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.raw.json_all_msigdb_gene_sets import \
-    MSIGDB_GENE_SETS_PARQUET_UNPACKED_FROM_JSON
+from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.processed.full_msigdb_parquet_from_sqlite import MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE
+
+from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix import \
+    CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX
+from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix_reduced import \
+    CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -21,7 +24,8 @@ def run_miscl_analysis():
             # MILLION_VETERAN_MIGRAINE_EUR_DATA_RAW,
             # MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.get_terminal_tasks()
         [
-            MSIGDB_GENE_SETS_PARQUET,
+            CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
+            # MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE,
             # MSIGDB_SQLLITE_EXTRACTED
             # MSIGDB_GENE_SETS_PARQUET_UNPACKED
             # MSIGDB_JSON_GENE_SETS_PARQUET
