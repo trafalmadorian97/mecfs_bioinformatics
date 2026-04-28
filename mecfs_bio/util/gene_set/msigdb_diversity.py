@@ -16,7 +16,7 @@ from mecfs_bio.constants.msigdb_columns import (
     SYSTEMATIC_NAME,
 )
 from mecfs_bio.constants.vocabulary_classes.gene_set import MSigDBGeneSetSpec
-from mecfs_bio.util.gene_set.msigdb_lookup import _apply_spec_mask
+from mecfs_bio.util.gene_set.msigdb_lookup import apply_spec_mask
 
 DiversityStrategy = Literal["min_max_jaccard", "min_mean_jaccard"]
 
@@ -79,7 +79,7 @@ def select_diverse_subset(
 
     ncbi_ids: dict[str, frozenset[int]] = {}
     for spec in gene_sets:
-        rows = df[_apply_spec_mask(df, spec)]
+        rows = df[apply_spec_mask(df, spec)]
         if len(rows) != 1:
             raise ValueError(
                 f"Expected exactly 1 match for {STANDARD_NAME}={spec.standard_name!r}, "

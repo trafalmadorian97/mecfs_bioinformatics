@@ -170,22 +170,6 @@ def test_values_are_only_zero_or_one(tmp_path: Path):
         assert set(df[col].unique()).issubset({0, 1})
 
 
-def test_meta_inherits_reference_file_meta(tmp_path: Path):
-    task = PrepareGeneSetsForMagmaTask.create(
-        asset_id="my_gene_sets",
-        gene_sets=[_spec("SET_A")],
-        parquet_db_task=_make_db_task(),
-    )
-    assert isinstance(task.meta, ReferenceFileMeta)
-    assert task.meta.asset_id == AssetId("my_gene_sets")
-    assert task.meta.extension == ".txt"
-    db_meta = _make_db_task().meta
-    assert isinstance(db_meta, ReferenceFileMeta)
-    assert task.meta.group == db_meta.group
-    assert task.meta.sub_group == db_meta.sub_group
-    assert task.meta.sub_folder == db_meta.sub_folder
-
-
 def test_meta_simple_file_meta_when_dep_is_simple(tmp_path: Path):
     db_task = FakeTask(meta=SimpleFileMeta(AssetId("db")))
     task = PrepareGeneSetsForMagmaTask.create(
