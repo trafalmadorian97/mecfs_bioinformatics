@@ -1,8 +1,9 @@
 """
 Task to convert MSigDB gene sets to the MAGMA column-format annotation file.
+Initial implementation by Claude
 """
 
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Sequence
 
 import pandas as pd
@@ -29,7 +30,7 @@ from mecfs_bio.constants.msigdb_columns import (
     SYSTEMATIC_NAME,
 )
 from mecfs_bio.constants.vocabulary_classes.gene_set import MSigDBGeneSetSpec
-from mecfs_bio.util.gene_set.msigdb_lookup import _apply_spec_mask
+from mecfs_bio.util.gene_set.msigdb_lookup import apply_spec_mask
 
 logger = structlog.get_logger()
 
@@ -68,7 +69,7 @@ class PrepareGeneSetsForMagmaTask(Task):
 
         gs_to_ids: dict[str, frozenset[int]] = {}
         for spec in self.gene_sets:
-            rows = df[_apply_spec_mask(df, spec)]
+            rows = df[apply_spec_mask(df, spec)]
             if len(rows) != 1:
                 raise ValueError(
                     f"Expected exactly 1 match for {STANDARD_NAME}={spec.standard_name!r}, "
@@ -112,9 +113,9 @@ class PrepareGeneSetsForMagmaTask(Task):
         meta: Meta
         if isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(
-                group=source_meta.group,
-                sub_group=source_meta.sub_group,
-                sub_folder=source_meta.sub_folder,
+                group="magma_reference_data",
+                sub_group="gene_specificity_matrix",
+                sub_folder=PurePath("processed"),
                 id=AssetId(asset_id),
                 extension=".txt",
             )

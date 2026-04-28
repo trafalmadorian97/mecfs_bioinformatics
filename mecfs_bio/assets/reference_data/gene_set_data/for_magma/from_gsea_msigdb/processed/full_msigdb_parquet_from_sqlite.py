@@ -54,7 +54,7 @@ GROUP BY
     gsd.added_in_MSigDB_id, gsd.changed_in_MSigDB_id, gsd.changed_reason\
 """
 
-MSIGDB_GENE_SETS_PARQUET = SqliteToParquetTask.create(
+MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE = SqliteToParquetTask.create(
     source_task=MSIGDB_SQLLITE_EXTRACTED,
     asset_id="msigdb_human_gene_sets_table_parquet_from_sqllite",
     query=_MSIGDB_HUMAN_GENE_SETS_QUERY,

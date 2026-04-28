@@ -25,7 +25,7 @@ JACCARD_COL_N_INTERSECTION = "n_intersection"
 JACCARD_COL_N_UNION = "n_union"
 
 
-def _apply_spec_mask(df: pd.DataFrame, spec: MSigDBGeneSetSpec) -> pd.Series:
+def apply_spec_mask(df: pd.DataFrame, spec: MSigDBGeneSetSpec) -> pd.Series:
     mask = df[STANDARD_NAME] == spec.standard_name
     if spec.exact_source is not None:
         mask &= df[EXACT_SOURCE] == spec.exact_source
@@ -58,7 +58,7 @@ def verify_gene_set_specs(
 
     failures: list[_SpecFailure] = []
     for spec in specs:
-        n = int(_apply_spec_mask(df, spec).sum())
+        n = int(apply_spec_mask(df, spec).sum())
         if n != 1:
             reason = "no match" if n == 0 else f"{n} matches (ambiguous)"
             failures.append(_SpecFailure(spec=spec, reason=reason, n_matches=n))
@@ -97,7 +97,7 @@ def gene_set_jaccard_index(
 
     gene_sets: list[frozenset[int]] = []
     for spec in specs:
-        rows = df[_apply_spec_mask(df, spec)]
+        rows = df[apply_spec_mask(df, spec)]
         if len(rows) != 1:
             raise ValueError(
                 f"Expected exactly 1 match for {STANDARD_NAME}={spec.standard_name!r}, "
