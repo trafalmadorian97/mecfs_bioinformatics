@@ -1,3 +1,7 @@
+"""
+Asset generator to perform gene set analysis using gene sets curated based on major theories of ME/CFS pathogensis
+"""
+
 from pathlib import PurePath
 
 from attrs import frozen
