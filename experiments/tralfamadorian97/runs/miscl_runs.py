@@ -1,4 +1,8 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import \
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS
+from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_gene_sets import \
+    BENTHAM_2015_GENE_SET_ANALYSIS, BENTHAM_2015_GENE_SET_ANALYSIS_FROM_GENE_ANALYSIS
 from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.processed.full_msigdb_parquet_from_sqlite import MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE
 
 from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix import \
@@ -23,8 +27,12 @@ def run_miscl_analysis():
             # YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap
             # MILLION_VETERAN_MIGRAINE_EUR_DATA_RAW,
             # MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.get_terminal_tasks()
+        # BENTHAM_2015_GENE_SET_ANALYSIS.terminal_tasks()+
+        # BENTHAM_2015_GENE_SET_ANALYSIS_FROM_GENE_ANALYSIS.terminal_tasks()+
+        JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.gene_set_analysis_tasks.terminal_tasks()+
+
         [
-            CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
+            # CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
             # MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE,
             # MSIGDB_SQLLITE_EXTRACTED
             # MSIGDB_GENE_SETS_PARQUET_UNPACKED
