@@ -76,6 +76,8 @@ The null hypothesis $\beta_{j}= 0$ is tested.
 
 Rejecting this null would indicate that the degree to which the gene $i$ participates in the biological system $j$ is predictive of the extent of association of the gene with the phenotype, $Z_i$.  This would suggest that the biological system is related to the phenotype.
 
+
+
 ## Limitations
 
 While MAGMA is a very useful approach for detecting the key biological systems involved in a disease or trait, it has a number of limitations.  These include:
@@ -85,6 +87,10 @@ While MAGMA is a very useful approach for detecting the key biological systems i
 3. Relatedly, MAGMA relies on the assumption that if a biological system is important to a phenotype, the degree of participation of a gene in that biological system should be linearly related to the association of the gene with the phenotype.  While this is intuitively reasonable, it does not necessarily hold: biology is inherently nonlinear.
 4. Since MAGMA in its original form mostly uses proximity to associate genes with variants, it cannot incorporate long-distance regulatory effects.  If such effects are important to a disease, MAGMA could give misleading results.
 
+
+## Gene set analysis with MAGMA
+
+MAGMA can also be used for gene-set analysis, which is implemented as a special case of gene property analysis.  In perform gene set analysis, we simply set $E_{i,j}=1$ if gene $i$ is a member of gene set $j$, and 0 otherwise.
 
 ## References
 The above discussion is based on:

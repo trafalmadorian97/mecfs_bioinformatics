@@ -23,6 +23,9 @@ from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_tas
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import (
+    DECODE_ME_CURATED_GENE_SET_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
@@ -68,6 +71,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
     DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
     DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
+    DECODE_ME_CURATED_GENE_SET_ANALYSIS.bar_plot_task_full,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.power_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.qq_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.result_markdown_table_task,
