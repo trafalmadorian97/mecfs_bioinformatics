@@ -4,6 +4,8 @@
     "config:recommended"
   ],
   "minimumReleaseAge": "1 day",
+  "schedule": ["after 2am and before 5am"],
+  "prHourlyLimit": 1,
   "enabledManagers": [
     "pixi",
     "github-actions"
