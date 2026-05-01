@@ -3,10 +3,7 @@
   "extends": [
     "config:recommended"
   ],
-<<<<<<< HEAD
   "minimumReleaseAge": "1 day",
-=======
->>>>>>> main
   "enabledManagers": [
     "pixi",
     "github-actions"
