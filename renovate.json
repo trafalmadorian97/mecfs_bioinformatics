@@ -3,6 +3,7 @@
   "extends": [
     "config:recommended"
   ],
+  "minimumReleaseAge": "1 day",
   "enabledManagers": [
     "pixi",
     "github-actions"
@@ -25,7 +26,6 @@
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
-      "matchCurrentVersion": "!/^0/",
       "automerge": true
     }
   ]
