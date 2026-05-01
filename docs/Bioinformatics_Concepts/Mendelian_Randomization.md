@@ -8,7 +8,7 @@ Hernan et al.[@hernan2019second] assert that the core activities of the data sci
 
 
 1. **Description**: Computing summary statistics, to enable large datasets to be easily comprehended. An example would be producing a chart summarizing the characteristics of heart disease patients.
-2. **Prediction**: Estimating the distribution of one variable conditional on other variables.  An example would be calculation of a person's odds of heart disease, conditional on their demographics, genetics, and [LDL](../Analysis/Verma_et_al_(LDL)/LDL_Overview.md) level.
+2. **Prediction**: Estimating the distribution of one variable conditional on other variables.  An example would be calculation of a person's odds of heart disease, conditional on their demographics, genetics, and [LDL](../Analysis/LDL/Verma_et_al/LDL_Overview.md) level.
 3. **Causal Inference**:   Reasoning about counterfactuals.   An example would be evaluating the evidence in support of a statement like: "If all patients with high LDL were put on statins, occurrence of heart disease would be reduced by $X$ percent".  
 
 
