@@ -3,7 +3,11 @@
   "extends": [
     "config:recommended"
   ],
-    "packageRules": [
+  "enabledManagers": [
+    "pixi",
+    "github-actions"
+  ],
+  "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
       "matchCurrentVersion": "!/^0/",
