@@ -519,7 +519,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/70/e07c381e6488a77094f04c85c9caf1c8008cdc30778f7019bc52e5285ef0/gdown-5.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/94/4d/954e3030f47c28a8b4156b1a53b388cd85c78a2736978328198a2a1e4264/geneview-0.2.1.tar.gz
       - pypi: https://files.pythonhosted.org/packages/38/d0/4f34f9889ed159db2bcd70014dfe08fcad9d34db528a19a73754790cc21f/gffutils-0.13-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/e0/08/68b2f358e5ee27bdff0d9922112898bdc9736cee120b08994b71fa1b9bdc/gget-0.29.3-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/1f/92/f41c7c318e08170c3f9ee3e9ee3072297b4e0445a953dd85ee37870595e0/gget-0.30.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/a0/61/5c78b91c3143ed5c14207f463aecfc8f9dbb5092fb2869baf37c273b2705/gitdb-4.0.12-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/6a/09/e21df6aef1e1ffc0c816f0522ddc3f6dcded766c3261813131c78a704470/gitpython-3.1.46-py3-none-any.whl
@@ -1984,7 +1984,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: e835cb586673db61f618915d143fba4dfefc8f223d10a5d32ea82f57c2a720e9
+  sha256: 6307be9ac4151f7b7c038e7399826cbec4485add713622909b00a7915827b71a
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/7f/ad/ed66f7dd3d5e595a8bf1e115a54f77a185b616eb49ea94fe052c7fd4259e/blosc2-4.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: blosc2
@@ -2823,10 +2823,10 @@ packages:
   purls: []
   size: 20048603
   timestamp: 1765257116312
-- pypi: https://files.pythonhosted.org/packages/e0/08/68b2f358e5ee27bdff0d9922112898bdc9736cee120b08994b71fa1b9bdc/gget-0.29.3-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/1f/92/f41c7c318e08170c3f9ee3e9ee3072297b4e0445a953dd85ee37870595e0/gget-0.30.3-py3-none-any.whl
   name: gget
-  version: 0.29.3
-  sha256: aad3f34b161a39fe3ce45eb97c2e5a6220257d4f1be63f3dd299e6ff9cf60614
+  version: 0.30.3
+  sha256: a68467fd66cb97995527a226a3373d0c87fd3516678e0c67abc4373c1240bb49
   requires_dist:
   - numpy>=1.17.2
   - pandas>=1.0.0
@@ -2838,7 +2838,7 @@ packages:
   - ipywidgets
   - tqdm
   - lxml
-  requires_python: '>=3.7'
+  requires_python: '>=3.8'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/gh-2.86.0-h76a2195_0.conda
   sha256: 5225b9a1eaf4df27abbc331852800fbdbae4027d32cf6ac59bf4417ee2a286f8
   md5: 64fa7f4e457cbc7b7195db1e04f33bee
