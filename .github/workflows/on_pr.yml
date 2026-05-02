@@ -36,7 +36,7 @@ jobs:
         if: steps.changes.outputs.nonmark != 'true'
         run: |
           echo "Docs-only change; skipping tests/linters."
-      - uses: prefix-dev/setup-pixi@v0.9.4
+      - uses: prefix-dev/setup-pixi@v0.9.5
         name: Setup Pixi Environment
         if: steps.changes.outputs.nonmark == 'true'
         with:
