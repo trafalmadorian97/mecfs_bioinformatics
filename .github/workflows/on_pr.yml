@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: changes
         name: Check whether non-markdown files changed
