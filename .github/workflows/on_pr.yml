@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - uses: dorny/paths-filter@v3
         id: changes
         name: Check whether non-markdown files changed
@@ -36,7 +36,7 @@ jobs:
         if: steps.changes.outputs.nonmark != 'true'
         run: |
           echo "Docs-only change; skipping tests/linters."
-      - uses: prefix-dev/setup-pixi@v0.9.4
+      - uses: prefix-dev/setup-pixi@v0.9.5
         name: Setup Pixi Environment
         if: steps.changes.outputs.nonmark == 'true'
         with:
@@ -44,7 +44,7 @@ jobs:
           cache: true
       - name: Cache R Packages
         if: steps.changes.outputs.nonmark == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: cache-r
         with:
          path: r-libs
@@ -95,7 +95,7 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
       - name: Restore testmon cache # testmon cache can be used to skip tests if their dependencies have not changed
         if: steps.changes.outputs.nonmark == 'true'
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           # SQLite runs in WAL mode on CI; the actual data lives in .testmondata-wal
           # until checkpointed, so we must cache the WAL/SHM sidecars too.
