@@ -428,7 +428,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/readline-8.2-h8c095d6_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml-0.17.17-py312h4c3975b_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml.clib-0.2.12-py312h4c3975b_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ruff-0.14.2-ha3a3aed_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ruff-0.15.11-h7805a7d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.95.0-h53717f1_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.95.0-h2c6d0dc_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/s2n-1.6.1-h23ded05_1.conda
@@ -1985,7 +1985,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 99d77bf2f26b481c452585fcc1137830aaacafc6dd6d21202ab753f3a1edf505
+  sha256: 2fce52b682af2083472a77e65ba89c4781961052ae1ed7599baa76d629836ebd
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/7f/ad/ed66f7dd3d5e595a8bf1e115a54f77a185b616eb49ea94fe052c7fd4259e/blosc2-4.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: blosc2
@@ -9893,10 +9893,10 @@ packages:
   - pkg:pypi/ruamel-yaml-clib?source=hash-mapping
   size: 139438
   timestamp: 1756828829310
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ruff-0.14.2-ha3a3aed_0.conda
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ruff-0.15.11-h7805a7d_0.conda
   noarch: python
-  sha256: d6c3ee6381ce275107a3fb3cfe82499f3cb74da1d95e134a93ed5e4851b4ec01
-  md5: ba27344e81c9c460c9502fcbf7bd1e5c
+  sha256: cdbe0e611cf6abfea4d0a8d31721cdd357987ebc4521392638d7b57169422968
+  md5: 67a5122f008a689124eeb2075c1d92ab
   depends:
   - python
   - __glibc >=2.17,<3.0.a0
@@ -9907,8 +9907,8 @@ packages:
   license_family: MIT
   purls:
   - pkg:pypi/ruff?source=compressed-mapping
-  size: 11071649
-  timestamp: 1761253375744
+  size: 9327937
+  timestamp: 1776378777189
 - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.95.0-h53717f1_1.conda
   sha256: 0f7965acec00e5b35d7b4748ea0da57249ab3db2177d13eb87909c0a142148b5
   md5: 26172b61a3f03c31e56065413ffc1f2f
