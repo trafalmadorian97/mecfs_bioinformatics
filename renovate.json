@@ -4,7 +4,7 @@
     "config:recommended"
   ],
   "minimumReleaseAge": "1 day",
-  "prHourlyLimit": 1,
+  "prHourlyLimit": 10,
   "enabledManagers": [
     "pixi",
     "github-actions"
@@ -27,6 +27,18 @@
   "packageRules": [
     {
       "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "pyarrow",
+        "xarray",
+        "ibis-framework",
+        "actions/cache",
+        "actions/setup-python",
+        "dorny/paths-filter"
+      ],
+      "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
     }
   ]
