@@ -35,7 +35,8 @@
         "xarray",
         "ibis-framework",
         "actions/cache",
-        "actions/setup-python"
+        "actions/setup-python",
+        "dorny/paths-filter"
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
