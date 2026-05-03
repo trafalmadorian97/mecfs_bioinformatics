@@ -445,7 +445,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhcf101f3_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-w-1.2.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomlkit-0.13.3-pyha770c72_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.33-h4e94fc0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.34-h4e94fc0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.41.0-hdab8a38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.3-pyhd8ed1ab_0.conda
@@ -1985,7 +1985,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: ecfd79ff07d2929babe7db9a4e9c18b39880b4fa16429729987939456a0e98e4
+  sha256: 1a59e7711667f403c98ced56530de750f09003aa2c605dfac423f3d88adcee64
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/7f/ad/ed66f7dd3d5e595a8bf1e115a54f77a185b616eb49ea94fe052c7fd4259e/blosc2-4.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: blosc2
@@ -10570,14 +10570,14 @@ packages:
   - pytest-mypy-testing ; extra == 'test'
   - pytest>=7.0,<8.2 ; extra == 'test'
   requires_python: '>=3.8'
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.33-h4e94fc0_0.conda
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.34-h4e94fc0_0.conda
   noarch: python
-  sha256: 3752a7500ef36225a70c63826576e0b342fa04b5600eb14fa69d875a59a4d3a1
-  md5: f8e96f35750f8783383a1603535886a8
+  sha256: af837e38bc1fcfb78e752a8f9a7761e9f13f8b1d3d2b48046e23ac399fe73909
+  md5: d518ffaf451ab6e5becaf4c26e381897
   depends:
   - python
-  - __glibc >=2.17,<3.0.a0
   - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
   - _python_abi3_support 1.*
   - cpython >=3.10
   constrains:
@@ -10585,9 +10585,9 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/ty?source=compressed-mapping
-  size: 9670785
-  timestamp: 1777381902433
+  - pkg:pypi/ty?source=hash-mapping
+  size: 9731624
+  timestamp: 1777689250933
 - pypi: https://files.pythonhosted.org/packages/62/21/15129201c1f52f6af1e7809e96dce46da4b406c2c07fe9425e92f51edc5c/typechecks-0.1.0.tar.gz
   name: typechecks
   version: 0.1.0
