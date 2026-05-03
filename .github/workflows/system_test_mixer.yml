@@ -9,18 +9,14 @@ jobs:
     timeout-minutes: 600
     name: Run MiXeR system test
     runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v6
-      - uses: prefix-dev/setup-pixi@v0.9.5
-        name: Setup Pixi Environment
-        with:
-          pixi-version: v0.67.2
-          cache: true
-      - name: Install R packages
-        run: pixi r invoke install-r-packages
-        env:
-          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       - name: Run mixer integration test
-        run:  pixi r python -m pytest -s test_mecfs_bio/system/test_mixer.py  # run  test using mixer example data
-
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_mixer.py
+          free-disk-space: "false"
+          pre-test-command: pixi r invoke install-r-packages
