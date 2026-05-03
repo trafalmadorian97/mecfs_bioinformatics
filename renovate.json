@@ -31,7 +31,6 @@
     },
     {
       "matchPackageNames": [
-        "pyarrow",
         "xarray",
         "ibis-framework",
         "actions/cache",
