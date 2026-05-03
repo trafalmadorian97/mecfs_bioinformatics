@@ -1,0 +1,72 @@
+name: Run system test
+description: >
+  Set up the pixi environment and run a pytest target with peak-RSS reporting
+  and a background memory sampler. The sampler streams one line per 15s to the
+  step log, so the last sample before an OOM/runner-shutdown is preserved.
+
+inputs:
+  pytest-target:
+    description: pytest target / args, e.g. "test_mecfs_bio/system/foo.py"
+    required: true
+  free-disk-space:
+    description: Run aggressive runner disk cleanup before the test ('true'/'false').
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - name: Free Disk Space (Ubuntu)
+      if: inputs.free-disk-space == 'true'
+      uses: jlumbroso/free-disk-space@main
+      with:
+        tool-cache: true
+        android: true
+        dotnet: true
+        haskell: true
+        large-packages: true
+        docker-images: true
+        swap-storage: true
+    - name: Browser cleanup
+      if: inputs.free-disk-space == 'true'
+      uses: mathio/gha-cleanup@v1
+      with:
+        remove-browsers: true
+        verbose: true
+    - name: Setup Pixi Environment
+      uses: prefix-dev/setup-pixi@v0.9.5
+      with:
+        pixi-version: v0.67.2
+        cache: true
+    - name: Snapshot pre-test resources
+      shell: bash
+      run: |
+        echo "----- df -h -----"
+        df -h
+        echo "----- free -h -----"
+        free -h
+    - name: Run system test with memory monitoring
+      shell: bash
+      run: |
+        TIME_OUT="$RUNNER_TEMP/time.out"
+        (
+          while true; do
+            ts=$(date -u +"%H:%M:%S")
+            mem=$(awk '/^MemTotal:|^MemAvailable:|^SwapFree:/ {gsub(":","",$1); printf "%s=%dMB ", $1, $2/1024}' /proc/meminfo)
+            top=$(ps -eo rss,comm --sort=-rss --no-headers | head -3 | awk '{printf "%s(%dMB) ", $2, $1/1024}')
+            echo "[memwatch $ts] $mem| top3: $top"
+            sleep 15
+          done
+        ) &
+        SAMPLER_PID=$!
+        cleanup() {
+          kill "$SAMPLER_PID" 2>/dev/null || true
+          if [ -f "$TIME_OUT" ]; then
+            echo ""
+            echo "===== /usr/bin/time -v summary ====="
+            cat "$TIME_OUT"
+            echo "===================================="
+          fi
+        }
+        trap cleanup EXIT
+        /usr/bin/time -v -o "$TIME_OUT" pixi r python -m pytest -s ${{ inputs.pytest-target }}
