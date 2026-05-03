@@ -112,7 +112,7 @@ types-tqdm = ">=4.67.0.20250809"
 universal-pathlib = ">=0.3.4"
 xarray = ">=2025.12.0,<2026"
 xxhash = ">=3.6.0"
-ibis-framework = { version = ">=11.0.0,<12", extras = ["duckdb", "examples"] }
+ibis-framework = { version = ">=12,<13", extras = ["duckdb", "examples"] }
 scikit-learn = ">=1.7.2,<2"
 gdown = ">=5.2.0,<6"
 mkdocs-gen-files = ">=0.6.1,<0.7"
