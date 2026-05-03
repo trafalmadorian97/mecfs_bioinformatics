@@ -720,7 +720,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/b5/e8/dbf020b4d98251a9860752a094d09a65e1b436ad181faf929983f697048f/watchdog-6.0.0-py3-none-manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/3f/0e/fa3b193432cfc60c93b42f3be03365f5f909d2b3ea410295cf36df739e31/widgetsnbextension-4.0.15-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9f/81/5d931d78d0eb732b95dc3ddaeeb71c8bb572fb01356e9133916cd729ecdd/wrapt-1.17.3-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/d5/e4/62a677feefde05b12a70a4fc9bdc8558010182a801fbcab68cb56c2b0986/xarray-2025.12.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/dc/83/6d810a8a9ebc9c307989b418840c20e46907c74d707beb67ab566773e6fc/xarray-2026.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/11/4f/426f91b96701ec2f37bb2b8cec664eff4f658a11f3fa9d94f0a887ea6d2b/xxhash-3.6.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/db/0f/0d52c98b8a885aeda831224b78f3be7ec2e1aa4a62091f9f9188c3c65b56/yarl-1.22.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/ad/10/2596e5d37a1e07d75917be5871020f6fe5ee01ef80281785e5a485e3ffaa/zepid-0.9.1-py2.py3-none-any.whl
@@ -1985,7 +1985,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 1a59e7711667f403c98ced56530de750f09003aa2c605dfac423f3d88adcee64
+  sha256: 9ccb37dc06141c86527fde524c4e07db53bd90aa805eb89e70f912b68100e1d9
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/7f/ad/ed66f7dd3d5e595a8bf1e115a54f77a185b616eb49ea94fe052c7fd4259e/blosc2-4.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: blosc2
@@ -10786,52 +10786,53 @@ packages:
   version: 1.17.3
   sha256: 042ec3bb8f319c147b1301f2393bc19dba6e176b7da446853406d041c36c7828
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/d5/e4/62a677feefde05b12a70a4fc9bdc8558010182a801fbcab68cb56c2b0986/xarray-2025.12.0-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/dc/83/6d810a8a9ebc9c307989b418840c20e46907c74d707beb67ab566773e6fc/xarray-2026.4.0-py3-none-any.whl
   name: xarray
-  version: 2025.12.0
-  sha256: 9e77e820474dbbe4c6c2954d0da6342aa484e33adaa96ab916b15a786181e970
+  version: 2026.4.0
+  sha256: d43751d9fb4a90f9249c30431684f00c41bc874f1edccd862631a40cbc0edf08
   requires_dist:
   - numpy>=1.26
-  - packaging>=24.1
+  - packaging>=24.2
   - pandas>=2.2
-  - scipy>=1.13 ; extra == 'accel'
+  - scipy>=1.15 ; extra == 'accel'
   - bottleneck ; extra == 'accel'
-  - numbagg>=0.8 ; extra == 'accel'
+  - numbagg>=0.9 ; extra == 'accel'
   - numba>=0.62 ; extra == 'accel'
-  - flox>=0.9 ; extra == 'accel'
+  - flox>=0.10 ; extra == 'accel'
   - opt-einsum ; extra == 'accel'
   - xarray[accel,etc,io,parallel,viz] ; extra == 'complete'
   - netcdf4>=1.6.0 ; extra == 'io'
-  - h5netcdf ; extra == 'io'
+  - h5netcdf[h5py]>=1.5.0 ; extra == 'io'
   - pydap ; extra == 'io'
-  - scipy>=1.13 ; extra == 'io'
-  - zarr>=2.18 ; extra == 'io'
+  - scipy>=1.15 ; extra == 'io'
+  - zarr>=3.0 ; extra == 'io'
   - fsspec ; extra == 'io'
   - cftime ; extra == 'io'
   - pooch ; extra == 'io'
   - sparse>=0.15 ; extra == 'etc'
   - dask[complete] ; extra == 'parallel'
-  - cartopy>=0.23 ; extra == 'viz'
-  - matplotlib>=3.8 ; extra == 'viz'
+  - cartopy>=0.24 ; extra == 'viz'
+  - matplotlib>=3.10 ; extra == 'viz'
   - nc-time-axis ; extra == 'viz'
   - seaborn ; extra == 'viz'
   - pandas-stubs ; extra == 'types'
   - scipy-stubs ; extra == 'types'
-  - types-pyyaml ; extra == 'types'
-  - types-pygments ; extra == 'types'
   - types-colorama ; extra == 'types'
   - types-decorator ; extra == 'types'
   - types-defusedxml ; extra == 'types'
   - types-docutils ; extra == 'types'
   - types-networkx ; extra == 'types'
+  - types-openpyxl ; extra == 'types'
   - types-pexpect ; extra == 'types'
   - types-psutil ; extra == 'types'
   - types-pycurl ; extra == 'types'
-  - types-openpyxl ; extra == 'types'
+  - types-pygments ; extra == 'types'
   - types-python-dateutil ; extra == 'types'
   - types-pytz ; extra == 'types'
+  - types-pyyaml ; extra == 'types'
   - types-requests ; extra == 'types'
   - types-setuptools ; extra == 'types'
+  - types-xlrd ; extra == 'types'
   requires_python: '>=3.11'
 - conda: https://conda.anaconda.org/conda-forge/noarch/xmltodict-1.0.2-pyhcf101f3_0.conda
   sha256: 5001a8b0a26810f5b8e20a05bca8cd458b0f6dcfbe00bf648aec017b1fd341f1

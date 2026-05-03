@@ -110,7 +110,7 @@ types-networkx = ">=3.5.0.20251001"
 types-requests = ">=2.32.4.20250913"
 types-tqdm = ">=4.67.0.20250809"
 universal-pathlib = ">=0.3.4"
-xarray = ">=2025.12.0,<2026"
+xarray = ">=2026.4,<2027"
 xxhash = ">=3.6.0"
 ibis-framework = { version = ">=12,<13", extras = ["duckdb", "examples"] }
 scikit-learn = ">=1.7.2,<2"
