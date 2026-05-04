@@ -35,7 +35,8 @@
         "ibis-framework",
         "actions/cache",
         "actions/setup-python",
-        "dorny/paths-filter"
+        "dorny/paths-filter",
+        "actionlint"
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
