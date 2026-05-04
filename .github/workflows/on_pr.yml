@@ -89,6 +89,9 @@ jobs:
       - name: Check types with ty
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke typecheck
+      - name: Lint with actionlint
+        if: steps.changes.outputs.nonmark == 'true'
+        run: pixi r  invoke lint-actions
       - name: Compute cache date
         if: steps.changes.outputs.nonmark == 'true'
         id: cache-date
