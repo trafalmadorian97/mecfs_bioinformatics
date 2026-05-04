@@ -128,7 +128,7 @@ def _print_progress(
 
 @frozen
 class TopologicalSchedulerSettings:
-    print_progress: bool = True
+    print_progress: bool = False
 
 
 def topological[

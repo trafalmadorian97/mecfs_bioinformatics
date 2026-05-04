@@ -12,11 +12,8 @@ jobs:
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v6
-      - uses: prefix-dev/setup-pixi@v0.9.5
-        name: Setup Pixi Environment
-        with:
-          pixi-version: v0.67.2
-          cache: true
       - name: Run harmonization integration test
-        run: pixi r python -m pytest -s  test_mecfs_bio/system/test_harmonize_drop_ambiguous.py  # run harmonization on Decode-ME data
-
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_harmonize_drop_ambiguous.py
+          free-disk-space: "false"
