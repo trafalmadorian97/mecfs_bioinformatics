@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 HAPMAP3_SNPLIST_FOR_GENOMIC_SEM = DownloadFileTask(
     meta=ReferenceFileMeta(
-        group="snplist_reference_data",
+        group="genomic_sem_reference",
         sub_group="hapmap",
         sub_folder=PurePath("raw"),
         id=AssetId("hapmap3_snp_list"),
