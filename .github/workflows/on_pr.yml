@@ -122,4 +122,5 @@ jobs:
           echo "--- find under /home/runner ---"
           find /home/runner -name '.testmondata*' 2>/dev/null
           echo "--- pixi shell view ---"
+          # shellcheck disable=SC2016  # $(pwd) is intentionally evaluated by the inner bash -c
           pixi r bash -c 'echo "pixi pwd: $(pwd)"; ls -la .testmondata* 2>/dev/null || echo "no .testmondata in pixi cwd"'
