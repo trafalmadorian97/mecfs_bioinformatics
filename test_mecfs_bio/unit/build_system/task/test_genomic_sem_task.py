@@ -28,7 +28,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
     BinaryPhenotypeSampleInfo,
     QuantPhenotype,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
     MUNGE_A1_COL,
     MUNGE_A2_COL,
     MUNGE_EFFECT_COL,

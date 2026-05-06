@@ -19,9 +19,8 @@ GenomicSEM is an R library, so it is accessed through Python via rpy2.
 import gc
 import re
 import tempfile
-from enum import StrEnum
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Final, Literal, Sequence
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -42,7 +41,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     MULTI_TRAIT,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
     LAVAAN_MODEL_FILENAME,
     LDSC_LOG_PREFIX,
     MUNGED_SUBDIR,
@@ -64,15 +63,15 @@ GWAS_RESULTS_SUBDIR = "gwas_results"
 COMMON_FACTOR_GWAS_FILENAME = "common_factor.parquet"
 
 
-class GWASMethod(StrEnum):
-    """
-    How the source GWAS was estimated. Controls the per-trait flag (one of
-    se.logit / OLS / linprob) passed to GenomicSEM::sumstats.
-    """
+# How the source GWAS was estimated. Controls the per-trait flag (one of
+# se.logit / OLS / linprob) passed to GenomicSEM::sumstats.
+OLS: Final = "ols"
+LOGISTIC: Final = "logistic"
+LINEAR_PROB: Final = "linear_prob"
 
-    OLS = "ols"
-    LOGISTIC = "logistic"
-    LINEAR_PROB = "linear_prob"
+# `ty` requires the type arguments to Literal to be inline literals rather
+# than Final-typed names, so the strings are repeated here.
+GWASMethod = Literal["ols", "logistic", "linear_prob"]
 
 
 @frozen
@@ -129,7 +128,7 @@ class GenomicSEMGWASRunConfig:
 class GenomicSEMCommonFactorGWASTask(Task):
     """
     Run GenomicSEM common factor GWAS: munge → ldsc → sumstats →
-    commonfactorGWAS. Output is a parquet of per-SNP common factor effects.
+    common factor GWAS. Output is a parquet of per-SNP common factor effects.
     """
 
     meta: Meta
@@ -363,9 +362,9 @@ def _gwas_method_flags(
     ols: list[bool] = []
     linprob: list[bool] = []
     for s in sources:
-        se_logit.append(s.gwas_method is GWASMethod.LOGISTIC)
-        ols.append(s.gwas_method is GWASMethod.OLS)
-        linprob.append(s.gwas_method is GWASMethod.LINEAR_PROB)
+        se_logit.append(s.gwas_method == LOGISTIC)
+        ols.append(s.gwas_method == OLS)
+        linprob.append(s.gwas_method == LINEAR_PROB)
     return se_logit, ols, linprob
 
 

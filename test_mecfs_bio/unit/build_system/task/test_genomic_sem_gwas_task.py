@@ -21,9 +21,12 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     QuantPhenotype,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem_gwas_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_gwas_task import (
     COMMON_FACTOR_GWAS_FILENAME,
     GWAS_RESULTS_SUBDIR,
+    LINEAR_PROB,
+    LOGISTIC,
+    OLS,
     GenomicSEMCommonFactorGWASTask,
     GenomicSEMGWASRunConfig,
     GenomicSEMGWASSumstatsSource,
@@ -33,7 +36,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem_gwas_task import (
     _gwas_method_flags,
     _sanitize_component_name,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
     GenomicSEMSumstatsSource,
 )
 
@@ -42,7 +45,7 @@ def _make_gwas_source(
     asset_id: str,
     alias: str,
     sample_info,
-    gwas_method: GWASMethod = GWASMethod.OLS,
+    gwas_method: GWASMethod = OLS,
 ) -> GenomicSEMGWASSumstatsSource:
     inner_task = FakeTask(
         SimpleFileMeta(
@@ -229,14 +232,10 @@ def test_gwas_method_flags_one_per_trait():
     Each source's GWASMethod produces exactly one TRUE in the
     (se_logit, OLS, linprob) triple, in the slot matching its method.
     """
-    src_ols = _make_gwas_source(
-        "a", "a", QuantPhenotype(total_sample_size=1), GWASMethod.OLS
-    )
-    src_log = _make_gwas_source(
-        "b", "b", QuantPhenotype(total_sample_size=1), GWASMethod.LOGISTIC
-    )
+    src_ols = _make_gwas_source("a", "a", QuantPhenotype(total_sample_size=1), OLS)
+    src_log = _make_gwas_source("b", "b", QuantPhenotype(total_sample_size=1), LOGISTIC)
     src_lin = _make_gwas_source(
-        "c", "c", QuantPhenotype(total_sample_size=1), GWASMethod.LINEAR_PROB
+        "c", "c", QuantPhenotype(total_sample_size=1), LINEAR_PROB
     )
 
     se_logit, ols, linprob = _gwas_method_flags([src_ols, src_log, src_lin])
