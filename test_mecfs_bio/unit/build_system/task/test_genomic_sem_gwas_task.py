@@ -21,13 +21,18 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     QuantPhenotype,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_gwas_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_common_factor_gwas_task import (
+    GenomicSEMCommonFactorGWASTask,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
+    GenomicSEMSumstatsSource,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_user_gwas_task import (
     COMMON_FACTOR_GWAS_FILENAME,
     GWAS_RESULTS_SUBDIR,
     LINEAR_PROB,
     LOGISTIC,
     OLS,
-    GenomicSEMCommonFactorGWASTask,
     GenomicSEMGWASRunConfig,
     GenomicSEMGWASSumstatsSource,
     GenomicSEMSumstatsConfig,
@@ -35,9 +40,6 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_gwas_task impor
     GWASMethod,
     _gwas_method_flags,
     _sanitize_component_name,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
-    GenomicSEMSumstatsSource,
 )
 
 

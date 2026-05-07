@@ -41,7 +41,10 @@ Rscript -e "if (!require('remotes', quietly=TRUE)) install.packages('remotes', r
 packages = ["mecfs_bio"]
 
 [tool.pixi.activation]
-env = { R_LIBS_USER = "r-libs" }
+# R_LIBS_USER must be absolute (see scripts/pixi-activate.sh for why); pixi
+# applies the static `env` table after `scripts`, so we cannot also set a
+# relative fallback here without overriding the script.
+scripts = ["scripts/pixi-activate.sh"]
 
 [tool.pixi.feature.analysis.dependencies]
 pysam = ">=0.23.3,<0.24"

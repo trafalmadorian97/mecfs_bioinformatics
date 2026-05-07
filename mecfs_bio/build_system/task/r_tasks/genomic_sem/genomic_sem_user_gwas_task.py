@@ -125,96 +125,6 @@ class GenomicSEMGWASRunConfig:
 
 
 @frozen
-class GenomicSEMCommonFactorGWASTask(Task):
-    """
-    Run GenomicSEM common factor GWAS: munge → ldsc → sumstats →
-    common factor GWAS. Output is a parquet of per-SNP common factor effects.
-    """
-
-    meta: Meta
-    sources: Sequence[GenomicSEMGWASSumstatsSource]
-    ld_ref_task: Task
-    hapmap_snps_task: Task
-    sumstats_ref_task: Task
-    munge_config: GenomicSEMConfig = GenomicSEMConfig()
-    sumstats_config: GenomicSEMSumstatsConfig = GenomicSEMSumstatsConfig()
-    run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig()
-
-    def __attrs_post_init__(self):
-        _validate_sources(self.sources)
-
-    @property
-    def deps(self) -> list[Task]:
-        result: list[Task] = [
-            self.ld_ref_task,
-            self.hapmap_snps_task,
-            self.sumstats_ref_task,
-        ]
-        for source in self.sources:
-            result.append(source.task)
-        return result
-
-    def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        gsem = importr("GenomicSEM")
-        ld_path = _resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
-        hapmap_path = _resolve_file_path(self.hapmap_snps_task, fetch)
-        sumstats_ref_path = _resolve_file_path(self.sumstats_ref_task, fetch)
-
-        with tempfile.TemporaryDirectory() as tmp_dir_str:
-            tmp_dir = Path(tmp_dir_str)
-            covstruc, snps = _prepare_gwas_inputs(
-                gsem=gsem,
-                sources=self.sources,
-                ld_path=ld_path,
-                hapmap_path=hapmap_path,
-                sumstats_ref_path=sumstats_ref_path,
-                munge_config=self.munge_config,
-                sumstats_config=self.sumstats_config,
-                fetch=fetch,
-                scratch_dir=scratch_dir,
-                tmp_dir=tmp_dir,
-            )
-            logger.debug("Running GenomicSEM::commonfactorGWAS")
-            result = _run_common_factor_gwas(
-                gsem=gsem, covstruc=covstruc, snps=snps, config=self.run_config
-            )
-            _save_common_factor_gwas_output(result, scratch_dir)
-
-        gc.collect()
-        ro.r("gc()")
-        return DirectoryAsset(scratch_dir)
-
-    @classmethod
-    def create(
-        cls,
-        asset_id: str,
-        sources: Sequence[GenomicSEMGWASSumstatsSource],
-        ld_ref_task: Task,
-        hapmap_snps_task: Task,
-        sumstats_ref_task: Task,
-        munge_config: GenomicSEMConfig = GenomicSEMConfig(),
-        sumstats_config: GenomicSEMSumstatsConfig = GenomicSEMSumstatsConfig(),
-        run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig(),
-    ) -> "GenomicSEMCommonFactorGWASTask":
-        meta = ResultDirectoryMeta(
-            id=AssetId(asset_id),
-            trait=MULTI_TRAIT,
-            project="genomic_sem",
-            sub_dir=PurePath("analysis"),
-        )
-        return cls(
-            meta=meta,
-            sources=sources,
-            ld_ref_task=ld_ref_task,
-            hapmap_snps_task=hapmap_snps_task,
-            sumstats_ref_task=sumstats_ref_task,
-            munge_config=munge_config,
-            sumstats_config=sumstats_config,
-            run_config=run_config,
-        )
-
-
-@frozen
 class GenomicSEMUserGWASTask(Task):
     """
     Run GenomicSEM multivariate (user) GWAS: munge → ldsc → sumstats →
@@ -378,13 +288,16 @@ def _resolve_ld_path(
 ) -> str:
     asset = fetch(ld_ref_task.asset_id)
     assert isinstance(asset, DirectoryAsset)
-    return str(asset.path) + munge_config.ld_file_filename_pattern
+    # Absolute path so the value remains correct after R chdirs during munge.
+    # The basename-prefix in munge_config.ld_file_filename_pattern is applied
+    # downstream by _run_ldsc via a symlink farm — do not concatenate it here.
+    return str(asset.path.resolve())
 
 
 def _resolve_file_path(task: Task, fetch: Fetch) -> str:
     asset = fetch(task.asset_id)
     assert isinstance(asset, FileAsset)
-    return str(asset.path)
+    return str(asset.path.resolve())
 
 
 def _prepare_gwas_inputs(
@@ -447,6 +360,7 @@ def _prepare_gwas_inputs(
         sample_prevs=sample_prevs,
         population_prevs=population_prevs,
         ld_path=ld_path,
+        ld_file_basename_prefix=munge_config.ld_file_filename_pattern,
         ldsc_log_prefix=str(scratch_dir / LDSC_LOG_PREFIX),
     )
     _save_ldsc_outputs(covstruc=covstruc, scratch_dir=scratch_dir)
@@ -479,6 +393,17 @@ def _run_sumstats(
     sample_sizes: list[float],
     config: GenomicSEMSumstatsConfig,
 ):
+    """
+    From the wiki: https://github.com/GenomicSEM/GenomicSEM/wiki/4.-Common-Factor-GWAS
+
+    The sumstats function takes care of a few things prior to running multivariate GWAS.
+    In order to run a multivariate GWAS, the SNPs, and corresponding SNP effects,
+    need to be coded across phenotypes so that the same allele is the reference allele in all cases.
+    In all cases, coefficients and their SEs are then further transformed such that they are scaled relative to unit-variance scaled phenotypes.
+    In order to appropriately perform this standardization for different types of betas (e.g., logistic betas, odds-ratios),
+    the sumstats function takes a number of arguments outlined below. The sumstats function then combines these newly scaled betas and SEs into a single, listwise deleted file. Note that it is possible to back out a beta and SE when only Z-statistics are provided as long as you have the total sample size for a continuous trait or the sum of effective sample sizes across the contributing cohorts for a binary trait. Confused about how to specify the arguments for this function? See point 3 on the important resources and key information page. Please also note that the sumstats function requires that the variables be listed in the same order as they are listed for the ldsc function above.
+    The sumstats function takes 4 necessary arguments, along with 6 additional arguments whose default is NULL:
+    """
     kwargs = dict(
         files=ro.StrVector(input_files),
         ref=ref_path,
@@ -498,22 +423,6 @@ def _run_sumstats(
     return gsem.sumstats(**kwargs)
 
 
-def _run_common_factor_gwas(*, gsem, covstruc, snps, config: GenomicSEMGWASRunConfig):
-    kwargs = dict(
-        covstruc=covstruc,
-        SNPs=snps,
-        estimation=config.estimation,
-        parallel=config.parallel,
-        GC=config.gc_correction,
-        toler=config.toler,
-        SNPSE=config.snp_se,
-        smooth_check=config.smooth_check,
-    )
-    if config.cores is not None:
-        kwargs["cores"] = config.cores
-    return gsem.commonfactorGWAS(**kwargs)
-
-
 def _run_user_gwas(
     *,
     gsem,
@@ -526,6 +435,9 @@ def _run_user_gwas(
     std_lv: bool,
     config: GenomicSEMGWASRunConfig,
 ):
+    """
+    See section 5 of https://github.com/GenomicSEM/GenomicSEM/wiki/5.-Multivariate-GWAS
+    """
     kwargs = dict(
         covstruc=covstruc,
         SNPs=snps,
@@ -550,16 +462,6 @@ def _r_to_pandas(r_df) -> pd.DataFrame:
     conv = ro.default_converter + pandas2ri.converter
     with localconverter(conv):
         return ro.conversion.get_conversion().rpy2py(r_df)
-
-
-def _save_common_factor_gwas_output(result, scratch_dir: Path) -> Path:
-    out_dir = scratch_dir / GWAS_RESULTS_SUBDIR
-    out_dir.mkdir(parents=True, exist_ok=True)
-    df = _r_to_pandas(result)
-    out_path = out_dir / COMMON_FACTOR_GWAS_FILENAME
-    df.to_parquet(out_path, index=False)
-    logger.debug(f"Wrote common factor GWAS sumstats to {out_path} ({len(df)} rows)")
-    return out_path
 
 
 def _save_user_gwas_outputs(

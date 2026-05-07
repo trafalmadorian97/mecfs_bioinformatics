@@ -8,10 +8,10 @@ GenomicSEM is an R library, so it is accessed through Python via rpy2.
 """
 
 import gc
-import shlex
 import tempfile
+from contextlib import contextmanager
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Iterator, Literal, Sequence
 
 import pandas as pd
 import polars as pl
@@ -75,6 +75,8 @@ LAVAAN_MODEL_FILENAME = "lavaan_model.txt"
 MODEL_FIT_FILENAME = "model_fit.csv"
 MODEL_RESULTS_FILENAME = "model_results.csv"
 
+GSEstmationType = Literal["DWLS", "ML"]
+
 
 @frozen
 class GenomicSEMSumstatsSource:
@@ -102,15 +104,20 @@ class GenomicSEMConfig:
     Configuration for the GenomicSEM workflow.
     """
 
-    estimation: str = "DWLS"  # GenomicSEM::usermodel estimation: "DWLS" or "ML"
+    estimation: GSEstmationType = (
+        "DWLS"  # GenomicSEM::usermodel estimation: "DWLS" or "ML"
+    )
     std_lv: bool = False  # If TRUE, latent variables are standardised
     cfi_calc: bool = True  # Whether to compute CFI fit index
     fix_resid: bool = True  # Whether to fix residual variances
     info_filter: float = 0.9  # munge: minimum INFO score
     maf_filter: float = 0.01  # munge: minimum MAF
-    ld_file_filename_pattern: str = (
-        ""  # Sub-path appended to the LD reference dir if needed
-    )
+    # If non-empty, treated as a basename prefix on the LD reference files
+    # (e.g. "LDscore." matches files named "LDscore.<chr>.l2.ldscore.gz").
+    # GenomicSEM::ldsc hardcodes "<ld>/<chr>.l2.ldscore.gz", so when a prefix
+    # is set we build a symlinked view of the dir with the prefix stripped and
+    # pass that to ldsc.
+    ld_file_filename_pattern: str = ""
 
 
 @frozen
@@ -160,11 +167,12 @@ class GenomicSEMTask(Task):
 
         ld_asset = fetch(self.ld_ref_task.asset_id)
         assert isinstance(ld_asset, DirectoryAsset)
-        ld_path = str(ld_asset.path) + self.config.ld_file_filename_pattern
+        # Absolute path so values remain correct after R chdirs during munge.
+        ld_path = str(ld_asset.path.resolve())
 
         hapmap_asset = fetch(self.hapmap_snps_task.asset_id)
         assert isinstance(hapmap_asset, FileAsset)
-        hapmap_path = str(hapmap_asset.path)
+        hapmap_path = str(hapmap_asset.path.resolve())
 
         munged_dir = scratch_dir / MUNGED_SUBDIR
         munged_dir.mkdir(parents=True, exist_ok=True)
@@ -213,6 +221,7 @@ class GenomicSEMTask(Task):
                 sample_prevs=sample_prevs,
                 population_prevs=population_prevs,
                 ld_path=ld_path,
+                ld_file_basename_prefix=self.config.ld_file_filename_pattern,
                 ldsc_log_prefix=str(scratch_dir / LDSC_LOG_PREFIX),
             )
 
@@ -370,9 +379,10 @@ def _run_munge(
     into output_dir for the call to keep all generated artifacts inside the
     target output directory.
     """
-    cwd_before = str(ro.r("getwd()")[0])  # ty: ignore[not-subscriptable]
+    base = importr("base")
+    cwd_before = str(base.getwd()[0])  # ty: ignore[not-subscriptable]
     try:
-        ro.r(f"setwd({shlex.quote(str(output_dir))})")
+        base.setwd(str(output_dir))
         gsem.munge(
             files=ro.StrVector(input_files),
             hm3=hapmap_path,
@@ -382,7 +392,30 @@ def _run_munge(
             maf_filter=maf_filter,
         )
     finally:
-        ro.r(f"setwd({shlex.quote(cwd_before)})")
+        base.setwd(cwd_before)
+
+
+@contextmanager
+def _ld_dir_with_genomic_sem_naming(
+    ld_path: str, basename_prefix: str
+) -> Iterator[str]:
+    """
+    GenomicSEM::ldsc constructs LD score paths as "<ld>/<chr>.l2.ldscore.gz",
+    so when the on-disk files have a basename prefix (e.g. "LDscore.") we
+    build a tempdir of symlinks with the prefix stripped and yield that.
+    """
+    if not basename_prefix:
+        yield ld_path
+        return
+    src_dir = Path(ld_path)
+    with tempfile.TemporaryDirectory() as tmp_str:
+        tmp = Path(tmp_str)
+        for src in src_dir.iterdir():
+            if not src.name.startswith(basename_prefix):
+                continue
+            stripped = src.name[len(basename_prefix) :]
+            (tmp / stripped).symlink_to(src.resolve())
+        yield str(tmp)
 
 
 def _run_ldsc(
@@ -392,23 +425,38 @@ def _run_ldsc(
     sample_prevs: list[float],
     population_prevs: list[float],
     ld_path: str,
+    ld_file_basename_prefix: str,
     ldsc_log_prefix: str,
 ):
     """
     Run GenomicSEM::ldsc to obtain a genetic covariance matrix. The same path
     is used for both ld and wld since GenomicSEM expects pre-built LD scores
     in standard form. ldsc appends "_ldsc.log" to the supplied prefix.
+
+    GSEM: The Genomic SEM R module
+
+    According to the genomic SEM wiki, he LDSC function returns an object with the following attributes:
+
+
+        LDSCoutput$S is the covariance matrix (on the liability scale for case/control designs).
+        LDSCoutput$V which is the sampling covariance matrix in the format expected by lavaan.
+        LDSCoutput$I is the matrix of LDSC intercepts and cross-trait (i.e., bivariate) intercepts.
+        LDSCoutput$N contains the sample sizes (N) for the heritabilities and sqrt(N1N2) for the co-heritabilities. These are the sample sizes provided in the munging process.
+        LDSCoutput$m is the number of SNPs used to construct the LD score.
     """
-    return gsem.ldsc(
-        traits=ro.StrVector(munged_paths),
-        sample_prev=ro.FloatVector(sample_prevs),
-        population_prev=ro.FloatVector(population_prevs),
-        ld=ld_path,
-        wld=ld_path,
-        trait_names=ro.StrVector(trait_names),
-        ldsc_log=ldsc_log_prefix,
-        stand=True,
-    )
+    with _ld_dir_with_genomic_sem_naming(
+        ld_path, ld_file_basename_prefix
+    ) as effective_ld:
+        return gsem.ldsc(
+            traits=ro.StrVector(munged_paths),
+            sample_prev=ro.FloatVector(sample_prevs),
+            population_prev=ro.FloatVector(population_prevs),
+            ld=effective_ld,
+            wld=effective_ld,
+            trait_names=ro.StrVector(trait_names),
+            ldsc_log=ldsc_log_prefix,
+            stand=True,
+        )
 
 
 def _save_ldsc_outputs(covstruc, scratch_dir: Path) -> None:
