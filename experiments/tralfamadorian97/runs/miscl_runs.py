@@ -1,6 +1,7 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import \
     DECODE_ME_CURATED_GENE_SET_ANALYSIS
+from mecfs_bio.assets.gwas.multi_trait.genomic_sem.mecf_pain_common_factor import MECFS_PAIN_COMMON_FACTOR
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import \
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_gene_sets import \
@@ -37,7 +38,8 @@ def run_miscl_analysis():
 
         # DECODE_ME_CURATED_GENE_SET_ANALYSIS.terminal_tasks()+
         [
-            GENOMES1K_REFERENCE_FOR_GENOMIC_SEM
+            MECFS_PAIN_COMMON_FACTOR
+            # GENOMES1K_REFERENCE_FOR_GENOMIC_SEM
             # HAPMAP3_SNPLIST_FOR_GENOMIC_SEM
             # CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
             # MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE,
