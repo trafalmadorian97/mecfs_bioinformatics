@@ -34,4 +34,4 @@ Here is a the plot of significant clusters again, this time with independently s
 
 ![sch-hba-cluster-plot](https://github.com/user-attachments/assets/f859d2e5-b507-4c2e-b658-0f89f6fdef97)
 
-It is interesting to observe the fairly significant overlap with the significant clusters found in the [analysis of the educational attainment GWAS](../../EDU/Lee_et_al_2018/MAGMA-HBA.md).
+It is interesting to observe the fairly significant overlap with the significant clusters found in the [analysis of the educational attainment GWAS](../../Education/Lee_et_al_2018/MAGMA-HBA.md).

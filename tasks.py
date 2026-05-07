@@ -357,6 +357,7 @@ def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
         c, include_authors=include_authors, enable_api_autonav=enable_api_autonav
     )
 
+
 @task
 def build_docs(c):
     cmd = "mkdocs build --strict"
