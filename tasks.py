@@ -358,6 +358,13 @@ def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
     )
 
 
+@task
+def build_docs(c):
+    cmd = "mkdocs build --strict"
+    print(f"running {cmd}")
+    c.run(cmd)
+
+
 # initialization
 @task(pre=[install_r_packages, pfig, green])
 def init(c):
