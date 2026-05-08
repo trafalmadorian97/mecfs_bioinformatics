@@ -41,6 +41,6 @@ The traits are:
 To reproduce these results, use {{ api_link("this script", "mecfs_bio.analysis.ct_ldsc_analysis") }}.
 
 
-[^sch_note]:  See _"Identification of Genes for Schizophrenia Highlights the Interplay of Rare and Common Risk Variants_" in Chapter 1 of Kandel et al.[@kandel2021principles] and also the [S-LDSC analysis of schizophrenia](../../PGC_2022_(SCH)/S-LDSC_SCH_Analysis.md) in this repo.
+[^sch_note]:  See _"Identification of Genes for Schizophrenia Highlights the Interplay of Rare and Common Risk Variants_" in Chapter 1 of Kandel et al.[@kandel2021principles] and also the [S-LDSC analysis of schizophrenia](../../Schizophrenia/PGC_2022/S-LDSC_SCH_Analysis.md) in this repo.
 
 [^asthma_note]: See _Janeway's Immunobiology,_[@murphy2022janeway] _Chapter 14: Allergic Diseases_.

@@ -274,6 +274,14 @@ def check_local_links(c):
     c.run(cmd)
 
 
+@task
+def lint_actions(c):
+    print("Linting github actions...")
+    cmd = "actionlint"
+    print(f"running {cmd}")
+    c.run(cmd)
+
+
 @task(
     pre=[
         lintfix,
@@ -285,6 +293,7 @@ def check_local_links(c):
         checkimports,
         fix_init_files,
         typecheck,
+        lint_actions,
         test,
     ]
 )
@@ -348,6 +357,13 @@ def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
     serve_docs(
         c, include_authors=include_authors, enable_api_autonav=enable_api_autonav
     )
+
+
+@task
+def build_docs(c):
+    cmd = "mkdocs build --strict"
+    print(f"running {cmd}")
+    c.run(cmd)
 
 
 # initialization
