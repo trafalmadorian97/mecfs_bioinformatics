@@ -1,4 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC, \
+    DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import \
     DECODE_ME_CURATED_GENE_SET_ANALYSIS
 from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs_standard_analysis import \
@@ -37,9 +39,11 @@ def run_miscl_analysis():
         # JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.gene_set_analysis_tasks.terminal_tasks()+
 
         # DECODE_ME_CURATED_GENE_SET_ANALYSIS.terminal_tasks()+
-        MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
+        # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
         [
-            MILLION_VETERANS_CFS_RAW
+            # MILLION_VETERANS_CFS_RAW,
+            # DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC
+            DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
             # CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
             # MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE,
             # MSIGDB_SQLLITE_EXTRACTED
