@@ -26,6 +26,9 @@ from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysi
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import (
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
+    DECODE_ME_GWAS_1_MANHATTAN_PLOT,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import (
     DECODE_ME_CURATED_GENE_SET_ANALYSIS,
 )
@@ -63,6 +66,7 @@ MULTI_TISSUE_CHROMATIN_REF = "multi_tissue_chromatin"
 MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
 
 ALL_FIGURE_TASKS: list[Task] = [
+    DECODE_ME_GWAS_1_MANHATTAN_PLOT,
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
