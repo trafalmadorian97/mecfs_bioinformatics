@@ -116,6 +116,10 @@ class StandardAnalysisTaskGroup:
     def heritability_markdown_task_unwrap(self) -> Task:
         return unwrap(self.heritability_task)
 
+    @property
+    def gene_set_analysis_unwrap(self) -> CuratedGeneSetAnalysisTasks:
+        return unwrap(self.gene_set_analysis_tasks)
+
     def get_terminal_tasks(self) -> list[Task]:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())
