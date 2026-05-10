@@ -7,4 +7,4 @@ I used [Cross-Trait Linkage Disequilibrium Score Regression](../../../../Bioinfo
 {{ include_file("docs/_figs/cfs_ct_ldsc_ct_ldsc_corr_agg_markdown.mdx") }}
 
 
-The genetic correlation of 0.6523 is high, but not as high as would be expected if the two GWAS were truly measuring an identical trait.  This is consistent with the Million Veterans GWAS using a somewhat imprecise trait definition.  Note also that the standard deviation of the estimated correlation (0.159) is relatively large, perhaps due to the moderate case count in the Million Veterans GWAS.
+The genetic correlation of 0.6523 is high, but not as high as would be expected if the two GWAS were truly measuring an identical trait.  This is consistent with the Million Veterans GWAS using a somewhat imprecise trait definition.  Note also that the standard error of the estimated correlation (0.159) is relatively large, perhaps due to the moderate case count in the Million Veterans GWAS.

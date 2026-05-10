@@ -86,12 +86,6 @@ def genetic_corr_by_ct_ldsc_asset_generator(
         pipe=CompositePipe(
             [DropColPipe(["h2_liab", "h2_liab_se", "h2_int", "h2_int_se"])]
             + [
-                # TransposePipe(),
-                # RenameColByPositionPipe(
-                #     col_position=0, col_new_name="Parameter"
-                # ),
-                # RenameColByPositionPipe(col_position=1, col_new_name="Value"),
-                # SelectColPipe(["Parameter", "Value"]),
                 FormatFloatNumbersPipe(col=item, format_str=".4g")
                 for item in ["rg", "se", "z", "p", "gcov_int", "gcov_int_se"]
             ]
