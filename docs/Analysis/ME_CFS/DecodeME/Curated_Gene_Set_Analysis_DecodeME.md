@@ -1,4 +1,4 @@
-# Curated Gene Set Analysis
+# Gene Set Analysis
 
 
 

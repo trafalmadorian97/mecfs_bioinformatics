@@ -2,7 +2,7 @@
 hide:
 - toc
 ---
-# S-LDSC Analysis of DecodeME
+# S-LDSC
 
 [Stratified Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] was applied to summary statistics from GWAS-1 of [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial].
 

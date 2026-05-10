@@ -1,8 +1,4 @@
----
-hide:
-- toc
----
-# Master Gene List
+# Gene List
 
 This file contains an aggregated list of [DecodeME](../../../Data_Sources/DecodeME.md) candidate genes generated using [GWASLAB](DecodeME_Lead_Variants.md) and [MAGMA](MAGMA_DecodeME_Analysis.md).  Each gene is accompanied by annotations retrieved using [gget](https://github.com/pachterlab/gget) from bioinformatic databases.
 

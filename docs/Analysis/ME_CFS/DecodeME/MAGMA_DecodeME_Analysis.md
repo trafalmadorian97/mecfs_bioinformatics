@@ -2,7 +2,7 @@
 hide:
 - toc
 ---
-## MAGMA GTEx Analysis
+## MAGMA GTEx
 As an initial step, I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md) to [DecodeME](../../../Data_Sources/DecodeME.md), partially reproducing analysis from the DecodeME preprint[@genetics2025initial].  
 
 
