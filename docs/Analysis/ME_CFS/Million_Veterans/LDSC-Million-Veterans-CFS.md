@@ -10,3 +10,5 @@ The results of running LDSC are listed below:
 Notably, the liability scale heritability is less than half that found in the analogous DecodeME analysis.
 
 While the LDSC intercept is low, so is the mean $\chi^2$ statistic.  Consequently, the attenuation ratio is moderate-to-high.  This suggests some possibility of confounding by stratification.
+
+Due to the low number of cases, the quantities in the table above have relatively high standard errors.

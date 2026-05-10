@@ -148,7 +148,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     gtex_magma_number_of_bars: int = 20,
     hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
     gget_settings: GGetSettings | None = GGetSettings(limit_genes=20),
-    manhattan_settings: ManhattanPlotSettings | None =None,
+    manhattan_settings: ManhattanPlotSettings | None = None,
     phenotype_info_for_ldsc: PhenotypeInfo | None = None,
     include_gene_set_analysis: bool = True,
 ) -> StandardAnalysisTaskGroup:

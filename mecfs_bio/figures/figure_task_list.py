@@ -23,16 +23,21 @@ from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_tas
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import \
-    DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import (
+    DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import (
     DECODE_ME_CURATED_GENE_SET_ANALYSIS,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
-from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs_standard_analysis import \
-    MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP
+from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs_standard_analysis import (
+    MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP,
+)
+from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies import (
+    CFS_CT_LDSC_ASSET_GENERATOR,
+)
 from mecfs_bio.assets.gwas.migraine.million_veterans.analysis.million_veterans_migraine_standard_analysis import (
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS,
 )
@@ -58,7 +63,7 @@ MULTI_TISSUE_CHROMATIN_REF = "multi_tissue_chromatin"
 MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
 
 ALL_FIGURE_TASKS: list[Task] = [
-DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
+    DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -111,5 +116,7 @@ DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
     MI_LCV_TASK_GROUP.downstream_trait_tables["MI"],
     YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
-    MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap
+    MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
+    MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
+    CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task,
 ]

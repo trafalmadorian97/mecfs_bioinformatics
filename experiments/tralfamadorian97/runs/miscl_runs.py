@@ -1,21 +1,10 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC, \
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import \
-    DECODE_ME_CURATED_GENE_SET_ANALYSIS
-from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs_standard_analysis import \
-    MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP
-from mecfs_bio.assets.gwas.me_cfs.million_veterans.raw.million_veterans_cfs_download import MILLION_VETERANS_CFS_RAW
-from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import \
-    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS
-from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_gene_sets import \
-    BENTHAM_2015_GENE_SET_ANALYSIS, BENTHAM_2015_GENE_SET_ANALYSIS_FROM_GENE_ANALYSIS
-from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.processed.full_msigdb_parquet_from_sqlite import MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE
-
-from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix import \
-    CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX
-from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix_reduced import \
-    CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
+from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies import \
+    CFS_CT_LDSC_ASSET_GENERATOR
+from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies_plot import \
+    CT_LDSC_CFS_CORR_PLOT
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -40,10 +29,12 @@ def run_miscl_analysis():
 
         # DECODE_ME_CURATED_GENE_SET_ANALYSIS.terminal_tasks()+
         # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
+        CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
         [
+            # CT_LDSC_CFS_CORR_PLOT
             # MILLION_VETERANS_CFS_RAW,
             # DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC
-            DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
+            # DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
             # CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
             # MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE,
             # MSIGDB_SQLLITE_EXTRACTED
@@ -66,6 +57,7 @@ def run_miscl_analysis():
 
         incremental_save=True,
         must_rebuild_transitive=[
+            CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
         ],
         settings=TopologicalSchedulerSettings(
             print_progress=False
