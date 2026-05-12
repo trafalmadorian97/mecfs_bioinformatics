@@ -1,9 +1,21 @@
 # make sure links are still valid.  Avoid link rot.
+#
+# This workflow runs daily. To suppress noise from transient outages (sites
+# briefly unreachable, anti-bot rate limiting, etc.) it tracks a per-URL
+# "consecutive failure streak" in an artifact named `link-check-state` and
+# only fails when a URL has been broken for >= 7 runs in a row. See
+# `mecfs_bio/util/link_check_streak.py` and the `check_all_links_with_streak`
+# invoke task in `tasks.py` for details.
 name: check_links
 on:
   schedule:
     - cron: "15 16 * * *"   #Run at 4:16 pm daily
   workflow_dispatch: {}
+
+# Needed so the streak-state download action can read artifacts from prior runs.
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   lead_variants:
@@ -22,6 +34,30 @@ jobs:
         run: pixi r invoke pfig
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check links
-        run: pixi r invoke check-all-links
-
+      - name: Download previous link-check streak state
+        # Fetch the streak state file written by the most recent run of this
+        # workflow. If no prior artifact exists yet (e.g. the very first run
+        # after this change) we silently proceed with an empty state.
+        uses: dawidd6/action-download-artifact@v6
+        with:
+          workflow: check_links.yml
+          name: link-check-state
+          path: .
+          if_no_artifact_found: warn
+          # Accept artifacts from any prior run, not just successful ones —
+          # we deliberately upload state even when the workflow fails so
+          # streaks keep counting across consecutive failing runs.
+          workflow_conclusion: ""
+      - name: Check links (streak-aware)
+        run: pixi r invoke check-all-links-with-streak
+      - name: Upload updated link-check streak state
+        # always() ensures the streak file is persisted even when the workflow
+        # fails because a URL has crossed the persistent-failure threshold.
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-check-state
+          path: link_check_state.json
+          retention-days: 90
+          overwrite: true
+          if-no-files-found: error
