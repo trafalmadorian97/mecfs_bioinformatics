@@ -447,7 +447,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhcf101f3_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-w-1.2.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomlkit-0.13.3-pyha770c72_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.34-h4e94fc0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.35-h4e94fc0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.41.0-hdab8a38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.3-pyhd8ed1ab_0.conda
@@ -1999,7 +1999,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 45de3c4f43177ed012057767cac2df70c5dec7fb5bb68195b98822fd110848cb
+  sha256: 061ab473e16b614eaa4291d354fd2915da0a96fa1618378d6a3500ce86238f56
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/7f/ad/ed66f7dd3d5e595a8bf1e115a54f77a185b616eb49ea94fe052c7fd4259e/blosc2-4.0.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
   name: blosc2
@@ -10598,10 +10598,10 @@ packages:
   - pytest-mypy-testing ; extra == 'test'
   - pytest>=7.0,<8.2 ; extra == 'test'
   requires_python: '>=3.8'
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.34-h4e94fc0_0.conda
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.35-h4e94fc0_0.conda
   noarch: python
-  sha256: af837e38bc1fcfb78e752a8f9a7761e9f13f8b1d3d2b48046e23ac399fe73909
-  md5: d518ffaf451ab6e5becaf4c26e381897
+  sha256: 2fa82e2ea22fd243c120523ee0bfa1d1b88f9e86695315b7d5b3ca8887d18f79
+  md5: c466ca591e70335bb3174655feb1ac7e
   depends:
   - python
   - libgcc >=14
@@ -10611,11 +10611,10 @@ packages:
   constrains:
   - __glibc >=2.17
   license: MIT
-  license_family: MIT
   purls:
   - pkg:pypi/ty?source=hash-mapping
-  size: 9731624
-  timestamp: 1777689250933
+  size: 9783502
+  timestamp: 1778445346518
 - pypi: https://files.pythonhosted.org/packages/62/21/15129201c1f52f6af1e7809e96dce46da4b406c2c07fe9425e92f51edc5c/typechecks-0.1.0.tar.gz
   name: typechecks
   version: 0.1.0
