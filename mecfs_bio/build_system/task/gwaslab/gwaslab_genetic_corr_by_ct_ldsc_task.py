@@ -54,6 +54,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_RSID_COL,
+    GWASLAB_SAMPLE_SIZE_COLUMN,
 )
 
 logger = structlog.get_logger()
@@ -306,7 +307,17 @@ def load_and_preprocess_sumstats(
     assert GWASLAB_RSID_COL in sumstats.data.columns
     sumstats.data = source.pipe.process_pandas(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)
+    _add_N_column_if_missing(sumstats, source=source)
     return sumstats, name, source.sample_info
+
+
+def _add_N_column_if_missing(
+    sumstats: gwaslab.Sumstats, source: SumstatsSource
+) -> None:
+    if GWASLAB_SAMPLE_SIZE_COLUMN in sumstats.data.columns:
+        return
+    assert source.sample_info.total_sample_size is not None
+    sumstats.data[GWASLAB_SAMPLE_SIZE_COLUMN] = source.sample_info.total_sample_size
 
 
 def get_compatible_snps_polars(df_i: pd.DataFrame, df_j: pd.DataFrame) -> pd.DataFrame:

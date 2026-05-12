@@ -24,3 +24,7 @@ class GWASSummaryDataFileMeta(FileMeta):
     project_path: PurePath | None
     read_spec: ReadSpec | None = None
     extension: str | None = None
+
+    def __attrs_post_init__(self):
+        if self.project_path is None:
+            assert len(str(self.project_path)) > 0
