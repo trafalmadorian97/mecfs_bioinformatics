@@ -13,6 +13,12 @@ from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs
 from mecfs_bio.assets.gwas.me_cfs.million_veterans.auxiliary.pheotype_info import (
     MILLION_VETERAN_CFS_PHENOTYPE_INFO,
 )
+from mecfs_bio.assets.gwas.me_cfs.neale_lab.analysis.neale_lab_cfs_standard_analysis import (
+    NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP,
+)
+from mecfs_bio.assets.gwas.me_cfs.neale_lab.auxiliary.neale_lab_cfs_phenotype_info import (
+    NEALE_LAB_CFS_PHENOTYPE_INFO,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     SumstatsSource,
 )
@@ -39,6 +45,11 @@ CFS_CT_LDSC_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
             alias="Million_Veterans_CFS",
             sample_info=MILLION_VETERAN_CFS_PHENOTYPE_INFO,
             pipe=CompositePipe([ComputeBetaIfNeededPipe(), ComputeSEPipe()]),
+        ),
+        SumstatsSource(
+            NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.sumstats_task,
+            alias="Neale_Lab_CFS",
+            sample_info=NEALE_LAB_CFS_PHENOTYPE_INFO,
         ),
     ],
 )
