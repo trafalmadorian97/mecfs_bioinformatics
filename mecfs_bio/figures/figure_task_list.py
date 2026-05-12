@@ -127,4 +127,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
     CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
+    NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
 ]
