@@ -406,7 +406,7 @@ def lint_actions(c):
         check_local_links,
         fix_table_trailing_newlines,
         checkimports,
-        fix_init_files,
+        # fix_init_files,
         typecheck,
         lint_actions,
         test,
