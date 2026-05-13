@@ -55,6 +55,19 @@ jobs:
           workflow_conclusion: completed
       - name: Check links (streak-aware)
         run: pixi r invoke check-all-links-with-streak
+      - name: Print streak state
+        # Echo the state file into the run log so it can be inspected without
+        # downloading the artifact. dump_state already writes pretty-printed
+        # JSON. if: always() so the state is visible even when the streak
+        # task exits non-zero (URL crossed the threshold).
+        if: always()
+        run: |
+          if [ -f link_check_state.json ]; then
+            echo "=== link_check_state.json ==="
+            cat link_check_state.json
+          else
+            echo "link_check_state.json not present"
+          fi
       - name: Upload updated link-check streak state
         # always() ensures the streak file is persisted even when the workflow
         # fails because a URL has crossed the persistent-failure threshold.
