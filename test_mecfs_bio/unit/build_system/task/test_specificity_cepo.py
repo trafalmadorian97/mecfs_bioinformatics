@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import pandas as pd
 
@@ -76,12 +76,12 @@ def test_prepare_specificity_cepo(tmp_path: Path):
     pivoted: Any = result_df.pivot(
         index="cell_type", columns="gene", values=DIFFERENTIAL_STABILITY
     )
-    val_ax: Any = unwrap(cast(Any, pivoted.loc["A", "X"]))
-    val_bx: Any = unwrap(cast(Any, pivoted.loc["B", "X"]))
-    val_cx: Any = unwrap(cast(Any, pivoted.loc["C", "X"]))
-    val_ay: Any = unwrap(cast(Any, pivoted.loc["A", "Y"]))
-    val_by: Any = unwrap(cast(Any, pivoted.loc["B", "Y"]))
-    val_cy: Any = unwrap(cast(Any, pivoted.loc["C", "Y"]))
+    val_ax: Any = unwrap(pivoted.loc["A", "X"])
+    val_bx: Any = unwrap(pivoted.loc["B", "X"])
+    val_cx: Any = unwrap(pivoted.loc["C", "X"])
+    val_ay: Any = unwrap(pivoted.loc["A", "Y"])
+    val_by: Any = unwrap(pivoted.loc["B", "Y"])
+    val_cy: Any = unwrap(pivoted.loc["C", "Y"])
     assert float(val_ax) > float(val_bx)
     assert float(val_bx) >= float(val_cx)
     assert float(val_ay) < float(val_by)
