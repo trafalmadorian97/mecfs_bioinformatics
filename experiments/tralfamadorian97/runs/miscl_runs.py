@@ -1,4 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.ankylosing_spondylitis.multi_study.genetic_correlation.ct_ldsc.ct_ldsc_ank_spond import \
+    ANK_SPOND_CT_LDSC_ASSET_GENERATOR
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC, \
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
 from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies import \
@@ -29,7 +31,8 @@ def run_miscl_analysis():
 
         # DECODE_ME_CURATED_GENE_SET_ANALYSIS.terminal_tasks()+
         # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
-        CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
+        # CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
+        ANK_SPOND_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
         [
             # CT_LDSC_CFS_CORR_PLOT
             # MILLION_VETERANS_CFS_RAW,
@@ -57,7 +60,7 @@ def run_miscl_analysis():
 
         incremental_save=True,
         must_rebuild_transitive=[
-            CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
+            # CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
         ],
         settings=TopologicalSchedulerSettings(
             print_progress=False

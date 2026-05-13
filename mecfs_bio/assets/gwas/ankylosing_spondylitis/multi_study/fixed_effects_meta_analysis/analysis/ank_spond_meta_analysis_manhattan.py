@@ -1,4 +1,4 @@
-from mecfs_bio.assets.gwas.ankylosing_spondylitis.fixed_effects_meta_analysis.processed.ank_spond_meta_analysis_sumstats import (
+from mecfs_bio.assets.gwas.ankylosing_spondylitis.multi_study.fixed_effects_meta_analysis.processed.ank_spond_meta_analysis_sumstats import (
     ANK_SPOND_META_ANALYSIS_SUMSTATS,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_manhattan_and_qq_plot_task import (

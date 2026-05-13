@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_transform_sumstats import (
     GWASLabTransformSumstatsTask,
 )
 
-FINGNEN_ANK_SPOND_SUMSTATS_HARMONIZED = (
+FINNGEN_ANK_SPOND_SUMSTATS_HARMONIZED = (
     GWASLabTransformSumstatsTask.create_from_source_task(
         source_tsk=FINGNEN_ANK_SPOND_SUMSTATS,
         asset_id="finngen_ank_spond_sumstats_37_harmonized",
