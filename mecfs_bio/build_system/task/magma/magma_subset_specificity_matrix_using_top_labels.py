@@ -43,7 +43,7 @@ class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
 
     """
 
-    _meta: Meta
+    meta: Meta
     specificity_matrix_task: Task
     magma_gene_covar_analysis_task: MagmaGeneSetAnalysisTask
 
@@ -60,10 +60,6 @@ class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
     @property
     def spec_matrix_meta(self) -> Meta:
         return self.specificity_matrix_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -138,5 +134,5 @@ def get_spec_matrix_filtered(
     filtered_covar_result = filtered_covar_result.sort_values(by=["P"])
     sig_list = filtered_covar_result["VARIABLE"].tolist()
     cols = ["GENE"] + sig_list
-    spec_matrix_filtered: pd.DataFrame = spec_matrix.loc[:, cols]
+    spec_matrix_filtered = pd.DataFrame(spec_matrix.loc[:, cols])
     return spec_matrix_filtered

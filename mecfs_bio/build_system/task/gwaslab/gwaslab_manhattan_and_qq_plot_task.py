@@ -17,15 +17,12 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
 from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
-    GWASLabCreateSumstatsTask,
-)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
-PlotMode = Literal["mqq", "qqm", "qq", "m"]
+AnnoMode = Literal["GENENAME"] | None
 
 
 @attrs.frozen
@@ -36,24 +33,22 @@ class GWASLabManhattanAndQQPlotTask(Task):
     see: https://cloufield.github.io/gwaslab/Visualization/
     """
 
-    _sumstats_task: GWASLabCreateSumstatsTask
-    _meta: GWASLabManhattanQQPlotMeta
+    sumstats_task: Task
+    meta: GWASLabManhattanQQPlotMeta
     sig_level: float = 5e-8
     top_cut: int = 12  # upper bound of graph
-    plot_setting: PlotMode = "mqq"  # passed to gwaslab to decide which plots to create
+    plot_setting: str = "mqq"  # passed to gwaslab to decide which plots to create
     pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> GWASLabManhattanQQPlotMeta:
-        return self._meta
+    plot_dims: tuple[int, int] = (12, 14)
+    anno_mode: AnnoMode = "GENENAME"
 
     @property
     def deps(self) -> list["Task"]:
-        return [self._sumstats_task]
+        return [self.sumstats_task]
 
     @property
     def _input_meta(self) -> GWASLabSumStatsMeta:
-        input_meta = self._sumstats_task.meta
+        input_meta = self.sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
         return input_meta
 
@@ -66,24 +61,24 @@ class GWASLabManhattanAndQQPlotTask(Task):
         sumstats: gl.Sumstats = read_sumstats(sumstats_asset)
         sumstats.data = self.pipe.process_pandas(sumstats.data)
         if self.plot_setting == "mqq":
-            fig, (ax1, ax2) = plt.subplots(figsize=(12, 14), ncols=2, nrows=1)
+            fig, (ax1, ax2) = plt.subplots(figsize=self.plot_dims, ncols=2, nrows=1)
             figax = [fig, ax1, ax2]
         else:
-            fig, ax1 = plt.subplots(figsize=(12, 14), ncols=1, nrows=1)
+            fig, ax1 = plt.subplots(figsize=self.plot_dims, ncols=1, nrows=1)
             figax = [
                 fig,
                 ax1,
             ]
+
         figs = {}
         plot_name = "mqq"
-        sumstats.infer_build()
         sumstats.plot_mqq(
             figax=figax,
             skip=2,
             cut=self.top_cut,
             mode=self.plot_setting,
             scaled=True,
-            anno="GENENAME",
+            anno=self.anno_mode,
             sig_level_lead=self.sig_level,
         )
         figs[plot_name] = fig
@@ -93,11 +88,12 @@ class GWASLabManhattanAndQQPlotTask(Task):
     @classmethod
     def create(
         cls,
-        sumstats_task: GWASLabCreateSumstatsTask,
+        sumstats_task: Task,
         asset_id: str,
         sig_level: float = 5e-8,
-        plot_setting: PlotMode = "mqq",
+        plot_setting: str = "mqq",
         pipe: DataProcessingPipe = IdentityPipe(),
+        anno_mode: AnnoMode = "GENENAME",
     ):
         input_meta = sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
@@ -110,6 +106,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
             sumstats_task=sumstats_task,
             meta=meta,
             sig_level=sig_level,
-            pipe=pipe,
             plot_setting=plot_setting,
+            pipe=pipe,
+            anno_mode=anno_mode,
         )

@@ -1,7 +1,25 @@
+"""
+Repo-level commands.  Run with
+
+pixi r invoke <task>
+
+Note that when running tasks this way, underscores (_) in task names should be replaced with dashes (-)
+"""
+
+import datetime as _dt
+import os
 import sys
 from pathlib import Path
 
+import yaml
 from invoke import task
+
+from mecfs_bio.util.link_check_streak import (
+    dump_state,
+    load_state,
+    read_lychee_report,
+    update_streaks,
+)
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
@@ -15,11 +33,59 @@ FIGS_PATH = Path("docs/_figs/")
 FIGS_PATTERN = "_figs"
 
 
+GITHUB_TOKEN_CONFIG = Path("gh_token_config.yaml")
+
+
+# Default location for the streak-state file. The CI workflow downloads this
+# from the prior run's artifact and uploads the updated copy after each run.
+LINK_CHECK_STATE_PATH = Path("link_check_state.json")
+LINK_CHECK_REPORT_PATH = Path("lychee_report.json")
+LINK_CHECK_DEFAULT_THRESHOLD = 7
+
+# Lychee flags shared by every link-checking task. Keep this in one place so
+# the strict and streak-aware tasks stay in sync.
+#   - 403 in --accept tolerates anti-bot systems.
+#   - --cache-exclude-status 400..=999 means failure results are NOT cached,
+#     so a previously-failing URL is always re-checked next run (essential
+#     for streak recovery detection).
+LYCHEE_SHARED_ARGS = (
+    f"--insecure --cache "
+    f"--accept 100..=103,200..=299,403 "
+    f"--cache-exclude-status 400..=999 "
+    f"--exclude {FIGS_PATTERN} "
+    f"--user-agent {USER_AGENT}"
+)
+
+
+# helper
+
+
+def _set_gh_token() -> None:
+    if not GITHUB_TOKEN_CONFIG.exists():
+        print(f"No github token file found at {GITHUB_TOKEN_CONFIG}")
+        return
+    with open(GITHUB_TOKEN_CONFIG) as infile:
+        loaded = yaml.load(infile, Loader=yaml.FullLoader)
+    assert "GH_TOKEN" in loaded
+    print("setting github token environment variable")
+    os.environ["GH_TOKEN"] = loaded["GH_TOKEN"]
+
+
+def _set_use_gh_token() -> None:
+    os.environ["HAVE_GH_TOKEN"] = "True"
+
+
+def _set_enable_api_autonav() -> None:
+    os.environ["ENABLE_API_AUTONAV"] = "True"
+
+
 # dev tasks
 @task
 def test(c):
-    print("Running unit and integration tests with pytest...")
-    cmd = f"pixi r python   -m pytest --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    print(
+        "Running unit and integration tests with pytest, while skipping un-needed tests with testmon..."
+    )
+    cmd = f" python   -m pytest  --testmon --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
     print(cmd)
     c.run(cmd, pty=True)
 
@@ -30,7 +96,7 @@ def test_debug(c):
     Run tests with extra information printed.  Useful for debugging.
     """
     print("Running unit and integration tests with pytest...")
-    cmd = f"pixi r python   -m pytest -s --typeguard-debug-instrumentation --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    cmd = f" python   -m pytest -s --typeguard-debug-instrumentation --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
     print(cmd)
     c.run(cmd, pty=True)
 
@@ -41,7 +107,7 @@ def format(c):
     Format code
     """
     print("Formatting with ruff...")
-    c.run("pixi r  ruff format", pty=True)
+    c.run(" ruff format", pty=True)
 
 
 @task
@@ -50,19 +116,19 @@ def formatcheck(c):
     Check for format errors
     """
     print("Checking format with black...")
-    c.run("pixi r ruff format --check .")
+    c.run(" ruff format --check .")
 
 
 @task
 def lintfix(c):
     print("linting and applying lint auto-fixes using ruff...")
-    c.run(" pixi r  ruff check --fix --unsafe-fixes")
+    c.run("  ruff check --fix --unsafe-fixes")
 
 
 @task
 def lintcheck(c):
     print("linting using ruff...")
-    c.run("pixi r ruff check")
+    c.run("ruff check")
 
 
 @task
@@ -70,8 +136,8 @@ def typecheck(c):
     """
     Check for type errors
     """
-    print("Typechecking with mypy...")
-    c.run(f"pixi r  mypy {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
+    print("Typechecking with ty...")
+    c.run(f"ty check {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
 
 
 @task
@@ -83,7 +149,7 @@ def spellcheck_docs(c):
     print(
         f"Checking documentation spelling using typos... (Add exceptions to {DOCS_PATH}/_typos.toml)"
     )
-    c.run(f"pixi r  typos {DOCS_PATH}", pty=True)
+    c.run(f"typos {DOCS_PATH}", pty=True)
 
 
 @task
@@ -95,7 +161,7 @@ def spellcheck_src(c):
     print(
         f"Checking source spelling using typos... (Add exceptions to {SRC_PATH}/_typos.toml)"
     )
-    c.run(f"pixi r  typos {SRC_PATH}", pty=True)
+    c.run(f"typos {SRC_PATH}", pty=True)
 
 
 @task
@@ -104,19 +170,144 @@ def checkimports(c):
     Use import linter to enforce architectural constraints
     """
     print("Checking architectural constraints using import-linter...")
-    c.run("pixi r lint-imports", pty=True)
+    c.run("lint-imports", pty=True)
+
+
+def _missing_init_dirs() -> list[Path]:
+    return [
+        d
+        for d in sorted(SRC_PATH.rglob("*"))
+        if d.is_dir() and d.name != "__pycache__" and not (d / "__init__.py").exists()
+    ]
+
+
+@task
+def check_init_files(c):
+    """
+    Verify that every directory under mecfs_bio/ contains an __init__.py.
+    """
+    print(f"Checking that every directory under {SRC_PATH}/ has an __init__.py...")
+    missing = _missing_init_dirs()
+    if missing:
+        print("ERROR: The following directories are missing __init__.py:")
+        for d in missing:
+            print(f"  {d}")
+        sys.exit(1)
+    else:
+        print("OK: all directories have __init__.py.")
+
+
+@task
+def fix_init_files(c):
+    """
+    Add a blank __init__.py to any directory under mecfs_bio/ that is missing one.
+    """
+    print(f"Adding missing __init__.py files under {SRC_PATH}/...")
+    missing = _missing_init_dirs()
+    if missing:
+        for d in missing:
+            (d / "__init__.py").touch()
+            print(f"  created {d / '__init__.py'}")
+        print(f"Created {len(missing)} file(s).")
+    else:
+        print("Nothing to fix.")
 
 
 @task
 def check_all_links(c):
     """
-    Check all links with lychee
+    Check all links with lychee.
 
-    I added "403" to the list of acceptable status codes to prevent this check from failing due to anti-bot systems.
+    Shared flags live in ``LYCHEE_SHARED_ARGS``. 403 is accepted to tolerate
+    anti-bot systems.
     """
     print("Checking links with lychee...")
-    c.run(
-        f"pixi r lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --exclude {FIGS_PATTERN} --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+    c.run(f"lychee {LYCHEE_SHARED_ARGS} {SRC_PATH} {DOCS_PATH}")
+
+
+@task(help={"threshold": "Consecutive failing runs required to fail the task."})
+def check_all_links_with_streak(c, threshold=LINK_CHECK_DEFAULT_THRESHOLD):
+    """
+    Run lychee and update the per-URL consecutive-failure streak state.
+
+    Behaves like ``check-all-links`` but only fails when a URL has been broken
+    for ``threshold`` runs in a row. Transient single-day outages no longer
+    fail the daily workflow.
+
+    State is read from / written to ``link_check_state.json`` at the repo
+    root. The CI workflow round-trips this file through an artifact between
+    runs (see ``.github/workflows/check_links.yml``).
+    """
+
+    threshold = int(threshold)
+    state_path = LINK_CHECK_STATE_PATH
+    report_path = LINK_CHECK_REPORT_PATH
+
+    print(
+        f"Checking links with lychee (streak-aware, threshold={threshold} consecutive runs)..."
+    )
+
+    # --verbose is required for lychee to populate success_map in the JSON
+    # report; without it we cannot tell ok URLs from URLs that simply weren't
+    # seen this run. --no-progress keeps the CI log readable.
+    cmd = (
+        f"lychee {LYCHEE_SHARED_ARGS} "
+        f"--format json --verbose --no-progress "
+        f"--output {report_path} "
+        f"{SRC_PATH} {DOCS_PATH}"
+    )
+    # lychee exits non-zero when any URL fails; we want the report regardless.
+    c.run(cmd, warn=True)
+
+    if not report_path.exists():
+        print(f"ERROR: lychee did not produce a JSON report at {report_path}.")
+        sys.exit(1)
+
+    # read_lychee_report raises LycheeReportSchemaError on schema drift. We
+    # let that propagate so a lychee upgrade that changes the report shape
+    # surfaces as a loud CI failure rather than a silently-empty check.
+    report = read_lychee_report(report_path)
+    previous_state = load_state(state_path)
+    result = update_streaks(
+        report,
+        previous_state,
+        run_date=_dt.date.today(),
+        threshold=threshold,
+    )
+    dump_state(state_path, result.new_state)
+
+    print(
+        f"\nlychee summary: total={report.total}, errors={report.errors}, "
+        f"timeouts={report.timeouts}"
+    )
+    print(f"State written to {state_path} ({len(result.new_state)} URLs tracked).")
+
+    if result.cleared:
+        print(f"\nRecovered URLs (streak reset to 0): {len(result.cleared)}")
+        for url in result.cleared:
+            print(f"  {url}")
+
+    if result.new_failures:
+        print(f"\nNew failures this run (streak=1): {len(result.new_failures)}")
+        for url in result.new_failures:
+            print(f"  {url}")
+
+    if result.all_failing:
+        print(f"\nAll currently failing URLs ({len(result.all_failing)}):")
+        for entry in result.all_failing:
+            print(f"  streak={entry.streak:>3}  {entry.url}")
+
+    if result.persistent_failures:
+        print(
+            f"\nERROR: {len(result.persistent_failures)} URL(s) have been failing for "
+            f">= {threshold} consecutive runs and are likely permanently broken:"
+        )
+        for entry in result.persistent_failures:
+            print(f"  streak={entry.streak:>3}  {entry.url}")
+        sys.exit(1)
+
+    print(
+        f"\nOK: no URLs have crossed the {threshold}-run persistent-failure threshold."
     )
 
 
@@ -193,7 +384,15 @@ def check_local_links(c):
     Check local links with lychee
     """
     print("Checking offline links with lychee...")
-    cmd = f"pixi r lychee --exclude {FIGS_PATTERN}  --offline {SRC_PATH} {DOCS_PATH}"
+    cmd = f"lychee --exclude {FIGS_PATTERN}  --offline {SRC_PATH} {DOCS_PATH}"
+    print(f"running {cmd}")
+    c.run(cmd)
+
+
+@task
+def lint_actions(c):
+    print("Linting github actions...")
+    cmd = "actionlint"
     print(f"running {cmd}")
     c.run(cmd)
 
@@ -207,7 +406,9 @@ def check_local_links(c):
         check_local_links,
         fix_table_trailing_newlines,
         checkimports,
+        fix_init_files,
         typecheck,
+        lint_actions,
         test,
     ]
 )
@@ -218,9 +419,10 @@ def green(c):
 @task
 def install_r_packages(c):
     """
-    Install R packages such as TwoSampleMR
+    Install R packages such as TwoSampleMR and LAVA
     """
     c.run("pixi r install-mr", pty=True)
+    c.run("pixi r install-lava", pty=True)
 
 
 ### Figures and Documentation
@@ -231,15 +433,25 @@ def pfig(c):
     """
     Pull figures from github to populate the _figs directory
     """
-    c.run(f"pixi r python {PULL_FIGURE_SCRIPT_PATH}")
+    c.run(f"python {PULL_FIGURE_SCRIPT_PATH}")
 
 
 @task
-def serve_docs(c, strict: bool = True):
+def serve_docs(
+    c,
+    strict: bool = True,
+    include_authors: bool = False,
+    enable_api_autonav: bool = False,
+):
     """
     Use mkdocs to serve documentation
     """
-    cmd = "pixi r mkdocs serve"
+    if include_authors:
+        _set_gh_token()
+        _set_use_gh_token()
+    if enable_api_autonav:
+        _set_enable_api_autonav()
+    cmd = " mkdocs serve"
     if strict:
         cmd += " --strict"
     print("Serving documentation...")
@@ -247,11 +459,25 @@ def serve_docs(c, strict: bool = True):
     c.run(cmd, pty=True)
 
 
-@task(pre=[pfig, serve_docs])
-def sdocs(c):
+@task(
+    pre=[
+        pfig,
+    ]
+)
+def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
     """
     Retrieve figures, then serve docs
     """
+    serve_docs(
+        c, include_authors=include_authors, enable_api_autonav=enable_api_autonav
+    )
+
+
+@task
+def build_docs(c):
+    cmd = "mkdocs build --strict"
+    print(f"running {cmd}")
+    c.run(cmd)
 
 
 # initialization

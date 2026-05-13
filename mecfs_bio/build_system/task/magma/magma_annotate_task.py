@@ -26,7 +26,7 @@ class MagmaAnnotateTask(Task):
     The window option is used to optionally associate SNPs outside the transcription region of a gene with the gene.
     """
 
-    _meta: Meta
+    meta: Meta
     magma_binary_task: Task
     snp_loc_file_task: Task
     gene_loc_file_task: Task
@@ -43,10 +43,6 @@ class MagmaAnnotateTask(Task):
     @property
     def gene_loc_id(self) -> AssetId:
         return self.gene_loc_file_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

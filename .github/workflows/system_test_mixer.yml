@@ -1,0 +1,22 @@
+name: system_test_mixer
+on:
+  schedule:
+    - cron: "0 4 * * 4"   #Run Thursday at 4 UTC
+  workflow_dispatch: {}
+
+jobs:
+  mixer_system_test:
+    timeout-minutes: 600
+    name: Run MiXeR system test
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+      - name: Run mixer integration test
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_mixer.py
+          free-disk-space: "false"
+          pre-test-command: pixi r invoke install-r-packages

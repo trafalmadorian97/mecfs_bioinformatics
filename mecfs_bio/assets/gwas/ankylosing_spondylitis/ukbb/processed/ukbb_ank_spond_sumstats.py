@@ -1,6 +1,7 @@
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.ukbb.processed.ukbb_eur_ank_spond_filtered import (
     FILTERED_UKBB_ANK_SPOND,
 )
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
     GWASLabCreateSumstatsTask,
@@ -8,7 +9,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 
 UK_BIOBANK_ANKYLOSING_SPONDYLITIS_SUMSTATS = GWASLabCreateSumstatsTask(
     df_source_task=FILTERED_UKBB_ANK_SPOND,
-    asset_id="uk_biobank_ank_spond_sumstats",
+    target_asset_id=AssetId("uk_biobank_ank_spond_sumstats"),
     fmt=GWASLabColumnSpecifiers(
         chrom="chromosome",
         pos="base_pair_location",

@@ -12,16 +12,13 @@ class ReferenceFileMeta(FileMeta):
     group: str
     sub_group: str
     sub_folder: PurePath
+    extension: str
     id: AssetId = field(converter=AssetId)
     filename: str | None = None
-    extension: str = ".zip"
-    _read_spec: ReadSpec | None = None
+    read_spec: ReadSpec | None = None
 
     def __attrs_post_init__(self):
-        assert self.extension.startswith(".")
-
-    def read_spec(self) -> ReadSpec | None:
-        return self._read_spec
+        assert self.extension.startswith(".") or self.extension == ""
 
     @property
     def asset_id(self) -> AssetId:

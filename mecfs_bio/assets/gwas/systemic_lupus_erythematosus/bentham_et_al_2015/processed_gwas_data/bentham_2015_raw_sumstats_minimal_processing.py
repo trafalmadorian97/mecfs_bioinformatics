@@ -13,7 +13,7 @@ For instance the variant rs887369 has a p value but no beta.
 """
 BENTHAM_2015_SUMSTATS_MINIMAL_PROCESSING_FROM_RAW_BUILD_37 = GWASLabCreateSumstatsTask(
     df_source_task=BENTHAM_2015_RAW_BUILD_37,
-    asset_id=AssetId("bentham_2015_raw_build_37_sumstats_minimal_processing"),
+    target_asset_id=AssetId("bentham_2015_raw_build_37_sumstats_minimal_processing"),
     basic_check=True,
     genome_build="infer",
     fmt=GWASLabColumnSpecifiers(

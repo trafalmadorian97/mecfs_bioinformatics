@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 
@@ -17,6 +17,7 @@ from mecfs_bio.build_system.task.specificity_cepo_task import (
     PrepareSpecificityCepo,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 _dummy_df = pd.DataFrame(  # X is stable in A.  Y is stable in B
     {
@@ -75,7 +76,13 @@ def test_prepare_specificity_cepo(tmp_path: Path):
     pivoted: Any = result_df.pivot(
         index="cell_type", columns="gene", values=DIFFERENTIAL_STABILITY
     )
-    assert pivoted.loc["A", "X"] > pivoted.loc["B", "X"]
-    assert pivoted.loc["B", "X"] >= pivoted.loc["C", "X"]
-    assert pivoted.loc["A", "Y"] < pivoted.loc["B", "Y"]
-    assert pivoted.loc["A", "Y"] >= pivoted.loc["C", "Y"]
+    val_ax: Any = unwrap(cast(Any, pivoted.loc["A", "X"]))
+    val_bx: Any = unwrap(cast(Any, pivoted.loc["B", "X"]))
+    val_cx: Any = unwrap(cast(Any, pivoted.loc["C", "X"]))
+    val_ay: Any = unwrap(cast(Any, pivoted.loc["A", "Y"]))
+    val_by: Any = unwrap(cast(Any, pivoted.loc["B", "Y"]))
+    val_cy: Any = unwrap(cast(Any, pivoted.loc["C", "Y"]))
+    assert float(val_ax) > float(val_bx)
+    assert float(val_bx) >= float(val_cx)
+    assert float(val_ay) < float(val_by)
+    assert float(val_ay) >= float(val_cy)

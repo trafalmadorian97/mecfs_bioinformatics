@@ -34,13 +34,9 @@ class GwasLabSumstatsToTableTask(Task):
     Task to write a sumstats object to a plain table for further processing.
     """
 
-    _meta: Meta
+    meta: Meta
     source_sumstats_task: Task
     pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def source_meta(self) -> Meta:

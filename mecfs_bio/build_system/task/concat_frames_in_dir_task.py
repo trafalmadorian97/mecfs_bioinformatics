@@ -43,7 +43,7 @@ class ConcatFramesInDirTask(Task):
     Example use case: when GWAS summary statistics are split over multiple files.
     """
 
-    _meta: Meta
+    meta: Meta
     source_dir_task: Task
     path_glob: str
     read_spec_for_frames: DataFrameReadSpec
@@ -55,10 +55,6 @@ class ConcatFramesInDirTask(Task):
     @property
     def deps(self) -> list["Task"]:
         return [self.source_dir_task]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         dir_asset = fetch(self.src_id)

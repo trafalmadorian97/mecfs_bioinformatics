@@ -5,7 +5,7 @@ hide:
 # LDSC
 Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
 
-## Intuition and High-level summary
+## Intuition and high-level summary
 
 The core idea of LDSC is illustrated below:
 
@@ -67,7 +67,7 @@ Using these two insights, we can estimate heritability from the slope of regress
 
 
 
-## Detailed Derivation of Method
+## Detailed derivation of method
 ### Data-generating model
 
 LDSC assumes the following data generating equation:
@@ -113,7 +113,7 @@ Furthermore, define the following quantities related to Linkage Disequilibrium (
 
 
 
-### Properties of $\hat{\beta}_j$ and $\chi^2_j$
+### Properties of Wald statistics
 We begin by computing the variance matrix of the genetic effects $X\beta$:
 
 
@@ -185,7 +185,7 @@ We have assumed that $M$ is large, that columns of $X$ are not too similar, and 
 
 $$
 \begin{align}
-&\lVert\phi- \frac{1}{N}\phi^T X_{:,j} X_{:,j} \rVert^2\\
+&\lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2\\
 &\approx \lVert\phi\rVert^2    \\
 &\approx \mathrm{trace}\left( \mathbb{Var} (\phi) \right)\\
 &= N  \label{residuals}
@@ -202,7 +202,7 @@ The standard error of the $j$th GWAS regression coefficient is
 $$
 \begin{align}
 &\mathrm{SE}(\hat{\beta}_j) \\
-&\approx \sqrt{\frac{\frac{1}{N}\lVert\phi- \frac{1}{N}\phi^T X_{:,j} X_{:,j} \rVert^2}{(X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,ij} )}}} & \text{Formula for OLS SE}\\
+&\approx \sqrt{\frac{\frac{1}{N}\lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2}{(X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,j} })}} & \text{Formula for OLS SE}\\
 &=\sqrt{\frac{1}{N}} & (\text{\ref{residuals}) + Normalization of $X$} \label{sebeta}
 \end{align}
 $$
@@ -243,6 +243,7 @@ Thus we have
 $$
 \begin{align}
 &\mathbb{E} \tilde{r}_{jk}^2 \\
+&=\frac{N-1}{N}r_{jk}^2 +\frac{1}{N}(1+2r_{jk}^2+\nu)\\ 
 &=r_{jk}^2 + \frac{1}{N}(1+r_{jk^2}^2+\nu)\\
 &=r_{jk}^2+ \frac{1}{N}(2r_{jk}^2+\nu)+ \frac{1}{N}(1-r_{jk}^2)
 \end{align}
@@ -264,7 +265,7 @@ $$
 \mathbb{E}\sum_k \tilde{r}_{jk}^2 \approx l_j + \frac{1}{N}(M-l_j)
 $$
 
-### The LDSC Equation
+### The LDSC equation
 
 With the preliminaries out of the way, now compute the expectation of the chi squared statistic of the $j$th SNP
 
@@ -282,7 +283,7 @@ $$
 &= N \mathbb{E} ( \frac{h^2}{M}\sum_k \tilde{r}^2_{jk} + \frac{1}{N}  (1-h^2) ) &\text{def of }\tilde{r}^2_{jk} \label{hstep}\\
 &= \frac{h^2}{M}(Nl_j + M-l_j) + 1 - h^2\\
 &= \frac{h^2}{M}l_j(N-1)+1\\
-&\approx \frac{h^2}{M}l_jN+1\\
+&\approx \frac{h^2}{M}l_jN+1 \label{main_ld_eq} \\
 \end{align}
 $$
 
@@ -326,7 +327,7 @@ So, in a rough sense, assuming that the heritability of a trait is distributed a
 
 ### Arguments that assumption is implausible
 
-On the other hand, the assumption of perfectly uniform polygenicity strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region.
+On the other hand, the assumption of perfectly uniform polygenicity strains plausibility.  For most traits, heritability is concentrated in certain key regions.  In autoimmune diseases, for example, heritability is typically concentrated around immunological regions, like  the MHC/HLA region[^MHC_Note].
 
 
 ### Extensions to make assumption more plausible
@@ -339,19 +340,340 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 [//]: # (To discuss: Plietotopy an important fact from GWAS.  But not all variants equally likely.  e.g. HLA-> autoimmune disease)
 
 
-## Usage
-LDSC in its original form has two main usages
+## Population structure and LDSC
 
-1. Estimation of the parameter $h^2$, the [heritability](Heritability.md) of phenotype of interest.  An estimate of this parameter can be directly read from the LDSC regression.
-2. Detection of population stratification.
+In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by population structure. In this section, I explain this use case.
 
 
+### Overview
 
-[//]: # ()
-[//]: # ([//]: # Notes: Pleiotropy is key assumption.  Basically heritability is distributed more-or-less evening across the genome.  Contrast: MHC for inflammatory diseases.  Monogenic diseases.)
+We are interested in two kinds of population structure:
+
+- _Genetic population stratification_, in which the population is divided into subpopulations with different allele frequencies
+- _Environmental population stratification_, in which the population is divided into subpopulations with different phenotype-impacting environmental exposures.
+
+Genetic stratification can confound GWAS results it is not accounted for.  Environmental stratification does not confound GWAS results on its own, but can amplify existing confounding due to genetic stratification.
+
+
+### Genetically stratified populations
+
+Let's begin by constructing a model of a genetically stratified population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
+
+- Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
+- Let $\mathcal{Q}\in\{1,-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
+- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix remain independent.
+- We assume that 
+
+$$
+\begin{align}
+f\sim N(0, F_{ST}V), \label{f_dist}
+\end{align}
+$$ 
+
+
+where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
+
+
+- We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
+
+- We assume that the conditional genotype variances are given by:
+
+$$
+\begin{align}
+\mathbb{Var}(X_{i,j}|f, \mathcal{Q})=1-f_j^2. \label{sub_var}
+\end{align}
+$$
+
+Note that this implies that
+
+
+$$
+\begin{align}
+&\mathbb{Var}(X_{i,j}|f)\\
+&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f,\mathcal{Q}) |f ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f,\mathcal{Q}) |f ) & \text{ By law of total variance}\\
+&= \mathbb{Var} ( f_j Q_j |f) + \mathbb{E} (1-f_j^2|f) & \text{by (\ref{sub_var})}\\
+&= f_j^2 + 1-f_j^2\\
+&= 1
+\end{align}
+$$
+
+
+and also
+
+
+$$
+\begin{align}
+&\mathbb{Var}(X_{i,j})\\
+&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f) ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f)) & \text{ By law of total variance}\\
+&=0+1\\
+&=1
+\end{align}
+$$
+
+
+
+Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score regression equation, for this case of an equal mixture of two subpopulations.
+
+
+
+
+
+We next compute the conditional expectation of the product of two genotypes:
+
+
+$$
+\begin{align}
+\mathbb{E}(X_{i,j}X_{i,k}|f)&=0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_1) + 0.5 \mathbb{E}(X_{i,j}X_{i,k}|f, i\in\mathcal{P}_2)\\
+&=0.5(r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + f_{j}f_{k}) + 0.5(r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + (-f_{j}) (-f_{k})  )\\
+&=r_{j,k}\sqrt{(1-f_j^2)(1-f_k^2)} + f_jf_k. \label{cond_prod_eq}\\
+&\approx r_{j,k} + f_jf_k
+\end{align}
+$$
+
+
+
+
+
+We next compute $\mathbb{E} \tilde{r}_{j,k}$, the expectation of the sample correlation between variant $j$ and variant $k$.  This quantity will be key to computing LD scores.
+
+We have
+
+
+$$
+\begin{align}
+&\mathbb{E}  \tilde{r}_{j,k}^2\\
+&=\mathbb{E} \mathbb{E} \left( \tilde{r}_{j,k}^2 \middle| f  \right) \text{ (by Tower Law)}  \\
+&= \mathbb{E} \mathbb{E}     \left(\frac{1}{N^2}\sum_i \sum_q X_{i,j}X_{i,k}X_{q,j}X_{q,k}\middle| f\right)\\
+&=\frac{1}{N^2}\mathbb{E} \mathbb{E}     \left(\sum_{i\ne q} X_{i,j}X_{i,k}X_{q,j}X_{q,k} + \sum_i X_{i,j}^2X_{i,k}^2\middle| f\right)\\
+&=\frac{1}{N^2}\mathbb{E}\left(\sum_{i\ne q}\mathbb{E}\left( X_{i,j}X_{i,k}\middle| f\right)\mathbb{E}\left( X_{q,j}X_{q,k}\middle| f\right)+ \sum_i \mathbb{E} \left( X_{i,j}^2 X_{i,k}^2\middle| f\right) \right) \text{ (Conditional independence)}\\
+&\approx\mathbb{E}\left( \frac{N-1}{N} (f_jf_k+r_{j,k})^2 +\frac{1}{N^2}\mathbb{E} \left( X_{i,j}^2 X_{i,k}^2\middle| f\right)  \right) \text{ (by (\ref{cond_prod_eq}) )}\\
+&=\mathbb{E}\left( \frac{N-1}{N}\left(f_j^2 f_k^2+2r_{j,k}f_j f_k +r_{j,k}^2 \right) +\frac{1}{N}(1+2(f_jf_k+r_{j,k})^2+\nu) \right) \text{ (Isserlis theorem)}\\
+&= \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N}(1+  2F_{ST}^2(1+2V_{jk})  + 2r_{j,k}^2 +4r_{jk}F_{ST}V_{j,k} +\nu) \label{iserlis2} \\
+&\approx \frac{N-1}{N}\left( F_{ST}^2(1+2V_{jk})  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N} \label{drop_small}
+\end{align}
+$$
+
+
+Where in $(\ref{iserlis2})$ we apply the exact version of Isserlis's theorem, and where in $(\ref{drop_small})$ we neglect non-leading $O(\frac{1}{N})$ terms, since we assume $F_{S,T}, V_{j,k}, r_{j,k}$ are small, and $N$ is large.
+
+
+
+Now sum across $j$ to get the empirical LD score
+
+
+$$
+\begin{align}
+\tilde{l}_{j}&= \sum_k\tilde{r}_{j,k}^2\\
+&=\sum_k \left( \frac{N-1}{N}\left( F_{ST}^2+2F_{ST}^2V_{jk}  +2r_{j,k}F_{ST}V_{j,k} +r_{j,k}^2 \right) +\frac{1}{N} \right)
+\end{align}
+$$
+
+
+Now consider the terms $2F_{ST}^2V_{jk}$, $2r_{j,k}F_{ST}V_{j,k}$, and $r_{j,k}^2$ all of which will be zero for most SNPs $k$, since most SNPs are unlinked. If we assume that when these terms are nonzero and that $F_{ST}$, $V_{j,k}$ and $r_{j,k}$ are all small and all approximately the same magnitude, then $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$ are much smaller than the $r_{j,k}^2$.  This justifies neglecting $2F_{ST}^2V_{jk}$ and $2r_{j,k}F_{ST}V_{j,k}$. We have
+
+
+
+$$
+\begin{align}
+\tilde{l}_{j}&\approx\sum_k\left(  \frac{N-1}{N}\left( F_{ST}^2+r_{j,k}^2 \right) +\frac{1}{N}\right) \\
+&\approx MF_{ST}^2 + l_j + \frac{M}{N}. \label{stratified_ld_score}
+\end{align}
+$$
+
+
+### Environmentally stratified populations
+
+
+We extend the model above to include environmental stratification in addition to genetic stratification:
+
+
+
+$$
+\begin{align}
+\phi = X\beta + S + \epsilon
+\end{align}
+$$
+
+Where $S\in\mathbb{R}^n$ is defined by
+
+$$
+\begin{align}
+S_i := \begin{cases}
+\frac{\sigma_s}{2} & \text{if $i\in P_1$}\\
+-\frac{\sigma_s}{2} & \text{if $i\in P_1$}\\
+\end{cases}
+\end{align}
+$$
+
+
+Thus $S$ represents a differing environmental contribution to the phenotype in the two subpopulations.
+
+
+We also modify the variance of $\epsilon$:
+
+$$
+\begin{align}
+\mathrm{Var}(\epsilon)=1-h^2-\frac{\sigma_s^2}{4}
+\end{align}
+$$
+ 
+so that $\mathrm{Var}(\phi)=1$.
+
+Our goal is to derive a modified version of the core LDSC equation $(\ref{main_ld_eq})$ for this stratified population.
+
+We begin by applying the law of total variance to $\mathrm{Var}(\hat\beta_j)$:
+
+
+$$
+\begin{align}
+\mathrm{Var}(\hat{\beta}_j)
+&=\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f) +  \mathrm{Var}\mathrm{E}(\hat{\beta}_j|X,f)) \text{ (Total variance)} \label{stratified_var_decomposition}
+\end{align}
+$$
+
+
+Focusing on the first term in $(\ref{stratified_var_decomposition})$,
+
+
+
+$$
+\begin{align}
+&\mathrm{Var}(\hat\beta_j|X,f)\\
+&=\mathrm{Var}(\frac{1}{N}\phi^TX_{:,j}|X,f)\\
+&=\frac{1}{N^2}X_{:,j}^T\mathrm{Var}(\phi|X,f)X_{:,j}\\
+\end{align}
+$$
+
+We compute the conditional variance of the $\phi$:
+
+
+$$
+\begin{align}
+&\mathrm{Var}(\phi|X,f)\\
+&=\mathrm{Var}(X\beta+\epsilon+S|X,f)\\
+&=\mathrm{Var}(X\beta|X,f)+\mathrm{Var}(\epsilon|X,f)&\text{$S$ is constant conditional on $f$}\\
+&=X\mathrm{Var}(\beta|X,f)X^T+(1-h^2-\frac{\sigma_s^2}{4})I \\
+&=\frac{h^2}{M}XX^T + (1-h^2-\sigma_s^2/4)I & \text{By (\ref{betavar})}
+\end{align}
+$$
+
+Thus
+
+$$
+\begin{align}
+&\mathrm{E}\mathrm{Var}(\hat{\beta}_j|X,f)\\
+&=\frac{1}{N^2}\frac{h^2}{M}\underbrace{\mathrm{E}X_{:,j}^TXX^TX_{:,j}}_{\approx\sum_h\sum_i(X_{i,j}X_{i,h})^2=N^2\hat l_j} + \frac{1}{N^2}(1-h^2-\sigma_s^2/4)\underbrace{\mathrm{E}X_{:,j}^TX_{:,j}}_{\approx N}\\
+&=\frac{h^2}{M}\hat l_j + \frac{1}{N}(1-h^2-\sigma_s^2/4)\\
+&=h^2F_{ST}^2+\frac{h^2}{M}l_j+\frac{h^2}{N} + \frac{1}{N}(1-h^2-\sigma_s^2/4) &\text{By (\ref{stratified_ld_score})}\\
+&=h^2F_{ST}^2+\frac{h^2}{M}l_j+ \frac{1}{N}(1-\sigma_s^2/4)\\
+\end{align}
+$$
+
+
+
+Now focusing on the second term in $(\ref{stratified_var_decomposition})$,
+
+$$
+\begin{align}
+& \mathrm{Var}\mathrm{E}(\hat{\beta}_j|X,f))\\
+&= \mathrm{Var}(\mathrm{E}\frac{1}{N}X_{:,j}^T\phi|X,f)\\
+&=\mathrm{Var}(\frac{1}{N}X_{:,j}^T\mathrm{E}(\phi|X,f))\\
+&=\mathrm{Var}(\frac{1}{N}X_{:,j}^T\mathrm{E}(X\beta+\epsilon+S|X,f) )\\
+&=\mathrm{Var}(\frac{1}{N}X_{:,j}^T\frac{\sigma_s}{2}Q )\\
+&=\frac{1}{N^2}\frac{\sigma_s^2}{4}\mathrm{Var}(\sum_i X_{i,j}Q_i)\\
+&=\frac{1}{N^2}\frac{\sigma_s^2}{4}\mathrm{Var}(\underbrace{\sum_{i\in P_1} X_{i,j} -\sum_{i\in P_2} X_{i,j}}_{=:A_j})\\
+&= \frac{1}{N^2}\frac{\sigma_s^2}{4}\left(\mathrm{Var}\mathrm{E}(A_j|f) + \mathrm{E}\mathrm{Var}(A_j|f) \right) & \text{By the law of total variance}
+\end{align}
+$$
+
+
+We have 
+
+
+$$
+\begin{align}
+&\mathrm{E}\mathrm{Var}(A_j|f)\\
+&=\mathrm{E}N(1-f_j^2) &  \text{By (\ref{sub_var}) and conditional independence} \\
+&=N(1-F_{ST}) & \text{By (\ref{f_dist}) }
+\end{align}
+$$
+
+
+and
+
+
+$$
+\begin{align}
+&\mathrm{Var}\mathrm{E}(A_j|f)\\
+&= \mathrm{Var} (\frac{N}{2}f_j - \frac{N}{2} (-f_j)  )\\
+&=\mathrm{Var}(Nf_j)\\
+&=N^2 F_{ST}
+\end{align}
+$$
+
+
+Thus the second term in $(\ref{stratified_var_decomposition})$ is
+
+$$
+\begin{align}
+&\frac{1}{N^2}\frac{\sigma_s^2}{4}\left(\mathrm{Var}\mathrm{E}(A_j|f) + \mathrm{E}\mathrm{Var}(A_j|f) \right)\\
+&= \frac{1}{N^2}\frac{\sigma_s^2}{4}N^2 F_{ST}+\frac{1}{N^2}\frac{\sigma_s^2}{4} N(1-F_{ST})  \\
+&= \frac{\sigma^2_s}{4}F_{ST}+ \frac{\sigma^2_s}{4N}(1-F_{ST}) \\
+&\approx\frac{\sigma^2_s}{4}F_{ST}+ \frac{\sigma^2_s}{4N} 
+\end{align}
+$$
+
+
+[//]: # (&\approx\frac{\sigma_s^2}{4} \frac{1}{N^2} \mathrm{Var} &#40;N f_j&#41;\\)
+
+[//]: # (&=\frac{\sigma_2^2}{4}F_{ST})
+
+
+
+Combining these results, we have
+
+$$
+\begin{align}
+&\mathrm{Var}(\hat \beta_j)\\
+&=\frac{h^2}{M}l_j+h^2F_{ST}^2+ \frac{1}{N}(1-\sigma_s^2/4)+ \frac{\sigma_2^2}{4}F_{ST}+\frac{\sigma^2_s}{4N}\\
+&=\frac{h^2}{M}l_j+h^2F_{ST}^2+ \frac{1}{N}+ \frac{\sigma_2^2}{4}F_{ST}
+\end{align}
+$$
+
+Multiply by N to get the expected chi-squared statistic.
+
+
+$$
+\begin{align}
+\mathrm{E} \chi^2&=\frac{Nh^2}{M}l_j+ Nh^2F_{ST}^2+1+ \frac{N\sigma_s^2}{4}F_{ST}\\
+&=:\frac{Nh^2}{M}l_j+ \psi \label{stratified_eq}
+\end{align}
+$$
+
+
+Thus genetic stratification, alone or in combination with environmental stratification, can be expected to inflate the LDSC intercept.
+
+
+### The attenuation ratio
+
+
+How is LDSC used to detect stratification in practice? One approach would be to declare that there is significant stratification if the intercept $\psi$ in ($\ref{stratified_eq}$) significantly exceeds 1. The problem with this approach is that it can be misleading for highly polygenic traits investigated by GWAS with large sample sizes.  For such traits, many variants will have very large Wald $\chi^2$ statistics. In this circumstance, even a small amount of model misspecification error can produce an intercept that exceeds 1.
+
+
+It is more useful to consider the fraction of a typical $\chi^2$ statistic that is explained by the intercept, rather the LD term in $(\ref{stratified_eq})$.  For this purpose, a quantity called the attenuation ratio is computed:
+
+$$
+\begin{align}
+R:= \frac{\psi-1}{\chi^2_{text{mean}}-1}
+\end{align}
+$$
+
+
+
+[^MHC_Note]: LDSC implementations usually exclude the MHC region, partially for this reason.
+
+
+
 
 \bibliography
 
-[//]: # (Main Reference:)
-
-[//]: # (Bulik-Sullivan, Brendan K., et al. "LD Score regression distinguishes confounding from polygenicity in genome-wide association studies." Nature genetics 47.3 &#40;2015&#41;: 291-295.)

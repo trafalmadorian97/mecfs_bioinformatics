@@ -1,0 +1,5 @@
+STANDARD_NAME = "standard_name"
+SYSTEMATIC_NAME = "systematic_name"
+EXACT_SOURCE = "exact_source"
+GENE_SYMBOLS = "gene_symbols"
+NCBI_IDS = "ncbi_ids"

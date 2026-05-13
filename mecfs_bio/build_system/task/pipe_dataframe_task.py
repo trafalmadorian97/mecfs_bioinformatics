@@ -10,6 +10,7 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
@@ -48,17 +49,17 @@ OutFormat = ParquetOutFormat | CSVOutFormat
 class PipeDataFrameTask(Task):
     source_data_task: Task
     pipes: Sequence[DataProcessingPipe]
-    _meta: Meta
+    meta: Meta
     out_format: OutFormat
     backend: ValidBackend = "ibis"
 
     def __attrs_post_init__(self):
-        if isinstance(self._source_meta.read_spec().format, DataFrameTextFormat):
+        source_meta = self._source_meta
+        assert isinstance(source_meta, FileMeta)
+        read_spec = source_meta.read_spec
+        assert read_spec is not None
+        if isinstance(read_spec.format, DataFrameTextFormat):
             assert self.backend in ("polars",), "Can only read text data with polars"
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

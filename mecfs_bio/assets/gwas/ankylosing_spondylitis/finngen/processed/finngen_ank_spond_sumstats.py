@@ -11,7 +11,7 @@ from mecfs_bio.build_system.task.pipes.str_split_exact_col import SplitExactColP
 
 FINGNEN_ANK_SPOND_SUMSTATS = GWASLabCreateSumstatsTask(
     df_source_task=FINNGEN_ANKYLOSING_SPONDYLITIS_DATA_RAW,
-    asset_id=AssetId("finngen_ank_spond_sumstats"),
+    target_asset_id=AssetId("finngen_ank_spond_sumstats"),
     basic_check=True,
     genome_build="infer",
     liftover_to="19",

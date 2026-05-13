@@ -1,5 +1,5 @@
 from pathlib import Path, PurePath
-from typing import Any, Sequence
+from typing import Sequence
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -33,14 +33,10 @@ class ExtractDataFrameFromRDataTask(Task):
     RData files can bundle together many R objects.  This is a Task to extract a single dataframe from such a file.
     """
 
-    _meta: Meta
+    meta: Meta
     rdata_file_task: Task
     r_dataframe_name: str
     r_package_list: Sequence[str]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -53,8 +49,8 @@ class ExtractDataFrameFromRDataTask(Task):
         rdata_asset = fetch(self.rdata_file_task.asset_id)
         assert isinstance(rdata_asset, FileAsset)
         pth = rdata_asset.path
-        load: Any = robjects.r["load"]
-        load(str(pth))
+        load = robjects.r["load"]
+        load(str(pth))  # type: ignore[operator] # ty: ignore[call-non-callable]
         r_dataframe = robjects.r[self.r_dataframe_name]
         with localconverter(conv):
             py_dataframe: pd.DataFrame = ro.conversion.get_conversion().rpy2py(

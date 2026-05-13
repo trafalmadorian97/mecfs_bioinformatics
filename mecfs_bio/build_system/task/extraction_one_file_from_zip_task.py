@@ -27,9 +27,9 @@ class ExtractFromZipTask(Task):
     Task to extract a single file from a zip archive
     """
 
-    _meta: Meta
-    _source_file_task: Task
-    _file_to_extract: str
+    meta: Meta
+    source_file_task: Task
+    file_to_extract: str
 
     @classmethod
     def create_from_zipped_executable(
@@ -95,22 +95,18 @@ class ExtractFromZipTask(Task):
         )
 
     @property
-    def meta(self) -> Meta:
-        return self._meta
-
-    @property
     def deps(self) -> list["Task"]:
-        return [self._source_file_task]
+        return [self.source_file_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        asset = fetch(self._source_file_task.asset_id)
+        asset = fetch(self.source_file_task.asset_id)
         assert isinstance(asset, FileAsset)
         extract_single_file_from_zip(
             zip_path=asset.path,
-            file_to_extract=self._file_to_extract,
+            file_to_extract=self.file_to_extract,
             destination_dir=scratch_dir,
         )
-        result_path = scratch_dir / self._file_to_extract
+        result_path = scratch_dir / self.file_to_extract
         return FileAsset(result_path)
 
 

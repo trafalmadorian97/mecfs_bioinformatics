@@ -1,23 +1,36 @@
 site_name: ME/CFS Biostatistics Home
 repo_url: https://github.com/trafalmadorian97/mecfs_bioinformatics
+edit_uri: edit/main/docs/
 theme:
   name: material
   features:
-    - navigation.indexes
+#    - navigation.indexes
+    - toc.integrate
     - content.footnote.tooltips
+    - content.action.edit
+    - content.action.view
 plugins:
 - search
 - macros
 - glightbox
 - bibtex:
     bib_file: "docs/refs.bib"
+- git-committers:
+    repository: trafalmadorian97/mecfs_bioinformatics
+    enabled: !ENV [HAVE_GH_TOKEN, false]
+    token: !ENV [GH_TOKEN, "none"]
+    branch: main
+    exclude_committers:
+      - web-flow
+
 - mkdocstrings:
    handlers:
       python:
         inventories:
           - https://docs.python.org/3/objects.inv
         options:
-          paths: [.]
+          extra:
+            paths: [.]
           docstring_section_style: list # or "table"
           docstring_style: "numpy"
           filters: [ "!^_" ]
@@ -34,6 +47,7 @@ plugins:
 - api-autonav:
     modules: ['mecfs_bio']
     exclude: ['mecfs_bio.util']
+    enabled: !ENV [ENABLE_API_AUTONAV, false]
 
 extra_javascript:
   - javascripts/mathjax.js

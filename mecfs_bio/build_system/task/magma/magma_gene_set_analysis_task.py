@@ -64,7 +64,7 @@ class MagmaGeneSetAnalysisTask(Task):
     See page 18 of the manual here: https://vu.data.surfsara.nl/s/MUiv3y1SFRePnyG?dir=/&editing=false&openfile=true
     """
 
-    _meta: Meta
+    meta: Meta
     magma_binary_task: Task
     magma_gene_analysis_task: Task
     gene_set_or_covar_task: Task | DirectoryGeneSetSpec
@@ -83,10 +83,6 @@ class MagmaGeneSetAnalysisTask(Task):
         if isinstance(self.gene_set_or_covar_task, Task):
             return self.gene_set_or_covar_task.asset_id
         return self.gene_set_or_covar_task.gene_set_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -110,7 +106,7 @@ class MagmaGeneSetAnalysisTask(Task):
             gene_set_or_covar_path = (
                 gene_set_or_covar_asset.path / self.gene_set_or_covar_task.path_in_dir
             )
-        if _empty_gene_set_file(gene_set_or_covar_path, model_params=self.model_params):
+        if empty_gene_set_file(gene_set_or_covar_path, model_params=self.model_params):
             pd.DataFrame({MAGMA_VARIABLE_COLUMN: [], MAGMA_P_COLUMN: []}).to_csv(
                 out_dir / (GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"),
                 sep="\t",
@@ -180,7 +176,7 @@ class MagmaGeneSetAnalysisTask(Task):
         )
 
 
-def _empty_gene_set_file(
+def empty_gene_set_file(
     gene_set_file_path: Path, model_params: ModelParams | None
 ) -> bool:
     """
@@ -189,7 +185,7 @@ def _empty_gene_set_file(
     """
 
     lim = (
-        1 if (model_params is None or ~model_params.joint_pairs) else 2
+        1 if (model_params is None or (not model_params.joint_pairs)) else 2
     )  # the first column is the "GENE" column, so to have 1 gene set we need two columns, and to have two gene sets we need three
     df = pd.read_csv(gene_set_file_path, sep=r"\s+")
     if len(df.columns) <= lim:

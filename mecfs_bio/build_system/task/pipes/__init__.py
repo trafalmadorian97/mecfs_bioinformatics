@@ -1,3 +1,3 @@
 """
-Pipes are simple, composable DataFrame transformations.
+Pipes are  composable DataFrame transformations.
 """

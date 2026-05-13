@@ -69,6 +69,7 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.constants.magma_constants import MAGMA_P_COLUMN
+from mecfs_bio.util.type_related.unwrap import unwrap
 
 
 @frozen
@@ -92,6 +93,18 @@ class HBAMagmaTasks:
     ) = None
     independent_clusters_markdown_task: ConvertDataFrameToMarkdownTask | None = None
     magma_independent_clusters_csv: JoinDataFramesTask | None = None
+
+    @property
+    def magma_independent_cluster_plot_unwrap(
+        self,
+    ) -> MAGMAPlotBrainAtlasResultWithStepwiseLabels:
+        return unwrap(self.magma_independent_cluster_plot)
+
+    @property
+    def independent_clusters_markdown_task_unwrap(
+        self,
+    ) -> ConvertDataFrameToMarkdownTask:
+        return unwrap(self.independent_clusters_markdown_task)
 
     def terminal_tasks(self) -> list[Task]:
         result: list = [self.extracted_plot_task]

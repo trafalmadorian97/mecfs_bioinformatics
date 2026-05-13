@@ -6,7 +6,7 @@ from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.magma.decode_me_gwas_1_build_37_magma_entrez_gene_analysis import (
     DECODE_ME_GWAS_1_MAGMA_ENTREZ_GENE_ANALYSIS,
 )
-from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.gsea_entrez_human_gene_set_2025_v1_extracted import (
+from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.extracted.gsea_entrez_human_gene_set_2025_v1_extracted import (
     GSEA_HUMAN_GENE_SET_2025_V1_EXTRACTED,
 )
 from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (

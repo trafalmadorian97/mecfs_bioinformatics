@@ -8,7 +8,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 
 LIU_ET_AL_2023_RSIDS_FROM_ANNOVAR_SUMSATS = GWASLabCreateSumstatsTask(
     df_source_task=LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR,
-    asset_id=AssetId("liu_et_al_2023_rsids_from_annovar_sumstats"),
+    target_asset_id=AssetId("liu_et_al_2023_rsids_from_annovar_sumstats"),
     basic_check=True,
     genome_build="19",
     fmt="gwaslab",

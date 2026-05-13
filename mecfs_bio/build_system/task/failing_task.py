@@ -3,7 +3,6 @@ A task that always fails, which can be used for testing.
 """
 
 from pathlib import Path
-from typing import Sequence
 
 from attrs import frozen
 
@@ -21,16 +20,8 @@ class FailingTask(Task):
     Intended to be used for testing.`
     """
 
-    _meta: Meta
-    _deps: Sequence[Task]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
-
-    @property
-    def deps(self) -> list["Task"]:
-        return list(self._deps)
+    meta: Meta
+    deps: list[Task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         raise ValueError("Task intentionally failed.")

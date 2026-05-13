@@ -11,7 +11,8 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.base_meta import FileMeta
+from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
@@ -29,28 +30,26 @@ class ConvertDataFrameToMarkdownTask(Task):
     Useful for writing up results
     """
 
-    _meta: Meta
-    _df_task: Task
+    meta: Meta
+    df_task: Task
     pipe: DataProcessingPipe = IdentityPipe()
 
     def __attrs_post_init__(self):
-        assert self._source_meta.read_spec() is not None
+        source_meta = self._source_meta
+        assert isinstance(source_meta, FileMeta)
+        assert source_meta.read_spec is not None
 
     @property
     def _source_meta(self) -> Meta:
-        return self._df_task.meta
+        return self.df_task.meta
 
     @property
     def _source_id(self) -> AssetId:
         return self._source_meta.asset_id
 
     @property
-    def meta(self) -> Meta:
-        return self._meta
-
-    @property
     def deps(self) -> list["Task"]:
-        return [self._df_task]
+        return [self.df_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         source_asset = fetch(self._source_id)
@@ -72,12 +71,11 @@ class ConvertDataFrameToMarkdownTask(Task):
     ):
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
-        meta = FilteredGWASDataMeta(
+        meta = MarkdownFileMeta(
             id=AssetId(asset_id),
             trait=source_meta.trait,
             project=source_meta.project,
             sub_dir=source_meta.sub_dir,
-            extension=".md",
         )
         return cls(meta=meta, df_task=source_task, pipe=pipe)
 

@@ -35,7 +35,7 @@ class ExtractSheetFromExelFileTask(Task):
     Useful for working with supplementary material to research papers, which is often in excel format
     """
 
-    _meta: Meta
+    meta: Meta
     excel_file_task: Task
     sheet_name: str
     out_format: OutFormat
@@ -46,10 +46,6 @@ class ExtractSheetFromExelFileTask(Task):
     @property
     def source_asset_id(self) -> AssetId:
         return self.excel_file_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

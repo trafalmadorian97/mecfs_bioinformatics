@@ -9,9 +9,17 @@ def lupus_analysis():
     Script to analyze the lupus GWAS of Bentham et al
     """
     DEFAULT_RUNNER.run(
-        BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.terminal_tasks(),
+        [
+        BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["immgen"].plot_task,
+            BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["multi_tissue_chromatin"].plot_task,
+            BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["multi_tissue_gene_expression"].plot_task,
+        ],
         incremental_save=True,
-        must_rebuild_transitive=[],
+        must_rebuild_transitive=[
+            BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["immgen"].plot_task,
+            BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["multi_tissue_chromatin"].plot_task,
+            BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks["multi_tissue_gene_expression"].plot_task,
+        ],
     )
 
 

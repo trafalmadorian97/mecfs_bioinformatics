@@ -8,15 +8,13 @@ Here is a discussion (which covers both single and cross-trait analysis) from ch
 Balding, David J., Ida Moltke, and John Marioni, eds. Handbook of statistical genomics. John Wiley & Sons, 2019.
 Chapter authors are S. Burgess, C.N. Foley and V. Zuber
 
-
-
-
 "
 *A criticism of LD score regression is that every analysis for each pair of traits uses the same LD scores as the dependent variable in the regression model (and as LD scores have been precomputed by its proponents, literally the same LD scores are used in the majority of applied analyses). This means that any influential points in the regression will affect not only one LD score regression analysis, but all such analyses. LD scores are also likely to be a ‘weak instrument’ in the language of Mendelian randomization, as they will only explain a small proportion of variance in the dependent variable. Additionally, due to the scale of the data, it is not possible to provide a visual representation of an LD score regression analysis. Standard regression diagnostics are rarely, if ever, performed. Finally, results from LD score regression are not always consistent with known causal relationships; for example, the method did not find evidence for a genetic correlation between LDL cholesterol and CHD risk that survived a multiple testing correction (Bulik-Sullivan et al., 2015). The method has utility in mapping the genetic distance between related phenotypes, such as determining how closely related different psychiatric disorders are in terms of their genetic predictors (Cross-Disorder Group of the Psychiatric Genomics Consortium, 2013). However, the reliance of the method on numerous linearity and independence assumptions, incorrect weighting in the linear regression model (correct weights would require computation of the Cholesky decomposition of a matrix with dimension equal to the number of genetic variants in the model – misspecified weights are recommended for use in practice), and lack of validation against known causal relationships mean that results from the method should not be treated too seriously as an assessment of causality.*
 "
 
-
 """
+
+MULTI_TRAIT = "multi_trait"
 
 from pathlib import Path, PurePath
 from typing import Sequence
@@ -43,7 +41,6 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import GenomeBuild
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     complement_reverse_expr,
     match_flipped_reference_expr,
@@ -52,10 +49,12 @@ from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid im
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_RSID_COL,
+    GWASLAB_SAMPLE_SIZE_COLUMN,
 )
 
 logger = structlog.get_logger()
@@ -104,6 +103,21 @@ class BinaryPhenotypeSampleInfo:
 
     sample_prevalence: float
     estimated_population_prevalence: float
+    total_sample_size: int | None = None
+
+    @property
+    def ncases(self) -> float:
+        assert self.total_sample_size is not None
+        return int(self.sample_prevalence * self.total_sample_size)
+
+    @property
+    def ncontrols(self) -> float:
+        assert self.total_sample_size is not None
+        return int((1 - self.sample_prevalence) * self.total_sample_size)
+
+    @property
+    def effective_sample_size(self) -> int:
+        return int(4 / (1 / self.ncases + 1 / self.ncontrols))
 
 
 @frozen
@@ -112,7 +126,7 @@ class QuantPhenotype:
     Marker class to indicate that a phenotype is quantitative, not binary, and so does not need to be converted to the liability scale.
     """
 
-    pass
+    total_sample_size: int | None = None
 
 
 PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
@@ -126,8 +140,8 @@ class SumstatsSource:
 
     task: Task
     alias: str
+    sample_info: PhenotypeInfo
     pipe: DataProcessingPipe = IdentityPipe()
-    sample_info: PhenotypeInfo | None = None
 
     @property
     def asset_id(self) -> AssetId:
@@ -154,7 +168,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
     source_sumstats_tasks: Sequence[SumstatsSource]
     ld_ref_task: Task
     ld_file_filename_pattern: str
-    _meta: Meta
+    meta: Meta
     build: GenomeBuild
     filter_settings: FilterSettings = FilterSettings()
 
@@ -164,10 +178,6 @@ class GeneticCorrelationByCTLDSCTask(Task):
     @property
     def _ld_ref_id(self) -> AssetId:
         return self.ld_ref_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -238,7 +248,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(
             id=asset_id,
-            trait="multi_trait",
+            trait=MULTI_TRAIT,
             project="genetic_correlation",
             sub_dir=PurePath("ct_ldsc"),
             extension=".csv",
@@ -283,7 +293,7 @@ def get_prev_options(
         "samp_prev": f"{t1_sp},{t2_sp}",
         "pop_prev": f"{t1_pp},{t2_pp}",
     }
-    logger.debug(f"Prevalance Options: {options}")
+    logger.debug(f"Prevalence Options: {options}")
     return options
 
 
@@ -297,7 +307,17 @@ def load_and_preprocess_sumstats(
     assert GWASLAB_RSID_COL in sumstats.data.columns
     sumstats.data = source.pipe.process_pandas(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)
+    _add_N_column_if_missing(sumstats, source=source)
     return sumstats, name, source.sample_info
+
+
+def _add_N_column_if_missing(
+    sumstats: gwaslab.Sumstats, source: SumstatsSource
+) -> None:
+    if GWASLAB_SAMPLE_SIZE_COLUMN in sumstats.data.columns:
+        return
+    assert source.sample_info.total_sample_size is not None
+    sumstats.data[GWASLAB_SAMPLE_SIZE_COLUMN] = source.sample_info.total_sample_size
 
 
 def get_compatible_snps_polars(df_i: pd.DataFrame, df_j: pd.DataFrame) -> pd.DataFrame:

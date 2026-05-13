@@ -54,7 +54,7 @@ As a more specific example, note that (a) many recent GWAS have shown that obesi
 
 For a popular science book that discusses subtle issues in the definition of heredity, see Harden 2021[@harden2021genetic].
 
-# Alternative definitions of Heritability
+## Alternative definitions of Heritability
 
 The standard definition of heritability stated [above](Heritability.md#heritability) has certain unsatisfactory aspects:
 
@@ -64,7 +64,7 @@ The standard definition of heritability stated [above](Heritability.md#heritabil
 
 The above unsatisfactory aspects make heritability a somewhat fuzzy concept, and motivate the development of alternative definitions.
 
-## Definition via conditional expectation
+### Definition via conditional expectation
 
 In the definition [above](Heritability.md#heritability), we first specified the relationship between $G$, $E$, and $Y$ , and then defined heritability in the context of this relationship. It is possible to reverse this.  
 
@@ -93,7 +93,7 @@ where the last line follows from the Projection Theorem (pg. 345 in Grimmet and 
  - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this alternative definition is applicable to any phenotype representable by a random variable in $L_2$.  Mathematically, it is now crystal clear what we mean when we speak of $G$ and $E$.
  - On the other hand, the conditional expectation definition of heritability has the **disadvantage** of reduced interpretability.  In particular, $G$ now incorporates all aspects of the phenotype that can be predicted from the genotype, including artifacts of population stratification.
 
-## Counterfactual heritability
+### Counterfactual heritability
 
 Todo[@leia2025heritability]
 

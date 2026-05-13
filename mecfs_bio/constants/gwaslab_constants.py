@@ -1,3 +1,7 @@
+"""
+Constants for interacting with gwaslab (https://github.com/Cloufield/gwaslab/tree/main/src/gwaslab).
+"""
+
 from typing import Literal
 
 GWASLAB_CHROM_COL = "CHR"

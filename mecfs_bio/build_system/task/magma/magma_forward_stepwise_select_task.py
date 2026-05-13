@@ -50,7 +50,7 @@ class MagmaForwardStepwiseSelectTask(Task):
     This is loosely based on: https://github.com/Integrative-Mental-Health-Lab/linking_cell_types_to_brain_phenotypes/blob/675b5c9b58b8762934183a3ca61ae49ad587934a/MAGMA/5.forward_selection_condition_results.md
     """
 
-    _meta: Meta
+    meta: Meta
     magma_marginal_output_task: Task
     magma_conditional_output_task: Task
     min_prop_sig: float = 0.5
@@ -63,10 +63,6 @@ class MagmaForwardStepwiseSelectTask(Task):
     @property
     def conditional_asset_id(self) -> AssetId:
         return self.magma_conditional_output_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

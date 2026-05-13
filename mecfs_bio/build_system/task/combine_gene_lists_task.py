@@ -47,7 +47,7 @@ class CombineGeneListsTask(Task):
     to create master gene list for the trait of interest.
     """
 
-    _meta: Meta
+    meta: Meta
     src_gene_lists: Sequence[SrcGeneList]
     out_format: OutFormat = CSVOutFormat(sep=",")
     out_pipe: DataProcessingPipe = IdentityPipe()
@@ -56,10 +56,6 @@ class CombineGeneListsTask(Task):
         assert len(self.src_gene_lists) > 0
         names = set([gl.name for gl in self.src_gene_lists])
         assert len(names) == len(self.src_gene_lists)
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -91,7 +87,7 @@ class CombineGeneListsTask(Task):
             .collect()
             .to_pandas()
         )
-        out_path = scratch_dir / (self._meta.asset_id + ".csv")
+        out_path = scratch_dir / (self.meta.asset_id + ".csv")
         if isinstance(self.out_format, CSVOutFormat):
             result_df.to_csv(out_path, index=False, sep=self.out_format.sep)
         elif isinstance(self.out_format, ParquetOutFormat):

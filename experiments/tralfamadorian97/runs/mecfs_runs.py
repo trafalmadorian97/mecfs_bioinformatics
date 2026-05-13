@@ -3,7 +3,9 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.multi_gwas.genetic_correlation.ct_ldsc_plot import CT_LDSC_INITIAL_PLOT
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initial_asset_generator import \
+    CT_LDSC_INITIAL_ASSET_GENERATOR
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import CT_LDSC_INITIAL_PLOT
 
 
 def run_initial_decode_me_analysis():
@@ -18,6 +20,9 @@ def run_initial_decode_me_analysis():
         (
             # [YU_DRG_SRC1_RDATA]
             [
+
+                CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
+
                 CT_LDSC_INITIAL_PLOT
                 # YU_DRG_FRAC_SPECIFICITY_MATRIX
                 # CT_LDSC_INITIAL_PLOT
@@ -62,7 +67,9 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            CT_LDSC_INITIAL_PLOT.genetic_corr_source.task
+
+            CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task
+            # CT_LDSC_INITIAL_PLOT.genetic_corr_source.task
             # CT_LDSC_INITIAL,
             # CT_LDSC_INITIAL_PLOT
             # CT_LDSC_INITIAL

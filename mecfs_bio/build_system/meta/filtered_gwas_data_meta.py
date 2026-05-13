@@ -21,8 +21,5 @@ class FilteredGWASDataMeta(FileMeta):
     trait: str
     project: str
     sub_dir: str | PurePath
-    _read_spec: ReadSpec | None = None
+    read_spec: ReadSpec | None = None
     extension: str = ".parquet"
-
-    def read_spec(self) -> ReadSpec | None:
-        return self._read_spec

@@ -31,13 +31,9 @@ class CopyFileFromDirectoryTask(Task):
     Copy a file within a DirectoryAsset to create a FileAsset.  Useful when downstream tasks require FileAssets.
     """
 
-    _meta: Meta
+    meta: Meta
     source_directory_task: Task
     path_inside_directory: PurePath
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:
@@ -50,6 +46,33 @@ class CopyFileFromDirectoryTask(Task):
         out_path = scratch_dir / self.meta.asset_id
         shutil.copyfile(src_path, out_path)
         return FileAsset(out_path)
+
+    @classmethod
+    def create_from_result_plot(
+        cls,
+        asset_id: str,
+        source_directory_task: Task,
+        path_inside_directory: PurePath,
+        extension: str,
+        subdir: PurePath = PurePath("analysis/plots"),
+    ):
+        source_meta: Meta = source_directory_task.meta
+        meta: Meta
+        if isinstance(source_meta, ResultDirectoryMeta):
+            meta = GWASPlotFileMeta(
+                trait=source_meta.trait,
+                project=source_meta.project,
+                extension=extension,
+                id=AssetId(asset_id),
+                sub_dir=subdir,
+            )
+        else:
+            raise ValueError(f"Unexpected source meta type {type(source_meta)}")
+        return cls(
+            source_directory_task=source_directory_task,
+            path_inside_directory=path_inside_directory,
+            meta=meta,
+        )
 
     @classmethod
     def create_result_table(

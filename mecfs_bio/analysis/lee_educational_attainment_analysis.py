@@ -29,8 +29,8 @@ def run_edu_analysis():
             LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.inner.bar_plot_task,
             # LEE_ET_AL_2018_H2_BY_LDSC,
         ]
-        + LEE_ET_AL_2018_HBA_MAGMA_TASKS_EDU.terminal_tasks(),
-        +LEE_ET_AL_EDU_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks(),
+        + LEE_ET_AL_2018_HBA_MAGMA_TASKS_EDU.terminal_tasks()
+        + list(LEE_ET_AL_EDU_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks()),
         incremental_save=True,
     )
 

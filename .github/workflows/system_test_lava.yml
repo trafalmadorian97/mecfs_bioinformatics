@@ -1,0 +1,22 @@
+name: system_test_lava
+on:
+  schedule:
+    - cron: "0 4 * * 3"   #Run Wednesday at 4 UTC
+  workflow_dispatch: {}
+
+jobs:
+  lead_variants:
+    timeout-minutes: 600
+    name: Run Lava
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v6
+      - name: Run lava integration test
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_lava.py::test_lava_vignette_data
+          free-disk-space: "false"
+          pre-test-command: pixi r invoke install-r-packages

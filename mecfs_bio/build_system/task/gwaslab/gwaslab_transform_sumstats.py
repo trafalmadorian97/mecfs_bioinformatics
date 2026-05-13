@@ -32,14 +32,10 @@ class GWASLabTransformSumstatsTask(Task):
     Task to read a pickled GWASlab sumstats object, apply transformations to it, write it out as a new GWASLab sumstats object.
     """
 
-    _meta: Meta
+    meta: Meta
     source_sumstats_task: Task
     transform_spec: GwasLabTransformSpec
     post_pipe: DataProcessingPipe = IdentityPipe()
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def source_meta(self) -> Meta:

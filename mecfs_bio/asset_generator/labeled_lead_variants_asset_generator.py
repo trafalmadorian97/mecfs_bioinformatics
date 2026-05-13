@@ -1,3 +1,7 @@
+"""
+Asset generator to find lead variants of a GWAS using gwaslab.
+"""
+
 from attrs import frozen
 
 from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
@@ -40,7 +44,7 @@ def generate_tasks_labeled_lead_variants(
         basic_check=True,
         genome_build="infer",
         pre_pipe=pre_pipe,
-        asset_id=AssetId(base_name + "_raw_sumstats_task_no_liftover"),
+        target_asset_id=AssetId(base_name + "_raw_sumstats_task_no_liftover"),
     )
     lead_variants_task = GwasLabLeadVariantsTask(
         sumstats_task=raw_sumstats_task, short_id=base_name + "_gwaslab_lead_variants"

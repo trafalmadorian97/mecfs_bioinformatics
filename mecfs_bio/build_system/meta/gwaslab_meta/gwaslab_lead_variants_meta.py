@@ -27,5 +27,6 @@ class GWASLabLeadVariantsMeta(FileMeta):
     id: AssetId = field(converter=AssetId)
     sub_dir: PurePath = PurePath("analysis/lead_variants")
 
+    @property
     def read_spec(self) -> ReadSpec | None:
         return ReadSpec(format=DataFrameTextFormat(separator=","))

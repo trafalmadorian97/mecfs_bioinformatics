@@ -8,7 +8,6 @@ from pathlib import Path
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.file_asset import FileAsset
-from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
@@ -22,12 +21,8 @@ class CopyTask(GeneratingTask):
     Used for testing
     """
 
-    _meta: SimpleFileMeta
+    meta: SimpleFileMeta
     dep_file_task: Task
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

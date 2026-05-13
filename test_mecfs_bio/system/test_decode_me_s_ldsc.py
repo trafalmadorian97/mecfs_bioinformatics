@@ -23,5 +23,5 @@ def test_run_s_lsdc(tmp_path: Path):
             info_store=info_store,
             asset_root=asset_root,
         )
-        result = test_runner.run(DECODE_ME_S_LDSC.get_terminal_tasks())
+        result = test_runner.run(list(DECODE_ME_S_LDSC.get_terminal_tasks()))
         assert result is not None

@@ -1,0 +1,45 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "minimumReleaseAge": "1 day",
+  "prHourlyLimit": 10,
+  "enabledManagers": [
+    "pixi",
+    "github-actions"
+  ],
+  "constraints": {
+    "pixi": "0.67.2"
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^renovate\\.json$/"],
+      "matchStrings": [
+        "\"pixi\":\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "prefix-dev/pixi",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch"],
+      "automerge": true
+    },
+    {
+      "matchPackageNames": [
+        "xarray",
+        "ibis-framework",
+        "actions/cache",
+        "actions/setup-python",
+        "dorny/paths-filter",
+        "actionlint"
+      ],
+      "matchUpdateTypes": ["major","minor", "patch"],
+      "automerge": true
+    }
+  ]
+}

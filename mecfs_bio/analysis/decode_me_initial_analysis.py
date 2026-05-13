@@ -55,7 +55,7 @@ def run_initial_decode_me_analysis():
             MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
             DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
         ]
-        + DECODE_ME_S_LDSC.get_terminal_tasks()
+        + list(DECODE_ME_S_LDSC.get_terminal_tasks())
         + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
         # + DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,

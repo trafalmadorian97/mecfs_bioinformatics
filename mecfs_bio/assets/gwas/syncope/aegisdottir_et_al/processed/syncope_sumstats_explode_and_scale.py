@@ -49,5 +49,5 @@ SYNCOPE_SUMSTATS_EXPLODE_AND_SCALE = GWASLabCreateSumstatsTask(
             UNNestPipe(col_to_unnest="rsName"),
         ]
     ),
-    asset_id=AssetId("aegisdottir_et_al_raw_sumstats_exploded_and_scaled"),
+    target_asset_id=AssetId("aegisdottir_et_al_raw_sumstats_exploded_and_scaled"),
 )

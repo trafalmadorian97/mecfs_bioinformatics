@@ -14,7 +14,7 @@ from mecfs_bio.constants import gwaslab_constants
 
 LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150 = GWASLabCreateSumstatsTask(
     df_source_task=LIU_ET_AL_2023_ASSIGN_RSID_VIA_SNP150_ANNOVAR,
-    asset_id=AssetId("liu_et_al_2023_ibd_sumstats_with_rsids_via_snp150"),
+    target_asset_id=AssetId("liu_et_al_2023_ibd_sumstats_with_rsids_via_snp150"),
     basic_check=True,
     genome_build="infer",
     liftover_to="19",

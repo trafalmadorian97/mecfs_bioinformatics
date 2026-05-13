@@ -16,8 +16,8 @@ git checkout -b <branchname>
 
 Implement your changes.  Typically, this will involve:
 
-- Defining a new `Task` object in the [assets][mecfs_bio.assets] directory.  This can often be accomplished using an existing `Task` class, but if no `Task` class meets your needs, you can implement a new one in the [task][mecfs_bio.build_system.task] directory.
-- Adding an [analysis script][mecfs_bio.analysis] to materialize the new asset you defined.
+- Defining a new `Task` object in the {{ api_link("assets", "mecfs_bio.assets") }} directory.  This can often be accomplished using an existing `Task` class, but if no `Task` class meets your needs, you can implement a new one in the {{ api_link("task", "mecfs_bio.build_system.task") }} directory.
+- Adding an {{ api_link("analysis script", "mecfs_bio.analysis") }} to materialize the new asset you defined.
 
 If you added a new `Task` class, you will also want to add a unit test to the `test_mecfs_bio directory` to verify that it works as intended on some dummy data.  To read about the principles of unit testing, see Winters et al.[@winters2020software] [^winters_chapter].  
 

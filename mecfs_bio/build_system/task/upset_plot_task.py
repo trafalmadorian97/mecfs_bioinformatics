@@ -91,12 +91,8 @@ class UpSetPlotTask(Task):
     See: https://en.wikipedia.org/wiki/UpSet_plot
     """
 
-    _meta: Meta
+    meta: Meta
     set_sources: Sequence[SetSource]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

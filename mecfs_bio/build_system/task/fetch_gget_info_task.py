@@ -70,7 +70,7 @@ class FetchGGetInfoTask(Task):
 
     source_df_task: Task
     ensembl_id_col: str
-    _meta: Meta
+    meta: Meta
     genes_to_use: int | None = None
     out_format: OutFormat = CSVOutFormat(",")
     post_pipe: DataProcessingPipe = IdentityPipe()
@@ -82,10 +82,6 @@ class FetchGGetInfoTask(Task):
     @property
     def source_id(self) -> AssetId:
         return self.source_df_task.asset_id
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

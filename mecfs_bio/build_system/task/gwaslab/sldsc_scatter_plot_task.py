@@ -31,7 +31,7 @@ class SLDSCScatterPlotTask(Task):
     Nature genetics 50.4 (2018): 621-629.
     """
 
-    _meta: Meta
+    meta: Meta
     df_source_task: Task
 
     @property
@@ -41,10 +41,6 @@ class SLDSCScatterPlotTask(Task):
     @property
     def _source_meta(self) -> Meta:
         return self.df_source_task.meta
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

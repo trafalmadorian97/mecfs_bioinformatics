@@ -29,7 +29,7 @@ def run_syncope_analysis():
         [
             AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA,
         ]
-        + SYNCOPE_S_LDSC_TASKS.get_terminal_tasks()
+        + list(SYNCOPE_S_LDSC_TASKS.get_terminal_tasks())
         + HBA_MAGMA_AEGISDOTTIR_SYCNOPE_GWAS.terminal_tasks()
         + AEGISDOTTIR_COMBINED_MAGMA_TASKS.inner.terminal_tasks(),
         incremental_save=True,

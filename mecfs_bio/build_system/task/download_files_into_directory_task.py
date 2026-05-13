@@ -29,7 +29,7 @@ class DownloadEntry:
 
     url: str
     filename: str
-    md5hash: str
+    md5hash: str | None
     post_download_command: Callable[[Path], list[str]] | None
 
     @classmethod
@@ -48,12 +48,8 @@ class DownloadFilesIntoDirectoryTask(Task):
     A directory consisting of one or more downloaded files
     """
 
-    _meta: Meta
+    meta: Meta
     entries: Sequence[DownloadEntry]
-
-    @property
-    def meta(self) -> Meta:
-        return self._meta
 
     @property
     def deps(self) -> list["Task"]:

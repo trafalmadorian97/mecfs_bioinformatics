@@ -47,3 +47,7 @@ Assays that report histone marks are a key method for understanding epigenetic r
 Besides assays that report histone marks, assays that directly measure chromatin accessibility are also informative about epigenetic regulation. ATAC-seq is an important example of such an accessibility assay.
 
 ATAC-seq  repurposes [transposase](https://en.wikipedia.org/wiki/Transposase), the enzyme responsible for the movement of transposons, or "jumping genes".  It works on the principle that transposase can interact with open chromatin, but not closed chromatin.  This explains the name: Assay for Transposase Accessible Chromatin (ATAC).
+
+## Links
+
+- For a popular science discussion of epigenetics, see Chapter 10 of [Herding Hemmingway's Cats](https://a.co/d/08XMYqfU).

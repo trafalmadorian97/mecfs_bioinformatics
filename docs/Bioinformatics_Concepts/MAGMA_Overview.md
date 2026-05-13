@@ -1,6 +1,6 @@
 # MAGMA
 ## MAGMA Overview
-[MAGMA](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219) is a tool for the analysis of GWAS results. MAGMA can operate on GWAS summary statistics and does not require raw GWAS data.
+[MAGMA](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219)[@de2015magma] is a tool for the analysis of GWAS results. MAGMA can operate on GWAS summary statistics and does not require raw GWAS data.
 
 
 [MAGMA](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219) performs two main steps:
@@ -51,13 +51,13 @@ MAGMA converts the test-statistic to a p value via a[ numerical-integration proc
 While knowing which genes are associated with the phenotype is of independent interest, understanding a phenotype requires knowing the biological systems that underlie it. To facilitate this, MAGMA provides a gene property module, which aims to answer the question: "are genes 
 associated with the phenotype over-represented in particular biological systems?"
 
-## Requirements
+### Requirements
 The gene property analysis module requires:
 
 1. The output of the gene analysis step, assigning p values to genes.
 2. A dataset of gene properties.  This dataset measures the extent to which different genes participate in various biological systems.  For example, tissue-specific RNAseq data from [GTEx](../Data_Sources/GTEx_RNAseq_Data.md) could be used.  A high quantity of RNA transcripts of a gene in a given tissue shows that the gene plays a role in that tissue.
  
-## Mathematical Overview
+### Mathematical Overview
 - Let $Z_i$ be the $z$-score of the association of gene $i$ with the phenotype.
 - Let $E_{i,j}$ be the measure of the participation of gene $i$ in biological system $j$.
 - Let $m$ be a vector of control covariates. 
@@ -76,6 +76,8 @@ The null hypothesis $\beta_{j}= 0$ is tested.
 
 Rejecting this null would indicate that the degree to which the gene $i$ participates in the biological system $j$ is predictive of the extent of association of the gene with the phenotype, $Z_i$.  This would suggest that the biological system is related to the phenotype.
 
+
+
 ## Limitations
 
 While MAGMA is a very useful approach for detecting the key biological systems involved in a disease or trait, it has a number of limitations.  These include:
@@ -85,6 +87,10 @@ While MAGMA is a very useful approach for detecting the key biological systems i
 3. Relatedly, MAGMA relies on the assumption that if a biological system is important to a phenotype, the degree of participation of a gene in that biological system should be linearly related to the association of the gene with the phenotype.  While this is intuitively reasonable, it does not necessarily hold: biology is inherently nonlinear.
 4. Since MAGMA in its original form mostly uses proximity to associate genes with variants, it cannot incorporate long-distance regulatory effects.  If such effects are important to a disease, MAGMA could give misleading results.
 
+
+## Gene set analysis with MAGMA
+
+MAGMA can also be used for gene-set analysis, which is implemented as a special case of gene property analysis.  In perform gene set analysis, we simply set $E_{i,j}=1$ if gene $i$ is a member of gene set $j$, and 0 otherwise.
 
 ## References
 The above discussion is based on:
