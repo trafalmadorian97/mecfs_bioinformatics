@@ -6,12 +6,20 @@ pixi r invoke <task>
 Note that when running tasks this way, underscores (_) in task names should be replaced with dashes (-)
 """
 
+import datetime as _dt
 import os
 import sys
 from pathlib import Path
 
 import yaml
 from invoke import task
+
+from mecfs_bio.util.link_check_streak import (
+    dump_state,
+    load_state,
+    read_lychee_report,
+    update_streaks,
+)
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
@@ -26,6 +34,28 @@ FIGS_PATTERN = "_figs"
 
 
 GITHUB_TOKEN_CONFIG = Path("gh_token_config.yaml")
+
+
+# Default location for the streak-state file. The CI workflow downloads this
+# from the prior run's artifact and uploads the updated copy after each run.
+LINK_CHECK_STATE_PATH = Path("link_check_state.json")
+LINK_CHECK_REPORT_PATH = Path("lychee_report.json")
+LINK_CHECK_DEFAULT_THRESHOLD = 7
+
+# Lychee flags shared by every link-checking task. Keep this in one place so
+# the strict and streak-aware tasks stay in sync.
+#   - 403 in --accept tolerates anti-bot systems.
+#   - --cache-exclude-status 400..=999 means failure results are NOT cached,
+#     so a previously-failing URL is always re-checked next run (essential
+#     for streak recovery detection).
+LYCHEE_SHARED_ARGS = (
+    f"--insecure --cache "
+    f"--accept 100..=103,200..=299,403 "
+    f"--cache-exclude-status 400..=999 "
+    f"--exclude {FIGS_PATTERN} "
+    f"--user-agent {USER_AGENT}"
+)
+
 
 # helper
 
@@ -186,13 +216,98 @@ def fix_init_files(c):
 @task
 def check_all_links(c):
     """
-    Check all links with lychee
+    Check all links with lychee.
 
-    I added "403" to the list of acceptable status codes to prevent this check from failing due to anti-bot systems.
+    Shared flags live in ``LYCHEE_SHARED_ARGS``. 403 is accepted to tolerate
+    anti-bot systems.
     """
     print("Checking links with lychee...")
-    c.run(
-        f"lychee --insecure --cache --accept 100..=103,200..=299,403  --cache-exclude-status 400..=999 --exclude {FIGS_PATTERN} --user-agent {USER_AGENT}  {SRC_PATH} {DOCS_PATH}  "
+    c.run(f"lychee {LYCHEE_SHARED_ARGS} {SRC_PATH} {DOCS_PATH}")
+
+
+@task(help={"threshold": "Consecutive failing runs required to fail the task."})
+def check_all_links_with_streak(c, threshold=LINK_CHECK_DEFAULT_THRESHOLD):
+    """
+    Run lychee and update the per-URL consecutive-failure streak state.
+
+    Behaves like ``check-all-links`` but only fails when a URL has been broken
+    for ``threshold`` runs in a row. Transient single-day outages no longer
+    fail the daily workflow.
+
+    State is read from / written to ``link_check_state.json`` at the repo
+    root. The CI workflow round-trips this file through an artifact between
+    runs (see ``.github/workflows/check_links.yml``).
+    """
+
+    threshold = int(threshold)
+    state_path = LINK_CHECK_STATE_PATH
+    report_path = LINK_CHECK_REPORT_PATH
+
+    print(
+        f"Checking links with lychee (streak-aware, threshold={threshold} consecutive runs)..."
+    )
+
+    # --verbose is required for lychee to populate success_map in the JSON
+    # report; without it we cannot tell ok URLs from URLs that simply weren't
+    # seen this run. --no-progress keeps the CI log readable.
+    cmd = (
+        f"lychee {LYCHEE_SHARED_ARGS} "
+        f"--format json --verbose --no-progress "
+        f"--output {report_path} "
+        f"{SRC_PATH} {DOCS_PATH}"
+    )
+    # lychee exits non-zero when any URL fails; we want the report regardless.
+    c.run(cmd, warn=True)
+
+    if not report_path.exists():
+        print(f"ERROR: lychee did not produce a JSON report at {report_path}.")
+        sys.exit(1)
+
+    # read_lychee_report raises LycheeReportSchemaError on schema drift. We
+    # let that propagate so a lychee upgrade that changes the report shape
+    # surfaces as a loud CI failure rather than a silently-empty check.
+    report = read_lychee_report(report_path)
+    previous_state = load_state(state_path)
+    result = update_streaks(
+        report,
+        previous_state,
+        run_date=_dt.date.today(),
+        threshold=threshold,
+    )
+    dump_state(state_path, result.new_state)
+
+    print(
+        f"\nlychee summary: total={report.total}, errors={report.errors}, "
+        f"timeouts={report.timeouts}"
+    )
+    print(f"State written to {state_path} ({len(result.new_state)} URLs tracked).")
+
+    if result.cleared:
+        print(f"\nRecovered URLs (streak reset to 0): {len(result.cleared)}")
+        for url in result.cleared:
+            print(f"  {url}")
+
+    if result.new_failures:
+        print(f"\nNew failures this run (streak=1): {len(result.new_failures)}")
+        for url in result.new_failures:
+            print(f"  {url}")
+
+    if result.all_failing:
+        print(f"\nAll currently failing URLs ({len(result.all_failing)}):")
+        for entry in result.all_failing:
+            print(f"  streak={entry.streak:>3}  {entry.url}")
+
+    if result.persistent_failures:
+        print(
+            f"\nERROR: {len(result.persistent_failures)} URL(s) have been failing for "
+            f">= {threshold} consecutive runs and are likely permanently broken:"
+        )
+        for entry in result.persistent_failures:
+            print(f"  streak={entry.streak:>3}  {entry.url}")
+        sys.exit(1)
+
+    print(
+        f"\nOK: no URLs have crossed the {threshold}-run persistent-failure threshold."
     )
 
 
@@ -356,6 +471,13 @@ def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
     serve_docs(
         c, include_authors=include_authors, enable_api_autonav=enable_api_autonav
     )
+
+
+@task
+def build_docs(c):
+    cmd = "mkdocs build --strict"
+    print(f"running {cmd}")
+    c.run(cmd)
 
 
 # initialization
