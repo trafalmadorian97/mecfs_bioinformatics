@@ -33,6 +33,9 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
+from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
+    ProcessedGwasDataDirectoryMeta,
+)
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameWhiteSpaceSepTextFormat,
@@ -41,6 +44,7 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
     scan_dataframe,
     scan_dataframe_asset,
 )
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
@@ -94,6 +98,18 @@ class GeneManhattanSource(ABC):
     def deps(self) -> list[Task]:
         pass
 
+    @property
+    @abstractmethod
+    def trait(self) -> str:
+        """The trait label inherited from the primary input task's metadata."""
+        pass
+
+    @property
+    @abstractmethod
+    def project(self) -> str:
+        """The project label inherited from the primary input task's metadata."""
+        pass
+
     @abstractmethod
     def load_df(self, fetch: Fetch) -> pd.DataFrame:
         """Materialize a pandas DataFrame with columns ``chrom``, ``pos``, ``ensembl_id``, ``gene_name``, ``p_value``."""
@@ -116,6 +132,20 @@ class MagmaGeneSource(GeneManhattanSource):
     @property
     def deps(self) -> list[Task]:
         return [self.magma_task, self.gene_thesaurus_task]
+
+    @property
+    def _magma_meta(self) -> ProcessedGwasDataDirectoryMeta:
+        meta = self.magma_task.meta
+        assert isinstance(meta, ProcessedGwasDataDirectoryMeta)
+        return meta
+
+    @property
+    def trait(self) -> str:
+        return self._magma_meta.trait
+
+    @property
+    def project(self) -> str:
+        return self._magma_meta.project
 
     def load_df(self, fetch: Fetch) -> pd.DataFrame:
         magma_asset = fetch(self.magma_task.asset_id)
@@ -190,6 +220,20 @@ class GenePValueTableSource(GeneManhattanSource):
     @property
     def deps(self) -> list[Task]:
         return [self.table_task, self.gene_locations_task]
+
+    @property
+    def _table_meta(self) -> ResultTableMeta:
+        meta = self.table_task.meta
+        assert isinstance(meta, ResultTableMeta)
+        return meta
+
+    @property
+    def trait(self) -> str:
+        return self._table_meta.trait
+
+    @property
+    def project(self) -> str:
+        return self._table_meta.project
 
     def load_df(self, fetch: Fetch) -> pd.DataFrame:
         join_col = _ENSEMBL_ID if self.gene_id_kind == "ensembl_id" else _GENE_NAME
@@ -385,14 +429,12 @@ class GeneManhattanPlotTask(Task):
         cls,
         asset_id: str,
         source: GeneManhattanSource,
-        trait: str,
-        project: str,
         sig_threshold: float | None = None,
         title: str | None = None,
     ) -> "GeneManhattanPlotTask":
         meta = GWASPlotFileMeta(
-            trait=trait,
-            project=project,
+            trait=source.trait,
+            project=source.project,
             extension=".html",
             id=AssetId(asset_id),
         )

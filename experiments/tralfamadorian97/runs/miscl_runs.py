@@ -1,6 +1,9 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC, \
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot import DECODE_ME_MAGMA_GENE_PLOT
+from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.magma.decode_me_gwas_1_build_37_magma_ensembl_gene_analysis import \
+    DECODE_ME_GWAS_1_MAGMA_ENSEMBL_GENE_ANALYSIS
 from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies import \
     CFS_CT_LDSC_ASSET_GENERATOR
 from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies_plot import \
@@ -29,8 +32,10 @@ def run_miscl_analysis():
 
         # DECODE_ME_CURATED_GENE_SET_ANALYSIS.terminal_tasks()+
         # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
-        CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
+        # CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
         [
+            DECODE_ME_MAGMA_GENE_PLOT
+            # DECODE_ME_GWAS_1_MAGMA_ENSEMBL_GENE_ANALYSIS
             # CT_LDSC_CFS_CORR_PLOT
             # MILLION_VETERANS_CFS_RAW,
             # DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC
@@ -57,7 +62,7 @@ def run_miscl_analysis():
 
         incremental_save=True,
         must_rebuild_transitive=[
-            CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
+            # CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
         ],
         settings=TopologicalSchedulerSettings(
             print_progress=False
