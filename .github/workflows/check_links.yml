@@ -72,7 +72,7 @@ jobs:
         # always() ensures the streak file is persisted even when the workflow
         # fails because a URL has crossed the persistent-failure threshold.
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: link-check-state
           path: link_check_state.json
