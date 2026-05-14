@@ -304,6 +304,11 @@ def load_and_preprocess_sumstats(
     sumstats_asset = fetch(source.asset_id)
     logger.debug(f"reading sumstats for {name}")
     sumstats = read_sumstats(sumstats_asset)
+    sumstats.infer_build()
+    if hasattr(
+        sumstats, "build"
+    ):  # added because it seems like the name of the build variable changed between gwaslab versions
+        sumstats._build = sumstats.build
     assert GWASLAB_RSID_COL in sumstats.data.columns
     sumstats.data = source.pipe.process_pandas(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)
