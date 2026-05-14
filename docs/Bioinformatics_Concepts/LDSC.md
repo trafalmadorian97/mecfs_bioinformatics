@@ -340,29 +340,29 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 [//]: # (To discuss: Plietotopy an important fact from GWAS.  But not all variants equally likely.  e.g. HLA-> autoimmune disease)
 
 
-## Population structure and LDSC
+## Population stratification and LDSC
 
-In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by population structure. In this section, I explain this use case.
+In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by population stratification. In this section, I explain this use case.
 
 
 ### Overview
 
-We are interested in two kinds of population structure:
+We are interested in two kinds of population stratification:
 
 - _Genetic population stratification_, in which the population is divided into subpopulations with different allele frequencies
 - _Environmental population stratification_, in which the population is divided into subpopulations with different phenotype-impacting environmental exposures.
 
-Genetic stratification can confound GWAS results it is not accounted for.  Environmental stratification does not confound GWAS results on its own, but can amplify existing confounding due to genetic stratification.
+Genetic stratification can confound GWAS if it is not accounted for.  Environmental stratification does not confound GWAS on its own, but can amplify existing confounding due to genetic stratification.
 
 
 ### Genetically stratified populations
 
-Let's begin by constructing a model of a genetically stratified population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
+Let's begin with a model of a genetically stratified population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
 
 - Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
 - Let $\mathcal{Q}\in\{1,-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
-- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  in the model of this section, the rows of the genotype matrix $X$ are no longer unconditionally independent.  This is because knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, however, the rows of the genotype matrix remain independent.
-- We assume that 
+- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  the rows of the genotype matrix $X$ are no longer unconditionally independent: knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, the rows of the genotype matrix remain independent.
+- We assume  
 
 $$
 \begin{align}
@@ -374,7 +374,7 @@ $$
 where $F_{ST}$ is a constant, and $V$ is a correlation matrix that is "close to diagonal", in the sense that there are no long-range correlations. 
 
 
-- We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The authors of the LDSC paper justify this choice by saying that they are assuming that large subpopulation differences have already been appropriately removed by subtracting principal components, so that only small subpopulation differences remain.
+- We assume that the correlation between $X_{i,j}$ and $X_{i,k}$ is constant across subpopulations and equal to $r_{j,k}$.  The LDSC authors justify this choice by assuming that we are considering the relatively small differences between subpopulations of the same continental ancestry, rather than larger intercontinental differences.
 
 - We assume that the conditional genotype variances are given by:
 
@@ -390,7 +390,7 @@ Note that this implies that
 $$
 \begin{align}
 &\mathbb{Var}(X_{i,j}|f)\\
-&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f,\mathcal{Q}) |f ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f,\mathcal{Q}) |f ) & \text{ By law of total variance}\\
+&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f,\mathcal{Q}) |f ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f,\mathcal{Q}) |f ) & \text{Law of total variance}\\
 &= \mathbb{Var} ( f_j Q_j |f) + \mathbb{E} (1-f_j^2|f) & \text{by (\ref{sub_var})}\\
 &= f_j^2 + 1-f_j^2\\
 &= 1
@@ -404,7 +404,8 @@ and also
 $$
 \begin{align}
 &\mathbb{Var}(X_{i,j})\\
-&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f) ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f)) & \text{ By law of total variance}\\
+&= \mathbb{Var}( \mathbb{E}(X_{i,j}|f) ) + \mathbb{E}(  \mathbb{Var}(X_{i,j}|f)) & \text{ Law of total variance}\\
+&= \mathbb{Var}(0) + 1\\
 &=0+1\\
 &=1
 \end{align}
@@ -412,7 +413,7 @@ $$
 
 
 
-Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score regression equation, for this case of an equal mixture of two subpopulations.
+Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score regression equation.
 
 
 
