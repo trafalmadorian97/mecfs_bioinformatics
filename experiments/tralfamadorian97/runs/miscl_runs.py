@@ -1,4 +1,7 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.height.yengo_2022.analysis.yengo_standard_analysis import YENGO_HEIGHT_STANDARD_ANALYSIS
+from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ldl import CT_LDSC_LDL
+from mecfs_bio.assets.gwas.me_cfs.astra_zenica_phewas_gene_level.raw.get_mecfs_az_phewas import MECFS_AZ_PHEWAS
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC, \
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
 from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies import \
@@ -29,8 +32,11 @@ def run_miscl_analysis():
 
         # DECODE_ME_CURATED_GENE_SET_ANALYSIS.terminal_tasks()+
         # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
-        CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
+        # CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
+        CT_LDSC_LDL.terminal_tasks()+
         [
+            # YENGO_HEIGHT_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task
+            # MECFS_AZ_PHEWAS
             # CT_LDSC_CFS_CORR_PLOT
             # MILLION_VETERANS_CFS_RAW,
             # DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC
@@ -57,7 +63,7 @@ def run_miscl_analysis():
 
         incremental_save=True,
         must_rebuild_transitive=[
-            CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
+            # CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
         ],
         settings=TopologicalSchedulerSettings(
             print_progress=False
