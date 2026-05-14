@@ -7,7 +7,7 @@ Results are below:
 
 
 
-{{ include_file("ldl_ct_ldsc_ct_ldsc_corr_agg_markdown copied to docs/_figs/ldl_ct_ldsc_ct_ldsc_corr_agg_markdown.mdx") }}
+{{ include_file("docs/_figs/ldl_ct_ldsc_ct_ldsc_corr_agg_markdown.mdx") }}
 
 
 
