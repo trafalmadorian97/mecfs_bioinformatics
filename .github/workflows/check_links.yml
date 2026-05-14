@@ -38,7 +38,7 @@ jobs:
         # Fetch the streak state file written by the most recent prior run of
         # this workflow. If no prior artifact exists yet (e.g. the very first
         # run after this change) we silently proceed with an empty state.
-        uses: dawidd6/action-download-artifact@v6
+        uses: dawidd6/action-download-artifact@v21
         with:
           workflow: check_links.yml
           name: link-check-state
