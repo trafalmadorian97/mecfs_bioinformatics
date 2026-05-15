@@ -45,8 +45,11 @@ def generate_new_figures(
         if not dst.exists():
             tasks_to_run.append(task)
 
-    logger.debug(f"Found new figure tasks: {tasks_to_run}")
-    exporter.export(tasks_to_run, fig_dir=fig_dir)
+    logger.debug(
+        f"Found new figure tasks: {[task.meta.asset_id for task in tasks_to_run]}"
+    )
+    if len(tasks_to_run) > 0:
+        exporter.export(tasks_to_run, fig_dir=fig_dir)
 
 
 if __name__ == "__main__":
