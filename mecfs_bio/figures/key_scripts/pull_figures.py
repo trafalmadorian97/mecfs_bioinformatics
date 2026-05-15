@@ -7,6 +7,7 @@ is missing or has a different hash. Files under the figure directory that are
 not listed in the manifest are left alone unless ``prune=True`` is passed.
 """
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import structlog
@@ -24,6 +25,11 @@ from mecfs_bio.util.github_commands.upload_download import (
 
 logger = structlog.get_logger()
 
+# Parallel workers for the release-download phase. As with the upload
+# path, per-call latency is dominated by `gh` CLI startup + network
+# round-trip, so a small pool gives a big speedup.
+DEFAULT_DOWNLOAD_WORKERS = 8
+
 
 def pull_figures(
     tag: str = FIGURE_GITHUB_RELEASE_TAG,
@@ -32,6 +38,7 @@ def pull_figures(
     manifest_path: Path = FIGURE_MANIFEST_PATH,
     use_gh_cli: bool = True,
     prune: bool = False,
+    max_workers: int = DEFAULT_DOWNLOAD_WORKERS,
 ):
     """
     Sync the local figure directory with the manifest by downloading any
@@ -45,11 +52,39 @@ def pull_figures(
 
     if not manifest.figures:
         logger.debug(f"Manifest {manifest_path} is empty; nothing to download.")
+
+    to_download: list[tuple[str, str]] = []
     for rel_path, expected_hash in manifest.figures.items():
         dest = fig_dir / rel_path
         if dest.is_file() and sha256_of_file(dest) == expected_hash:
             logger.debug(f"{rel_path} is up to date; skipping download.")
             continue
+        to_download.append((rel_path, expected_hash))
+
+    if to_download:
+        _download_blobs_in_parallel(
+            to_download=to_download,
+            tag=tag,
+            repo_name=repo_name,
+            fig_dir=fig_dir,
+            use_gh_cli=use_gh_cli,
+            max_workers=max_workers,
+        )
+
+    if prune:
+        _prune_unmanifested(fig_dir=fig_dir, manifest=manifest)
+
+
+def _download_blobs_in_parallel(
+    to_download: list[tuple[str, str]],
+    tag: str,
+    repo_name: str,
+    fig_dir: Path,
+    use_gh_cli: bool,
+    max_workers: int,
+) -> None:
+    def _download_one(rel_path: str, expected_hash: str) -> None:
+        dest = fig_dir / rel_path
         logger.debug(f"Fetching {rel_path} (asset {expected_hash}) from release {tag}.")
         download_release_asset(
             release_tag=tag,
@@ -64,8 +99,13 @@ def pull_figures(
             f"expected {expected_hash}"
         )
 
-    if prune:
-        _prune_unmanifested(fig_dir=fig_dir, manifest=manifest)
+    workers = min(max_workers, len(to_download))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [
+            pool.submit(_download_one, rel_path, h) for rel_path, h in to_download
+        ]
+        for fut in as_completed(futures):
+            fut.result()
 
 
 def _prune_unmanifested(fig_dir: Path, manifest: FigureManifest) -> None:

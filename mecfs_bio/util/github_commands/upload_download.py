@@ -167,46 +167,59 @@ def list_release_asset_names(release_tag: str, repo_name: str) -> set[str]:
     return {asset["name"] for asset in payload.get("assets", [])}
 
 
+def ensure_release_exists(
+    release_tag: str, repo_name: str, title: str | None = None
+) -> None:
+    """
+    Idempotently create the GitHub release if it does not already exist.
+
+    Callers that intend to upload many blobs should invoke this once up
+    front; subsequent ``upload_blob_to_release`` calls can then skip the
+    per-blob existence check (which previously doubled the number of
+    ``gh`` invocations).
+    """
+    if does_release_exist(release_tag=release_tag, repo_name=repo_name):
+        return
+    cmd = [
+        "gh",
+        "release",
+        "create",
+        release_tag,
+        "--title",
+        title if title is not None else release_tag,
+        "-R",
+        repo_name,
+    ]
+    execute_command(cmd=cmd)
+
+
 def upload_blob_to_release(
     release_tag: str,
     repo_name: str,
     asset_name: str,
     src_path: Path,
-    title: str | None = None,
 ) -> None:
     """
     Upload ``src_path`` to the release as an asset named ``asset_name``.
 
     GitHub uses the local filename as the asset name, so the file is staged
-    under ``asset_name`` in a temp dir before upload. The release is created
-    if it does not already exist.
+    under ``asset_name`` in a temp dir before upload. The release must
+    already exist; call ``ensure_release_exists`` once before the first
+    upload.
     """
     assert src_path.is_file()
     with tempfile.TemporaryDirectory() as tmpdir:
         staged = Path(tmpdir) / asset_name
         shutil.copy(src_path, staged)
-        if not does_release_exist(release_tag=release_tag, repo_name=repo_name):
-            cmd = [
-                "gh",
-                "release",
-                "create",
-                release_tag,
-                str(staged),
-                "--title",
-                title if title is not None else release_tag,
-                "-R",
-                repo_name,
-            ]
-        else:
-            cmd = [
-                "gh",
-                "release",
-                "upload",
-                release_tag,
-                str(staged),
-                "-R",
-                repo_name,
-            ]
+        cmd = [
+            "gh",
+            "release",
+            "upload",
+            release_tag,
+            str(staged),
+            "-R",
+            repo_name,
+        ]
         execute_command(cmd=cmd)
 
 

@@ -14,6 +14,7 @@ to drop those entries from the manifest --- the upstream blobs remain on the
 release for any past commit that still references them.
 """
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from typing import Sequence
 
@@ -34,11 +35,17 @@ from mecfs_bio.figures.manifest import (
 )
 from mecfs_bio.figures.manifest_validation import validate_manifest_subset_of_tasks
 from mecfs_bio.util.github_commands.upload_download import (
+    ensure_release_exists,
     list_release_asset_names,
     upload_blob_to_release,
 )
 
 logger = structlog.get_logger()
+
+# Parallel workers for the release-upload phase. GitHub accepts concurrent
+# uploads without trouble and the per-call latency is dominated by `gh` CLI
+# startup + network round-trip, so a small pool gives a big speedup.
+DEFAULT_UPLOAD_WORKERS = 8
 
 
 def push_figures(
@@ -49,6 +56,7 @@ def push_figures(
     title: str = FIGURES_ARCHIVE_TITLE,
     prune: bool = False,
     figure_tasks: Sequence[Task] = ALL_FIGURE_TASKS,
+    max_workers: int = DEFAULT_UPLOAD_WORKERS,
 ):
     """
     Update the manifest from the local figure directory and upload any new
@@ -68,37 +76,65 @@ def push_figures(
     )
 
     remote_assets = list_release_asset_names(release_tag=tag, repo_name=repo_name)
-
     new_hashes = new_manifest.hashes() - remote_assets
-    if not new_hashes:
-        logger.debug("No new blobs to upload to release.")
-    for rel_path, sha in local_manifest.figures.items():
-        if sha not in new_hashes:
-            continue
-        src = fig_dir / rel_path
-        logger.debug(f"Uploading blob {sha} (from {rel_path}) to release {tag}.")
-        upload_blob_to_release(
-            release_tag=tag,
-            repo_name=repo_name,
-            asset_name=sha,
-            src_path=src,
-            title=title,
-        )
-        new_hashes.discard(sha)
 
-    if new_hashes:
+    # Collect one (rel_path, src) per unique hash that needs uploading. The
+    # release is content-addressed, so even if two figure paths share the
+    # same blob it gets uploaded exactly once.
+    uploads_by_sha: dict[str, tuple[str, Path]] = {}
+    for rel_path, sha in local_manifest.figures.items():
+        if sha in new_hashes and sha not in uploads_by_sha:
+            uploads_by_sha[sha] = (rel_path, fig_dir / rel_path)
+
+    unaccounted = new_hashes - uploads_by_sha.keys()
+    if unaccounted:
         # A hash listed in the new manifest is missing both from the release
         # and from the local figure directory --- this can only happen if
         # the manifest already referenced a blob the user does not have a
         # local copy of and which was never uploaded.
         raise RuntimeError(
             f"Manifest references hashes that are neither on the release nor "
-            f"available locally: {sorted(new_hashes)}"
+            f"available locally: {sorted(unaccounted)}"
+        )
+
+    if not uploads_by_sha:
+        logger.debug("No new blobs to upload to release.")
+    else:
+        # Create the release once up front so the parallel uploads can all
+        # use `gh release upload` and skip the per-blob existence check.
+        ensure_release_exists(release_tag=tag, repo_name=repo_name, title=title)
+        _upload_blobs_in_parallel(
+            uploads_by_sha=uploads_by_sha,
+            tag=tag,
+            repo_name=repo_name,
+            max_workers=max_workers,
         )
 
     new_manifest.save(manifest_path)
     logger.debug(f"Manifest written to {manifest_path}.")
     logger.debug("Push complete. Commit the manifest to record the change.")
+
+
+def _upload_blobs_in_parallel(
+    uploads_by_sha: dict[str, tuple[str, Path]],
+    tag: str,
+    repo_name: str,
+    max_workers: int,
+) -> None:
+    def _upload_one(sha: str, rel_path: str, src: Path) -> None:
+        logger.debug(f"Uploading blob {sha} (from {rel_path}) to release {tag}.")
+        upload_blob_to_release(
+            release_tag=tag, repo_name=repo_name, asset_name=sha, src_path=src
+        )
+
+    workers = min(max_workers, len(uploads_by_sha))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [
+            pool.submit(_upload_one, sha, rel_path, src)
+            for sha, (rel_path, src) in uploads_by_sha.items()
+        ]
+        for fut in as_completed(futures):
+            fut.result()
 
 
 def _merge_manifests(
