@@ -15,9 +15,11 @@ release for any past commit that still references them.
 """
 
 from pathlib import Path
+from typing import Sequence
 
 import structlog
 
+from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.constants.gh_constants import GH_REPO_NAME
 from mecfs_bio.figures.fig_constants import (
     FIGURE_DIRECTORY,
@@ -25,10 +27,12 @@ from mecfs_bio.figures.fig_constants import (
     FIGURE_MANIFEST_PATH,
     FIGURES_ARCHIVE_TITLE,
 )
+from mecfs_bio.figures.figure_task_list import ALL_FIGURE_TASKS
 from mecfs_bio.figures.manifest import (
     FigureManifest,
     scan_figure_dir,
 )
+from mecfs_bio.figures.manifest_validation import validate_manifest_subset_of_tasks
 from mecfs_bio.util.github_commands.upload_download import (
     list_release_asset_names,
     upload_blob_to_release,
@@ -44,6 +48,7 @@ def push_figures(
     manifest_path: Path = FIGURE_MANIFEST_PATH,
     title: str = FIGURES_ARCHIVE_TITLE,
     prune: bool = False,
+    figure_tasks: Sequence[Task] = ALL_FIGURE_TASKS,
 ):
     """
     Update the manifest from the local figure directory and upload any new
@@ -55,6 +60,12 @@ def push_figures(
     local_manifest = scan_figure_dir(fig_dir)
 
     new_manifest = _merge_manifests(old=old_manifest, local=local_manifest, prune=prune)
+
+    # Fail fast if the manifest we are about to write references files that
+    # no task in figure_tasks produces --- those would silently rot.
+    validate_manifest_subset_of_tasks(
+        manifest=new_manifest, tasks=figure_tasks, fig_dir=fig_dir
+    )
 
     remote_assets = list_release_asset_names(release_tag=tag, repo_name=repo_name)
 

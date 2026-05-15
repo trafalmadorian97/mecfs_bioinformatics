@@ -57,27 +57,15 @@ class FigureExporter(AbstractFigureExporter):
         )
         for task, meta in zip(to_export, meta_list):
             asset = result[task.asset_id]
-            if isinstance(meta, GWASPlotFileMeta | GWASLabManhattanQQPlotMeta):
-                assert isinstance(asset, FileAsset)
-                src = asset.path
-                dst = get_fig_file_path(meta=meta, fig_dir=fig_dir)
-                shutil.copy(src, dst)
-                logger.debug(f"Figure asset {task.asset_id} copied to {dst}.")
-            elif isinstance(meta, GWASPlotDirectoryMeta):
+            dst = get_figure_destination(meta=meta, fig_dir=fig_dir)
+            if isinstance(meta, GWASPlotDirectoryMeta):
                 assert isinstance(asset, DirectoryAsset)
-                src = asset.path
-                assert isinstance(meta, GWASPlotDirectoryMeta)
-                dst = get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
-                shutil.copytree(src, dst, dirs_exist_ok=True)
+                shutil.copytree(asset.path, dst, dirs_exist_ok=True)
                 logger.debug(f"Directory figure asset {task.asset_id} copied to {dst}.")
-            elif isinstance(meta, MarkdownFileMeta):
-                assert isinstance(asset, FileAsset)
-                src = asset.path
-                dst = get_md_fig_file_path(meta=meta, fig_dir=fig_dir)
-                shutil.copy(src, dst)
-                logger.debug(f"Markdown figure asset {task.asset_id} copied to {dst}.")
             else:
-                raise ValueError(f"Unknown meta type {type(meta)}")
+                assert isinstance(asset, FileAsset)
+                shutil.copy(asset.path, dst)
+                logger.debug(f"Figure asset {task.asset_id} copied to {dst}.")
 
 
 def get_fig_file_path(
@@ -96,3 +84,21 @@ def get_md_fig_file_path(meta: MarkdownFileMeta, fig_dir: Path) -> Path:
 
 def get_fig_dir_meta(meta: GWASPlotDirectoryMeta, fig_dir: Path) -> Path:
     return fig_dir / meta.id
+
+
+def get_figure_destination(meta: ValidFigureMeta, fig_dir: Path) -> Path:
+    """
+    Single source of truth for "where in the figure directory does the figure
+    produced by a task with this meta land?".
+
+    For file-emitting metas this is an exact file path; for
+    GWASPlotDirectoryMeta this is the destination directory (the task's
+    output files all live underneath it).
+    """
+    if isinstance(meta, GWASPlotFileMeta | GWASLabManhattanQQPlotMeta):
+        return get_fig_file_path(meta=meta, fig_dir=fig_dir)
+    if isinstance(meta, GWASPlotDirectoryMeta):
+        return get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
+    if isinstance(meta, MarkdownFileMeta):
+        return get_md_fig_file_path(meta=meta, fig_dir=fig_dir)
+    raise ValueError(f"Unknown meta type {type(meta)}")
