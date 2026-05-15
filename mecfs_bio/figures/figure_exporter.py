@@ -1,4 +1,5 @@
 import shutil
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
@@ -30,8 +31,14 @@ ValidFigureMeta = (
 )
 
 
+class AbstractFigureExporter(ABC):
+    @abstractmethod
+    def export(self, to_export: Sequence[Task], fig_dir: Path) -> None:
+        pass
+
+
 @frozen
-class FigureExporter:
+class FigureExporter(AbstractFigureExporter):
     """
     Responsible for invoking the build system to generate Assets corresponding to figures, then copying those assets to the figure directory.
     """

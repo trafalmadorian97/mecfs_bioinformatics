@@ -11,7 +11,7 @@ from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.figures.fig_constants import FIGURE_DIRECTORY
 from mecfs_bio.figures.figure_exporter import (
-    FigureExporter,
+    AbstractFigureExporter,
     get_fig_dir_meta,
     get_fig_file_path,
     get_md_fig_file_path,
@@ -25,7 +25,7 @@ logger = structlog.get_logger()
 def generate_new_figures(
     all_figure_tasks: list[Task],
     fig_dir: Path,
-    exporter: FigureExporter,
+    exporter: AbstractFigureExporter,
 ):
     """
     Aim of this function is to only invoke the build system  to build figures that do not
