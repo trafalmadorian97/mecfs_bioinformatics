@@ -71,6 +71,7 @@ MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
 ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
+    # DECODE_ME_MAGMA_GENE_PLOT,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,

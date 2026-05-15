@@ -86,6 +86,8 @@ def _get_initial_frontier(g: nx.DiGraph) -> list[AssetId]:
     """
     Frontier is defined as the set of assets without dependencies, or whose dependencies have been built
     """
+    if len(g) == 0:
+        return []
     generations = nx.topological_generations(g)
     list_of_generations = [sorted(gen) for gen in generations]
     return list_of_generations[0]
