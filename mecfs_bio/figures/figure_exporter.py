@@ -1,4 +1,5 @@
 import shutil
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
@@ -9,6 +10,9 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_manhattan_plot_meta import (
+    GWASLabManhattanQQPlotMeta,
+)
 from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
@@ -19,11 +23,22 @@ from mecfs_bio.build_system.task.base_task import Task
 
 logger = structlog.get_logger()
 
-ValidFigureMeta = GWASPlotFileMeta | GWASPlotDirectoryMeta | MarkdownFileMeta
+ValidFigureMeta = (
+    GWASPlotFileMeta
+    | GWASPlotDirectoryMeta
+    | MarkdownFileMeta
+    | GWASLabManhattanQQPlotMeta
+)
+
+
+class AbstractFigureExporter(ABC):
+    @abstractmethod
+    def export(self, to_export: Sequence[Task], fig_dir: Path) -> None:
+        pass
 
 
 @frozen
-class FigureExporter:
+class FigureExporter(AbstractFigureExporter):
     """
     Responsible for invoking the build system to generate Assets corresponding to figures, then copying those assets to the figure directory.
     """
@@ -42,7 +57,7 @@ class FigureExporter:
         )
         for task, meta in zip(to_export, meta_list):
             asset = result[task.asset_id]
-            if isinstance(meta, GWASPlotFileMeta):
+            if isinstance(meta, GWASPlotFileMeta | GWASLabManhattanQQPlotMeta):
                 assert isinstance(asset, FileAsset)
                 src = asset.path
                 dst = get_fig_file_path(meta=meta, fig_dir=fig_dir)
@@ -65,7 +80,11 @@ class FigureExporter:
                 raise ValueError(f"Unknown meta type {type(meta)}")
 
 
-def get_fig_file_path(meta: GWASPlotFileMeta, fig_dir: Path) -> Path:
+def get_fig_file_path(
+    meta: GWASPlotFileMeta | GWASLabManhattanQQPlotMeta, fig_dir: Path
+) -> Path:
+    if isinstance(meta, GWASLabManhattanQQPlotMeta):
+        return fig_dir / (str(meta.asset_id) + ".png")
     return fig_dir / (meta.asset_id + meta.extension)
 
 

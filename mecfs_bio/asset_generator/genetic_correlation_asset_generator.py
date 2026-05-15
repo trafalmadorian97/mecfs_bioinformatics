@@ -16,6 +16,9 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
+from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
+    ConvertDataFrameToMarkdownTask,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     GeneticCorrelationByCTLDSCTask,
     SumstatsSource,
@@ -24,6 +27,9 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task i
     SNPHeritabilityByLDSCTask,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import CSVOutFormat
+from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
+from mecfs_bio.build_system.task.pipes.format_numbers_pipe import FormatFloatNumbersPipe
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
@@ -34,9 +40,14 @@ class GeneticCorrTasks:
     aggregation_task: Task
     heritability_tasks: Sequence[Task]
     heritability_aggregation_task: Task
+    aggregation_markdown_task: Task
 
     def terminal_tasks(self) -> list[Task]:
-        return [self.aggregation_task, self.heritability_aggregation_task]
+        return [
+            self.aggregation_task,
+            self.heritability_aggregation_task,
+            self.aggregation_markdown_task,
+        ]
 
 
 def genetic_corr_by_ct_ldsc_asset_generator(
@@ -68,6 +79,19 @@ def genetic_corr_by_ct_ldsc_asset_generator(
         frames_tasks=list(tasks.values()),
         out_format=CSVOutFormat(","),
     )
+
+    aggregation_md = ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+        asset_id=base_name + "_ct_ldsc_corr_agg_markdown",
+        source_task=aggregation,
+        pipe=CompositePipe(
+            [DropColPipe(["h2_liab", "h2_liab_se", "h2_int", "h2_int_se"])]
+            + [
+                FormatFloatNumbersPipe(col=item, format_str=".4g")
+                for item in ["rg", "se", "z", "p", "gcov_int", "gcov_int_se"]
+            ]
+        ),
+    )
+
     heritability_tasks = [
         SNPHeritabilityByLDSCTask.create(
             asset_id=base_name + "_heritability_" + source.alias,
@@ -101,6 +125,7 @@ def genetic_corr_by_ct_ldsc_asset_generator(
         aggregation_task=aggregation,
         heritability_tasks=heritability_tasks,
         heritability_aggregation_task=heritability_agg,
+        aggregation_markdown_task=aggregation_md,
     )
 
 

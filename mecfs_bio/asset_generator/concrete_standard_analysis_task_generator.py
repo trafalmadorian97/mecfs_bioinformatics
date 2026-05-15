@@ -22,6 +22,10 @@ from mecfs_bio.asset_generator.labeled_lead_variants_asset_generator import (
     LabelLeadVariantsTasks,
     generate_tasks_labeled_lead_variants,
 )
+from mecfs_bio.asset_generator.magma_curated_gene_set_analysis_generator import (
+    CuratedGeneSetAnalysisTasks,
+    curated_gene_set_analysis_magma_tasks_from_gene_analysis,
+)
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.eur_ld_scores_thousand_genome_phase_3_v1_extracted import (
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
@@ -98,6 +102,7 @@ class StandardAnalysisTaskGroup:
     hba_magma_tasks: HBAMagmaTasks | None = None
     manhattan_task: Task | None = None
     heritability_task: Task | None = None
+    gene_set_analysis_tasks: CuratedGeneSetAnalysisTasks | None = None
 
     @property
     def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
@@ -110,6 +115,10 @@ class StandardAnalysisTaskGroup:
     @property
     def heritability_markdown_task_unwrap(self) -> Task:
         return unwrap(self.heritability_task)
+
+    @property
+    def gene_set_analysis_unwrap(self) -> CuratedGeneSetAnalysisTasks:
+        return unwrap(self.gene_set_analysis_tasks)
 
     def get_terminal_tasks(self) -> list[Task]:
         result = (
@@ -145,6 +154,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     gget_settings: GGetSettings | None = GGetSettings(limit_genes=20),
     manhattan_settings: ManhattanPlotSettings | None = None,
     phenotype_info_for_ldsc: PhenotypeInfo | None = None,
+    include_gene_set_analysis: bool = True,
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -252,6 +262,16 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         )
     else:
         hba_magma = None
+    if include_gene_set_analysis:
+        assert include_hba_magma_tasks, (
+            "gene set analysis requires hba magma analysis, since the two analysis pathways make use of common MAGMA entrez gene analysis resulsts"
+        )
+        assert hba_magma is not None
+        gene_set_analysis = curated_gene_set_analysis_magma_tasks_from_gene_analysis(
+            base_name=base_name, gene_analysis_task=hba_magma.magma_gene_analysis_task
+        )
+    else:
+        gene_set_analysis = None
 
     return StandardAnalysisTaskGroup(
         sldsc_tasks=sldsc_tasks,
@@ -261,6 +281,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         hba_magma_tasks=hba_magma,
         manhattan_task=manhattan_task,
         heritability_task=heritability_md_task,
+        gene_set_analysis_tasks=gene_set_analysis,
     )
 
 

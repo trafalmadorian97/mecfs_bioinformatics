@@ -1,9 +1,21 @@
 # make sure links are still valid.  Avoid link rot.
+#
+# This workflow runs daily. To suppress noise from transient outages (sites
+# briefly unreachable, anti-bot rate limiting, etc.) it tracks a per-URL
+# "consecutive failure streak" in an artifact named `link-check-state` and
+# only fails when a URL has been broken for >= 7 runs in a row. See
+# `mecfs_bio/util/link_check_streak.py` and the `check_all_links_with_streak`
+# invoke task in `tasks.py` for details.
 name: check_links
 on:
   schedule:
     - cron: "15 16 * * *"   #Run at 4:16 pm daily
   workflow_dispatch: {}
+
+# Needed so the streak-state download action can read artifacts from prior runs.
+permissions:
+  contents: read
+  actions: read
 
 jobs:
   lead_variants:
@@ -12,16 +24,58 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v4
-      - uses: prefix-dev/setup-pixi@v0.9.2
+        uses: actions/checkout@v6
+      - uses: prefix-dev/setup-pixi@v0.9.5
         name: Setup Pixi Environment
         with:
-          pixi-version: v0.55.0
+          pixi-version: v0.67.2
           cache: true
       - name: Download figures
         run: pixi r invoke pfig
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Check links
-        run: pixi r invoke check-all-links
-
+      - name: Download previous link-check streak state
+        # Fetch the streak state file written by the most recent prior run of
+        # this workflow. If no prior artifact exists yet (e.g. the very first
+        # run after this change) we silently proceed with an empty state.
+        uses: dawidd6/action-download-artifact@v21
+        with:
+          workflow: check_links.yml
+          name: link-check-state
+          path: .
+          if_no_artifact_found: warn
+          # `completed` filters on the run *status*, which is satisfied by any
+          # finished run regardless of conclusion (success, failure, cancelled,
+          # ...). This is what we want: the streak workflow intentionally fails
+          # when a URL crosses the threshold, but we still need to read state
+          # from those failing runs so streaks keep accumulating. We must NOT
+          # leave this as the empty string — that would cause dawidd6 to match
+          # the current in-progress run, whose upload step hasn't executed yet,
+          # so no artifact is ever found.
+          workflow_conclusion: completed
+      - name: Check links (streak-aware)
+        run: pixi r invoke check-all-links-with-streak
+      - name: Print streak state
+        # Echo the state file into the run log so it can be inspected without
+        # downloading the artifact. dump_state already writes pretty-printed
+        # JSON. if: always() so the state is visible even when the streak
+        # task exits non-zero (URL crossed the threshold).
+        if: always()
+        run: |
+          if [ -f link_check_state.json ]; then
+            echo "=== link_check_state.json ==="
+            cat link_check_state.json
+          else
+            echo "link_check_state.json not present"
+          fi
+      - name: Upload updated link-check streak state
+        # always() ensures the streak file is persisted even when the workflow
+        # fails because a URL has crossed the persistent-failure threshold.
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: link-check-state
+          path: link_check_state.json
+          retention-days: 90
+          overwrite: true
+          if-no-files-found: error

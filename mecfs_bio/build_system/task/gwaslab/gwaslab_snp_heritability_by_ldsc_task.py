@@ -82,6 +82,12 @@ class SNPHeritabilityByLDSCTask(Task):
         assert isinstance(ref_asset, DirectoryAsset)
         if self.set_N is not None:
             sumstats.data[GWASLAB_SAMPLE_SIZE_COLUMN] = self.set_N
+        elif GWASLAB_SAMPLE_SIZE_COLUMN not in sumstats.data.columns:
+            assert self.phenotype_info.total_sample_size is not None
+            sumstats.data[GWASLAB_SAMPLE_SIZE_COLUMN] = (
+                self.phenotype_info.total_sample_size
+            )
+
         sumstats.infer_build()
         assert sumstats.meta["gwaslab"]["genome_build"] == self.build
         sumstats.estimate_h2_by_ldsc(
