@@ -146,6 +146,53 @@ def test_prune_errors_with_missing_file_note_when_orphan_referenced_and_absent(
     assert "local file is also missing" in msg
 
 
+def test_prune_detects_orphan_file_not_yet_in_manifest(tmp_path: Path):
+    # A leftover file under fig_dir whose task was removed from
+    # ALL_FIGURE_TASKS may never have been written to the manifest. The
+    # manifest-merge inside push_figures would still pick it up via its
+    # scan, so pruning has to catch it from the on-disk side too.
+    fig_dir = tmp_path / "_figs"
+    fig_dir.mkdir()
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    manifest_path = tmp_path / "manifest.json"
+
+    (fig_dir / "leftover.png").write_bytes(b"x")
+    _write_manifest(manifest_path, {})
+
+    prune_orphan_figures(
+        manifest_path=manifest_path,
+        docs_dir=docs,
+        fig_dir=fig_dir,
+        figure_tasks=[],
+    )
+
+    assert not (fig_dir / "leftover.png").exists()
+    assert FigureManifest.load(manifest_path).figures == {}
+
+
+def test_prune_errors_on_referenced_leftover_file_not_in_manifest(tmp_path: Path):
+    fig_dir = tmp_path / "_figs"
+    fig_dir.mkdir()
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "page.md").write_text("![p](../_figs/leftover.png)\n")
+    manifest_path = tmp_path / "manifest.json"
+
+    (fig_dir / "leftover.png").write_bytes(b"x")
+    _write_manifest(manifest_path, {})
+
+    with pytest.raises(OrphanReferencedInDocsError) as exc:
+        prune_orphan_figures(
+            manifest_path=manifest_path,
+            docs_dir=docs,
+            fig_dir=fig_dir,
+            figure_tasks=[],
+        )
+    assert "leftover.png" in str(exc.value)
+    assert (fig_dir / "leftover.png").exists()
+
+
 def test_prune_is_noop_when_no_orphans(tmp_path: Path):
     fig_dir = tmp_path / "_figs"
     fig_dir.mkdir()

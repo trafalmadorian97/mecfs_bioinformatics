@@ -34,7 +34,7 @@ from mecfs_bio.figures.orphan_pruning import prune_orphan_figures
 logger = structlog.get_logger()
 
 
-def publish_new_figures() -> None:
+def publish_figures() -> None:
     logger.info("Generating any missing figures from ALL_FIGURE_TASKS.")
     generate_new_figures(
         all_figure_tasks=ALL_FIGURE_TASKS,
@@ -56,4 +56,4 @@ def publish_new_figures() -> None:
 
 
 if __name__ == "__main__":
-    publish_new_figures()
+    publish_figures()

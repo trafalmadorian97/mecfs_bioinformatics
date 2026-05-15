@@ -18,7 +18,7 @@ from typing import Sequence
 import structlog
 
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.figures.manifest import FigureManifest
+from mecfs_bio.figures.manifest import FigureManifest, scan_figure_dir
 from mecfs_bio.figures.manifest_validation import find_orphan_paths
 
 logger = structlog.get_logger()
@@ -65,6 +65,12 @@ def prune_orphan_figures(
     Drop manifest entries that no task in ``figure_tasks`` produces, and
     delete the corresponding files under ``fig_dir``.
 
+    The orphan check considers both manifest keys *and* files actually
+    present under ``fig_dir`` --- leftover files from a removed task may
+    not be in the committed manifest yet, but ``push_figures`` would
+    pick them up via its directory scan and the manifest-vs-task-list
+    validation would then fail.
+
     For each orphan, ``docs_dir`` is scanned for references. If any orphan
     is still referenced the function raises ``OrphanReferencedInDocsError``
     without mutating disk; the error distinguishes orphans whose local
@@ -72,7 +78,11 @@ def prune_orphan_figures(
     the figure can be re-pulled.
     """
     manifest = FigureManifest.load(manifest_path)
-    orphans = find_orphan_paths(manifest=manifest, tasks=figure_tasks, fig_dir=fig_dir)
+    on_disk = scan_figure_dir(fig_dir) if fig_dir.exists() else FigureManifest.empty()
+    candidate_paths = set(manifest.figures) | set(on_disk.figures)
+    orphans = find_orphan_paths(
+        paths=candidate_paths, tasks=figure_tasks, fig_dir=fig_dir
+    )
     if not orphans:
         logger.debug("No orphan figure-manifest entries to prune.")
         return

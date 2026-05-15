@@ -11,7 +11,7 @@ pull and regenerate from scratch. This module catches that drift.
 """
 
 from pathlib import Path
-from typing import Sequence
+from typing import Iterable, Sequence
 
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.task.base_task import Task
@@ -27,18 +27,20 @@ class ManifestTaskMismatchError(ValueError):
 
 
 def find_orphan_paths(
-    manifest: FigureManifest,
+    paths: Iterable[str],
     tasks: Sequence[Task],
     fig_dir: Path,
 ) -> list[str]:
     """
-    Return the manifest paths that no task in ``tasks`` produces.
+    Return the paths in ``paths`` that no task in ``tasks`` produces.
 
-    A manifest path is covered (i.e. *not* an orphan) when either:
+    A path is covered (i.e. *not* an orphan) when either:
     - it matches exactly the destination of a file-emitting task, or
     - it lies inside the destination directory of a directory-emitting task.
 
-    Result is sorted for stable error messages and pruning order.
+    The caller decides which paths to consider --- typically manifest keys
+    for validation, or the union of manifest keys and on-disk files for
+    pruning. Result is sorted for stable error messages and pruning order.
     """
     file_destinations: set[str] = set()
     dir_destinations: list[str] = []
@@ -53,15 +55,12 @@ def find_orphan_paths(
             file_destinations.add(rel)
 
     orphan_paths: list[str] = []
-    for manifest_path in manifest.figures:
-        if manifest_path in file_destinations:
+    for path in paths:
+        if path in file_destinations:
             continue
-        if any(
-            manifest_path == d or manifest_path.startswith(d + "/")
-            for d in dir_destinations
-        ):
+        if any(path == d or path.startswith(d + "/") for d in dir_destinations):
             continue
-        orphan_paths.append(manifest_path)
+        orphan_paths.append(path)
 
     return sorted(orphan_paths)
 
@@ -74,7 +73,9 @@ def validate_manifest_subset_of_tasks(
     """
     Raises ManifestTaskMismatchError if any manifest path is uncovered by ``tasks``.
     """
-    orphan_paths = find_orphan_paths(manifest=manifest, tasks=tasks, fig_dir=fig_dir)
+    orphan_paths = find_orphan_paths(
+        paths=manifest.figures.keys(), tasks=tasks, fig_dir=fig_dir
+    )
     if orphan_paths:
         raise ManifestTaskMismatchError(
             "Figure manifest references paths that no task in the supplied "

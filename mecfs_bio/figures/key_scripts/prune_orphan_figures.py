@@ -2,7 +2,7 @@
 Remove figure-manifest entries that no task in ALL_FIGURE_TASKS produces.
 
 Refuses to prune when the docs still reference the orphan. Run as a
-standalone tool, or rely on ``publish_new_figures`` which calls the same
+standalone tool, or rely on ``publish_figures`` which calls the same
 function between ``generate_new_figures`` and ``push_figures``.
 """
 
