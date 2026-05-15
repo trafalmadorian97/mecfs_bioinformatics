@@ -40,14 +40,12 @@ The components of the programmatic figure system are:
 Suppose that you have analyzed a genomic dataset and generated figures.  You wish to publish these figures and an associated write-up to the project documentation page.  Follow these steps:
 
 - Add the Tasks that generate your figures to `ALL_FIGURE_TASKS`.
-- Either run the {{ api_link("generate_figures.py", "mecfs_bio.figures.key_scripts.generate_figures") }} script to generate all figures, or write your own script to call the {{ api_link("generate_figures", "mecfs_bio.figures.key_scripts.generate_figures.generate_figures") }} function on just your newly added Tasks. In either case, your figures will be copied into `docs/_figs`
+- Run {{ api_link("publish_figures.py", "mecfs_bio.figures.key_scripts.publish_figures") }} script to generate all figures, copy them to `docs/_figs` and push them as part of a github release.
 - Document your analysis by adding a markdown file to `docs/analysis`.  In your write-up, include your figures by referencing their location in `docs/_figs`.
-- Upload your figures using {{ api_link("push_figures.py", "mecfs_bio.figures.key_scripts.push_figures") }}. This uploads any new blobs to the release and updates `figures_manifest.json`.
 - Commit the updated `figures_manifest.json` along with your other changes.
 - Create a pull request with your changes (see [Standard Workflow](../Getting_Started/b_Standard_Workflow.md)).
 
-To remove a figure, delete it from `docs/_figs` and run `push_figures` with `prune=True`, then commit the updated manifest. To update an existing figure, regenerate it (its hash will change) and run `push_figures`; the new blob will be uploaded alongside the old one and the manifest will point to the new hash.
-
+To remove a figure, delete the corresponding Task from `ALL_FIGURE_TASKS`, then use `publish_figures.py`
 
 ### Advantages
 
