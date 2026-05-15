@@ -26,19 +26,19 @@ class ManifestTaskMismatchError(ValueError):
     """Raised when the manifest references paths no task in the list produces."""
 
 
-def validate_manifest_subset_of_tasks(
+def find_orphan_paths(
     manifest: FigureManifest,
     tasks: Sequence[Task],
     fig_dir: Path,
-) -> None:
+) -> list[str]:
     """
-    Verify that every path in ``manifest`` is covered by ``tasks``.
+    Return the manifest paths that no task in ``tasks`` produces.
 
-    A manifest path is covered when either:
+    A manifest path is covered (i.e. *not* an orphan) when either:
     - it matches exactly the destination of a file-emitting task, or
     - it lies inside the destination directory of a directory-emitting task.
 
-    Raises ManifestTaskMismatchError listing any uncovered paths.
+    Result is sorted for stable error messages and pruning order.
     """
     file_destinations: set[str] = set()
     dir_destinations: list[str] = []
@@ -63,10 +63,22 @@ def validate_manifest_subset_of_tasks(
             continue
         orphan_paths.append(manifest_path)
 
+    return sorted(orphan_paths)
+
+
+def validate_manifest_subset_of_tasks(
+    manifest: FigureManifest,
+    tasks: Sequence[Task],
+    fig_dir: Path,
+) -> None:
+    """
+    Raises ManifestTaskMismatchError if any manifest path is uncovered by ``tasks``.
+    """
+    orphan_paths = find_orphan_paths(manifest=manifest, tasks=tasks, fig_dir=fig_dir)
     if orphan_paths:
         raise ManifestTaskMismatchError(
             "Figure manifest references paths that no task in the supplied "
             "task list produces. Either add a task that generates them or "
             "remove them from the manifest. Offending paths: "
-            f"{sorted(orphan_paths)}"
+            f"{orphan_paths}"
         )

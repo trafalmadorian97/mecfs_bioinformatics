@@ -1,6 +1,8 @@
 from pathlib import Path
 
-FIGURE_DIRECTORY = Path("docs/_figs")
+DOCS_DIRECTORY = Path("docs")
+
+FIGURE_DIRECTORY = DOCS_DIRECTORY / "_figs"
 
 FIGURE_GITHUB_RELEASE_TAG = "figures"
 
