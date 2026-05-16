@@ -12,7 +12,7 @@ DECODE_ME_GWAS_MALE_TASK = OSFRetrievalTask(
     meta=GWASSummaryDataFileMeta(
         id=AssetId("decode_me_gwas_male_raw"),
         trait="ME_CFS",
-        project="DecodeME",
+        project="DecodeME_male",
         sub_dir="raw",
         project_path=PurePath("DecodeME Summary Statistics") / "gwas_1_male.regenie.gz",
         read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=" ")),
