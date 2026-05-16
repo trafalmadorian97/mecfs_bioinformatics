@@ -10,27 +10,27 @@ from mecfs_bio.figures.manifest import FigureManifest
 
 
 def test_merge_manifests_local_wins_for_overlapping_paths():
-    old = FigureManifest(figures={"a.png": "h_old"})
-    local = FigureManifest(figures={"a.png": "h_new"})
+    old = FigureManifest(figures={Path("a.png"): "h_old"})
+    local = FigureManifest(figures={Path("a.png"): "h_new"})
     merged = _merge_manifests(old=old, local=local, prune=False)
-    assert merged.figures == {"a.png": "h_new"}
+    assert merged.figures == {Path("a.png"): "h_new"}
 
 
 def test_merge_manifests_keeps_old_only_paths_when_not_pruning():
-    old = FigureManifest(figures={"only_in_old.png": "h_old"})
-    local = FigureManifest(figures={"only_in_local.png": "h_local"})
+    old = FigureManifest(figures={Path("only_in_old.png"): "h_old"})
+    local = FigureManifest(figures={Path("only_in_local.png"): "h_local"})
     merged = _merge_manifests(old=old, local=local, prune=False)
     assert merged.figures == {
-        "only_in_old.png": "h_old",
-        "only_in_local.png": "h_local",
+        Path("only_in_old.png"): "h_old",
+        Path("only_in_local.png"): "h_local",
     }
 
 
 def test_merge_manifests_drops_old_only_paths_when_pruning():
-    old = FigureManifest(figures={"only_in_old.png": "h_old"})
-    local = FigureManifest(figures={"only_in_local.png": "h_local"})
+    old = FigureManifest(figures={Path("only_in_old.png"): "h_old"})
+    local = FigureManifest(figures={Path("only_in_local.png"): "h_local"})
     merged = _merge_manifests(old=old, local=local, prune=True)
-    assert merged.figures == {"only_in_local.png": "h_local"}
+    assert merged.figures == {Path("only_in_local.png"): "h_local"}
 
 
 def test_prune_unmanifested_deletes_files_not_in_manifest(tmp_path: Path):
@@ -40,7 +40,7 @@ def test_prune_unmanifested_deletes_files_not_in_manifest(tmp_path: Path):
     sub.mkdir()
     (sub / "also_stale.html").write_bytes(b"z")
 
-    manifest = FigureManifest(figures={"kept.png": "irrelevant"})
+    manifest = FigureManifest(figures={Path("kept.png"): "irrelevant"})
     _prune_unmanifested(fig_dir=tmp_path, manifest=manifest)
 
     assert (tmp_path / "kept.png").exists()

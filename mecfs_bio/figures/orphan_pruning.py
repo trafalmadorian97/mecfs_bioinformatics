@@ -23,34 +23,37 @@ from mecfs_bio.figures.manifest_validation import find_orphan_paths
 
 logger = structlog.get_logger()
 
-_DOC_EXTENSIONS = (".md", ".mdx")
+_DOC_EXTENSIONS = (".md",)
 
 
 class OrphanReferencedInDocsError(ValueError):
     """Raised when an orphan manifest path is still referenced by documentation."""
 
 
-def find_doc_references(rel_path: str, docs_dir: Path) -> list[Path]:
+def find_doc_references(rel_path: Path, docs_dir: Path) -> list[Path]:
     """
-    Return every ``.md`` / ``.mdx`` file under ``docs_dir`` whose contents
-    mention ``rel_path`` as a substring.
+    Return every ``.md`` file under ``docs_dir`` whose contents mention
+    ``rel_path`` as a substring.
 
-    The figure paths in the manifest are POSIX-style and relative to the
-    figure directory (``docs/_figs``). Every reference style in the repo
-    --- ``plotly_embed("docs/_figs/<rel_path>")``,
+    Only ``.md`` files are scanned: ``.mdx`` files in this repo are
+    figure tables, not documentation pages, and are included from inside
+    ``.md`` files.
+
+    The figure paths in the manifest are relative to the figure directory
+    (``docs/_figs``). Every reference style in the repo ---
+    ``plotly_embed("docs/_figs/<rel_path>")``,
     ``include_file("docs/_figs/<rel_path>")``,
-    ``![alt](../../_figs/<rel_path>)``, and ``<iframe src="..._figs/<rel_path>">``
-    --- contains the rel_path verbatim, so a substring search is reliable.
+    ``![alt](../../_figs/<rel_path>)``, and
+    ``<iframe src="..._figs/<rel_path>">`` --- contains the rel_path
+    verbatim (POSIX form), so a substring search is reliable.
     """
+    needle = rel_path.as_posix()
     hits: list[Path] = []
     for path in sorted(docs_dir.rglob("*")):
         if not path.is_file() or path.suffix not in _DOC_EXTENSIONS:
             continue
-        try:
-            text = path.read_text(encoding="utf-8")
-        except UnicodeDecodeError:
-            continue
-        if rel_path in text:
+        text = path.read_text(encoding="utf-8")
+        if needle in text:
             hits.append(path)
     return hits
 
@@ -87,9 +90,9 @@ def prune_orphan_figures(
         logger.debug("No orphan figure-manifest entries to prune.")
         return
 
-    blockers_present: dict[str, list[Path]] = {}
-    blockers_missing: dict[str, list[Path]] = {}
-    safe_to_remove: list[str] = []
+    blockers_present: dict[Path, list[Path]] = {}
+    blockers_missing: dict[Path, list[Path]] = {}
+    safe_to_remove: list[Path] = []
     for rel_path in orphans:
         refs = find_doc_references(rel_path=rel_path, docs_dir=docs_dir)
         if refs:
@@ -122,13 +125,14 @@ def prune_orphan_figures(
     FigureManifest(figures=new_figures).save(manifest_path)
     logger.info(
         f"Pruned {len(safe_to_remove)} orphan manifest "
-        f"{'entry' if len(safe_to_remove) == 1 else 'entries'}: {safe_to_remove}"
+        f"{'entry' if len(safe_to_remove) == 1 else 'entries'}: "
+        f"{[str(p) for p in safe_to_remove]}"
     )
 
 
 def _format_blocked_message(
-    blockers_present: dict[str, list[Path]],
-    blockers_missing: dict[str, list[Path]],
+    blockers_present: dict[Path, list[Path]],
+    blockers_missing: dict[Path, list[Path]],
 ) -> str:
     lines = [
         "Cannot prune figure manifest: the following entries are not "

@@ -27,10 +27,10 @@ class ManifestTaskMismatchError(ValueError):
 
 
 def find_orphan_paths(
-    paths: Iterable[str],
+    paths: Iterable[Path],
     tasks: Sequence[Task],
     fig_dir: Path,
-) -> list[str]:
+) -> list[Path]:
     """
     Return the paths in ``paths`` that no task in ``tasks`` produces.
 
@@ -42,23 +42,23 @@ def find_orphan_paths(
     for validation, or the union of manifest keys and on-disk files for
     pruning. Result is sorted for stable error messages and pruning order.
     """
-    file_destinations: set[str] = set()
-    dir_destinations: list[str] = []
+    file_destinations: set[Path] = set()
+    dir_destinations: list[Path] = []
     for task in tasks:
         meta = task.meta
         assert isinstance(meta, ValidFigureMeta)
         dst = get_figure_destination(meta=meta, fig_dir=fig_dir)
-        rel = dst.relative_to(fig_dir).as_posix()
+        rel = dst.relative_to(fig_dir)
         if isinstance(meta, GWASPlotDirectoryMeta):
             dir_destinations.append(rel)
         else:
             file_destinations.add(rel)
 
-    orphan_paths: list[str] = []
+    orphan_paths: list[Path] = []
     for path in paths:
         if path in file_destinations:
             continue
-        if any(path == d or path.startswith(d + "/") for d in dir_destinations):
+        if any(path == d or d in path.parents for d in dir_destinations):
             continue
         orphan_paths.append(path)
 
@@ -81,5 +81,5 @@ def validate_manifest_subset_of_tasks(
             "Figure manifest references paths that no task in the supplied "
             "task list produces. Either add a task that generates them or "
             "remove them from the manifest. Offending paths: "
-            f"{orphan_paths}"
+            f"{[str(p) for p in orphan_paths]}"
         )

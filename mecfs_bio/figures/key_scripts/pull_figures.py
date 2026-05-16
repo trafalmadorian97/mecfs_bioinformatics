@@ -53,7 +53,7 @@ def pull_figures(
     if not manifest.figures:
         logger.debug(f"Manifest {manifest_path} is empty; nothing to download.")
 
-    to_download: list[tuple[str, str]] = []
+    to_download: list[tuple[Path, str]] = []
     for rel_path, expected_hash in manifest.figures.items():
         dest = fig_dir / rel_path
         if dest.is_file() and sha256_of_file(dest) == expected_hash:
@@ -76,14 +76,14 @@ def pull_figures(
 
 
 def _download_blobs_in_parallel(
-    to_download: list[tuple[str, str]],
+    to_download: list[tuple[Path, str]],
     tag: str,
     repo_name: str,
     fig_dir: Path,
     use_gh_cli: bool,
     max_workers: int,
 ) -> None:
-    def _download_one(rel_path: str, expected_hash: str) -> None:
+    def _download_one(rel_path: Path, expected_hash: str) -> None:
         dest = fig_dir / rel_path
         logger.debug(f"Fetching {rel_path} (asset {expected_hash}) from release {tag}.")
         download_release_asset(
@@ -113,7 +113,7 @@ def _prune_unmanifested(fig_dir: Path, manifest: FigureManifest) -> None:
     for path in fig_dir.rglob("*"):
         if not path.is_file():
             continue
-        rel = path.relative_to(fig_dir).as_posix()
+        rel = path.relative_to(fig_dir)
         if rel not in managed:
             logger.debug(f"Pruning {rel} (not in manifest).")
             path.unlink()

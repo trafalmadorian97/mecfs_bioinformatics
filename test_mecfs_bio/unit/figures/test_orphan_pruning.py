@@ -24,22 +24,32 @@ def _file_task(asset_id: str, extension: str = ".png") -> FakeTask:
     )
 
 
-def _write_manifest(manifest_path: Path, entries: dict[str, str]) -> None:
+def _write_manifest(manifest_path: Path, entries: dict[Path, str]) -> None:
     FigureManifest(figures=entries).save(manifest_path)
 
 
-def test_find_doc_references_picks_up_md_and_mdx(tmp_path: Path):
+def test_find_doc_references_picks_up_md(tmp_path: Path):
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "a.md").write_text("![foo](../_figs/my_plot.png)\n")
     sub = docs / "sub"
     sub.mkdir()
-    (sub / "b.mdx").write_text('{{ plotly_embed("docs/_figs/my_plot.png", id="x") }}\n')
+    (sub / "b.md").write_text('{{ plotly_embed("docs/_figs/my_plot.png", id="x") }}\n')
     (docs / "unrelated.md").write_text("nothing here\n")
 
-    hits = find_doc_references(rel_path="my_plot.png", docs_dir=docs)
+    hits = find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs)
 
-    assert sorted(hits) == sorted([docs / "a.md", sub / "b.mdx"])
+    assert sorted(hits) == sorted([docs / "a.md", sub / "b.md"])
+
+
+def test_find_doc_references_ignores_mdx_files(tmp_path: Path):
+    # .mdx files in this repo are figure tables, not documentation pages,
+    # so they should not gate orphan pruning.
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "table.mdx").write_text("includes my_plot.png\n")
+
+    assert find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs) == []
 
 
 def test_find_doc_references_ignores_non_doc_files(tmp_path: Path):
@@ -47,7 +57,16 @@ def test_find_doc_references_ignores_non_doc_files(tmp_path: Path):
     docs.mkdir()
     (docs / "notes.txt").write_text("references my_plot.png\n")
 
-    assert find_doc_references(rel_path="my_plot.png", docs_dir=docs) == []
+    assert find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs) == []
+
+
+def test_find_doc_references_raises_on_non_utf8_doc(tmp_path: Path):
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "bad.md").write_bytes(b"\xff\xfe not utf8")
+
+    with pytest.raises(UnicodeDecodeError):
+        find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs)
 
 
 def test_prune_drops_orphan_with_no_doc_reference_and_present_file(tmp_path: Path):
@@ -59,7 +78,7 @@ def test_prune_drops_orphan_with_no_doc_reference_and_present_file(tmp_path: Pat
 
     (fig_dir / "kept.png").write_bytes(b"x")
     (fig_dir / "orphan.png").write_bytes(b"y")
-    _write_manifest(manifest_path, {"kept.png": "h1", "orphan.png": "h2"})
+    _write_manifest(manifest_path, {Path("kept.png"): "h1", Path("orphan.png"): "h2"})
 
     prune_orphan_figures(
         manifest_path=manifest_path,
@@ -70,7 +89,7 @@ def test_prune_drops_orphan_with_no_doc_reference_and_present_file(tmp_path: Pat
 
     assert not (fig_dir / "orphan.png").exists()
     assert (fig_dir / "kept.png").exists()
-    assert FigureManifest.load(manifest_path).figures == {"kept.png": "h1"}
+    assert FigureManifest.load(manifest_path).figures == {Path("kept.png"): "h1"}
 
 
 def test_prune_drops_orphan_when_local_file_already_missing(tmp_path: Path):
@@ -80,7 +99,7 @@ def test_prune_drops_orphan_when_local_file_already_missing(tmp_path: Path):
     docs.mkdir()
     manifest_path = tmp_path / "manifest.json"
 
-    _write_manifest(manifest_path, {"orphan.png": "h2"})
+    _write_manifest(manifest_path, {Path("orphan.png"): "h2"})
 
     prune_orphan_figures(
         manifest_path=manifest_path,
@@ -101,7 +120,7 @@ def test_prune_errors_when_orphan_referenced_with_present_file(tmp_path: Path):
     manifest_path = tmp_path / "manifest.json"
 
     (fig_dir / "orphan.png").write_bytes(b"y")
-    _write_manifest(manifest_path, {"orphan.png": "h2"})
+    _write_manifest(manifest_path, {Path("orphan.png"): "h2"})
 
     with pytest.raises(OrphanReferencedInDocsError) as exc:
         prune_orphan_figures(
@@ -117,7 +136,7 @@ def test_prune_errors_when_orphan_referenced_with_present_file(tmp_path: Path):
     assert "local file is also missing" not in msg
     # Disk untouched on error
     assert (fig_dir / "orphan.png").exists()
-    assert FigureManifest.load(manifest_path).figures == {"orphan.png": "h2"}
+    assert FigureManifest.load(manifest_path).figures == {Path("orphan.png"): "h2"}
 
 
 def test_prune_errors_with_missing_file_note_when_orphan_referenced_and_absent(
@@ -130,7 +149,7 @@ def test_prune_errors_with_missing_file_note_when_orphan_referenced_and_absent(
     (docs / "page.md").write_text("![p](../_figs/orphan.png)\n")
     manifest_path = tmp_path / "manifest.json"
 
-    _write_manifest(manifest_path, {"orphan.png": "h2"})
+    _write_manifest(manifest_path, {Path("orphan.png"): "h2"})
 
     with pytest.raises(OrphanReferencedInDocsError) as exc:
         prune_orphan_figures(
@@ -201,7 +220,7 @@ def test_prune_is_noop_when_no_orphans(tmp_path: Path):
     manifest_path = tmp_path / "manifest.json"
 
     (fig_dir / "kept.png").write_bytes(b"x")
-    _write_manifest(manifest_path, {"kept.png": "h1"})
+    _write_manifest(manifest_path, {Path("kept.png"): "h1"})
 
     prune_orphan_figures(
         manifest_path=manifest_path,
@@ -210,5 +229,5 @@ def test_prune_is_noop_when_no_orphans(tmp_path: Path):
         figure_tasks=[_file_task("kept")],
     )
 
-    assert FigureManifest.load(manifest_path).figures == {"kept.png": "h1"}
+    assert FigureManifest.load(manifest_path).figures == {Path("kept.png"): "h1"}
     assert (fig_dir / "kept.png").exists()

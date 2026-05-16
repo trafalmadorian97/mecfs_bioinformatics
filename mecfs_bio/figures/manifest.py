@@ -29,11 +29,15 @@ _VERSION_FIELD = "version"
 @frozen
 class FigureManifest:
     """
-    Mapping from figure path (POSIX-style, relative to the figure directory)
-    to SHA-256 hex digest of file contents.
+    Mapping from figure path (relative to the figure directory) to the
+    SHA-256 hex digest of file contents.
+
+    Keys are ``Path`` objects in memory; they are serialised as POSIX
+    strings in the on-disk JSON so the manifest is portable across
+    operating systems.
     """
 
-    figures: dict[str, str]
+    figures: dict[Path, str]
 
     @classmethod
     def empty(cls) -> "FigureManifest":
@@ -53,24 +57,26 @@ class FigureManifest:
             )
         figures = raw.get(_HASH_FIELD, {})
         assert isinstance(figures, dict)
-        return cls(figures=dict(figures))
+        return cls(figures={Path(k): v for k, v in figures.items()})
 
     def save(self, manifest_path: Path) -> None:
         manifest_path.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             _VERSION_FIELD: MANIFEST_VERSION,
-            _HASH_FIELD: dict(sorted(self.figures.items())),
+            _HASH_FIELD: {
+                path.as_posix(): sha for path, sha in sorted(self.figures.items())
+            },
         }
         with open(manifest_path, "w") as f:
             json.dump(payload, f, indent=2, sort_keys=False)
             f.write("\n")
 
-    def with_entry(self, rel_path: str, sha256: str) -> "FigureManifest":
+    def with_entry(self, rel_path: Path, sha256: str) -> "FigureManifest":
         new = dict(self.figures)
         new[rel_path] = sha256
         return FigureManifest(figures=new)
 
-    def without_entry(self, rel_path: str) -> "FigureManifest":
+    def without_entry(self, rel_path: Path) -> "FigureManifest":
         new = dict(self.figures)
         new.pop(rel_path, None)
         return FigureManifest(figures=new)
@@ -93,12 +99,12 @@ def sha256_of_file(path: Path, chunk_size: int = 1 << 16) -> str:
 def scan_figure_dir(fig_dir: Path) -> FigureManifest:
     """
     Build a manifest by hashing every file under ``fig_dir`` recursively.
-    Paths are stored POSIX-style and relative to ``fig_dir``.
+    Paths are stored as ``Path`` objects relative to ``fig_dir``.
     """
-    figures: dict[str, str] = {}
+    figures: dict[Path, str] = {}
     for path in sorted(fig_dir.rglob("*")):
         if not path.is_file():
             continue
-        rel = path.relative_to(fig_dir).as_posix()
+        rel = path.relative_to(fig_dir)
         figures[rel] = sha256_of_file(path)
     return FigureManifest(figures=figures)
