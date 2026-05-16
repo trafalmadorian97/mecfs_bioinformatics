@@ -57,7 +57,7 @@ class FilterSNPsTask(Task):
         snp_list_task: Task,
         col_in_raw_data: str = "ID",
         col_in_filter_data: str = "ID",
-    ):
+    ) -> Task:
         source_meta = raw_gwas_task.meta
         assert isinstance(source_meta, GWASSummaryDataFileMeta)
         meta = FilteredGWASDataMeta(
