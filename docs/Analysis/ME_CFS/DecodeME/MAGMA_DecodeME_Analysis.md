@@ -2,8 +2,8 @@
 hide:
 - toc
 ---
-## MAGMA GTEx
-As an initial step, I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md) to [DecodeME](../../../Data_Sources/DecodeME.md), partially reproducing analysis from the DecodeME preprint[@genetics2025initial].  
+# MAGMA GTEx
+As an initial step, I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to [DecodeME](../../../Data_Sources/DecodeME.md), partially reproducing analysis from the DecodeME preprint[@genetics2025initial].  
 
 
 ## MAGMA Gene Analysis
@@ -42,6 +42,23 @@ MAGMA produces a table of genes, effect sizes, and p values.  Filtering these ge
 | ENSG00000188730 | VWC2        |     7 | 5.7778e-06 | von Willebrand factor C domain containing 2 [Source:HGNC Symbol;Acc:HGNC:30200]       |
 | ENSG00000028116 | VRK2        |     2 | 7.4569e-06 | VRK serine/threonine kinase 2 [Source:HGNC Symbol;Acc:HGNC:12719]                     |
 | ENSG00000117601 | SERPINC1    |     1 | 8.7656e-06 | serpin family C member 1 [Source:HGNC Symbol;Acc:HGNC:775]                            |
+
+
+
+It is also useful get a genome-wide view of the patterns of gene-level significance induced by MAGMA's SNP-wise-mean model. The Manhattan plot below serves this purpose:
+
+
+
+{{ plotly_embed("docs/_figs/decode_me_magma_gene_plot.html", id="magma-decode-me-gene-manhattan-window") }}
+
+
+
+
+The MAGMA SNP-wise-mean model is sensitive to the rules used for allocation of variants to genes.  The results above use a conservative assignment strategy: only coding variants are assigned to genes.  It is interesting to compare these with results produced by less-restrictive assumptions.  In the plot below, variants  between 35 kilobases upstream and 10 kilobases downstream of a given gene are associated with that gene.
+
+
+
+{{ plotly_embed("docs/_figs/decode_me_magma_gene_plot_with_window.html", id="magma-decode-me-gene-manhattan") }}
 
 
 ## MAGMA Gene Property Analysis
