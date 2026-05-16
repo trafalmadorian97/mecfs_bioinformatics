@@ -4,9 +4,9 @@ DOCS_DIRECTORY = Path("docs")
 
 FIGURE_DIRECTORY = DOCS_DIRECTORY / "_figs"
 
-FIGURE_GITHUB_RELEASE_TAG = "figures_V2"
+FIGURE_GITHUB_RELEASE_TAG = "figures_v3"
 
-FIGURES_ARCHIVE_TITLE = "figures"
+FIGURES_ARCHIVE_TITLE = "figures_v3"
 
 # Manifest mapping figure paths (relative to FIGURE_DIRECTORY) to SHA-256
 # content hashes. The manifest is committed to git and is the source of truth

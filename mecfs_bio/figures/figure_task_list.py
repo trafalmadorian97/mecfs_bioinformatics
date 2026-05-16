@@ -20,7 +20,9 @@ from mecfs_bio.assets.gwas.human_herpesvirus_7_dna.kamitaki_et_al_2025.analysis.
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_task import (
     MV_LDL_LDSC_RESULTS_MARKDOWN,
 )
-from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ldl import CT_LDSC_LDL
+from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ldl import (
+    CT_LDSC_LDL,
+)
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )
@@ -134,5 +136,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
-    CT_LDSC_LDL.aggregation_markdown_task
+    CT_LDSC_LDL.aggregation_markdown_task,
 ]
