@@ -11,4 +11,4 @@ Results are below:
 
 
 
-The standard error is high.  The genetic correlation of 0.496 is higher than would be expected for two identical traits. This may be in part due to the exclusion of statin users from the Willer GWAS but not the Million Veteran GWAS.
+The standard error is high.  The genetic correlation of 0.496 is lower than would be expected for two studies of the same trait. This may be in part due to the exclusion of statin users from the Willer GWAS but not the Million Veteran GWAS.
