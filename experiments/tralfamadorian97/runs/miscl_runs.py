@@ -38,8 +38,8 @@ def run_miscl_analysis():
         # CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
         # CT_LDSC_LDL.terminal_tasks()+
         [
+            DECODE_ME_MAGMA_GENE_PLOT,
             DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
-            DECODE_ME_MAGMA_GENE_PLOT
             # YENGO_HEIGHT_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task
             # MECFS_AZ_PHEWAS
             # CT_LDSC_CFS_CORR_PLOT
