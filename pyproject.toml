@@ -40,7 +40,7 @@ packages = ["mecfs_bio"]
 env = { R_LIBS_USER = "r-libs" }
 
 [tool.pixi.feature.analysis.dependencies]
-pysam = ">=0.23.3,<0.24"
+pysam = ">=0.24,<0.25"
 pixi-pycharm = ">=0.0.11,<0.0.12"
 ruff = ">=0.15.11,<0.16"
 bedops = ">=2.4.42,<3"
