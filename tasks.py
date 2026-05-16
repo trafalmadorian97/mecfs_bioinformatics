@@ -28,6 +28,7 @@ DOCS_PATH = Path("docs")
 USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
 
 PULL_FIGURE_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/pull_figures.py")
+PUBLISH_FIGURES_SCRIPT_PATH = Path("mecfs_bio/figures/key_scripts/publish_figures.py")
 
 FIGS_PATH = Path("docs/_figs/")
 FIGS_PATTERN = "_figs"
@@ -434,6 +435,17 @@ def pfig(c):
     Pull figures from github to populate the _figs directory
     """
     c.run(f"python {PULL_FIGURE_SCRIPT_PATH}")
+
+
+@task()
+def publish_figures(c):
+    """
+    Run the end-to-end figure-system workflow: generate any missing
+    figures from ALL_FIGURE_TASKS, prune orphan manifest entries (after
+    confirming no docs still reference them), then update the manifest
+    and push new blobs to the GitHub release.
+    """
+    c.run(f"python {PUBLISH_FIGURES_SCRIPT_PATH}")
 
 
 @task

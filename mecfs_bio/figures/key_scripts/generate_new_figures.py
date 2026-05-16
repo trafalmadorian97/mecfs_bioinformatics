@@ -2,19 +2,12 @@ from pathlib import Path
 
 import structlog
 
-from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_manhattan_plot_meta import (
-    GWASLabManhattanQQPlotMeta,
-)
-from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
-from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
-from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.figures.fig_constants import FIGURE_DIRECTORY
 from mecfs_bio.figures.figure_exporter import (
     AbstractFigureExporter,
-    get_fig_dir_meta,
-    get_fig_file_path,
-    get_md_fig_file_path,
+    ValidFigureMeta,
+    get_figure_destination,
 )
 from mecfs_bio.figures.figure_task_list import ALL_FIGURE_TASKS
 from mecfs_bio.figures.key_scripts.generate_figures import FIGURE_EXPORTER
@@ -34,14 +27,8 @@ def generate_new_figures(
     tasks_to_run = []
     for task in all_figure_tasks:
         meta = task.meta
-        if isinstance(meta, GWASPlotFileMeta | GWASLabManhattanQQPlotMeta):
-            dst = get_fig_file_path(meta=meta, fig_dir=fig_dir)
-        elif isinstance(meta, GWASPlotDirectoryMeta):
-            dst = get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
-        elif isinstance(meta, MarkdownFileMeta):
-            dst = get_md_fig_file_path(meta=meta, fig_dir=fig_dir)
-        else:
-            raise ValueError(f"Unknown meta type {(meta)}")
+        assert isinstance(meta, ValidFigureMeta)
+        dst = get_figure_destination(meta=meta, fig_dir=fig_dir)
         if not dst.exists():
             tasks_to_run.append(task)
 
