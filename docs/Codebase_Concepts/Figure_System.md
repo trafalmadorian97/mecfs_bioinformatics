@@ -40,7 +40,7 @@ The components of the programmatic figure system are:
 Suppose that you have analyzed a genomic dataset and generated figures.  You wish to publish these figures and an associated write-up to the project documentation page.  Follow these steps:
 
 - Add the Tasks that generate your figures to `ALL_FIGURE_TASKS`.
-- Run {{ api_link("publish_figures.py", "mecfs_bio.figures.key_scripts.publish_figures") }} script to generate all figures, copy them to `docs/_figs` and push them as part of a github release.
+- Run `pixi r invoke publish-figures` to generate all figures, copy them to `docs/_figs` and push them as part of a github release. `publish-figures` will also remove any figures not present in `ALL_FIGURE_TASKS`.
 - Document your analysis by adding a markdown file to `docs/analysis`.  In your write-up, include your figures by referencing their location in `docs/_figs`.
 - Commit the updated `figures_manifest.json` along with your other changes.
 - Create a pull request with your changes (see [Standard Workflow](../Getting_Started/b_Standard_Workflow.md)).
@@ -50,7 +50,7 @@ To remove a figure, delete the corresponding Task from `ALL_FIGURE_TASKS`, then 
 ### Advantages
 
 
-This programmatic approach is undoubtedly more complex than the link-based approach. Nevertheless, this workflow, in which figures are represented as Tasks, has several advantages;
+This programmatic approach is  more complex than the link-based approach. Nevertheless it has several advantages;
 
 - **Figure Lineage**:  Since figures are represented as build-system Tasks, it is straightforward to determine exactly the datasets and analysis used to produce any given figure.  This supports that project principle of [automated reproducibility](../project_outline.md#principles) and is consistent with [data-science best practices](https://www.scientificdiscovery.dev/i/180950252/maximally-reproducible-charts).
 - **Figure Upgrades**: Since figures are represented as build system Tasks, any improvement to that code that generates a particular class of figures can easily be propagated to all figures of that class.
