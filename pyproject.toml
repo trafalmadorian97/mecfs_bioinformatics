@@ -116,7 +116,7 @@ xarray = ">=2026.4,<2027"
 xxhash = ">=3.6.0"
 ibis-framework = { version = ">=12,<13", extras = ["duckdb", "examples"] }
 scikit-learn = ">=1.7.2,<2"
-gdown = ">=5.2.0,<6"
+gdown = ">=6,<7"
 mkdocs-gen-files = ">=0.6.1,<0.7"
 mkdocs-literate-nav = "*"
 mkdocs-api-autonav = ">=0.4.0,<0.5"
