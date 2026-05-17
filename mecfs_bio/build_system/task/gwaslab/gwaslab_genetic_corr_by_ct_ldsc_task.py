@@ -309,6 +309,7 @@ def load_and_preprocess_sumstats(
         sumstats, "build"
     ):  # added because it seems like the name of the build variable changed between gwaslab versions
         sumstats._build = sumstats.build
+    assert sumstats.build == build
     assert GWASLAB_RSID_COL in sumstats.data.columns
     sumstats.data = source.pipe.process_pandas(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)

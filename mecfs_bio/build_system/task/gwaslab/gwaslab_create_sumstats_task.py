@@ -358,6 +358,8 @@ def transform_gwaslab_sumstats(
 
     if spec.liftover_to is not None and (build != spec.liftover_to):
         sumstats.liftover(to_build=spec.liftover_to, from_build=forced_build)
+        sumstats.infer_build()
+        assert sumstats.build == spec.liftover_to
     if spec.filter_hapmap3:
         sumstats.filter_hapmap3(inplace=True, build=forced_build)
     if spec.filter_indels:
