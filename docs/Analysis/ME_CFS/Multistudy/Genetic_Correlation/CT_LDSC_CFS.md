@@ -26,6 +26,6 @@ Most of the results above suffer from large standard errors.  It may be worthwhi
 
 ## How to reproduce analysis
 
-
+Use {{ api_link("this script", "mecfs_bio.analysis.cfs_genetic_corr") }} to reproduce the above analysis.
 
 [^overlap]: This is not a consequence of overlap between some of the subsets.  CT-LDSC automatically accounts for sample overlap using its intercept.
