@@ -57,6 +57,7 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_START_COL,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.util.plotting.save_fig import PlotlyWriteMode
 
 logger = structlog.get_logger()
 
@@ -404,7 +405,7 @@ class GeneManhattanPlotTask(Task):
     colors: tuple[str, str] = ("#1f77b4", "#ff7f0e")
     sig_line_color: str = "red"
     title: str | None = None
-    plotly_js_mode: bool | str = "cdn"
+    plotly_js_mode: bool | PlotlyWriteMode = "cdn"
 
     @property
     def deps(self) -> list[Task]:
