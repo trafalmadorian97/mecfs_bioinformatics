@@ -354,7 +354,7 @@ def build_manhattan_plot(
         sig_threshold = 0.05 / len(df)
     sig_y = float(-np.log10(sig_threshold))
 
-    pos_label = f"Position (hg{genome_build})"
+    pos_label = f"position (hg{genome_build})"
     fig = go.Figure()
     for idx, chrom in enumerate(chroms):
         chrom_df = df[df[_CHROM] == chrom]
@@ -377,9 +377,10 @@ def build_manhattan_plot(
                 ),
                 hovertemplate=(
                     "<b>%{customdata[0]}</b><br>"
-                    "Ensembl: %{customdata[1]}<br>"
-                    "Chromosome: %{customdata[2]}<br>"
-                    f"{pos_label}: " + "%{customdata[3]:,.0f}<br>"
+                    f"{pos_label}:" + " chr%{customdata[2]} %{customdata[3]:,.0f}<br>"
+                    # "Ensembl: %{customdata[1]}<br>"
+                    # "Chromosome: %{customdata[2]}<br>"
+                    # f"{pos_label}: " + "%{customdata[3]:,.0f}<br>"
                     "-log<sub>10</sub>(p): %{y:.3f}<br>"
                     "<extra></extra>"
                 ),
