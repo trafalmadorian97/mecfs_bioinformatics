@@ -36,6 +36,7 @@ def test_build_manhattan_plot_basic_shape():
         colors=("#1f77b4", "#ff7f0e"),
         sig_line_color="red",
         title="test",
+        genome_build="19",
     )
 
     assert isinstance(fig, go.Figure)
@@ -62,17 +63,42 @@ def test_build_manhattan_plot_hover_and_yvalues():
         colors=("#1f77b4", "#ff7f0e"),
         sig_line_color="red",
         title=None,
+        genome_build="19",
     )
 
     chr1_trace = next(t for t in fig.data if t.name == "chr1")
-    # Hover template surfaces gene name, Ensembl ID, and -log10(p).
+    # Hover template surfaces gene name, Ensembl ID, chromosome, position
+    # (build-tagged), and -log10(p).
     assert "%{customdata[0]}" in chr1_trace.hovertemplate
     assert "Ensembl" in chr1_trace.hovertemplate
+    assert "Chromosome:" in chr1_trace.hovertemplate
+    assert "Position (hg19):" in chr1_trace.hovertemplate
     assert "log" in chr1_trace.hovertemplate
+
+    # customdata exposes (gene_name, ensembl_id, chrom, pos) — four columns
+    # per row, one row per chr1 gene.
+    assert len(chr1_trace.customdata) == 4
+    assert len(chr1_trace.customdata[0]) == 4
 
     # The y-values are -log10(p) for chr1's four genes.
     expected_y = -np.log10(np.array([0.5, 0.1, 1e-3, 1e-9]))
     np.testing.assert_allclose(sorted(chr1_trace.y), sorted(expected_y))
+
+
+def test_build_manhattan_plot_hover_label_uses_hg38_for_build_38():
+    df = _synthetic_df()
+    fig = build_manhattan_plot(
+        df=df,
+        sig_threshold=5e-8,
+        point_size=5,
+        colors=("#1f77b4", "#ff7f0e"),
+        sig_line_color="red",
+        title=None,
+        genome_build="38",
+    )
+    chr1_trace = next(t for t in fig.data if t.name == "chr1")
+    assert "Position (hg38):" in chr1_trace.hovertemplate
+    assert "Position (hg19):" not in chr1_trace.hovertemplate
 
 
 def test_build_manhattan_plot_alternates_colors_across_chromosomes():
@@ -85,6 +111,7 @@ def test_build_manhattan_plot_alternates_colors_across_chromosomes():
         colors=(blue, orange),
         sig_line_color="red",
         title=None,
+        genome_build="19",
     )
     chr_to_color = {t.name: t.marker.color for t in fig.data}
     # Canonical order: chr1 first => blue, chr2 second => orange, chrX third => blue.
@@ -103,6 +130,7 @@ def test_build_manhattan_plot_sig_line_present():
         colors=("#1f77b4", "#ff7f0e"),
         sig_line_color="red",
         title=None,
+        genome_build="19",
     )
 
     # add_hline produces a shape on the layout at y = -log10(threshold).
@@ -122,6 +150,7 @@ def test_build_manhattan_plot_default_sig_threshold_is_bonferroni():
         colors=("#1f77b4", "#ff7f0e"),
         sig_line_color="red",
         title=None,
+        genome_build="19",
     )
 
     expected_y = float(-np.log10(0.05 / len(df)))
@@ -170,6 +199,7 @@ def test_build_manhattan_plot_drops_nonpositive_and_null_pvalues():
         colors=("#1f77b4", "#ff7f0e"),
         sig_line_color="red",
         title=None,
+        genome_build="19",
     )
 
     chr1_trace = next(t for t in fig.data if t.name == "chr1")
@@ -195,4 +225,5 @@ def test_build_manhattan_plot_empty_df_raises():
             colors=("#1f77b4", "#ff7f0e"),
             sig_line_color="red",
             title=None,
+            genome_build="19",
         )
