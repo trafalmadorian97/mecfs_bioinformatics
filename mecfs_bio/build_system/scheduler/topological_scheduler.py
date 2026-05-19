@@ -173,7 +173,7 @@ def topological[
             def __call__(self, asset_id: AssetId) -> Asset:
                 return store[asset_id]
 
-        new_asset, info = rebuilder.rebuild(
+        new_asset, info, info_changed = rebuilder.rebuild(
             task=task,
             asset=maybe_asset,
             fetch=SimpleFetch(),
@@ -181,7 +181,7 @@ def topological[
             info=info,
             meta_to_path=meta_to_path,
         )
-        if incremental_save_path is not None:
+        if incremental_save_path is not None and info_changed:
             rebuilder.save_info(info, incremental_save_path)
         store[node] = new_asset
         frontier, G = _update_frontier_and_G(G=G, completed=node, frontier=frontier)
