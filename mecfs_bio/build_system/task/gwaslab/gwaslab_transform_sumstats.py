@@ -58,7 +58,7 @@ class GWASLabTransformSumstatsTask(Task):
         )
         sumstats.data = self.post_pipe.process_pandas(sumstats.data)
         out_path = scratch_dir / "pickled_sumstats.pickle"
-        gl.dump_pickle(sumstats, path=out_path)
+        gl.dump_pickle(sumstats, path=str(out_path))
         return FileAsset(out_path)
 
     @classmethod
