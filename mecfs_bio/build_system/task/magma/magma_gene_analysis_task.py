@@ -136,6 +136,46 @@ class MagmaGeneAnalysisTask(Task):
             meta=meta,
         )
 
+    @classmethod
+    def create_with_prebuilt_annotation(
+        cls,
+        asset_id: str,
+        magma_annotation_task: Task,
+        magma_p_value_task: Task,
+        magma_binary_task: Task,
+        magma_ld_ref_task: Task,
+        ld_ref_file_stem: str,
+        sample_size: int,
+        sub_dir_suffix: PurePath | None = None,
+    ):
+        """Create a MagmaGeneAnalysisTask that consumes a pre-built annotation file
+        (e.g. an H-MAGMA tissue-specific .genes.annot reference file) instead of
+        an annotation produced by an upstream MagmaAnnotateTask. trait/project are
+        derived from ``magma_p_value_task.meta`` since the annotation has no
+        GWAS-derived metadata. ``sub_dir_suffix`` is appended to the p-value
+        task's ``sub_dir`` to isolate the output (e.g. ``PurePath("h_magma")``).
+        """
+        p_value_meta = magma_p_value_task.meta
+        assert isinstance(p_value_meta, FilteredGWASDataMeta)
+        sub_dir = PurePath(p_value_meta.sub_dir)
+        if sub_dir_suffix is not None:
+            sub_dir = sub_dir / sub_dir_suffix
+        meta = ProcessedGwasDataDirectoryMeta(
+            id=AssetId(asset_id),
+            trait=p_value_meta.trait,
+            project=p_value_meta.project,
+            sub_dir=sub_dir,
+        )
+        return cls(
+            magma_annotation_task=magma_annotation_task,
+            magma_p_value_task=magma_p_value_task,
+            magma_binary_task=magma_binary_task,
+            magma_ld_ref_task=magma_ld_ref_task,
+            ld_ref_file_stem=ld_ref_file_stem,
+            sample_size=sample_size,
+            meta=meta,
+        )
+
 
 def read_magma_gene_analysis_result(result_dir: Path) -> pd.DataFrame:
     return (
