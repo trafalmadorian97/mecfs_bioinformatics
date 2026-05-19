@@ -28,7 +28,6 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annova
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
 
-DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED
 
 
 def run_initial_decode_me_analysis():
@@ -57,10 +56,8 @@ def run_initial_decode_me_analysis():
         ]
         + list(DECODE_ME_S_LDSC.get_terminal_tasks())
         + DECODE_ME_HBA_MAGMA_TASKS.terminal_tasks(),
-        # + DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-            DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.harmonize_task
         ],
     )
 
