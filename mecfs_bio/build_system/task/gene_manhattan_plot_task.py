@@ -14,7 +14,9 @@ Supports two source types:
 
 The plot uses Plotly's WebGL ``Scattergl`` renderer for performance with
 20k-30k gene points and exposes hover text containing the gene name, Ensembl
-ID, and ``-log10(p)``.
+ID, chromosome, genomic midpoint position (labelled ``Position (hg19)`` or
+``Position (hg38)`` according to the source's declared ``genome_build``), and
+``-log10(p)``.
 """
 
 from abc import ABC, abstractmethod
@@ -57,6 +59,7 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_START_COL,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.util.plotting.save_fig import PlotlyWriteMode
 
 logger = structlog.get_logger()
@@ -111,6 +114,15 @@ class GeneManhattanSource(ABC):
         """The project label inherited from the primary input task's metadata."""
         pass
 
+    @property
+    @abstractmethod
+    def genome_build(self) -> GenomeBuild:
+        """Genome build of the chromosomal positions exposed by ``load_df``.
+
+        Drives the hover-text position label (``pos_hg19`` vs ``pos_hg38``).
+        """
+        pass
+
     @abstractmethod
     def load_df(self, fetch: Fetch) -> pd.DataFrame:
         """Materialize a pandas DataFrame with columns ``chrom``, ``pos``, ``ensembl_id``, ``gene_name``, ``p_value``."""
@@ -129,6 +141,7 @@ class MagmaGeneSource(GeneManhattanSource):
 
     magma_task: Task
     gene_thesaurus_task: Task
+    genome_build: GenomeBuild
 
     @property
     def deps(self) -> list[Task]:
@@ -216,6 +229,7 @@ class GenePValueTableSource(GeneManhattanSource):
     gene_locations_task: Task
     gene_col: str
     p_col: str
+    genome_build: GenomeBuild
     gene_id_kind: GeneIdKind = "ensembl_id"
 
     @property
@@ -296,6 +310,7 @@ def build_manhattan_plot(
     colors: tuple[str, str],
     sig_line_color: str,
     title: str | None,
+    genome_build: GenomeBuild,
 ) -> go.Figure:
     """Construct a Plotly figure containing a gene-level Manhattan plot.
 
@@ -303,6 +318,10 @@ def build_manhattan_plot(
     undefined). If ``sig_threshold`` is ``None``, a Bonferroni-corrected
     threshold ``0.05 / N_genes`` is used and a dashed horizontal line is drawn
     at the corresponding ``-log10(p)``.
+
+    ``genome_build`` selects the hover label for the gene's midpoint position
+    (``Position (hg19)`` for build 37, ``Position (hg38)`` for build 38).
+    Positions in ``df`` are assumed to already be in the declared build.
     """
     df = df.dropna(subset=[_P]).copy()
     df = df[df[_P] > 0]
@@ -335,6 +354,7 @@ def build_manhattan_plot(
         sig_threshold = 0.05 / len(df)
     sig_y = float(-np.log10(sig_threshold))
 
+    pos_label = f"position (hg{genome_build})"
     fig = go.Figure()
     for idx, chrom in enumerate(chroms):
         chrom_df = df[df[_CHROM] == chrom]
@@ -346,16 +366,21 @@ def build_manhattan_plot(
                 mode="markers",
                 marker=dict(size=point_size, color=color),
                 name=f"chr{chrom}",
-                customdata=np.stack(
-                    [
-                        chrom_df[_GENE_NAME].astype(str).to_numpy(),
-                        chrom_df[_ENSEMBL_ID].astype(str).to_numpy(),
-                    ],
-                    axis=-1,
+                customdata=list(
+                    zip(
+                        chrom_df[_GENE_NAME].astype(str),
+                        chrom_df[_ENSEMBL_ID].astype(str),
+                        chrom_df[_CHROM].astype(str),
+                        chrom_df[_POS].astype(float),
+                        strict=True,
+                    )
                 ),
                 hovertemplate=(
                     "<b>%{customdata[0]}</b><br>"
-                    "Ensembl: %{customdata[1]}<br>"
+                    f"{pos_label}:" + " chr%{customdata[2]} %{customdata[3]:,.0f}<br>"
+                    # "Ensembl: %{customdata[1]}<br>"
+                    # "Chromosome: %{customdata[2]}<br>"
+                    # f"{pos_label}: " + "%{customdata[3]:,.0f}<br>"
                     "-log<sub>10</sub>(p): %{y:.3f}<br>"
                     "<extra></extra>"
                 ),
@@ -420,6 +445,7 @@ class GeneManhattanPlotTask(Task):
             colors=self.colors,
             sig_line_color=self.sig_line_color,
             title=self.title,
+            genome_build=self.source.genome_build,
         )
         out_path = scratch_dir / "gene_manhattan.html"
         fig.write_html(out_path, include_plotlyjs=self.plotly_js_mode)

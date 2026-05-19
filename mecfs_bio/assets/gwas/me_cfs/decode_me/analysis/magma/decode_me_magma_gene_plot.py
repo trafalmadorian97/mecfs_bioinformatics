@@ -19,5 +19,6 @@ DECODE_ME_MAGMA_GENE_PLOT = GeneManhattanPlotTask.create(
     source=MagmaGeneSource(
         magma_task=DECODE_ME_GWAS_1_MAGMA_ENSEMBL_GENE_ANALYSIS,
         gene_thesaurus_task=GENE_THESAURUS,
+        genome_build="19",
     ),
 )
