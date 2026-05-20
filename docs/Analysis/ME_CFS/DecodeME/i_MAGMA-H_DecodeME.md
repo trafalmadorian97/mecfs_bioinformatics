@@ -59,4 +59,4 @@ I used the 6 standard variant-to-gene assignment maps provided by the authors of
 
 
 
-[^footnote]:  The significance threshold differs between analysis because the number genes with meeting the minimum number of annotations differs, which in turn affects the Bonferoni correction.
+[^footnote]:  The significance threshold differs between analyses because the number of annotated genes differs, which in turn affects the Bonferroni correction.
