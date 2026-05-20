@@ -58,7 +58,7 @@ The plot and table below show the results of the application of S-LDSC to Decode
 | Brain_Spinal_cord_(cervical_c-1)                               |   2.08238e-09 |           0.00603588  | False         |
 
 
-As we saw in our earlier [MAGMA analysis](MAGMA_DecodeME_Analysis.md) using the GTEx dataset, the significant tissues are all CNS-related.
+As we saw in our earlier [MAGMA analysis](g_MAGMA_DecodeME_Analysis.md) using the GTEx dataset, the significant tissues are all CNS-related.
 
 
 ### Roadmap Chromatin data

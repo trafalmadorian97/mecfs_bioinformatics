@@ -12,6 +12,6 @@ The LDSC results are shown below:
 
 {{ include_file("docs/_figs/neale_lab_cfs_ldsc_heritability_markdown.mdx") }}
 
-The liability-scale heritability of 8% is similar to that [seen in DecodeME](../DecodeME/LDSC-DecodeME.md).
+The liability-scale heritability of 8% is similar to that [seen in DecodeME](../DecodeME/f_LDSC-DecodeME.md).
 
 The low intercept and moderate attenuation ratio suggest low risk of confounding by stratification.
