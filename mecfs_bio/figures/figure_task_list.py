@@ -35,6 +35,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.without_palindromes.susie_finemap_decode_me_37_chr1_173_locus_stackplot import (
     DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.h_magma.decode_me_h_magma_asset_generator import (
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import (
     DECODE_ME_CURATED_GENE_SET_ANALYSIS,
 )
@@ -86,6 +89,24 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT,
     DECODE_ME_MAGMA_GENE_PLOT,
     DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "adult_brain"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "cortical_neuron"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "fetal_brain"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "midbrain_da"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "ipsc_derived_astro"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "ipsc_derived_neuro"
+    ].gene_manhattan_plot_task,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,

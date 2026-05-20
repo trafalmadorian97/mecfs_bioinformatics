@@ -94,6 +94,9 @@ class HMagmaTasks:
     def terminal_tasks(self) -> list[Task]:
         return [t.gene_manhattan_plot_task for t in self.per_annotation]
 
+    def labeled_by_annotation(self) -> dict[str, HMagmaTasksForAnnotation]:
+        return {t.annotation_name: t for t in self.per_annotation}
+
 
 def generate_h_magma_tasks(
     base_name: str,
