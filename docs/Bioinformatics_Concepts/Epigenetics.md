@@ -48,6 +48,16 @@ Besides assays that report histone marks, assays that directly measure chromatin
 
 ATAC-seq  repurposes [transposase](https://en.wikipedia.org/wiki/Transposase), the enzyme responsible for the movement of transposons, or "jumping genes".  It works on the principle that transposase can interact with open chromatin, but not closed chromatin.  This explains the name: Assay for Transposase Accessible Chromatin (ATAC).
 
+
+## Hi-C
+
+The ability of proteins bound to one region of the genome to regulate gene expression in another region of the genome is influenced by the proximity of the two regions of the genome in three-dimensional space.  Eurkaryotic chromosomes have complex three-dimensional structures, involving multiple levels of looping and entanglement. Thus determining which regions of the genome are in proximity to which other regions is not trivial.
+
+Hi-C[^textbookref] is an assay that partially solves this problem. It works by using cross-linking agents to force chromatin regions in close proximity to adhere to each other. Its output is a sparse matrix whose $(i,j)$-entry reflects the probability that chromatin region $i$ is found near chromatin region $j$.
+
 ## Links
 
 - For a popular science discussion of epigenetics, see Chapter 10 of [Herding Hemmingway's Cats](https://a.co/d/08XMYqfU).
+
+
+[^textbookref]: See pg 221-222 of Molecular Biology of the Cell[@alberts2022molecular].

@@ -1,12 +1,12 @@
 # H-MAGMA
 
 
-I applied H-MAGMA[@sey2020computational] to the [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 summary statistics.  H-MAGMA operates identically to standard [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma], except that variants are assigned to genes not using proximity, but according to the results of HI-C chromatin interaction experiments performed on a variety of neural and glial cells.
+I applied H-MAGMA[@sey2020computational] to the [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 summary statistics.  H-MAGMA operates identically to standard [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma], except that variants are assigned to genes not using proximity, but according to the results of [Hi-C](../../../Bioinformatics_Concepts/Epigenetics.md#hi-c) chromatin interaction experiments performed on a variety of neural and glial cells.
 
 
 
 ## Results
-I used the 6 standard variant-to-gene assignment maps provided by the authors of H-MAGMA.  The Manhattan plots below illustrate the gene-level MAGMA results.
+I used the 6 standard variant-to-gene assignment maps provided by the authors of H-MAGMA. Like in the other MAGMA analyses, I used the European 1000-genomes linkage disequilibrium reference. The Manhattan plots below illustrate the gene-level MAGMA results.
 
 
 
