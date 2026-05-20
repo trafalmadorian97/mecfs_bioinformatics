@@ -55,7 +55,7 @@ I used the 6 standard variant-to-gene assignment maps provided by the authors of
 ## Discussion
 
 - As would be expected, switching from MAGMA to H-MAGMA preserved the broad pattern of significance across the genome.
-- On the other hand, some of the individual significant genes change.  For instance, BTN1A1 is significant in a number of the H-MAGMA analyses, but was not significant in the original MAGMA analysis  [^footnote1].
+- On the other hand, some of the individual significant genes change.  For instance, BTN1A1 is significant in a number of the H-MAGMA analyses, but was not significant in the original MAGMA analysis[^footnote1].
 
 
 
