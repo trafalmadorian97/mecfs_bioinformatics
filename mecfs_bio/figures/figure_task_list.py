@@ -69,6 +69,9 @@ from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GR
 from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import (
     MECFS_PAIN_BIVARIATE_MIXER,
 )
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.magma.johnston_gene_level_magma_plot import (
+    JOHNSTON_MAGMA_GENE_PLOT,
+)
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import (
     JOHNSTON_ET_AL_UNIVARIATE_MIXER,
 )
@@ -128,6 +131,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.power_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.qq_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.result_markdown_table_task,
+    JOHNSTON_MAGMA_GENE_PLOT,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.independent_clusters_markdown_task_unwrap,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
