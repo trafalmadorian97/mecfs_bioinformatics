@@ -3,7 +3,7 @@ hide:
 - toc
 ---
 # MAGMA HBA
-I applied MAGMA to the DecodeME GWAS[@genetics2025initial] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] (HBA) as a reference.
+I applied MAGMA to the DecodeME GWAS[@genetics2025initial] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] (HBA). As in my other MAGMA analyses, I sourced linkage disequilibrium reference data from the European subset of the 1000-genomes project.
 
 ## Results
 The results are plotted below:
