@@ -665,7 +665,7 @@ It is more useful to consider the fraction of a typical $\chi^2$ statistic that 
 
 $$
 \begin{align}
-R:= \frac{\psi-1}{\chi^2_{text{mean}}-1}
+R:= \frac{\psi-1}{\chi^2_{\text{mean}}-1}
 \end{align}
 $$
 
