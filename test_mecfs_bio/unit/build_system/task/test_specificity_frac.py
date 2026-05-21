@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, cast
+from typing import Any
 
 import pandas as pd
 
@@ -62,9 +62,9 @@ def test_prepare_specificity_frac(tmp_path: Path):
     pivoted: Any = result_df.pivot(
         index="cell_type", columns="gene", values=NORMALIZED_MEAN
     )
-    val_ax: Any = unwrap(cast(Any, pivoted.loc["A", "X"]))
-    val_bx: Any = unwrap(cast(Any, pivoted.loc["B", "X"]))
-    val_ay: Any = unwrap(cast(Any, pivoted.loc["A", "Y"]))
-    val_by: Any = unwrap(cast(Any, pivoted.loc["B", "Y"]))
+    val_ax: Any = unwrap(pivoted.loc["A", "X"])
+    val_bx: Any = unwrap(pivoted.loc["B", "X"])
+    val_ay: Any = unwrap(pivoted.loc["A", "Y"])
+    val_by: Any = unwrap(pivoted.loc["B", "Y"])
     assert float(val_ax) < float(val_bx)
     assert float(val_ay) > float(val_by)

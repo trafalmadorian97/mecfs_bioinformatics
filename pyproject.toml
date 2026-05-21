@@ -47,7 +47,7 @@ packages = ["mecfs_bio"]
 scripts = ["scripts/pixi-activate.sh"]
 
 [tool.pixi.feature.analysis.dependencies]
-pysam = ">=0.23.3,<0.24"
+pysam = ">=0.24,<0.25"
 pixi-pycharm = ">=0.0.11,<0.0.12"
 ruff = ">=0.15.11,<0.16"
 bedops = ">=2.4.42,<3"
@@ -108,7 +108,7 @@ r-gdata = "*"
 r-readr = "*"
 r-remotes = "*"
 r-devtools = "*"
-ty = ">=0.0.34,<0.0.35"
+ty = ">=0.0.38,<0.0.39"
 actionlint = ">=1.7.12,<2"
 shellcheck = ">=0.11.0,<0.12"
 
@@ -117,7 +117,7 @@ attrs = ">=25.3.0"
 cattrs = ">=25.2.0"
 emoji = ">=2.15.0"
 geneview = ">=0.2.1"
-gwaslab = "==3.6.8"
+gwaslab = "==4.1.6"
 invoke = ">=2.2.0"
 loguru = ">=0.7.3"
 matplotlib = ">=3.8"

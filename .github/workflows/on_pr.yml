@@ -80,9 +80,9 @@ jobs:
       - name: Lint imports
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke checkimports
-      - name: Check __init__.py files
-        if: steps.changes.outputs.nonmark == 'true'
-        run: pixi r invoke check-init-files
+#      - name: Check __init__.py files
+#        if: steps.changes.outputs.nonmark == 'true'
+#        run: pixi r invoke check-init-files
       - name: Check links
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke check-local-links

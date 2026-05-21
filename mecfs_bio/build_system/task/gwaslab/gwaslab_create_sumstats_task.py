@@ -135,7 +135,7 @@ def _do_harmonization(
 
     sumstats.harmonize(
         basic_check=basic_check,
-        n_cores=options.cores,
+        threads=options.cores,
         ref_seq=gl.get_path(options.ref_seq),
         ref_infer=gl.get_path(options.ref_infer.name),
         ref_alt_freq=options.ref_infer.ref_alt_freq,
@@ -313,7 +313,7 @@ class GWASLabCreateSumstatsTask(Task):
         )
         sumstats = transform_gwaslab_sumstats(sumstats, spec=transform_spec)
         out_path = scratch_dir / "pickled_sumstats.pickle"
-        gl.dump_pickle(sumstats, path=out_path)
+        gl.dump_pickle(sumstats, path=str(out_path))
         return FileAsset(out_path)
 
 
@@ -358,6 +358,8 @@ def transform_gwaslab_sumstats(
 
     if spec.liftover_to is not None and (build != spec.liftover_to):
         sumstats.liftover(to_build=spec.liftover_to, from_build=forced_build)
+        sumstats.infer_build()
+        assert sumstats.build == spec.liftover_to
     if spec.filter_hapmap3:
         sumstats.filter_hapmap3(inplace=True, build=forced_build)
     if spec.filter_indels:

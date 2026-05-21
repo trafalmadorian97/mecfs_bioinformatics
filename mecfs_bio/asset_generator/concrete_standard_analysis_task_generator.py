@@ -116,6 +116,10 @@ class StandardAnalysisTaskGroup:
     def heritability_markdown_task_unwrap(self) -> Task:
         return unwrap(self.heritability_task)
 
+    @property
+    def gene_set_analysis_unwrap(self) -> CuratedGeneSetAnalysisTasks:
+        return unwrap(self.gene_set_analysis_tasks)
+
     def get_terminal_tasks(self) -> list[Task]:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())
@@ -309,6 +313,7 @@ def concrete_standard_analysis_generator_no_rsid(
     include_hba_magma_tasks: bool = True,
     include_independent_cluster_plot_in_hba: bool = True,
     hbp_plot_settings: PlotSettings = PlotSettings("plotly_white"),
+    phenotype_info_for_ldsc: PhenotypeInfo | None = None,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
@@ -343,6 +348,7 @@ def concrete_standard_analysis_generator_no_rsid(
         include_hba_magma_tasks=include_hba_magma_tasks,
         include_independent_cluster_plot_in_hba=include_independent_cluster_plot_in_hba,
         hba_plot_settings=hbp_plot_settings,
+        phenotype_info_for_ldsc=phenotype_info_for_ldsc,
     )
     return StandardAnalysisTaskGroupAddRSIDS(
         tasks=standard_tasks,
