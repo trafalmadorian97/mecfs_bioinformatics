@@ -59,4 +59,4 @@ I used the 6 standard variant-to-gene assignment maps provided by the authors of
 
 
 
-[^footnote1]: The authors of H-MAGMA included non-protein-coding RNA transcripts in their annotation file, in addition to protein coding genes. This results in around 54k gene-like entities, and a Bonferoni threshold of $0.05/54000 \approx 9 \times 10^{-7}$. The significance threshold differs slightly between analyses because of variations in the number of genes with a minimum number of annotations.
+[^footnote1]: The authors of H-MAGMA included non-protein-coding RNA transcripts in their annotation file, in addition to protein-coding genes. This results in around 54k gene-like entities, and a Bonferoni threshold of $0.05/54000 \approx 9 \times 10^{-7}$. The significance threshold differs slightly between analyses because the number of annotated genes differs, which in turn affects the Bonferroni correction.
