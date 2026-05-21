@@ -22,7 +22,7 @@ This analysis used standard reference datasets recommended and preprocessed by t
 
 ### GTEx and Franke lab tissue expression data
 
-Similarly to the [GTEx MAGMA results](2_MAGMA-GTEx.md), all of the significant tissues in the S-LDSC analysis were related to the brain. Here are the cell/tissue types which were significant after correction using FDR < 0.01:
+Similarly to the [GTEx MAGMA results](3_MAGMA-GTEx.md), all of the significant tissues in the S-LDSC analysis were related to the brain. Here are the cell/tissue types which were significant after correction using FDR < 0.01:
 
 ![s-ldsc_gene-expression](https://github.com/user-attachments/assets/306bb51c-fcd3-402c-84ff-7b6996067e73)
 
@@ -165,4 +165,4 @@ Similarly, there were no significant tissues when testing the GTEx brain tissues
 | Brain_Spinal_cord_(cervical_c-1)        |  -1.70661e-09 |            0.97087    | False         |
 | Brain_Substantia_nigra                  |  -2.03971e-09 |            0.986552   | False         |
 
-In this S-LDSC analysis, tissue gene sets were defined as those genes specifically expressed in a tissue relative to other tissues. Thus, a dataset restricted to only brain tissues will exclude general brain genes which are highly expressed in multiple brain tissues. If these general genes are truly causal, excluding them can reduce the ability for S-LDSC to detect true effects. This likely explains why there were no brain tissues significant in this analysis, while several brain tissues were significant in the [GTEx MAGMA analysis](2_MAGMA-GTEx.md) which instead controlled for average expression across all GTEx body tissues.
+In this S-LDSC analysis, tissue gene sets were defined as those genes specifically expressed in a tissue relative to other tissues. Thus, a dataset restricted to only brain tissues will exclude general brain genes which are highly expressed in multiple brain tissues. If these general genes are truly causal, excluding them can reduce the ability for S-LDSC to detect true effects. This likely explains why there were no brain tissues significant in this analysis, while several brain tissues were significant in the [GTEx MAGMA analysis](3_MAGMA-GTEx.md) which instead controlled for average expression across all GTEx body tissues.

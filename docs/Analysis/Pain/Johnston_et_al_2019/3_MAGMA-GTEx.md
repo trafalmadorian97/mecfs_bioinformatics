@@ -5,6 +5,8 @@ hide:
 
 # MAGMA GTEx
 
+## Tissue Enrichment
+
 Johnston et al.[@johnston2019genome] tested [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md) tissue enrichment in their study of Multisite Chronic Pain (MCP) using bulk RNAseq expression data for 53 tissues from the [GTEx database](../../../Data_Sources/GTEx_RNAseq_Data.md)[@gtex2020gtex]. The significant tissues from that study, starting from most significant, were: 
 
 1. Brain_Cortex

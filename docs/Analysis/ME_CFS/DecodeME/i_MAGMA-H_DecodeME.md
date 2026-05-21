@@ -55,8 +55,8 @@ I used the 6 standard variant-to-gene assignment maps provided by the authors of
 ## Discussion
 
 - As would be expected, switching from MAGMA to H-MAGMA preserved the broad pattern of significance across the genome.
-- On the other hand, some of the individual significant genes change.  For instance, BTN1A1 is significant in a number of the H-MAGMA analyses, but was not significant in the original MAGMA analysis[^footnote].
+- On the other hand, some of the individual significant genes change.  For instance, BTN1A1 is significant in a number of the H-MAGMA analyses, but was not significant in the original MAGMA analysis[^footnote1].
 
 
 
-[^footnote]:  The significance threshold differs between analyses because the number of annotated genes differs, which in turn affects the Bonferroni correction.
+[^footnote1]: The authors of H-MAGMA included non-protein-coding RNA transcripts in their annotation file, in addition to protein-coding genes. This results in around 54k gene-like entities, and a Bonferoni threshold of $0.05/54000 \approx 9 \times 10^{-7}$. The significance threshold differs slightly between analyses because the number of annotated genes differs, which in turn affects the Bonferroni correction.
