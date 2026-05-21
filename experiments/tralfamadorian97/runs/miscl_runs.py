@@ -11,6 +11,8 @@ from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_lds
     CFS_CT_LDSC_ASSET_GENERATOR
 from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies_plot import \
     CT_LDSC_CFS_CORR_PLOT
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import \
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -37,9 +39,10 @@ def run_miscl_analysis():
         # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
         # CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
         # CT_LDSC_LDL.terminal_tasks()+
+        JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks.terminal_tasks()+
         [
-            DECODE_ME_MAGMA_GENE_PLOT,
-            DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
+            # DECODE_ME_MAGMA_GENE_PLOT,
+            # DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
             # YENGO_HEIGHT_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task
             # MECFS_AZ_PHEWAS
             # CT_LDSC_CFS_CORR_PLOT
