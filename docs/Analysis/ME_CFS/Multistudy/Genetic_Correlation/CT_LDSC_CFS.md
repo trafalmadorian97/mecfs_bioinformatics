@@ -4,13 +4,16 @@
 I used [Cross-Trait Linkage Disequilibrium Score Regression](../../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md)[@bulik2015atlas] to compute the [genetic correlation](../../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the various CFS-related GWAS.  I included [DecodeME](../../../../Data_Sources/DecodeME.md)[@genetics2025initial], the subset-GWAS of DecodeME, as well as other GWAS of CFS-like traits.
 
 
-Results are below:
+Results are below.  
 
 
 {{ include_file("docs/_figs/cfs_ct_ldsc_ct_ldsc_corr_agg_markdown.mdx") }}
 
+_The columns are as follows: p1: study 1; p2: study 2; rg: genetic correlation;  se: standard error; z: z-score. p: p value. gcov_int: CT-LDSC intercept._ 
 
-The first observation is that the various DecodeME subset-GWAS are all highly genetically correlated[^overlap]. Particularly notable is the high genetical correlation between male and female ME/CFS patients; and between ME/CFS patients who do and do not-report an infectious onset. The correlation between male and female patients suggest that the underlying genetic mechanism driving ME/CFS is likely the same in both sexes.  The correlation between infectious-onset and non-infectious onset patients suggests that either: a) the pathological process driving ME/CFS is the same regardless of whether it is triggered by an infectious agent or b) self-reported infectious onset is unreliable.
+
+
+The first observation[^numerical] is that the various DecodeME subset-GWAS are all highly genetically correlated[^overlap]. Particularly notable is the high genetical correlation between male and female ME/CFS patients; and between ME/CFS patients who do and do not-report an infectious onset. The correlation between male and female patients suggest that the underlying genetic mechanism driving ME/CFS is likely the same in both sexes.  The correlation between infectious-onset and non-infectious onset patients suggests that either: a) the pathological process driving ME/CFS is the same regardless of whether it is triggered by an infectious agent or b) self-reported infectious onset is unreliable.
 
 
 The genetic correlation between DecodeME and the [Million Veterans Program](../../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity] GWAS is 0.6523, which is high, but not as high as would be expected if the two GWAS were truly measuring an identical trait.  This is consistent with the Million Veterans GWAS using a somewhat imprecise trait definition.  Note also that the standard error of the estimated correlation (0.159) is relatively large, perhaps due to the moderate case count in the Million Veterans GWAS.
@@ -28,4 +31,9 @@ Most of the results above suffer from large standard errors.  It may be worthwhi
 
 Use {{ api_link("this script", "mecfs_bio.analysis.cfs_genetic_corr") }} to reproduce the above analysis.
 
+
+
+[^numerical]: Note that while genetic correlation is a Pearson correlation and so cannot exceed 1, the CT-LDSC estimator can exceed 1, as is seen in the table on this page.  This can result from either statistical noise or model misspecification.
+
 [^overlap]: This is not a consequence of overlap between some of the subsets.  CT-LDSC automatically accounts for sample overlap using its intercept.
+
