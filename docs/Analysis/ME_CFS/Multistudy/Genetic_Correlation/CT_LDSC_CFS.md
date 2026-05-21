@@ -34,4 +34,4 @@ Use {{ api_link("this script", "mecfs_bio.analysis.cfs_genetic_corr") }} to repr
 [^overlap]: This is not a consequence of overlap between some of the subsets.  CT-LDSC automatically accounts for sample overlap using its intercept.
 
 
-[^numerical]: Note that while genetic correlation, as a Pearson correlation, cannot exceed 1 the CT-LDSC estimator can exceed 1, as is seen in the table on this page.  This can result from either statistical noise or model mis-specification.
+[^numerical]: Note that while genetic correlation, as a Pearson correlation, cannot exceed 1 the CT-LDSC estimator can exceed 1, as is seen in the table on this page.  This can result from either statistical noise or model misspecification.
