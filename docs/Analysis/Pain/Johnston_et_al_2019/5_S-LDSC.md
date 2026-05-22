@@ -166,3 +166,6 @@ Similarly, there were no significant tissues when testing the GTEx brain tissues
 | Brain_Substantia_nigra                  |  -2.03971e-09 |            0.986552   | False         |
 
 In this S-LDSC analysis, tissue gene sets were defined as those genes specifically expressed in a tissue relative to other tissues. Thus, a dataset restricted to only brain tissues will exclude general brain genes which are highly expressed in multiple brain tissues. If these general genes are truly causal, excluding them can reduce the ability for S-LDSC to detect true effects. This likely explains why there were no brain tissues significant in this analysis, while several brain tissues were significant in the [GTEx MAGMA analysis](3_MAGMA-GTEx.md) which instead controlled for average expression across all GTEx body tissues.
+
+
+Analysis by [ruvilonix](https://github.com/ruvilonix).

@@ -110,6 +110,10 @@ class StandardAnalysisTaskGroup:
     h_magma_tasks: HMagmaTasks | None = None
 
     @property
+    def h_magma_tasks_unwrap(self) -> HMagmaTasks:
+        return unwrap(self.h_magma_tasks)
+
+    @property
     def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
         return unwrap(self.hba_magma_tasks)
 

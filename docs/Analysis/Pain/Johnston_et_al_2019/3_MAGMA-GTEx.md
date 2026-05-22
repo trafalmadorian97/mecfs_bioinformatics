@@ -23,3 +23,5 @@ MAGMA gene-property analysis was repeated here using the `mecfs_bioinformatics` 
 ![magma-mcp-gtex](https://github.com/user-attachments/assets/273991a2-483b-4583-88f3-4314b22f97c7)
 
 As in the original study, all of the significant tissues are brain regions. Interestingly, two additional tissues were significant in this analysis, amygdala and hippocampus, and the order of the significant tissues has changed. These differences might be attributed to the usage of different linkage disequilibrium (LD) panels as reference data for MAGMA. The original study likely used an LD panel based on the UK Biobank, as the study cohort was sampled from the UK Biobank, while the present analysis used an LD panel for Europeans from the 1000 Genomes project.
+
+Analysis by [ruvilonix](https://github.com/ruvilonix).
