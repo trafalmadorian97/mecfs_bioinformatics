@@ -55,15 +55,36 @@ We fit, separately for each SNP, the model
     F1  ~ beta * SNP                             (latent regression)
     trait_j ~ 0 * SNP                            (no direct SNP effect)
 
-with free parameters `theta = (lambda, beta, psi_1, psi_2, sigma_sq)`:
+The above is lavaan notation (an R SEM library). In ordinary equations the
+model says:
+
+    F1      = beta * SNP + zeta                  zeta ~ N(0, sigma_sq)
+    trait_1 = 1      * F1 + epsilon_1            epsilon_1 ~ N(0, psi_1)
+    trait_2 = lambda * F1 + epsilon_2            epsilon_2 ~ N(0, psi_2)
+
+That is: a latent (unobserved) variable F1 is a linear function of the SNP
+genotype plus independent noise zeta. Each observed trait is then a linear
+function of F1 plus its own independent noise epsilon_j. The loading on
+trait 1 is fixed to 1 for identification; lambda captures how strongly
+trait 2 loads relative to trait 1. All noise terms (zeta, epsilon_1,
+epsilon_2) are assumed independent of one another and of the SNP.
+
+The SNP has *no direct effect* on either trait (both trait equations lack a
+SNP term). Any genetic association between the SNP and the traits is
+mediated entirely through F1. The coefficient beta therefore measures how
+the SNP shifts a latent dimension of shared genetic liability across the
+two traits.
+
+Free parameters `theta = (lambda, beta, psi_1, psi_2, sigma_sq)`:
 
 - lambda   :  factor loading on trait 2 (loading on trait 1 fixed to 1 for
-              identification; this is lavaan's default scaling).
+              identification).
 - beta     :  the SNP -> F1 regression coefficient.  *This is the quantity
               we report.*
 - psi_1,   :  residual variances of traits 1 and 2 (the part of each trait
   psi_2       not mediated by F1).
-- sigma_sq :  residual variance of F1 after partialing out the SNP.
+- sigma_sq :  Var(zeta), the residual variance of F1 after partialing out
+              the SNP.
 
 The model implies an augmented 3x3 covariance matrix over the variables
 (SNP, trait_1, trait_2). Define `varF = beta^2 * varSNP + sigma_sq`, the
