@@ -2,6 +2,7 @@ import pickle
 from pathlib import Path
 
 import gwaslab
+import pandas as pd
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -20,6 +21,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_STATUS_COL
 
 
 def test_gwaslab_sumstats(
@@ -53,6 +55,11 @@ def test_gwaslab_sumstats(
             f,
         )
     assert isinstance(loaded, gwaslab.Sumstats)
+    assert loaded.data[GWASLAB_STATUS_COL].dtype == pd.Int64Dtype(), (
+        f"Expected gwaslab STATUS column to be Int64, got {loaded.data[GWASLAB_STATUS_COL].dtype}. "
+        "If gwaslab changed this dtype, update the STATUS column handling in "
+        "gwaslab_create_sumstats_task.py (_do_harmonization and _sumstats_raise_on_error)."
+    )
     scratch_loc_2 = tmp_path / "scratch_2"
     scratch_loc_2.mkdir(exist_ok=True, parents=True)
 
