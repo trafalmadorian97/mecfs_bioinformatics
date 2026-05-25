@@ -140,17 +140,17 @@ def _do_harmonization(
         ref_infer=gl.get_path(options.ref_infer.name),
         ref_alt_freq=options.ref_infer.ref_alt_freq,
     )
+    # gwaslab v4+ stores STATUS as Int64; cast to string for character-level access
+    status_str = sumstats.data[GWASLAB_STATUS_COL].astype(str)
     if options.drop_missing_from_ref_seq:
         # see meaning of status codes here: https://cloufield.github.io/gwaslab/StatusCode/
-        missing_from_ref_seq = sumstats.data[GWASLAB_STATUS_COL].str[5:6] == "8"
+        missing_from_ref_seq = status_str.str[5:6] == "8"
         logger.debug(
             f"Dropping {missing_from_ref_seq.sum()} variants that are missing from the sequence FASTA reference"
         )
         sumstats.data = sumstats.data.loc[~missing_from_ref_seq, :]
     if options.drop_missing_from_ref_infer_or_ambiguous:
-        missing_from_ref_infer = (sumstats.data[GWASLAB_STATUS_COL].str[6] == "8") | (
-            sumstats.data[GWASLAB_STATUS_COL].str[6] == "7"
-        )
+        missing_from_ref_infer = (status_str.str[6] == "8") | (status_str.str[6] == "7")
         logger.debug(
             f"Dropping {missing_from_ref_infer.sum()} variants that are missing from the VCF reference"
         )
@@ -318,7 +318,7 @@ class GWASLabCreateSumstatsTask(Task):
 
 
 def _sumstats_raise_on_error(sumstats: gl.Sumstats):
-    error_status = sumstats.data[GWASLAB_STATUS_COL] == "9999999"
+    error_status = sumstats.data[GWASLAB_STATUS_COL].astype(str) == "9999999"
     if error_status.any():
         raise ValueError("GWASLAB Error")
     if len(sumstats.data) == 0:
