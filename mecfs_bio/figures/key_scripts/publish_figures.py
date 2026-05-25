@@ -1,16 +1,21 @@
 """
 End-to-end "the figure system is out of date" workflow.
 
-Runs the three steps a contributor wants in sequence:
-  1. ``generate_new_figures`` --- invoke the build system for any figure
-     task in ALL_FIGURE_TASKS whose output is not yet on disk, and copy the
-     results into the figure directory.
-  2. ``prune_orphan_figures`` --- drop manifest entries (and local files)
+Runs the four steps a contributor wants in sequence:
+  1. ``pull_figures`` --- download any figures listed in the manifest
+     that are missing or out-of-date locally. This ensures that
+     ``generate_new_figures`` only triggers the build system for
+     genuinely new tasks, not for every figure the collaborator hasn't
+     pulled yet.
+  2. ``generate_new_figures`` --- invoke the build system for any figure
+     task in ALL_FIGURE_TASKS whose output is not yet on disk, and copy
+     the results into the figure directory.
+  3. ``prune_orphan_figures`` --- drop manifest entries (and local files)
      for figures no task in ALL_FIGURE_TASKS produces. If any such entry
      is still referenced in the documentation, the script raises before
      touching anything; the user resolves the conflict by restoring the
      task or removing the doc reference.
-  3. ``push_figures`` --- rehash the figure directory, update the
+  4. ``push_figures`` --- rehash the figure directory, update the
      committed manifest, and upload any new content-addressed blobs to
      the GitHub release.
 
@@ -28,6 +33,7 @@ from mecfs_bio.figures.fig_constants import (
 from mecfs_bio.figures.figure_task_list import ALL_FIGURE_TASKS
 from mecfs_bio.figures.key_scripts.generate_figures import FIGURE_EXPORTER
 from mecfs_bio.figures.key_scripts.generate_new_figures import generate_new_figures
+from mecfs_bio.figures.key_scripts.pull_figures import pull_figures
 from mecfs_bio.figures.key_scripts.push_figures import push_figures
 from mecfs_bio.figures.orphan_pruning import prune_orphan_figures
 
@@ -35,6 +41,8 @@ logger = structlog.get_logger()
 
 
 def publish_figures() -> None:
+    logger.info("Pulling existing figures from the GitHub release.")
+    pull_figures()
     logger.info("Generating any missing figures from ALL_FIGURE_TASKS.")
     generate_new_figures(
         all_figure_tasks=ALL_FIGURE_TASKS,
