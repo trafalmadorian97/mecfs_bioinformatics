@@ -23,8 +23,6 @@ GTEx bulk tissue RNA-seq datasets are used by the gene set analysis step of [MAG
 
 [//]: # (3. Associate with each tissue the vector of these log-transformed median TPM values.  Two tissue are similar if their vectors in are close in this [vector space.]&#40;https://www.amazon.ca/Finite-Dimensional-Vector-Spaces-Paul-Halmos/dp/178139573X/ref=sr_1_2?crid=1NP4YJ625N57Q&dib=eyJ2IjoiMSJ9.RvuvtK5wnnXaXwjSyhb2f2Rew81JmSRnjAm5_9lOLvHKA8ao96xae_g4QQ_KrW7ae8ooj39H8M3cS_I45y-PJ0352qCDsvDR3iNLRKdx1IOD_7hx63eAVrzPWERq6ClWyxAXNsq1YpV0YPayj7MihW2ASQilGq76qolAt7bC1EeMiPlalsEA8gCET3a1CBzA0tb76Xt8IgF5PGgs9R0mS-R9sVOVgjTKYIf1bsUEU1VDiAkbZXBW2HwehlgzGozxuls4FRmWPT1HrygTdM1Uw1j34aaEHGuVXAgC6Gx7L_Y.2Bb5clC88ItUNoLhsRy6M94O8SUYlI67ubbO-Fekq3k&dib_tag=se&keywords=finite+dimensional+vector+spaces&qid=1762831919&sprefix=finite+dimensional+vector+space%2Caps%2C118&sr=8-2&#41;.)
 
-[//]: # ()
-[//]: # (This approach to defining tissue similarity is based on the one used by [FUMA]&#40;https://fuma.ctglab.nl/tutorial#snp-1gene&#41;.  )
 
 [//]: # ()
 ## Artifacts in GTEx RNAseq data
@@ -47,7 +45,7 @@ Finucane et al.[@finucane2018heritability] applied Gene Ontology Enrichment Anal
 
 ## References
 
-[FUMA Tutorial](https://fuma.ctglab.nl/tutorial#snp-1gene) (Discusses use of GTEx data for post-GWAS analysis)
+[FUMA Tutorial](https://web.archive.org/web/20260313163356/https://fuma.ctglab.nl/tutorial#snp-1gene) (Discusses use of GTEx data for post-GWAS analysis)
 
 [GTEx Bulk Tissue Expression Data](https://gtexportal.org/home/downloads/adult-gtex/bulk_tissue_expression)
 

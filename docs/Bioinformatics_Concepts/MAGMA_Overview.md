@@ -97,7 +97,7 @@ The above discussion is based on:
 
 [//]: # ( [Generalized chi-squared distribution]&#40;https://en.wikipedia.org/wiki/Generalized_chi-squared_distribution&#41;)
 
-[FUMA Tutorial](https://fuma.ctglab.nl/tutorial#snp2gene)
+[FUMA Tutorial](https://web.archive.org/web/20260313163356/https://fuma.ctglab.nl/tutorial#snp2gene)
 
 [MAGMA Paper](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219) 
 
