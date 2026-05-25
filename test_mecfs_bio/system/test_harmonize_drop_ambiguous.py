@@ -37,8 +37,8 @@ def count_ambiguous_or_missing_cases(sumstats: gwaslab.Sumstats) -> int:
     status code 7 indicates a strand-indistinguishable variant, while status code 8 indicates a variant not in the reference VCF
     """
     ambiguous_or_missing = (
-        (sumstats.data["STATUS"].str.slice(-1) == "7")
-        | (sumstats.data["STATUS"].str.slice(-1) == "8")
+        (sumstats.data["STATUS"].astype(str).str.slice(-1) == "7")
+        | (sumstats.data["STATUS"].astype(str).str.slice(-1) == "8")
     ).sum()
     return ambiguous_or_missing
 
