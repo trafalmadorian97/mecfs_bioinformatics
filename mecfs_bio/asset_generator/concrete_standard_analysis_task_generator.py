@@ -14,6 +14,10 @@ from mecfs_bio.asset_generator.concrete_magma_asset_generator import (
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
 )
+from mecfs_bio.asset_generator.h_magma_asset_generator import (
+    HMagmaTasks,
+    generate_h_magma_tasks,
+)
 from mecfs_bio.asset_generator.hba_magma_asset_generator import (
     HBAMagmaTasks,
     generate_human_brain_atlas_magma_tasks,
@@ -103,6 +107,11 @@ class StandardAnalysisTaskGroup:
     manhattan_task: Task | None = None
     heritability_task: Task | None = None
     gene_set_analysis_tasks: CuratedGeneSetAnalysisTasks | None = None
+    h_magma_tasks: HMagmaTasks | None = None
+
+    @property
+    def h_magma_tasks_unwrap(self) -> HMagmaTasks:
+        return unwrap(self.h_magma_tasks)
 
     @property
     def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
@@ -155,6 +164,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     manhattan_settings: ManhattanPlotSettings | None = None,
     phenotype_info_for_ldsc: PhenotypeInfo | None = None,
     include_gene_set_analysis: bool = True,
+    include_h_magma_tasks: bool = False,
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
@@ -272,6 +282,15 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         )
     else:
         gene_set_analysis = None
+    h_magma_tasks = (
+        generate_h_magma_tasks(
+            base_name=base_name,
+            gwas_parquet_with_rsids_task=magma_tasks.parquet_file_task,
+            sample_size=sample_size,
+        )
+        if include_h_magma_tasks
+        else None
+    )
 
     return StandardAnalysisTaskGroup(
         sldsc_tasks=sldsc_tasks,
@@ -282,6 +301,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         manhattan_task=manhattan_task,
         heritability_task=heritability_md_task,
         gene_set_analysis_tasks=gene_set_analysis,
+        h_magma_tasks=h_magma_tasks,
     )
 
 

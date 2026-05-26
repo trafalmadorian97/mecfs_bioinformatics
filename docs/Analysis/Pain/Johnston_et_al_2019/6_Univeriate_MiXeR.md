@@ -22,3 +22,6 @@ As befits a polygenic trait with weak effects, a very large sample size would be
 The QQ-plot suggests a good fit between the Mixer model and the multi-site pain GWAS data:
 
 ![pain_qq](../../../_figs/johnston_et_al_pain_univariate_mixer_qq_plot.png)
+
+
+Analysis by [ruvilonix](https://github.com/ruvilonix).
