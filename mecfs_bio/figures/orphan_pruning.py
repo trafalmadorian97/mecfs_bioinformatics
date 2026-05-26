@@ -30,24 +30,29 @@ class OrphanReferencedInDocsError(ValueError):
     """Raised when an orphan manifest path is still referenced by documentation."""
 
 
-def find_doc_references(rel_path: Path, docs_dir: Path) -> list[Path]:
+def find_doc_references(
+    rel_path: Path, docs_dir: Path, fig_dir_name: str
+) -> list[Path]:
     """
     Return every ``.md`` file under ``docs_dir`` whose contents mention
-    ``rel_path`` as a substring.
+    ``rel_path`` anchored to the figure directory name.
 
     Only ``.md`` files are scanned: ``.mdx`` files in this repo are
     figure tables, not documentation pages, and are included from inside
     ``.md`` files.
 
     The figure paths in the manifest are relative to the figure directory
-    (``docs/_figs``). Every reference style in the repo ---
+    (e.g. ``_figs``). Every reference style in the repo ---
     ``plotly_embed("docs/_figs/<rel_path>")``,
     ``include_file("docs/_figs/<rel_path>")``,
     ``![alt](../../_figs/<rel_path>)``, and
-    ``<iframe src="..._figs/<rel_path>">`` --- contains the rel_path
-    verbatim (POSIX form), so a substring search is reliable.
+    ``<iframe src="..._figs/<rel_path>">`` --- contains
+    ``<fig_dir_name>/<rel_path>`` as a substring, so searching for that
+    anchored form avoids false positives from bare filenames that happen
+    to appear inside longer paths (e.g. ``sldsc_scatter.html`` matching
+    ``some_prefix_s_ldsc_plot/sldsc_scatter.html``).
     """
-    needle = rel_path.as_posix()
+    needle = f"{fig_dir_name}/{rel_path.as_posix()}"
     hits: list[Path] = []
     for path in sorted(docs_dir.rglob("*")):
         if not path.is_file() or path.suffix not in _DOC_EXTENSIONS:
@@ -94,7 +99,9 @@ def prune_orphan_figures(
     blockers_missing: dict[Path, list[Path]] = {}
     safe_to_remove: list[Path] = []
     for rel_path in orphans:
-        refs = find_doc_references(rel_path=rel_path, docs_dir=docs_dir)
+        refs = find_doc_references(
+            rel_path=rel_path, docs_dir=docs_dir, fig_dir_name=fig_dir.name
+        )
         if refs:
             if (fig_dir / rel_path).exists():
                 blockers_present[rel_path] = refs

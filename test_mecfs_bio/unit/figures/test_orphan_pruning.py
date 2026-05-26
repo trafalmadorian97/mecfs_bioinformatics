@@ -37,27 +37,52 @@ def test_find_doc_references_picks_up_md(tmp_path: Path):
     (sub / "b.md").write_text('{{ plotly_embed("docs/_figs/my_plot.png", id="x") }}\n')
     (docs / "unrelated.md").write_text("nothing here\n")
 
-    hits = find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs)
+    hits = find_doc_references(
+        rel_path=Path("my_plot.png"), docs_dir=docs, fig_dir_name="_figs"
+    )
 
     assert sorted(hits) == sorted([docs / "a.md", sub / "b.md"])
 
 
-def test_find_doc_references_ignores_mdx_files(tmp_path: Path):
-    # .mdx files in this repo are figure tables, not documentation pages,
-    # so they should not gate orphan pruning.
+def test_find_doc_references_does_not_match_bare_filename_inside_longer_path(
+    tmp_path: Path,
+):
     docs = tmp_path / "docs"
     docs.mkdir()
-    (docs / "table.mdx").write_text("includes my_plot.png\n")
+    (docs / "page.md").write_text(
+        '{{ plotly_embed("docs/_figs/some_prefix_plot/inner.html", id="x") }}\n'
+    )
 
-    assert find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs) == []
+    hits = find_doc_references(
+        rel_path=Path("inner.html"), docs_dir=docs, fig_dir_name="_figs"
+    )
+    assert hits == []
+
+
+def test_find_doc_references_ignores_mdx_files(tmp_path: Path):
+    docs = tmp_path / "docs"
+    docs.mkdir()
+    (docs / "table.mdx").write_text("_figs/my_plot.png\n")
+
+    assert (
+        find_doc_references(
+            rel_path=Path("my_plot.png"), docs_dir=docs, fig_dir_name="_figs"
+        )
+        == []
+    )
 
 
 def test_find_doc_references_ignores_non_doc_files(tmp_path: Path):
     docs = tmp_path / "docs"
     docs.mkdir()
-    (docs / "notes.txt").write_text("references my_plot.png\n")
+    (docs / "notes.txt").write_text("_figs/my_plot.png\n")
 
-    assert find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs) == []
+    assert (
+        find_doc_references(
+            rel_path=Path("my_plot.png"), docs_dir=docs, fig_dir_name="_figs"
+        )
+        == []
+    )
 
 
 def test_find_doc_references_raises_on_non_utf8_doc(tmp_path: Path):
@@ -66,7 +91,9 @@ def test_find_doc_references_raises_on_non_utf8_doc(tmp_path: Path):
     (docs / "bad.md").write_bytes(b"\xff\xfe not utf8")
 
     with pytest.raises(UnicodeDecodeError):
-        find_doc_references(rel_path=Path("my_plot.png"), docs_dir=docs)
+        find_doc_references(
+            rel_path=Path("my_plot.png"), docs_dir=docs, fig_dir_name="_figs"
+        )
 
 
 def test_prune_drops_orphan_with_no_doc_reference_and_present_file(tmp_path: Path):
