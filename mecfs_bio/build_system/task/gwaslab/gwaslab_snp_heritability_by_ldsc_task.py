@@ -82,6 +82,12 @@ class SNPHeritabilityByLDSCTask(Task):
         assert isinstance(ref_asset, DirectoryAsset)
         if self.set_N is not None:
             sumstats.data[GWASLAB_SAMPLE_SIZE_COLUMN] = self.set_N
+        elif GWASLAB_SAMPLE_SIZE_COLUMN not in sumstats.data.columns:
+            assert self.phenotype_info.total_sample_size is not None
+            sumstats.data[GWASLAB_SAMPLE_SIZE_COLUMN] = (
+                self.phenotype_info.total_sample_size
+            )
+
         sumstats.infer_build()
         assert sumstats.meta["gwaslab"]["genome_build"] == self.build
         sumstats.estimate_h2_by_ldsc(
@@ -89,7 +95,9 @@ class SNPHeritabilityByLDSCTask(Task):
             w_ld_chr=str(ref_asset.path) + self.ld_file_filename_pattern,
             **_get_prev_params(self.phenotype_info),
         )
-        out_df: pd.DataFrame = unwrap(sumstats.ldsc_h2)  # type: ignore[assignment]
+        ldsc_h2 = unwrap(sumstats.ldsc_h2)
+        assert isinstance(ldsc_h2, pd.DataFrame)
+        out_df = ldsc_h2
         logger.debug(
             f"ldsc_h2_results:\n{out_df}",
         )

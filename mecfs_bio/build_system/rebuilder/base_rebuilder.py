@@ -20,6 +20,10 @@ class Rebuilder[Info](ABC):
     - Decide whether a given asset is up-to-date using information from Info.
     - If the asset is up-to-date, return it together with Info.
     - If the asset is not up-to-date, bring it up-to-date, update Info, and return the new values of both.
+
+    The third element of the returned tuple is ``info_changed``: True iff this call
+    produced new state that needs to be persisted. The scheduler uses this to skip
+    incremental saves of Info when nothing changed (an all-cached run).
     """
 
     @abstractmethod
@@ -31,7 +35,7 @@ class Rebuilder[Info](ABC):
         wf: WF,
         info: Info,
         meta_to_path: MetaToPath,
-    ) -> tuple[Asset, Info]:
+    ) -> tuple[Asset, Info, bool]:
         pass
 
     @classmethod

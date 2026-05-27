@@ -50,4 +50,5 @@ def gwaslab_download_ref_if_missing(ref: str) -> Path:
     if not result:
         gl.download_ref(ref)
         result = gl.get_path(ref)
-    return result
+    assert isinstance(result, str)
+    return Path(result)

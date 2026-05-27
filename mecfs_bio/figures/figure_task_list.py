@@ -20,6 +20,9 @@ from mecfs_bio.assets.gwas.human_herpesvirus_7_dna.kamitaki_et_al_2025.analysis.
 from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_task import (
     MV_LDL_LDSC_RESULTS_MARKDOWN,
 )
+from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ldl import (
+    CT_LDSC_LDL,
+)
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )
@@ -29,8 +32,20 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc impor
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.without_palindromes.susie_finemap_decode_me_37_chr1_173_locus_stackplot import (
+    DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.h_magma.decode_me_h_magma_asset_generator import (
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import (
     DECODE_ME_CURATED_GENE_SET_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot import (
+    DECODE_ME_MAGMA_GENE_PLOT,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot_with_window import (
+    DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
@@ -54,6 +69,12 @@ from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GR
 from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import (
     MECFS_PAIN_BIVARIATE_MIXER,
 )
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.magma.johnston_gene_level_magma_plot import (
+    JOHNSTON_MAGMA_GENE_PLOT,
+)
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import (
     JOHNSTON_ET_AL_UNIVARIATE_MIXER,
 )
@@ -71,6 +92,27 @@ MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
 ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
+    DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT,
+    DECODE_ME_MAGMA_GENE_PLOT,
+    DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "adult_brain"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "cortical_neuron"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "fetal_brain"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "midbrain_da"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "ipsc_derived_astro"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
+        "ipsc_derived_neuro"
+    ].gene_manhattan_plot_task,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -92,7 +134,26 @@ ALL_FIGURE_TASKS: list[Task] = [
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.power_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.qq_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.result_markdown_table_task,
+    JOHNSTON_MAGMA_GENE_PLOT,
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "adult_brain"
+    ].gene_manhattan_plot_task,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "cortical_neuron"
+    ].gene_manhattan_plot_task,
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "fetal_brain"
+    ].gene_manhattan_plot_task,
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "midbrain_da"
+    ].gene_manhattan_plot_task,
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "ipsc_derived_astro"
+    ].gene_manhattan_plot_task,
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "ipsc_derived_neuro"
+    ].gene_manhattan_plot_task,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.independent_clusters_markdown_task_unwrap,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -128,4 +189,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
+    CT_LDSC_LDL.aggregation_markdown_task,
 ]

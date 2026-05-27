@@ -7,6 +7,36 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_with_annovar_37_rsids_sumstats import (
     DECODEME_ME_SUMSTATS_37_WITH_ANNOVAR_RSID,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me_female.analysis.decode_me_female_standard_analysis import (
+    DECODE_ME_FEMALE_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_female.auxiliary.decode_me_female_phenotype_info import (
+    DECODE_ME_FEMALE_PHENOTYPE_INFO,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_gwas_2.analysis.decode_me_gwas_2_standard_analysis import (
+    DECODE_ME_GWAS_2_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_gwas_2.auxiliary.decode_me_gwas_2_phenotype_info import (
+    DECODE_ME_GWAS_2_PHENOTYPE_INFO,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_infectious_onset.analysis.decode_me_infectious_onset_standard_analysis import (
+    DECODE_ME_INFECTIOUS_ONSET_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_infectious_onset.auxiliary.decode_me_infectious_onset_phenotype_info import (
+    DECODE_ME_INFECTIOUS_ONSET_PHENOTYPE_INFO,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_male.analysis.decode_me_male_standard_analysis import (
+    DECODE_ME_MALE_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_male.auxiliary.decode_me_male_phenotype_info import (
+    DECODE_ME_MALE_PHENOTYPE_INFO,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_non_infectious_onset.analysis.decode_me_non_infectious_onset_standard_analysis import (
+    DECODE_ME_NON_INFECTIOUS_ONSET_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_non_infectious_onset.auxiliary.decode_me_non_infectious_onset_phenotype_info import (
+    DECODE_ME_NON_INFECTIOUS_ONSET_PHENOTYPE_INFO,
+)
 from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs_standard_analysis import (
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP,
 )
@@ -39,6 +69,31 @@ CFS_CT_LDSC_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
                 constant=275488,
             ),  # true total sample size. From preprint
             sample_info=DECODE_ME_PREVALENCE_INFO,
+        ),
+        SumstatsSource(
+            DECODE_ME_FEMALE_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+            alias="DecodeME_Female",
+            sample_info=DECODE_ME_FEMALE_PHENOTYPE_INFO,
+        ),
+        SumstatsSource(
+            DECODE_ME_MALE_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+            alias="DecodeME_Male",
+            sample_info=DECODE_ME_MALE_PHENOTYPE_INFO,
+        ),
+        SumstatsSource(
+            DECODE_ME_GWAS_2_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+            alias="DecodeME_GWAS_2",
+            sample_info=DECODE_ME_GWAS_2_PHENOTYPE_INFO,
+        ),
+        SumstatsSource(
+            DECODE_ME_INFECTIOUS_ONSET_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+            alias="DecodeME_Infectious_Onset",
+            sample_info=DECODE_ME_INFECTIOUS_ONSET_PHENOTYPE_INFO,
+        ),
+        SumstatsSource(
+            DECODE_ME_NON_INFECTIOUS_ONSET_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+            alias="DecodeME_Non_Infectious_Onset",
+            sample_info=DECODE_ME_NON_INFECTIOUS_ONSET_PHENOTYPE_INFO,
         ),
         SumstatsSource(
             MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.sumstats_task,

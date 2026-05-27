@@ -1,7 +1,7 @@
-585	chr1	10019	10020	rs775809821	0	+	A	A	-/A	genomic	deletion	unknown	0	0	near-gene-5	exact	1		1	SSMP,	0
-585	chr1	10019	10020	rs775809821 0   +	A	A	-/A genomic	deletion	unknown	0	0	near-gene-5	exact	1		1	SSMP,	0
-585	chr1	662621	662622	rstest_dummy	0	+	A	A	A/C	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0
+585	chr1	10019	10020	rs775809821	0	+	A	A	-/A	genomic	deletion	unknown	0	0	near-gene-5	exact	1		1	SSMP,	0				
+585	chr1	10019	10020	rs775809821	0	+	A	A	-/A	genomic	deletion	unknown	0	0	near-gene-5	exact	1		1	SSMP,	0				
+585	chr1	662621	662622	rstest_dummy	0	+	A	A	A/C	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0				
 585	chr1	10042	10043	rs1008829651	0	+	T	T	A/T	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0				
-585	chrUn_gl000211	662621	662622	bad_chrom_dummy	0	+	A	A	A/C	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0
-585	chrX	10042	10043	rs1008829651	0	+	T	T	A/T	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0
-585	chr11	662621	662622	rstest_dummy	0	+	A	A	A/C	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0
+585	chrUn_gl000211	662621	662622	bad_chrom_dummy	0	+	A	A	A/C	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0				
+585	chrX	10042	10043	rs1008829651	0	+	T	T	A/T	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0				
+585	chr11	662621	662622	rstest_dummy	0	+	A	A	A/C	genomic	single	unknown	0	0	near-gene-5	exact	1		1	USC_VALOUEV,	0				

@@ -3,7 +3,7 @@ hide:
 - toc
 ---
 # MAGMA EDU Analysis
-As another follow-up to the application of [MAGMA to the DecodeME summary statistics](../../ME_CFS/DecodeME/MAGMA_DecodeME_Analysis.md), I applied MAGMA to the educational attainment study of Lee et al. (2018)[@lee2018gene], to see if the results recapitulated known biology.
+As another follow-up to the application of [MAGMA to the DecodeME summary statistics](../../ME_CFS/DecodeME/g_MAGMA_DecodeME_Analysis.md), I applied MAGMA to the educational attainment study of Lee et al. (2018)[@lee2018gene], to see if the results recapitulated known biology.
 
 ## Data
 I used summary statistics from [Lee et al.'s GWAS of Educational attainment](https://www.nature.com/articles/s41588-018-0147-3).
