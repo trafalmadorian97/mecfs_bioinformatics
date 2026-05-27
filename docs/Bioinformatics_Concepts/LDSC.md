@@ -167,7 +167,7 @@ $$
 &= \frac{\frac{1}{N}(\phi-\overline{\phi})^T(X_{:,j} -\overline{X_{:,j}} )}{\frac{1}{N}  (X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,j}} ) }    & \text{ By OLS formula}\\
 &= \frac{\frac{1}{N}(\phi-\overline{\phi})^TX_{:,j}  }{  \frac{1}{N}X_{:,j}^TX_{:,j}  } & \text{Since columns of $X$ are normalized}\\
 &\approx \frac{\frac{1}{N}\phi^TX_{:,j}  }{\frac{1}{N}X_{:,j}^TX_{:,j}} & \text{Since $\mathbb{E}\phi=0$ and $N$ is large}\\
-&=\frac{1}{N}\phi^TX_{:,i}  & \text{Since columns of $X$ are normalized}
+&=\frac{1}{N}\phi^TX_{:,j}  & \text{Since columns of $X$ are normalized}
 \end{align}
 $$
 
