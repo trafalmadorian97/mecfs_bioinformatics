@@ -10,6 +10,10 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
+import rpy2.robjects as ro
+from rpy2.robjects import pandas2ri
+from rpy2.robjects.conversion import localconverter
+from rpy2.robjects.packages import importr
 
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._common_factor_kernel import (
     compute_s_fullrun_batch,
@@ -201,18 +205,11 @@ def _have_rpy2_genomic_sem() -> bool:
         return False
 
 
-@pytest.mark.skipif(
-    not _have_rpy2_genomic_sem(), reason="rpy2/GenomicSEM not available"
-)
 def test_matches_lavaan_on_small_slice():
     """
     Run R's commonfactorGWAS and our kernel on the same well-conditioned
     synthetic data, and assert the per-SNP estimates and sandwich SEs match.
     """
-    import rpy2.robjects as ro
-    from rpy2.robjects import pandas2ri
-    from rpy2.robjects.conversion import localconverter
-    from rpy2.robjects.packages import importr
 
     gsem = importr("GenomicSEM")
 
