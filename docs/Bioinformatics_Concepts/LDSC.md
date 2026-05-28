@@ -3,7 +3,7 @@ hide:
 - toc
 ---
 # LDSC
-Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends on the validity certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
+Linkage Disequilibrium Score Regression[@bulik2015ld] (LDSC) is a technique for estimating  [heritability](Heritability.md) from GWAS summary statistics.  LDSC is ubiquitous, but its usefulness depends on the validity of certain modeling assumptions. This page includes both a high-level summary and a detailed derivation of LDSC.
 
 ## Intuition and high-level summary
 
@@ -11,7 +11,7 @@ The core idea of LDSC is illustrated below:
 
 ![ldsc-schematic](https://github.com/user-attachments/assets/7a642f44-2fb9-4647-888a-23c1a344d12d)
 
-For each SNP, we compute a quantity called Linkage-Disequilibrium Score, or LD score, which measures the strength of the correlation between this SNP and other SNPs.  Two key insights are central to LDSC:
+For each SNP, we compute a quantity called Linkage-Disequilibrium Score, or LD score, which measures the strength of the correlation between this SNP and other SNPs.  Two insights are central:
 
 - SNPs with higher LD scores will tend to be more strongly associated with the GWAS phenotype, and thus will have higher [Wald test statistics](https://en.wikipedia.org/wiki/Wald_test).  This follows because if a SNP is not itself causal, it can be associated with the GWAS phenotype through correlation with a causal SNP.  A SNP with a higher LD score has a higher chance of being correlated with a causal SNP than a SNP with a lower LD score.
 - The strength of the relationship between LD score and the Wald test statistic depends on heritability.  A more heritable trait (right panel) will exhibit a stronger relationship than a less heritable trait (left panel).  This follows because for a more heritable trait, SNPs have a greater influence over the phenotype, so that increasing the extent to which a SNP is in LD with other SNPs will on average increase its association with the phenotype by a larger amount.
@@ -70,7 +70,7 @@ Using these two insights, we can estimate heritability from the slope of regress
 ## Detailed derivation of method
 ### Data-generating model
 
-LDSC assumes the following data generating equation:
+LDSC assumes the data generating equation:
 
 $$
 \phi = X\beta + \epsilon
@@ -99,6 +99,8 @@ $$
 \end{align}
 $$
 
+Assume:
+
 - The rows of $X$ are independent and identically distributed.
 - The distributions of columns of $X$ are "not too similar".
 - The SNP $X_{i,j}$ may be highly correlated with a few other SNPs, but is uncorrelated with most SNPs.
@@ -114,7 +116,7 @@ Furthermore, define the following quantities related to Linkage Disequilibrium (
 
 
 ### Properties of Wald statistics
-We begin by computing the variance matrix of the genetic effects $X\beta$:
+We begin by computing the variance of the matrix of the genetic effects $X\beta$:
 
 
 $$
@@ -138,7 +140,7 @@ $$
 \end{align}
 $$
 
-Note that the [heritability](Heritability.md) of the phenotype for an arbitrary individual $i$ is:
+Note that the [heritability](Heritability.md) of the phenotype for an arbitrary individual $i$ is defined as:
 
 $$
 \begin{align}
@@ -159,7 +161,7 @@ $$
 $$
 
 
-In a GWAS, it is typical to run a separate single-variant regression for each variant. Denote by $\hat{\beta}_j$ the single-variant regression coefficient for SNP $j$.  This is given by:
+In GWAS, it is typical to run a separate single-variant regression for each variant. Denote by $\hat{\beta}_j$ the single-variant regression coefficient for SNP $j$.  This is given by:
 
 $$
 \begin{align}
@@ -332,7 +334,7 @@ On the other hand, the assumption of perfectly uniform polygenicity strains plau
 
 ### Extensions to make assumption more plausible
 
-The issue of the implausibility of isotropic polygenicity is partially resolved by [Stratified Linkage Disequilibrium Score Segression](S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2015partitioning] (S-LDSC), an extension proposed by the same authors who devised LDSC.  S-LDSC allows the use of a pre-specified functional partitioning of the genome. While heritability is still assumed to be evenly distributed within a given partition, S-LDSC allows it to differ across partitions.
+The issue of the implausibility of isotropic polygenicity is partially resolved by [Stratified Linkage Disequilibrium Score Segression](S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2015partitioning] (S-LDSC), an extension proposed by some of the same authors who devised LDSC.  S-LDSC allows the use of a pre-specified functional partitioning of the genome. While heritability is still assumed to be evenly distributed within a given partition, S-LDSC allows it to differ between partitions.
 
 
 [//]: # (So it would be fair to say that while LDSC's key assumption is valid in a rough sense, it is not accurate in a granular sense.)
@@ -342,7 +344,7 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 
 ## Population stratification and LDSC
 
-In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by population stratification. In this section, I explain this use case.
+In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by population stratification.
 
 
 ### Overview
@@ -357,11 +359,11 @@ Genetic stratification can confound GWAS if it is not accounted for.  Environmen
 
 ### Genetically stratified populations
 
-Let's begin with a model of a genetically stratified population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model) as follows.
+Let's begin with a model of a genetically stratified population. For illustrative simplicity, we consider an equal mixture of two sub-populations.  We modify the model described [above](#data-generating-model).
 
 - Let $\mathcal{P}_1$ denote the random set of individuals in the first subpopulation, and let $\mathcal{P}_2$ denote the random set of individuals in the second subpopulation.  Since we are assuming an equal mixture, we have that for any individual $i$, $P(i\in \mathcal{P}_1)=P(i\in \mathcal{P}_2)=0.5$.
 - Let $\mathcal{Q}\in\{1,-1\}^N$ be the random vector of assignments of individuals to the two subpopulations.
-- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  the rows of the genotype matrix $X$ are no longer unconditionally independent: knowledge of one row of $X$ informs us about $f$, which informs us about other rows of $X$.  Conditioned on $f$, the rows of the genotype matrix remain independent.
+- Let $f\in\mathbb{R}^M$ denote the random vector of genotype means in subpopulation 1.  Thus $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_1)=f_j$.  Since we still assume that the population as a whole is normalized to genotype means of zero, this implies that $\mathbb{E}(X_{i,j}|f,i\in\mathcal{P}_2)=-f_j$.  Note also that unlike [above](#data-generating-model),  the rows of the genotype matrix $X$ are no longer unconditionally independent: knowledge of one row of $X$ informs us about $f$, which informs us about other rows.  Conditioned on $f$, the rows of the genotype matrix remain independent.
 - We assume  
 
 $$
@@ -419,7 +421,7 @@ Our goal is to derive an analogue of ($\ref{main_ld_eq}$), the main LD score reg
 
 
 
-We next compute the conditional expectation of the product of two genotypes:
+Compute the conditional expectation of the product of two genotypes:
 
 
 $$
@@ -673,6 +675,59 @@ $$
 
 [^MHC_Note]: LDSC implementations usually exclude the MHC region, partially for this reason.
 
+
+## Sampling noise and LDSC (In progress)
+
+
+For some applications such as GenomicSEM[@grotzinger2019genomic], it is of interest to
+estimate how much sampling error we can expect in our estimates of the $\hat\beta_i$.
+
+In this section, we follow GenomicSEM and consider the setting in which the columns of $X$ are non-normalized, so tht SNP $j$ has variance $H_j$, not 1.  
+
+To compensate, we must adjust the prior on $\beta$:
+
+$$
+\begin{align}
+\mathbb{Var}(\beta)_j&=\frac{H^2}{M H_j}
+\end{align}
+$$
+
+
+We decompose the variance of $\hat\beta_j$ via the law of total variance
+
+$$
+\begin{align}
+\mathbb{Var}(\hat\beta_j) &= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j))+\mathrm{Var}(\mathrm{E}((\hat\beta_j|\beta_j))) \label{sampling_beta_decomp}
+\end{align}
+$$
+
+The first term in this decomposition is the expected sampling variance.  That is, it reflects the average variability of the marginal regression coefficient that remains after fixing the true causal effects $\beta$.
+
+Let's examine the other terms in ($\ref{sampling_beta_decomp}$) .  
+
+We derive a version of $(\ref{wald})$ for the present setting: 
+
+
+$$
+\begin{align}
+\chi^2 &= \frac{\hat \beta_j^2}{\mathrm{SE}(\hat\beta_j)^2  }\\
+&= N \frac{\hat \beta_j^2}{ 1/H_j  }\\
+&= N H_j \hat \beta_j^2 \\
+\hat \beta_j^2 &=  \frac{\chi^2}{N H_j}
+\end{align}
+$$
+
+
+From the [MiXeR derivation](../Bioinformatics_Concepts/Mixer.md#distribution-of-z-scores) we have (the MiXeR model is similar enough to the LDSC model that the derivation still holds)
+
+$$
+\begin{align}
+\mathbb{E}(\hat{\beta}_i |\beta) &\approx  \sum_j \beta_j r_{i,j}\sqrt{\frac{H_j}{ H_i}} \\
+\mathbb{Var}( \mathbb{E}(\hat{\beta}_i |\beta) ) &\approx \mathbb{Var}(\sum_j \beta_j r_{i,j}\sqrt{\frac{H_j}{ H_i}})\\
+&= \sum_j   \frac{H_j}{ H_i} r_{i,j}^2 \frac{h^2}{M H_j}\\
+&=\frac{h^2}{ M H_i} l_i
+\end{align}
+$$
 
 
 
