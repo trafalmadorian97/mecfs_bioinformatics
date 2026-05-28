@@ -120,7 +120,7 @@ $(\ref{mixer_dgm})$ and $(\ref{uni_mixer_core})$ specify the core univariate MiX
 - Using this probability distribution, derive an efficient algorithm to fit the MiXeR model by maximum likelihood.
 
 
-###  Distribution of $z$-scores
+###  Distribution of z-scores
 
 We begin by deriving an expression for $\hat{\beta}_i$, the univariate regression coefficient of variant $i$.
 
