@@ -205,7 +205,7 @@ $$
 \begin{align}
 &\mathrm{SE}(\hat{\beta}_j) \\
 &\approx \sqrt{\frac{\frac{1}{N}\lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2}{(X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,j} })}} & \text{Formula for OLS SE}\\
-&=\sqrt{\frac{1}{N}} & (\text{\ref{residuals}) + Normalization of $X$} \label{sebeta}
+&\approx\sqrt{\frac{1}{N}} & (\text{\ref{residuals}) + Normalization of $X$} \label{sebeta}
 \end{align}
 $$
 
@@ -676,19 +676,33 @@ $$
 [^MHC_Note]: LDSC implementations usually exclude the MHC region, partially for this reason.
 
 
-## Sampling noise and LDSC (In progress)
+## Sampling noise and LDSC 
 
 
-For some applications such as GenomicSEM[@grotzinger2019genomic], it is of interest to
-estimate how much sampling error we can expect in our estimates of the $\hat\beta_i$.
+For some applications such as Genomic SEM[@grotzinger2019genomic], it is of interest to use terms in the LDSC equation to
+estimate how much sampling error we can expect in our estimates of the $\hat\beta$. I this section we compute such an estimate.
 
-In this section, we follow GenomicSEM and consider the setting in which the columns of $X$ are non-normalized, so that SNP $j$ has variance $H_j$, not 1.  
+We follow Genomic SEM and consider the setting in which the columns of $X$ are non-normalized, so that SNP $j$ has variance $H_j$, not 1.  
 
-To compensate, we must adjust the prior on $\beta$:
+
+In this new setting, the standard error of $\hat\beta_j$ is changed ( compare this with ($\ref{sebeta}$)):
 
 $$
 \begin{align}
-\mathbb{Var}(\beta)_j&=\frac{H^2}{M H_j}
+&\mathrm{SE}(\hat{\beta}_j) \\
+&\approx \sqrt{\frac{\frac{1}{N}\lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2}{(X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,j} })}} & \text{Formula for OLS SE}\\
+&\approx  \sqrt{\frac{ \frac{1}{N} \lVert \phi \rVert^2}{N H_j}}\\
+&= \sqrt{\frac{1}{N H_j}}.
+\end{align}
+$$
+
+ .
+
+In this setting, we must also adjust the prior on $\beta$:
+
+$$
+\begin{align}
+\mathbb{Var}(\beta)_j&=\frac{h^2}{M H_j}
 \end{align}
 $$
 
@@ -697,13 +711,13 @@ We decompose the variance of $\hat\beta_j$ via the law of total variance
 
 $$
 \begin{align}
-\mathbb{Var}(\hat\beta_j) &= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j))+\mathrm{Var}(\mathrm{E}((\hat\beta_j|\beta_j))) \label{sampling_beta_decomp}
+\mathbb{Var}(\hat\beta_j) &= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j))+\mathrm{Var}(\mathrm{E}(\hat\beta_j|\beta_j)) \label{sampling_beta_decomp}
 \end{align}
 $$
 
 The first term in this decomposition is the expected sampling variance.  That is, it reflects the average variability of the marginal regression coefficient that remains after fixing the true causal effects $\beta$.
 
-Let's examine the other terms in ($\ref{sampling_beta_decomp}$) .  
+[//]: # (Let's examine the other terms in &#40;$\ref{sampling_beta_decomp}$&#41; .  )
 
 We derive a version of $(\ref{wald})$ for the present setting: 
 
@@ -711,12 +725,21 @@ We derive a version of $(\ref{wald})$ for the present setting:
 $$
 \begin{align}
 \chi^2 &= \frac{\hat \beta_j^2}{\mathrm{SE}(\hat\beta_j)^2  }\\
-&= N \frac{\hat \beta_j^2}{ 1/H_j  }\\
 &= N H_j \hat \beta_j^2 \\
-\hat \beta_j^2 &=  \frac{\chi^2}{N H_j}
+\mathbb{E} \chi^2 &=N H_j  \mathbb{Var}(\hat\beta_j) 
 \end{align}
 $$
 
+We can substitute this into the LD score regression equation (which holds in this setting), to get
+
+$$
+\begin{align}
+N H_j  \mathbb{Var}(\hat\beta_j)&= \frac{N h^2}{M}l_j + \psi\\
+ \mathbb{Var}(\hat\beta_j) &=\frac{ h^2}{MH_j}l_j + \frac{\psi}{H_j} \label{sem-ld-eq}
+\end{align}
+$$
+
+[//]: # (\hat \beta_j^2 &=  \frac{\chi^2}{N H_j})
 
 From the [MiXeR derivation](../Bioinformatics_Concepts/Mixer.md#distribution-of-z-scores) we have (the MiXeR model is similar enough to the LDSC model that the derivation still holds)
 
@@ -725,9 +748,22 @@ $$
 \mathbb{E}(\hat{\beta}_i |\beta) &\approx  \sum_j \beta_j r_{i,j}\sqrt{\frac{H_j}{ H_i}} \\
 \mathbb{Var}( \mathbb{E}(\hat{\beta}_i |\beta) ) &\approx \mathbb{Var}(\sum_j \beta_j r_{i,j}\sqrt{\frac{H_j}{ H_i}})\\
 &= \sum_j   \frac{H_j}{ H_i} r_{i,j}^2 \frac{h^2}{M H_j}\\
-&=\frac{h^2}{ M H_i} l_i
+&=\frac{h^2}{ M H_i} l_i \label{sem-eqn-var}
 \end{align}
 $$
+
+
+Next, let us combine $(\ref{sem-eqn-var})$, $(\ref{sem-ld-eq})$, and $(\ref{sampling_beta_decomp})$.  The result is:
+
+$$
+\begin{align}
+\mathbb{Var}(\hat\beta_j) &= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j))+\mathrm{Var}(\mathrm{E}(\hat\beta_j|\beta_j))\\
+\frac{ h^2}{MH_j}l_j + \frac{\psi}{H_j}&= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j)) + \frac{h^2}{ M H_j} l_j \\
+\frac{\psi}{H_j} &=\mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j)) \label{sem-intercept-sampling}
+\end{align}
+$$
+
+This equation relates that the average sampling error of $\hat\beta$ to the LDSC intercept, a relationship that is used in Genomic SEM.
 
 
 
