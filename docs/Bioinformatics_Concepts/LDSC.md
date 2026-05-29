@@ -682,7 +682,7 @@ $$
 For some applications such as GenomicSEM[@grotzinger2019genomic], it is of interest to
 estimate how much sampling error we can expect in our estimates of the $\hat\beta_i$.
 
-In this section, we follow GenomicSEM and consider the setting in which the columns of $X$ are non-normalized, so tht SNP $j$ has variance $H_j$, not 1.  
+In this section, we follow GenomicSEM and consider the setting in which the columns of $X$ are non-normalized, so that SNP $j$ has variance $H_j$, not 1.  
 
 To compensate, we must adjust the prior on $\beta$:
 
