@@ -1,5 +1,5 @@
 """
-Task to filter SNPs in a GWAS based on a minumum minor allele frequency.
+Task to filter SNPs in a GWAS based on a minimum minor allele frequency.
 """
 
 from pathlib import Path, PurePath
