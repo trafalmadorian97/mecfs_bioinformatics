@@ -1,6 +1,5 @@
 """
-Task to filter SNPs in a GWAS according to another table of SNPs passing quality control.
-Implemented as a DataFrame join.
+Task to filter SNPs in a GWAS based on a minumum minor allele frequency.
 """
 
 from pathlib import Path, PurePath
