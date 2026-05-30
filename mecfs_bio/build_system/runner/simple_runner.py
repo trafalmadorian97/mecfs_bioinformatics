@@ -52,13 +52,14 @@ class SimpleRunner:
     asset_root: root under which to create the asset store
     tracer: algorithm uses to calculate verifying traces of assets.  An example would be a hashing algorithm.  changing this forces all assets to be rebuilt
     post_execute: hook invoked after each task materialization. Defaults to running `gc.collect()` and logging RSS,
-        which keeps cycle-held memory from accumulating across long pipeline runs.  Pass `None` to disable.
+        which keeps cycle-held memory from accumulating across long pipeline runs.  Pass `noop_post_execute_hook`
+        from `mecfs_bio.build_system.rebuilder.sandboxed_execute` to disable.
     """
 
     info_store: Path
     asset_root: Path
     tracer: Tracer = SimpleHasher.md5_hasher()
-    post_execute: Callable[[Task], None] | None = gc_collect_post_execute_hook
+    post_execute: Callable[[Task], None] = gc_collect_post_execute_hook
 
     @property
     def meta_to_path(self) -> SimpleMetaToPath:

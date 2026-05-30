@@ -15,6 +15,9 @@ from mecfs_bio.build_system.rebuilder.fetch.restricted_fetch import RestrictedFe
 from mecfs_bio.build_system.rebuilder.metadata_to_path.base_meta_to_path import (
     MetaToPath,
 )
+from mecfs_bio.build_system.rebuilder.sandboxed_execute import (
+    noop_post_execute_hook,
+)
 from mecfs_bio.build_system.rebuilder.tracking_sandboxed_execute import (
     tracking_sandboxed_execute,
 )
@@ -39,14 +42,14 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
     "Build systems à la carte: Theory and practice."
     Journal of Functional Programming 30 (2020): e11.
 
-    `post_execute` is an optional hook invoked with the task after each
-    materialization (after the asset has been moved into place). The default
-    is `None` (no-op). See `mecfs_bio.build_system.runner.gc_post_execute_hook`
-    for an implementation that runs `gc.collect()` between tasks.
+    `post_execute` is a hook invoked with the task after each materialization
+    (after the asset has been moved into place). The default is a no-op. See
+    `mecfs_bio.build_system.runner.gc_post_execute_hook` for an implementation
+    that runs `gc.collect()` between tasks.
     """
 
     tracer: Tracer
-    post_execute: Callable[[Task], None] | None = None
+    post_execute: Callable[[Task], None] = noop_post_execute_hook
 
     def rebuild(
         self,
