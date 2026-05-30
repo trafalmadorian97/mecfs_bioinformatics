@@ -1,3 +1,5 @@
+from typing import Callable
+
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
@@ -14,6 +16,7 @@ def tracking_sandboxed_execute(
     meta_to_path: MetaToPath,
     wf: WF,
     fetch: Fetch,
+    post_execute: Callable[[Task], None] | None = None,
 ) -> tuple[Asset, list[tuple[AssetId, Asset]]]:
     deps: list[tuple[AssetId, Asset]] = []
 
@@ -24,6 +27,10 @@ def tracking_sandboxed_execute(
             return a
 
     result = sandboxed_execute(
-        task=task, meta_to_path=meta_to_path, wf=wf, fetch=TrackingFetch()
+        task=task,
+        meta_to_path=meta_to_path,
+        wf=wf,
+        fetch=TrackingFetch(),
+        post_execute=post_execute,
     )
     return result, deps

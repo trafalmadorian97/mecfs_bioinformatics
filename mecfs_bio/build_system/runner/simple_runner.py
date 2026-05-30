@@ -1,11 +1,14 @@
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 import structlog
 from rich.pretty import pprint
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.runner.gc_post_execute_hook import (
+    gc_collect_post_execute_hook,
+)
 from mecfs_bio.build_system.runner.info_purge import info_purge
 
 logger = structlog.get_logger()
@@ -48,11 +51,14 @@ class SimpleRunner:
     info_store: path at which to store persistent cash for build-system internal information
     asset_root: root under which to create the asset store
     tracer: algorithm uses to calculate verifying traces of assets.  An example would be a hashing algorithm.  changing this forces all assets to be rebuilt
+    post_execute: hook invoked after each task materialization. Defaults to running `gc.collect()` and logging RSS,
+        which keeps cycle-held memory from accumulating across long pipeline runs.  Pass `None` to disable.
     """
 
     info_store: Path
     asset_root: Path
     tracer: Tracer = SimpleHasher.md5_hasher()
+    post_execute: Callable[[Task], None] | None = gc_collect_post_execute_hook
 
     @property
     def meta_to_path(self) -> SimpleMetaToPath:
@@ -78,7 +84,9 @@ class SimpleRunner:
             info = VerifyingTraceInfo.empty()
         if incremental_save:
             logger.debug("incremental save is enabled")
-        rebuilder = VerifyingTraceRebuilder(self.tracer)
+        rebuilder = VerifyingTraceRebuilder(
+            tracer=self.tracer, post_execute=self.post_execute
+        )
         wf = RobustDownloadWF()
         # wf= SimpleWF()
         meta_to_path = self.meta_to_path

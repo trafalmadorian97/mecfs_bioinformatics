@@ -38,9 +38,15 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
     Mokhov, Andrey, Neil Mitchell, and Simon Peyton Jones.
     "Build systems à la carte: Theory and practice."
     Journal of Functional Programming 30 (2020): e11.
+
+    `post_execute` is an optional hook invoked with the task after each
+    materialization (after the asset has been moved into place). The default
+    is `None` (no-op). See `mecfs_bio.build_system.runner.gc_post_execute_hook`
+    for an implementation that runs `gc.collect()` between tasks.
     """
 
     tracer: Tracer
+    post_execute: Callable[[Task], None] | None = None
 
     def rebuild(
         self,
@@ -76,6 +82,7 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
             meta_to_path=meta_to_path,
             wf=wf,
             fetch=RestrictedFetch.from_task(fetch=fetch, task=task),
+            post_execute=self.post_execute,
         )
         deps_traced = [(k, self.tracer(v)) for k, v in deps]
         new_trace = self.tracer(new_value)

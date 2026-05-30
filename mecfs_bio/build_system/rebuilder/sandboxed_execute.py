@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Callable
 
 import attr
 import structlog
@@ -24,10 +25,14 @@ def sandboxed_execute(
     meta_to_path: MetaToPath,
     wf: WF,
     fetch: Fetch,
+    post_execute: Callable[[Task], None] | None = None,
 ) -> Asset:
     """
     Execute a task in a temporary directory, then move its result to the final location
     determined by the task's metadata.
+
+    If a `post_execute` hook is provided, it is invoked with the task after the temp
+    directory is cleaned up and the asset has been moved into place.
     """
     meta = task.meta
     target_path = meta_to_path(meta)
@@ -38,6 +43,8 @@ def sandboxed_execute(
         target_path.parent.mkdir(exist_ok=True, parents=True)
         result = _move_asset(result, target_path)
         logger.debug(f"Saved asset {task.asset_id} to {target_path}.")
+    if post_execute is not None:
+        post_execute(task)
     return result
 
 
