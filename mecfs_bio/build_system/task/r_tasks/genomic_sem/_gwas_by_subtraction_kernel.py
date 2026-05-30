@@ -182,8 +182,59 @@ def _jacobian_betas_wrt_s(
     varSNP: np.ndarray,
 ) -> np.ndarray:
     """
-    Compute d(beta_C, beta_NC)/d(s2, s3, s4, s5, s6) via centred finite
-    differences. Returns shape (N, 2, 5).
+    Analytic d(beta_C, beta_NC)/d(s2, s3, s4, s5, s6). Returns shape (N, 2, 5).
+
+    The estimates are elementary functions of the data:
+
+        b      = sqrt(s6)
+        a_C    = s5 / b               (so a_C / b = s5 / s6)
+        a_NC   = sqrt(s4 - s5^2 / s6)
+        beta_C  = s3 / (b * v)
+        beta_NC = (s2 / v - (s5 / s6) * s3 / v) / a_NC
+
+    with v = varSNP. Differentiating directly (v is known data, not part of
+    s) gives the partials below; see the module test for a finite-difference
+    cross-check. Unlike finite differences, this never evaluates the
+    `max(s4 - a_C^2, ...)` clamp inside `_solve_betas_from_s`, so it stays
+    correct even when a_NC is small.
+    """
+    N = s2.shape[0]
+    v = varSNP
+    b = np.sqrt(s6)
+    a_NC_sq = s4 - s5**2 / s6
+    a_NC = np.sqrt(a_NC_sq)
+    beta_NC = (s2 / v - (s5 / s6) * s3 / v) / a_NC
+
+    G = np.zeros((N, 2, 5))
+
+    # beta_C = s3 / (sqrt(s6) * v): depends only on s3 and s6.
+    beta_C = s3 / (b * v)
+    G[:, 0, 1] = 1.0 / (b * v)  # d/ds3
+    G[:, 0, 4] = -beta_C / (2.0 * s6)  # d/ds6
+
+    # beta_NC partials.
+    G[:, 1, 0] = 1.0 / (v * a_NC)  # d/ds2
+    G[:, 1, 1] = -s5 / (s6 * v * a_NC)  # d/ds3
+    G[:, 1, 2] = -beta_NC / (2.0 * a_NC_sq)  # d/ds4
+    G[:, 1, 3] = -s3 / (s6 * v * a_NC) + beta_NC * s5 / (s6 * a_NC_sq)  # d/ds5
+    G[:, 1, 4] = s5 * s3 / (s6**2 * v * a_NC) - beta_NC * s5**2 / (
+        2.0 * s6**2 * a_NC_sq
+    )  # d/ds6
+    return G
+
+
+def _jacobian_betas_wrt_s_fd(
+    s2: np.ndarray,
+    s3: np.ndarray,
+    s4: float,
+    s5: float,
+    s6: float,
+    varSNP: np.ndarray,
+) -> np.ndarray:
+    """
+    Finite-difference reference for `_jacobian_betas_wrt_s`, kept as a test
+    oracle only (not used in production). Centred differences with a
+    scale-aware step. Returns shape (N, 2, 5).
     """
     N = s2.shape[0]
     G = np.zeros((N, 2, 5))

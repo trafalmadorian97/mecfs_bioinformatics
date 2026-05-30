@@ -11,7 +11,10 @@ import numpy as np
 import pytest
 
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel import (
+    _jacobian_betas_wrt_s,
+    _jacobian_betas_wrt_s_fd,
     _solve_betas,
+    _solve_betas_from_s,
     _solve_loadings,
     fit_gwas_by_subtraction,
 )
@@ -130,6 +133,69 @@ def test_n_eff_smaller_for_subtracted_factor():
         varSNP=varSNP,
     )
     assert np.median(result.n_eff_NC) < np.median(result.n_eff_C)
+
+
+# ---- analytic vs finite-difference Jacobian --------------------------------
+
+
+def test_analytic_jacobian_matches_finite_difference():
+    """Analytic d(beta)/d(s) agrees with centred finite differences at an
+    ordinary interior point."""
+    rng = np.random.default_rng(7)
+    N = 40
+    varSNP = rng.uniform(0.1, 0.5, N)
+    beta_SNP = rng.normal(0, 0.01, (N, 2))
+    s2 = varSNP * beta_SNP[:, 0]
+    s3 = varSNP * beta_SNP[:, 1]
+    s4, s5, s6 = 0.08, 0.03, 0.06  # a_NC^2 = 0.08 - 0.03^2/0.06 = 0.065
+
+    G = _jacobian_betas_wrt_s(s2, s3, s4, s5, s6, varSNP)
+    G_fd = _jacobian_betas_wrt_s_fd(s2, s3, s4, s5, s6, varSNP)
+    np.testing.assert_allclose(G, G_fd, rtol=1e-5, atol=1e-8)
+
+
+def test_analytic_jacobian_stays_correct_for_small_a_nc():
+    """
+    When a_NC is small (Var(T1) only slightly above Cov^2/Var(T2)), centred
+    finite differences over s4/s5/s6 can straddle the `max(..., 1e-30)` clamp
+    in `_solve_betas_from_s` and degrade. The analytic Jacobian does not. We
+    verify the analytic form against a tight one-sided complex-free check:
+    a very small symmetric step that does not cross the clamp.
+    """
+    rng = np.random.default_rng(11)
+    N = 25
+    varSNP = rng.uniform(0.1, 0.5, N)
+    beta_SNP = rng.normal(0, 0.01, (N, 2))
+    s2 = varSNP * beta_SNP[:, 0]
+    s3 = varSNP * beta_SNP[:, 1]
+    # a_NC^2 = s4 - s5^2/s6 = 0.0610 - 0.0600 = 1e-3  -> a_NC ~ 0.0316 (small).
+    s4, s5, s6 = 0.0610, 0.06, 0.06
+
+    G = _jacobian_betas_wrt_s(s2, s3, s4, s5, s6, varSNP)
+
+    def centred_col(idx: int, h: float) -> np.ndarray:
+        """Tiny centred difference for the idx-th element of s, staying well
+        inside a_NC^2 > 0 so the clamp is never hit."""
+        p2, p3, p4, p5, p6 = s2, s3, s4, s5, s6
+        m2, m3, m4, m5, m6 = s2, s3, s4, s5, s6
+        if idx == 0:
+            p2, m2 = s2 + h, s2 - h
+        elif idx == 1:
+            p3, m3 = s3 + h, s3 - h
+        elif idx == 2:
+            p4, m4 = s4 + h, s4 - h
+        elif idx == 3:
+            p5, m5 = s5 + h, s5 - h
+        else:
+            p6, m6 = s6 + h, s6 - h
+        bc_p, bnc_p = _solve_betas_from_s(p2, p3, p4, p5, p6, varSNP)
+        bc_m, bnc_m = _solve_betas_from_s(m2, m3, m4, m5, m6, varSNP)
+        return np.stack([(bc_p - bc_m) / (2 * h), (bnc_p - bnc_m) / (2 * h)])
+
+    steps = [1e-7, 1e-7, 1e-9, 1e-9, 1e-9]
+    for j, h in enumerate(steps):
+        ref = centred_col(j, h)
+        np.testing.assert_allclose(G[:, :, j].T, ref, rtol=1e-3, atol=1e-6)
 
 
 # ---- R comparison test -------------------------------------------------------
