@@ -203,6 +203,13 @@ def _get_sumstats(
     x = x.drop(drop_cols)
     logger.debug("Collecting Narwhals Lazyframe and converting to pandas")
     collected_df = x.collect().to_pandas()
+
+    # Downcast floating point columns to float32 to save memory
+    # 8.4 million rows * 8 bytes (float64) = 67MB per column
+    # float32 reduces this to 33.5MB per column
+    float_cols = collected_df.select_dtypes(include=["float64"]).columns
+    collected_df[float_cols] = collected_df[float_cols].astype("float32")
+
     if isinstance(fmt, GWASLabColumnSpecifiers):
         return gl.Sumstats(
             collected_df,

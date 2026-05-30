@@ -97,10 +97,18 @@ class SNPHeritabilityByLDSCTask(Task):
         )
         ldsc_h2 = unwrap(sumstats.ldsc_h2)
         assert isinstance(ldsc_h2, pd.DataFrame)
-        out_df = ldsc_h2
+        out_df = ldsc_h2.copy()
         logger.debug(
             f"ldsc_h2_results:\n{out_df}",
         )
+
+        # Explicitly delete the large sumstats object and trigger garbage collection
+        # to prevent memory accumulation in the same process
+        del sumstats
+        import gc
+
+        gc.collect()
+
         out_path = scratch_dir / "ldsc_h2.csv"
         out_df.to_csv(out_path, index=False)
         return FileAsset(out_path)

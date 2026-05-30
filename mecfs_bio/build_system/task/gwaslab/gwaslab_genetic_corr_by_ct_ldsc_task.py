@@ -191,6 +191,8 @@ class GeneticCorrelationByCTLDSCTask(Task):
         ref_asset = fetch(ref_id)
         assert isinstance(ref_asset, DirectoryAsset)
         results = []
+        import gc
+
         for i in range(len(self.source_sumstats_tasks) - 1):
             i_sumstats, i_name, i_sample_info = load_and_preprocess_sumstats(
                 source=self.source_sumstats_tasks[i],
@@ -224,7 +226,14 @@ class GeneticCorrelationByCTLDSCTask(Task):
                     build=self.build,
                     **options,
                 )
-            results.append(i_sumstats.ldsc_rg)
+                # Free memory from j_sumstats
+                del j_sumstats
+                gc.collect()
+
+            results.append(i_sumstats.ldsc_rg.copy())
+            # Free memory from i_sumstats
+            del i_sumstats
+            gc.collect()
 
         out_df: pd.DataFrame = pd.concat(results, ignore_index=True)
         logger.debug(

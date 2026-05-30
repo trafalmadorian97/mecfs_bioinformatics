@@ -143,8 +143,15 @@ class CellAnalysisByLDSCTask(Task):
                 ref_ld_chr_cts=str(new_loc_chr_cts_index_path),
                 w_ld_chr=str(w_ld_chr_full_pattern),
             )
-            ldsc_h2_cts: pd.DataFrame = unwrap(sumstats.ldsc_h2_cts)  # type: ignore[assignment]
+            ldsc_h2_cts: pd.DataFrame = unwrap(sumstats.ldsc_h2_cts).copy()  # type: ignore[assignment]
             logger.debug(f"cell type specific s-LDSC results: \n \n {ldsc_h2_cts}\n")
+
+            # Explicitly delete the large sumstats object and trigger garbage collection
+            # to prevent memory accumulation in the same process
+            del sumstats
+            import gc
+
+            gc.collect()
 
             out_path = scratch_dir / "ldsc_h2_cts.csv"
             ldsc_h2_cts.to_csv(out_path, index=False)
