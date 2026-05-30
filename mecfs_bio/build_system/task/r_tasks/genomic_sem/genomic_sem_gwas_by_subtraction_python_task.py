@@ -3,11 +3,12 @@ GWAS-by-subtraction via munge+ldsc+sumstats in R, with the per-SNP
 Cholesky decomposition and delta-method SE computed in numpy.
 
 Convention: source[0] = composite trait (T1), source[1] = reference trait (T2).
-Factor C aligns with T2; factor NC captures the T1 residual orthogonal to C.
+Factor F is the genetic factor common to both traits (defined by the reference
+trait T2); factor R is the remainder unique to the composite trait T1,
+orthogonal to F. See `_gwas_by_subtraction_kernel` for the model.
 
-The output parquet contains two rows of results per SNP (one for C~SNP, one
-for NC~SNP), matching the layout that GenomicSEM's userGWAS with
-sub=c("C~SNP","NC~SNP") would produce.
+The output is two parquets, one per factor (F~SNP and R~SNP), matching the
+layout that GenomicSEM's userGWAS with sub=c("F~SNP","R~SNP") would produce.
 """
 
 import gc
@@ -52,8 +53,8 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_user_gwas_task 
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
-SUBTRACTION_C_FILENAME = "reference_factor.parquet"
-SUBTRACTION_NC_FILENAME = "residual_factor.parquet"
+SUBTRACTION_F_FILENAME = "common_factor.parquet"  # F: factor shared by both traits
+SUBTRACTION_R_FILENAME = "remainder_factor.parquet"  # R: residual unique to T1
 
 
 @frozen
@@ -65,8 +66,8 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
     source[0] = composite trait (T1, e.g. educational attainment)
     source[1] = reference trait (T2, e.g. cognitive performance)
 
-    Output: two parquets under gwas_results/ — one for the reference-aligned
-    factor (C~SNP) and one for the residual factor (NC~SNP).
+    Output: two parquets under gwas_results/ — one for the common factor
+    (F~SNP) and one for the remainder factor (R~SNP).
     """
 
     meta: Meta
@@ -116,19 +117,19 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
                 tmp_dir=tmp_dir,
             )
             logger.debug("Running Python GWAS-by-subtraction kernel")
-            c_df, nc_df = _run_python_subtraction(
+            frames = _run_python_subtraction(
                 covstruc_r=covstruc_r,
                 snps_r=snps_r,
                 varSNPSE2=_resolve_snp_se(self.run_config),
             )
             out_dir = scratch_dir / GWAS_RESULTS_SUBDIR
             out_dir.mkdir(parents=True, exist_ok=True)
-            c_df.to_parquet(out_dir / SUBTRACTION_C_FILENAME, index=False)
-            nc_df.to_parquet(out_dir / SUBTRACTION_NC_FILENAME, index=False)
+            frames.f_df.to_parquet(out_dir / SUBTRACTION_F_FILENAME, index=False)
+            frames.r_df.to_parquet(out_dir / SUBTRACTION_R_FILENAME, index=False)
             logger.debug(
                 f"Wrote subtraction results: "
-                f"C ({len(c_df)} rows, {int(c_df['fail'].sum())} fails), "
-                f"NC ({len(nc_df)} rows, {int(nc_df['fail'].sum())} fails)"
+                f"F ({len(frames.f_df)} rows, {int(frames.f_df['fail'].sum())} fails), "
+                f"R ({len(frames.r_df)} rows, {int(frames.r_df['fail'].sum())} fails)"
             )
 
         gc.collect()
@@ -187,13 +188,29 @@ def _r_matrix_to_numpy(r_matrix) -> np.ndarray:
     return arr
 
 
-def _extract_covstruc_arrays(
-    covstruc_r,
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-    S_LD = _r_matrix_to_numpy(covstruc_r.rx2("S"))
-    V_LD = _r_matrix_to_numpy(covstruc_r.rx2("V"))
-    I_LD = _r_matrix_to_numpy(covstruc_r.rx2("I"))
-    return S_LD, V_LD, I_LD
+@frozen
+class _CovStruct:
+    """LDSC covariance structure extracted from the R covstruc list."""
+
+    S_LD: np.ndarray  # (k, k) genetic covariance
+    V_LD: np.ndarray  # sampling covariance of vech(S_LD)
+    I_LD: np.ndarray  # (k, k) LDSC intercepts
+
+
+@frozen
+class _SubtractionFrames:
+    """The two per-factor result tables written by the task."""
+
+    f_df: pd.DataFrame  # common factor F ~ SNP
+    r_df: pd.DataFrame  # remainder factor R ~ SNP
+
+
+def _extract_covstruc_arrays(covstruc_r) -> _CovStruct:
+    return _CovStruct(
+        S_LD=_r_matrix_to_numpy(covstruc_r.rx2("S")),
+        V_LD=_r_matrix_to_numpy(covstruc_r.rx2("V")),
+        I_LD=_r_matrix_to_numpy(covstruc_r.rx2("I")),
+    )
 
 
 def _make_result_df(
@@ -204,7 +221,6 @@ def _make_result_df(
     p: np.ndarray,
     n_eff: np.ndarray,
     fail: np.ndarray,
-    warning: np.ndarray,
     lhs: str,
 ) -> pd.DataFrame:
     n = len(snps_df)
@@ -225,15 +241,14 @@ def _make_result_df(
             "Pval_Estimate": p,
             "N_eff": n_eff,
             "fail": fail,
-            "warning": warning,
         }
     )
 
 
 def _run_python_subtraction(
     *, covstruc_r, snps_r, varSNPSE2: float
-) -> tuple[pd.DataFrame, pd.DataFrame]:
-    S_LD, V_LD, I_LD = _extract_covstruc_arrays(covstruc_r)
+) -> _SubtractionFrames:
+    cov = _extract_covstruc_arrays(covstruc_r)
     snps_df = _r_to_pandas(snps_r)
 
     beta_cols = [c for c in snps_df.columns if str(c).startswith("beta.")]
@@ -246,35 +261,33 @@ def _run_python_subtraction(
     varSNP = 2.0 * maf * (1.0 - maf)
 
     result = fit_gwas_by_subtraction(
-        S_LD=S_LD,
-        V_LD=V_LD,
-        I_LD=I_LD,
+        S_LD=cov.S_LD,
+        V_LD=cov.V_LD,
+        I_LD=cov.I_LD,
         beta_SNP=beta_SNP,
         SE_SNP=SE_SNP,
         varSNP=varSNP,
         varSNPSE2=varSNPSE2,
     )
 
-    c_df = _make_result_df(
+    f_df = _make_result_df(
         snps_df,
-        est=result.beta_C,
-        se_c=result.se_c_C,
-        z=result.z_C,
-        p=result.p_C,
-        n_eff=result.n_eff_C,
+        est=result.beta_F,
+        se_c=result.se_c_F,
+        z=result.z_F,
+        p=result.p_F,
+        n_eff=result.n_eff_F,
         fail=result.fail,
-        warning=result.warning,
-        lhs="C",
+        lhs="F",
     )
-    nc_df = _make_result_df(
+    r_df = _make_result_df(
         snps_df,
-        est=result.beta_NC,
-        se_c=result.se_c_NC,
-        z=result.z_NC,
-        p=result.p_NC,
-        n_eff=result.n_eff_NC,
+        est=result.beta_R,
+        se_c=result.se_c_R,
+        z=result.z_R,
+        p=result.p_R,
+        n_eff=result.n_eff_R,
         fail=result.fail,
-        warning=result.warning,
-        lhs="NC",
+        lhs="R",
     )
-    return c_df, nc_df
+    return _SubtractionFrames(f_df=f_df, r_df=r_df)
