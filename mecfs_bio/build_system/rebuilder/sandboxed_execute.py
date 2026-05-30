@@ -1,3 +1,4 @@
+import gc
 import shutil
 import tempfile
 from pathlib import Path
@@ -5,6 +6,17 @@ from pathlib import Path
 import attr
 import structlog
 from loguru import logger
+
+
+def _current_rss_kb() -> int:
+    try:
+        with open("/proc/self/status") as f:
+            for line in f:
+                if line.startswith("VmRSS:"):
+                    return int(line.split()[1])
+    except OSError:
+        pass
+    return -1
 
 logger = structlog.get_logger()
 
@@ -38,6 +50,13 @@ def sandboxed_execute(
         target_path.parent.mkdir(exist_ok=True, parents=True)
         result = _move_asset(result, target_path)
         logger.debug(f"Saved asset {task.asset_id} to {target_path}.")
+    rss_before_kb = _current_rss_kb()
+    collected = gc.collect()
+    rss_after_kb = _current_rss_kb()
+    logger.debug(
+        f"[gc-experiment] post-task gc.collect for {task.asset_id}: "
+        f"unreachable_collected={collected} rss_before_kb={rss_before_kb} rss_after_kb={rss_after_kb}"
+    )
     return result
 
 
