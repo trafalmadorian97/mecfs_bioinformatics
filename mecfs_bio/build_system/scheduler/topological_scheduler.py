@@ -162,7 +162,11 @@ def topological[
             done=done,
             print_progress_list=settings.print_progress,
         )
-        node = frontier[0]
+        # HACK (experiment/immgen-first): when an "immgen" cell-analysis task
+        # is available, run it before its cahoy/gtex siblings to test whether
+        # the OOM is caused by residue from prior tasks vs. immgen's own size.
+        immgen_first = [n for n in frontier if "immgen" in n]
+        node = immgen_first[0] if immgen_first else frontier[0]
         task = tasks[node]
         maybe_asset = get_asset_if_exists(
             meta=task.meta,
