@@ -357,7 +357,6 @@ def fit_gwas_by_subtraction(
     beta_SNP: np.ndarray,
     SE_SNP: np.ndarray,
     varSNP: np.ndarray,
-    varSNPSE2: float = (5e-4) ** 2,
 ) -> GWASBySubtractionResult:
     """
     GWAS-by-subtraction for k=2 traits via Cholesky decomposition.
@@ -373,7 +372,6 @@ def fit_gwas_by_subtraction(
         beta_SNP   : (N, 2) per-SNP marginal betas (col 0 = T1, col 1 = T2)
         SE_SNP     : (N, 2) per-SNP standard errors
         varSNP     : (N,) = 2 * MAF * (1 - MAF)
-        varSNPSE2  : scalar, variance of the SNP-SNP entry (default (5e-4)^2)
 
     Returns GWASBySubtractionResult.
 

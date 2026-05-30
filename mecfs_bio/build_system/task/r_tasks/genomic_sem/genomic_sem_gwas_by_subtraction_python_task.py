@@ -120,7 +120,6 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
             frames = _run_python_subtraction(
                 covstruc_r=covstruc_r,
                 snps_r=snps_r,
-                varSNPSE2=_resolve_snp_se(self.run_config),
             )
             out_dir = scratch_dir / GWAS_RESULTS_SUBDIR
             out_dir.mkdir(parents=True, exist_ok=True)
@@ -164,12 +163,6 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
             sumstats_config=sumstats_config,
             run_config=run_config,
         )
-
-
-def _resolve_snp_se(run_config: GenomicSEMGWASRunConfig) -> float:
-    if run_config.snp_se is False or run_config.snp_se is None:
-        return (5e-4) ** 2
-    return float(run_config.snp_se)
 
 
 def _r_to_pandas(r_df) -> pd.DataFrame:
@@ -245,9 +238,7 @@ def _make_result_df(
     )
 
 
-def _run_python_subtraction(
-    *, covstruc_r, snps_r, varSNPSE2: float
-) -> _SubtractionFrames:
+def _run_python_subtraction(*, covstruc_r, snps_r) -> _SubtractionFrames:
     cov = _extract_covstruc_arrays(covstruc_r)
     snps_df = _r_to_pandas(snps_r)
 
@@ -267,7 +258,6 @@ def _run_python_subtraction(
         beta_SNP=beta_SNP,
         SE_SNP=SE_SNP,
         varSNP=varSNP,
-        varSNPSE2=varSNPSE2,
     )
 
     f_df = _make_result_df(
