@@ -1,7 +1,6 @@
 from pathlib import Path, PurePath
 
 import pandas as pd
-import structlog
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -18,9 +17,6 @@ from mecfs_bio.build_system.task.filter_snps_by_frequency import (
     FilterSNPsFrequencyTask,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
-
-logger = structlog.get_logger()
-
 
 def test_filter_snps_by_frequency_task(tmp_path: Path):
     df_1_loc = tmp_path / "df_1.csv"
