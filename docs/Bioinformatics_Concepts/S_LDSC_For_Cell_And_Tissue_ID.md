@@ -54,7 +54,7 @@ $$
 
 where
 
-- $\chi^2_i$ is the $\chi^2$ statistic of the maginal GWAS regression for genetic variant $i$.
+- $\chi^2_i$ is the $\chi^2$ statistic of the marginal GWAS regression for genetic variant $i$.
 - $M$ is the number of genetic variants in the GWAS.
 - $N$ is the number of individuals in the GWAS.
 - $l_i:=\sum_k r_{ik}^2$ is the linkage disequilibrium score of genetic variant $i$, where $r_{ik}$ denotes the correlation between variants $i$ and $k$.

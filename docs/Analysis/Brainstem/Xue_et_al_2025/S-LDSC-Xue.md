@@ -6,7 +6,7 @@ hide:
 
 
 
-I applied [Stratified Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from Xue et al.'s GWAS of whole brainstem volume[@xue2025genetic]
+I applied [Stratified Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from Xue et al.'s GWAS of whole brainstem volume[@xue2025genetic].
 
 
 
