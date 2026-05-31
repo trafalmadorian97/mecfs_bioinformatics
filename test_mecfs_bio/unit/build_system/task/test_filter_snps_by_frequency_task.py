@@ -1,4 +1,4 @@
-from pathlib import Path, PurePath
+from pathlib import Path
 
 import pandas as pd
 
@@ -9,14 +9,13 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameTextFormat,
 )
-from mecfs_bio.build_system.meta.simple_filtered_gwas_data_meta import (
-    SimpleFilteredGWASDataMeta,
-)
+from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.filter_snps_by_frequency import (
     FilterSNPsFrequencyTask,
 )
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
+
 
 def test_filter_snps_by_frequency_task(tmp_path: Path):
     df_1_loc = tmp_path / "df_1.csv"
@@ -40,19 +39,13 @@ def test_filter_snps_by_frequency_task(tmp_path: Path):
     scratch_loc = tmp_path / "scratch"
     scratch_loc.mkdir(exist_ok=True, parents=True)
     task = FilterSNPsFrequencyTask(
-        meta=SimpleFilteredGWASDataMeta(
-            trait="fake",
-            project="fake",
-            sub_dir=PurePath("abc/def"),
-            id=AssetId("my_task"),
+        meta=SimpleFileMeta(
+            AssetId("fake"),
             read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=",")),
         ),
         raw_gwas_task=FakeTask(
-            SimpleFilteredGWASDataMeta(
-                trait="fake",
-                project="fake",
-                sub_dir=PurePath("abc/def"),
-                id=AssetId("Fake"),
+            SimpleFileMeta(
+                AssetId("dummy"),
                 read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=",")),
             ),
         ),

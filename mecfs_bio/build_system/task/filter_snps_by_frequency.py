@@ -9,6 +9,7 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -35,7 +36,7 @@ class FilterSNPsFrequencyTask(Task):
     """
 
     raw_gwas_task: Task
-    meta: FilteredGWASDataMeta
+    meta: FilteredGWASDataMeta | FileMeta
     allele_freq_col: str = "effect_allele_frequency"
     freq_thresh: float = 0.05
 
