@@ -29,6 +29,11 @@ import narwhals as nw
 
 @frozen
 class FilterSNPsFrequencyTask(Task):
+    """
+    Task to only keep variants where the minor allele frequency
+    is greater than or equal to the given freq_thresh.
+    """
+
     raw_gwas_task: Task
     meta: FilteredGWASDataMeta
     allele_freq_col: str = "effect_allele_frequency"
