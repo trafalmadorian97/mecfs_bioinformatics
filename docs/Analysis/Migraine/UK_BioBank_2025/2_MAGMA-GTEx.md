@@ -13,6 +13,6 @@ hide:
 
 The four significant tissues in this analysis were all digestive tissues. This result is consistent with another migraine GWAS which also used the UK BioBank (but also included other individuals), and where the top MAGMA tissues were also all digestive tissues.[@choquet2021new] 
 
-The finding of significant digestive tissues is somewhat surprising, as migraine is generally considered a neurological disease[@ruschel2024migraine]. This MAGMA finding may relate to observations that irritable bowel syndrome is found with increased prevalence in those with migraine.[@wongtrakul2022increased]
+The finding of significant digestive tissues is somewhat surprising, as migraine is generally considered a neurological disease[@ruschel2024migraine]. This MAGMA finding may relate to studies reporting that irritable bowel syndrome is found with increased prevalence in those with migraine.[@wongtrakul2022increased][@todor2023systematic]
 
 A different migraine GWAS in a USA cohort found MAGMA enrichment primarily in brain tissues, but also in the uterus.[@gasperi2025multi]
