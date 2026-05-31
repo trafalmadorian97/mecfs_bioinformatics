@@ -5,6 +5,9 @@ hide:
 # MAGMA HBA
 I applied MAGMA to the DecodeME GWAS[@genetics2025initial] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] (HBA). As in my other MAGMA analyses, I sourced linkage disequilibrium reference data from the European subset of the 1000-genomes project.
 
+For this MAGMA analysis, I used a MAGMA gene/cell specificity matrix (i.e. the $E$ matrix in my [notes on MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md) ) prepared as described in Duncan et al[@duncan2025mapping] (see Section "Gene expression data
+").  This involves log-transforming the raw RNAseq data, and then row-normalizing the $E$ matrix.  Note that this differs from the FUMA approach.
+
 ## Results
 The results are plotted below:
 
