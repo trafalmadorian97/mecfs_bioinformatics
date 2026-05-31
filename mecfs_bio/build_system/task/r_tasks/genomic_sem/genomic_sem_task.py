@@ -380,7 +380,7 @@ def _run_munge(
     target output directory.
     """
     base = importr("base")
-    cwd_before = str(base.getwd()[0])  # ty: ignore[not-subscriptable]
+    cwd_before = str(base.getwd()[0])
     try:
         base.setwd(str(output_dir))
         gsem.munge(
