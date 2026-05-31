@@ -1,6 +1,7 @@
 import shutil
 import tempfile
 from pathlib import Path
+from typing import Callable
 
 import attr
 import structlog
@@ -19,15 +20,23 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
+def noop_post_execute_hook(task: Task) -> None:
+    """Default post-execute hook: do nothing."""
+
+
 def sandboxed_execute(
     task: Task,
     meta_to_path: MetaToPath,
     wf: WF,
     fetch: Fetch,
+    post_execute: Callable[[Task], None] = noop_post_execute_hook,
 ) -> Asset:
     """
     Execute a task in a temporary directory, then move its result to the final location
     determined by the task's metadata.
+
+    `post_execute` is invoked with the task after the temp directory is cleaned up and
+    the asset has been moved into place. The default is a no-op.
     """
     meta = task.meta
     target_path = meta_to_path(meta)
@@ -38,6 +47,7 @@ def sandboxed_execute(
         target_path.parent.mkdir(exist_ok=True, parents=True)
         result = _move_asset(result, target_path)
         logger.debug(f"Saved asset {task.asset_id} to {target_path}.")
+    post_execute(task)
     return result
 
 
