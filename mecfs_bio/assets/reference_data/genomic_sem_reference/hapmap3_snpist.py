@@ -11,6 +11,10 @@ I have rehosted the file on dropbox.
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -24,6 +28,8 @@ HAPMAP3_SNPLIST_FOR_GENOMIC_SEM = DownloadFileTask(
         id=AssetId("hapmap3_snp_list"),
         extension=".snplist",
         filename="w_hm3",
+        # Tab-separated with a header (SNP, A1, A2).
+        read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
     ),
     url="https://www.dropbox.com/scl/fi/8dsoz94erkkv3fdln1mhb/w_hm3.snplist?rlkey=59lhbaz7bvj3bv669f87fsufg&dl=1",
     md5_hash="e1372a59749eb1f92f7f6931c075f5ac",

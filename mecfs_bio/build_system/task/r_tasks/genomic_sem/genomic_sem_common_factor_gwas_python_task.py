@@ -51,14 +51,14 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsConfig,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _resolve_file_path,
-    _resolve_ld_path,
-    _validate_sources,
+    resolve_file_path,
+    resolve_ld_path,
+    validate_sources,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
-    _prepare_gwas_inputs,
-    _r_matrix_to_numpy,
-    _r_to_pandas,
+    prepare_gwas_inputs,
+    r_matrix_to_numpy,
+    r_to_pandas,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -84,7 +84,7 @@ class GenomicSEMCommonFactorGWASPythonTask(Task):
     run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig()
 
     def __attrs_post_init__(self):
-        _validate_sources(self.sources)
+        validate_sources(self.sources)
         assert len(self.sources) == 2, (
             f"Python kernel v1 only supports k=2 traits; got {len(self.sources)}"
         )
@@ -102,13 +102,13 @@ class GenomicSEMCommonFactorGWASPythonTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         gsem = importr("GenomicSEM")
-        ld_path = _resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
-        hapmap_path = _resolve_file_path(self.hapmap_snps_task, fetch)
-        sumstats_ref_path = _resolve_file_path(self.sumstats_ref_task, fetch)
+        ld_path = resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
+        hapmap_path = resolve_file_path(self.hapmap_snps_task, fetch)
+        sumstats_ref_path = resolve_file_path(self.sumstats_ref_task, fetch)
 
         with tempfile.TemporaryDirectory() as tmp_dir_str:
             tmp_dir = Path(tmp_dir_str)
-            covstruc_r, snps_r = _prepare_gwas_inputs(
+            covstruc_r, snps_r = prepare_gwas_inputs(
                 gsem=gsem,
                 sources=self.sources,
                 ld_path=ld_path,
@@ -183,9 +183,9 @@ def _extract_covstruc_arrays(
     covstruc_r,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Return (S_LD, V_LD, I_LD) from GenomicSEM's ldsc output."""
-    S_LD = _r_matrix_to_numpy(covstruc_r.rx2("S"))
-    V_LD = _r_matrix_to_numpy(covstruc_r.rx2("V"))
-    I_LD = _r_matrix_to_numpy(covstruc_r.rx2("I"))
+    S_LD = r_matrix_to_numpy(covstruc_r.rx2("S"))
+    V_LD = r_matrix_to_numpy(covstruc_r.rx2("V"))
+    I_LD = r_matrix_to_numpy(covstruc_r.rx2("I"))
     return S_LD, V_LD, I_LD
 
 
@@ -197,7 +197,7 @@ def _run_python_common_factor_gwas(
     package the results in the column layout downstream code expects.
     """
     S_LD, V_LD, I_LD = _extract_covstruc_arrays(covstruc_r)
-    snps_df = _r_to_pandas(snps_r)
+    snps_df = r_to_pandas(snps_r)
 
     # Sumstats() emits one beta.<trait> and se.<trait> per trait, in the order
     # the LDSC was run. Discover them by name to remain robust to extra

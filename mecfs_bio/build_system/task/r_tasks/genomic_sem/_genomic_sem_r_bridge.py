@@ -36,24 +36,24 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsConfig,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _get_prevs,
-    _get_sample_size,
-    _gwas_method_flags,
-    _ld_dir_with_genomic_sem_naming,
-    _sanitize_component_name,
-    _write_munge_input,
+    get_prevs,
+    get_sample_size,
+    gwas_method_flags,
+    ld_dir_with_genomic_sem_naming,
+    sanitize_component_name,
+    write_munge_input,
 )
 
 logger = structlog.get_logger()
 
 
-def _r_to_pandas(r_df) -> pd.DataFrame:
+def r_to_pandas(r_df) -> pd.DataFrame:
     conv = ro.default_converter + pandas2ri.converter
     with localconverter(conv):
         return ro.conversion.get_conversion().rpy2py(r_df)
 
 
-def _r_matrix_to_numpy(r_matrix) -> np.ndarray:
+def r_matrix_to_numpy(r_matrix) -> np.ndarray:
     """Convert an R numeric matrix to a (rows, cols) numpy array."""
     conv = ro.default_converter + pandas2ri.converter
     with localconverter(conv):
@@ -66,10 +66,10 @@ def _r_matrix_to_numpy(r_matrix) -> np.ndarray:
     return arr
 
 
-def _run_munge(
+def run_r_munge(
     gsem,
     input_files: list[str],
-    hapmap_path: str,
+    hapmap_path: Path,
     trait_names: list[str],
     sample_sizes: list[float],
     output_dir: Path,
@@ -88,7 +88,7 @@ def _run_munge(
         base.setwd(str(output_dir))
         gsem.munge(
             files=ro.StrVector(input_files),
-            hm3=hapmap_path,
+            hm3=str(hapmap_path),
             trait_names=ro.StrVector(trait_names),
             N=ro.FloatVector(sample_sizes),
             info_filter=info_filter,
@@ -98,13 +98,13 @@ def _run_munge(
         base.setwd(cwd_before)
 
 
-def _run_ldsc(
+def run_r_ldsc(
     gsem,
     munged_paths: list[str],
     trait_names: list[str],
     sample_prevs: list[float],
     population_prevs: list[float],
-    ld_path: str,
+    ld_path: Path,
     ld_file_basename_prefix: str,
     ldsc_log_prefix: str,
 ):
@@ -125,22 +125,22 @@ def _run_ldsc(
             sqrt(N1N2) for the co-heritabilities.
         LDSCoutput$m is the number of SNPs used to construct the LD score.
     """
-    with _ld_dir_with_genomic_sem_naming(
+    with ld_dir_with_genomic_sem_naming(
         ld_path, ld_file_basename_prefix
     ) as effective_ld:
         return gsem.ldsc(
             traits=ro.StrVector(munged_paths),
             sample_prev=ro.FloatVector(sample_prevs),
             population_prev=ro.FloatVector(population_prevs),
-            ld=effective_ld,
-            wld=effective_ld,
+            ld=str(effective_ld),
+            wld=str(effective_ld),
             trait_names=ro.StrVector(trait_names),
             ldsc_log=ldsc_log_prefix,
             stand=True,
         )
 
 
-def _save_ldsc_outputs(covstruc, scratch_dir: Path) -> None:
+def save_ldsc_outputs(covstruc, scratch_dir: Path) -> None:
     """
     Convert the LDSC output (an R named list) into CSV files so the outputs are
     inspectable from outside R.
@@ -163,7 +163,7 @@ def _save_ldsc_outputs(covstruc, scratch_dir: Path) -> None:
         s_stand_df.to_csv(scratch_dir / LDSC_S_STAND_FILENAME, index=False)
 
 
-def _save_model_outputs(model_result, scratch_dir: Path) -> None:
+def save_model_outputs(model_result, scratch_dir: Path) -> None:
     """
     GenomicSEM::usermodel returns a named R list with $modelfit (fit indices)
     and $results (parameter estimates).
@@ -180,13 +180,13 @@ def _save_model_outputs(model_result, scratch_dir: Path) -> None:
     results_df.to_csv(scratch_dir / MODEL_RESULTS_FILENAME, index=False)
 
 
-def _prepare_gwas_inputs(
+def prepare_gwas_inputs(
     *,
     gsem,
     sources: Sequence[GenomicSEMGWASSumstatsSource],
-    ld_path: str,
-    hapmap_path: str,
-    sumstats_ref_path: str,
+    ld_path: Path,
+    hapmap_path: Path,
+    sumstats_ref_path: Path,
     munge_config: GenomicSEMConfig,
     sumstats_config: GenomicSEMSumstatsConfig,
     fetch: Fetch,
@@ -207,18 +207,18 @@ def _prepare_gwas_inputs(
     sample_prevs: list[float] = []
     population_prevs: list[float] = []
     for gwas_src in sources:
-        input_path = _write_munge_input(
+        input_path = write_munge_input(
             source=gwas_src.source, fetch=fetch, tmp_dir=tmp_dir
         )
         input_files.append(str(input_path))
         trait_names.append(gwas_src.alias)
-        sample_sizes.append(_get_sample_size(gwas_src.source))
-        samp_prev, pop_prev = _get_prevs(gwas_src.source.sample_info)
+        sample_sizes.append(get_sample_size(gwas_src.source))
+        samp_prev, pop_prev = get_prevs(gwas_src.source.sample_info)
         sample_prevs.append(samp_prev)
         population_prevs.append(pop_prev)
 
     logger.debug(f"Running GenomicSEM::munge on {len(input_files)} files")
-    _run_munge(
+    run_r_munge(
         gsem=gsem,
         input_files=input_files,
         hapmap_path=hapmap_path,
@@ -233,7 +233,7 @@ def _prepare_gwas_inputs(
         assert Path(path).is_file(), f"Munged sumstats not found at {path}"
 
     logger.debug("Running GenomicSEM::ldsc")
-    covstruc = _run_ldsc(
+    covstruc = run_r_ldsc(
         gsem=gsem,
         munged_paths=munged_paths,
         trait_names=trait_names,
@@ -243,11 +243,11 @@ def _prepare_gwas_inputs(
         ld_file_basename_prefix=munge_config.ld_file_filename_pattern,
         ldsc_log_prefix=str(scratch_dir / LDSC_LOG_PREFIX),
     )
-    _save_ldsc_outputs(covstruc=covstruc, scratch_dir=scratch_dir)
+    save_ldsc_outputs(covstruc=covstruc, scratch_dir=scratch_dir)
 
     logger.debug("Running GenomicSEM::sumstats")
-    se_logit_flags, ols_flags, linprob_flags = _gwas_method_flags(sources)
-    snps = _run_sumstats(
+    se_logit_flags, ols_flags, linprob_flags = gwas_method_flags(sources)
+    snps = _run_r_sumstats(
         gsem=gsem,
         input_files=input_files,
         ref_path=sumstats_ref_path,
@@ -261,11 +261,11 @@ def _prepare_gwas_inputs(
     return covstruc, snps
 
 
-def _run_sumstats(
+def _run_r_sumstats(
     *,
     gsem,
     input_files: list[str],
-    ref_path: str,
+    ref_path: Path,
     trait_names: list[str],
     se_logit_flags: list[bool],
     ols_flags: list[bool],
@@ -283,7 +283,7 @@ def _run_sumstats(
     """
     kwargs = dict(
         files=ro.StrVector(input_files),
-        ref=ref_path,
+        ref=str(ref_path),
         trait_names=ro.StrVector(trait_names),
         se_logit=ro.BoolVector(se_logit_flags),
         OLS=ro.BoolVector(ols_flags),
@@ -300,7 +300,7 @@ def _run_sumstats(
     return gsem.sumstats(**kwargs)
 
 
-def _run_user_gwas(
+def run_r_user_gwas(
     *,
     gsem,
     covstruc,
@@ -335,7 +335,7 @@ def _run_user_gwas(
     return gsem.userGWAS(**kwargs)
 
 
-def _save_user_gwas_outputs(
+def save_user_gwas_outputs(
     *, result, sub_components: Sequence[str], scratch_dir: Path
 ) -> list[Path]:
     """
@@ -347,8 +347,8 @@ def _save_user_gwas_outputs(
     out_paths: list[Path] = []
     for i, component in enumerate(sub_components, start=1):
         r_df = result.rx2(i)
-        df = _r_to_pandas(r_df)
-        filename = f"{_sanitize_component_name(component)}.parquet"
+        df = r_to_pandas(r_df)
+        filename = f"{sanitize_component_name(component)}.parquet"
         out_path = out_dir / filename
         df.to_parquet(out_path, index=False)
         logger.debug(

@@ -58,7 +58,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
-def _get_sample_size(source: GenomicSEMSumstatsSource) -> float:
+def get_sample_size(source: GenomicSEMSumstatsSource) -> float:
     info = source.sample_info
     if isinstance(info, BinaryPhenotypeSampleInfo):
         if info.total_sample_size is not None:
@@ -71,7 +71,7 @@ def _get_sample_size(source: GenomicSEMSumstatsSource) -> float:
     raise ValueError(f"Unknown sample info type {type(info)}")
 
 
-def _get_prevs(info: PhenotypeInfo) -> tuple[float, float]:
+def get_prevs(info: PhenotypeInfo) -> tuple[float, float]:
     if isinstance(info, BinaryPhenotypeSampleInfo):
         return info.sample_prevalence, info.estimated_population_prevalence
     if isinstance(info, QuantPhenotype):
@@ -79,11 +79,25 @@ def _get_prevs(info: PhenotypeInfo) -> tuple[float, float]:
     raise ValueError(f"Unknown sample info type {type(info)}")
 
 
-def _write_munge_input(
-    source: GenomicSEMSumstatsSource, fetch: Fetch, tmp_dir: Path
-) -> Path:
+def read_dataframe_from_task(task: Task, fetch: Fetch) -> pl.DataFrame:
     """
-    Read the source sumstats and write a TSV with the column names munge expects.
+    Read a fetched single-file tabular asset as a polars DataFrame using the
+    format declared in the task's metadata read_spec. This lets the upstream
+    task choose whatever on-disk format is convenient (tsv, space-delimited,
+    parquet, ...) without the reader needing to know which.
+    """
+    asset = fetch(task.asset_id)
+    return scan_dataframe_asset(asset, task.meta).collect().to_polars()
+
+
+def build_munge_input_df(
+    source: GenomicSEMSumstatsSource, fetch: Fetch
+) -> pl.DataFrame:
+    """
+    Read the source sumstats (via its read_spec) and rename to the canonical
+    munge columns (SNP, A1, A2, effect, SE, P, N, and MAF when present). This
+    is what ``munge_sumstats`` / ``sumstats`` consume; ``write_munge_input``
+    additionally serialises it to disk for the R workflow.
     """
     asset = fetch(source.asset_id)
     df = (
@@ -91,7 +105,7 @@ def _write_munge_input(
         .collect()
         .to_polars()
     )
-    df = _add_sample_size_if_missing(df, sample_info=source.sample_info)
+    df = add_sample_size_if_missing(df, sample_info=source.sample_info)
 
     required = [
         GWASLAB_RSID_COL,
@@ -116,8 +130,17 @@ def _write_munge_input(
     ]
     if GWASLAB_EFFECT_ALLELE_FREQ_COL in df.columns:
         select_exprs.append(pl.col(GWASLAB_EFFECT_ALLELE_FREQ_COL).alias(MUNGE_MAF_COL))
-    munge_df = df.select(select_exprs)
+    return df.select(select_exprs)
 
+
+def write_munge_input(
+    source: GenomicSEMSumstatsSource, fetch: Fetch, tmp_dir: Path
+) -> Path:
+    """
+    Build the munge-format DataFrame for a source and write it as a TSV (the
+    on-disk form GenomicSEM::munge reads).
+    """
+    munge_df = build_munge_input_df(source, fetch)
     output_path = tmp_dir / f"{source.alias}.sumstats.txt"
     munge_df.write_csv(output_path, separator="\t")
     logger.debug(
@@ -127,7 +150,7 @@ def _write_munge_input(
     return output_path
 
 
-def _add_sample_size_if_missing(
+def add_sample_size_if_missing(
     df: pl.DataFrame, sample_info: PhenotypeInfo
 ) -> pl.DataFrame:
     if GWASLAB_SAMPLE_SIZE_COLUMN in df.columns:
@@ -152,9 +175,9 @@ def _add_sample_size_if_missing(
 
 
 @contextmanager
-def _ld_dir_with_genomic_sem_naming(
-    ld_path: str, basename_prefix: str
-) -> Iterator[str]:
+def ld_dir_with_genomic_sem_naming(
+    ld_path: Path, basename_prefix: str
+) -> Iterator[Path]:
     """
     GenomicSEM::ldsc constructs LD score paths as "<ld>/<chr>.l2.ldscore.gz",
     so when the on-disk files have a basename prefix (e.g. "LDscore.") we
@@ -163,35 +186,34 @@ def _ld_dir_with_genomic_sem_naming(
     if not basename_prefix:
         yield ld_path
         return
-    src_dir = Path(ld_path)
     with tempfile.TemporaryDirectory() as tmp_str:
         tmp = Path(tmp_str)
-        for src in src_dir.iterdir():
+        for src in ld_path.iterdir():
             if not src.name.startswith(basename_prefix):
                 continue
             stripped = src.name[len(basename_prefix) :]
             (tmp / stripped).symlink_to(src.resolve())
-        yield str(tmp)
+        yield tmp
 
 
-def _resolve_ld_path(
+def resolve_ld_path(
     ld_ref_task: Task, fetch: Fetch, munge_config: GenomicSEMConfig
-) -> str:
+) -> Path:
     asset = fetch(ld_ref_task.asset_id)
     assert isinstance(asset, DirectoryAsset)
     # Absolute path so the value remains correct after R chdirs during munge.
     # The basename-prefix in munge_config.ld_file_filename_pattern is applied
     # downstream via a symlink farm — do not concatenate it here.
-    return str(asset.path.resolve())
+    return asset.path.resolve()
 
 
-def _resolve_file_path(task: Task, fetch: Fetch) -> str:
+def resolve_file_path(task: Task, fetch: Fetch) -> Path:
     asset = fetch(task.asset_id)
     assert isinstance(asset, FileAsset)
-    return str(asset.path.resolve())
+    return asset.path.resolve()
 
 
-def _validate_sources(sources: Sequence[GenomicSEMGWASSumstatsSource]) -> None:
+def validate_sources(sources: Sequence[GenomicSEMGWASSumstatsSource]) -> None:
     assert len(sources) >= 2, "GenomicSEM GWAS requires at least two traits"
     aliases = [s.alias for s in sources]
     assert len(set(aliases)) == len(aliases), (
@@ -199,7 +221,7 @@ def _validate_sources(sources: Sequence[GenomicSEMGWASSumstatsSource]) -> None:
     )
 
 
-def _gwas_method_flags(
+def gwas_method_flags(
     sources: Sequence[GenomicSEMGWASSumstatsSource],
 ) -> tuple[list[bool], list[bool], list[bool]]:
     """
@@ -216,6 +238,6 @@ def _gwas_method_flags(
     return se_logit, ols, linprob
 
 
-def _sanitize_component_name(name: str) -> str:
+def sanitize_component_name(name: str) -> str:
     """Map a lavaan sub-component (e.g. 'F1~SNP') to a filename stem ('F1_SNP')."""
     return re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_")

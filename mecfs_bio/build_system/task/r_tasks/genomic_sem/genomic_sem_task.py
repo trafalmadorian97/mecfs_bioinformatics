@@ -40,15 +40,15 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsSource,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _get_prevs,
-    _get_sample_size,
-    _write_munge_input,
+    get_prevs,
+    get_sample_size,
+    write_munge_input,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
-    _run_ldsc,
-    _run_munge,
-    _save_ldsc_outputs,
-    _save_model_outputs,
+    run_r_ldsc,
+    run_r_munge,
+    save_ldsc_outputs,
+    save_model_outputs,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -103,11 +103,11 @@ class GenomicSEMTask(Task):
         ld_asset = fetch(self.ld_ref_task.asset_id)
         assert isinstance(ld_asset, DirectoryAsset)
         # Absolute path so values remain correct after R chdirs during munge.
-        ld_path = str(ld_asset.path.resolve())
+        ld_path = ld_asset.path.resolve()
 
         hapmap_asset = fetch(self.hapmap_snps_task.asset_id)
         assert isinstance(hapmap_asset, FileAsset)
-        hapmap_path = str(hapmap_asset.path.resolve())
+        hapmap_path = hapmap_asset.path.resolve()
 
         munged_dir = scratch_dir / MUNGED_SUBDIR
         munged_dir.mkdir(parents=True, exist_ok=True)
@@ -120,18 +120,18 @@ class GenomicSEMTask(Task):
             sample_prevs: list[float] = []
             population_prevs: list[float] = []
             for source in self.sources:
-                input_path = _write_munge_input(
+                input_path = write_munge_input(
                     source=source, fetch=fetch, tmp_dir=tmp_dir
                 )
                 input_files.append(str(input_path))
                 trait_names.append(source.alias)
-                sample_sizes.append(_get_sample_size(source))
-                samp_prev, pop_prev = _get_prevs(source.sample_info)
+                sample_sizes.append(get_sample_size(source))
+                samp_prev, pop_prev = get_prevs(source.sample_info)
                 sample_prevs.append(samp_prev)
                 population_prevs.append(pop_prev)
 
             logger.debug(f"Running GenomicSEM::munge on {len(input_files)} files")
-            _run_munge(
+            run_r_munge(
                 gsem=gsem,
                 input_files=input_files,
                 hapmap_path=hapmap_path,
@@ -149,7 +149,7 @@ class GenomicSEMTask(Task):
                 assert Path(path).is_file(), f"Munged sumstats not found at {path}"
 
             logger.debug("Running GenomicSEM::ldsc")
-            covstruc = _run_ldsc(
+            covstruc = run_r_ldsc(
                 gsem=gsem,
                 munged_paths=munged_paths,
                 trait_names=trait_names,
@@ -160,7 +160,7 @@ class GenomicSEMTask(Task):
                 ldsc_log_prefix=str(scratch_dir / LDSC_LOG_PREFIX),
             )
 
-            _save_ldsc_outputs(covstruc=covstruc, scratch_dir=scratch_dir)
+            save_ldsc_outputs(covstruc=covstruc, scratch_dir=scratch_dir)
 
             (scratch_dir / LAVAAN_MODEL_FILENAME).write_text(self.factor_model)
 
@@ -173,7 +173,7 @@ class GenomicSEMTask(Task):
                 std_lv=self.config.std_lv,
                 fix_resid=self.config.fix_resid,
             )
-            _save_model_outputs(model_result=model_result, scratch_dir=scratch_dir)
+            save_model_outputs(model_result=model_result, scratch_dir=scratch_dir)
 
         gc.collect()
         ro.r("gc()")

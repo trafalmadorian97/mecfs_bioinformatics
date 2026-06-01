@@ -6,7 +6,7 @@ It materializes the dependencies of the common-factor example, munges the two
 traits in R (shared step), runs both R `ldsc` and the Python port on the same
 munged files + LD reference, and prints the element-wise agreement of S/V/I.
 
-Run with:  pixi r python experiments/tralfamadorian97/runs/validate_python_ldsc.py
+Run with:  pixi r python experiments/claude/runs/validate_python_ldsc.py
 """
 
 from pathlib import Path
@@ -23,17 +23,17 @@ from mecfs_bio.assets.gwas.multi_trait.genomic_sem.mecf_pain_common_factor impor
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import run_ldsc
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _get_prevs,
-    _get_sample_size,
-    _ld_dir_with_genomic_sem_naming,
-    _write_munge_input,
+    get_prevs,
+    get_sample_size,
+    ld_dir_with_genomic_sem_naming,
+    write_munge_input,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
-    _run_ldsc,
-    _run_munge,
+    run_r_ldsc,
+    run_r_munge,
 )
 
-WORKDIR = Path("experiments/tralfamadorian97/runs/_ldsc_validation").resolve()
+WORKDIR = Path("experiments/claude/runs/_ldsc_validation").resolve()
 LD_PREFIX = "LDscore."
 
 
@@ -65,8 +65,8 @@ def main() -> None:
         return result[asset_id]
 
     # munge chdirs into the output dir, so all paths handed to R must be absolute.
-    ld_path = str(Path(result[task.ld_ref_task.asset_id].path).resolve())
-    hapmap_path = str(Path(result[task.hapmap_snps_task.asset_id].path).resolve())
+    ld_path = Path(result[task.ld_ref_task.asset_id].path).resolve()
+    hapmap_path = Path(result[task.hapmap_snps_task.asset_id].path).resolve()
 
     gsem = importr("GenomicSEM")
 
@@ -78,16 +78,16 @@ def main() -> None:
     population_prevs: list[float] = []
     for g in gwas_sources:
         src = g.source
-        path = _write_munge_input(source=src, fetch=fetch, tmp_dir=tmp_dir)
+        path = write_munge_input(source=src, fetch=fetch, tmp_dir=tmp_dir)
         input_files.append(str(path))
         trait_names.append(src.alias)
-        sample_sizes.append(_get_sample_size(src))
-        sp, pp = _get_prevs(src.sample_info)
+        sample_sizes.append(get_sample_size(src))
+        sp, pp = get_prevs(src.sample_info)
         sample_prevs.append(sp)
         population_prevs.append(pp)
 
     print("Running R munge ...")
-    _run_munge(
+    run_r_munge(
         gsem=gsem,
         input_files=input_files,
         hapmap_path=hapmap_path,
@@ -103,7 +103,7 @@ def main() -> None:
 
     # 3. R ldsc (ground truth).
     print("Running R ldsc ...")
-    covstruc = _run_ldsc(
+    covstruc = run_r_ldsc(
         gsem=gsem,
         munged_paths=[str(p) for p in munged_paths],
         trait_names=trait_names,
@@ -120,10 +120,10 @@ def main() -> None:
 
     # 4. Python ldsc on the same munged files + LD reference.
     print("Running Python run_ldsc ...")
-    with _ld_dir_with_genomic_sem_naming(ld_path, LD_PREFIX) as eff_ld:
+    with ld_dir_with_genomic_sem_naming(ld_path, LD_PREFIX) as eff_ld:
         py = run_ldsc(
             munged_paths=munged_paths,
-            ld_dir=Path(eff_ld),
+            ld_dir=eff_ld,
             sample_prev=sample_prevs,
             population_prev=population_prevs,
             n_chrom=22,

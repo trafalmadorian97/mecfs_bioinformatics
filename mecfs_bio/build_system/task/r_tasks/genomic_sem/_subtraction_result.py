@@ -12,14 +12,14 @@ from attrs import frozen
 
 
 @frozen
-class _SubtractionFrames:
+class SubtractionFrames:
     """The two per-factor result tables written by a subtraction task."""
 
     f_df: pd.DataFrame  # common factor F ~ SNP
     r_df: pd.DataFrame  # remainder factor R ~ SNP
 
 
-def _make_result_df(
+def make_result_df(
     snps_df: pd.DataFrame,
     est: np.ndarray,
     se_c: np.ndarray,

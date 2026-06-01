@@ -34,8 +34,8 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GWASMethod,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _gwas_method_flags,
-    _sanitize_component_name,
+    gwas_method_flags,
+    sanitize_component_name,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_common_factor_gwas_task import (
     GenomicSEMCommonFactorGWASTask,
@@ -242,7 +242,7 @@ def test_gwas_method_flags_one_per_trait():
         "c", "c", QuantPhenotype(total_sample_size=1), LINEAR_PROB
     )
 
-    se_logit, ols, linprob = _gwas_method_flags([src_ols, src_log, src_lin])
+    se_logit, ols, linprob = gwas_method_flags([src_ols, src_log, src_lin])
 
     assert se_logit == [False, True, False]
     assert ols == [True, False, False]
@@ -250,10 +250,10 @@ def test_gwas_method_flags_one_per_trait():
 
 
 def test_sanitize_component_name():
-    assert _sanitize_component_name("F1~SNP") == "F1_SNP"
-    assert _sanitize_component_name("F1=~a") == "F1_a"
-    assert _sanitize_component_name("a~~b") == "a_b"
-    assert _sanitize_component_name("~F1") == "F1"
+    assert sanitize_component_name("F1~SNP") == "F1_SNP"
+    assert sanitize_component_name("F1=~a") == "F1_a"
+    assert sanitize_component_name("a~~b") == "a_b"
+    assert sanitize_component_name("~F1") == "F1"
 
 
 # ---- config defaults -------------------------------------------------------

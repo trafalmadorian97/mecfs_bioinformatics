@@ -42,21 +42,21 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsConfig,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _resolve_file_path,
-    _resolve_ld_path,
-    _validate_sources,
+    resolve_file_path,
+    resolve_ld_path,
+    validate_sources,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
-    _prepare_gwas_inputs,
-    _r_matrix_to_numpy,
-    _r_to_pandas,
+    prepare_gwas_inputs,
+    r_matrix_to_numpy,
+    r_to_pandas,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel import (
     fit_gwas_by_subtraction,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._subtraction_result import (
-    _make_result_df,
-    _SubtractionFrames,
+    SubtractionFrames,
+    make_result_df,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -86,7 +86,7 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
     run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig()
 
     def __attrs_post_init__(self):
-        _validate_sources(self.sources)
+        validate_sources(self.sources)
         assert len(self.sources) == 2, (
             f"GWAS-by-subtraction requires exactly 2 traits; got {len(self.sources)}"
         )
@@ -104,13 +104,13 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         gsem = importr("GenomicSEM")
-        ld_path = _resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
-        hapmap_path = _resolve_file_path(self.hapmap_snps_task, fetch)
-        sumstats_ref_path = _resolve_file_path(self.sumstats_ref_task, fetch)
+        ld_path = resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
+        hapmap_path = resolve_file_path(self.hapmap_snps_task, fetch)
+        sumstats_ref_path = resolve_file_path(self.sumstats_ref_task, fetch)
 
         with tempfile.TemporaryDirectory() as tmp_dir_str:
             tmp_dir = Path(tmp_dir_str)
-            covstruc_r, snps_r = _prepare_gwas_inputs(
+            covstruc_r, snps_r = prepare_gwas_inputs(
                 gsem=gsem,
                 sources=self.sources,
                 ld_path=ld_path,
@@ -182,15 +182,15 @@ class _CovStruct:
 
 def _extract_covstruc_arrays(covstruc_r) -> _CovStruct:
     return _CovStruct(
-        S_LD=_r_matrix_to_numpy(covstruc_r.rx2("S")),
-        V_LD=_r_matrix_to_numpy(covstruc_r.rx2("V")),
-        I_LD=_r_matrix_to_numpy(covstruc_r.rx2("I")),
+        S_LD=r_matrix_to_numpy(covstruc_r.rx2("S")),
+        V_LD=r_matrix_to_numpy(covstruc_r.rx2("V")),
+        I_LD=r_matrix_to_numpy(covstruc_r.rx2("I")),
     )
 
 
-def _run_python_subtraction(*, covstruc_r, snps_r) -> _SubtractionFrames:
+def _run_python_subtraction(*, covstruc_r, snps_r) -> SubtractionFrames:
     cov = _extract_covstruc_arrays(covstruc_r)
-    snps_df = _r_to_pandas(snps_r)
+    snps_df = r_to_pandas(snps_r)
 
     beta_cols = [c for c in snps_df.columns if str(c).startswith("beta.")]
     se_cols = [c for c in snps_df.columns if str(c).startswith("se.")]
@@ -210,7 +210,7 @@ def _run_python_subtraction(*, covstruc_r, snps_r) -> _SubtractionFrames:
         varSNP=varSNP,
     )
 
-    f_df = _make_result_df(
+    f_df = make_result_df(
         snps_df,
         est=result.beta_F,
         se_c=result.se_c_F,
@@ -220,7 +220,7 @@ def _run_python_subtraction(*, covstruc_r, snps_r) -> _SubtractionFrames:
         fail=result.fail,
         lhs="F",
     )
-    r_df = _make_result_df(
+    r_df = make_result_df(
         snps_df,
         est=result.beta_R,
         se_c=result.se_c_R,
@@ -230,4 +230,4 @@ def _run_python_subtraction(*, covstruc_r, snps_r) -> _SubtractionFrames:
         fail=result.fail,
         lhs="R",
     )
-    return _SubtractionFrames(f_df=f_df, r_df=r_df)
+    return SubtractionFrames(f_df=f_df, r_df=r_df)

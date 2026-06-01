@@ -4,7 +4,7 @@ GenomicSEM::munge / ::sumstats on the real ME/CFS + multisite-pain GWASes,
 and report the speed difference.
 
 Run with:
-  pixi r python experiments/tralfamadorian97/runs/validate_python_munge_sumstats.py
+  pixi r python experiments/claude/runs/validate_python_munge_sumstats.py
 """
 
 import time
@@ -29,15 +29,15 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_sumstats impor
     run_sumstats,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _get_prevs,
-    _get_sample_size,
-    _write_munge_input,
+    get_prevs,
+    get_sample_size,
+    write_munge_input,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
-    _run_munge,
+    run_r_munge,
 )
 
-WORKDIR = Path("experiments/tralfamadorian97/runs/_munge_sumstats_validation").resolve()
+WORKDIR = Path("experiments/claude/runs/_munge_sumstats_validation").resolve()
 _METHOD_TO_FLAGS = {
     "ols": (True, False, False),
     "logistic": (False, True, False),
@@ -71,7 +71,7 @@ def main() -> None:
     def fetch(asset_id):
         return result[asset_id]
 
-    hapmap_path = str(Path(result[task.hapmap_snps_task.asset_id].path).resolve())
+    hapmap_path = Path(result[task.hapmap_snps_task.asset_id].path).resolve()
     sumstats_ref_path = Path(
         DEFAULT_RUNNER.run([task.sumstats_ref_task])[task.sumstats_ref_task.asset_id].path
     ).resolve()
@@ -86,11 +86,11 @@ def main() -> None:
     methods: list[str] = []
     for g in gwas_sources:
         src = g.source
-        path = _write_munge_input(source=src, fetch=fetch, tmp_dir=tmp_dir)
+        path = write_munge_input(source=src, fetch=fetch, tmp_dir=tmp_dir)
         input_files.append(path)
         trait_names.append(src.alias)
-        sample_sizes.append(_get_sample_size(src))
-        sp, pp = _get_prevs(src.sample_info)
+        sample_sizes.append(get_sample_size(src))
+        sp, pp = get_prevs(src.sample_info)
         sample_prevs.append(sp)
         pop_prevs.append(pp)
         methods.append(g.gwas_method)
@@ -98,7 +98,7 @@ def main() -> None:
     # ---------------- MUNGE ----------------
     print("\n==== MUNGE ====")
     t0 = time.time()
-    _run_munge(
+    run_r_munge(
         gsem=gsem,
         input_files=[str(p) for p in input_files],
         hapmap_path=hapmap_path,

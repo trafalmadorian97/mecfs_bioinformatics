@@ -27,13 +27,13 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsConfig,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _resolve_file_path,
-    _resolve_ld_path,
-    _validate_sources,
+    resolve_file_path,
+    resolve_ld_path,
+    validate_sources,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
-    _prepare_gwas_inputs,
-    _r_to_pandas,
+    prepare_gwas_inputs,
+    r_to_pandas,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -57,7 +57,7 @@ class GenomicSEMCommonFactorGWASTask(Task):
     run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig()
 
     def __attrs_post_init__(self):
-        _validate_sources(self.sources)
+        validate_sources(self.sources)
 
     @property
     def deps(self) -> list[Task]:
@@ -72,13 +72,13 @@ class GenomicSEMCommonFactorGWASTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         gsem = importr("GenomicSEM")
-        ld_path = _resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
-        hapmap_path = _resolve_file_path(self.hapmap_snps_task, fetch)
-        sumstats_ref_path = _resolve_file_path(self.sumstats_ref_task, fetch)
+        ld_path = resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
+        hapmap_path = resolve_file_path(self.hapmap_snps_task, fetch)
+        sumstats_ref_path = resolve_file_path(self.sumstats_ref_task, fetch)
 
         with tempfile.TemporaryDirectory() as tmp_dir_str:
             tmp_dir = Path(tmp_dir_str)
-            covstruc, snps = _prepare_gwas_inputs(
+            covstruc, snps = prepare_gwas_inputs(
                 gsem=gsem,
                 sources=self.sources,
                 ld_path=ld_path,
@@ -152,7 +152,7 @@ def _run_common_factor_gwas(*, gsem, covstruc, snps, config: GenomicSEMGWASRunCo
 def _save_common_factor_gwas_output(result, scratch_dir: Path) -> Path:
     out_dir = scratch_dir / GWAS_RESULTS_SUBDIR
     out_dir.mkdir(parents=True, exist_ok=True)
-    df = _r_to_pandas(result)
+    df = r_to_pandas(result)
     out_path = out_dir / COMMON_FACTOR_GWAS_FILENAME
     df.to_parquet(out_path, index=False)
     logger.debug(f"Wrote common factor GWAS sumstats to {out_path} ({len(df)} rows)")

@@ -15,10 +15,10 @@ data (see `_genomic_sem_ldsc`, `_genomic_sem_munge`, `_genomic_sem_sumstats`).
 The win over the R-backed task is runtime: R munge+sumstats took ~12 min
 combined on the user's laptop; the polars ports run in seconds.
 
-Convention (identical to the R-backed task): source[0] = composite trait (T1),
-source[1] = reference trait (T2). Factor F is the genetic factor common to
-both traits (defined by the reference trait T2); factor R is the remainder
-unique to the composite trait T1, orthogonal to F. See
+Convention: the two traits are named explicitly (composite_trait_source = T1,
+reference_trait_source = T2) to avoid ordering mistakes. Factor F is the genetic
+factor common to both traits (defined by the reference trait T2); factor R is
+the remainder unique to the composite trait T1, orthogonal to F. See
 `_gwas_by_subtraction_kernel` for the model.
 
 Output: two parquets under gwas_results/ -- one for the common factor (F~SNP)
@@ -27,9 +27,7 @@ R-backed task, so downstream consumers are interchangeable.
 """
 
 import gc
-import tempfile
 from pathlib import Path, PurePath
-from typing import Sequence
 
 import numpy as np
 import pandas as pd
@@ -64,13 +62,12 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsConfig,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _get_prevs,
-    _get_sample_size,
-    _ld_dir_with_genomic_sem_naming,
-    _resolve_file_path,
-    _resolve_ld_path,
-    _validate_sources,
-    _write_munge_input,
+    build_munge_input_df,
+    get_prevs,
+    get_sample_size,
+    ld_dir_with_genomic_sem_naming,
+    read_dataframe_from_task,
+    resolve_ld_path,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import (
     LDSCResult,
@@ -87,8 +84,8 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel
     fit_gwas_by_subtraction,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._subtraction_result import (
-    _make_result_df,
-    _SubtractionFrames,
+    SubtractionFrames,
+    make_result_df,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -105,15 +102,19 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     GWAS-by-subtraction with munge, LDSC, sumstats, and the Cholesky kernel all
     computed in Python (no rpy2/R at execution time).
 
-    source[0] = composite trait (T1, e.g. educational attainment)
-    source[1] = reference trait (T2, e.g. cognitive performance)
+    The two traits are named explicitly to remove any ordering ambiguity:
+    - composite_trait_source: T1 (loads on both factors, e.g. educational
+      attainment); factor R is its residual.
+    - reference_trait_source: T2 (a pure indicator of the common factor F,
+      e.g. cognitive performance).
 
     Output: two parquets under gwas_results/ -- one for the common factor
     (F~SNP) and one for the remainder factor (R~SNP).
     """
 
     meta: Meta
-    sources: Sequence[GenomicSEMGWASSumstatsSource]
+    composite_trait_source: GenomicSEMGWASSumstatsSource
+    reference_trait_source: GenomicSEMGWASSumstatsSource
     ld_ref_task: Task
     hapmap_snps_task: Task
     sumstats_ref_task: Task
@@ -122,44 +123,43 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig()
 
     def __attrs_post_init__(self):
-        _validate_sources(self.sources)
-        assert len(self.sources) == 2, (
-            f"GWAS-by-subtraction requires exactly 2 traits; got {len(self.sources)}"
+        assert self.composite_trait_source.alias != self.reference_trait_source.alias, (
+            "composite and reference trait aliases must differ"
         )
 
     @property
+    def _ordered_sources(self) -> list[GenomicSEMGWASSumstatsSource]:
+        # Order defines the trait axis for ldsc/sumstats and the kernel:
+        # index 0 = T1 (composite), index 1 = T2 (reference).
+        return [self.composite_trait_source, self.reference_trait_source]
+
+    @property
     def deps(self) -> list[Task]:
-        result: list[Task] = [
+        return [
             self.ld_ref_task,
             self.hapmap_snps_task,
             self.sumstats_ref_task,
+            self.composite_trait_source.task,
+            self.reference_trait_source.task,
         ]
-        for source in self.sources:
-            result.append(source.task)
-        return result
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        ld_path = _resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
-        hapmap_path = _resolve_file_path(self.hapmap_snps_task, fetch)
-        sumstats_ref_path = _resolve_file_path(self.sumstats_ref_task, fetch)
+        ld_path = resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
+        ref_hm3 = read_dataframe_from_task(self.hapmap_snps_task, fetch)
+        ref_1kg = read_dataframe_from_task(self.sumstats_ref_task, fetch)
 
-        with (
-            tempfile.TemporaryDirectory() as tmp_dir_str,
-            _ld_dir_with_genomic_sem_naming(
-                ld_path, self.munge_config.ld_file_filename_pattern
-            ) as effective_ld,
-        ):
-            tmp_dir = Path(tmp_dir_str)
+        with ld_dir_with_genomic_sem_naming(
+            ld_path, self.munge_config.ld_file_filename_pattern
+        ) as effective_ld:
             inputs = _prepare_python_inputs(
-                sources=self.sources,
-                ld_dir=Path(effective_ld),
-                hapmap_path=Path(hapmap_path),
-                sumstats_ref_path=Path(sumstats_ref_path),
+                sources=self._ordered_sources,
+                ld_dir=effective_ld,
+                ref_hm3=ref_hm3,
+                ref_1kg=ref_1kg,
                 munge_config=self.munge_config,
                 sumstats_config=self.sumstats_config,
                 fetch=fetch,
                 scratch_dir=scratch_dir,
-                tmp_dir=tmp_dir,
             )
             logger.debug("Running Python GWAS-by-subtraction kernel")
             frames = _build_subtraction_frames(inputs)
@@ -180,7 +180,8 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     def create(
         cls,
         asset_id: str,
-        sources: Sequence[GenomicSEMGWASSumstatsSource],
+        composite_trait_source: GenomicSEMGWASSumstatsSource,
+        reference_trait_source: GenomicSEMGWASSumstatsSource,
         ld_ref_task: Task,
         hapmap_snps_task: Task,
         sumstats_ref_task: Task,
@@ -196,7 +197,8 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         )
         return cls(
             meta=meta,
-            sources=sources,
+            composite_trait_source=composite_trait_source,
+            reference_trait_source=reference_trait_source,
             ld_ref_task=ld_ref_task,
             hapmap_snps_task=hapmap_snps_task,
             sumstats_ref_task=sumstats_ref_task,
@@ -217,7 +219,7 @@ class _PythonGWASInputs:
     trait_names: list[str]  # T1, T2 order (defines the beta./se. column order)
 
 
-def _sumstats_trait(
+def sumstats_trait(
     gwas_src: GenomicSEMGWASSumstatsSource, df: pl.DataFrame, n: float
 ) -> SumstatsTrait:
     """Map a source's GWAS method onto the SumstatsTrait standardization flag."""
@@ -244,25 +246,23 @@ def _save_python_ldsc_outputs(result: LDSCResult, scratch_dir: Path) -> None:
 
 def _prepare_python_inputs(
     *,
-    sources: Sequence[GenomicSEMGWASSumstatsSource],
+    sources: list[GenomicSEMGWASSumstatsSource],
     ld_dir: Path,
-    hapmap_path: Path,
-    sumstats_ref_path: Path,
+    ref_hm3: pl.DataFrame,
+    ref_1kg: pl.DataFrame,
     munge_config: GenomicSEMConfig,
     sumstats_config: GenomicSEMSumstatsConfig,
     fetch: Fetch,
     scratch_dir: Path,
-    tmp_dir: Path,
 ) -> _PythonGWASInputs:
     """
     Run munge -> ldsc -> sumstats entirely in Python and return the kernel
-    inputs. Side effects: writes munged sumstats and LDSC CSVs into scratch_dir.
+    inputs. ``sources`` is ordered [composite (T1), reference (T2)]; ``ref_hm3``
+    and ``ref_1kg`` are the HapMap3 and 1000G reference panels. Side effects:
+    writes the munged sumstats and LDSC CSVs into scratch_dir.
     """
     munged_dir = scratch_dir / MUNGED_SUBDIR
     munged_dir.mkdir(parents=True, exist_ok=True)
-
-    ref_hm3 = pl.read_csv(hapmap_path, separator="\t")
-    ref_1kg = pl.read_csv(sumstats_ref_path, separator=" ")
 
     trait_names: list[str] = []
     sample_sizes: list[float] = []
@@ -272,13 +272,10 @@ def _prepare_python_inputs(
     sumstats_traits: list[SumstatsTrait] = []
 
     for gwas_src in sources:
-        input_path = _write_munge_input(
-            source=gwas_src.source, fetch=fetch, tmp_dir=tmp_dir
-        )
-        df = pl.read_csv(input_path, separator="\t")
+        df = build_munge_input_df(gwas_src.source, fetch)
         name = gwas_src.alias
-        n = _get_sample_size(gwas_src.source)
-        samp_prev, pop_prev = _get_prevs(gwas_src.source.sample_info)
+        n = get_sample_size(gwas_src.source)
+        samp_prev, pop_prev = get_prevs(gwas_src.source.sample_info)
 
         logger.debug(f"Munging '{name}' ({df.height} variants)")
         munged = munge_sumstats(
@@ -296,7 +293,7 @@ def _prepare_python_inputs(
         sample_prevs.append(samp_prev)
         population_prevs.append(pop_prev)
         munged_paths.append(munged_path)
-        sumstats_traits.append(_sumstats_trait(gwas_src, df, n))
+        sumstats_traits.append(sumstats_trait(gwas_src, df, n))
 
     logger.debug("Running Python LDSC")
     ldsc_result = run_ldsc(
@@ -326,7 +323,7 @@ def _prepare_python_inputs(
     )
 
 
-def _build_subtraction_frames(inputs: _PythonGWASInputs) -> _SubtractionFrames:
+def _build_subtraction_frames(inputs: _PythonGWASInputs) -> SubtractionFrames:
     """Run the Cholesky kernel and package the F/R per-factor result tables."""
     snps_pd = inputs.snps_df.to_pandas()
     # Columns are ordered by trait: col 0 = T1 (composite), col 1 = T2 (reference),
@@ -349,7 +346,7 @@ def _build_subtraction_frames(inputs: _PythonGWASInputs) -> _SubtractionFrames:
         varSNP=varSNP,
     )
 
-    f_df = _make_result_df(
+    f_df = make_result_df(
         snps_pd,
         est=result.beta_F,
         se_c=result.se_c_F,
@@ -359,7 +356,7 @@ def _build_subtraction_frames(inputs: _PythonGWASInputs) -> _SubtractionFrames:
         fail=result.fail,
         lhs="F",
     )
-    r_df = _make_result_df(
+    r_df = make_result_df(
         snps_pd,
         est=result.beta_R,
         se_c=result.se_c_R,
@@ -369,4 +366,4 @@ def _build_subtraction_frames(inputs: _PythonGWASInputs) -> _SubtractionFrames:
         fail=result.fail,
         lhs="R",
     )
-    return _SubtractionFrames(f_df=f_df, r_df=r_df)
+    return SubtractionFrames(f_df=f_df, r_df=r_df)

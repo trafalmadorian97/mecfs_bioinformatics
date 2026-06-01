@@ -44,15 +44,15 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsConfig,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _resolve_file_path,
-    _resolve_ld_path,
-    _sanitize_component_name,
-    _validate_sources,
+    resolve_file_path,
+    resolve_ld_path,
+    sanitize_component_name,
+    validate_sources,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
-    _prepare_gwas_inputs,
-    _run_user_gwas,
-    _save_user_gwas_outputs,
+    prepare_gwas_inputs,
+    run_r_user_gwas,
+    save_user_gwas_outputs,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -85,11 +85,11 @@ class GenomicSEMUserGWASTask(Task):
     std_lv: bool = False
 
     def __attrs_post_init__(self):
-        _validate_sources(self.sources)
+        validate_sources(self.sources)
         assert len(self.sub_components) >= 1, (
             "userGWAS requires at least one sub_components entry"
         )
-        sanitized = [_sanitize_component_name(c) for c in self.sub_components]
+        sanitized = [sanitize_component_name(c) for c in self.sub_components]
         assert len(set(sanitized)) == len(sanitized), (
             f"sub_components map to colliding filenames: {sanitized}"
         )
@@ -107,13 +107,13 @@ class GenomicSEMUserGWASTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         gsem = importr("GenomicSEM")
-        ld_path = _resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
-        hapmap_path = _resolve_file_path(self.hapmap_snps_task, fetch)
-        sumstats_ref_path = _resolve_file_path(self.sumstats_ref_task, fetch)
+        ld_path = resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
+        hapmap_path = resolve_file_path(self.hapmap_snps_task, fetch)
+        sumstats_ref_path = resolve_file_path(self.sumstats_ref_task, fetch)
 
         with tempfile.TemporaryDirectory() as tmp_dir_str:
             tmp_dir = Path(tmp_dir_str)
-            covstruc, snps = _prepare_gwas_inputs(
+            covstruc, snps = prepare_gwas_inputs(
                 gsem=gsem,
                 sources=self.sources,
                 ld_path=ld_path,
@@ -127,7 +127,7 @@ class GenomicSEMUserGWASTask(Task):
             )
             (scratch_dir / LAVAAN_MODEL_FILENAME).write_text(self.factor_model)
             logger.debug("Running GenomicSEM::userGWAS")
-            result = _run_user_gwas(
+            result = run_r_user_gwas(
                 gsem=gsem,
                 covstruc=covstruc,
                 snps=snps,
@@ -138,7 +138,7 @@ class GenomicSEMUserGWASTask(Task):
                 std_lv=self.std_lv,
                 config=self.run_config,
             )
-            _save_user_gwas_outputs(
+            save_user_gwas_outputs(
                 result=result,
                 sub_components=self.sub_components,
                 scratch_dir=scratch_dir,

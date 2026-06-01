@@ -41,10 +41,10 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     GenomicSEMSumstatsSource,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
-    _add_sample_size_if_missing,
-    _get_prevs,
-    _get_sample_size,
-    _write_munge_input,
+    add_sample_size_if_missing,
+    get_prevs,
+    get_sample_size,
+    write_munge_input,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
     GenomicSEMTask,
@@ -148,7 +148,7 @@ def test_rejects_duplicate_aliases():
 def test_get_sample_size_quant():
     info = QuantPhenotype(total_sample_size=12345)
     src = _make_source("x", "x", info)
-    assert _get_sample_size(src) == pytest.approx(12345.0)
+    assert get_sample_size(src) == pytest.approx(12345.0)
 
 
 def test_get_sample_size_binary():
@@ -158,17 +158,17 @@ def test_get_sample_size_binary():
         total_sample_size=4000,
     )
     src = _make_source("x", "x", info)
-    assert _get_sample_size(src) == pytest.approx(4000.0)
+    assert get_sample_size(src) == pytest.approx(4000.0)
 
 
 def test_get_prevs_quant_returns_nan():
-    samp, pop = _get_prevs(QuantPhenotype(total_sample_size=10))
+    samp, pop = get_prevs(QuantPhenotype(total_sample_size=10))
     assert samp != samp  # NaN
     assert pop != pop
 
 
 def test_get_prevs_binary():
-    samp, pop = _get_prevs(
+    samp, pop = get_prevs(
         BinaryPhenotypeSampleInfo(
             sample_prevalence=0.2,
             estimated_population_prevalence=0.01,
@@ -181,7 +181,7 @@ def test_get_prevs_binary():
 
 def test_add_sample_size_if_missing_uses_quant_total():
     df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_SAMPLE_SIZE_COLUMN)
-    out = _add_sample_size_if_missing(
+    out = add_sample_size_if_missing(
         df, sample_info=QuantPhenotype(total_sample_size=999)
     )
     assert (out[GWASLAB_SAMPLE_SIZE_COLUMN] == 999).all()
@@ -189,7 +189,7 @@ def test_add_sample_size_if_missing_uses_quant_total():
 
 def test_add_sample_size_if_missing_keeps_existing_column():
     df = _make_dummy_sumstats(n_rows=3)
-    out = _add_sample_size_if_missing(
+    out = add_sample_size_if_missing(
         df, sample_info=QuantPhenotype(total_sample_size=1)
     )
     pl.testing.assert_frame_equal(out, df)
@@ -198,14 +198,14 @@ def test_add_sample_size_if_missing_keeps_existing_column():
 def test_add_sample_size_if_missing_raises_when_missing_total():
     df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_SAMPLE_SIZE_COLUMN)
     with pytest.raises(ValueError):
-        _add_sample_size_if_missing(
+        add_sample_size_if_missing(
             df, sample_info=QuantPhenotype(total_sample_size=None)
         )
 
 
 def test_write_munge_input_renames_columns_and_writes_tsv(tmp_path: Path):
     """
-    _write_munge_input is the bridge between gwaslab format and what
+    write_munge_input is the bridge between gwaslab format and what
     GenomicSEM::munge expects. Verify the file lands on disk with the right
     columns.
     """
@@ -229,7 +229,7 @@ def test_write_munge_input_renames_columns_and_writes_tsv(tmp_path: Path):
         assert asset_id == "trait_a"
         return FileAsset(source_path)
 
-    output_path = _write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
+    output_path = write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
 
     assert output_path == tmp_path / "trait_a.sumstats.txt"
     assert output_path.is_file()
@@ -273,7 +273,7 @@ def test_write_munge_input_omits_maf_when_freq_missing(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(source_path)
 
-    output_path = _write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
+    output_path = write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
     written = pl.read_csv(output_path, separator="\t")
     assert MUNGE_MAF_COL not in written.columns
 
@@ -299,7 +299,7 @@ def test_write_munge_input_raises_when_required_column_missing(tmp_path: Path):
         return FileAsset(source_path)
 
     with pytest.raises(AssertionError):
-        _write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
+        write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
 
 
 def test_config_has_sensible_defaults():
