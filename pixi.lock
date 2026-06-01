@@ -430,8 +430,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml-0.17.17-py312h4c3975b_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml.clib-0.2.12-py312h4c3975b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruff-0.15.11-h7805a7d_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.95.0-h53717f1_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.95.0-h2c6d0dc_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.96.0-h53717f1_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.96.0-h2c6d0dc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/s2n-1.7.0-ha63dd3a_1.conda
       - conda: https://conda.anaconda.org/bioconda/linux-64/samtools-1.22.1-h96c455f_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/sed-4.9-h6688a6e_0.conda
@@ -447,7 +447,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhcf101f3_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-w-1.2.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomlkit-0.13.3-pyha770c72_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.39-h4e94fc0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.40-h4e94fc0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.41.0-hdab8a38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.3-pyhd8ed1ab_0.conda
@@ -533,7 +533,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/e8/eba9fece11d57a71e3e22ea672742c8f3cf23b35730c9e96db768b295216/googleapis_common_protos-1.71.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/83/3b1d03d36f224edded98e9affd0467630fc09d766c0e56fb1498cbb04a9b/griffe-1.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/ac/42b4d6bc0ea119ce2e91e1788feabf32c5433e9617dbb495c2a3d0dc7f12/grimp-3.14-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/1f/f5/df80b03d7b8d8f3b1277930d8351128c72e96930c3382ad07734d8a3eabf/gwaslab-4.1.6-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/36/5c/489b27e8e1c18473a17b152d8c2281c76f58e7208a844dd32c8a3bd16960/gwaslab-4.1.7-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3a/30/d1c94066343a98bb2cea40120873193a4fed68c4ad7f8935c11caf74c681/h5py-3.15.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/82/4d/1fcf74ad06b114f3ae4a528f582bba38330cb71a5c4afe58e4752a8a7dd0/HiCMatrix-17.2-py3-none-any.whl
@@ -1991,7 +1991,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 6ee4a92479929face62887b336f4e232deee4dfd30b9e7604e2fb6ca458d39df
+  sha256: b36fe6af7c528a8b890e640baaf1dee2cdc09351c443533bfad274f8275bbef1
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -3082,10 +3082,10 @@ packages:
   purls: []
   size: 3376423
   timestamp: 1626369596591
-- pypi: https://files.pythonhosted.org/packages/1f/f5/df80b03d7b8d8f3b1277930d8351128c72e96930c3382ad07734d8a3eabf/gwaslab-4.1.6-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/36/5c/489b27e8e1c18473a17b152d8c2281c76f58e7208a844dd32c8a3bd16960/gwaslab-4.1.7-py3-none-any.whl
   name: gwaslab
-  version: 4.1.6
-  sha256: c9b3d049598d523255a3c2f026f5231e4856b3fca0d65ece79ae46c1e0d74fdf
+  version: 4.1.7
+  sha256: aaf53be8b17d0bba84b9b23d278dc193d316ac6c4eda5389f735cfb67add5be8
   requires_dist:
   - pandas>=1.3,!=1.5,<=2.3.3
   - numpy>=1.21.2,<2
@@ -9844,33 +9844,33 @@ packages:
   - pkg:pypi/ruff?source=compressed-mapping
   size: 9327937
   timestamp: 1776378777189
-- conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.95.0-h53717f1_1.conda
-  sha256: 0f7965acec00e5b35d7b4748ea0da57249ab3db2177d13eb87909c0a142148b5
-  md5: 26172b61a3f03c31e56065413ffc1f2f
+- conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.96.0-h53717f1_0.conda
+  sha256: d084a53a1ce2cea8d6f9cf45108e516a629118dd3f8fb3113d87d1dcd3eea669
+  md5: 5b80270d422d9fddf028cb4ce68370b2
   depends:
   - __glibc >=2.17,<3.0.a0
   - gcc_impl_linux-64
   - libgcc >=14
   - libzlib >=1.3.2,<2.0a0
-  - rust-std-x86_64-unknown-linux-gnu 1.95.0 h2c6d0dc_1
+  - rust-std-x86_64-unknown-linux-gnu 1.96.0 h2c6d0dc_0
   - sysroot_linux-64 >=2.17
   license: MIT
   license_family: MIT
   purls: []
-  size: 182907915
-  timestamp: 1777536012536
-- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.95.0-h2c6d0dc_1.conda
-  sha256: 5d2e2b38a6d2a7653afc93706da04a5a14a6de9834cd34c0a2f4d7af619a3bc6
-  md5: 835766243561e6c6f34b617b9eb89110
+  size: 171986391
+  timestamp: 1780046427552
+- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.96.0-h2c6d0dc_0.conda
+  sha256: e8c453fc331eedd6b7a02356d177802a2c03b0bc6490d86c0e63c15ef172d53f
+  md5: cbbc8546ba8381cb792744564cec0430
   depends:
   - __unix
   constrains:
-  - rust >=1.95.0,<1.95.1.0a0
+  - rust >=1.96.0,<1.96.1.0a0
   license: MIT
   license_family: MIT
   purls: []
-  size: 36416714
-  timestamp: 1777535938349
+  size: 36676677
+  timestamp: 1780046295074
 - conda: https://conda.anaconda.org/conda-forge/linux-64/s2n-1.7.0-ha63dd3a_1.conda
   sha256: 37b2d9768f205f497f5af48cc9e83ca8a5e15c9ba5493f6c0835fff9a6503e66
   md5: f9bb0a7187f2e25b19cde17aa8c846c4
@@ -10511,23 +10511,24 @@ packages:
   - pytest-mypy-testing ; extra == 'test'
   - pytest>=7.0,<8.2 ; extra == 'test'
   requires_python: '>=3.8'
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.39-h4e94fc0_0.conda
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.40-h4e94fc0_0.conda
   noarch: python
-  sha256: de34478aef5e818fd36f8d52928e602a2dfe587e09215f06d49caa3939b630ad
-  md5: 5aa10297d2687cf01925eb5ab0af3b5d
+  sha256: c5c354398f8a9d9e153c8ceadf91c78bf613859aad13d3cbdffe53109bc6a41c
+  md5: 7dd447d1be3cf6ae56cf4322841f0358
   depends:
   - python
-  - __glibc >=2.17,<3.0.a0
   - libgcc >=14
+  - __glibc >=2.17,<3.0.a0
   - _python_abi3_support 1.*
   - cpython >=3.10
   constrains:
   - __glibc >=2.17
   license: MIT
+  license_family: MIT
   purls:
-  - pkg:pypi/ty?source=hash-mapping
-  size: 9877551
-  timestamp: 1779499161183
+  - pkg:pypi/ty?source=compressed-mapping
+  size: 9909766
+  timestamp: 1779937521869
 - pypi: https://files.pythonhosted.org/packages/1b/a9/e3aee762739c1d7528da1c3e06d518503f8b6c439c35549b53735ba52ead/typeguard-4.4.4-py3-none-any.whl
   name: typeguard
   version: 4.4.4
