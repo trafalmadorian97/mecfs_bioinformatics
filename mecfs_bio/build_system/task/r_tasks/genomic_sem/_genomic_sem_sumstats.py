@@ -38,8 +38,37 @@ import polars as pl
 from attrs import frozen
 from scipy.stats import norm
 
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    MUNGE_A1_COL,
+    MUNGE_A2_COL,
+    MUNGE_EFFECT_COL,
+    MUNGE_INFO_COL,
+    MUNGE_MAF_COL,
+    MUNGE_N_COL,
+    MUNGE_P_COL,
+    MUNGE_SE_COL,
+    MUNGE_SNP_COL,
+    MUNGE_Z_COL,
+)
+
 _ACGT = ["A", "C", "G", "T"]
 _TINY_P = 1e-307
+
+# Internal column names introduced while aligning a trait to the reference
+# (the reference side gets a "_ref" suffix, the file side a "_file" suffix);
+# these are not canonical munge columns. varSNP is the derived per-SNP variance.
+_A1_REF_COL = f"{MUNGE_A1_COL}_ref"
+_A2_REF_COL = f"{MUNGE_A2_COL}_ref"
+_A1_FILE_COL = f"{MUNGE_A1_COL}_file"
+_A2_FILE_COL = f"{MUNGE_A2_COL}_file"
+_MAF_REF_COL = "maf_ref"
+_MAF_FILE_COL = "maf_file"
+_VARSNP_COL = "varSNP"
+
+# Per-trait output columns; run_sumstats prefixes these with the trait name
+# (e.g. "beta.<trait>" / "se.<trait>").
+_BETA_OUT_COL = "beta"
+_SE_OUT_COL = "se"
 
 
 @frozen
@@ -62,10 +91,10 @@ def _restrict_to_acgt(col: str) -> pl.Expr:
 def _filter_reference(
     ref: pl.DataFrame, maf_filter: float, ambig: bool
 ) -> pl.DataFrame:
-    out = ref.filter(pl.col("MAF") >= maf_filter)
+    out = ref.filter(pl.col(MUNGE_MAF_COL) >= maf_filter)
     if ambig:
-        a1 = pl.col("A1").str.to_uppercase()
-        a2 = pl.col("A2").str.to_uppercase()
+        a1 = pl.col(MUNGE_A1_COL).str.to_uppercase()
+        a2 = pl.col(MUNGE_A2_COL).str.to_uppercase()
         ambiguous = (
             ((a1 == "T") & (a2 == "A"))
             | ((a1 == "A") & (a2 == "T"))
@@ -81,132 +110,157 @@ def _standardize_trait(
 ) -> pl.DataFrame:
     """Return a DataFrame with columns SNP, beta, se for one trait."""
     work = trait.df
-    assert "P" in work.columns and "effect" in work.columns
+    assert MUNGE_P_COL in work.columns and MUNGE_EFFECT_COL in work.columns
     if trait.n is not None:
-        work = work.with_columns(pl.lit(float(trait.n)).alias("N"))
+        work = work.with_columns(pl.lit(float(trait.n)).alias(MUNGE_N_COL))
 
     # Drop multiallelic (duplicated) SNPs entirely.
-    work = work.filter(pl.col("SNP").is_unique())
-    work = work.with_columns(_restrict_to_acgt("A1"), _restrict_to_acgt("A2"))
+    work = work.filter(pl.col(MUNGE_SNP_COL).is_unique())
+    work = work.with_columns(
+        _restrict_to_acgt(MUNGE_A1_COL), _restrict_to_acgt(MUNGE_A2_COL)
+    )
 
-    ref_aligned = ref.rename({"A1": "A1_ref", "A2": "A2_ref", "MAF": "maf_ref"})
-    has_file_maf = "MAF" in work.columns
+    ref_aligned = ref.rename(
+        {
+            MUNGE_A1_COL: _A1_REF_COL,
+            MUNGE_A2_COL: _A2_REF_COL,
+            MUNGE_MAF_COL: _MAF_REF_COL,
+        }
+    )
+    has_file_maf = MUNGE_MAF_COL in work.columns
     if has_file_maf:
-        work = work.rename({"MAF": "maf_file"})
-    work = work.rename({"A1": "A1_file", "A2": "A2_file"})
+        work = work.rename({MUNGE_MAF_COL: _MAF_FILE_COL})
+    work = work.rename({MUNGE_A1_COL: _A1_FILE_COL, MUNGE_A2_COL: _A2_FILE_COL})
 
-    merged = ref_aligned.join(work, on="SNP", how="inner")
-    merged = merged.filter(pl.col("P").is_not_null() & pl.col("effect").is_not_null())
+    merged = ref_aligned.join(work, on=MUNGE_SNP_COL, how="inner")
+    merged = merged.filter(
+        pl.col(MUNGE_P_COL).is_not_null() & pl.col(MUNGE_EFFECT_COL).is_not_null()
+    )
 
     # varSNP from the file MAF (folded, dropping monomorphic) or the ref MAF.
     if has_file_maf:
         merged = merged.with_columns(
-            pl.when(pl.col("maf_file") > 0.5)
-            .then(1.0 - pl.col("maf_file"))
-            .otherwise(pl.col("maf_file"))
-            .alias("maf_file")
+            pl.when(pl.col(_MAF_FILE_COL) > 0.5)
+            .then(1.0 - pl.col(_MAF_FILE_COL))
+            .otherwise(pl.col(_MAF_FILE_COL))
+            .alias(_MAF_FILE_COL)
         )
-        merged = merged.filter((pl.col("maf_file") != 0) & (pl.col("maf_file") != 1))
+        merged = merged.filter(
+            (pl.col(_MAF_FILE_COL) != 0) & (pl.col(_MAF_FILE_COL) != 1)
+        )
         merged = merged.with_columns(
-            (2.0 * pl.col("maf_file") * (1.0 - pl.col("maf_file"))).alias("varSNP")
+            (2.0 * pl.col(_MAF_FILE_COL) * (1.0 - pl.col(_MAF_FILE_COL))).alias(
+                _VARSNP_COL
+            )
         )
     else:
         merged = merged.with_columns(
-            (2.0 * pl.col("maf_ref") * (1.0 - pl.col("maf_ref"))).alias("varSNP")
+            (2.0 * pl.col(_MAF_REF_COL) * (1.0 - pl.col(_MAF_REF_COL))).alias(
+                _VARSNP_COL
+            )
         )
 
     # Odds-ratio detection on the merged effect column.
-    median_effect = merged.select(pl.col("effect").median()).item()
+    median_effect = merged.select(pl.col(MUNGE_EFFECT_COL).median()).item()
     if median_effect is not None and round(median_effect) == 1:
-        merged = merged.with_columns(pl.col("effect").log().alias("effect"))
-    merged = merged.filter(pl.col("effect") != 0)
+        merged = merged.with_columns(
+            pl.col(MUNGE_EFFECT_COL).log().alias(MUNGE_EFFECT_COL)
+        )
+    merged = merged.filter(pl.col(MUNGE_EFFECT_COL) != 0)
 
     if merged.height == 0:
-        return pl.DataFrame({"SNP": [], "beta": [], "se": []})
+        return pl.DataFrame({MUNGE_SNP_COL: [], _BETA_OUT_COL: [], _SE_OUT_COL: []})
 
     # Z with a high-magnitude approximation for extremely small P.
-    p = merged["P"].to_numpy().astype(float)
-    effect = merged["effect"].to_numpy().astype(float)
+    p = merged[MUNGE_P_COL].to_numpy().astype(float)
+    effect = merged[MUNGE_EFFECT_COL].to_numpy().astype(float)
     tiny = ~np.isfinite(p) | (p < _TINY_P)
     z = np.empty_like(p)
     z[~tiny] = np.sign(effect[~tiny]) * norm.isf(p[~tiny] / 2.0)
     if tiny.any():
         z[tiny] = np.sign(effect[tiny]) * np.sqrt(-2.0 * np.log(p[tiny]))
-    merged = merged.with_columns(pl.Series("Z", z))
+    merged = merged.with_columns(pl.Series(MUNGE_Z_COL, z))
 
     # Method-specific rescaling of effect (and SE for linprob).
     if trait.ols:
         merged = merged.with_columns(
-            (pl.col("Z") / (pl.col("N") * pl.col("varSNP")).sqrt()).alias("effect")
+            (
+                pl.col(MUNGE_Z_COL) / (pl.col(MUNGE_N_COL) * pl.col(_VARSNP_COL)).sqrt()
+            ).alias(MUNGE_EFFECT_COL)
         )
     elif trait.linprob:
         merged = merged.with_columns(
-            (pl.col("Z") / ((pl.col("N") / 4.0) * pl.col("varSNP")).sqrt()).alias(
-                "effect"
+            (
+                pl.col(MUNGE_Z_COL)
+                / ((pl.col(MUNGE_N_COL) / 4.0) * pl.col(_VARSNP_COL)).sqrt()
+            ).alias(MUNGE_EFFECT_COL),
+            (1.0 / ((pl.col(MUNGE_N_COL) / 4.0) * pl.col(_VARSNP_COL)).sqrt()).alias(
+                MUNGE_SE_COL
             ),
-            (1.0 / ((pl.col("N") / 4.0) * pl.col("varSNP")).sqrt()).alias("SE"),
         )
 
     # Flip effect to the reference A1 allele, then drop allele mismatches.
     merged = merged.with_columns(
         pl.when(
-            (pl.col("A1_ref") != pl.col("A1_file"))
-            & (pl.col("A1_ref") == pl.col("A2_file"))
+            (pl.col(_A1_REF_COL) != pl.col(_A1_FILE_COL))
+            & (pl.col(_A1_REF_COL) == pl.col(_A2_FILE_COL))
         )
-        .then(-pl.col("effect"))
-        .otherwise(pl.col("effect"))
-        .alias("effect")
+        .then(-pl.col(MUNGE_EFFECT_COL))
+        .otherwise(pl.col(MUNGE_EFFECT_COL))
+        .alias(MUNGE_EFFECT_COL)
     )
     merged = merged.filter(
         (
-            (pl.col("A1_ref") == pl.col("A1_file"))
-            | (pl.col("A1_ref") == pl.col("A2_file"))
+            (pl.col(_A1_REF_COL) == pl.col(_A1_FILE_COL))
+            | (pl.col(_A1_REF_COL) == pl.col(_A2_FILE_COL))
         )
         & (
-            (pl.col("A2_ref") == pl.col("A2_file"))
-            | (pl.col("A2_ref") == pl.col("A1_file"))
+            (pl.col(_A2_REF_COL) == pl.col(_A2_FILE_COL))
+            | (pl.col(_A2_REF_COL) == pl.col(_A1_FILE_COL))
         )
     )
-    if "INFO" in merged.columns:
-        merged = merged.filter(pl.col("INFO") >= info_filter)
+    if MUNGE_INFO_COL in merged.columns:
+        merged = merged.filter(pl.col(MUNGE_INFO_COL) >= info_filter)
 
     # Output transform.
     pi_term = (math.pi**2) / 3.0
     if trait.ols:
         out = merged.select(
-            pl.col("SNP"),
-            pl.col("effect").alias("beta"),
-            (pl.col("effect") / pl.col("Z")).abs().alias("se"),
+            pl.col(MUNGE_SNP_COL),
+            pl.col(MUNGE_EFFECT_COL).alias(_BETA_OUT_COL),
+            (pl.col(MUNGE_EFFECT_COL) / pl.col(MUNGE_Z_COL)).abs().alias(_SE_OUT_COL),
         )
     elif trait.linprob:
-        den = (pl.col("effect") ** 2 * pl.col("varSNP") + pi_term).sqrt()
+        den = (pl.col(MUNGE_EFFECT_COL) ** 2 * pl.col(_VARSNP_COL) + pi_term).sqrt()
         out = merged.select(
-            pl.col("SNP"),
-            (pl.col("effect") / den).alias("beta"),
-            (pl.col("SE") / den).alias("se"),
-        ).filter((pl.col("beta") != 0) & (pl.col("se") != 0))
+            pl.col(MUNGE_SNP_COL),
+            (pl.col(MUNGE_EFFECT_COL) / den).alias(_BETA_OUT_COL),
+            (pl.col(MUNGE_SE_COL) / den).alias(_SE_OUT_COL),
+        ).filter((pl.col(_BETA_OUT_COL) != 0) & (pl.col(_SE_OUT_COL) != 0))
     elif trait.se_logit:
-        den = (pl.col("effect") ** 2 * pl.col("varSNP") + pi_term).sqrt()
+        den = (pl.col(MUNGE_EFFECT_COL) ** 2 * pl.col(_VARSNP_COL) + pi_term).sqrt()
         out = merged.select(
-            pl.col("SNP"),
-            (pl.col("effect") / den).alias("beta"),
-            (pl.col("SE") / den).alias("se"),
+            pl.col(MUNGE_SNP_COL),
+            (pl.col(MUNGE_EFFECT_COL) / den).alias(_BETA_OUT_COL),
+            (pl.col(MUNGE_SE_COL) / den).alias(_SE_OUT_COL),
         )
     else:
-        den = (pl.col("effect") ** 2 * pl.col("varSNP") + pi_term).sqrt()
+        den = (pl.col(MUNGE_EFFECT_COL) ** 2 * pl.col(_VARSNP_COL) + pi_term).sqrt()
         out = merged.select(
-            pl.col("SNP"),
-            (pl.col("effect") / den).alias("beta"),
-            (pl.col("SE") / pl.col("effect").exp() / den).alias("se"),
+            pl.col(MUNGE_SNP_COL),
+            (pl.col(MUNGE_EFFECT_COL) / den).alias(_BETA_OUT_COL),
+            (pl.col(MUNGE_SE_COL) / pl.col(MUNGE_EFFECT_COL).exp() / den).alias(
+                _SE_OUT_COL
+            ),
         )
     # R's na.omit drops rows with NA *or* NaN. polars drop_nulls keeps NaN, so
     # filter both: e.g. an OLS SNP with P == 1 gives Z == 0 -> effect == 0 ->
     # se == |0/0| == NaN, which R discards.
     return out.filter(
-        pl.col("beta").is_not_null()
-        & pl.col("se").is_not_null()
-        & pl.col("beta").is_not_nan()
-        & pl.col("se").is_not_nan()
+        pl.col(_BETA_OUT_COL).is_not_null()
+        & pl.col(_SE_OUT_COL).is_not_null()
+        & pl.col(_BETA_OUT_COL).is_not_nan()
+        & pl.col(_SE_OUT_COL).is_not_nan()
     )
 
 
@@ -229,6 +283,11 @@ def run_sumstats(
     out = ref_f
     for trait in traits:
         per = _standardize_trait(trait, ref_f, info_filter=info_filter)
-        per = per.rename({"beta": f"beta.{trait.name}", "se": f"se.{trait.name}"})
-        out = out.join(per, on="SNP", how="inner")
+        per = per.rename(
+            {
+                _BETA_OUT_COL: f"{_BETA_OUT_COL}.{trait.name}",
+                _SE_OUT_COL: f"{_SE_OUT_COL}.{trait.name}",
+            }
+        )
+        out = out.join(per, on=MUNGE_SNP_COL, how="inner")
     return out
