@@ -28,7 +28,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
     BinaryPhenotypeSampleInfo,
     QuantPhenotype,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     MUNGE_A1_COL,
     MUNGE_A2_COL,
     MUNGE_EFFECT_COL,
@@ -39,11 +39,15 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
     MUNGE_SNP_COL,
     GenomicSEMConfig,
     GenomicSEMSumstatsSource,
-    GenomicSEMTask,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     _add_sample_size_if_missing,
     _get_prevs,
     _get_sample_size,
     _write_munge_input,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
+    GenomicSEMTask,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,

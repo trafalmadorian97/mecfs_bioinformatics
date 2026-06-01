@@ -28,11 +28,13 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_sumstats impor
     SumstatsTrait,
     run_sumstats,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     _get_prevs,
     _get_sample_size,
-    _run_munge,
     _write_munge_input,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
+    _run_munge,
 )
 
 WORKDIR = Path("experiments/tralfamadorian97/runs/_munge_sumstats_validation").resolve()

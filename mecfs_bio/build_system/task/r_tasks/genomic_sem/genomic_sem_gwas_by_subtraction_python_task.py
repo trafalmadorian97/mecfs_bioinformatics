@@ -17,11 +17,9 @@ from pathlib import Path, PurePath
 from typing import Sequence
 
 import numpy as np
-import pandas as pd
 import rpy2.robjects as ro
+import structlog
 from attrs import frozen
-from rpy2.robjects import pandas2ri
-from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import importr
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -34,27 +32,35 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     MULTI_TRAIT,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel import (
-    fit_gwas_by_subtraction,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
-    GenomicSEMConfig,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_user_gwas_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     GWAS_RESULTS_SUBDIR,
+    SUBTRACTION_F_FILENAME,
+    SUBTRACTION_R_FILENAME,
+    GenomicSEMConfig,
     GenomicSEMGWASRunConfig,
     GenomicSEMGWASSumstatsSource,
     GenomicSEMSumstatsConfig,
-    _prepare_gwas_inputs,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     _resolve_file_path,
     _resolve_ld_path,
     _validate_sources,
-    logger,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
+    _prepare_gwas_inputs,
+    _r_matrix_to_numpy,
+    _r_to_pandas,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel import (
+    fit_gwas_by_subtraction,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._subtraction_result import (
+    _make_result_df,
+    _SubtractionFrames,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
-SUBTRACTION_F_FILENAME = "common_factor.parquet"  # F: factor shared by both traits
-SUBTRACTION_R_FILENAME = "remainder_factor.parquet"  # R: residual unique to T1
+logger = structlog.get_logger()
 
 
 @frozen
@@ -165,22 +171,6 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
         )
 
 
-def _r_to_pandas(r_df) -> pd.DataFrame:
-    conv = ro.default_converter + pandas2ri.converter
-    with localconverter(conv):
-        return ro.conversion.get_conversion().rpy2py(r_df)
-
-
-def _r_matrix_to_numpy(r_matrix) -> np.ndarray:
-    conv = ro.default_converter + pandas2ri.converter
-    with localconverter(conv):
-        arr = np.asarray(ro.conversion.get_conversion().rpy2py(r_matrix))
-    if arr.ndim == 1:
-        dim = tuple(int(x) for x in r_matrix.dim)
-        arr = arr.reshape(dim, order="F")
-    return arr
-
-
 @frozen
 class _CovStruct:
     """LDSC covariance structure extracted from the R covstruc list."""
@@ -190,51 +180,11 @@ class _CovStruct:
     I_LD: np.ndarray  # (k, k) LDSC intercepts
 
 
-@frozen
-class _SubtractionFrames:
-    """The two per-factor result tables written by the task."""
-
-    f_df: pd.DataFrame  # common factor F ~ SNP
-    r_df: pd.DataFrame  # remainder factor R ~ SNP
-
-
 def _extract_covstruc_arrays(covstruc_r) -> _CovStruct:
     return _CovStruct(
         S_LD=_r_matrix_to_numpy(covstruc_r.rx2("S")),
         V_LD=_r_matrix_to_numpy(covstruc_r.rx2("V")),
         I_LD=_r_matrix_to_numpy(covstruc_r.rx2("I")),
-    )
-
-
-def _make_result_df(
-    snps_df: pd.DataFrame,
-    est: np.ndarray,
-    se_c: np.ndarray,
-    z: np.ndarray,
-    p: np.ndarray,
-    n_eff: np.ndarray,
-    fail: np.ndarray,
-    lhs: str,
-) -> pd.DataFrame:
-    n = len(snps_df)
-    return pd.DataFrame(
-        {
-            "SNP": snps_df["SNP"].to_numpy(),
-            "CHR": snps_df.get("CHR", pd.Series([pd.NA] * n)).to_numpy(),
-            "BP": snps_df.get("BP", pd.Series([pd.NA] * n)).to_numpy(),
-            "MAF": snps_df["MAF"].to_numpy(),
-            "A1": snps_df.get("A1", pd.Series([""] * n)).to_numpy(),
-            "A2": snps_df.get("A2", pd.Series([""] * n)).to_numpy(),
-            "lhs": [lhs] * n,
-            "op": ["~"] * n,
-            "rhs": ["SNP"] * n,
-            "est": est,
-            "se_c": se_c,
-            "Z_Estimate": z,
-            "Pval_Estimate": p,
-            "N_eff": n_eff,
-            "fail": fail,
-        }
     )
 
 

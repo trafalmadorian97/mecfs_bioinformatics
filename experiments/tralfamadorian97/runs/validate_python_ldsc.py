@@ -22,13 +22,15 @@ from mecfs_bio.assets.gwas.multi_trait.genomic_sem.mecf_pain_common_factor impor
     MECFS_PAIN_COMMON_FACTOR,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import run_ldsc
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     _get_prevs,
     _get_sample_size,
     _ld_dir_with_genomic_sem_naming,
+    _write_munge_input,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
     _run_ldsc,
     _run_munge,
-    _write_munge_input,
 )
 
 WORKDIR = Path("experiments/tralfamadorian97/runs/_ldsc_validation").resolve()

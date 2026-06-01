@@ -19,15 +19,13 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     QuantPhenotype,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_common_factor_gwas_python_task import (
-    GenomicSEMCommonFactorGWASPythonTask,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
-    GenomicSEMSumstatsSource,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_user_gwas_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     OLS,
     GenomicSEMGWASSumstatsSource,
+    GenomicSEMSumstatsSource,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_common_factor_gwas_python_task import (
+    GenomicSEMCommonFactorGWASPythonTask,
 )
 
 

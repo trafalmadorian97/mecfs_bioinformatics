@@ -3,6 +3,7 @@ import tempfile
 from pathlib import Path, PurePath
 from typing import Sequence
 
+import structlog
 from attrs import frozen
 from rpy2 import robjects as ro
 from rpy2.robjects.packages import importr
@@ -17,23 +18,26 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     MULTI_TRAIT,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
-    GenomicSEMConfig,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_user_gwas_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     COMMON_FACTOR_GWAS_FILENAME,
     GWAS_RESULTS_SUBDIR,
+    GenomicSEMConfig,
     GenomicSEMGWASRunConfig,
     GenomicSEMGWASSumstatsSource,
     GenomicSEMSumstatsConfig,
-    _prepare_gwas_inputs,
-    _r_to_pandas,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     _resolve_file_path,
     _resolve_ld_path,
     _validate_sources,
-    logger,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_r_bridge import (
+    _prepare_gwas_inputs,
+    _r_to_pandas,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+
+logger = structlog.get_logger()
 
 
 @frozen

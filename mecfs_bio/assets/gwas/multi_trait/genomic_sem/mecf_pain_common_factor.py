@@ -22,16 +22,14 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.compute_p_pipe import ComputePPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_common_factor_gwas_task import (
-    GenomicSEMCommonFactorGWASTask,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     GenomicSEMConfig,
-    GenomicSEMSumstatsSource,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_user_gwas_task import (
     GenomicSEMGWASRunConfig,
     GenomicSEMGWASSumstatsSource,
+    GenomicSEMSumstatsSource,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_common_factor_gwas_task import (
+    GenomicSEMCommonFactorGWASTask,
 )
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 

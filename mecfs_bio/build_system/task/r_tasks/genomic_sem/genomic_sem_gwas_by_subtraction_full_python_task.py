@@ -34,6 +34,7 @@ from typing import Sequence
 import numpy as np
 import pandas as pd
 import polars as pl
+import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -45,6 +46,31 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     MULTI_TRAIT,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    GWAS_RESULTS_SUBDIR,
+    LDSC_S_FILENAME,
+    LDSC_S_STAND_FILENAME,
+    LDSC_V_FILENAME,
+    LINEAR_PROB,
+    LOGISTIC,
+    MUNGED_SUBDIR,
+    OLS,
+    SUBTRACTION_F_FILENAME,
+    SUBTRACTION_R_FILENAME,
+    GenomicSEMConfig,
+    GenomicSEMGWASRunConfig,
+    GenomicSEMGWASSumstatsSource,
+    GenomicSEMSumstatsConfig,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
+    _get_prevs,
+    _get_sample_size,
+    _ld_dir_with_genomic_sem_naming,
+    _resolve_file_path,
+    _resolve_ld_path,
+    _validate_sources,
+    _write_munge_input,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import (
     LDSCResult,
@@ -60,37 +86,13 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_sumstats impor
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel import (
     fit_gwas_by_subtraction,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_gwas_by_subtraction_python_task import (
-    SUBTRACTION_F_FILENAME,
-    SUBTRACTION_R_FILENAME,
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._subtraction_result import (
     _make_result_df,
     _SubtractionFrames,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_task import (
-    LDSC_S_FILENAME,
-    LDSC_S_STAND_FILENAME,
-    LDSC_V_FILENAME,
-    MUNGED_SUBDIR,
-    GenomicSEMConfig,
-    _get_prevs,
-    _get_sample_size,
-    _ld_dir_with_genomic_sem_naming,
-    _write_munge_input,
-)
-from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_user_gwas_task import (
-    GWAS_RESULTS_SUBDIR,
-    LINEAR_PROB,
-    LOGISTIC,
-    OLS,
-    GenomicSEMGWASRunConfig,
-    GenomicSEMGWASSumstatsSource,
-    GenomicSEMSumstatsConfig,
-    _resolve_file_path,
-    _resolve_ld_path,
-    _validate_sources,
-    logger,
-)
 from mecfs_bio.build_system.wf.base_wf import WF
+
+logger = structlog.get_logger()
 
 # The munged sumstats are written uncompressed (polars has no csv-gzip writer);
 # run_ldsc reads them straight back via pandas, which is format-agnostic.
