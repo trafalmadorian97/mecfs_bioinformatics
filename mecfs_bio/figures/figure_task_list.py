@@ -62,6 +62,9 @@ from mecfs_bio.assets.gwas.me_cfs.neale_lab.analysis.neale_lab_cfs_standard_anal
 from mecfs_bio.assets.gwas.migraine.million_veterans.analysis.million_veterans_migraine_standard_analysis import (
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.migraine.uk_biobank_2025.analysis.uk_biobank_2025_migraine_standard_analysis import (
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import (
     CT_LDSC_INITIAL_PLOT,
 )
@@ -190,4 +193,11 @@ ALL_FIGURE_TASKS: list[Task] = [
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
     CT_LDSC_LDL.aggregation_markdown_task,
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.independent_clusters_markdown_task_unwrap,
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].plot_task_unwrap,
 ]

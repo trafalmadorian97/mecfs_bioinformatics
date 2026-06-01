@@ -3,7 +3,7 @@ hide:
 - toc
 ---
 # MAGMA HBA
-I applied MAGMA to the DecodeME GWAS[@genetics2025initial] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] (HBA). As in my other MAGMA analyses, I sourced linkage disequilibrium reference data from the European subset of the 1000-genomes project.
+I applied MAGMA to the DecodeME GWAS[@genetics2025initial] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] (HBA). As in my other MAGMA analyses, I sourced linkage disequilibrium reference data from the European subset of the 1000-genomes project. I used a MAGMA gene/cell specificity matrix (i.e. the $E$ matrix in my [notes on MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md) ) prepared as described[^matrix_prep] in Duncan et al.[@duncan2025mapping]
 
 ## Results
 The results are plotted below:
@@ -22,3 +22,5 @@ The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while 
 | Cluster419          | 8.2057e-06 | Amygdala excitatory           | NEUR                    | VGLUT1 VGLUT2                      | ADCYAP CART CCK CHGA CHGB NAMPT NUCB NXPH SCG UBL VGF proSAAS        | 0                         |                         | Amygdala: 78.9%, Cerebral cortex: 14.0%, Thalamus: 5.1%     | AC025244.1, AC096759.1, SCN5A, FAM9B, GABRQ, LINC01920, VWA5B1, CYP19A1, CARM1P1, LINC02498                  |
 | Cluster136          | 1.2765e-05 | Deep-layer intratelencephalic | NEUR                    | VGLUT1 VGLUT2                      | ADCYAP CBLN CCK CHGA CHGB CRH NAMPT NUCB PYY SCG UBL UCN VGF proSAAS | 0                         |                         | Amygdala: 54.6%, Cerebral cortex: 36.2%, Hypothalamus: 8.6% | AC099517.1, LINC02196, AC079380.1, LINC02465, AL138927.1, AC073578.2, AL450352.1, ARHGAP15, TNNT2, LINC02378 |⏎                      
 
+
+[^matrix_prep]:  Duncan et al.[@duncan2025mapping] first log-transform the raw RNAseq matrix, and then row-normalize it.  Note that this differs from the FUMA approach.  See the Section "Gene expression data" from their paper.  See also their [GitHub repo](https://github.com/Integrative-Mental-Health-Lab/linking_cell_types_to_brain_phenotypes?tab=readme-ov-file).
