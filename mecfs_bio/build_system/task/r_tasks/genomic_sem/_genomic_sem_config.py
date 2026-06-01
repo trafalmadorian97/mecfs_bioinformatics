@@ -31,6 +31,8 @@ MUNGE_SE_COL = "SE"
 MUNGE_P_COL = "P"
 MUNGE_N_COL = "N"
 MUNGE_MAF_COL = "MAF"
+MUNGE_INFO_COL = "INFO"  # optional input column (imputation quality)
+MUNGE_Z_COL = "Z"  # Z-score column in the munged output
 
 # --- Output structure produced by the basic GenomicSEMTask. ---
 MUNGED_SUBDIR = "munged"

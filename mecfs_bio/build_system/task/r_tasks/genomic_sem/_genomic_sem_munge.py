@@ -7,7 +7,7 @@ reference and produces the ``.sumstats`` table (SNP, N, Z, A1, A2) that
 DataFrame so the full pipeline can munge straight from the in-memory source
 (no multi-minute R read of giant text files).
 
-Input columns (canonical munge names, as written by ``_write_munge_input``):
+Input columns (canonical munge names, as written by ``write_munge_input``):
 SNP, A1, A2, effect, P, N, and optionally MAF / INFO. (SE is accepted but
 unused, matching R: Z is derived from the effect sign and P.)
 
@@ -36,7 +36,24 @@ import numpy as np
 import polars as pl
 from scipy.stats import norm
 
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    MUNGE_A1_COL,
+    MUNGE_A2_COL,
+    MUNGE_EFFECT_COL,
+    MUNGE_INFO_COL,
+    MUNGE_MAF_COL,
+    MUNGE_N_COL,
+    MUNGE_P_COL,
+    MUNGE_SNP_COL,
+    MUNGE_Z_COL,
+)
+
 _ACGT = ["A", "C", "G", "T"]
+
+# Internal join-suffix names for the reference panel's alleles (not canonical
+# munge columns), so the file's A1/A2 can be compared against them.
+_A1_REF_COL = f"{MUNGE_A1_COL}_ref"
+_A2_REF_COL = f"{MUNGE_A2_COL}_ref"
 
 
 def _restrict_to_acgt(col: str) -> pl.Expr:
@@ -57,66 +74,81 @@ def munge_sumstats(
     HapMap3 snplist (SNP, A1, A2). Returns a polars DataFrame with columns
     SNP, N, Z, A1, A2.
     """
-    assert "P" in df.columns, "munge input requires a P column"
-    assert "effect" in df.columns, "munge input requires an effect column"
-    has_maf = "MAF" in df.columns
-    has_info = "INFO" in df.columns
+    assert MUNGE_P_COL in df.columns, "munge input requires a P column"
+    assert MUNGE_EFFECT_COL in df.columns, "munge input requires an effect column"
+    has_maf = MUNGE_MAF_COL in df.columns
+    has_info = MUNGE_INFO_COL in df.columns
 
     work = df
     if n is not None:
-        work = work.with_columns(pl.lit(float(n)).alias("N"))
+        work = work.with_columns(pl.lit(float(n)).alias(MUNGE_N_COL))
     if has_maf:
         work = work.with_columns(
-            pl.when(pl.col("MAF") <= 0.5)
-            .then(pl.col("MAF"))
-            .otherwise(1.0 - pl.col("MAF"))
-            .alias("MAF")
+            pl.when(pl.col(MUNGE_MAF_COL) <= 0.5)
+            .then(pl.col(MUNGE_MAF_COL))
+            .otherwise(1.0 - pl.col(MUNGE_MAF_COL))
+            .alias(MUNGE_MAF_COL)
         )
-    work = work.with_columns(_restrict_to_acgt("A1"), _restrict_to_acgt("A2"))
+    work = work.with_columns(
+        _restrict_to_acgt(MUNGE_A1_COL), _restrict_to_acgt(MUNGE_A2_COL)
+    )
 
     ref_aligned = ref.select(
-        pl.col("SNP"),
-        pl.col("A1").str.to_uppercase().alias("A1_ref"),
-        pl.col("A2").str.to_uppercase().alias("A2_ref"),
+        pl.col(MUNGE_SNP_COL),
+        pl.col(MUNGE_A1_COL).str.to_uppercase().alias(_A1_REF_COL),
+        pl.col(MUNGE_A2_COL).str.to_uppercase().alias(_A2_REF_COL),
     )
-    merged = ref_aligned.join(work, on="SNP", how="inner")
-    merged = merged.filter(pl.col("P").is_not_null() & pl.col("effect").is_not_null())
+    merged = ref_aligned.join(work, on=MUNGE_SNP_COL, how="inner")
+    merged = merged.filter(
+        pl.col(MUNGE_P_COL).is_not_null() & pl.col(MUNGE_EFFECT_COL).is_not_null()
+    )
 
     # Odds-ratio detection on the merged effect column.
-    median_effect = merged.select(pl.col("effect").median()).item()
+    median_effect = merged.select(pl.col(MUNGE_EFFECT_COL).median()).item()
     if median_effect is not None and round(median_effect) == 1:
-        merged = merged.with_columns(pl.col("effect").log().alias("effect"))
+        merged = merged.with_columns(
+            pl.col(MUNGE_EFFECT_COL).log().alias(MUNGE_EFFECT_COL)
+        )
 
     # Flip effect to the reference A1 allele.
     merged = merged.with_columns(
-        pl.when((pl.col("A1_ref") != pl.col("A1")) & (pl.col("A1_ref") == pl.col("A2")))
-        .then(-pl.col("effect"))
-        .otherwise(pl.col("effect"))
-        .alias("effect")
+        pl.when(
+            (pl.col(_A1_REF_COL) != pl.col(MUNGE_A1_COL))
+            & (pl.col(_A1_REF_COL) == pl.col(MUNGE_A2_COL))
+        )
+        .then(-pl.col(MUNGE_EFFECT_COL))
+        .otherwise(pl.col(MUNGE_EFFECT_COL))
+        .alias(MUNGE_EFFECT_COL)
     )
 
     # Keep only rows whose alleles match the reference (either orientation).
     # polars .filter drops nulls, matching R's NA-dropping subset().
     merged = merged.filter(
-        ((pl.col("A1_ref") == pl.col("A1")) | (pl.col("A1_ref") == pl.col("A2")))
-        & ((pl.col("A2_ref") == pl.col("A2")) | (pl.col("A2_ref") == pl.col("A1")))
+        (
+            (pl.col(_A1_REF_COL) == pl.col(MUNGE_A1_COL))
+            | (pl.col(_A1_REF_COL) == pl.col(MUNGE_A2_COL))
+        )
+        & (
+            (pl.col(_A2_REF_COL) == pl.col(MUNGE_A2_COL))
+            | (pl.col(_A2_REF_COL) == pl.col(MUNGE_A1_COL))
+        )
     )
 
     if has_info:
-        merged = merged.filter(pl.col("INFO") >= info_filter)
+        merged = merged.filter(pl.col(MUNGE_INFO_COL) >= info_filter)
     if has_maf:
         merged = merged.filter(
-            (pl.col("MAF") >= maf_filter) & pl.col("MAF").is_not_null()
+            (pl.col(MUNGE_MAF_COL) >= maf_filter) & pl.col(MUNGE_MAF_COL).is_not_null()
         )
 
-    effect = merged["effect"].to_numpy()
-    p = merged["P"].to_numpy()
+    effect = merged[MUNGE_EFFECT_COL].to_numpy()
+    p = merged[MUNGE_P_COL].to_numpy()
     z = np.sign(effect) * norm.isf(p / 2.0)
 
     return merged.select(
-        pl.col("SNP"),
-        pl.col("N"),
-        pl.Series("Z", z),
-        pl.col("A1_ref").alias("A1"),
-        pl.col("A2_ref").alias("A2"),
+        pl.col(MUNGE_SNP_COL),
+        pl.col(MUNGE_N_COL),
+        pl.Series(MUNGE_Z_COL, z),
+        pl.col(_A1_REF_COL).alias(MUNGE_A1_COL),
+        pl.col(_A2_REF_COL).alias(MUNGE_A2_COL),
     )
