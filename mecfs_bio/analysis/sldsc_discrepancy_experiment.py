@@ -173,7 +173,7 @@ CONFIGS = [
 # (short label used in asset ids, partitioning-dataset entry_name)
 DATASETS = [
     ("gtexbrain", "gtex_brain"),
-    ("multitissue", "multi_tissue_gene_expression"),
+    # ("multitissue", "multi_tissue_gene_expression"),
 ]
 
 
