@@ -41,6 +41,10 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_filtering import (
+    FilterSettings,
+    filter_sumstats,
+)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     complement_reverse_expr,
     match_flipped_reference_expr,
@@ -58,40 +62,6 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 logger = structlog.get_logger()
-
-
-@frozen
-class FilterSettings:
-    """
-    Options for SNP filtering for CT-LDSC
-    """
-
-    remove_indels: bool = True
-    remove_palindromic: bool = True
-    remove_hla: bool = True
-    keep_only_hapmap: bool = True
-
-
-def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build: str):
-    """
-    Performing filtering roughly consistent with the procedure described in the methods section of Bulik-Sullivan et al.
-    """
-    if settings.remove_indels:
-        logger.debug("filtering indels")
-        sumstats.filter_indel(inplace=True, mode="out")
-    if settings.remove_palindromic:
-        logger.debug("filtering palindromes")
-        sumstats.filter_palindromic(inplace=True, mode="out")
-    if settings.remove_hla:
-        logger.debug("filtering hla region")
-        sumstats.exclude_hla(inplace=True)
-    if settings.keep_only_hapmap:
-        sumstats.filter_hapmap3(inplace=True, build=build)
-    logger.debug("dropping duplicate rsids")
-    len_before = len(sumstats.data)
-    sumstats.data = sumstats.data.drop_duplicates(subset=[GWASLAB_RSID_COL], keep=False)
-    len_after = len(sumstats.data)
-    logger.debug(f"dropped {len_before - len_after} variants with identical rsids")
 
 
 @frozen

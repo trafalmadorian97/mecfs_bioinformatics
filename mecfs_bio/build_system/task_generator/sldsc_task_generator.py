@@ -9,6 +9,9 @@ from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
 from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_sldsc import (
     CellAnalysisByLDSCTask,
 )
+from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_filtering import (
+    FilterSettings,
+)
 from mecfs_bio.build_system.task.gwaslab.sldsc_scatter_plot_task import (
     SLDSCScatterPlotTask,
 )
@@ -20,6 +23,7 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 
@@ -96,6 +100,8 @@ class SLDSCTaskGenerator:
         multiple_testing_alpha: float,
         multiple_testing_method: Method,
         pre_pipe: DataProcessingPipe = IdentityPipe(),
+        filter_settings: FilterSettings | None = None,
+        build: GenomeBuild = "19",
     ):
         cell_analysis_task_groups = {}
         for entry in partitioned_entries:
@@ -112,6 +118,8 @@ class SLDSCTaskGenerator:
                 w_ld_chr_task=w_ld_chr_task,
                 w_ld_chr_inner_dirname=w_ld_chr_inner_dirname,
                 pre_pipe=pre_pipe,
+                filter_settings=filter_settings,
+                build=build,
             )
             multiple_testing_task = (
                 MultipleTestingTableTask.create_from_result_table_task(

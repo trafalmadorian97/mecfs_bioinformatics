@@ -34,9 +34,14 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_filtering import (
+    FilterSettings,
+    filter_sumstats,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 logger = structlog.get_logger()
 
@@ -68,6 +73,8 @@ class CellAnalysisByLDSCTask(Task):
     w_ld_chr_task: Task
     w_ld_chr_inner_pattern: str
     pre_pipe: DataProcessingPipe = IdentityPipe()
+    filter_settings: FilterSettings | None = None
+    build: GenomeBuild = "19"
 
     @property
     def deps(self) -> list["Task"]:
@@ -102,6 +109,9 @@ class CellAnalysisByLDSCTask(Task):
             .collect()
             .to_pandas()
         )
+        if self.filter_settings is not None:
+            sumstats.infer_build()
+            filter_sumstats(sumstats, self.filter_settings, build=self.build)
         ref_ld_chr_cts_asset = fetch(self._ref_ld_chr_cts_id)
         assert isinstance(ref_ld_chr_cts_asset, DirectoryAsset)
         ref_ld_chr_cts_index_path = (
@@ -162,6 +172,8 @@ class CellAnalysisByLDSCTask(Task):
         w_ld_chr_task: Task,
         w_ld_chr_inner_dirname: str,
         pre_pipe: DataProcessingPipe = IdentityPipe(),
+        filter_settings: FilterSettings | None = None,
+        build: GenomeBuild = "19",
     ):
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
@@ -183,6 +195,8 @@ class CellAnalysisByLDSCTask(Task):
             w_ld_chr_task=w_ld_chr_task,
             w_ld_chr_inner_pattern=w_ld_chr_inner_dirname,
             pre_pipe=pre_pipe,
+            filter_settings=filter_settings,
+            build=build,
         )
 
 
