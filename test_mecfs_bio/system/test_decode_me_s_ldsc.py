@@ -47,7 +47,21 @@ def test_run_s_lsdc(tmp_path: Path):
             info_store=info_store,
             asset_root=asset_root,
         )
-        store = test_runner.run(list(DECODE_ME_S_LDSC.get_terminal_tasks()))
+        # Emit the full cts result tables to the logs (disable pandas truncation), so every
+        # tissue's p-value is recoverable from the CI logs rather than just the head/tail of the
+        # large GTEx/Franke and Roadmap-chromatin tables. The cts task logs the result via an
+        # f-string repr, which respects these process-wide display options.
+        with pd.option_context(
+            "display.max_rows",
+            None,
+            "display.max_columns",
+            None,
+            "display.width",
+            1000,
+            "display.max_colwidth",
+            None,
+        ):
+            store = test_runner.run(list(DECODE_ME_S_LDSC.get_terminal_tasks()))
         assert store is not None
         _assert_documented_multitissue_pvalues(store)
 
