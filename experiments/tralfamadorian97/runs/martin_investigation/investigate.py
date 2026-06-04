@@ -132,7 +132,7 @@ def check_zscore_agreement():
     df_martin = _prep_munged_df_martin()
     df_martin= _add_z_abs(df_martin)
     joined = df_martin.merge(df_peter, left_on="SNP", right_on="rsID")
-    joined["z_diff"] = abs( abs(joined["Z_abs"]) - abs(joined["Z_abs_peter"])   )
+    joined["z_diff"] = abs( (joined["Z_abs"]) - (joined["Z_abs_peter"])   )
     print("Absolute z diff stats:")
     print(joined["z_diff"].describe(percentiles=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]))
     print("Relative z diff stats:")
