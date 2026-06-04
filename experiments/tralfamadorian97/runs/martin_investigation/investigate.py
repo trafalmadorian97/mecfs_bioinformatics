@@ -61,7 +61,6 @@ def check_zscore_agreement():
     joined = joined.loc[abs(joined["Z"])>0]
     joined["rel_z_diff"] = abs( (joined["Z"] - joined["Z_peter"] )/abs(joined[["Z","Z_peter"]].max(axis=1))  )
     print(joined["rel_z_diff"].describe(percentiles=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.99]))
-    import pdb; pdb.set_trace()
     print("yo")
 
 
