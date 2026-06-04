@@ -71,5 +71,5 @@ def check_zscore_agreement():
 
 if __name__ == "__main__":
     check_zscore_agreement()
-    # intersect_rsids()
+    intersect_rsids()
 
