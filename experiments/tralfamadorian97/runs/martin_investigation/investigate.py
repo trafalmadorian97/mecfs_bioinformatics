@@ -101,6 +101,7 @@ def _get_allele_disagreement():
     disagreement = joined.loc[~joined["rsID"].isin(match_total["rsID"])]
     print(f"Forward matches {len(match_forward)}")
     print(f"Reverse matches {len(match_reverse)}")
+    import pdb; pdb.set_trace()
     print(
         f"Instances of variants with the same rsID but different alleles {len(disagreement)}"
     )
@@ -168,7 +169,7 @@ def check_zscore_agreement():
 
 
 if __name__ == "__main__":
-    intersect_rsids()
-    _get_value_counts()
-    check_zscore_agreement()
+    # intersect_rsids()
+    # _get_value_counts()
+    # check_zscore_agreement()
     _get_allele_disagreement()
