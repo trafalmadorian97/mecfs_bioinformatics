@@ -16,9 +16,12 @@ KEY RESULT (gtex_brain, baseline v1.2, Brain_Cortex headline):
   peter                                    -> 1.06e-4   (== Peter's documented value; harness control)
   martin (full)                            -> 0.33      (collapse)
   martin_restricted_to_peter_snps          -> 1.07e-4   (== Peter; given the same SNPs, gwaslab agrees)
-  common_snps_plus_gwaslab_hapmap_missing  -> 1.3e-4    (benign: gwaslab's HapMap3-snplist choice)
-  common_snps_plus_rsid_assignment         -> 0.33      (the collapse: upstream rsID-assignment disagreement)
-So the driver is the rsID-assignment step, NOT the implementation, baseline, or gwaslab HapMap3 list.
+  common_snps_plus_present_in_peter_annovar -> 1.3e-4   (benign: Martin-unique SNPs Peter HAS but
+                                                          gwaslab's HapMap3 list dropped)
+  common_snps_plus_absent_from_peter_annovar -> 0.33    (the collapse: Martin-unique SNPs absent from
+                                                          Peter's annovar output)
+So the driver is the SNP set -- specifically the ~2,600 SNPs absent from Peter's annovar output, NOT
+the implementation, baseline, or gwaslab HapMap3 list.
 """
 
 import shutil
@@ -157,17 +160,18 @@ def _fetch_martin_restricted_to_peter_snps() -> pd.DataFrame:
     return _martin_common()
 
 
-def _fetch_common_snps_plus_gwaslab_hapmap_missing() -> pd.DataFrame:
-    # common + Martin-unique SNPs that ARE in Peter's full annovar data (real SNPs gwaslab's
-    # HapMap3 snplist dropped). Isolates the gwaslab-HapMap3-snplist choice.
+def _fetch_common_snps_plus_present_in_peter_annovar() -> pd.DataFrame:
+    # common + Martin-unique SNPs that ARE present in Peter's full annovar data (they're absent only
+    # from the HapMap3-filtered comparison set because gwaslab's HapMap3 list dropped them). Benign.
     uniq = _martin_unique()
     group_a = uniq[uniq["SNP"].isin(_peter_full_annovar_rsids())]
     return pd.concat([_martin_common(), group_a])
 
 
-def _fetch_common_snps_plus_rsid_assignment() -> pd.DataFrame:
-    # common + Martin-unique SNPs ABSENT from Peter's data entirely. Isolates the upstream
-    # rsID-assignment disagreement.
+def _fetch_common_snps_plus_absent_from_peter_annovar() -> pd.DataFrame:
+    # common + Martin-unique SNPs ABSENT from Peter's annovar output entirely. These drive the
+    # collapse (found to be mostly DecodeME-QC-failed variants Martin retained; see
+    # experiments/claude/group_b_root_cause).
     uniq = _martin_unique()
     group_b = uniq[~uniq["SNP"].isin(_peter_full_annovar_rsids())]
     return pd.concat([_martin_common(), group_b])
@@ -177,8 +181,8 @@ DATAFRAMES = {
     "peter": _fetch_peter,
     "martin": _fetch_martin,
     "martin_restricted_to_peter_snps": _fetch_martin_restricted_to_peter_snps,
-    "common_snps_plus_gwaslab_hapmap_missing": _fetch_common_snps_plus_gwaslab_hapmap_missing,
-    "common_snps_plus_rsid_assignment": _fetch_common_snps_plus_rsid_assignment,
+    "common_snps_plus_present_in_peter_annovar": _fetch_common_snps_plus_present_in_peter_annovar,
+    "common_snps_plus_absent_from_peter_annovar": _fetch_common_snps_plus_absent_from_peter_annovar,
 }
 
 
