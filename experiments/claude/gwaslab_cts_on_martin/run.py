@@ -1,29 +1,30 @@
 """
-Experiment: run gwaslab's S-LDSC cell-type regression on MARTIN's munged sumstats.
+Experiment: run gwaslab's S-LDSC cell-type regression on controlled variations of Martin's AND
+Peter's summary statistics, through an IDENTICAL harness, to localize the Peter-vs-Martin gap.
 
-GOAL -- isolate whether the Peter-vs-Martin cell-type p-value gap is due to the input SNP set or
-the S-LDSC implementation (gwaslab's port vs original LDSC 1.0.1).
+Each run is identified by three names: (dataframe_name, dataset_label, baseline_label). Together
+they uniquely determine both the input that is run and the output path
+`results/{dataframe_name}_{dataset_label}_baseline_{baseline_label}.csv`, so nothing is ever
+silently overwritten and the experiment is fully controlled.
 
-We feed Martin's munged `.sumstats.gz` (columns SNP, A1, A2, Z, N -- his exact ~1,157,905-SNP set)
-directly into gwaslab's cts regression, BYPASSING gwaslab's internal `_get_hapmap3` re-restriction
-(which would drop his ~5k unique SNPs and collapse the set back toward Peter's). This is the
-faithful analog of what `ldsc.py` does: merge the munged sumstats with the LD-score files and
-regress. We call the lower-level `_estimate_h2_cts_by_ldsc` directly to skip `_get_hapmap3`.
+Method: feed a munged sumstats DataFrame (columns SNP, A1, A2, Z, N, ...) straight into gwaslab's
+cts regression, BYPASSING gwaslab's internal `_get_hapmap3` re-restriction (call the lower-level
+`_estimate_h2_cts_by_ldsc` directly). This is the faithful analog of what `ldsc.py` does: merge the
+munged sumstats with the LD-score files and regress chi^2 = Z^2.
 
-INTERPRETATION (compare the headline tissue p-value):
-  gwaslab(Martin input) ~= Peter's gwaslab value  -> the input SNP set does NOT explain the gap
-                                                     -> the gap is the implementation (gwaslab vs LDSC).
-  gwaslab(Martin input) shifts toward "less significant" -> the input SNP set matters.
-
-We run with baseline v1.2 (Peter's) for direct comparison to Peter, and v1.0 (Martin's likely
-baseline) for a Martin-replica. Peter reference values (fresh gwaslab 4.1.7 from CI run
-26691178699): multitissue A08.186.211.Brain = 2.334e-7, Brain_Cortex = 2.347e-6;
-gtex_brain Brain_Cortex ~= 0.000106.
+KEY RESULT (gtex_brain, baseline v1.2, Brain_Cortex headline):
+  peter                                    -> 1.06e-4   (== Peter's documented value; harness control)
+  martin (full)                            -> 0.33      (collapse)
+  martin_restricted_to_peter_snps          -> 1.07e-4   (== Peter; given the same SNPs, gwaslab agrees)
+  common_snps_plus_gwaslab_hapmap_missing  -> 1.3e-4    (benign: gwaslab's HapMap3-snplist choice)
+  common_snps_plus_rsid_assignment         -> 0.33      (the collapse: upstream rsID-assignment disagreement)
+So the driver is the rsID-assignment step, NOT the implementation, baseline, or gwaslab HapMap3 list.
 """
 
-import sys
 import shutil
+import sys
 import tempfile
+from functools import lru_cache
 from pathlib import Path
 
 import pandas as pd
@@ -36,9 +37,13 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_sldsc import (
 
 REPO = Path(__file__).resolve().parents[3]
 MARTIN_SUMSTATS = REPO / "gwas_1.regenie.filtered.rsids.munged.txt.sumstats.gz"
-# Peter's HapMap3-filtered sumstats (has CHR/POS per rsID); used only to supply CHR/POS columns
-# that gwaslab's cts column-check decorator requires (they are not used in the regression itself).
+# Peter's HapMap3-filtered sumstats (his exact pre-S-LDSC SNP set, with CHR/POS/EA/NEA/BETA/SE).
 PETER_CSV = REPO / "martin_exchange_5/hapmap_filtered_sumstats.csv"
+# Peter's full pre-HapMap3 annovar-assigned sumstats (~8.8M), used to classify Martin-unique SNPs.
+PETER_FULL_ANNOVAR = (
+    REPO
+    / "assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/decode_me_gwas_1_assign_rsids_via_dbsnp150.parquet"
+)
 OUT_DIR = Path(__file__).resolve().parent / "results"
 
 _REF = REPO / "assets/base_asset_store/reference_data/linkage_disequilibrium_scores"
@@ -85,6 +90,10 @@ CTS_DATASETS = {
 }
 
 
+# --------------------------------------------------------------------------------------------------
+# Base loaders (cached, so the full experiment reuses them across runs)
+# --------------------------------------------------------------------------------------------------
+@lru_cache(maxsize=1)
 def load_martin_sumstats() -> pd.DataFrame:
     """
     Martin's munged file: SNP A1 A2 Z N. Drop the merge-alleles padding rows (NaN Z).
@@ -102,8 +111,9 @@ def load_martin_sumstats() -> pd.DataFrame:
     return df
 
 
+@lru_cache(maxsize=1)
 def load_peter_as_munged() -> pd.DataFrame:
-    """Peter's HapMap3 CSV mapped to the same SNP/A1/A2/Z/N schema (diagnostic control)."""
+    """Peter's HapMap3 CSV mapped to the same SNP/A1/A2/Z/N schema (the harness control)."""
     df = pd.read_csv(PETER_CSV)
     df = df.rename(columns={"rsID": "SNP", "EA": "A1", "NEA": "A2"})
     df["Z"] = df["BETA"] / df["SE"]
@@ -112,15 +122,80 @@ def load_peter_as_munged() -> pd.DataFrame:
     return df[["SNP", "A1", "A2", "Z", "N", "EA", "NEA", "CHR", "POS"]]
 
 
+@lru_cache(maxsize=1)
+def _peter_hm3_rsids() -> frozenset[str]:
+    return frozenset(pd.read_csv(PETER_CSV)["rsID"])
+
+
+@lru_cache(maxsize=1)
+def _peter_full_annovar_rsids() -> frozenset[str]:
+    return frozenset(pd.read_parquet(PETER_FULL_ANNOVAR, columns=["rsid"])["rsid"])
+
+
+# --------------------------------------------------------------------------------------------------
+# Dataframe registry: name -> fetcher. Each fetcher returns one controlled input variation.
+# --------------------------------------------------------------------------------------------------
+def _martin_common() -> pd.DataFrame:
+    m = load_martin_sumstats()
+    return m[m["SNP"].isin(_peter_hm3_rsids())]
+
+
+def _martin_unique() -> pd.DataFrame:
+    m = load_martin_sumstats()
+    return m[~m["SNP"].isin(_peter_hm3_rsids())]
+
+
+def _fetch_martin() -> pd.DataFrame:
+    return load_martin_sumstats()
+
+
+def _fetch_peter() -> pd.DataFrame:
+    return load_peter_as_munged()
+
+
+def _fetch_martin_restricted_to_peter_snps() -> pd.DataFrame:
+    return _martin_common()
+
+
+def _fetch_common_snps_plus_gwaslab_hapmap_missing() -> pd.DataFrame:
+    # common + Martin-unique SNPs that ARE in Peter's full annovar data (real SNPs gwaslab's
+    # HapMap3 snplist dropped). Isolates the gwaslab-HapMap3-snplist choice.
+    uniq = _martin_unique()
+    group_a = uniq[uniq["SNP"].isin(_peter_full_annovar_rsids())]
+    return pd.concat([_martin_common(), group_a])
+
+
+def _fetch_common_snps_plus_rsid_assignment() -> pd.DataFrame:
+    # common + Martin-unique SNPs ABSENT from Peter's data entirely. Isolates the upstream
+    # rsID-assignment disagreement.
+    uniq = _martin_unique()
+    group_b = uniq[~uniq["SNP"].isin(_peter_full_annovar_rsids())]
+    return pd.concat([_martin_common(), group_b])
+
+
+DATAFRAMES = {
+    "peter": _fetch_peter,
+    "martin": _fetch_martin,
+    "martin_restricted_to_peter_snps": _fetch_martin_restricted_to_peter_snps,
+    "common_snps_plus_gwaslab_hapmap_missing": _fetch_common_snps_plus_gwaslab_hapmap_missing,
+    "common_snps_plus_rsid_assignment": _fetch_common_snps_plus_rsid_assignment,
+}
+
+
+# --------------------------------------------------------------------------------------------------
+# The harness
+# --------------------------------------------------------------------------------------------------
 def run_one(
-    baseline_label: str,
-    dataset_label: str,
-    df: pd.DataFrame | None = None,
-    tag: str = "martin_input",
+    dataframe_name: str, dataset_label: str, baseline_label: str
 ) -> pd.DataFrame:
+    """
+    Run gwaslab cts on DATAFRAMES[dataframe_name] with the given cts dataset and baseline model.
+
+    The triple (dataframe_name, dataset_label, baseline_label) uniquely determines the input and
+    the output path, so runs never collide.
+    """
     cts_dir, index_name, headline = CTS_DATASETS[dataset_label]
-    if df is None:
-        df = load_martin_sumstats()
+    df = DATAFRAMES[dataframe_name]()
     with tempfile.TemporaryDirectory() as tmp:
         # The .ldcts index stores paths relative to its own directory; copy the cts dir and
         # prepend an absolute prefix (same workaround as CellAnalysisByLDSCTask).
@@ -140,80 +215,58 @@ def run_one(
         )
     summary = summary.sort_values("Coefficient_P_value").reset_index(drop=True)
     OUT_DIR.mkdir(parents=True, exist_ok=True)
-    out_path = OUT_DIR / f"{tag}_{dataset_label}_baseline_{baseline_label}.csv"
+    out_path = OUT_DIR / f"{dataframe_name}_{dataset_label}_baseline_{baseline_label}.csv"
     summary.to_csv(out_path, index=False)
-    head_p = summary.loc[summary["Name"] == headline, "Coefficient_P_value"]
+    head_p = summary.loc[summary["Name"] == headline, "Coefficient_P_value"].iloc[0]
     print(
-        f"\n==> [{tag} | {dataset_label} / baseline {baseline_label}] n_snps_input={len(df)}  "
-        f"{headline} p = {head_p.iloc[0]:.4e}  (saved {out_path.name})"
+        f"\n==> [{dataframe_name} | {dataset_label} / baseline {baseline_label}] "
+        f"n_snps_input={len(df)}  {headline} p = {head_p:.4e}  (saved {out_path.name})"
     )
-    print(summary.head(6).to_string(index=False))
     return summary
 
 
-def _peter_full_annovar_rsids() -> set[str]:
-    """rsIDs in Peter's full (pre-HapMap3) annovar-assigned sumstats (~8.8M)."""
-    full = pd.read_parquet(
-        REPO
-        / "assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/decode_me_gwas_1_assign_rsids_via_dbsnp150.parquet",
-        columns=["rsid"],
-    )
-    return set(full["rsid"])
+def summary_to_markdown(table: pd.DataFrame) -> str:
+    """Render the (dataframe x baseline) headline-p-value summary table as markdown."""
+    return table.to_markdown(floatfmt=".3e")
 
 
-def run_followup_2(dataset_label: str = "gtex_brain", baseline_label: str = "v1.2"):
+def run_full_experiment(
+    dataset_label: str = "gtex_brain",
+    baseline_labels: tuple[str, ...] = ("v1.2", "v1.0"),
+) -> pd.DataFrame:
     """
-    Split Martin's ~5,318 unique SNPs (those collapsing the cts result) by their upstream cause:
-
-      A = present in Peter's FULL annovar data but dropped by gwaslab's HapMap3 snplist
-          -> isolates the gwaslab-HapMap3-snplist choice (db150 subset vs canonical w_hm3)
-      B = absent from Peter's data entirely
-          -> isolates upstream rsID-assignment disagreement
-
-    Run cts on (common + A) and (common + B) to see which group drives the collapse.
-    Reference points: common-only -> ~1.07e-4 (matches Peter); common + A + B (full) -> 0.33.
+    Run EVERY dataframe variation (Peter's + Martin's) x every baseline through the same harness,
+    then print a single controlled summary table of the headline-tissue p-value.
     """
-    m = load_martin_sumstats()
-    peter_hm3 = set(pd.read_csv(PETER_CSV)["rsID"])
-    common = m[m["SNP"].isin(peter_hm3)]
-    unique = m[~m["SNP"].isin(peter_hm3)]
-    in_peter_full = unique["SNP"].isin(_peter_full_annovar_rsids())
-    group_a = unique[in_peter_full]  # real SNPs gwaslab's HapMap3 list dropped
-    group_b = unique[~in_peter_full]  # upstream rsID-assignment artifacts
-    print(
-        f"common={len(common)}  A(gwaslab-HM3-list dropped, real)={len(group_a)}  "
-        f"B(rsID-assignment artifact)={len(group_b)}"
+    _, _, headline = CTS_DATASETS[dataset_label]
+    rows = []
+    for dataframe_name in DATAFRAMES:
+        for baseline_label in baseline_labels:
+            summary = run_one(dataframe_name, dataset_label, baseline_label)
+            p = summary.loc[summary["Name"] == headline, "Coefficient_P_value"].iloc[0]
+            rows.append(
+                {
+                    "dataframe": dataframe_name,
+                    "baseline": baseline_label,
+                    f"{headline}_p": p,
+                }
+            )
+    table = pd.DataFrame(rows).pivot(
+        index="dataframe", columns="baseline", values=f"{headline}_p"
     )
-    run_one(
-        baseline_label,
-        dataset_label,
-        df=pd.concat([common, group_a]),
-        tag="common_plus_A_gwaslab_hm3_list",
-    )
-    run_one(
-        baseline_label,
-        dataset_label,
-        df=pd.concat([common, group_b]),
-        tag="common_plus_B_rsid_assignment",
-    )
+    print(f"\n### {dataset_label}: {headline} p-value\n")
+    print(summary_to_markdown(table))
+    table.to_csv(OUT_DIR / f"SUMMARY_{dataset_label}.csv")
+    return table
 
 
 def main():
-
-    if sys.argv[1:2] == ["followup2"]:
-        run_followup_2(*sys.argv[2:])
-        return
-
-    # default: validate on the small/fast gtex_brain first, then the headline multitissue.
-    jobs = sys.argv[1:] or [
-        "gtex_brain:v1.2",
-        "gtex_brain:v1.0",
-        "multitissue:v1.2",
-        "multitissue:v1.0",
-    ]
-    for job in jobs:
-        dataset_label, baseline_label = job.split(":")
-        run_one(baseline_label=baseline_label, dataset_label=dataset_label)
+    args = sys.argv[1:]
+    if not args or args[0] == "full":
+        run_full_experiment(*(args[1:]))
+    else:
+        # run.py <dataframe_name> <dataset_label> <baseline_label>
+        run_one(args[0], args[1], args[2])
 
 
 if __name__ == "__main__":
