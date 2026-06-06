@@ -24,7 +24,7 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].  The table shows details of the cell/tissues types with the smallest p values.
 
 
-![s-ldsc-decodme-gene-expression](https://github.com/user-attachments/assets/77dfefc0-2717-4e45-9b1d-4f09d67b7dc5)
+{{ plotly_embed("docs/_figs/decode_me_gwas_1_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-me-sldsc-gene-expression") }}
 
 | Name                                                           |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:---------------------------------------------------------------|--------------:|----------------------:|:--------------|
@@ -65,7 +65,7 @@ As we saw in our earlier [MAGMA analysis](g_MAGMA_DecodeME_Analysis.md) using th
 
 I next applied S-LDSC using the reference dataset derived from the Roadmap epigenetic project.  The results are in the plot and table below:
 
-![s-ldsc-roadmap-chromatin](https://github.com/user-attachments/assets/79ffff5d-1693-41f5-b3b1-a54df7bd6294)
+{{ plotly_embed("docs/_figs/decode_me_gwas_1_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-me-sldsc-chromatin") }}
 
 
 | Name                                                                     |   Coefficient |   Coefficient_P_value | Reject Null   |

@@ -14,16 +14,16 @@ To narrow the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025i
 
 The 4 SUSIE runs each produced a single credible set containing 98 variants.  These  credible sets were largely but not entirely overlapping:
 
-![chr6b_upsetplot](https://github.com/user-attachments/assets/53391a87-436a-4c43-9ba0-eb20cb0ada4f)
+![chr6b_upsetplot](../../../../../_figs/decode_mechr6_97500000_99000000_palindromes_keep_upset_plot.png)
 
 
 The stacked plot for the $L=10$ run:
 
-![ch6b_stackplot](https://github.com/user-attachments/assets/fbf09dc9-04b4-44df-9759-86e7294eaa08)
+![ch6b_stackplot](../../../../../_figs/decode_mechr6_97500000_99000000_palindromes_keep_susie_stackplot.png)
 
 And for the $L=2$ run:
 
-![chrb_stackplot_l2](https://github.com/user-attachments/assets/835cc6fa-a823-4bac-a8f4-40941d0502cd)
+![chrb_stackplot_l2](../../../../../_figs/decode_mechr6_97500000_99000000_palindromes_keep_susie_stackplot_2_credible_set.png)
 
 Overall, SUSIE returns a diffuse signal in a region rather far from genes, making the genetic mechanism of action non-obvious. 
 

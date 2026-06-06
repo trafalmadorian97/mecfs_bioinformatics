@@ -65,7 +65,7 @@ The MAGMA SNP-wise-mean model is sensitive to the rules used for allocation of v
 
 I next applied [MAGMA's](../../../Bioinformatics_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../../Data_Sources/DecodeME.md).  This step combined the gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../../Data_Sources/GTEx_RNAseq_Data.md)[@gtex2020gtex].  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
 
-![bar_plot_decodeme_tissues](https://github.com/user-attachments/assets/519629d4-c60a-434b-9ceb-809c2878cbe5)
+{{ plotly_embed("docs/_figs/decode_me_gwas_1_build_37_magma_ensemble_specific_tissue_gene_covar_analysis_bar_plot/magma_gene_set_plot.html", id="decode-me-magma-gtex-tissue-bar-plot") }}
 In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p value meets Bonferroni-corrected significance threshold,
 
 

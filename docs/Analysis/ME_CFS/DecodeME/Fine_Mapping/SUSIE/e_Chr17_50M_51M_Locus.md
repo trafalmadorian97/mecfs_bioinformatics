@@ -15,19 +15,19 @@ To narrow down the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics
 Each of the 4 SUSIE runs produced a single credible set with the same 63 variants, as illustrated by the UpSet plot below:
 
 
-![chr17_upset](https://github.com/user-attachments/assets/79044a67-d441-4841-b68f-e0bc602eefde)
+![chr17_upset](../../../../../_figs/decode_mechr17_50000000_51000000_palindromes_keep_upset_plot.png)
 
 
 The distribution of probability mass across these variants was slightly different across the runs, as illustrated by the following UpSet plot, which is restricted to variants of $PIP>0.01$.
 
 
 
-![chr_17_pip001](https://github.com/user-attachments/assets/a8867989-fb8e-452e-8754-24ee46dbe761)
+![chr_17_pip001](../../../../../_figs/decode_mechr17_50000000_51000000_palindromes_keep_upset_plot_pip001.png)
 
 
 The stackplot below, for the $L=10$ case, illustrates the typical PIP pattern across variants.
 
-![chr17_stackplot](https://github.com/user-attachments/assets/f449a641-b3f5-4671-b7ae-0369e2c01179)
+![chr17_stackplot](../../../../../_figs/decode_mechr17_50000000_51000000_palindromes_keep_susie_stackplot.png)
 
 The credible set at this locus is focused upstream of the CA10 gene.  This would seem to make a CA10 a good candidate for further investigation.  
 
