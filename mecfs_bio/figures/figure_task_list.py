@@ -132,6 +132,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
     MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
     DECODE_ME_HBA_MAGMA_TASKS.extracted_plot_task,
+    DECODE_ME_HBA_MAGMA_TASKS.magma_independent_cluster_plot_unwrap,
     DECODE_ME_S_LDSC.partitioned_tasks[
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,

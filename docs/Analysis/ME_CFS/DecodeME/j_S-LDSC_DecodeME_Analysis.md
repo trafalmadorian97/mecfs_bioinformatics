@@ -65,7 +65,7 @@ As we saw in our earlier [MAGMA analysis](g_MAGMA_DecodeME_Analysis.md) using th
 
 I next applied S-LDSC using the reference dataset derived from the Roadmap epigenetic project.  The results are in the plot and table below:
 
-{{ plotly_embed("docs/_figs/decode_me_gwas_1_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-me-sldsc-chromatin") }}
+_{{ plotly_embed("docs/_figs/decode_me_gwas_1_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-me-sldsc-chromatin") }}_
 
 
 | Name                                                                     |   Coefficient |   Coefficient_P_value | Reject Null   |
