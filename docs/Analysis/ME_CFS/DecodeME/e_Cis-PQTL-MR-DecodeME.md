@@ -34,12 +34,12 @@ initial ME/CFS symptoms."
 
 To further investigate, I generate two region plots.  The first shows the DECODE ME GWAS signal in region of the RABGAP1L gene:
 
-![mecfs_rabgap1l_region_plot](https://github.com/user-attachments/assets/e2a71bbf-e803-4b57-9a7d-a22b4f9fd2f2)
+{{ png_embed("docs/_figs/decode_me_region_plot_rabgap1l_locus/region_plot.png", alt="mecfs_rabgap1l_region_plot") }}
 
 
 The second shows the same region from the UK Biobank Pharma Proteomics Project GWAS of plasma RABGAP1L levels:
 
-![rabgap1l_region_plot](https://github.com/user-attachments/assets/161f1b0e-e309-4c0e-a88a-d312b8dc80ee)
+{{ png_embed("docs/_figs/rabgap1l_region_plot_rabgap1l_locus/region_plot.png", alt="rabgap1l_region_plot") }}
 
 From visual inspection, it seems clear that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  A colocalization algorithm may clarify the question.
 
@@ -59,13 +59,13 @@ Again, to further investigate, I compared region plots in the vicinity of BTN1A1
 
 The first plot is from DecodeME:
 
-![decode-me-btn1a1-region](https://github.com/user-attachments/assets/71e71dde-84d9-4e8e-8d2d-a5e28e075914)
+{{ png_embed("docs/_figs/decode_me_region_plot_btn1a1_locus/region_plot.png", alt="decode-me-btn1a1-region") }}
 
 
 The second is from UK Biobank Pharma Proteomics Project:
 
 
-![ukbb_ppp_btn1a1](https://github.com/user-attachments/assets/400039dc-0e31-4cfd-b219-c3cea2350a3c)
+{{ png_embed("docs/_figs/btn1a1_ukbb_ppp_region_plot/region_plot.png", alt="ukbb_ppp_btn1a1") }}
 
 
 In this comparison, it seems even more obvious that the primary signals do not colocalize: they are separated by a recombination boundary.

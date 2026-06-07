@@ -13,9 +13,9 @@ pull and regenerate from scratch. This module catches that drift.
 from pathlib import Path
 from typing import Iterable, Sequence
 
-from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.figures.figure_exporter import (
+    DirectoryFigureMeta,
     ValidFigureMeta,
     get_figure_destination,
 )
@@ -49,7 +49,7 @@ def find_orphan_paths(
         assert isinstance(meta, ValidFigureMeta)
         dst = get_figure_destination(meta=meta, fig_dir=fig_dir)
         rel = dst.relative_to(fig_dir)
-        if isinstance(meta, GWASPlotDirectoryMeta):
+        if isinstance(meta, DirectoryFigureMeta):
             dir_destinations.append(rel)
         else:
             file_destinations.add(rel)

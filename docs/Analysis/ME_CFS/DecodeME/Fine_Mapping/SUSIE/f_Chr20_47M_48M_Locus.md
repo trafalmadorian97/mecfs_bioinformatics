@@ -20,7 +20,7 @@ The UpSet plot for this locus reveals that the variants found by the $L=10$ SUSI
 
 
 
-![chr20_upset_plot](https://github.com/user-attachments/assets/ca20aa18-1a70-4043-be5a-253bc156be34)
+{{ png_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_upset_plot.png", alt="chr20_upset_plot") }}
 
 
 
@@ -29,7 +29,7 @@ The UpSet plot for this locus reveals that the variants found by the $L=10$ SUSI
 The Stackplot and variant list for the $L=10$ run shows the highly concentrated nature of one of the credible sets.
 
 
-![chr20_l10](https://github.com/user-attachments/assets/53ab0988-4002-4a52-b88e-f3c59f695e6f)
+{{ png_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_susie_stackplot.png", alt="chr20_l10") }}
 
 
 
@@ -148,7 +148,7 @@ The Stackplot and variant list for the $L=10$ run shows the highly concentrated 
 In contrast, the stackplot and variant list for $L=2$ reveal a single credible set
 
 
-![chr20_L2](https://github.com/user-attachments/assets/3863e3a8-e4aa-40af-8a1d-5bd0efd46109)
+{{ png_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_susie_stackplot_2_credible_set.png", alt="chr20_L2") }}
 
 This region of chromosome 20 is relatively gene-dense, so that are a number of plausible causal genes.
 

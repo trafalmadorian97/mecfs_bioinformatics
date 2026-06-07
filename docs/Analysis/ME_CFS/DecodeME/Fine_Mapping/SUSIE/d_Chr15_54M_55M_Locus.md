@@ -14,13 +14,13 @@ To narrow the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025i
 
 Each of the 4 SUSIE runs produced a single credible set containing identical variants, as illustrated by the following UpSet plot:
 
-![ch15upsetplot](https://github.com/user-attachments/assets/388d42c5-c492-4b44-a2c5-bc6472119ced)
+{{ png_embed("docs/_figs/decode_mechr15_54500000_55500000_palindromes_keep_upset_plot.png", alt="ch15upsetplot") }}
 
 
 Here is a plot of the SUSIE results for the $L=10$ case.  It is representative of the other runs.
 
 
-![CH15_susie_results](https://github.com/user-attachments/assets/f82a0d96-54b5-4476-9170-62ae5873e058)
+{{ png_embed("docs/_figs/decode_mechr15_54500000_55500000_palindromes_keep_susie_stackplot.png", alt="CH15_susie_results") }}
 
 
 Compare to the other loci, the SUSIE credible set at this locus is relatively concentrated on a single variant: a G $\to$ A substitution at GRCh37 position 55158922 on chromosome 15.

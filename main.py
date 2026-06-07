@@ -53,6 +53,55 @@ def define_env(env):
         return file_path.read_text()
 
     @env.macro
+    def png_embed(src, alt="", caption=""):
+        """
+        Embed a PNG (or other static image) using a path relative to the project
+        root, mirroring :func:`plotly_embed` so that static and interactive
+        figures are referenced the same way.
+
+        This avoids the hard-to-read, page-relative ``![](../../../../../_figs/...)``
+        links: callers pass a repo-root-relative path
+        (e.g. "docs/_figs/my_plot.png") and the macro resolves the URL relative
+        to the served page itself.
+
+        Parameters
+        ----------
+        src : str
+            Path to the image file, relative to the project root
+            (e.g. "docs/_figs/my_plot.png").
+        alt : str
+            Alt text for the image.
+        caption : str
+            Optional caption rendered as a <figcaption> below the image. When
+            provided the image is wrapped in a <figure>.
+        """
+        if not Path(src).is_file():
+            raise FileNotFoundError(
+                f"png_embed: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+
+        # Convert project-root-relative path to a URL relative to the served page.
+        # Files under docs/ are served from the site root, so strip the docs_dir prefix.
+        docs_dir = Path(env.conf["docs_dir"])
+        site_path = Path(src).resolve().relative_to(docs_dir.resolve())
+        page_dir = Path(env.page.file.dest_uri).parent
+        relative_url = os.path.relpath(site_path, page_dir)
+
+        # Use max-width (not width) so the image renders at its natural size and
+        # only shrinks when it would overflow the page — matching how a plain
+        # markdown ``![](...)`` image behaves under Material's default CSS.
+        img = f'<img src="{relative_url}" alt="{alt}" style="max-width:100%; height:auto;">'
+        if caption:
+            return (
+                f'<figure style="margin:0;">\n'
+                f"{img}\n"
+                f'<figcaption style="text-align:center; font-style:italic; margin-top:0.5em;">{caption}</figcaption>\n'
+                f"</figure>"
+            )
+        return img
+
+    @env.macro
     def plotly_embed(src, id, height="775px", caption=""):
         """
         This is a macro function added by Claude to allow the embedding of plotly plots which can be expanded to full screen.
