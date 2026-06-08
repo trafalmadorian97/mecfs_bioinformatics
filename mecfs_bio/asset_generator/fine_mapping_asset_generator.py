@@ -272,7 +272,7 @@ def generate_assets_broad_ukbb_fine_map(
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
-        max_credible_sets=1,
+        max_credible_sets=2,
     )
     susie_plot_2_credible_set = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_2_credible_set",

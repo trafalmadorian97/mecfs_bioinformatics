@@ -153,6 +153,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.upset_plot_task_pip001,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_stackplot_task,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_2_credible_set_plot,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_strict_plot,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.upset_plot_task,
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "adult_brain"
