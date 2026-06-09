@@ -26,8 +26,17 @@ from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ld
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_cis_pqtl_mr import (
+    DECODE_ME_BASIC_CIS_PQTL_MR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_gene_list_markdown import (
+    DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import (
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_variants_markdown import (
+    DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
@@ -70,6 +79,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot_with_window import (
     DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_table_markdown import (
+    DECODE_ME_GWAS_1_MAGMA_GENE_TABLE_MARKDOWN,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot import (
     MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
@@ -124,6 +136,10 @@ from mecfs_bio.build_system.task.base_task import Task
 
 MULTI_TISSUE_CHROMATIN_REF = "multi_tissue_chromatin"
 MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
+CAHOY_CNS_REF = "cahoy_cns"
+GTEX_BRAIN_REF = "gtex_brain"
+IMMGEN_REF = "immgen"
+CORCES_ATAC_REF = "corces_atac"
 
 ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
@@ -155,6 +171,30 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_2_credible_set_plot,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_strict_plot,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.upset_plot_task,
+    # DecodeME programmatic markdown tables (replacing hand-pasted docs tables)
+    DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
+    DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
+    DECODE_ME_GWAS_1_MAGMA_GENE_TABLE_MARKDOWN,
+    DECODE_ME_HBA_MAGMA_TASKS.independent_clusters_markdown_task_unwrap,
+    DECODE_ME_BASIC_CIS_PQTL_MR.md_task,
+    DECODE_ME_S_LDSC.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF
+    ].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[IMMGEN_REF].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[CORCES_ATAC_REF].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[CAHOY_CNS_REF].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[GTEX_BRAIN_REF].multiple_testing_task_markdown,
+    # SUSIE credible-set variant lists
+    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_2_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_strict_credible_set_markdown_table,
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "adult_brain"
     ].gene_manhattan_plot_task,
