@@ -1,4 +1,4 @@
- # LDSC
+# LDSC
 
 I applied [Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to the [Million Veterans Program](../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity] migraine GWAS.  The aim was to estimate heritability and look for signs of stratification and confounding.
 

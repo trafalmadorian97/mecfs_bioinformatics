@@ -108,7 +108,7 @@ r-gdata = "*"
 r-readr = "*"
 r-remotes = "*"
 r-devtools = "*"
-ty = ">=0.0.40,<0.0.41"
+ty = ">=0.0.44,<0.0.45"
 actionlint = ">=1.7.12,<2"
 shellcheck = ">=0.11.0,<0.12"
 

@@ -26,14 +26,44 @@ from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ld
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_cis_pqtl_mr import (
+    DECODE_ME_BASIC_CIS_PQTL_MR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_gene_list_markdown import (
+    DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import (
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_variants_markdown import (
+    DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.without_palindromes.susie_finemap_decode_me_37_chr1_173_locus_stackplot import (
-    DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT,
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_BTN1A1_locus_37 import (
+    DECODE_ME_BTN1A1_REGION_PLOT_37,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabgap1l_locus_37 import (
+    DECODE_ME_RABGAP1L_REGION_PLOT_37,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
+    DECODE_ME_S_LDSC,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import (
+    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr6_97_505_620_locus_palindromes import (
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr15_54_925_638_locus_plalindindromes import (
+    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr17_50_237_377_locus_palindromes import (
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr20_47_653_230_locus_palindromes import (
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.h_magma.decode_me_h_magma_asset_generator import (
     DECODE_ME_H_MAGMA_ASSET_GENERATOR,
@@ -41,11 +71,20 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.h_magma.decode_me_h_magma_a
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import (
     DECODE_ME_CURATED_GENE_SET_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_hba_magma_analysis import (
+    DECODE_ME_HBA_MAGMA_TASKS,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot import (
     DECODE_ME_MAGMA_GENE_PLOT,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot_with_window import (
     DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_table_markdown import (
+    DECODE_ME_GWAS_1_MAGMA_GENE_TABLE_MARKDOWN,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue_bar_plot import (
+    MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
@@ -87,17 +126,75 @@ from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analy
 from mecfs_bio.assets.gwas.triglycerides.willer_et_al.analysis.triglycide_standard_analysis import (
     WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.ukbb_ppp.btn1a1.generator.retrieve_and_process import (
+    BTN1A1_UKBB_PPP_GWAS_PROCESS,
+)
+from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.analysis.ukbb_rabgap1l_region_plot_37 import (
+    UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37,
+)
 from mecfs_bio.build_system.task.base_task import Task
 
 MULTI_TISSUE_CHROMATIN_REF = "multi_tissue_chromatin"
 MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
+CAHOY_CNS_REF = "cahoy_cns"
+GTEX_BRAIN_REF = "gtex_brain"
+IMMGEN_REF = "immgen"
+CORCES_ATAC_REF = "corces_atac"
 
 ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
-    DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS_STACKPLOT,
     DECODE_ME_MAGMA_GENE_PLOT,
     DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
+    MAGMA_DECODE_ME_SPECIFIC_TISSUE_ANALYSIS_BAR_PLOT,
+    DECODE_ME_HBA_MAGMA_TASKS.extracted_plot_task,
+    DECODE_ME_HBA_MAGMA_TASKS.magma_independent_cluster_plot_unwrap,
+    DECODE_ME_S_LDSC.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].plot_task_unwrap,
+    DECODE_ME_S_LDSC.partitioned_tasks[MULTI_TISSUE_CHROMATIN_REF].plot_task_unwrap,
+    DECODE_ME_RABGAP1L_REGION_PLOT_37,
+    UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37,
+    DECODE_ME_BTN1A1_REGION_PLOT_37,
+    BTN1A1_UKBB_PPP_GWAS_PROCESS.plot_task,
+    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.susie_stackplot_task,
+    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.upset_plot_task,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_stackplot_task,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_finemap_2_credible_set_plot,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.upset_plot_task,
+    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES.susie_stackplot_task,
+    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES.upset_plot_task,
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.susie_stackplot_task,
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.upset_plot_task,
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.upset_plot_task_pip001,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_stackplot_task,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_2_credible_set_plot,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_strict_plot,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.upset_plot_task,
+    # DecodeME programmatic markdown tables (replacing hand-pasted docs tables)
+    DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
+    DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
+    DECODE_ME_GWAS_1_MAGMA_GENE_TABLE_MARKDOWN,
+    DECODE_ME_HBA_MAGMA_TASKS.independent_clusters_markdown_task_unwrap,
+    DECODE_ME_BASIC_CIS_PQTL_MR.md_task,
+    DECODE_ME_S_LDSC.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF
+    ].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[IMMGEN_REF].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[CORCES_ATAC_REF].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[CAHOY_CNS_REF].multiple_testing_task_markdown,
+    DECODE_ME_S_LDSC.partitioned_tasks[GTEX_BRAIN_REF].multiple_testing_task_markdown,
+    # SUSIE credible-set variant lists
+    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_2_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_base_credible_set_markdown_table,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_strict_credible_set_markdown_table,
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "adult_brain"
     ].gene_manhattan_plot_task,
@@ -200,4 +297,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
 ]

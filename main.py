@@ -1,5 +1,37 @@
 import os
+import textwrap
 from pathlib import Path
+
+
+def _assert_macro_call_at_margin(page, macro: str, arg: str) -> None:
+    """Fail the build if a macro call is indented in the page source.
+
+    Some macros (e.g. ``markdown_table``) emit block-level markdown --- an
+    admonition or table --- that python-markdown only parses when it begins at
+    the left margin. If the ``{{ macro(...) }}`` call is itself indented, the
+    first line of the macro output inherits that indentation and is reinterpreted
+    as an indented code block, silently breaking the page.
+
+    We locate the call in the raw page source by the unique ``arg`` (the table
+    path) and raise if its line has leading whitespace. ``arg`` being unique per
+    call lets this work even with several calls on one page; if the call spans
+    multiple source lines it simply isn't checked.
+    """
+    source = Path(page.file.abs_src_path).read_text()
+    needle = f"{macro}("
+    for line in source.splitlines():
+        if needle in line and arg in line:
+            if line != line.lstrip():
+                raise ValueError(
+                    f'{macro}("{arg}") is indented on page '
+                    f"'{page.file.src_uri}'. This macro emits a block-level "
+                    "admonition/table that only renders at the left margin; "
+                    "move the call to column 0."
+                )
+            return
+    raise ValueError(
+        f"{macro} and {arg} not found in any lines in {page.file.abs_src_path}"
+    )
 
 
 def define_env(env):
@@ -51,6 +83,103 @@ def define_env(env):
         if not file_path.is_file():
             raise FileNotFoundError(f"include_file: '{path}' does not exist")
         return file_path.read_text()
+
+    @env.macro
+    def markdown_table(src, title="Table", collapse_threshold=50):
+        """Include a programmatically-generated markdown table, collapsing large ones.
+
+        Like :func:`include_file`, this returns the raw markdown of a `.mdx`
+        table file (resolved relative to the project root) so mkdocs renders it
+        as a table. When the table has ``collapse_threshold`` or more data rows
+        it is wrapped in a closed ``??? info`` admonition so long tables don't
+        dominate the page.
+
+        The ``{{ markdown_table(...) }}`` call must start at column 0: the
+        returned block-level admonition/table only parses correctly at the left
+        margin (an indented call would turn the first output line into a code
+        block). This is enforced --- an indented call fails the build (see
+        ``_assert_macro_call_at_margin``) rather than silently mis-rendering.
+
+        Parameters
+        ----------
+        src : str
+            Path to the `.mdx` table file, relative to the project root
+            (e.g. "docs/_figs/my_table.mdx").
+        title : str
+            Title shown on the collapsible block (only used when the table is
+            large enough to be collapsed).
+        collapse_threshold : int
+            Minimum number of data rows (excluding the header and separator
+            rows) at which the table is wrapped in a collapsible block.
+        """
+        file_path = Path(src)
+        if not file_path.is_file():
+            raise FileNotFoundError(
+                f"markdown_table: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+        _assert_macro_call_at_margin(env.page, macro="markdown_table", arg=src)
+        text = file_path.read_text()
+
+        # A markdown table is a header row + a separator row + one row per record;
+        # every one of those lines starts with "|". Subtract the header and
+        # separator to get the data-row count.
+        table_lines = [ln for ln in text.splitlines() if ln.lstrip().startswith("|")]
+        n_rows = max(len(table_lines) - 2, 0)
+
+        if n_rows >= collapse_threshold:
+            body = textwrap.indent(text, "    ")
+            return f'??? info "{title}"\n\n{body}'
+        return text
+
+    @env.macro
+    def png_embed(src, alt="", caption=""):
+        """
+        Embed a PNG (or other static image) using a path relative to the project
+        root, mirroring :func:`plotly_embed` so that static and interactive
+        figures are referenced the same way.
+
+        This avoids the hard-to-read, page-relative ``![](../../../../../_figs/...)``
+        links: callers pass a repo-root-relative path
+        (e.g. "docs/_figs/my_plot.png") and the macro resolves the URL relative
+        to the served page itself.
+
+        Parameters
+        ----------
+        src : str
+            Path to the image file, relative to the project root
+            (e.g. "docs/_figs/my_plot.png").
+        alt : str
+            Alt text for the image.
+        caption : str
+            Optional caption rendered as a <figcaption> below the image. When
+            provided the image is wrapped in a <figure>.
+        """
+        if not Path(src).is_file():
+            raise FileNotFoundError(
+                f"png_embed: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+
+        # Convert project-root-relative path to a URL relative to the served page.
+        # Files under docs/ are served from the site root, so strip the docs_dir prefix.
+        docs_dir = Path(env.conf["docs_dir"])
+        site_path = Path(src).resolve().relative_to(docs_dir.resolve())
+        page_dir = Path(env.page.file.dest_uri).parent
+        relative_url = os.path.relpath(site_path, page_dir)
+
+        # Use max-width (not width) so the image renders at its natural size and
+        # only shrinks when it would overflow the page — matching how a plain
+        # markdown ``![](...)`` image behaves under Material's default CSS.
+        img = f'<img src="{relative_url}" alt="{alt}" style="max-width:100%; height:auto;">'
+        if caption:
+            return (
+                f'<figure style="margin:0;">\n'
+                f"{img}\n"
+                f'<figcaption style="text-align:center; font-style:italic; margin-top:0.5em;">{caption}</figcaption>\n'
+                f"</figure>"
+            )
+        return img
 
     @env.macro
     def plotly_embed(src, id, height="775px", caption=""):

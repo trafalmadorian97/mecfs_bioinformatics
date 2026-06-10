@@ -83,7 +83,14 @@ class BroadFineMapTaskGroup:
     susie_finemap_1_credible_set_plot: Task
     susie_finemap_2_credible_set_task: Task
     susie_finemap_2_credible_set_plot: Task
-    markdown_table_tasks: list[Task]
+    # Markdown tables of each run's credible sets. Named one-per-run (rather than
+    # a positional list) so call sites reference the run explicitly. The
+    # ``base`` run is the default L=10 fit; the others mirror the corresponding
+    # finemap-task names above.
+    susie_base_credible_set_markdown_table: Task
+    susie_strict_credible_set_markdown_table: Task
+    susie_1_credible_set_markdown_table: Task
+    susie_2_credible_set_markdown_table: Task
     upset_plot_task: Task
     upset_plot_task_pip001: Task
 
@@ -99,7 +106,11 @@ class BroadFineMapTaskGroup:
             self.susie_finemap_2_credible_set_plot,
             self.upset_plot_task,
             self.upset_plot_task_pip001,
-        ] + self.markdown_table_tasks
+            self.susie_base_credible_set_markdown_table,
+            self.susie_strict_credible_set_markdown_table,
+            self.susie_1_credible_set_markdown_table,
+            self.susie_2_credible_set_markdown_table,
+        ]
 
 
 def generate_assets_broad_ukbb_fine_map(
@@ -190,7 +201,6 @@ def generate_assets_broad_ukbb_fine_map(
         ),
         chrom_range_filter=chrom_range,
     )
-    markdown_table_tasks = []
     susie_finemap_task = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap",
         gwas_data_task=harmonized_sumstats_task,
@@ -208,10 +218,8 @@ def generate_assets_broad_ukbb_fine_map(
             heatmap_bin_options=None, mode="ld2", cmap="plasma"
         ),
     )
-    markdown_table_tasks.append(
-        markdown_cs_table_task(
-            susie_finemap_task=susie_finemap_task, base_name=base_name + "_susie_base"
-        )
+    susie_base_credible_set_markdown_table = markdown_cs_table_task(
+        susie_finemap_task=susie_finemap_task, base_name=base_name + "_susie_base"
     )
 
     susie_finemap_task_strict = SusieRFinemapTask.create(
@@ -233,11 +241,9 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    markdown_table_tasks.append(
-        markdown_cs_table_task(
-            susie_finemap_task=susie_finemap_task_strict,
-            base_name=base_name + "_susie_strict",
-        )
+    susie_strict_credible_set_markdown_table = markdown_cs_table_task(
+        susie_finemap_task=susie_finemap_task_strict,
+        base_name=base_name + "_susie_strict",
     )
 
     susie_finemap_task_1_credible_set = SusieRFinemapTask.create(
@@ -259,11 +265,9 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    markdown_table_tasks.append(
-        markdown_cs_table_task(
-            susie_finemap_task=susie_finemap_task_1_credible_set,
-            base_name=base_name + "_susie_1",
-        )
+    susie_1_credible_set_markdown_table = markdown_cs_table_task(
+        susie_finemap_task=susie_finemap_task_1_credible_set,
+        base_name=base_name + "_susie_1",
     )
 
     susie_finemap_task_2_credible_set = SusieRFinemapTask.create(
@@ -272,7 +276,7 @@ def generate_assets_broad_ukbb_fine_map(
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
-        max_credible_sets=1,
+        max_credible_sets=2,
     )
     susie_plot_2_credible_set = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_2_credible_set",
@@ -285,11 +289,9 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    markdown_table_tasks.append(
-        markdown_cs_table_task(
-            susie_finemap_task=susie_finemap_task_2_credible_set,
-            base_name=base_name + "_susie_2",
-        )
+    susie_2_credible_set_markdown_table = markdown_cs_table_task(
+        susie_finemap_task=susie_finemap_task_2_credible_set,
+        base_name=base_name + "_susie_2",
     )
     variant_id = "__variant_id"
     id_variant_pipe = ConcatStrPipe(
@@ -402,9 +404,12 @@ def generate_assets_broad_ukbb_fine_map(
         susie_finemap_strict_plot=strict_plot,
         susie_finemap_1_credible_set_task=susie_finemap_task_1_credible_set,
         susie_finemap_1_credible_set_plot=susie_plot_1_credible_set,
-        markdown_table_tasks=markdown_table_tasks,
         susie_finemap_2_credible_set_task=susie_finemap_task_2_credible_set,
         susie_finemap_2_credible_set_plot=susie_plot_2_credible_set,
+        susie_base_credible_set_markdown_table=susie_base_credible_set_markdown_table,
+        susie_strict_credible_set_markdown_table=susie_strict_credible_set_markdown_table,
+        susie_1_credible_set_markdown_table=susie_1_credible_set_markdown_table,
+        susie_2_credible_set_markdown_table=susie_2_credible_set_markdown_table,
         upset_plot_task=upset_plot,
         upset_plot_task_pip001=upset_plot_pip001,
     )

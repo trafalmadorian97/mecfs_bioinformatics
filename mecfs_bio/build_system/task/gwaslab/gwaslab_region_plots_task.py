@@ -162,7 +162,7 @@ def plot_region_around_variant(
         save=str(
             output_path,
         ),
-        save_args={"dpi": 400, "facecolor": "white"},
+        save_kwargs={"dpi": 400, "facecolor": "white"},
         vcf_path=vcf_path,
     )
 
