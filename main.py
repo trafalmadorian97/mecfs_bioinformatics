@@ -1,6 +1,24 @@
 import os
+import struct
 import textwrap
 from pathlib import Path
+
+
+def _png_width_px(path: Path) -> int:
+    """Return a PNG's intrinsic width in pixels by reading its IHDR chunk.
+
+    PNG files start with an 8-byte signature followed by the IHDR chunk, whose
+    4-byte big-endian width sits at byte offset 16. This avoids pulling in an
+    image library just to scale a figure.
+    """
+    with path.open("rb") as fh:
+        header = fh.read(24)
+    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+        raise ValueError(
+            f"png_embed: 'scale' only supports PNG files; '{path}' is not a PNG"
+        )
+    (width,) = struct.unpack(">I", header[16:20])
+    return width
 
 
 def _assert_macro_call_at_margin(page, macro: str, arg: str) -> None:
@@ -133,7 +151,7 @@ def define_env(env):
         return text
 
     @env.macro
-    def png_embed(src, alt="", caption=""):
+    def png_embed(src, alt="", caption="", scale=1.0):
         """
         Embed a PNG (or other static image) using a path relative to the project
         root, mirroring :func:`plotly_embed` so that static and interactive
@@ -154,7 +172,15 @@ def define_env(env):
         caption : str
             Optional caption rendered as a <figcaption> below the image. When
             provided the image is wrapped in a <figure>.
+        scale : float
+            Multiplier applied to the image's natural size, preserving aspect
+            ratio (``scale=0.5`` renders at half size, ``scale=2`` at double).
+            The default of ``1.0`` keeps the previous behaviour: the image
+            renders at its natural size and only shrinks to fit the page.
         """
+        if scale <= 0:
+            raise ValueError(f"png_embed: 'scale' must be positive, got {scale!r}")
+
         if not Path(src).is_file():
             raise FileNotFoundError(
                 f"png_embed: '{src}' does not exist "
@@ -168,10 +194,24 @@ def define_env(env):
         page_dir = Path(env.page.file.dest_uri).parent
         relative_url = os.path.relpath(site_path, page_dir)
 
-        # Use max-width (not width) so the image renders at its natural size and
-        # only shrinks when it would overflow the page — matching how a plain
-        # markdown ``![](...)`` image behaves under Material's default CSS.
-        img = f'<img src="{relative_url}" alt="{alt}" style="max-width:100%; height:auto;">'
+        if scale == 1.0:
+            # Use max-width (not width) so the image renders at its natural size
+            # and only shrinks when it would overflow the page — matching how a
+            # plain markdown ``![](...)`` image behaves under Material's default
+            # CSS.
+            sizing = "max-width:100%; height:auto;"
+        else:
+            # Scaling is relative to the image's *natural* size, so we need its
+            # intrinsic pixel width; a CSS percentage would be relative to the
+            # container instead. Read the width from the PNG header and set an
+            # explicit width with ``height:auto`` to preserve the aspect ratio.
+            # ``max-width:100%`` is kept so the image stays responsive and never
+            # overflows the content column.
+            natural_width = _png_width_px(Path(src))
+            scaled_width = round(natural_width * scale)
+            sizing = f"width:{scaled_width}px; max-width:100%; height:auto;"
+
+        img = f'<img src="{relative_url}" alt="{alt}" style="{sizing}">'
         if caption:
             return (
                 f'<figure style="margin:0;">\n'
