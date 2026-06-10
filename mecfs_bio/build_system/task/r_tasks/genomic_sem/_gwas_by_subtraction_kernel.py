@@ -422,6 +422,16 @@ def compute_v_snp_batch(
     varSNP: (N,) Per SNP variances
 
 
+    Output:
+      - Per SNP sampling covariance of the
+          vector (Cov(SNP,T1), Cov(SNP,T2))^T = (\beta_{T_1,i} * VAR_{SNP}, \beta_{T_2,i} * VAR_{SNP}) )^T
+
+
+    Approach:
+    -  Use logic of the section "Sampling noise and LDSC" to derive scaled sampling of the beta as
+        intercept * SE(\beta)*2
+    - Multiply by Var_{SNP}^2 to account for Var_{SNP} factor
+
 
 
     """
@@ -531,9 +541,9 @@ def fit_gwas_by_subtraction(
     se_c_F[good] = np.sqrt(var_F[good])
     se_c_R[good] = np.sqrt(var_R[good])
 
-    z_F = beta_F / se_c_F
+    # z_F = beta_F / se_c_F
+    # p_F = 2.0 * norm.sf(np.abs(z_F))
     z_R = beta_R / se_c_R
-    p_F = 2.0 * norm.sf(np.abs(z_F))
     p_R = 2.0 * norm.sf(np.abs(z_R))
 
     # Effective sample size: N_eff = 1 / (varSNP * se^2).
