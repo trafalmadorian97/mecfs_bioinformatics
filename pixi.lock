@@ -506,7 +506,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/toml-0.10.2-pyhcf101f3_3.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-w-1.2.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomlkit-0.13.3-pyha770c72_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.44-h4e94fc0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.46-h4e94fc0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.41.0-hdab8a38_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/urllib3-2.6.3-pyhd8ed1ab_0.conda
@@ -592,7 +592,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/e8/eba9fece11d57a71e3e22ea672742c8f3cf23b35730c9e96db768b295216/googleapis_common_protos-1.71.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/83/3b1d03d36f224edded98e9affd0467630fc09d766c0e56fb1498cbb04a9b/griffe-1.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/ac/42b4d6bc0ea119ce2e91e1788feabf32c5433e9617dbb495c2a3d0dc7f12/grimp-3.14-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/36/5c/489b27e8e1c18473a17b152d8c2281c76f58e7208a844dd32c8a3bd16960/gwaslab-4.1.7-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/6d/317b1c42af12f41a0e9aa09aea956079eb6708f76d1c5d015bf24bc96308/gwaslab-4.1.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3a/30/d1c94066343a98bb2cea40120873193a4fed68c4ad7f8935c11caf74c681/h5py-3.15.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/82/4d/1fcf74ad06b114f3ae4a528f582bba38330cb71a5c4afe58e4752a8a7dd0/HiCMatrix-17.2-py3-none-any.whl
@@ -2050,7 +2050,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 6c6bb3f864388c749b3d09db53634dffa85ece1b8f0919dad601efc7760a7e7a
+  sha256: ea80357865fb0ce69b22f90b8f0b42a98114516a7b88f436edd041272ac7fc29
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -3141,10 +3141,10 @@ packages:
   purls: []
   size: 3376423
   timestamp: 1626369596591
-- pypi: https://files.pythonhosted.org/packages/36/5c/489b27e8e1c18473a17b152d8c2281c76f58e7208a844dd32c8a3bd16960/gwaslab-4.1.7-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/0d/6d/317b1c42af12f41a0e9aa09aea956079eb6708f76d1c5d015bf24bc96308/gwaslab-4.1.9-py3-none-any.whl
   name: gwaslab
-  version: 4.1.7
-  sha256: aaf53be8b17d0bba84b9b23d278dc193d316ac6c4eda5389f735cfb67add5be8
+  version: 4.1.9
+  sha256: b70420b9af8f993562a2e2221cd659e6f6ac330dca1d40e3f39bda440cc23400
   requires_dist:
   - pandas>=1.3,!=1.5,<=2.3.3
   - numpy>=1.21.2,<2
@@ -11508,10 +11508,10 @@ packages:
   - pytest-mypy-testing ; extra == 'test'
   - pytest>=7.0,<8.2 ; extra == 'test'
   requires_python: '>=3.8'
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.44-h4e94fc0_0.conda
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.46-h4e94fc0_0.conda
   noarch: python
-  sha256: 0e59e322106ec3ace300b7aead606584ad6e1a17cfe2471bf38f93f5e5899a96
-  md5: be9ae2561d307b7e85a2f0b63755a50f
+  sha256: 47dc3682c443633140e12e4f648232734e87e6b4f4d64153b63c6212dbb8baad
+  md5: 038a323f4926fd495704b47cbe0489b2
   depends:
   - python
   - __glibc >=2.17,<3.0.a0
@@ -11523,9 +11523,9 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/ty?source=compressed-mapping
-  size: 10100663
-  timestamp: 1780641112068
+  - pkg:pypi/ty?source=hash-mapping
+  size: 10198162
+  timestamp: 1780982728250
 - pypi: https://files.pythonhosted.org/packages/1b/a9/e3aee762739c1d7528da1c3e06d518503f8b6c439c35549b53735ba52ead/typeguard-4.4.4-py3-none-any.whl
   name: typeguard
   version: 4.4.4

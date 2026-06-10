@@ -4,7 +4,7 @@ hide:
 ---
 # S-LDSC
 
-[Stratified Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] was applied to summary statistics from GWAS-1 of [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial].
+I applied [Stratified Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) (S-LDSC)[@finucane2018heritability] to summary statistics from [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1.
 
 ## Reference Data Sources
 
@@ -21,43 +21,43 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 ## Results
 
 ### GTEx and Franke lab tissue expression data
-The plot and table below show the results of the application of S-LDSC to DecodeME using the GTEx and Franke lab gene expression datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to broad tissue category.  Large points correspond to cell/tissue types deemed significant by an application of the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].  The table lists every cell/tissue type in the reference panel, sorted by p value.
+The plot and expandable table below show the results of S-LDSC applied to DecodeME using the GTEx and Franke lab gene expression reference datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to tissue category.  Large points indicate cell/tissue types deemed significant by the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].  
 
 
 {{ plotly_embed("docs/_figs/decode_me_gwas_1_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-me-sldsc-gene-expression") }}
 
-{{ markdown_table("docs/_figs/decode_me_gwas_1_multi_tissue_gene_expression_s_ldsc_cell_analysis_md_table.mdx", title="GTEx and Franke lab tissue expression — full results") }}
+{{ markdown_table("docs/_figs/decode_me_gwas_1_multi_tissue_gene_expression_s_ldsc_cell_analysis_md_table.mdx", title="GTEx and Franke lab tissue expression — full results", collapse_threshold=0) }}
 
 
-As we saw in our earlier [MAGMA analysis](g_MAGMA_DecodeME_Analysis.md) using the GTEx dataset, the significant tissues are all CNS-related.
+As we saw in [GTEx MAGMA analysis](g_MAGMA_DecodeME_Analysis.md), the significant tissues are all CNS-related.
 
 
 ### Roadmap Chromatin data
 
-I next applied S-LDSC using the reference dataset derived from the Roadmap epigenetic project.  The results are in the plot and table below:
+I next applied S-LDSC using the Roadmap epigenetic reference dataset.  The results are in the plot and expandable table below:
 
 {{ plotly_embed("docs/_figs/decode_me_gwas_1_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-me-sldsc-chromatin") }}
 
-{{ markdown_table("docs/_figs/decode_me_gwas_1_multi_tissue_chromatin_s_ldsc_cell_analysis_md_table.mdx", title="Roadmap chromatin — full results") }}
+{{ markdown_table("docs/_figs/decode_me_gwas_1_multi_tissue_chromatin_s_ldsc_cell_analysis_md_table.mdx", title="Roadmap chromatin — full results", collapse_threshold=0) }}
 
-Again, the strongest and most significant associations are all with CNS cell-types.
+Again, the strongest associations are with CNS cell-types.
 
 ### ImmGen data
 
-Next, I applied S-LDSC using reference data from the ImmGen project.
+Next, I applied S-LDSC using the ImmGen project reference dataset.
 
 There were no significant cell types.
 
-The full set of cell types, sorted by p value, is shown in the table below:
+The full results are in the expandable table below.
 
-{{ markdown_table("docs/_figs/decode_me_gwas_1_immgen_s_ldsc_cell_analysis_md_table.mdx", title="ImmGen — full results") }}
+{{ markdown_table("docs/_figs/decode_me_gwas_1_immgen_s_ldsc_cell_analysis_md_table.mdx", title="ImmGen — full results", collapse_threshold=0) }}
 
 
 ### Corces et al. ATAC-seq data
 
-The results of applying S-LDSC using the epigenetic reference data from Corces et al. ATAC-seq analysis of blood cells are shown below.  There are no significant cell types:
+The results of applying S-LDSC using the epigenetic reference data from Corces et al. ATAC-seq analysis of blood cells are shown in the expandable table below.  There are no significant cell types.
 
-{{ markdown_table("docs/_figs/decode_me_gwas_1_corces_atac_s_ldsc_cell_analysis_md_table.mdx", title="Corces et al. ATAC-seq — full results") }}
+{{ markdown_table("docs/_figs/decode_me_gwas_1_corces_atac_s_ldsc_cell_analysis_md_table.mdx", title="Corces et al. ATAC-seq — full results", collapse_threshold=0) }}
 
 
 ### Cahoy and GTEx-Brain data
@@ -66,12 +66,12 @@ The next two reference datasets pertain to the nervous system.
 
 Surprisingly, when we analyze the DecodeME results using the Cahoy dataset, the neuron cell type is not even close to being significant.  This is discordant with some of the results above, in which many CNS-related cell and tissue types were marked as significant.  Moreover, the oligodendrocyte cell type is closer to being significant than the neuron cell type.
 
-{{ markdown_table("docs/_figs/decode_me_gwas_1_cahoy_cns_s_ldsc_cell_analysis_md_table.mdx", title="Cahoy — full results") }}
+{{ markdown_table("docs/_figs/decode_me_gwas_1_cahoy_cns_s_ldsc_cell_analysis_md_table.mdx", title="Cahoy — full results", collapse_threshold=0) }}
 
 
-When we apply the S-LDSC using the GTEx brain dataset, we find the the cortex tissue type is significant:
+When we use the GTEx brain reference dataset, the cortex tissue type is significant. See the expandable table.
 
-{{ markdown_table("docs/_figs/decode_me_gwas_1_gtex_brain_s_ldsc_cell_analysis_md_table.mdx", title="GTEx brain — full results") }}
+{{ markdown_table("docs/_figs/decode_me_gwas_1_gtex_brain_s_ldsc_cell_analysis_md_table.mdx", title="GTEx brain — full results", collapse_threshold=0) }}
 
 
 ## How to Reproduce This
