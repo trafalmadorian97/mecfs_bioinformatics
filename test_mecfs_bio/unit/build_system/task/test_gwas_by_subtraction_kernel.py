@@ -13,7 +13,7 @@ import pytest
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel import (
     SubtractionLoadings,
     _jacobian_betas_wrt_s,
-    _jacobian_betas_wrt_s_fd,
+    _jacobian_betas_wrt_s_finite_difference,
     _solve_betas,
     _solve_betas_from_s,
     _solve_loadings,
@@ -153,7 +153,7 @@ def test_analytic_jacobian_matches_finite_difference():
     s4, s5, s6 = 0.08, 0.03, 0.06  # a_R^2 = 0.08 - 0.03^2/0.06 = 0.065
 
     G = _jacobian_betas_wrt_s(s2, s3, s4, s5, s6, varSNP)
-    G_fd = _jacobian_betas_wrt_s_fd(s2, s3, s4, s5, s6, varSNP)
+    G_fd = _jacobian_betas_wrt_s_finite_difference(s2, s3, s4, s5, s6, varSNP)
     np.testing.assert_allclose(G, G_fd, rtol=1e-5, atol=1e-8)
 
 

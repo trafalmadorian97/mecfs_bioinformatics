@@ -139,7 +139,7 @@ class SubtractionLoadings:
     a_R: float
 
     def __attrs_post_init__(self):
-        assert self.b>=0, f"b is equal to the variance of trait 2, and so must be positive.  Got b={b}"
+        assert self.b>=0, f"b is equal to the variance of trait 2, and so must be positive.  Got b={self.b}"
         assert self.a_R>=0, f"a_R must be positive.  If it is negative, this implies the genetic covariance matrix is not positive definite."
 
 
@@ -251,9 +251,15 @@ def _solve_betas(beta_SNP: np.ndarray, loadings: SubtractionLoadings) -> FactorB
 
     [
     Var_{SNP}
+    \beta_{T_1, i} * Var_{SNP}
+    \beta_{T_2, i} * Var_{SNP}
+    ].
 
 
-    ]
+    Solving these yields
+
+    \beta_{F,i}  = \beta_{ T_2,i } / b
+    \beta_{R,i} = 1/a_R * (\beta_{ T_1,i } -a_F * \beta_{T_2,i}  / b )
 
 
     """
@@ -280,6 +286,10 @@ def _solve_betas_from_s(
     s2 = Cov(SNP, T1) = varSNP * beta_SNP[:,0]   (N,)
     s3 = Cov(SNP, T2) = varSNP * beta_SNP[:,1]   (N,)
     s4 = S_LD[0,0],  s5 = S_LD[0,1],  s6 = S_LD[1,1]   (scalars)
+
+    Differs from _solve_betas, in that we solve for a and b jointly with solving for the betas
+
+    Used only in finite difference Jacobian computation
     """
     assert s2.shape == s3.shape == varSNP.shape, (
         f"s2, s3, varSNP must share shape; got {s2.shape}, {s3.shape}, {varSNP.shape}"
@@ -345,7 +355,7 @@ def _jacobian_betas_wrt_s(
     return G
 
 
-def _jacobian_betas_wrt_s_fd(
+def _jacobian_betas_wrt_s_finite_difference(
     s2: np.ndarray,
     s3: np.ndarray,
     s4: float,
@@ -404,12 +414,21 @@ def compute_v_snp_batch(
     GC="standard". Same formula as in `_common_factor_kernel`.
 
     SE_SNP : (N, 2),  I_LD : (2, 2),  varSNP : (N,).  Returns (N, 2, 2).
+
+    Inputs:
+
+    SE_SNP: (N,2) standard errors of the two GWAS traits T1 and T2
+    I_LD: (2,2) LDSC intercept matrix
+    varSNP: (N,) Per SNP variances
+
+
+
+
     """
-    k = 2
-    assert SE_SNP.ndim == 2 and SE_SNP.shape[1] == k, (
+    assert SE_SNP.ndim == 2 and SE_SNP.shape[1] == 2, (
         f"SE_SNP must be (N, 2); got {SE_SNP.shape}"
     )
-    assert I_LD.shape == (k, k), f"I_LD must be (2, 2); got {I_LD.shape}"
+    assert I_LD.shape == (2, 2), f"I_LD must be (2, 2); got {I_LD.shape}"
     assert varSNP.shape == (SE_SNP.shape[0],), (
         f"varSNP must be (N,); got {varSNP.shape}"
     )
