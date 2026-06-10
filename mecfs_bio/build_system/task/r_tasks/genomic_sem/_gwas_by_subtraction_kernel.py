@@ -120,11 +120,27 @@ class SubtractionLoadings:
     b   : loading of the reference trait (T2) on the common factor F.
     a_F : loading of the composite trait (T1) on the common factor F.
     a_R : loading of the composite trait (T1) on the remainder factor R.
+
+
+    Derived by equating the theoretical and empirical 2x2 covariance matricies
+
+    [a_F^2 + a_R^2  a_F*b]        ==      [S_{LD,1,1}        S_{LD,1,2}]
+    [a_F*b          b^2  ]                [S_{LD,1,2}        S_{LD,2,2}]
+
+    Which yields
+    b=\sqrt{S_{LD,2,2}}
+    a_F=S_{LD,1,2}/\sqrt{S_{LD,2,2}}
+    a_R=\sqrt{S_{LD,1,1}-\frac{S_{LD,1,2}^2}{S_{LD,2,2}}}
+
     """
 
     b: float
     a_F: float
     a_R: float
+
+    def __attrs_post_init__(self):
+        assert self.b>=0, f"b is equal to the variance of trait 2, and so must be positive.  Got b={b}"
+        assert self.a_R>=0, f"a_R must be positive.  If it is negative, this implies the genetic covariance matrix is not positive definite."
 
 
 @frozen
@@ -134,8 +150,15 @@ class FactorBetas:
     beta_F: np.ndarray  # effect on the common factor F
     beta_R: np.ndarray  # effect on the remainder factor R
 
+    def __attrs_post_init__(self):
+        assert self.beta_F.ndim==1
+        assert (
+            self.beta_F.shape == self.beta_R.shape
+        )
 
-class GWASBySubtractionResult(NamedTuple):
+
+@frozen
+class GWASBySubtractionResult:
     """Per-SNP results from `fit_gwas_by_subtraction`."""
 
     loadings: SubtractionLoadings  # the Cholesky loadings used for every SNP
@@ -143,15 +166,31 @@ class GWASBySubtractionResult(NamedTuple):
     # Per-SNP arrays (length N).
     beta_F: np.ndarray  # common-factor effect
     se_c_F: np.ndarray  # sandwich SE for beta_F
-    z_F: np.ndarray
-    p_F: np.ndarray
+    z_F: np.ndarray # Z scores of the beta-F
+    p_F: np.ndarray  # p-values of the beta-Fs
     beta_R: np.ndarray  # remainder-factor effect
     se_c_R: np.ndarray  # sandwich SE for beta_R
-    z_R: np.ndarray
-    p_R: np.ndarray
+    z_R: np.ndarray  # z scores of the beta_Rs
+    p_R: np.ndarray  # p values of the beta_Rs
     n_eff_F: np.ndarray  # effective sample size for beta_F
     n_eff_R: np.ndarray  # effective sample size for beta_R
     fail: np.ndarray  # bool, True if SE was non-finite/non-positive for this SNP
+
+    def __attrs_post_init__(self):
+        assert (
+            self.beta_F.ndim==1
+        )
+        assert (self.beta_F.shape
+                ==self.se_c_F.shape
+                ==self.z_F.shape
+                ==self.p_F.shape
+                ==self.beta_R.shape
+                ==self.se_c_R.shape
+                ==self.z_R.shape
+                ==self.p_R.shape
+                ==self.n_eff_F.shape
+                ==self.n_eff_R.shape
+                ==self.fail.shape)
 
 
 def _solve_loadings(S_LD: np.ndarray) -> SubtractionLoadings:
@@ -160,6 +199,18 @@ def _solve_loadings(S_LD: np.ndarray) -> SubtractionLoadings:
 
     Convention: source[0] = composite (T1), source[1] = reference (T2).
     Factor F is shared between both traits; factor R is the T1 residual.
+
+
+
+    Derived by equating the theoretical and empirical 2x2 covariance matricies
+
+    [a_F^2 + a_R^2  a_F*b]        ==      [S_{LD,1,1}        S_{LD,1,2}]
+    [a_F*b          b^2  ]                [S_{LD,1,2}        S_{LD,2,2}]
+
+    Which yields
+    b=\sqrt{S_{LD,2,2}}
+    a_F=S_{LD,1,2}/\sqrt{S_{LD,2,2}}
+    a_R=\sqrt{S_{LD,1,1}-\frac{S_{LD,1,2}^2}{S_{LD,2,2}}}
     """
     assert S_LD.shape == (2, 2), f"S_LD must be (2, 2); got {S_LD.shape}"
     s44 = float(S_LD[0, 0])  # Var(T1)
@@ -183,6 +234,28 @@ def _solve_betas(beta_SNP: np.ndarray, loadings: SubtractionLoadings) -> FactorB
 
     beta_SNP : (N, 2) with column 0 = T1 marginal beta, column 1 = T2 marginal beta.
     Returns FactorBetas with beta_F, beta_R each shape (N,).
+
+
+    The formulae used here are derived by equating the first columns of the empirical and theoretical
+    3x3 covariance matrices
+
+    That is:
+
+    [
+    Var_{SNP}
+    Var_{SNP} * (a_F * \beta_{F,i} + a_R * \beta_{R,i} )
+    Var_{SNP} * b * \beta_{F,i}
+    ]
+
+    ==
+
+    [
+    Var_{SNP}
+
+
+    ]
+
+
     """
     assert beta_SNP.ndim == 2 and beta_SNP.shape[1] == 2, (
         f"beta_SNP must be (N, 2); got {beta_SNP.shape}"
