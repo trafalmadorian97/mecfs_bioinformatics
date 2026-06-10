@@ -105,7 +105,7 @@ the subtraction amplifies noise.
 
 from __future__ import annotations
 
-from typing import NamedTuple
+from functools import cached_property
 
 import numpy as np
 from attrs import frozen
@@ -122,15 +122,15 @@ class SubtractionLoadings:
     a_R : loading of the composite trait (T1) on the remainder factor R.
 
 
-    Derived by equating the theoretical and empirical 2x2 covariance matricies
+    Derived by equating the theoretical and empirical 2x2 covariance matrices
 
     [a_F^2 + a_R^2  a_F*b]        ==      [S_{LD,1,1}        S_{LD,1,2}]
     [a_F*b          b^2  ]                [S_{LD,1,2}        S_{LD,2,2}]
 
     Which yields
-    b=\sqrt{S_{LD,2,2}}
-    a_F=S_{LD,1,2}/\sqrt{S_{LD,2,2}}
-    a_R=\sqrt{S_{LD,1,1}-\frac{S_{LD,1,2}^2}{S_{LD,2,2}}}
+    b=\\sqrt{S_{LD,2,2}}
+    a_F=S_{LD,1,2}/\\sqrt{S_{LD,2,2}}
+    a_R=\\sqrt{S_{LD,1,1}-\frac{S_{LD,1,2}^2}{S_{LD,2,2}}}
 
     """
 
@@ -139,8 +139,12 @@ class SubtractionLoadings:
     a_R: float
 
     def __attrs_post_init__(self):
-        assert self.b>=0, f"b is equal to the variance of trait 2, and so must be positive.  Got b={self.b}"
-        assert self.a_R>=0, f"a_R must be positive.  If it is negative, this implies the genetic covariance matrix is not positive definite."
+        assert self.b >= 0, (
+            f"b is equal to the variance of trait 2, and so must be positive.  Got b={self.b}"
+        )
+        assert self.a_R >= 0, (
+            "a_R must be positive.  If it is negative, this implies the genetic covariance matrix is not positive definite."
+        )
 
 
 @frozen
@@ -151,46 +155,60 @@ class FactorBetas:
     beta_R: np.ndarray  # effect on the remainder factor R
 
     def __attrs_post_init__(self):
-        assert self.beta_F.ndim==1
-        assert (
-            self.beta_F.shape == self.beta_R.shape
-        )
+        assert self.beta_F.ndim == 1
+        assert self.beta_F.shape == self.beta_R.shape
 
 
-@frozen
+@frozen(slots=False)
 class GWASBySubtractionResult:
-    """Per-SNP results from `fit_gwas_by_subtraction`."""
+    """Per-SNP results from `fit_gwas_by_subtraction`.
+
+    Z scores and p-values are derived from the betas and sandwich SEs, so they
+    are exposed as cached properties rather than stored fields.
+    """
 
     loadings: SubtractionLoadings  # the Cholesky loadings used for every SNP
 
     # Per-SNP arrays (length N).
     beta_F: np.ndarray  # common-factor effect
     se_c_F: np.ndarray  # sandwich SE for beta_F
-    z_F: np.ndarray # Z scores of the beta-F
-    p_F: np.ndarray  # p-values of the beta-Fs
     beta_R: np.ndarray  # remainder-factor effect
     se_c_R: np.ndarray  # sandwich SE for beta_R
-    z_R: np.ndarray  # z scores of the beta_Rs
-    p_R: np.ndarray  # p values of the beta_Rs
     n_eff_F: np.ndarray  # effective sample size for beta_F
     n_eff_R: np.ndarray  # effective sample size for beta_R
     fail: np.ndarray  # bool, True if SE was non-finite/non-positive for this SNP
 
     def __attrs_post_init__(self):
+        assert self.beta_F.ndim == 1
         assert (
-            self.beta_F.ndim==1
+            self.beta_F.shape
+            == self.se_c_F.shape
+            == self.beta_R.shape
+            == self.se_c_R.shape
+            == self.n_eff_F.shape
+            == self.n_eff_R.shape
+            == self.fail.shape
         )
-        assert (self.beta_F.shape
-                ==self.se_c_F.shape
-                ==self.z_F.shape
-                ==self.p_F.shape
-                ==self.beta_R.shape
-                ==self.se_c_R.shape
-                ==self.z_R.shape
-                ==self.p_R.shape
-                ==self.n_eff_F.shape
-                ==self.n_eff_R.shape
-                ==self.fail.shape)
+
+    @cached_property
+    def z_F(self) -> np.ndarray:
+        """Z scores of beta_F."""
+        return self.beta_F / self.se_c_F
+
+    @cached_property
+    def p_F(self) -> np.ndarray:
+        """Two-sided p-values of beta_F."""
+        return 2.0 * norm.sf(np.abs(self.z_F))
+
+    @cached_property
+    def z_R(self) -> np.ndarray:
+        """Z scores of beta_R."""
+        return self.beta_R / self.se_c_R
+
+    @cached_property
+    def p_R(self) -> np.ndarray:
+        """Two-sided p-values of beta_R."""
+        return 2.0 * norm.sf(np.abs(self.z_R))
 
 
 def _solve_loadings(S_LD: np.ndarray) -> SubtractionLoadings:
@@ -202,15 +220,15 @@ def _solve_loadings(S_LD: np.ndarray) -> SubtractionLoadings:
 
 
 
-    Derived by equating the theoretical and empirical 2x2 covariance matricies
+    Derived by equating the theoretical and empirical 2x2 covariance matrices
 
     [a_F^2 + a_R^2  a_F*b]        ==      [S_{LD,1,1}        S_{LD,1,2}]
     [a_F*b          b^2  ]                [S_{LD,1,2}        S_{LD,2,2}]
 
     Which yields
-    b=\sqrt{S_{LD,2,2}}
-    a_F=S_{LD,1,2}/\sqrt{S_{LD,2,2}}
-    a_R=\sqrt{S_{LD,1,1}-\frac{S_{LD,1,2}^2}{S_{LD,2,2}}}
+    b=\\sqrt{S_{LD,2,2}}
+    a_F=S_{LD,1,2}/\\sqrt{S_{LD,2,2}}
+    a_R=\\sqrt{S_{LD,1,1}-\frac{S_{LD,1,2}^2}{S_{LD,2,2}}}
     """
     assert S_LD.shape == (2, 2), f"S_LD must be (2, 2); got {S_LD.shape}"
     s44 = float(S_LD[0, 0])  # Var(T1)
@@ -541,11 +559,6 @@ def fit_gwas_by_subtraction(
     se_c_F[good] = np.sqrt(var_F[good])
     se_c_R[good] = np.sqrt(var_R[good])
 
-    # z_F = beta_F / se_c_F
-    # p_F = 2.0 * norm.sf(np.abs(z_F))
-    z_R = beta_R / se_c_R
-    p_R = 2.0 * norm.sf(np.abs(z_R))
-
     # Effective sample size: N_eff = 1 / (varSNP * se^2).
     n_eff_F = np.full(N, np.nan)
     n_eff_R = np.full(N, np.nan)
@@ -556,12 +569,8 @@ def fit_gwas_by_subtraction(
         loadings=loadings,
         beta_F=beta_F,
         se_c_F=se_c_F,
-        z_F=z_F,
-        p_F=p_F,
         beta_R=beta_R,
         se_c_R=se_c_R,
-        z_R=z_R,
-        p_R=p_R,
         n_eff_F=n_eff_F,
         n_eff_R=n_eff_R,
         fail=fail,
