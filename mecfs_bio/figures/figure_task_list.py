@@ -297,4 +297,5 @@ ALL_FIGURE_TASKS: list[Task] = [
     UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
 ]
