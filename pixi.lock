@@ -533,7 +533,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/e8/eba9fece11d57a71e3e22ea672742c8f3cf23b35730c9e96db768b295216/googleapis_common_protos-1.71.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/83/3b1d03d36f224edded98e9affd0467630fc09d766c0e56fb1498cbb04a9b/griffe-1.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/ac/42b4d6bc0ea119ce2e91e1788feabf32c5433e9617dbb495c2a3d0dc7f12/grimp-3.14-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/36/5c/489b27e8e1c18473a17b152d8c2281c76f58e7208a844dd32c8a3bd16960/gwaslab-4.1.7-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/0d/6d/317b1c42af12f41a0e9aa09aea956079eb6708f76d1c5d015bf24bc96308/gwaslab-4.1.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3a/30/d1c94066343a98bb2cea40120873193a4fed68c4ad7f8935c11caf74c681/h5py-3.15.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/82/4d/1fcf74ad06b114f3ae4a528f582bba38330cb71a5c4afe58e4752a8a7dd0/HiCMatrix-17.2-py3-none-any.whl
@@ -1991,7 +1991,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: bbcaa8dcfe4a0dba7b42b20ad2b85cf9db7e83ecbe2b8e44409bf8177a0a5991
+  sha256: 33b0e8806d6b7b73ed12e412ccba2a6d4ed353206ba6b36b6dc44f1e09407b56
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -3082,10 +3082,10 @@ packages:
   purls: []
   size: 3376423
   timestamp: 1626369596591
-- pypi: https://files.pythonhosted.org/packages/36/5c/489b27e8e1c18473a17b152d8c2281c76f58e7208a844dd32c8a3bd16960/gwaslab-4.1.7-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/0d/6d/317b1c42af12f41a0e9aa09aea956079eb6708f76d1c5d015bf24bc96308/gwaslab-4.1.9-py3-none-any.whl
   name: gwaslab
-  version: 4.1.7
-  sha256: aaf53be8b17d0bba84b9b23d278dc193d316ac6c4eda5389f735cfb67add5be8
+  version: 4.1.9
+  sha256: b70420b9af8f993562a2e2221cd659e6f6ac330dca1d40e3f39bda440cc23400
   requires_dist:
   - pandas>=1.3,!=1.5,<=2.3.3
   - numpy>=1.21.2,<2
