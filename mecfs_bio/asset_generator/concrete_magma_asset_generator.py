@@ -17,6 +17,7 @@ from mecfs_bio.assets.reference_data.magma_ld_reference.magma_eur_build_37_1k_ge
 from mecfs_bio.assets.reference_data.rna_seq_data.gtex.gtex_v10_median_tissue_expression_rna_seq_prep_for_magma import (
     GTEx_V10_MEDIAN_TISSUE_EXPRESSION_RNA_SEQ_PREP_FOR_MAGMA,
 )
+from mecfs_bio.build_system.sample_size_spec import SampleSizeSpec
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     ValidGwaslabFormat,
@@ -33,7 +34,7 @@ def concrete_magma_assets_generate(
     base_name: str,
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
-    sample_size: int,
+    sample_size: int | SampleSizeSpec,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     gget_settings: GGetSettings | None = GGetSettings(50),
     number_of_bars: int = 20,
