@@ -16,7 +16,10 @@ Port of ``GenomicSEM:::.sumstats_main`` per trait, in order:
 5. Drop rows with missing P or effect.
 6. varSNP from the *file* MAF when present (folded to minor, dropping 0/1),
    else from the reference MAF.
-7. Odds-ratio detection: if round(median(effect)) == 1, take log(effect).
+7. Odds-ratio guard: if round(median(effect)) == 1 the effect column looks
+   like an OR, which this pipeline never produces (gwaslab keeps ORs separate
+   and feeds only BETA into `effect`), so raise rather than silently log() as
+   GenomicSEM does.
 8. Drop effect == 0.
 9. Z = sign(effect) * Phi^{-1}(1 - P/2); for P < 1e-307, sign(effect)*sqrt(-2 ln P).
 10. Method-specific rescaling of effect / SE (OLS, linprob, se.logit, default).
@@ -169,11 +172,19 @@ def _standardize_trait(
             )
         )
 
-    # Odds-ratio detection on the merged effect column.
+    # Guard against an odds-ratio effect column. GenomicSEM silently
+    # log-transforms when round(median(effect)) == 1 (assuming the column is an
+    # OR), but this pipeline always feeds a log-scale beta -- gwaslab keeps odds
+    # ratios in a separate OR column, and build_munge_input_df wires only BETA
+    # into `effect`. A median near 1 therefore signals a mis-specified input
+    # rather than an OR to convert, so fail loudly instead of mutating the data.
     median_effect = merged.select(pl.col(MUNGE_EFFECT_COL).median()).item()
     if median_effect is not None and round(median_effect) == 1:
-        merged = merged.with_columns(
-            pl.col(MUNGE_EFFECT_COL).log().alias(MUNGE_EFFECT_COL)
+        raise ValueError(
+            f"effect column has median {median_effect:.4g} (rounds to 1), which "
+            "looks like an odds ratio. This pipeline expects log-scale betas; "
+            "supply odds ratios via the gwaslab OR column / convert to beta "
+            "upstream rather than passing them as 'effect'."
         )
     merged = merged.filter(pl.col(MUNGE_EFFECT_COL) != 0)
 

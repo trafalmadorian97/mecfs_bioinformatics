@@ -19,7 +19,10 @@ The steps mirror ``GenomicSEM:::.munge_main`` exactly, in the same order:
 3. Upper-case A1/A2 and null out anything outside {A, C, G, T}.
 4. Inner-merge with the reference on SNP (reference alleles become A1.x/A2.x).
 5. Drop rows with missing P or effect.
-6. Odds-ratio detection: if round(median(effect)) == 1, take log(effect).
+6. Odds-ratio guard: if round(median(effect)) == 1 the effect column looks
+   like an OR, which this pipeline never produces (gwaslab keeps ORs separate
+   and feeds only BETA into `effect`), so raise rather than silently log() as
+   GenomicSEM does.
 7. Flip the effect sign where the file's effect allele matches the
    reference's *other* allele.
 8. Drop rows whose alleles don't match the reference (either orientation).
@@ -71,6 +74,10 @@ def munge_sumstats(
     maf_filter: float = 0.01,
 ) -> pl.DataFrame:
     """
+    df: summary statistics input file
+    ref: Table of reference alleles.  Usually from hapmap3.
+
+
     Munge one trait. ``df`` holds canonical munge columns; ``ref`` is the
     HapMap3 snplist (SNP, A1, A2). Returns a polars DataFrame with columns
     SNP, N, Z, A1, A2.
@@ -113,11 +120,19 @@ def munge_sumstats(
         & pl.col(MUNGE_EFFECT_COL).is_not_nan()
     )
 
-    # Odds-ratio detection on the merged effect column.
+    # Guard against an odds-ratio effect column. GenomicSEM::munge silently
+    # log-transforms when round(median(effect)) == 1 (assuming the column is an
+    # OR), but this pipeline always feeds a log-scale beta -- gwaslab keeps odds
+    # ratios in a separate OR column, and build_munge_input_df wires only BETA
+    # into `effect`. A median near 1 therefore signals a mis-specified input
+    # rather than an OR to convert, so fail loudly instead of mutating the data.
     median_effect = merged.select(pl.col(MUNGE_EFFECT_COL).median()).item()
     if median_effect is not None and round(median_effect) == 1:
-        merged = merged.with_columns(
-            pl.col(MUNGE_EFFECT_COL).log().alias(MUNGE_EFFECT_COL)
+        raise ValueError(
+            f"effect column has median {median_effect:.4g} (rounds to 1), which "
+            "looks like an odds ratio. This pipeline expects log-scale betas; "
+            "supply odds ratios via the gwaslab OR column / convert to beta "
+            "upstream rather than passing them as 'effect'."
         )
 
     # Flip effect to the reference A1 allele.

@@ -3,7 +3,7 @@ Tests for the polars LD-score munge port (`_genomic_sem_munge`).
 
 Headline comparison against GenomicSEM::munge on synthetic summary statistics
 that exercise allele flips, allele mismatches, MAF folding, and INFO/MAF
-filtering, plus a focused odds-ratio-detection test.
+filtering, plus a focused odds-ratio-guard test.
 """
 
 from __future__ import annotations
@@ -133,11 +133,13 @@ def test_matches_genomic_sem_munge(tmp_path):
     )
 
 
-@pytest.mark.skipif(
-    not _have_rpy2_genomic_sem(), reason="rpy2/GenomicSEM not available"
-)
-def test_matches_genomic_sem_munge_odds_ratio(tmp_path):
-    """When the effect column is an odds ratio (median ~ 1), both take log."""
+def test_odds_ratio_effect_raises():
+    """
+    An effect column that looks like an odds ratio (median rounds to 1) is a
+    mis-specified input here: this pipeline always feeds a log-scale beta
+    (gwaslab keeps ORs in a separate column). Unlike GenomicSEM, which silently
+    log-transforms, munge_sumstats raises rather than mutate the data.
+    """
     rng = np.random.default_rng(11)
     n_snps = 300
     snps = [f"rs{i}" for i in range(n_snps)]
@@ -159,13 +161,8 @@ def test_matches_genomic_sem_munge_odds_ratio(tmp_path):
     )
     ref = pl.DataFrame({"SNP": snps, "A1": a1, "A2": a2})
 
-    r_out = _run_r_munge(tmp_path, sumstats, ref, 9999.0).sort("SNP")
-    py_out = munge_sumstats(sumstats, ref, n=9999.0).sort("SNP")
-
-    assert r_out["SNP"].to_list() == py_out["SNP"].to_list()
-    np.testing.assert_allclose(
-        py_out["Z"].to_numpy(), r_out["Z"].to_numpy(), rtol=1e-6, atol=1e-8
-    )
+    with pytest.raises(ValueError, match="looks like an odds ratio"):
+        munge_sumstats(sumstats, ref, n=9999.0)
 
 
 def _simple_matching_inputs() -> tuple[pl.DataFrame, pl.DataFrame]:
