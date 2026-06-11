@@ -692,7 +692,7 @@ $$
 &\mathrm{SE}(\hat{\beta}_j) \\
 &\approx \sqrt{\frac{\frac{1}{N}\lVert\phi- \frac{1}{N}(\phi^T X_{:,j}) X_{:,j} \rVert^2}{(X_{:,j} -\overline{X_{:,j}} )^T (X_{:,j} -\overline{X_{:,j} })}} & \text{Formula for OLS SE}\\
 &\approx  \sqrt{\frac{ \frac{1}{N} \lVert \phi \rVert^2}{N H_j}}\\
-&= \sqrt{\frac{1}{N H_j}}.
+&= \sqrt{\frac{1}{N H_j}}. \label{nonstandardized_se_eqn}
 \end{align}
 $$
 
@@ -717,7 +717,6 @@ $$
 
 The first term in this decomposition is the expected sampling variance.  That is, it reflects the average variability of the marginal regression coefficient that remains after fixing the true causal effects $\beta$.
 
-[//]: # (Let's examine the other terms in &#40;$\ref{sampling_beta_decomp}$&#41; .  )
 
 We derive a version of $(\ref{wald})$ for the present setting: 
 
@@ -735,11 +734,10 @@ We can substitute this into the LD score regression equation (which holds in thi
 $$
 \begin{align}
 N H_j  \mathbb{Var}(\hat\beta_j)&= \frac{N h^2}{M}l_j + \psi\\
- \mathbb{Var}(\hat\beta_j) &=\frac{ h^2}{MH_j}l_j + \frac{\psi}{H_j} \label{sem-ld-eq}
+ \mathbb{Var}(\hat\beta_j) &=\frac{ h^2}{MH_j}l_j + \frac{\psi}{N H_j} \label{sem-ld-eq}
 \end{align}
 $$
 
-[//]: # (\hat \beta_j^2 &=  \frac{\chi^2}{N H_j})
 
 From the [MiXeR derivation](../Bioinformatics_Concepts/Mixer.md#distribution-of-z-scores) we have (the MiXeR model is similar enough to the LDSC model that the derivation still holds)
 
@@ -758,8 +756,9 @@ Next, let us combine $(\ref{sem-eqn-var})$, $(\ref{sem-ld-eq})$, and $(\ref{samp
 $$
 \begin{align}
 \mathbb{Var}(\hat\beta_j) &= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j))+\mathrm{Var}(\mathrm{E}(\hat\beta_j|\beta_j))\\
-\frac{ h^2}{MH_j}l_j + \frac{\psi}{H_j}&= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j)) + \frac{h^2}{ M H_j} l_j \\
-\frac{\psi}{H_j} &=\mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j)) \label{sem-intercept-sampling}
+\frac{ h^2}{MH_j}l_j + \frac{\psi}{NH_j}&= \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j)) + \frac{h^2}{ M H_j} l_j \\
+ \mathrm{E}(\mathrm{Var}(\hat\beta_j|\beta_j))  &=  \frac{\psi}{H_jN} \label{sem-intercept-sampling} \\ 
+&=\psi \mathrm{SE} (\hat\beta_j)^2 & \text{ By }(\ref{nonstandardized_se_eqn})
 \end{align}
 $$
 
