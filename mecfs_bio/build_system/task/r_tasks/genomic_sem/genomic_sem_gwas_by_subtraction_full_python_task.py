@@ -128,7 +128,9 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         )
 
     @property
-    def _ordered_sources(self) -> tuple[GenomicSEMGWASSumstatsSource, GenomicSEMGWASSumstatsSource]:
+    def _ordered_sources(
+        self,
+    ) -> tuple[GenomicSEMGWASSumstatsSource, GenomicSEMGWASSumstatsSource]:
         # Order defines the trait axis for ldsc/sumstats and the kernel:
         # index 0 = T1 (composite), index 1 = T2 (reference).
         return tuple([self.composite_trait_source, self.reference_trait_source])
