@@ -13,7 +13,8 @@ unused, matching R: Z is derived from the effect sign and P.)
 
 The steps mirror ``GenomicSEM:::.munge_main`` exactly, in the same order:
 
-1. Override N with the provided scalar (when given).
+1. Override N with the provided scalar (when given and not NaN; a NaN N means
+   "not provided", matching R's `!is.na(N)`, so the file's N column is kept).
 2. Fold MAF to the minor-allele frequency (min(MAF, 1-MAF)).
 3. Upper-case A1/A2 and null out anything outside {A, C, G, T}.
 4. Inner-merge with the reference on SNP (reference alleles become A1.x/A2.x).
@@ -80,7 +81,10 @@ def munge_sumstats(
     has_info = MUNGE_INFO_COL in df.columns
 
     work = df
-    if n is not None:
+    # Override N with the provided scalar only when it is a real number. This
+    # mirrors GenomicSEM::munge's `!is.na(N)` guard: a NaN sample size means
+    # "not provided", so the file's own N column is kept rather than clobbered.
+    if n is not None and not np.isnan(n):
         work = work.with_columns(pl.lit(float(n)).alias(MUNGE_N_COL))
     if has_maf:
         work = work.with_columns(

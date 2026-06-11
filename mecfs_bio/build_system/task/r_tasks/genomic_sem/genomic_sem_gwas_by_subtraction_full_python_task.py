@@ -267,7 +267,6 @@ def _prepare_python_inputs(
     munged_dir.mkdir(parents=True, exist_ok=True)
 
     trait_names: list[str] = []
-    sample_sizes: list[float] = []
     sample_prevs: list[float] = []
     population_prevs: list[float] = []
     munged_paths: list[Path] = []
@@ -276,6 +275,12 @@ def _prepare_python_inputs(
     for gwas_src in sources:
         df = build_munge_input_df(gwas_src.source, fetch)
         name = gwas_src.alias
+        # N handling matches GenomicSEM munge/sumstats: build_munge_input_df has
+        # already put an N column on df (from the source's own N column, else
+        # from PhenotypeInfo). get_sample_size returns the PhenotypeInfo scalar,
+        # which overrides that column when present, or NaN ("not provided") when
+        # PhenotypeInfo carries no sample size -- in which case the file's N
+        # column stands. munge_sumstats/run_sumstats apply the same is-NaN guard.
         n = get_sample_size(gwas_src.source)
         samp_prev, pop_prev = get_prevs(gwas_src.source.sample_info)
 
@@ -291,7 +296,6 @@ def _prepare_python_inputs(
         munged.write_csv(munged_path, separator="\t")
 
         trait_names.append(name)
-        sample_sizes.append(n)
         sample_prevs.append(samp_prev)
         population_prevs.append(pop_prev)
         munged_paths.append(munged_path)

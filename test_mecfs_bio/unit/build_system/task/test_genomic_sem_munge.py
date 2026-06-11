@@ -166,3 +166,41 @@ def test_matches_genomic_sem_munge_odds_ratio(tmp_path):
     np.testing.assert_allclose(
         py_out["Z"].to_numpy(), r_out["Z"].to_numpy(), rtol=1e-6, atol=1e-8
     )
+
+
+def _simple_matching_inputs() -> tuple[pl.DataFrame, pl.DataFrame]:
+    """Three SNPs whose file alleles match the reference, with a per-SNP N."""
+    snps = ["rs0", "rs1", "rs2"]
+    sumstats = pl.DataFrame(
+        {
+            "SNP": snps,
+            "A1": ["A", "C", "G"],
+            "A2": ["G", "T", "A"],
+            "effect": [0.1, -0.2, 0.05],
+            "SE": [0.05, 0.05, 0.05],
+            "P": [0.01, 0.2, 0.5],
+            "N": [11000.0, 12000.0, 13000.0],
+        }
+    )
+    ref = pl.DataFrame({"SNP": snps, "A1": ["A", "C", "G"], "A2": ["G", "T", "A"]})
+    return sumstats, ref
+
+
+def test_nan_n_keeps_file_n_column():
+    """
+    A NaN sample size means "not provided" (mirroring R's `!is.na(N)`), so the
+    file's per-SNP N column must survive rather than be clobbered with NaN.
+    Regression test for the bug where `if n is not None` overrode N with NaN.
+    """
+    sumstats, ref = _simple_matching_inputs()
+    out = munge_sumstats(sumstats, ref, n=float("nan")).sort("SNP")
+    np.testing.assert_array_equal(
+        out["N"].to_numpy(), np.array([11000.0, 12000.0, 13000.0])
+    )
+
+
+def test_scalar_n_overrides_file_n_column():
+    """A real scalar N overrides the file's N column, as GenomicSEM does."""
+    sumstats, ref = _simple_matching_inputs()
+    out = munge_sumstats(sumstats, ref, n=50000.0).sort("SNP")
+    np.testing.assert_array_equal(out["N"].to_numpy(), np.full(3, 50000.0))

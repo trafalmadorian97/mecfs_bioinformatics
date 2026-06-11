@@ -111,7 +111,10 @@ def _standardize_trait(
     """Return a DataFrame with columns SNP, beta, se for one trait."""
     work = trait.df
     assert MUNGE_P_COL in work.columns and MUNGE_EFFECT_COL in work.columns
-    if trait.n is not None:
+    # Override N with the provided scalar only when it is a real number (mirrors
+    # GenomicSEM's `!is.na(N)`): a NaN sample size means "not provided", so the
+    # file's own N column is kept rather than clobbered.
+    if trait.n is not None and not np.isnan(trait.n):
         work = work.with_columns(pl.lit(float(trait.n)).alias(MUNGE_N_COL))
 
     # Drop multiallelic (duplicated) SNPs entirely.
