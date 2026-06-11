@@ -3,12 +3,12 @@ hide:
 - toc
 ---
 # MAGMA GTEx
-As an initial step, I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to [DecodeME](../../../Data_Sources/DecodeME.md), partially reproducing analysis from the DecodeME preprint[@genetics2025initial].  
+I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to [DecodeME](../../../Data_Sources/DecodeME.md), partially reproducing analysis from the DecodeME preprint[@genetics2025initial].  
 
 
 ## MAGMA Gene Analysis
 
-I applied MAGMA's SNP-wise-mean model to the summary statistics from DecodeME's GWAS-1. 
+I applied MAGMA's SNP-wise-mean model to the summary statistics from DecodeME GWAS-1. 
 
 
 In this step:
@@ -24,7 +24,7 @@ MAGMA produces a table of genes, effect sizes, and p values.  Filtering these ge
 
 
 
-It is also useful get a genome-wide view of the patterns of gene-level significance induced by MAGMA's SNP-wise-mean model. The Manhattan plot below serves this purpose:
+It is also useful get a genome-wide view of the patterns of gene significance induced by the SNP-wise-mean model. The plot below serves this purpose:
 
 
 
@@ -33,7 +33,7 @@ It is also useful get a genome-wide view of the patterns of gene-level significa
 
 
 
-The MAGMA SNP-wise-mean model is sensitive to the rules used for allocation of variants to genes.  The results above use a conservative assignment strategy: only coding variants are assigned to genes.  It is interesting to compare these with results produced by less-restrictive assumptions.  In the plot below, variants  between 35 kilobases upstream and 10 kilobases downstream of a given gene are associated with that gene.
+The MAGMA SNP-wise-mean model is sensitive to the rules used for allocation of variants to genes.  The results above use a conservative assignment strategy: only coding variants are assigned to genes.  It is interesting to compare these with results produced by less-restrictive assumptions.  In the plot below, variants between 35 kilobases upstream and 10 kilobases downstream of a given gene are associated with that gene.
 
 
 
@@ -42,7 +42,7 @@ The MAGMA SNP-wise-mean model is sensitive to the rules used for allocation of v
 
 ## MAGMA Gene Property Analysis
 
-I next applied [MAGMA's](../../../Bioinformatics_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../../Data_Sources/DecodeME.md).  This step combined the gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../../Data_Sources/GTEx_RNAseq_Data.md)[@gtex2020gtex].  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are shown in the bar plot below:
+I next applied [MAGMA's](../../../Bioinformatics_Concepts/MAGMA_Overview.md) gene property analysis module to [DecodeME](../../../Data_Sources/DecodeME.md).  This step combined the conservative gene analysis results above with tissue-specific RNA expression values from the [GTEx project](../../../Data_Sources/GTEx_RNAseq_Data.md)[@gtex2020gtex].  The aim was to identify tissues enriched for genes associated with ME/CFS.  The results are plotted below:
 
 {{ plotly_embed("docs/_figs/decode_me_gwas_1_build_37_magma_ensemble_specific_tissue_gene_covar_analysis_bar_plot/magma_gene_set_plot.html", id="decode-me-magma-gtex-tissue-bar-plot") }}
 In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p value meets Bonferroni-corrected significance threshold,
@@ -51,7 +51,6 @@ In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corre
 
 These results unambiguously point to the nervous system as a major site of ME/CFS gene activity.
 
-[//]: # (To reproduce this analysis, use the build system to materialize the asset in [this file]&#40;https://github.com/trafalmadorian97/mecfs_bioinformatics/blob/ba3ee982c59977358ee0d40708347d43a009f190/src_new/assets/gwas/me_cfs/decode_me/analysis_results/magma/magma_specific_tissue_bar_plot.py&#41;.)
 
 
 ## Reproducing
