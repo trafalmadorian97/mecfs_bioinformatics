@@ -136,8 +136,14 @@ def _standardize_trait(
     work = work.rename({MUNGE_A1_COL: _A1_FILE_COL, MUNGE_A2_COL: _A2_FILE_COL})
 
     merged = ref_aligned.join(work, on=MUNGE_SNP_COL, how="inner")
+    # Drop rows with missing P or effect. R's is.na() is true for NA *and* NaN,
+    # but polars is_not_null keeps NaN, so we also exclude NaN to match R (and to
+    # keep the odds-ratio median below from being poisoned by a stray NaN).
     merged = merged.filter(
-        pl.col(MUNGE_P_COL).is_not_null() & pl.col(MUNGE_EFFECT_COL).is_not_null()
+        pl.col(MUNGE_P_COL).is_not_null()
+        & pl.col(MUNGE_P_COL).is_not_nan()
+        & pl.col(MUNGE_EFFECT_COL).is_not_null()
+        & pl.col(MUNGE_EFFECT_COL).is_not_nan()
     )
 
     # varSNP from the file MAF (folded, dropping monomorphic) or the ref MAF.

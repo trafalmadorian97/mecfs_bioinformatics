@@ -204,3 +204,18 @@ def test_scalar_n_overrides_file_n_column():
     sumstats, ref = _simple_matching_inputs()
     out = munge_sumstats(sumstats, ref, n=50000.0).sort("SNP")
     np.testing.assert_array_equal(out["N"].to_numpy(), np.full(3, 50000.0))
+
+
+def test_nan_p_or_effect_rows_are_dropped():
+    """
+    R's is.na() drops both NA and NaN, so a NaN P or NaN effect row must be
+    dropped (polars is_not_null alone would keep NaN). Regression test.
+    """
+    sumstats, ref = _simple_matching_inputs()
+    sumstats = sumstats.with_columns(
+        pl.Series("P", [float("nan"), 0.2, 0.5]),
+        pl.Series("effect", [0.1, float("nan"), 0.05]),
+    )
+    out = munge_sumstats(sumstats, ref, n=50000.0).sort("SNP")
+    # rs0 (NaN P) and rs1 (NaN effect) drop; only rs2 survives.
+    assert out["SNP"].to_list() == ["rs2"]
