@@ -128,10 +128,10 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         )
 
     @property
-    def _ordered_sources(self) -> list[GenomicSEMGWASSumstatsSource]:
+    def _ordered_sources(self) -> tuple[GenomicSEMGWASSumstatsSource, GenomicSEMGWASSumstatsSource]:
         # Order defines the trait axis for ldsc/sumstats and the kernel:
         # index 0 = T1 (composite), index 1 = T2 (reference).
-        return [self.composite_trait_source, self.reference_trait_source]
+        return tuple([self.composite_trait_source, self.reference_trait_source])
 
     @property
     def deps(self) -> list[Task]:
@@ -144,7 +144,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        ld_path = resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
+        ld_path = resolve_ld_path(self.ld_ref_task, fetch)
         ref_hm3 = read_dataframe_from_task(self.hapmap_snps_task, fetch)
         ref_1kg = read_dataframe_from_task(self.sumstats_ref_task, fetch)
 
@@ -246,7 +246,7 @@ def _save_python_ldsc_outputs(result: LDSCResult, scratch_dir: Path) -> None:
 
 def _prepare_python_inputs(
     *,
-    sources: list[GenomicSEMGWASSumstatsSource],
+    sources: tuple[GenomicSEMGWASSumstatsSource, GenomicSEMGWASSumstatsSource],
     ld_dir: Path,
     ref_hm3: pl.DataFrame,
     ref_1kg: pl.DataFrame,

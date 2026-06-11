@@ -197,7 +197,7 @@ def ld_dir_with_genomic_sem_naming(
 
 
 def resolve_ld_path(
-    ld_ref_task: Task, fetch: Fetch, munge_config: GenomicSEMConfig
+    ld_ref_task: Task, fetch: Fetch
 ) -> Path:
     asset = fetch(ld_ref_task.asset_id)
     assert isinstance(asset, DirectoryAsset)
