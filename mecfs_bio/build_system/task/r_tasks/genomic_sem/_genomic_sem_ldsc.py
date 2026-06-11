@@ -225,6 +225,11 @@ def _read_ld_scores(ld_dir: Path, n_chrom: int) -> tuple[pd.DataFrame, float]:
     """
     Read ``<chr>.l2.ldscore.gz`` (SNP, CHR, BP, L2) and ``<chr>.l2.M_5_50``
     for chromosomes 1..n_chrom. Returns (ld_df, m_total).
+
+    Point to an LD directory in standard format
+    - Reads all dataframes and concatenates them.  Return the concatenated result
+    - Reads all the M_5_50 files, which store the number of SNPs with minor allele frequencies between 5 and 50 used to compute the LD scores
+      Sums these values across all chromosomes, to return an M total.
     """
     ld_frames = []
     m_total = 0.0

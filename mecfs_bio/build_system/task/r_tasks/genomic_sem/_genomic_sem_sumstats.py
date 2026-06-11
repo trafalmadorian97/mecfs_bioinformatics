@@ -176,7 +176,7 @@ def _standardize_trait(
     # log-transforms when round(median(effect)) == 1 (assuming the column is an
     # OR), but this pipeline always feeds a log-scale beta -- gwaslab keeps odds
     # ratios in a separate OR column, and build_munge_input_df wires only BETA
-    # into `effect`. A median near 1 therefore signals a mis-specified input
+    # into `effect`. A median near 1 therefore signals a misspecified input
     # rather than an OR to convert, so fail loudly instead of mutating the data.
     median_effect = merged.select(pl.col(MUNGE_EFFECT_COL).median()).item()
     if median_effect is not None and round(median_effect) == 1:

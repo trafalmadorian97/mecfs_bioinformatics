@@ -72,7 +72,7 @@ class GenomicSEMCommonFactorGWASTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         gsem = importr("GenomicSEM")
-        ld_path = resolve_ld_path(self.ld_ref_task, fetch, self.munge_config)
+        ld_path = resolve_ld_path(self.ld_ref_task, fetch)
         hapmap_path = resolve_file_path(self.hapmap_snps_task, fetch)
         sumstats_ref_path = resolve_file_path(self.sumstats_ref_task, fetch)
 

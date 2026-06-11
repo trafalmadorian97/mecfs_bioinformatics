@@ -133,7 +133,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     ) -> tuple[GenomicSEMGWASSumstatsSource, GenomicSEMGWASSumstatsSource]:
         # Order defines the trait axis for ldsc/sumstats and the kernel:
         # index 0 = T1 (composite), index 1 = T2 (reference).
-        return tuple([self.composite_trait_source, self.reference_trait_source])
+        return (self.composite_trait_source, self.reference_trait_source)
 
     @property
     def deps(self) -> list[Task]:
@@ -271,8 +271,10 @@ def _prepare_python_inputs(
     population_prevs: list[float] = []
     munged_paths: list[Path] = []
     sumstats_traits: list[SumstatsTrait] = []
+    logger.debug("Preparing inputs...")
 
     for gwas_src in sources:
+        logger.debug(f"Processing source {gwas_src.alias}")
         df = build_munge_input_df(gwas_src.source, fetch)
         name = gwas_src.alias
         # N handling matches GenomicSEM munge/sumstats: build_munge_input_df has
