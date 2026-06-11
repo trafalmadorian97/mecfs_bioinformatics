@@ -7,7 +7,7 @@ hide:
 
 ## Methodology
 
-To narrow down the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 17 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
+To narrow down the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 17 using SUSIE[@wang2020simple]. The parameters of my runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
 
 
 ## Results
@@ -31,7 +31,7 @@ The stackplot below, for the $L=10$ case, illustrates the typical PIP pattern ac
 
 The credible set at this locus is focused upstream of the CA10 gene.  This would seem to make a CA10 a good candidate for further investigation.  
 
-The detailed variants results are below:
+The detailed variants results are in the expandable table below:
 
 {{ markdown_table("docs/_figs/decode_mechr17_50000000_51000000_palindromes_keep_susie_base_convert_cs_to_markdown.mdx", title="Variant List (L=10)") }}
 
