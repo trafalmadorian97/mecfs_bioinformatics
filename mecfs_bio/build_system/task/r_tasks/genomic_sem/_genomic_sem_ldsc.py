@@ -51,6 +51,29 @@ import pandas as pd
 from attrs import frozen
 from scipy.stats import norm
 
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    LDSC_BP_COL,
+    LDSC_CHR_COL,
+    LDSC_L2_COL,
+    MUNGE_A1_COL,
+    MUNGE_N_COL,
+    MUNGE_SNP_COL,
+    MUNGE_Z_COL,
+)
+
+# Derived columns local to this module (not part of the munge/LD-score schemas):
+# wLD is the regression-weight LD score, and the cross-trait covariance merge
+# suffixes each trait's columns with ".x" (first trait) / ".y" (second).
+_WLD_COL = "wLD"
+_X_SUFFIX = ".x"
+_Y_SUFFIX = ".y"
+_Z_X_COL = f"{MUNGE_Z_COL}{_X_SUFFIX}"
+_Z_Y_COL = f"{MUNGE_Z_COL}{_Y_SUFFIX}"
+_N_X_COL = f"{MUNGE_N_COL}{_X_SUFFIX}"
+_N_Y_COL = f"{MUNGE_N_COL}{_Y_SUFFIX}"
+_A1_X_COL = f"{MUNGE_A1_COL}{_X_SUFFIX}"
+_A1_Y_COL = f"{MUNGE_A1_COL}{_Y_SUFFIX}"
+
 
 @frozen
 class LDSCResult:
@@ -235,7 +258,7 @@ def _read_ld_scores(ld_dir: Path, n_chrom: int) -> tuple[pd.DataFrame, float]:
     m_total = 0.0
     for chrom in range(1, n_chrom + 1):
         score = pd.read_csv(ld_dir / f"{chrom}.l2.ldscore.gz", sep="\t")
-        ld_frames.append(score[["CHR", "SNP", "BP", "L2"]])
+        ld_frames.append(score[[LDSC_CHR_COL, MUNGE_SNP_COL, LDSC_BP_COL, LDSC_L2_COL]])
         m_val = pd.read_csv(ld_dir / f"{chrom}.l2.M_5_50", header=None)
         m_total += float(np.asarray(m_val).sum())
     ld_df = pd.concat(ld_frames, ignore_index=True)
@@ -245,7 +268,7 @@ def _read_ld_scores(ld_dir: Path, n_chrom: int) -> tuple[pd.DataFrame, float]:
 def _read_munged(path: Path) -> pd.DataFrame:
     """Read a munged ``.sumstats(.gz)`` file, keeping SNP, N, Z, A1."""
     df = pd.read_csv(path, sep="\t")
-    df = df[["SNP", "N", "Z", "A1"]].dropna()
+    df = df[[MUNGE_SNP_COL, MUNGE_N_COL, MUNGE_Z_COL, MUNGE_A1_COL]].dropna()
     return df
 
 
@@ -256,14 +279,16 @@ def _merge_trait_with_ld(
     Merge one trait's sumstats with LD scores, order by (CHR, BP), and apply
     the chi^2 filter (per-trait threshold when chisq_max is None).
     """
-    merged = trait.merge(ld_df, on="SNP", how="inner", sort=False)
-    merged = merged.sort_values(["CHR", "BP"], kind="stable").reset_index(drop=True)
+    merged = trait.merge(ld_df, on=MUNGE_SNP_COL, how="inner", sort=False)
+    merged = merged.sort_values([LDSC_CHR_COL, LDSC_BP_COL], kind="stable").reset_index(
+        drop=True
+    )
     threshold = (
         chisq_max
         if chisq_max is not None
-        else max(0.001 * float(merged["N"].max()), 80.0)
+        else max(0.001 * float(merged[MUNGE_N_COL].max()), 80.0)
     )
-    keep = merged["Z"].to_numpy() ** 2 <= threshold
+    keep = merged[MUNGE_Z_COL].to_numpy() ** 2 <= threshold
     return merged.loc[keep].reset_index(drop=True)
 
 
@@ -292,7 +317,7 @@ def run_ldsc(
 
     ld_df, m_total = _read_ld_scores(ld_dir, n_chrom)
     # sep_weights = FALSE: weights LD score equals the regression LD score.
-    ld_df = ld_df.assign(wLD=ld_df["L2"])
+    ld_df = ld_df.assign(**{_WLD_COL: ld_df[LDSC_L2_COL]})
 
     all_y = [
         _merge_trait_with_ld(_read_munged(Path(p)), ld_df, chisq_max)
@@ -319,10 +344,10 @@ def run_ldsc(
         if j == kk:
             yj = all_y[j]
             est = _estimate_h2(
-                chi=yj["Z"].to_numpy() ** 2,
-                ld_raw=yj["L2"].to_numpy(),
-                wld_raw=yj["wLD"].to_numpy(),
-                n=yj["N"].to_numpy(dtype=float),
+                chi=yj[MUNGE_Z_COL].to_numpy() ** 2,
+                ld_raw=yj[LDSC_L2_COL].to_numpy(),
+                wld_raw=yj[_WLD_COL].to_numpy(),
+                n=yj[MUNGE_N_COL].to_numpy(dtype=float),
                 m=m_total,
                 n_blocks=n_blocks,
             )
@@ -330,28 +355,28 @@ def run_ldsc(
             intercepts[j, j] = est.intercept
         else:
             merged = all_y[j].merge(
-                all_y[kk][["SNP", "N", "Z", "A1"]],
-                on="SNP",
+                all_y[kk][[MUNGE_SNP_COL, MUNGE_N_COL, MUNGE_Z_COL, MUNGE_A1_COL]],
+                on=MUNGE_SNP_COL,
                 how="inner",
                 sort=False,
-                suffixes=(".x", ".y"),
+                suffixes=(_X_SUFFIX, _Y_SUFFIX),
             )
-            merged = merged.sort_values(["CHR", "BP"], kind="stable").reset_index(
-                drop=True
-            )
-            z_x = merged["Z.x"].to_numpy()
-            z_y = merged["Z.y"].to_numpy()
+            merged = merged.sort_values(
+                [LDSC_CHR_COL, LDSC_BP_COL], kind="stable"
+            ).reset_index(drop=True)
+            z_x = merged[_Z_X_COL].to_numpy()
+            z_y = merged[_Z_Y_COL].to_numpy()
             # Flip trait-j Z where the reference alleles disagree.
-            same_allele = (merged["A1.y"] == merged["A1.x"]).to_numpy()
+            same_allele = (merged[_A1_Y_COL] == merged[_A1_X_COL]).to_numpy()
             z_x = np.where(same_allele, z_x, -z_x)
             est = _estimate_cov(
                 zz=z_y * z_x,
                 chi1=z_x**2,
                 chi2=z_y**2,
-                ld_raw=merged["L2"].to_numpy(),
-                wld_raw=merged["wLD"].to_numpy(),
-                n_x=merged["N.x"].to_numpy(dtype=float),
-                n_y=merged["N.y"].to_numpy(dtype=float),
+                ld_raw=merged[LDSC_L2_COL].to_numpy(),
+                wld_raw=merged[_WLD_COL].to_numpy(),
+                n_x=merged[_N_X_COL].to_numpy(dtype=float),
+                n_y=merged[_N_Y_COL].to_numpy(dtype=float),
                 m=m_total,
                 n_blocks=n_blocks,
             )

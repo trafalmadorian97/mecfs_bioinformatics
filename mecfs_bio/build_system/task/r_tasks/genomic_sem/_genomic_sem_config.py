@@ -34,6 +34,12 @@ MUNGE_MAF_COL = "MAF"
 MUNGE_INFO_COL = "INFO"  # optional input column (imputation quality)
 MUNGE_Z_COL = "Z"  # Z-score column in the munged output
 
+# --- Columns in the LD-score reference files (`<chr>.l2.ldscore.gz`) read by
+#     GenomicSEM::ldsc. SNP is shared with the munged columns (MUNGE_SNP_COL). ---
+LDSC_CHR_COL = "CHR"
+LDSC_BP_COL = "BP"
+LDSC_L2_COL = "L2"  # per-SNP LD score
+
 # --- Output structure produced by the basic GenomicSEMTask. ---
 MUNGED_SUBDIR = "munged"
 LDSC_LOG_PREFIX = "genomic_sem"  # GenomicSEM::ldsc appends "_ldsc.log" to this
