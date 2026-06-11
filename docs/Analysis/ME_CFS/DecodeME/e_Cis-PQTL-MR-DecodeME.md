@@ -13,11 +13,11 @@ Since each protein in the UKBB PPP has at most one cis-pQTL, I used the Wald Rat
 I used the R package `TwoSampleMR`.
 
 
-**NOTE**: since the controls for the DecodeME project come from the UK Biobank, and since the pQTLs from the UKBB PPP are also derived from analysis of the UK Biobank, we do not actually have two fully independent samples, so we partially violate the assumptions of `TwoSampleMR`.  This could introduce some error. 
+**NOTE**: since the controls for the DecodeME project come from the UK Biobank, and since the pQTLs from the UKBB PPP are also derived from analysis of the UK Biobank, we do not actually have two fully independent samples, so we partially violate the assumptions of `TwoSampleMR`.  This could introduce error. 
 
 ## Results
 
-`TwoSampleMR` identified two potentially causal plasma proteins: RABGAP1L, significant at the Bonferroni-corrected level of 0.01, and BTN1A1, which additionally emerges when the threshold is relaxed to 0.05.  Both are listed in the table below and discussed in turn in the following subsections.
+`TwoSampleMR` identified two potentially causal plasma proteins: RABGAP1L, significant at the Bonferroni-corrected p value threshold 0.01, and BTN1A1, significant at 0.05.  
 
 {{ markdown_table("docs/_figs/decode_me_gwas_1_mr_cis_mr_markdown.mdx", title="cis-pQTL MR Results") }}
 
@@ -39,7 +39,7 @@ The second shows the same region from the UK Biobank Pharma Proteomics Project G
 
 {{ png_embed("docs/_figs/rabgap1l_region_plot_rabgap1l_locus/region_plot.png", alt="rabgap1l_region_plot") }}
 
-From visual inspection, it seems clear that at least the primary signals do not colocalize: the GWAS peaks are clearly in different locations.  However, it could be that there are secondary signals that do colocalize.  A colocalization algorithm may clarify the question.
+From visual inspection, it seems that at least the primary signals do not colocalize: the GWAS peaks differ.  However, it could be that there are secondary signals that do colocalize.  A colocalization algorithm could clarify the question.
 
 ### BTN1A1
 
@@ -69,4 +69,4 @@ In this comparison, it seems even more obvious that the primary signals do not c
 
 - Does co-localization analysis suggest that the DecodeME causal variant and the cis-pQTL co-localize?
 
-- Do the cis-pQTLs identified above co-localize with trans-pQTLs for other proteins? If so, this could suggest causal protein regulatory chains.
+- Do the cis-pQTLs identified above co-localize with trans-pQTLs for other proteins? If so, this could suggest a role for causal protein regulatory chains.

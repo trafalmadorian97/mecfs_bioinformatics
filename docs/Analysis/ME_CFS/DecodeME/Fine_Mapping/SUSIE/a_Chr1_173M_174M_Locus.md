@@ -9,10 +9,10 @@ hide:
 
 To narrow the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) the hit on chromosome 1 using [SUSIE](https://stephenslab.github.io/susieR/)[@wang2020simple].
 
-As a linkage disequilibrium reference, I used a UK Biobank LD matrix hosted on [AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used GWASLab to liftover the DecodeME summary statistics to GRCh37.
+As a linkage disequilibrium reference, I used a [UK Biobank LD matrix hosted on AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used GWASLab to liftover the DecodeME GWAS-1 summary statistics to GRCh37.
 
 
-As a sensitivity analysis, I ran SUSIE 4 times:
+I ran SUSIE 4 times:
 
 - Once with $L=10$,
 - Once with $L=2$,
@@ -35,7 +35,7 @@ In all 4 runs, SUSIE found a single diffuse credible set.  Moreover, this credib
 {{ png_embed("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_upset_plot.png", alt="upset_chrom_1") }}
 
 
-The next figure illustrates the SUSIE results for $L=10$. It is representative of the other runs.
+The next figure illustrates the SUSIE results for $L=10$. It is representative.
 
 {{ png_embed("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_susie_stackplot.png", alt="chr1_stackplot") }}
 
@@ -50,7 +50,7 @@ The next figure illustrates the SUSIE results for $L=10$. It is representative o
 Overall, SUSIE has returned a diffuse signal in a region with a number of plausible genes.  This makes it unclear which genes deserve follow-up investigation.
 
 
-The table below lists the full detailed SUSIE results for the $L=10$ case
+The expandable table below lists the full SUSIE results for the $L=10$ case.
 
 {{ markdown_table("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_susie_base_convert_cs_to_markdown.mdx", title="Variant List") }}
 
