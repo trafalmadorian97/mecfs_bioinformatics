@@ -40,7 +40,6 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     MUNGE_SE_COL,
     MUNGE_SNP_COL,
     OLS,
-    GenomicSEMConfig,
     GenomicSEMGWASSumstatsSource,
     GenomicSEMSumstatsSource,
 )
@@ -129,7 +128,17 @@ def build_munge_input_df(
         pl.col(GWASLAB_SAMPLE_SIZE_COLUMN).alias(MUNGE_N_COL),
     ]
     if GWASLAB_EFFECT_ALLELE_FREQ_COL in df.columns:
-        select_exprs.append(pl.col(GWASLAB_EFFECT_ALLELE_FREQ_COL).alias(MUNGE_MAF_COL))
+        # Fold the effect-allele frequency to the minor-allele frequency so the
+        # MUNGE_MAF_COL column actually holds a MAF. The source reports the
+        # frequency of the effect allele, which need not be the minor allele;
+        # downstream munge/sumstats only ever use the minor frequency (for the
+        # MAF filter and varSNP = 2p(1-p)), so we normalise it at the source.
+        select_exprs.append(
+            pl.when(pl.col(GWASLAB_EFFECT_ALLELE_FREQ_COL) <= 0.5)
+            .then(pl.col(GWASLAB_EFFECT_ALLELE_FREQ_COL))
+            .otherwise(1.0 - pl.col(GWASLAB_EFFECT_ALLELE_FREQ_COL))
+            .alias(MUNGE_MAF_COL)
+        )
     return df.select(select_exprs)
 
 
@@ -196,9 +205,7 @@ def ld_dir_with_genomic_sem_naming(
         yield tmp
 
 
-def resolve_ld_path(
-    ld_ref_task: Task, fetch: Fetch
-) -> Path:
+def resolve_ld_path(ld_ref_task: Task, fetch: Fetch) -> Path:
     asset = fetch(ld_ref_task.asset_id)
     assert isinstance(asset, DirectoryAsset)
     # Absolute path so the value remains correct after R chdirs during munge.
