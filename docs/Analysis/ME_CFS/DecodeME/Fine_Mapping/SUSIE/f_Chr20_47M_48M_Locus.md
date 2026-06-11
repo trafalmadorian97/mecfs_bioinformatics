@@ -13,7 +13,7 @@ To narrow the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025i
 ## Results
 
 
-At the chromosome 20 locus, the $L=10$ and $L=2$ SUSIE runs returned two credible sets.  One of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant.  In contrast, the $L=1$ and strict $L=10$ SUSIE runs return a single diffuse credible set.  It is unclear which of these two results is correct.  It would be interesting to re-run SUSIE on this locus using individual-level data.
+At the chromosome 20 locus, the $L=10$ and $L=2$ SUSIE runs returned two credible sets.  One of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant, while the other is diffuse.  In contrast, the $L=1$ and strict $L=10$ SUSIE runs return a single diffuse credible set.  It is unclear which of these two results is correct.  It would be interesting to re-run SUSIE on this locus using individual-level data.
 
 
 As expected, the UpSet plot for this locus reveals that the variants found by the $L=10$ and $L=2$ SUSIE runs are identical, and differ from those found by the $L=1$ and strict $L=10$ runs. 

@@ -1,23 +1,24 @@
 # Univariate MiXeR
 
 
-Using [software provided by the authors](https://github.com/precimed/mixer), I ran univariate [MiXeR](../../../Bioinformatics_Concepts/Mixer.md)[@holland2020beyond] on the DecodeME summary statistics.  
+Using [software provided by the authors](https://github.com/precimed/mixer), I ran univariate [MiXeR](../../../Bioinformatics_Concepts/Mixer.md)[@holland2020beyond] on the DecodeME GWAS-1 summary statistics.  
 
 The MiXeR authors recommend running MiXeR 20 times using 20 different subsets of their standard reference panel of genetic variants. This serves as a form of [bootstrapping](https://en.wikipedia.org/wiki/Bootstrapping_(statistics)). Means and standard deviations reported are over these 20 runs.
 
-First, the table below lists the key MiXeR output parameters:
+The table below lists the key MiXeR output parameters.  Means and standard deviations are over the 20 runs mentioned above.
 
 
 
 {{ include_file("docs/_figs/decode_me_univariate_mixer_results_table_as_markdown.mdx") }}
 
-By comparing $\pi \approx 0.0019$ to the values in Table 2 from the original MiXeR paper[@holland2020beyond],  we observe that ME/CFS is more polygenic than average.
 
-Next, consider the power plot generated from the MiXeR model:
+Comparing $\pi \approx 0.0019$ to the values in Table 2 from the original MiXeR paper[@holland2020beyond],  we observe that ME/CFS is more polygenic than average.
+
+MiXeR also produces a power plot.
 
 {{ png_embed("docs/_figs/decode_me_univariate_mixer_power_plot.png", alt="decode_me_mixer_power") }}
 
-MiXeR predicts that an effective sample size of one million would be required to explain slightly more than 20 percent of ME/CFS's heritability with genome-wide significant SNPs.  This conclusion is consistent with ME/CFS being a polygenic trait: Since ME/CFS risk is conferred by a large number of weak genetic effects, large statistical power is required to make these weak genetic effects statistically significant.
+MiXeR predicts that an effective sample size of one million would be required to explain slightly more than 20 percent of ME/CFS's heritability with genome-wide significant SNPs.  This conclusion is consistent with ME/CFS being a polygenic trait: since ME/CFS risk is conferred by a large number of weak genetic effects, large statistical power is required to make these weak genetic effects statistically significant.
 
 
 
