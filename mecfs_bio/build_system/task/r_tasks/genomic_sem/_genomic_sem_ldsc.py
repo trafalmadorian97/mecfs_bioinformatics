@@ -104,6 +104,10 @@ def _liability_conversion_factor(
     """
     Observed -> liability scale conversion factor for a binary trait. Returns
     1.0 (no conversion) when either prevalence is missing.
+
+
+    See equation 23 in Lee, S. H., Wray, N. R., Goddard, M. E., & Visscher, P. M. (2011). Estimating missing heritability for disease from genome-wide association studies.
+    The American Journal of Human Genetics, 88(3), 294-305. https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3059431/
     """
     if (
         sample_prev is None
@@ -171,7 +175,17 @@ def _regress_jackknife(
 
 def _aggregate_h2(chi: np.ndarray, ld: np.ndarray, n: np.ndarray, m: float) -> float:
     """Aggregate h2 estimate used to build heteroskedasticity weights, clamped
-    to [0, 1] (R's tot.agg)."""
+    to [0, 1] (R's tot.agg).
+
+    Recall that the core LDSC equation is
+
+    E chi^2 = h^2*l*N/m +1
+
+    The h^2 estimate computed by this function comes from taking the mean of the key quantities on both sides and solving
+    for h^2.
+
+
+    """
     tot_agg = (m * (float(np.mean(chi)) - 1.0)) / float(np.mean(ld * n))
     return float(min(max(tot_agg, 0.0), 1.0))
 
@@ -179,7 +193,27 @@ def _aggregate_h2(chi: np.ndarray, ld: np.ndarray, n: np.ndarray, m: float) -> f
 def _het_oc_initial_weight(
     tot_agg: float, ld_raw: np.ndarray, wld_raw: np.ndarray, n: np.ndarray, m: float
 ) -> np.ndarray:
-    """sqrt(het.w * oc.w) per SNP (R's initial.w)."""
+    """sqrt(het.w * oc.w) per SNP (R's initial.w).
+
+
+
+    The purpose of this function is to compute regression weights for use in the LDSC regression.
+
+    There are two reasons for computing these regression weights:
+    1.  Heteroskedasticity: The signal from different SNPs will have different variances.  We should downweight SNPs with
+        high variances.
+
+    2.  Overcounting: because neighbouring SNPs are in linkage disequilibrium, they to some extent carry redundant information.
+        We use weighting to avoid overcounting this redundant information.
+
+
+    The het_w weights computed by this function account for heteroskedasticity.  The oc_w weights account for overcounting.
+
+    The computation of the het_w weights takes advantage of the fact that in the LDSC model, the chi^2 statistics are distributed
+    according to a standard chi^2 distributed scaled by factor = h^2*m/n*l_j +1.  A standard chi^2 random variable has
+    variance of twice its mean.  Scaling the random variable by factor scales its variance by factor**2A.
+
+    """
     ld = np.maximum(ld_raw, 1.0)
     w_ld = np.maximum(wld_raw, 1.0)
     c = tot_agg * n / m
