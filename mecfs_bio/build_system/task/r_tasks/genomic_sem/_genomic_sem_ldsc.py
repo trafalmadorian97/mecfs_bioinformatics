@@ -90,7 +90,12 @@ class LDSCResult:
 
 @frozen
 class _PairEstimate:
-    """Result of one heritability or covariance LDSC regression."""
+    """Result of one heritability or covariance LDSC regression.
+
+    NOTE:
+        - reg_tot is scaled slope, so that we estimate h^2 or genetic covariance
+        - pseudo_coef are unscaled.  So they are not on the same scale as reg_tot.
+    """
 
     reg_tot: float  # observed-scale h2 (diagonal) or genetic covariance
     intercept: float  # LDSC (or cross-trait) intercept
@@ -149,6 +154,11 @@ def _regress_jackknife(
     weighted_chi : (n,) weighted response
     Returns (reg, pseudo) where reg is (2,) = [slope, intercept] and pseudo is
     (n_blocks, 2) of pseudo-values.
+
+
+
+    reg: Regression coefficient alpha computed via normal equations (X^TX)\alpha = X^TY
+    pseudo: Vector of Tukey Jackknife Pseudo-values.  Used to estimate variances and covariances.
     """
     assert weighted_ld.ndim == 2 and weighted_ld.shape[1] == 2
     assert weighted_chi.shape == (weighted_ld.shape[0],)
@@ -157,13 +167,13 @@ def _regress_jackknife(
     block_xty = np.empty((n_blocks, 2))
     block_xtx = np.empty((n_blocks, 2, 2))
     for i, (a, b) in enumerate(bounds):
-        wl = weighted_ld[a:b]
-        wc = weighted_chi[a:b]
-        block_xty[i] = wl.T @ wc
-        block_xtx[i] = wl.T @ wl
+        wx= weighted_ld[a:b]
+        wy = weighted_chi[a:b]
+        block_xty[i] = wx.T @ wy
+        block_xtx[i] = wx.T @ wx
 
-    xty = block_xty.sum(axis=0)
-    xtx = block_xtx.sum(axis=0)
+    xty = block_xty.sum(axis=0)# This amounts to computing X^TX from the normal equations through block matrix multiplication
+    xtx = block_xtx.sum(axis=0)# This amounts to computing X^TY from the normal equations through block marix multiplication
     reg = np.linalg.solve(xtx, xty)
 
     pseudo = np.empty((n_blocks, 2))
@@ -306,7 +316,7 @@ def _read_munged(path: Path) -> pd.DataFrame:
     return df
 
 
-def _merge_trait_with_ld(
+def _merge_trait_with_ld_and_sort(
     trait: pd.DataFrame, ld_df: pd.DataFrame, chisq_max: float | None
 ) -> pd.DataFrame:
     """
@@ -353,8 +363,8 @@ def run_ldsc(
     # sep_weights = FALSE: weights LD score equals the regression LD score.
     ld_df = ld_df.assign(**{_WLD_COL: ld_df[LDSC_L2_COL]})
 
-    all_y = [
-        _merge_trait_with_ld(_read_munged(Path(p)), ld_df, chisq_max)
+    trait_frames = [
+        _merge_trait_with_ld_and_sort(_read_munged(Path(p)), ld_df, chisq_max)
         for p in munged_paths
     ]
 
@@ -376,7 +386,7 @@ def run_ldsc(
 
     for s, (j, kk) in enumerate(pairs):
         if j == kk:
-            yj = all_y[j]
+            yj = trait_frames[j]
             est = _estimate_h2(
                 chi=yj[MUNGE_Z_COL].to_numpy() ** 2,
                 ld_raw=yj[LDSC_L2_COL].to_numpy(),
@@ -388,8 +398,8 @@ def run_ldsc(
             cov[j, j] = est.reg_tot
             intercepts[j, j] = est.intercept
         else:
-            merged = all_y[j].merge(
-                all_y[kk][[MUNGE_SNP_COL, MUNGE_N_COL, MUNGE_Z_COL, MUNGE_A1_COL]],
+            merged = trait_frames[j].merge(
+                trait_frames[kk][[MUNGE_SNP_COL, MUNGE_N_COL, MUNGE_Z_COL, MUNGE_A1_COL]],
                 on=MUNGE_SNP_COL,
                 how="inner",
                 sort=False,
@@ -423,7 +433,8 @@ def run_ldsc(
     # Raw-slope jackknife covariance -> observed-scale h2/cov sampling cov.
     denom = np.outer(
         n_vec * (np.sqrt(n_blocks) / m_total), n_vec * (np.sqrt(n_blocks) / m_total)
-    )
+    ) #Note: this denominator combines two re-scaling. One prescribed by Jackknife, and one to convert
+      # raw regression slope to heritability/ covariance units
     v_out = np.cov(v_hold, rowvar=False) / denom
 
     # Liability scaling of S and V.
