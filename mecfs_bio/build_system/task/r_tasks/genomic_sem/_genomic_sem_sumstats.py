@@ -92,10 +92,10 @@ def _restrict_to_acgt(col: str) -> pl.Expr:
 
 
 def _filter_reference(
-    ref: pl.DataFrame, maf_filter: float, ambig: bool
+    ref: pl.DataFrame, maf_filter: float, exclude_ambig: bool
 ) -> pl.DataFrame:
     out = ref.filter(pl.col(MUNGE_MAF_COL) >= maf_filter)
-    if ambig:
+    if exclude_ambig:
         a1 = pl.col(MUNGE_A1_COL).str.to_uppercase()
         a2 = pl.col(MUNGE_A2_COL).str.to_uppercase()
         ambiguous = (
@@ -290,7 +290,7 @@ def run_sumstats(
     *,
     maf_filter: float = 0.01,
     info_filter: float = 0.6,
-    ambig: bool = False,
+    exclude_ambig: bool = False,
 ) -> pl.DataFrame:
     """
     Align and standardise all traits against the reference, then listwise-merge.
@@ -298,8 +298,11 @@ def run_sumstats(
     Returns a wide DataFrame: the reference columns (SNP, CHR, BP, MAF, A1, A2)
     plus beta.<name> / se.<name> for each trait, restricted to the common SNP
     set. Trait order is preserved (it must match the ldsc trait order).
+
+    ``exclude_ambig=True`` drops strand-ambiguous (A/T, C/G) SNPs from the
+    reference before alignment.
     """
-    ref_f = _filter_reference(ref, maf_filter, ambig)
+    ref_f = _filter_reference(ref, maf_filter, exclude_ambig)
     out = ref_f
     for trait in traits:
         per = _standardize_trait(trait, ref_f, info_filter=info_filter)

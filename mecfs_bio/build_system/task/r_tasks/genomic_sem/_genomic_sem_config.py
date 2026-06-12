@@ -146,7 +146,7 @@ class GenomicSEMSumstatsConfig:
     keep_indel: bool = False
     parallel: bool = False
     cores: int | None = None
-    ambig: bool = False
+    exclude_ambig: bool = False  # drop strand-ambiguous SNPs (R's `ambig=TRUE`)
 
 
 @frozen

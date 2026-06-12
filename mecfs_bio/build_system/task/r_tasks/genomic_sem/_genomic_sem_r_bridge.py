@@ -293,7 +293,7 @@ def _run_r_sumstats(
         maf_filter=config.maf_filter,
         keep_indel=config.keep_indel,
         parallel=config.parallel,
-        ambig=config.ambig,
+        ambig=config.exclude_ambig,  # R's `ambig=TRUE` drops strand-ambiguous SNPs
     )
     if config.cores is not None:
         kwargs["cores"] = config.cores

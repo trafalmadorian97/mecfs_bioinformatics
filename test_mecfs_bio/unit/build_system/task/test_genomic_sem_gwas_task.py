@@ -267,7 +267,7 @@ def test_sumstats_config_defaults():
     assert cfg.keep_indel is False
     assert cfg.parallel is False
     assert cfg.cores is None
-    assert cfg.ambig is False
+    assert cfg.exclude_ambig is False
 
 
 def test_run_config_defaults():

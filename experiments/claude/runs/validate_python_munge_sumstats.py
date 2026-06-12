@@ -153,7 +153,7 @@ def main() -> None:
         N=ro.FloatVector(sample_sizes),
         info_filter=task.sumstats_config.info_filter,
         maf_filter=task.sumstats_config.maf_filter,
-        ambig=task.sumstats_config.ambig,
+        ambig=task.sumstats_config.exclude_ambig,
     )
     with localconverter(ro.default_converter + pandas2ri.converter):
         r_ss_df = pl.from_pandas(ro.conversion.get_conversion().rpy2py(r_ss))
@@ -177,7 +177,7 @@ def main() -> None:
         ref_1kg,
         maf_filter=task.sumstats_config.maf_filter,
         info_filter=task.sumstats_config.info_filter,
-        ambig=task.sumstats_config.ambig,
+        exclude_ambig=task.sumstats_config.exclude_ambig,
     )
     print(f"Python sumstats took {time.time() - t0:.1f}s")
 

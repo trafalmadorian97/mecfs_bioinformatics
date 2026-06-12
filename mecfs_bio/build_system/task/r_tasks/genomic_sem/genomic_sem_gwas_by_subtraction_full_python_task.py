@@ -56,10 +56,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     OLS,
     SUBTRACTION_F_FILENAME,
     SUBTRACTION_R_FILENAME,
-    GenomicSEMConfig,
-    GenomicSEMGWASRunConfig,
     GenomicSEMGWASSumstatsSource,
-    GenomicSEMSumstatsConfig,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     build_munge_input_df,
@@ -97,6 +94,32 @@ _MUNGED_SUFFIX = ".sumstats"
 
 
 @frozen
+class GWASBySubtractionFullPythonConfig:
+    """
+    Configuration for GenomicSEMGWASBySubtractionFullPythonTask.
+
+    Every field here is actually consumed by the Python pipeline. Unlike the
+    R-facing configs (GenomicSEMConfig / GenomicSEMSumstatsConfig /
+    GenomicSEMGWASRunConfig), there are no R-only knobs (cores, parallel,
+    keep_indel, estimation, ...) that the task would silently ignore. The munge
+    and sumstats QC thresholds are kept separate because GenomicSEM defaults
+    them differently (munge INFO 0.9 vs sumstats 0.6).
+    """
+
+    # If non-empty, a basename prefix on the LD reference files (e.g. "LDscore.")
+    # that is stripped via a symlinked view before being passed to ldsc.
+    ld_file_filename_pattern: str = ""
+    # munge step QC thresholds.
+    munge_info_filter: float = 0.9
+    munge_maf_filter: float = 0.01
+    # sumstats step QC thresholds.
+    sumstats_info_filter: float = 0.6
+    sumstats_maf_filter: float = 0.01
+    # Drop strand-ambiguous (A/T, C/G) SNPs from the reference during alignment.
+    exclude_ambig: bool = False
+
+
+@frozen
 class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     """
     GWAS-by-subtraction with munge, LDSC, sumstats, and the Cholesky kernel all
@@ -118,9 +141,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     ld_ref_task: Task
     hapmap_snps_task: Task
     sumstats_ref_task: Task
-    munge_config: GenomicSEMConfig = GenomicSEMConfig()
-    sumstats_config: GenomicSEMSumstatsConfig = GenomicSEMSumstatsConfig()
-    run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig()
+    config: GWASBySubtractionFullPythonConfig = GWASBySubtractionFullPythonConfig()
 
     def __attrs_post_init__(self):
         assert self.composite_trait_source.alias != self.reference_trait_source.alias, (
@@ -151,15 +172,14 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         ref_1kg = read_dataframe_from_task(self.sumstats_ref_task, fetch)
 
         with ld_dir_with_genomic_sem_naming(
-            ld_path, self.munge_config.ld_file_filename_pattern
+            ld_path, self.config.ld_file_filename_pattern
         ) as effective_ld:
             inputs = _prepare_python_inputs(
                 sources=self._ordered_sources,
                 ld_dir=effective_ld,
                 ref_hm3=ref_hm3,
                 ref_1kg=ref_1kg,
-                munge_config=self.munge_config,
-                sumstats_config=self.sumstats_config,
+                config=self.config,
                 fetch=fetch,
                 scratch_dir=scratch_dir,
             )
@@ -187,9 +207,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         ld_ref_task: Task,
         hapmap_snps_task: Task,
         sumstats_ref_task: Task,
-        munge_config: GenomicSEMConfig = GenomicSEMConfig(),
-        sumstats_config: GenomicSEMSumstatsConfig = GenomicSEMSumstatsConfig(),
-        run_config: GenomicSEMGWASRunConfig = GenomicSEMGWASRunConfig(),
+        config: GWASBySubtractionFullPythonConfig = GWASBySubtractionFullPythonConfig(),
     ) -> "GenomicSEMGWASBySubtractionFullPythonTask":
         meta = ResultDirectoryMeta(
             id=AssetId(asset_id),
@@ -204,9 +222,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
             ld_ref_task=ld_ref_task,
             hapmap_snps_task=hapmap_snps_task,
             sumstats_ref_task=sumstats_ref_task,
-            munge_config=munge_config,
-            sumstats_config=sumstats_config,
-            run_config=run_config,
+            config=config,
         )
 
 
@@ -252,8 +268,7 @@ def _prepare_python_inputs(
     ld_dir: Path,
     ref_hm3: pl.DataFrame,
     ref_1kg: pl.DataFrame,
-    munge_config: GenomicSEMConfig,
-    sumstats_config: GenomicSEMSumstatsConfig,
+    config: GWASBySubtractionFullPythonConfig,
     fetch: Fetch,
     scratch_dir: Path,
 ) -> _PythonGWASInputs:
@@ -291,8 +306,8 @@ def _prepare_python_inputs(
             df,
             ref_hm3,
             n=n,
-            info_filter=munge_config.info_filter,
-            maf_filter=munge_config.maf_filter,
+            info_filter=config.munge_info_filter,
+            maf_filter=config.munge_maf_filter,
         )
         munged_path = munged_dir / f"{name}{_MUNGED_SUFFIX}"
         munged.write_csv(munged_path, separator="\t")
@@ -316,9 +331,9 @@ def _prepare_python_inputs(
     snps_df = run_sumstats(
         sumstats_traits,
         ref_1kg,
-        maf_filter=sumstats_config.maf_filter,
-        info_filter=sumstats_config.info_filter,
-        ambig=sumstats_config.ambig,
+        maf_filter=config.sumstats_maf_filter,
+        info_filter=config.sumstats_info_filter,
+        exclude_ambig=config.exclude_ambig,
     )
     logger.debug(f"sumstats produced {snps_df.height} aligned SNPs")
 

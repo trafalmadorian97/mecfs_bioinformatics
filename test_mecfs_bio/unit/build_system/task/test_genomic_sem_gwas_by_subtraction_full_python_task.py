@@ -32,6 +32,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_gwas_by_subtraction_full_python_task import (
     GenomicSEMGWASBySubtractionFullPythonTask,
+    GWASBySubtractionFullPythonConfig,
     sumstats_trait,
 )
 
@@ -122,3 +123,14 @@ def test_sumstats_trait_flag_mapping(method, expected):
     assert (trait.ols, trait.se_logit, trait.linprob) == expected
     assert trait.name == "t"
     assert trait.n == 10000.0
+
+
+def test_config_defaults():
+    """The full-Python config carries only consumed knobs, with sane defaults."""
+    cfg = GWASBySubtractionFullPythonConfig()
+    assert cfg.ld_file_filename_pattern == ""
+    assert cfg.munge_info_filter == pytest.approx(0.9)
+    assert cfg.munge_maf_filter == pytest.approx(0.01)
+    assert cfg.sumstats_info_filter == pytest.approx(0.6)
+    assert cfg.sumstats_maf_filter == pytest.approx(0.01)
+    assert cfg.exclude_ambig is False
