@@ -167,13 +167,17 @@ def _regress_jackknife(
     block_xty = np.empty((n_blocks, 2))
     block_xtx = np.empty((n_blocks, 2, 2))
     for i, (a, b) in enumerate(bounds):
-        wx= weighted_ld[a:b]
+        wx = weighted_ld[a:b]
         wy = weighted_chi[a:b]
         block_xty[i] = wx.T @ wy
         block_xtx[i] = wx.T @ wx
 
-    xty = block_xty.sum(axis=0)# This amounts to computing X^TX from the normal equations through block matrix multiplication
-    xtx = block_xtx.sum(axis=0)# This amounts to computing X^TY from the normal equations through block marix multiplication
+    xty = block_xty.sum(
+        axis=0
+    )  # This amounts to computing X^TX from the normal equations through block matrix multiplication
+    xtx = block_xtx.sum(
+        axis=0
+    )  # This amounts to computing X^TY from the normal equations through block marix multiplication
     reg = np.linalg.solve(xtx, xty)
 
     pseudo = np.empty((n_blocks, 2))
@@ -399,7 +403,9 @@ def run_ldsc(
             intercepts[j, j] = est.intercept
         else:
             merged = trait_frames[j].merge(
-                trait_frames[kk][[MUNGE_SNP_COL, MUNGE_N_COL, MUNGE_Z_COL, MUNGE_A1_COL]],
+                trait_frames[kk][
+                    [MUNGE_SNP_COL, MUNGE_N_COL, MUNGE_Z_COL, MUNGE_A1_COL]
+                ],
                 on=MUNGE_SNP_COL,
                 how="inner",
                 sort=False,
@@ -433,8 +439,8 @@ def run_ldsc(
     # Raw-slope jackknife covariance -> observed-scale h2/cov sampling cov.
     denom = np.outer(
         n_vec * (np.sqrt(n_blocks) / m_total), n_vec * (np.sqrt(n_blocks) / m_total)
-    ) #Note: this denominator combines two re-scaling. One prescribed by Jackknife, and one to convert
-      # raw regression slope to heritability/ covariance units
+    )  # Note: this denominator combines two re-scaling. One prescribed by Jackknife, and one to convert
+    # raw regression slope to heritability/ covariance units
     v_out = np.cov(v_hold, rowvar=False) / denom
 
     # Liability scaling of S and V.
