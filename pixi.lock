@@ -270,7 +270,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggplot2-4.0.3-r45h785f33e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-ggrepel-0.9.8-r45h3697838_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggridges-0.5.7-r45hc72bb7e_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-4.1_10-r45ha36cffa_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-5.0-r45ha36cffa_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-globals-0.19.1-r45hc72bb7e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-glue-1.8.1-r45h54b55ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-gmp-0.7_5.1-r45h3697838_0.conda
@@ -2006,7 +2006,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 21773c0ef69b94620b9a9058745d898279e995fff75a3a172d99833de759e7b0
+  sha256: 03bfabdc7961e0ab6da5b5c15cfdc0e7ec44748224d2af1781ecfd7132cee055
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -7333,9 +7333,9 @@ packages:
   purls: []
   size: 2158732
   timestamp: 1757517320767
-- conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-4.1_10-r45ha36cffa_1.conda
-  sha256: 4971136fbcec60676d1671d513e88dffe495ff473868afd65611ad52c30f2dbf
-  md5: 3b87325916cb2f097eae73f531ff0ec1
+- conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-5.0-r45ha36cffa_0.conda
+  sha256: 27964f30dcfcf327bbbd6ac2d3c69a671a1df8bb3805181bcbb2cb409f59801e
+  md5: d8dd931172a54345283f7715b1b0a8f5
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=14
@@ -7352,8 +7352,8 @@ packages:
   license: GPL-2.0-only
   license_family: GPL2
   purls: []
-  size: 1981308
-  timestamp: 1757514921805
+  size: 2428354
+  timestamp: 1778057485651
 - conda: https://conda.anaconda.org/conda-forge/noarch/r-globals-0.19.1-r45hc72bb7e_0.conda
   sha256: 05683862038020e679b6b1e30cebf4244416a7ffd73b7247f046b6155a351a05
   md5: 5bb935fc63812c4978f0ac443b8b3420
