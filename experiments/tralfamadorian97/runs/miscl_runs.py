@@ -1,18 +1,20 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.height.yengo_2022.analysis.yengo_standard_analysis import YENGO_HEIGHT_STANDARD_ANALYSIS
-from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ldl import CT_LDSC_LDL
-from mecfs_bio.assets.gwas.me_cfs.astra_zenica_phewas_gene_level.raw.get_mecfs_az_phewas import MECFS_AZ_PHEWAS
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC, \
-    DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot import DECODE_ME_MAGMA_GENE_PLOT
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_magma_gene_plot_with_window import \
-    DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW
-from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies import \
-    CFS_CT_LDSC_ASSET_GENERATOR
-from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_ldsc.ct_ldsc_mecfs_studies_plot import \
-    CT_LDSC_CFS_CORR_PLOT
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_curated_gene_set_analysis import \
+    DECODE_ME_CURATED_GENE_SET_ANALYSIS
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_hba_magma_analysis import DECODE_ME_HBA_MAGMA_TASKS
+from mecfs_bio.assets.gwas.multi_trait.genomic_sem.mecf_pain_common_factor import MECFS_PAIN_COMMON_FACTOR
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import \
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS
+from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_gene_sets import \
+    BENTHAM_2015_GENE_SET_ANALYSIS, BENTHAM_2015_GENE_SET_ANALYSIS_FROM_GENE_ANALYSIS
+from mecfs_bio.assets.reference_data.gene_set_data.for_magma.from_gsea_msigdb.processed.full_msigdb_parquet_from_sqlite import MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE
+from mecfs_bio.assets.reference_data.genomic_sem_reference.genomes_1k import GENOMES1K_REFERENCE_FOR_GENOMIC_SEM
+
+from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix import \
+    CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX
+from mecfs_bio.assets.reference_data.magma_specificity_matrices.processed.curated_potential_mecfs_gene_sets_specificity_matrix_reduced import \
+    CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
+from mecfs_bio.assets.reference_data.genomic_sem_reference.hapmap3_snpist import HAPMAP3_SNPLIST_FOR_GENOMIC_SEM
 from mecfs_bio.build_system.scheduler.topological_scheduler import TopologicalSchedulerSettings
 
 
@@ -36,19 +38,13 @@ def run_miscl_analysis():
         # JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.gene_set_analysis_tasks.terminal_tasks()+
 
         # DECODE_ME_CURATED_GENE_SET_ANALYSIS.terminal_tasks()+
-        # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
-        # CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
-        # CT_LDSC_LDL.terminal_tasks()+
-        JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks.terminal_tasks()+
         [
-            # DECODE_ME_MAGMA_GENE_PLOT,
-            # DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
-            # YENGO_HEIGHT_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task
-            # MECFS_AZ_PHEWAS
-            # CT_LDSC_CFS_CORR_PLOT
-            # MILLION_VETERANS_CFS_RAW,
-            # DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC
-            # DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD
+            # MECFS_PAIN_COMMON_FACTOR
+
+            DECODE_ME_HBA_MAGMA_TASKS.magma_hba_multiple_testing_task
+
+            # GENOMES1K_REFERENCE_FOR_GENOMIC_SEM
+            # HAPMAP3_SNPLIST_FOR_GENOMIC_SEM
             # CURATED_POTENTIAL_MECFS_GENE_SETS_SPECIFICITY_MATRIX_REDUCED
             # MSIGDB_GENE_SETS_PARQUET_FROM_SQLLITE,
             # MSIGDB_SQLLITE_EXTRACTED
@@ -71,7 +67,6 @@ def run_miscl_analysis():
 
         incremental_save=True,
         must_rebuild_transitive=[
-            # CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task
         ],
         settings=TopologicalSchedulerSettings(
             print_progress=False
