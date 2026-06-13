@@ -106,21 +106,14 @@ def test_uses_simple_directory_meta_when_passed():
     assert task.asset_id == "subtraction_dir_py"
 
 
-@pytest.mark.parametrize(
-    "method, expected",
-    [
-        (OLS, (True, False, False)),
-        (LOGISTIC, (False, True, False)),
-        (LINEAR_PROB, (False, False, True)),
-    ],
-)
-def test_sumstats_trait_flag_mapping(method, expected):
-    """gwas_method maps onto exactly one of (ols, se_logit, linprob)."""
+@pytest.mark.parametrize("method", [OLS, LOGISTIC, LINEAR_PROB])
+def test_sumstats_trait_carries_method(method):
+    """sumstats_trait passes the source's GWAS method through unchanged."""
     src = _make_gwas_source("t_data", "t", gwas_method=method)
     df = pl.DataFrame({"SNP": ["rs1"], "P": [0.5], "effect": [0.1]})
     trait = sumstats_trait(src, df, n=10000.0)
 
-    assert (trait.ols, trait.se_logit, trait.linprob) == expected
+    assert trait.gwas_method == method
     assert trait.name == "t"
     assert trait.n == 10000.0
 

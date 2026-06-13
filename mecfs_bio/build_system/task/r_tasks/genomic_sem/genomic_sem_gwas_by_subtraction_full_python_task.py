@@ -50,10 +50,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     LDSC_S_FILENAME,
     LDSC_S_STAND_FILENAME,
     LDSC_V_FILENAME,
-    LINEAR_PROB,
-    LOGISTIC,
     MUNGED_SUBDIR,
-    OLS,
     SUBTRACTION_F_FILENAME,
     SUBTRACTION_R_FILENAME,
     GenomicSEMGWASSumstatsSource,
@@ -254,15 +251,12 @@ class _PythonGWASInputs:
 def sumstats_trait(
     gwas_src: GenomicSEMGWASSumstatsSource, df: pl.DataFrame, n: float
 ) -> SumstatsTrait:
-    """Map a source's GWAS method onto the SumstatsTrait standardization flag."""
-    method = gwas_src.gwas_method
+    """Build the SumstatsTrait for a source, carrying through its GWAS method."""
     return SumstatsTrait(
         df=df,
         name=gwas_src.alias,
         n=n,
-        ols=method == OLS,
-        se_logit=method == LOGISTIC,
-        linprob=method == LINEAR_PROB,
+        gwas_method=gwas_src.gwas_method,
     )
 
 

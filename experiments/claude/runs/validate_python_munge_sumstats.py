@@ -21,6 +21,9 @@ from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.assets.gwas.multi_trait.genomic_sem.mecf_pain_common_factor import (
     MECFS_PAIN_COMMON_FACTOR,
 )
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    GWASMethod,
+)
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_munge import (
     munge_sumstats,
 )
@@ -83,7 +86,7 @@ def main() -> None:
     sample_sizes: list[float] = []
     sample_prevs: list[float] = []
     pop_prevs: list[float] = []
-    methods: list[str] = []
+    methods: list[GWASMethod] = []
     for g in gwas_sources:
         src = g.source
         path = write_munge_input(source=src, fetch=fetch, tmp_dir=tmp_dir)
@@ -166,9 +169,7 @@ def main() -> None:
             df=pl.read_csv(path, separator="\t"),
             name=name,
             n=n,
-            ols=_METHOD_TO_FLAGS[m][0],
-            se_logit=_METHOD_TO_FLAGS[m][1],
-            linprob=_METHOD_TO_FLAGS[m][2],
+            gwas_method=m,
         )
         for path, name, n, m in zip(input_files, trait_names, sample_sizes, methods)
     ]

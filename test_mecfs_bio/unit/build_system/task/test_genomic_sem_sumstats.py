@@ -12,6 +12,10 @@ import numpy as np
 import polars as pl
 import pytest
 
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    LOGISTIC,
+    OLS,
+)
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_sumstats import (
     SumstatsTrait,
     run_sumstats,
@@ -153,8 +157,8 @@ def test_matches_genomic_sem_sumstats(tmp_path):
 
     py_out = run_sumstats(
         [
-            SumstatsTrait(df=t0, name="T0", n=80000.0, se_logit=True),
-            SumstatsTrait(df=t1, name="T1", n=120000.0, ols=True),
+            SumstatsTrait(df=t0, name="T0", n=80000.0, gwas_method=LOGISTIC),
+            SumstatsTrait(df=t1, name="T1", n=120000.0, gwas_method=OLS),
         ],
         ref,
         maf_filter=0.01,

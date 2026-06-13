@@ -22,13 +22,15 @@ Port of ``GenomicSEM:::.sumstats_main`` per trait, in order:
    GenomicSEM does.
 8. Drop effect == 0.
 9. Z = sign(effect) * Phi^{-1}(1 - P/2); for P < 1e-307, sign(effect)*sqrt(-2 ln P).
-10. Method-specific rescaling of effect / SE (OLS, linprob, se.logit, default).
+10. Method-specific rescaling of effect / SE (OLS, linprob, se.logit).
 11. Flip effect to the reference A1 allele; drop allele mismatches.
 12. INFO filter when present.
 13. Emit (SNP, beta, se) under the method's transform.
 
-Exactly one of OLS / se_logit / linprob is typically set; if none, the
-"default" OR-with-OR-SE transform is used (matching R).
+The trait's ``gwas_method`` selects the transform; it must be one of OLS /
+LOGISTIC (se.logit) / LINEAR_PROB. GenomicSEM's no-flag "default" OR-with-
+OR-SE transform is intentionally not supported here (this pipeline never
+feeds raw odds ratios -- see the odds-ratio guard).
 """
 
 from __future__ import annotations
@@ -42,6 +44,8 @@ from attrs import frozen
 from scipy.stats import norm
 
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    LINEAR_PROB,
+    LOGISTIC,
     MUNGE_A1_COL,
     MUNGE_A2_COL,
     MUNGE_EFFECT_COL,
@@ -52,6 +56,8 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     MUNGE_SE_COL,
     MUNGE_SNP_COL,
     MUNGE_Z_COL,
+    OLS,
+    GWASMethod,
 )
 
 _ACGT = ["A", "C", "G", "T"]
@@ -81,9 +87,8 @@ class SumstatsTrait:
     df: pl.DataFrame  # canonical cols: SNP, A1, A2, effect, SE, P, N, MAF?, INFO?
     name: str
     n: float | None  # provided sample size (total for OLS, sum-Neff for binary)
-    ols: bool = False
-    se_logit: bool = False
-    linprob: bool = False
+    # Regression that produced the betas; selects the standardisation transform.
+    gwas_method: GWASMethod
 
 
 def _restrict_to_acgt(col: str) -> pl.Expr:
@@ -202,13 +207,13 @@ def _standardize_trait(
     merged = merged.with_columns(pl.Series(MUNGE_Z_COL, z))
 
     # Method-specific rescaling of effect (and SE for linprob).
-    if trait.ols:
+    if trait.gwas_method == OLS:
         merged = merged.with_columns(
             (
                 pl.col(MUNGE_Z_COL) / (pl.col(MUNGE_N_COL) * pl.col(_VARSNP_COL)).sqrt()
             ).alias(MUNGE_EFFECT_COL)
         )
-    elif trait.linprob:
+    elif trait.gwas_method == LINEAR_PROB:
         merged = merged.with_columns(
             (
                 pl.col(MUNGE_Z_COL)
@@ -244,20 +249,20 @@ def _standardize_trait(
 
     # Output transform.
     pi_term = (math.pi**2) / 3.0
-    if trait.ols:
+    if trait.gwas_method == OLS:
         out = merged.select(
             pl.col(MUNGE_SNP_COL),
             pl.col(MUNGE_EFFECT_COL).alias(_BETA_OUT_COL),
             (pl.col(MUNGE_EFFECT_COL) / pl.col(MUNGE_Z_COL)).abs().alias(_SE_OUT_COL),
         )
-    elif trait.linprob:
+    elif trait.gwas_method == LINEAR_PROB:
         den = (pl.col(MUNGE_EFFECT_COL) ** 2 * pl.col(_VARSNP_COL) + pi_term).sqrt()
         out = merged.select(
             pl.col(MUNGE_SNP_COL),
             (pl.col(MUNGE_EFFECT_COL) / den).alias(_BETA_OUT_COL),
             (pl.col(MUNGE_SE_COL) / den).alias(_SE_OUT_COL),
         ).filter((pl.col(_BETA_OUT_COL) != 0) & (pl.col(_SE_OUT_COL) != 0))
-    elif trait.se_logit:
+    elif trait.gwas_method == LOGISTIC:
         den = (pl.col(MUNGE_EFFECT_COL) ** 2 * pl.col(_VARSNP_COL) + pi_term).sqrt()
         out = merged.select(
             pl.col(MUNGE_SNP_COL),
@@ -265,14 +270,7 @@ def _standardize_trait(
             (pl.col(MUNGE_SE_COL) / den).alias(_SE_OUT_COL),
         )
     else:
-        den = (pl.col(MUNGE_EFFECT_COL) ** 2 * pl.col(_VARSNP_COL) + pi_term).sqrt()
-        out = merged.select(
-            pl.col(MUNGE_SNP_COL),
-            (pl.col(MUNGE_EFFECT_COL) / den).alias(_BETA_OUT_COL),
-            (pl.col(MUNGE_SE_COL) / pl.col(MUNGE_EFFECT_COL).exp() / den).alias(
-                _SE_OUT_COL
-            ),
-        )
+        raise AssertionError(f"unsupported gwas_method: {trait.gwas_method!r}")
     # R's na.omit drops rows with NA *or* NaN. polars drop_nulls keeps NaN, so
     # filter both: e.g. an OLS SNP with P == 1 gives Z == 0 -> effect == 0 ->
     # se == |0/0| == NaN, which R discards.
