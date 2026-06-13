@@ -17,6 +17,7 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
     DataFrameReadSpec,
     DataFrameTextFormat,
 )
@@ -42,6 +43,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     add_sample_size_if_missing,
+    build_munge_input_df,
     get_prevs,
     get_sample_size,
     write_munge_input,
@@ -276,6 +278,41 @@ def test_write_munge_input_omits_maf_when_freq_missing(tmp_path: Path):
     output_path = write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
     written = pl.read_csv(output_path, separator="\t")
     assert MUNGE_MAF_COL not in written.columns
+
+
+def test_build_munge_input_df_casts_categorical_alleles_to_string(tmp_path: Path):
+    """
+    Parquet sources deliver SNP/allele columns as Categorical (dictionary-
+    encoded), which breaks the `.str` ops and SNP joins in munge/sumstats.
+    build_munge_input_df must normalise SNP/A1/A2 to String regardless.
+    """
+    df = _make_dummy_sumstats(n_rows=4).with_columns(
+        pl.col(GWASLAB_RSID_COL).cast(pl.Categorical),
+        pl.col(GWASLAB_EFFECT_ALLELE_COL).cast(pl.Categorical),
+        pl.col(GWASLAB_NON_EFFECT_ALLELE_COL).cast(pl.Categorical),
+    )
+    source_path = tmp_path / "source.parquet"
+    df.write_parquet(source_path)
+
+    task = FakeTask(
+        SimpleFileMeta(
+            AssetId("trait_cat"),
+            read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+        ),
+    )
+    source = GenomicSEMSumstatsSource(
+        task=task,
+        alias="trait_cat",
+        sample_info=QuantPhenotype(total_sample_size=10000),
+    )
+
+    def fetch(asset_id: AssetId) -> Asset:
+        return FileAsset(source_path)
+
+    out = build_munge_input_df(source, fetch)
+    assert out.schema[MUNGE_SNP_COL] == pl.String
+    assert out.schema[MUNGE_A1_COL] == pl.String
+    assert out.schema[MUNGE_A2_COL] == pl.String
 
 
 def test_write_munge_input_raises_when_required_column_missing(tmp_path: Path):

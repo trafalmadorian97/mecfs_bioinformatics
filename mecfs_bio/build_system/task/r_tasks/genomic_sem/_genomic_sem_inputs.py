@@ -118,10 +118,13 @@ def build_munge_input_df(
     missing = [c for c in required if c not in df.columns]
     assert not missing, f"Source '{source.alias}' is missing required columns {missing}"
 
+    # Cast the SNP / allele columns to String. Parquet sources can sometimes deliver them as
+    # Categorical (dictionary-encoded), which breaks the `.str` operations and
+    # SNP joins in munge/sumstats; normalising here keeps those ports simple.
     select_exprs: list[pl.Expr] = [
-        pl.col(GWASLAB_RSID_COL).alias(MUNGE_SNP_COL),
-        pl.col(GWASLAB_EFFECT_ALLELE_COL).alias(MUNGE_A1_COL),
-        pl.col(GWASLAB_NON_EFFECT_ALLELE_COL).alias(MUNGE_A2_COL),
+        pl.col(GWASLAB_RSID_COL).cast(pl.String).alias(MUNGE_SNP_COL),
+        pl.col(GWASLAB_EFFECT_ALLELE_COL).cast(pl.String).alias(MUNGE_A1_COL),
+        pl.col(GWASLAB_NON_EFFECT_ALLELE_COL).cast(pl.String).alias(MUNGE_A2_COL),
         pl.col(GWASLAB_BETA_COL).alias(MUNGE_EFFECT_COL),
         pl.col(GWASLAB_SE_COL).alias(MUNGE_SE_COL),
         pl.col(GWASLAB_P_COL).alias(MUNGE_P_COL),

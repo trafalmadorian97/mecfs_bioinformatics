@@ -177,7 +177,7 @@ def _regress_jackknife(
     )  # This amounts to computing X^TX from the normal equations through block matrix multiplication
     xtx = block_xtx.sum(
         axis=0
-    )  # This amounts to computing X^TY from the normal equations through block marix multiplication
+    )  # This amounts to computing X^TY from the normal equations through block matrix multiplication
     reg = np.linalg.solve(xtx, xty)
 
     pseudo = np.empty((n_blocks, 2))

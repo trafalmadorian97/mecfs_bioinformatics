@@ -216,6 +216,7 @@ def _standardize_trait(
 
     # Method-specific rescaling of effect (and SE for linprob).
     if trait.gwas_method == OLS:
+        # See notes on Sampling noise and LDSC
         merged = merged.with_columns(
             (
                 pl.col(MUNGE_Z_COL) / (pl.col(MUNGE_N_COL) * pl.col(_VARSNP_COL)).sqrt()
@@ -277,6 +278,19 @@ def _standardize_trait(
             (pl.col(MUNGE_EFFECT_COL) / den).alias(_BETA_OUT_COL),
             (pl.col(MUNGE_SE_COL) / den).alias(_SE_OUT_COL),
         )
+
+        # Notes on this branch:
+
+        # den: the standard deviation of the latent liability random variable
+        # This is because the standard logistic regression model can be written as modeling a
+        # latent variable L with
+        # L = \beta * g + epsilon
+        # Where epsilon has logistic distribution
+        # epsilon thus has variance pi**2/3
+
+        # We scale beta by den so that beta is measures effect of the SNP on standardized
+        # (variance=1) liability random variable
+        # We scale se by den o that it is o the same scale as beta.
     else:
         raise AssertionError(f"unsupported gwas_method: {trait.gwas_method!r}")
     # R's na.omit drops rows with NA *or* NaN. polars drop_nulls keeps NaN, so
