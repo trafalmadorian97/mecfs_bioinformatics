@@ -35,6 +35,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     GWAS_RESULTS_SUBDIR,
     SUBTRACTION_F_FILENAME,
+    SUBTRACTION_FAIL_COL,
     SUBTRACTION_R_FILENAME,
     GenomicSEMConfig,
     GenomicSEMGWASRunConfig,
@@ -133,8 +134,10 @@ class GenomicSEMGWASBySubtractionPythonTask(Task):
             frames.r_df.to_parquet(out_dir / SUBTRACTION_R_FILENAME, index=False)
             logger.debug(
                 f"Wrote subtraction results: "
-                f"F ({len(frames.f_df)} rows, {int(frames.f_df['fail'].sum())} fails), "
-                f"R ({len(frames.r_df)} rows, {int(frames.r_df['fail'].sum())} fails)"
+                f"F ({len(frames.f_df)} rows, "
+                f"{int(frames.f_df[SUBTRACTION_FAIL_COL].sum())} fails), "
+                f"R ({len(frames.r_df)} rows, "
+                f"{int(frames.r_df[SUBTRACTION_FAIL_COL].sum())} fails)"
             )
 
         gc.collect()
