@@ -1,6 +1,6 @@
 # UKBB PPP
 
-The UK Biobank Pharma Proteomics Project (PPP)[@sun2023plasma] is an effort to characterize the plasma proteomes of a sample of UK Biobank participants.  The PPP was funded and organized by a consortium consisting of the research arms of major pharmaceutical companies.  The aim was to produce datasets suitable for drug-discovery research.
+The UK Biobank Pharma Proteomics Project (PPP)[@sun2023plasma] is an effort to characterize the plasma proteomes of a sample of UK Biobank participants.  The PPP was funded and organized by a consortium of major pharmaceutical companies.  The aim was to produce datasets suitable for drug-discovery research.
 
 ## Motivation
 
@@ -14,7 +14,7 @@ While access to individual-level PPP data requires UKBB accreditation, there are
 
 A plasma pQTL for a protein is a genetic variation that has likely-causal association with variations in plasma levels of that protein. One can find such pQTLs by running a GWAS with the plasma level of the target protein as the phenotype, then fine-mapping the results.   The original Sun et al. paper[@sun2023plasma] provides pQTLs for 2525 different proteins (see Supplementary Tables 9 and 10).  These pQTLs are divided into cis-pQTLs (within 1Mb of the gene encoding the protein they affect), and trans-pQTLs.  
 
-pQTLs can be used in  [Mendelian randomization](../Bioinformatics_Concepts/Mendelian_Randomization.md) (MR). In pQTL-based MR, the pQTLs for a protein are instruments, the level of the protein is the exposure, and a phenotype is the outcome.  The goal is causal inference about the effect of the protein on the phenotype.  In a pQTL MR study, one must decide whether to exclusively use cis-pQTLs, or to use both trans- and cis- pQTLs.  On the one hand, using only cis-pQTLs reduces the risk of violations of the MR assumptions due to pleiotropy, since the pathway from the genetic variant to the protein level is relatively straightforward.  On the other hand, for certain proteins, inclusion of trans-pQTL can increase statistical power.
+pQTLs can be used in  [Mendelian randomization](../Bioinformatics_Concepts/Mendelian_Randomization.md) (MR). In pQTL-based MR, the pQTLs for a protein are instruments, the level of the protein is the exposure, and a phenotype is the outcome.  The goal is causal inference about the effect of the protein on the phenotype.  In a pQTL MR study, one must decide whether to exclusively use cis-pQTLs, or to use both trans- and cis- pQTLs.  On the one hand, using only cis-pQTLs reduces the risk of violations of the MR assumptions due to pleiotropy, since the pathway from a cis-pQTL to the protein level is relatively straightforward.  On the other hand, for certain proteins, inclusion of trans-pQTLs can increase statistical power.
 
 
 The figure below from Donoghue et al.[@donoghue2025integration] shows the proportion of variance in levels of asthma-relevant proteins explained by cis vs trans pQTL.  For certain proteins, it is necessary to use trans pQTLs to explain an adequate proportion of the variance.
