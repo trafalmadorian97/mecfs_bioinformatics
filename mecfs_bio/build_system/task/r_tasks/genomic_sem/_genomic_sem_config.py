@@ -57,6 +57,19 @@ COMMON_FACTOR_GWAS_FILENAME = "common_factor.parquet"
 SUBTRACTION_F_FILENAME = "common_factor.parquet"  # F: factor shared by both traits
 SUBTRACTION_R_FILENAME = "remainder_factor.parquet"  # R: residual unique to T1
 
+# --- Columns of the per-factor subtraction result tables (make_result_df).
+#     SNP/CHR/BP/MAF/A1/A2 reuse the munge/LDSC column constants; the rest are
+#     the subtraction-specific estimate columns. ---
+SUBTRACTION_LHS_COL = "lhs"  # left-hand side of the model term (factor name)
+SUBTRACTION_OP_COL = "op"  # model operator ("~")
+SUBTRACTION_RHS_COL = "rhs"  # right-hand side of the model term ("SNP")
+SUBTRACTION_EST_COL = "est"  # per-SNP factor effect estimate
+SUBTRACTION_SE_COL = "se_c"  # sandwich standard error
+SUBTRACTION_Z_COL = "Z_Estimate"
+SUBTRACTION_P_COL = "Pval_Estimate"
+SUBTRACTION_N_EFF_COL = "N_eff"
+SUBTRACTION_FAIL_COL = "fail"
+
 GSEstmationType = Literal["DWLS", "ML"]
 
 # How the source GWAS was estimated. Controls the per-trait flag (one of

@@ -10,6 +10,28 @@ import numpy as np
 import pandas as pd
 from attrs import frozen
 
+from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
+    LDSC_BP_COL,
+    LDSC_CHR_COL,
+    MUNGE_A1_COL,
+    MUNGE_A2_COL,
+    MUNGE_MAF_COL,
+    MUNGE_SNP_COL,
+    SUBTRACTION_EST_COL,
+    SUBTRACTION_FAIL_COL,
+    SUBTRACTION_LHS_COL,
+    SUBTRACTION_N_EFF_COL,
+    SUBTRACTION_OP_COL,
+    SUBTRACTION_P_COL,
+    SUBTRACTION_RHS_COL,
+    SUBTRACTION_SE_COL,
+    SUBTRACTION_Z_COL,
+)
+
+# Model-term values placed in the lhs/op/rhs columns (the SEM "<factor> ~ SNP").
+_MODEL_OP = "~"
+_MODEL_RHS = "SNP"
+
 
 @frozen
 class SubtractionFrames:
@@ -32,20 +54,20 @@ def make_result_df(
     n = len(snps_df)
     return pd.DataFrame(
         {
-            "SNP": snps_df["SNP"].to_numpy(),
-            "CHR": snps_df.get("CHR", pd.Series([pd.NA] * n)).to_numpy(),
-            "BP": snps_df.get("BP", pd.Series([pd.NA] * n)).to_numpy(),
-            "MAF": snps_df["MAF"].to_numpy(),
-            "A1": snps_df.get("A1", pd.Series([""] * n)).to_numpy(),
-            "A2": snps_df.get("A2", pd.Series([""] * n)).to_numpy(),
-            "lhs": [lhs] * n,
-            "op": ["~"] * n,
-            "rhs": ["SNP"] * n,
-            "est": est,
-            "se_c": se_c,
-            "Z_Estimate": z,
-            "Pval_Estimate": p,
-            "N_eff": n_eff,
-            "fail": fail,
+            MUNGE_SNP_COL: snps_df[MUNGE_SNP_COL].to_numpy(),
+            LDSC_CHR_COL: snps_df.get(LDSC_CHR_COL, pd.Series([pd.NA] * n)).to_numpy(),
+            LDSC_BP_COL: snps_df.get(LDSC_BP_COL, pd.Series([pd.NA] * n)).to_numpy(),
+            MUNGE_MAF_COL: snps_df[MUNGE_MAF_COL].to_numpy(),
+            MUNGE_A1_COL: snps_df.get(MUNGE_A1_COL, pd.Series([""] * n)).to_numpy(),
+            MUNGE_A2_COL: snps_df.get(MUNGE_A2_COL, pd.Series([""] * n)).to_numpy(),
+            SUBTRACTION_LHS_COL: [lhs] * n,
+            SUBTRACTION_OP_COL: [_MODEL_OP] * n,
+            SUBTRACTION_RHS_COL: [_MODEL_RHS] * n,
+            SUBTRACTION_EST_COL: est,
+            SUBTRACTION_SE_COL: se_c,
+            SUBTRACTION_Z_COL: z,
+            SUBTRACTION_P_COL: p,
+            SUBTRACTION_N_EFF_COL: n_eff,
+            SUBTRACTION_FAIL_COL: fail,
         }
     )
