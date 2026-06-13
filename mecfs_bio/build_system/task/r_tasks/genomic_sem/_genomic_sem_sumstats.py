@@ -116,7 +116,12 @@ def _filter_reference(
 def _standardize_trait(
     trait: SumstatsTrait, ref: pl.DataFrame, *, info_filter: float
 ) -> pl.DataFrame:
-    """Return a DataFrame with columns SNP, beta, se for one trait."""
+    """Return a DataFrame with columns SNP, beta, se for one trait.
+
+    Note:
+        - In this method, the ref dataframe is typically 1000 genomes
+        - This is in contrast to munging, where the ref dataframe is hapmap3
+    """
     work = trait.df
     assert MUNGE_P_COL in work.columns and MUNGE_EFFECT_COL in work.columns
     # Override N with the provided scalar only when it is a real number (mirrors
@@ -196,10 +201,13 @@ def _standardize_trait(
     if merged.height == 0:
         return pl.DataFrame({MUNGE_SNP_COL: [], _BETA_OUT_COL: [], _SE_OUT_COL: []})
 
-    # Z with a high-magnitude approximation for extremely small P.
+    # Z, with a large-deviation approximation for extremely small P. Below
+    # _TINY_P, p/2 underflows in double precision and norm.isf saturates to inf,
+    # so use z ~ sqrt(-2 ln p) there instead. P is already finite and non-null
+    # here (filtered above), so no NaN/inf guard is needed.
     p = merged[MUNGE_P_COL].to_numpy().astype(float)
     effect = merged[MUNGE_EFFECT_COL].to_numpy().astype(float)
-    tiny = ~np.isfinite(p) | (p < _TINY_P)
+    tiny = p < _TINY_P
     z = np.empty_like(p)
     z[~tiny] = np.sign(effect[~tiny]) * norm.isf(p[~tiny] / 2.0)
     if tiny.any():
