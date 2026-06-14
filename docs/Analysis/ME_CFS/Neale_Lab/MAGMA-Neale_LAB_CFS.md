@@ -1,7 +1,7 @@
 # MAGMA
  
 
-I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to the Neale lab GWAS of self-reported CFS in the UK Biobank.  I used GTEx bulk RNAseq reference data[@gtex2020gtex].  Since this study's phenotype is based on a single-question self-report, it is less precise than the detailed phenotyping of DecodeME.  Nevertheless, it is still interesting and worthwhile to analyze this data.
+I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to the Neale lab GWAS of self-reported CFS in the UK Biobank.  I used GTEx bulk RNAseq reference data[@gtex2020gtex].  Since this study's phenotype derives from a single-question self-report, it is less precise than the detailed phenotyping of DecodeME.  Nevertheless, it is still interesting and worthwhile to analyze this data.
 
 
 Results are plotted below:

@@ -2,7 +2,7 @@
 
 I applied [Linkage Disequlibirum Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to the Neale Lab's GWAS of self-reported chronic fatigue syndrome (CFS) in the UK Biobank.
 
-Since the phenotype used in this study is based on a single-question self-report, it is less precise than the detailed phenotyping used in DecodeME.  This imprecision combined with the relatively small number of cases in this GWAS is expected to produce noisy summary statistics.  Nevertheless, it is still interesting and worthwhile to analyze these summary statistics.
+Since the Neale Lab's CFS phenotype is derived from a single-question self-report, it is less precise than DecodeME's detailed phenotyping.  This imprecision combined with the relatively small number of cases is expected to produce noisy summary statistics.  Nevertheless, it is still interesting and worthwhile to analyze them.
 
 
 The LDSC results are shown below:
