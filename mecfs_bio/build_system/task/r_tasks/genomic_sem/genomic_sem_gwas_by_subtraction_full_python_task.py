@@ -104,7 +104,7 @@ class GWASBySubtractionFullPythonConfig:
     them differently (munge INFO 0.9 vs sumstats 0.6).
 
 
-    Comment on munge versus sumstats step:
+    NOTE:Comment on munge versus sumstats step:
 
     1.  Munge step aligns to hapmap3, and produces summary statistics suitable for consumption by LDSC.
     2.  sumstats steps aligns to 1000genomes, and produces summary statistics suitable for consumption by GWAS-by-subtraction
@@ -139,7 +139,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     (F~SNP) and one for the remainder factor (R~SNP).
 
 
-    My notes on key steps:
+    NOTE:My notes on key steps:
     - Munge: standardize summary statistics and restrict to hapmap3.  Designed to produce summary statistics suitable for LDSC consumptions
     - LDSC: compute LDSC genetic covariance matrix, and its sampling covariance. Uses munged summary statistics.
     - sumstats: standardize summary statistics to a form suitable for consumption by GWAS-by-subtraction

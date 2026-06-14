@@ -279,7 +279,7 @@ def _standardize_trait(
             (pl.col(MUNGE_SE_COL) / den).alias(_SE_OUT_COL),
         )
 
-        # Notes on this branch:
+        # NOTES on this branch:
 
         # den: the standard deviation of the latent liability random variable
         # This is because the standard logistic regression model can be written as modeling a

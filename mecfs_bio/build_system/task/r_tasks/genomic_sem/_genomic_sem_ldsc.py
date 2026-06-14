@@ -156,7 +156,7 @@ def _regress_jackknife(
     (n_blocks, 2) of pseudo-values.
 
 
-
+    NOTE:
     reg: Regression coefficient alpha computed via normal equations (X^TX)\alpha = X^TY
     pseudo: Vector of Tukey Jackknife Pseudo-values.  Used to estimate variances and covariances.
     """
@@ -191,6 +191,8 @@ def _aggregate_h2(chi: np.ndarray, ld: np.ndarray, n: np.ndarray, m: float) -> f
     """Aggregate h2 estimate used to build heteroskedasticity weights, clamped
     to [0, 1] (R's tot.agg).
 
+
+    NOTE:
     Recall that the core LDSC equation is
 
     E chi^2 = h^2*l*N/m +1
@@ -211,6 +213,7 @@ def _het_oc_initial_weight(
 
 
 
+    NOTE:
     The purpose of this function is to compute regression weights for use in the LDSC regression.
 
     There are two reasons for computing these regression weights:

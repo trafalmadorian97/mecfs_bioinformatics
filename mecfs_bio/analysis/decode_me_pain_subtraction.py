@@ -5,7 +5,10 @@ from mecfs_bio.assets.gwas.multi_trait.genomic_sem.decode_me_minus_pain_subtract
 
 
 def run_initial_decode_me_minus_pain():
-    """ """
+    """
+    Function to use GenomicSEM to subtract Johnston et al.'s pain GWAS from DecodeME.
+
+    """
     DEFAULT_RUNNER.run(
         [DECODE_ME_MINUS_PAIN_SUBTRACTION],
         must_rebuild_transitive=[],
