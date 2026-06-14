@@ -13,6 +13,11 @@ from mecfs_bio.build_system.reference.schemas.chrom_rename_rules import (
 from mecfs_bio.build_system.reference.schemas.hg19_snp151_schema_valid_choms import (
     HG19_SNP151_VALID_CHROMS,
 )
+from mecfs_bio.build_system.sample_size_spec import (
+    SampleSizeSpec,
+    coerce_sample_size,
+    per_variant_column,
+)
 from mecfs_bio.build_system.task.assign_rsids_via_snp151_task import (
     AssignRSIDSToSNPsViaSNP151Task,
 )
@@ -93,16 +98,18 @@ class StandardMagmaTaskGenerator:
         magma_ld_ref_task: Task,
         tissue_expression_gene_set_task: Task,
         base_name: str,
-        sample_size: int,
+        sample_size: int | SampleSizeSpec,
         ld_ref_file_stem: str = "g1000_eur",
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
         number_of_bars: int = 20,
     ):
+        sample_size = coerce_sample_size(sample_size)
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
                 gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
                 asset_id=base_name + "_magma_snp_p_values",
+                sample_size_column=per_variant_column(sample_size),
             )
         )
         snp_loc_task = MagmaSNPFileTask.create_for_magma_snp_pos_file(
@@ -240,7 +247,7 @@ class MagmaTaskGeneratorFromRaw:
         magma_ld_ref_task: Task,
         tissue_expression_gene_set_task: Task,
         base_name: str,
-        sample_size: int,
+        sample_size: int | SampleSizeSpec,
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         post_pipe: DataProcessingPipe = IdentityPipe(),
         ld_ref_file_stem: str = "g1000_eur",
@@ -306,7 +313,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
         snp151_database_file_task: Task,
         tissue_expression_gene_set_task: Task,
         base_name: str,
-        sample_size: int,
+        sample_size: int | SampleSizeSpec,
         pipe: DataProcessingPipe = IdentityPipe(),
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         ld_ref_file_stem: str = "g1000_eur",

@@ -50,6 +50,11 @@ from mecfs_bio.assets.reference_data.h_magma_annotations.raw.midbrain_da_h_magma
 from mecfs_bio.assets.reference_data.magma_ld_reference.magma_eur_build_37_1k_genomes_ref_extracted import (
     MAGMA_EUR_BUILD_37_1K_GENOMES_EXTRACTED,
 )
+from mecfs_bio.build_system.sample_size_spec import (
+    SampleSizeSpec,
+    coerce_sample_size,
+    per_variant_column,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gene_manhattan_plot_task import (
     GeneManhattanPlotTask,
@@ -101,7 +106,7 @@ class HMagmaTasks:
 def generate_h_magma_tasks(
     base_name: str,
     gwas_parquet_with_rsids_task: Task,
-    sample_size: int,
+    sample_size: int | SampleSizeSpec,
     pipes: list[DataProcessingPipe] | None = None,
 ) -> HMagmaTasks:
     """Generate one MAGMA gene analysis task and one gene-level Manhattan plot
@@ -111,10 +116,12 @@ def generate_h_magma_tasks(
     column names plus an RSID column (the standard input to MAGMA in this
     repository).
     """
+    sample_size = coerce_sample_size(sample_size)
     p_value_task = MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
         gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
         asset_id=base_name + "_h_magma_snp_p_values",
         pipes=pipes,
+        sample_size_column=per_variant_column(sample_size),
     )
 
     per_annotation: list[HMagmaTasksForAnnotation] = []
