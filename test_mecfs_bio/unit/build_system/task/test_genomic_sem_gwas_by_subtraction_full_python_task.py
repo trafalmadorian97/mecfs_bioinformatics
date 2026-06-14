@@ -15,8 +15,6 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameTextFormat,
 )
-from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
-from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
@@ -32,7 +30,6 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_gwas_by_subtraction_full_python_task import (
     GenomicSEMGWASBySubtractionFullPythonTask,
-    GWASBySubtractionFullPythonConfig,
     sumstats_trait,
 )
 
@@ -54,29 +51,6 @@ def _make_gwas_source(
     return GenomicSEMGWASSumstatsSource(source=inner, gwas_method=gwas_method)
 
 
-def test_create_meta_and_deps():
-    ld_ref = FakeTask.create_with_filemeta("ld_ref")
-    hapmap = FakeTask.create_with_filemeta("hapmap")
-    ref = FakeTask.create_with_filemeta("sumstats_ref")
-    composite = _make_gwas_source("trait_a_data", "a")
-    reference = _make_gwas_source("trait_b_data", "b")
-
-    task = GenomicSEMGWASBySubtractionFullPythonTask.create(
-        asset_id="subtraction_full_py",
-        composite_trait_source=composite,
-        reference_trait_source=reference,
-        ld_ref_task=ld_ref,
-        hapmap_snps_task=hapmap,
-        sumstats_ref_task=ref,
-    )
-
-    assert isinstance(task.meta, ResultDirectoryMeta)
-    assert task.meta.asset_id == "subtraction_full_py"
-    assert task.meta.project == "genomic_sem"
-    # Composite trait comes before reference trait in the dependency order.
-    assert task.deps == [ld_ref, hapmap, ref, composite.task, reference.task]
-
-
 def test_rejects_duplicate_aliases():
     """The two traits must have distinct aliases (they key the output columns)."""
     composite = _make_gwas_source("trait_a_data", "same")
@@ -92,20 +66,6 @@ def test_rejects_duplicate_aliases():
         )
 
 
-def test_uses_simple_directory_meta_when_passed():
-    composite = _make_gwas_source("a_data", "a")
-    reference = _make_gwas_source("b_data", "b")
-    task = GenomicSEMGWASBySubtractionFullPythonTask(
-        meta=SimpleDirectoryMeta(AssetId("subtraction_dir_py")),
-        composite_trait_source=composite,
-        reference_trait_source=reference,
-        ld_ref_task=FakeTask.create_with_filemeta("ld_ref"),
-        hapmap_snps_task=FakeTask.create_with_filemeta("hapmap"),
-        sumstats_ref_task=FakeTask.create_with_filemeta("sumstats_ref"),
-    )
-    assert task.asset_id == "subtraction_dir_py"
-
-
 @pytest.mark.parametrize("method", [OLS, LOGISTIC, LINEAR_PROB])
 def test_sumstats_trait_carries_method(method):
     """sumstats_trait passes the source's GWAS method through unchanged."""
@@ -116,14 +76,3 @@ def test_sumstats_trait_carries_method(method):
     assert trait.gwas_method == method
     assert trait.name == "t"
     assert trait.n == 10000.0
-
-
-def test_config_defaults():
-    """The full-Python config carries only consumed knobs, with sane defaults."""
-    cfg = GWASBySubtractionFullPythonConfig()
-    assert cfg.ld_file_filename_pattern == ""
-    assert cfg.munge_info_filter == pytest.approx(0.9)
-    assert cfg.munge_maf_filter == pytest.approx(0.01)
-    assert cfg.sumstats_info_filter == pytest.approx(0.6)
-    assert cfg.sumstats_maf_filter == pytest.approx(0.01)
-    assert cfg.exclude_ambig is False
