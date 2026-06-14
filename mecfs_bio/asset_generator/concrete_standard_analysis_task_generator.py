@@ -176,7 +176,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     assuming that GWAS data already contains rsids.
 
     ``sample_size`` may be a scalar (the common case) or a
-    :class:`PerVariantSampleSize` when the GWAS already carries a per-variant N
+    `PerVariantSampleSize` when the GWAS already carries a per-variant N
     column (e.g. meta-analysis or GenomicSEM output); in the latter case MAGMA,
     S-LDSC, and LDSC heritability all read N from that column instead of a
     constant.

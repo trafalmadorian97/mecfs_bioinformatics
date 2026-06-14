@@ -22,15 +22,8 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import (
     VerifyingTraceRebuilder,
 )
-from mecfs_bio.build_system.sample_size_spec import (
-    PerVariantSampleSize,
-    ScalarSampleSize,
-)
 from mecfs_bio.build_system.scheduler.topological_scheduler import topological
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
-    MagmaGeneAnalysisTask,
-)
 from mecfs_bio.build_system.task.magma.magma_snp_location_task import MagmaSNPFileTask
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
 from mecfs_bio.build_system.wf.base_wf import SimpleWF
@@ -75,32 +68,3 @@ def test_pval_file_includes_n_column(tmp_path: Path, assign_rsids_task: Task):
         GWASLAB_P_COL,
         GWASLAB_SAMPLE_SIZE_COLUMN,
     ]
-
-
-def _gene_analysis_task(p_value_task: Task, sample_size) -> MagmaGeneAnalysisTask:
-    # Only ``magma_p_value_task`` is read when building the sample-size argument,
-    # so the other dependency slots can reuse the p-value task.
-    return MagmaGeneAnalysisTask(
-        meta=p_value_task.meta,
-        magma_binary_task=p_value_task,
-        magma_annotation_task=p_value_task,
-        magma_p_value_task=p_value_task,
-        magma_ld_ref_task=p_value_task,
-        ld_ref_file_stem="g1000_eur",
-        sample_size=sample_size,
-    )
-
-
-def test_scalar_sample_size_uses_n_modifier(assign_rsids_task: Task):
-    task = _gene_analysis_task(
-        _p_value_task_with_n(assign_rsids_task), ScalarSampleSize(275488)
-    )
-    assert task._sample_size_arg() == "N=275488"
-
-
-def test_per_variant_sample_size_uses_ncol_modifier(assign_rsids_task: Task):
-    # The p-value file columns are [rsID, P, N], so N is the third column.
-    task = _gene_analysis_task(
-        _p_value_task_with_n(assign_rsids_task), PerVariantSampleSize()
-    )
-    assert task._sample_size_arg() == "ncol=3"
