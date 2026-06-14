@@ -180,6 +180,7 @@ class GWASLabColumnSpecifiers:
     or_95u: str | None = None
     chi_sq: str | None = None
     mlog10p: str | None = None
+    maf: str | None = None
 
     def get_selection_pipe(self) -> SelectColPipe:
         fields = attrs.asdict(self)
@@ -227,6 +228,7 @@ def _get_sumstats(
             OR_95U=fmt.or_95u,
             chisq=fmt.chi_sq,
             mlog10p=fmt.mlog10p,
+            maf=fmt.maf,
         )
 
     return gl.Sumstats(
