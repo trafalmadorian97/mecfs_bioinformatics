@@ -70,8 +70,6 @@ SUBTRACTION_P_COL = "Pval_Estimate"
 SUBTRACTION_N_EFF_COL = "N_eff"
 SUBTRACTION_FAIL_COL = "fail"
 
-GSEstmationType = Literal["DWLS", "ML"]
-
 # How the source GWAS was estimated. Controls the per-trait flag (one of
 # se.logit / OLS / linprob) passed to GenomicSEM::sumstats.
 OLS: Final = "ols"
@@ -104,28 +102,6 @@ class GenomicSEMSumstatsSource:
 
 
 @frozen
-class GenomicSEMConfig:
-    """
-    Configuration for the basic GenomicSEM workflow (munge + ldsc + usermodel).
-    """
-
-    estimation: GSEstmationType = (
-        "DWLS"  # GenomicSEM::usermodel estimation: "DWLS" or "ML"
-    )
-    std_lv: bool = False  # If TRUE, latent variables are standardised
-    cfi_calc: bool = True  # Whether to compute CFI fit index
-    fix_resid: bool = True  # Whether to fix residual variances
-    info_filter: float = 0.9  # munge: minimum INFO score
-    maf_filter: float = 0.01  # munge: minimum MAF
-    # If non-empty, treated as a basename prefix on the LD reference files
-    # (e.g. "LDscore." matches files named "LDscore.<chr>.l2.ldscore.gz").
-    # GenomicSEM::ldsc hardcodes "<ld>/<chr>.l2.ldscore.gz", so when a prefix
-    # is set we build a symlinked view of the dir with the prefix stripped and
-    # pass that to ldsc.
-    ld_file_filename_pattern: str = ""
-
-
-@frozen
 class GenomicSEMGWASSumstatsSource:
     """
     A source trait for GenomicSEM GWAS-extension workflows.
@@ -148,28 +124,3 @@ class GenomicSEMGWASSumstatsSource:
     @property
     def asset_id(self) -> AssetId:
         return self.source.asset_id
-
-
-@frozen
-class GenomicSEMSumstatsConfig:
-    """Configuration for GenomicSEM::sumstats."""
-
-    info_filter: float = 0.6  # GenomicSEM default — lower than munge's 0.9
-    maf_filter: float = 0.01
-    keep_indel: bool = False
-    parallel: bool = False
-    cores: int | None = None
-    exclude_ambig: bool = False  # drop strand-ambiguous SNPs (R's `ambig=TRUE`)
-
-
-@frozen
-class GenomicSEMGWASRunConfig:
-    """Configuration shared by commonfactorGWAS and userGWAS."""
-
-    estimation: str = "DWLS"
-    parallel: bool = True
-    cores: int | None = None
-    gc_correction: str = "standard"  # "standard", "conserv", or "none"
-    toler: float | bool = False
-    snp_se: float | bool = False
-    smooth_check: bool = False

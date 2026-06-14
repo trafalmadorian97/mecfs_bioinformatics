@@ -1,25 +1,23 @@
 """
-rpy2-free input-preparation helpers shared across the GenomicSEM task family:
-reading/writing the munge-format inputs, deriving sample sizes and
-prevalences, resolving fetched asset paths, and validating sources.
+rpy2-free input-preparation helpers used by the full-Python GenomicSEM tasks:
+deriving sample sizes and prevalences, reading a fetched tabular asset, building
+the canonical munge-format DataFrame, and resolving the LD reference directory.
 
-These helpers contain no R calls, so both the R-backed tasks and the
-full-Python tasks can rely on them.
+R-only input helpers (the munge-TSV writer, single-file path resolution, source
+validation, sumstats method flags, lavaan-component sanitisation) live in
+``_genomic_sem_r_inputs``.
 """
 
 from __future__ import annotations
 
-import re
 import tempfile
-from collections.abc import Iterator, Sequence
+from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
 import polars as pl
-import structlog
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
-from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -29,8 +27,6 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
     QuantPhenotype,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
-    LINEAR_PROB,
-    LOGISTIC,
     MUNGE_A1_COL,
     MUNGE_A2_COL,
     MUNGE_EFFECT_COL,
@@ -39,8 +35,6 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     MUNGE_P_COL,
     MUNGE_SE_COL,
     MUNGE_SNP_COL,
-    OLS,
-    GenomicSEMGWASSumstatsSource,
     GenomicSEMSumstatsSource,
 )
 from mecfs_bio.constants.gwaslab_constants import (
@@ -53,8 +47,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
-
-logger = structlog.get_logger()
 
 
 def get_sample_size(source: GenomicSEMSumstatsSource) -> float:
@@ -145,23 +137,6 @@ def build_munge_input_df(
     return df.select(select_exprs)
 
 
-def write_munge_input(
-    source: GenomicSEMSumstatsSource, fetch: Fetch, tmp_dir: Path
-) -> Path:
-    """
-    Build the munge-format DataFrame for a source and write it as a TSV (the
-    on-disk form GenomicSEM::munge reads).
-    """
-    munge_df = build_munge_input_df(source, fetch)
-    output_path = tmp_dir / f"{source.alias}.sumstats.txt"
-    munge_df.write_csv(output_path, separator="\t")
-    logger.debug(
-        f"Wrote munge input for '{source.alias}' to {output_path} "
-        f"({len(munge_df)} variants)"
-    )
-    return output_path
-
-
 def add_sample_size_if_missing(
     df: pl.DataFrame, sample_info: PhenotypeInfo
 ) -> pl.DataFrame:
@@ -215,39 +190,3 @@ def resolve_ld_path(ld_ref_task: Task, fetch: Fetch) -> Path:
     # The basename-prefix in munge_config.ld_file_filename_pattern is applied
     # downstream via a symlink farm — do not concatenate it here.
     return asset.path.resolve()
-
-
-def resolve_file_path(task: Task, fetch: Fetch) -> Path:
-    asset = fetch(task.asset_id)
-    assert isinstance(asset, FileAsset)
-    return asset.path.resolve()
-
-
-def validate_sources(sources: Sequence[GenomicSEMGWASSumstatsSource]) -> None:
-    assert len(sources) >= 2, "GenomicSEM GWAS requires at least two traits"
-    aliases = [s.alias for s in sources]
-    assert len(set(aliases)) == len(aliases), (
-        f"Trait aliases must be unique. Got: {aliases}"
-    )
-
-
-def gwas_method_flags(
-    sources: Sequence[GenomicSEMGWASSumstatsSource],
-) -> tuple[list[bool], list[bool], list[bool]]:
-    """
-    GenomicSEM::sumstats expects a (se.logit, OLS, linprob) BoolVector triple.
-    Exactly one is TRUE per trait.
-    """
-    se_logit: list[bool] = []
-    ols: list[bool] = []
-    linprob: list[bool] = []
-    for s in sources:
-        se_logit.append(s.gwas_method == LOGISTIC)
-        ols.append(s.gwas_method == OLS)
-        linprob.append(s.gwas_method == LINEAR_PROB)
-    return se_logit, ols, linprob
-
-
-def sanitize_component_name(name: str) -> str:
-    """Map a lavaan sub-component (e.g. 'F1~SNP') to a filename stem ('F1_SNP')."""
-    return re.sub(r"[^A-Za-z0-9]+", "_", name).strip("_")

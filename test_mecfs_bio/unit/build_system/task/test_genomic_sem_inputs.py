@@ -1,7 +1,7 @@
 """
-Unit tests for the rpy2-free input helpers in ``_genomic_sem_inputs``: sample
-size / prevalence extraction and the gwaslab -> canonical-munge dataframe
-conversion (``build_munge_input_df`` / ``write_munge_input``).
+Unit tests for the rpy2-free input helpers in ``_genomic_sem_inputs`` used by
+the full-Python GenomicSEM path: sample size / prevalence extraction and the
+gwaslab -> canonical-munge dataframe conversion (``build_munge_input_df``).
 """
 
 from pathlib import Path
@@ -40,7 +40,6 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import 
     build_munge_input_df,
     get_prevs,
     get_sample_size,
-    write_munge_input,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -81,6 +80,18 @@ def _make_source(
         ),
     )
     return GenomicSEMSumstatsSource(task=task, alias=alias, sample_info=sample_info)
+
+
+def _csv_source(df: pl.DataFrame, tmp_path: Path, alias: str = "trait"):
+    """Write df as CSV and return (source, fetch) reading it back."""
+    source_path = tmp_path / f"{alias}.csv"
+    df.write_csv(source_path)
+    source = _make_source(alias, alias, QuantPhenotype(total_sample_size=10000))
+
+    def fetch(asset_id: AssetId) -> Asset:
+        return FileAsset(source_path)
+
+    return source, fetch
 
 
 def test_get_sample_size_quant():
@@ -141,37 +152,13 @@ def test_add_sample_size_if_missing_raises_when_missing_total():
         )
 
 
-def test_write_munge_input_renames_columns_and_writes_tsv(tmp_path: Path):
-    """
-    write_munge_input is the bridge between gwaslab format and the canonical
-    munge columns. Verify the file lands on disk with the right columns.
-    """
-    df = _make_dummy_sumstats(n_rows=4)
-    source_path = tmp_path / "source.csv"
-    df.write_csv(source_path)
+def test_build_munge_input_df_renames_to_canonical_columns(tmp_path: Path):
+    """gwaslab columns are mapped to the canonical munge names munge/sumstats use."""
+    source, fetch = _csv_source(_make_dummy_sumstats(n_rows=4), tmp_path)
 
-    task = FakeTask(
-        SimpleFileMeta(
-            AssetId("trait_a"),
-            read_spec=DataFrameReadSpec(DataFrameTextFormat(",")),
-        ),
-    )
-    source = GenomicSEMSumstatsSource(
-        task=task,
-        alias="trait_a",
-        sample_info=QuantPhenotype(total_sample_size=10000),
-    )
+    out = build_munge_input_df(source, fetch)
 
-    def fetch(asset_id: AssetId) -> Asset:
-        assert asset_id == "trait_a"
-        return FileAsset(source_path)
-
-    output_path = write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
-
-    assert output_path == tmp_path / "trait_a.sumstats.txt"
-    assert output_path.is_file()
-    written = pl.read_csv(output_path, separator="\t")
-    assert set(written.columns) == {
+    assert set(out.columns) == {
         MUNGE_SNP_COL,
         MUNGE_A1_COL,
         MUNGE_A2_COL,
@@ -181,38 +168,26 @@ def test_write_munge_input_renames_columns_and_writes_tsv(tmp_path: Path):
         MUNGE_N_COL,
         MUNGE_MAF_COL,
     }
-    assert len(written) == 4
-    assert written[MUNGE_SNP_COL].to_list() == [f"rs{i}" for i in range(4)]
-    assert (written[MUNGE_N_COL] == 10000).all()
+    assert len(out) == 4
+    assert out[MUNGE_SNP_COL].to_list() == [f"rs{i}" for i in range(4)]
+    assert (out[MUNGE_N_COL] == 10000).all()
 
 
-def test_write_munge_input_omits_maf_when_freq_missing(tmp_path: Path):
-    """
-    EAF is optional; if it's not in the source dataframe, MAF should be absent
-    from the munge input rather than filled with NaN.
-    """
+def test_build_munge_input_df_omits_maf_when_freq_missing(tmp_path: Path):
+    """EAF is optional; absent it, MAF is omitted rather than filled with NaN."""
     df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_EFFECT_ALLELE_FREQ_COL)
-    source_path = tmp_path / "source.csv"
-    df.write_csv(source_path)
+    source, fetch = _csv_source(df, tmp_path)
 
-    task = FakeTask(
-        SimpleFileMeta(
-            AssetId("trait_x"),
-            read_spec=DataFrameReadSpec(DataFrameTextFormat(",")),
-        ),
-    )
-    source = GenomicSEMSumstatsSource(
-        task=task,
-        alias="trait_x",
-        sample_info=QuantPhenotype(total_sample_size=10000),
-    )
+    out = build_munge_input_df(source, fetch)
+    assert MUNGE_MAF_COL not in out.columns
 
-    def fetch(asset_id: AssetId) -> Asset:
-        return FileAsset(source_path)
 
-    output_path = write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
-    written = pl.read_csv(output_path, separator="\t")
-    assert MUNGE_MAF_COL not in written.columns
+def test_build_munge_input_df_raises_when_required_column_missing(tmp_path: Path):
+    df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_BETA_COL)
+    source, fetch = _csv_source(df, tmp_path)
+
+    with pytest.raises(AssertionError):
+        build_munge_input_df(source, fetch)
 
 
 def test_build_munge_input_df_casts_categorical_alleles_to_string(tmp_path: Path):
@@ -248,27 +223,3 @@ def test_build_munge_input_df_casts_categorical_alleles_to_string(tmp_path: Path
     assert out.schema[MUNGE_SNP_COL] == pl.String
     assert out.schema[MUNGE_A1_COL] == pl.String
     assert out.schema[MUNGE_A2_COL] == pl.String
-
-
-def test_write_munge_input_raises_when_required_column_missing(tmp_path: Path):
-    df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_BETA_COL)
-    source_path = tmp_path / "source.csv"
-    df.write_csv(source_path)
-
-    task = FakeTask(
-        SimpleFileMeta(
-            AssetId("trait_x"),
-            read_spec=DataFrameReadSpec(DataFrameTextFormat(",")),
-        ),
-    )
-    source = GenomicSEMSumstatsSource(
-        task=task,
-        alias="trait_x",
-        sample_info=QuantPhenotype(total_sample_size=10000),
-    )
-
-    def fetch(asset_id: AssetId) -> Asset:
-        return FileAsset(source_path)
-
-    with pytest.raises(AssertionError):
-        write_munge_input(source=source, fetch=fetch, tmp_dir=tmp_path)
