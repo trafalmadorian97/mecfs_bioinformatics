@@ -34,6 +34,11 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.sample_size_spec import (
+    SampleSizeSpec,
+    ScalarSampleSize,
+    coerce_sample_size,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.combine_gene_lists_task import SrcGeneList
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
@@ -150,8 +155,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     base_name: str,
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
-    sample_size: int,
-    sample_size_for_sldsc: int | None = None,
+    sample_size: int | SampleSizeSpec,
+    sample_size_for_sldsc: int | SampleSizeSpec | None = None,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
@@ -168,8 +173,15 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
-    assuming that GWAS data already contains rsids
+    assuming that GWAS data already contains rsids.
+
+    ``sample_size`` may be a scalar (the common case) or a
+    `PerVariantSampleSize` when the GWAS already carries a per-variant N
+    column (e.g. meta-analysis or GenomicSEM output); in the latter case MAGMA,
+    S-LDSC, and LDSC heritability all read N from that column instead of a
+    constant.
     """
+    sample_size = coerce_sample_size(sample_size)
 
     labeled_lead_variant_task_group = generate_tasks_labeled_lead_variants(
         base_name=base_name,
@@ -187,16 +199,21 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         gget_settings=gget_settings,
     )
     sldsc_ss = (
-        sample_size_for_sldsc if sample_size_for_sldsc is not None else sample_size
+        coerce_sample_size(sample_size_for_sldsc)
+        if sample_size_for_sldsc is not None
+        else sample_size
     )
-    pre_sldsc_pipe = CompositePipe(
-        [
-            SetColToConstantPipe(
-                col_name=GWASLAB_SAMPLE_SIZE_COLUMN, constant=sldsc_ss
-            ),
-            pre_sldsc_pipe,
-        ]
-    )
+    if isinstance(sldsc_ss, ScalarSampleSize):
+        # Force a uniform N onto every variant. For a per-variant sample size the
+        # GWAS already carries an N column, which flows through to S-LDSC unchanged.
+        pre_sldsc_pipe = CompositePipe(
+            [
+                SetColToConstantPipe(
+                    col_name=GWASLAB_SAMPLE_SIZE_COLUMN, constant=sldsc_ss.n
+                ),
+                pre_sldsc_pipe,
+            ]
+        )
 
     sldsc_tasks = standard_sldsc_task_generator(
         sumstats_task=magma_tasks.sumstats_task,
@@ -237,7 +254,9 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             pipe=pre_sldsc_pipe,
             phenotype_info=phenotype_info_for_ldsc,
             build="19",
-            set_sample_size=sample_size,
+            set_sample_size=(
+                sample_size.n if isinstance(sample_size, ScalarSampleSize) else None
+            ),
             source_sumstats_task=magma_tasks.sumstats_task,
             ld_ref_task=THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
         )
@@ -323,8 +342,8 @@ def concrete_standard_analysis_generator_no_rsid(
     base_name: str,
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
-    sample_size: int,
-    sample_size_for_sldsc: int | None = None,
+    sample_size: int | SampleSizeSpec,
+    sample_size_for_sldsc: int | SampleSizeSpec | None = None,
     pre_pipe_after_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_pipe_before_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),

@@ -9,6 +9,7 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
@@ -16,10 +17,16 @@ from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
 )
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
+    DataFrameTextFormat,
     DataFrameWhiteSpaceSepTextFormat,
 )
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
+from mecfs_bio.build_system.sample_size_spec import (
+    SampleSizeSpec,
+    ScalarSampleSize,
+    coerce_sample_size,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.subproc.run_command import execute_command
@@ -39,7 +46,7 @@ class MagmaGeneAnalysisTask(Task):
     magma_p_value_task: Task
     magma_ld_ref_task: Task
     ld_ref_file_stem: str
-    sample_size: int
+    sample_size: SampleSizeSpec
     synonym_mode: SynonymMode = "drop-dup"
     duplicate_mode: DuplicateMode | None = "first"
 
@@ -96,7 +103,7 @@ class MagmaGeneAnalysisTask(Task):
             "--pval",
             str(p_value_path),
             f"duplicate={self.duplicate_mode}",
-            f"N={self.sample_size}",
+            self._sample_size_arg(),
             "--gene-annot",
             str(annotation_path),
             "--out",
@@ -107,6 +114,17 @@ class MagmaGeneAnalysisTask(Task):
 
         return DirectoryAsset(out_dir)
 
+    def _sample_size_arg(self) -> str:
+        """Build the MAGMA ``--pval`` sample-size modifier: a scalar ``N=`` or,
+        for a per-variant sample size, ``ncol=`` referencing the N column in the
+        (headerless) p-value file by its 1-based index."""
+        if isinstance(self.sample_size, ScalarSampleSize):
+            return f"N={self.sample_size.n}"
+        ncol_index = _resolve_pval_column_index(
+            self.p_value_meta, self.sample_size.column
+        )
+        return f"ncol={ncol_index}"
+
     @classmethod
     def create(
         cls,
@@ -116,7 +134,7 @@ class MagmaGeneAnalysisTask(Task):
         magma_binary_task: Task,
         magma_ld_ref_task: Task,
         ld_ref_file_stem: str,
-        sample_size: int,
+        sample_size: int | SampleSizeSpec,
     ):
         annotation_meta = magma_annotation_task.meta  # magma_p_value_task.meta
         assert isinstance(annotation_meta, FilteredGWASDataMeta)
@@ -132,7 +150,7 @@ class MagmaGeneAnalysisTask(Task):
             magma_binary_task=magma_binary_task,
             magma_ld_ref_task=magma_ld_ref_task,
             ld_ref_file_stem=ld_ref_file_stem,
-            sample_size=sample_size,
+            sample_size=coerce_sample_size(sample_size),
             meta=meta,
         )
 
@@ -145,7 +163,7 @@ class MagmaGeneAnalysisTask(Task):
         magma_binary_task: Task,
         magma_ld_ref_task: Task,
         ld_ref_file_stem: str,
-        sample_size: int,
+        sample_size: int | SampleSizeSpec,
         sub_dir_suffix: PurePath | None = None,
     ):
         """Create a MagmaGeneAnalysisTask that consumes a pre-built annotation file
@@ -172,9 +190,26 @@ class MagmaGeneAnalysisTask(Task):
             magma_binary_task=magma_binary_task,
             magma_ld_ref_task=magma_ld_ref_task,
             ld_ref_file_stem=ld_ref_file_stem,
-            sample_size=sample_size,
+            sample_size=coerce_sample_size(sample_size),
             meta=meta,
         )
+
+
+def _resolve_pval_column_index(p_value_meta: Meta, column: str) -> int:
+    """Return the 1-based index of ``column`` in the (headerless) MAGMA p-value
+    file, derived from the column layout declared in the file's own meta. MAGMA
+    references columns of a headerless file by index."""
+    assert isinstance(p_value_meta, FileMeta)
+    read_spec = p_value_meta.read_spec
+    assert isinstance(read_spec, DataFrameReadSpec)
+    fmt = read_spec.format
+    assert isinstance(fmt, DataFrameTextFormat)
+    assert fmt.column_names is not None
+    assert column in fmt.column_names, (
+        f"sample size column {column!r} not found in p-value file columns "
+        f"{fmt.column_names}"
+    )
+    return fmt.column_names.index(column) + 1
 
 
 def read_magma_gene_analysis_result(result_dir: Path) -> pd.DataFrame:
