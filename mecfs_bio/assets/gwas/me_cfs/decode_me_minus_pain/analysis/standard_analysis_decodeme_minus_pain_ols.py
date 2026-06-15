@@ -28,8 +28,6 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     SUBTRACTION_SE_COL,
 )
 
-# Same column layout as the logistic variant (the subtraction result schema is
-# identical); only the upstream standardisation differs.
 GENOMIC_SEM_COL_SPECIFIERS = GWASLabColumnSpecifiers(
     rsid=MUNGE_SNP_COL,
     chrom=LDSC_CHR_COL,
