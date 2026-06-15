@@ -9,12 +9,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.standard_analysi
 
 def run_decode_me_minus_pain_ols():
     """
-    Linear-scale (OLS) variant of GWAS-by-subtraction: DecodeME is treated as a
-    quantitative/OLS trait so the subtraction coefficient and the per-SNP betas
-    share a scale, making the remainder genuinely orthogonal to pain.
-
-    Builds the genetic-correlation aggregation comparing the OLS remainder factor
-    against DecodeME and multisite pain.
+    Analysis of the residual after Johnston's GWAS of multisite pan is subtracted from
+    DecodeME
     """
     DEFAULT_RUNNER.run(
         DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR.terminal_tasks()

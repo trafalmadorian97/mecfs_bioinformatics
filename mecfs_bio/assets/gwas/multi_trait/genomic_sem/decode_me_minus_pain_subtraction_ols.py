@@ -4,12 +4,7 @@ DecodeME is the composite trait (T1); Johnston pain is the reference trait (T2),
 a pure indicator of the common factor F. The remainder factor R is the
 ME/CFS-specific signal left after the pain-shared component is subtracted out.
 
-Both traits are standardised on a single linear scale and no liability
-conversion is applied -- this is the only coherent treatment (see
-`genomic_sem_gwas_by_subtraction_full_python_task` for why DecodeME being a
-case/control trait is *not* given binary/logistic special-casing: doing so would
-leave R non-orthogonal to pain). The `_ols` suffix is historical; it is now the
-standard subtraction.
+Both traits are standardised on a single linear scale.
 """
 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (

@@ -76,13 +76,14 @@ class GenomicSEMSumstatsSource:
     (see mecfs_bio.constants.gwaslab_constants).
 
     Every trait is standardised on a single linear (OLS-style) scale and no
-    liability conversion is applied, so the source carries only a sample size
-    (no case/control prevalences). See ``_genomic_sem_sumstats`` and
-    ``genomic_sem_gwas_by_subtraction_full_python_task`` for why the binary /
-    logistic special-casing was removed.
+    liability conversion is applied.
 
-    ``sample_size`` is the total GWAS sample size, used to standardise the
-    per-SNP effects. ``None`` means "take N from the source's own N column".
+    sample_size is the total GWAS sample size, used to standardise the
+    per-SNP effects.
+
+
+    NOTE: sample_size affects intermediate calculations, but (except in some special cases)
+    does not affect the final output.
     """
 
     task: Task

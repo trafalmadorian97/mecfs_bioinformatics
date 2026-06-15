@@ -1,11 +1,3 @@
-"""Genetic correlation of the OLS-variant remainder factor with DecodeME and
-multisite pain.
-
-Mirrors `residual_genetic_corr.py` but uses the linear-scale subtraction output
-(`..._ols`). If the scale-consistency fix works, rg(remainder, pain) should be
-~0 here, versus ~0.23 for the logistic variant.
-"""
-
 from mecfs_bio.asset_generator.genetic_correlation_asset_generator import (
     genetic_corr_by_ct_ldsc_asset_generator,
 )
