@@ -1,19 +1,24 @@
 """
 GWAS-by-subtraction with the *entire* pipeline in Python -- no rpy2/R.
 
-This is the full-Python sibling of `GenomicSEMGWASBySubtractionPythonTask`,
-which still calls R for munge/ldsc/sumstats and only runs the Cholesky kernel
-in numpy. Here every stage is Python:
+Every stage is Python:
 
     munge_sumstats   (polars)  -> per-trait .sumstats tables
     run_ldsc         (numpy)   -> S / V / I genetic covariance structure
     run_sumstats     (polars)  -> reference-aligned per-SNP betas/SEs
     fit_gwas_by_subtraction (numpy) -> per-SNP factor effects + delta-method SE
 
-Each port has been validated against GenomicSEM to machine precision on real
-data (see `_genomic_sem_ldsc`, `_genomic_sem_munge`, `_genomic_sem_sumstats`).
-The win over the R-backed task is runtime: R munge+sumstats took ~12 min
-combined on the user's laptop; the polars ports run in seconds.
+**This is intentionally NOT a faithful GenomicSEM port.** GenomicSEM has a
+conceptual flaw for binary composite traits: `sumstats(se.logit/linprob)`
+standardises per-SNP betas on the logistic-latent scale while `ldsc(prevalences)`
+puts the genetic-covariance matrix on the liability scale, and the per-SNP SEM
+combines the two without reconciling them -- so the subtraction coefficient
+c = S12/S22 is miscalibrated against the betas and the remainder factor is not
+orthogonal to the reference trait (measured rg ~ 0.23 instead of 0). To avoid
+that footgun this task treats *every* trait on one linear scale: run_sumstats
+standardises as beta = Z/sqrt(N*varSNP) and run_ldsc is called without
+prevalences (observed-scale S). There is no per-trait method flag and no binary/
+logistic special-casing.
 
 Convention: the two traits are named explicitly (composite_trait_source = T1,
 reference_trait_source = T2) to avoid ordering mistakes. Factor F is the genetic
@@ -22,8 +27,7 @@ the remainder unique to the composite trait T1, orthogonal to F. See
 `_gwas_by_subtraction_kernel` for the model.
 
 Output: two parquets under gwas_results/ -- one for the common factor (F~SNP)
-and one for the remainder factor (R~SNP) -- in the same column layout as the
-R-backed task, so downstream consumers are interchangeable.
+and one for the remainder factor (R~SNP).
 """
 
 import gc
@@ -54,11 +58,10 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import 
     SUBTRACTION_F_FILENAME,
     SUBTRACTION_FAIL_COL,
     SUBTRACTION_R_FILENAME,
-    GenomicSEMGWASSumstatsSource,
+    GenomicSEMSumstatsSource,
 )
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import (
     build_munge_input_df,
-    get_prevs,
     get_sample_size,
     ld_dir_with_genomic_sem_naming,
     read_dataframe_from_task,
@@ -148,8 +151,8 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     """
 
     meta: Meta
-    composite_trait_source: GenomicSEMGWASSumstatsSource
-    reference_trait_source: GenomicSEMGWASSumstatsSource
+    composite_trait_source: GenomicSEMSumstatsSource
+    reference_trait_source: GenomicSEMSumstatsSource
     ld_ref_task: Task
     hapmap_snps_task: Task
     sumstats_ref_task: Task
@@ -163,7 +166,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     @property
     def _ordered_sources(
         self,
-    ) -> tuple[GenomicSEMGWASSumstatsSource, GenomicSEMGWASSumstatsSource]:
+    ) -> tuple[GenomicSEMSumstatsSource, GenomicSEMSumstatsSource]:
         # Order defines the trait axis for ldsc/sumstats and the kernel:
         # index 0 = T1 (composite), index 1 = T2 (reference).
         return (self.composite_trait_source, self.reference_trait_source)
@@ -216,8 +219,8 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     def create(
         cls,
         asset_id: str,
-        composite_trait_source: GenomicSEMGWASSumstatsSource,
-        reference_trait_source: GenomicSEMGWASSumstatsSource,
+        composite_trait_source: GenomicSEMSumstatsSource,
+        reference_trait_source: GenomicSEMSumstatsSource,
         ld_ref_task: Task,
         hapmap_snps_task: Task,
         sumstats_ref_task: Task,
@@ -252,14 +255,14 @@ class _PythonGWASInputs:
 
 
 def sumstats_trait(
-    gwas_src: GenomicSEMGWASSumstatsSource, df: pl.DataFrame, n: float
+    gwas_src: GenomicSEMSumstatsSource, df: pl.DataFrame, n: float
 ) -> SumstatsTrait:
-    """Build the SumstatsTrait for a source, carrying through its GWAS method."""
+    """Build the SumstatsTrait for a source (every trait is standardised
+    linearly; there is no per-trait method)."""
     return SumstatsTrait(
         df=df,
         name=gwas_src.alias,
         n=n,
-        gwas_method=gwas_src.gwas_method,
     )
 
 
@@ -275,7 +278,7 @@ def _save_python_ldsc_outputs(result: LDSCResult, scratch_dir: Path) -> None:
 
 def _prepare_python_inputs(
     *,
-    sources: tuple[GenomicSEMGWASSumstatsSource, GenomicSEMGWASSumstatsSource],
+    sources: tuple[GenomicSEMSumstatsSource, GenomicSEMSumstatsSource],
     ld_dir: Path,
     ref_hm3: pl.DataFrame,
     ref_1kg: pl.DataFrame,
@@ -293,24 +296,21 @@ def _prepare_python_inputs(
     munged_dir.mkdir(parents=True, exist_ok=True)
 
     trait_names: list[str] = []
-    sample_prevs: list[float] = []
-    population_prevs: list[float] = []
     munged_paths: list[Path] = []
     sumstats_traits: list[SumstatsTrait] = []
     logger.debug("Preparing inputs...")
 
     for gwas_src in sources:
         logger.debug(f"Processing source {gwas_src.alias}")
-        df = build_munge_input_df(gwas_src.source, fetch)
+        df = build_munge_input_df(gwas_src, fetch)
         name = gwas_src.alias
-        # N handling matches GenomicSEM munge/sumstats: build_munge_input_df has
-        # already put an N column on df (from the source's own N column, else
-        # from PhenotypeInfo). get_sample_size returns the PhenotypeInfo scalar,
-        # which overrides that column when present, or NaN ("not provided") when
-        # PhenotypeInfo carries no sample size -- in which case the file's N
-        # column stands. munge_sumstats/run_sumstats apply the same is-NaN guard.
-        n = get_sample_size(gwas_src.source)
-        samp_prev, pop_prev = get_prevs(gwas_src.source.sample_info)
+        # N handling: build_munge_input_df has already put an N column on df
+        # (from the source's own N column, else from source.sample_size).
+        # get_sample_size returns the source's scalar sample_size, which
+        # overrides that column when present, or NaN ("not provided") when the
+        # source carries none -- in which case the file's N column stands.
+        # munge_sumstats/run_sumstats apply the same is-NaN guard.
+        n = get_sample_size(gwas_src)
 
         logger.debug(f"Munging '{name}' ({df.height} variants)")
         munged = munge_sumstats(
@@ -324,17 +324,19 @@ def _prepare_python_inputs(
         munged.write_csv(munged_path, separator="\t")
 
         trait_names.append(name)
-        sample_prevs.append(samp_prev)
-        population_prevs.append(pop_prev)
         munged_paths.append(munged_path)
         sumstats_traits.append(sumstats_trait(gwas_src, df, n))
 
     logger.debug("Running Python LDSC")
+    # No prevalences: every trait is treated linearly, so the genetic-covariance
+    # matrix S stays on the observed scale (no liability conversion), consistent
+    # with the linear per-SNP betas from run_sumstats.
+    no_prev: list[float | None] = [None] * len(sources)
     ldsc_result = run_ldsc(
         munged_paths=munged_paths,
         ld_dir=ld_dir,
-        sample_prev=sample_prevs,
-        population_prev=population_prevs,
+        sample_prev=no_prev,
+        population_prev=no_prev,
     )
     _save_python_ldsc_outputs(ldsc_result, scratch_dir)
 

@@ -1,7 +1,7 @@
 """
 rpy2-free input-preparation helpers used by the full-Python GenomicSEM tasks:
-deriving sample sizes and prevalences, reading a fetched tabular asset, building
-the canonical munge-format DataFrame, and resolving the LD reference directory.
+deriving the sample size, reading a fetched tabular asset, building the canonical
+munge-format DataFrame, and resolving the LD reference directory.
 
 R-only input helpers (the munge-TSV writer, single-file path resolution, source
 validation, sumstats method flags, lavaan-component sanitisation) live in
@@ -21,11 +21,6 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
-    BinaryPhenotypeSampleInfo,
-    PhenotypeInfo,
-    QuantPhenotype,
-)
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     MUNGE_A1_COL,
     MUNGE_A2_COL,
@@ -50,24 +45,11 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 
 def get_sample_size(source: GenomicSEMSumstatsSource) -> float:
-    info = source.sample_info
-    if isinstance(info, BinaryPhenotypeSampleInfo):
-        if info.total_sample_size is not None:
-            return float(info.total_sample_size)
-        return float("nan")
-    if isinstance(info, QuantPhenotype):
-        if info.total_sample_size is not None:
-            return float(info.total_sample_size)
-        return float("nan")
-    raise ValueError(f"Unknown sample info type {type(info)}")
-
-
-def get_prevs(info: PhenotypeInfo) -> tuple[float, float]:
-    if isinstance(info, BinaryPhenotypeSampleInfo):
-        return info.sample_prevalence, info.estimated_population_prevalence
-    if isinstance(info, QuantPhenotype):
-        return float("nan"), float("nan")
-    raise ValueError(f"Unknown sample info type {type(info)}")
+    """Total sample size for the source, or NaN ("not provided", so the file's
+    own N column stands) when the source carries no ``sample_size``."""
+    if source.sample_size is not None:
+        return float(source.sample_size)
+    return float("nan")
 
 
 def read_dataframe_from_task(task: Task, fetch: Fetch) -> pl.DataFrame:
@@ -96,7 +78,7 @@ def build_munge_input_df(
         .collect()
         .to_polars()
     )
-    df = add_sample_size_if_missing(df, sample_info=source.sample_info)
+    df = add_sample_size_if_missing(df, sample_size=source.sample_size)
 
     required = [
         GWASLAB_RSID_COL,
@@ -138,27 +120,16 @@ def build_munge_input_df(
 
 
 def add_sample_size_if_missing(
-    df: pl.DataFrame, sample_info: PhenotypeInfo
+    df: pl.DataFrame, sample_size: float | None
 ) -> pl.DataFrame:
     if GWASLAB_SAMPLE_SIZE_COLUMN in df.columns:
         return df
-    if isinstance(sample_info, BinaryPhenotypeSampleInfo):
-        if sample_info.total_sample_size is None:
-            raise ValueError(
-                "BinaryPhenotypeSampleInfo.total_sample_size must be set when "
-                "the source dataframe does not include an N column"
-            )
-        n = sample_info.total_sample_size
-    elif isinstance(sample_info, QuantPhenotype):
-        if sample_info.total_sample_size is None:
-            raise ValueError(
-                "QuantPhenotype.total_sample_size must be set when the source "
-                "dataframe does not include an N column"
-            )
-        n = sample_info.total_sample_size
-    else:
-        raise ValueError(f"Unknown sample info type {type(sample_info)}")
-    return df.with_columns(pl.lit(n).alias(GWASLAB_SAMPLE_SIZE_COLUMN))
+    if sample_size is None:
+        raise ValueError(
+            "sample_size must be set when the source dataframe does not include "
+            "an N column"
+        )
+    return df.with_columns(pl.lit(sample_size).alias(GWASLAB_SAMPLE_SIZE_COLUMN))
 
 
 @contextmanager

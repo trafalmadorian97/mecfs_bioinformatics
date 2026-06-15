@@ -54,5 +54,4 @@ DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS = concrete_standard_analysis_generato
         type=narwhals.dtypes.Int64(),
         new_col_name=SUBTRACTION_N_EFF_COL,
     ),
-
 )
