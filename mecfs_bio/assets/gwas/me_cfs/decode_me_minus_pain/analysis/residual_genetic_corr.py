@@ -25,7 +25,7 @@ DECODE_ME_MINUS_PAIN_GENETIC_CORR_GENERATOR = genetic_corr_by_ct_ldsc_asset_gene
     sources=[
         SumstatsSource(
             DECODE_ME_MINUS_PAIN_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
-            alias="decode_me_minus_pain",
+            alias="DecodeME_Minus_Pain",
             sample_info=QuantPhenotype(),
         ),
         SumstatsSource(
