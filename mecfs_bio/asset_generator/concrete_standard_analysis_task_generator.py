@@ -148,6 +148,8 @@ class StandardAnalysisTaskGroup:
             result.append(self.manhattan_task)
         if self.heritability_task is not None:
             result.append(self.heritability_task)
+        if self.gene_set_analysis_tasks is not None:
+            result.extend(self.gene_set_analysis_tasks.terminal_tasks())
         return result
 
 
