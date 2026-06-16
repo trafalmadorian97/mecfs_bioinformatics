@@ -11,4 +11,4 @@ I then analyzed the remainder trait $R$ using my standard suite for post-GWAS an
 Mathematically, GWAS-by-subtraction is a purely linear-algebraic operation: we define a Euclidian space in which GWAS traits are vectors and inner product between two vectors is their [genetic covariance](../../../../../Bioinformatics_Concepts/Genetic_Correlation.md).  In this Euclidian space, $R$ is the perpendicular projection of ME/CFS onto the orthogonal complement of chronic pain[^algebra_note].
 
 
-[^algebra_note]:  For more on the underlying mathematics, see Halmos's classic text[@halmos1958finite].
+[^algebra_note]:  For more on the underlying mathematics, see Section 75 "Perpendicular Projection" in Halmos's classic linear algebra text[@halmos1958finite].
