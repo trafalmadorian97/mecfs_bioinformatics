@@ -5,18 +5,24 @@ import pandas as pd
 import plotly.graph_objs as go
 import pytest
 
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
 )
+from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gene_manhattan_plot_task import (
     GenePValueTableSource,
+    MagmaGeneSource,
     build_manhattan_plot,
+)
+from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
+    GENE_ANALYSIS_OUTPUT_STEM_NAME,
 )
 
 
@@ -128,6 +134,33 @@ def test_build_manhattan_plot_default_sig_threshold_is_bonferroni():
     assert len(matching) == 1
 
 
+def test_build_manhattan_plot_bonferroni_uses_correction_count():
+    df = _synthetic_df()
+    # Supplying a correction count larger than the plotted-row count (e.g. because
+    # high-p-value genes were filtered out before plotting) must drive the
+    # threshold, keeping the significance line invariant to that filtering.
+    num_genes_for_correction = 5_000
+    fig = build_manhattan_plot(
+        df=df,
+        sig_threshold=None,
+        point_size=5,
+        colors=("#1f77b4", "#ff7f0e"),
+        sig_line_color="red",
+        title=None,
+        genome_build="19",
+        num_genes_for_correction=num_genes_for_correction,
+    )
+
+    expected_y = float(-np.log10(0.05 / num_genes_for_correction))
+    shapes = fig.layout.shapes
+    matching = [
+        s
+        for s in shapes
+        if np.isclose(float(s.y0), expected_y) and np.isclose(float(s.y1), expected_y)
+    ]
+    assert len(matching) == 1
+
+
 def test_build_manhattan_plot_drops_nonpositive_and_null_pvalues():
     df = _synthetic_df()
     # Inject a row with p == 0 and a row with p == NaN. Both should be dropped
@@ -220,15 +253,89 @@ def _write_gene_pvalue_source(
 
 def test_gene_pvalue_source_filters_by_max_p_value(tmp_path: Path):
     source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=0.01)
-    df = source.load_df(fetch=fetch)
+    data = source.load_df(fetch=fetch)
     # 0.5 and 0.02 are at or above 0.01 and dropped; 1e-3 and 1e-9 remain.
-    assert sorted(df["p_value"].tolist()) == [1e-9, 1e-3]
+    assert sorted(data.df["p_value"].tolist()) == [1e-9, 1e-3]
 
 
 def test_gene_pvalue_source_no_filter_when_max_p_value_none(tmp_path: Path):
     source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=None)
-    df = source.load_df(fetch=fetch)
-    assert len(df) == 4
+    data = source.load_df(fetch=fetch)
+    assert len(data.df) == 4
+
+
+def test_gene_pvalue_source_correction_count_is_pre_filter(tmp_path: Path):
+    # All four genes have valid positive p-values, so the multiple-testing count
+    # must be 4 regardless of how many rows survive the max_p_value filter.
+    source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=0.01)
+    data = source.load_df(fetch=fetch)
+    assert len(data.df) == 2
+    assert data.num_genes_for_correction == 4
+
+
+def _write_magma_source(
+    tmp_path: Path,
+    max_p_value: float | None,
+) -> tuple[MagmaGeneSource, Fetch]:
+    """Build a MagmaGeneSource over four genes with p-values 0.5, 0.02, 1e-3, 1e-9.
+
+    Returns the source plus a fetch callable that resolves its two task assets.
+    """
+    magma_dir = tmp_path / "magma"
+    magma_dir.mkdir()
+    genes_out = magma_dir / f"{GENE_ANALYSIS_OUTPUT_STEM_NAME}.genes.out"
+    genes_out.write_text(
+        "GENE CHR START STOP P\n"
+        "ENSG000 1 100000 150000 0.5\n"
+        "ENSG001 1 200000 250000 0.02\n"
+        "ENSG002 2 100000 150000 1e-3\n"
+        "ENSG003 X 100000 150000 1e-9\n"
+    )
+
+    thesaurus_df = pd.DataFrame(
+        {
+            "Gene stable ID": ["ENSG000", "ENSG001", "ENSG002", "ENSG003"],
+            "Gene name": ["GENE0", "GENE1", "GENE2", "GENE3"],
+        }
+    )
+    thesaurus_path = tmp_path / "thesaurus.parquet"
+    thesaurus_df.to_parquet(thesaurus_path)
+
+    source = MagmaGeneSource(
+        magma_task=FakeTask(SimpleDirectoryMeta("magma")),
+        gene_thesaurus_task=FakeTask(
+            SimpleFileMeta(
+                "thesaurus", read_spec=DataFrameReadSpec(DataFrameParquetFormat())
+            )
+        ),
+        genome_build="19",
+        max_p_value=max_p_value,
+    )
+
+    def fetch(asset_id: AssetId):
+        if asset_id == "magma":
+            return DirectoryAsset(magma_dir)
+        if asset_id == "thesaurus":
+            return FileAsset(thesaurus_path)
+        raise ValueError(f"Unknown asset id {asset_id}")
+
+    return source, fetch
+
+
+def test_magma_source_filters_by_max_p_value(tmp_path: Path):
+    source, fetch = _write_magma_source(tmp_path, max_p_value=0.01)
+    data = source.load_df(fetch=fetch)
+    # 0.5 and 0.02 are at or above 0.01 and dropped; 1e-3 and 1e-9 remain. The
+    # correction count still reflects all four tested genes.
+    assert sorted(data.df["p_value"].tolist()) == [1e-9, 1e-3]
+    assert data.num_genes_for_correction == 4
+
+
+def test_magma_source_no_filter_when_max_p_value_none(tmp_path: Path):
+    source, fetch = _write_magma_source(tmp_path, max_p_value=None)
+    data = source.load_df(fetch=fetch)
+    assert len(data.df) == 4
+    assert data.num_genes_for_correction == 4
 
 
 def test_build_manhattan_plot_empty_df_raises():
