@@ -134,6 +134,10 @@ class StandardAnalysisTaskGroup:
     def gene_set_analysis_unwrap(self) -> CuratedGeneSetAnalysisTasks:
         return unwrap(self.gene_set_analysis_tasks)
 
+    @property
+    def gene_manhattan_plot_unwrap(self) -> Task:
+        return unwrap(self.magma_tasks.inner.gene_manhattan_plot_task)
+
     def get_terminal_tasks(self) -> list[Task]:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())

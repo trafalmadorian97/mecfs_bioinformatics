@@ -142,6 +142,7 @@ class MagmaGeneSource(GeneManhattanSource):
     magma_task: Task
     gene_thesaurus_task: Task
     genome_build: GenomeBuild
+    max_p_value: float | None = 0.01
 
     @property
     def deps(self) -> list[Task]:
@@ -187,6 +188,16 @@ class MagmaGeneSource(GeneManhattanSource):
                 _P: magma_df[_MAGMA_P_COL].astype(float),
             }
         )
+
+        if self.max_p_value is not None:
+            num_before = len(magma_df)
+            magma_df = magma_df[magma_df[_P] < self.max_p_value]
+            logger.info(
+                "Filtered genes by maximum p-value",
+                max_p_value=self.max_p_value,
+                num_dropped=num_before - len(magma_df),
+                num_kept=len(magma_df),
+            )
 
         thesaurus_asset = fetch(self.gene_thesaurus_task.asset_id)
         thesaurus_df = (
