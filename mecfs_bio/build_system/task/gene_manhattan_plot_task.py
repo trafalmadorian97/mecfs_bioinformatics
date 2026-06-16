@@ -194,14 +194,14 @@ class MagmaGeneSource(GeneManhattanSource):
 
     max_p_value, when not None, drops genes whose p-value is at or above it
     before plotting, keeping the figure free of the many uninformative
-    high-p-value points. The default of 0.01 retains only the nominally
+    high-p-value points. The default of 0.1 retains only the nominally
     interesting tail. Filtering does not affect the significance threshold.
     """
 
     magma_task: Task
     gene_thesaurus_task: Task
     genome_build: GenomeBuild
-    max_p_value: float | None = 0.01
+    max_p_value: float | None = 0.1
 
     @property
     def deps(self) -> list[Task]:
@@ -286,7 +286,7 @@ class GenePValueTableSource(GeneManhattanSource):
 
     max_p_value, when not None, drops genes whose p-value is at or above it
     before plotting, keeping the figure free of the many uninformative
-    high-p-value points. The default of 0.01 retains only the nominally
+    high-p-value points. The default of 0.1 retains only the nominally
     interesting tail. Filtering does not affect the significance threshold.
     """
 
@@ -296,7 +296,7 @@ class GenePValueTableSource(GeneManhattanSource):
     p_col: str
     genome_build: GenomeBuild
     gene_id_kind: GeneIdKind = "ensembl_id"
-    max_p_value: float | None = 0.01
+    max_p_value: float | None = 0.1
 
     @property
     def deps(self) -> list[Task]:
