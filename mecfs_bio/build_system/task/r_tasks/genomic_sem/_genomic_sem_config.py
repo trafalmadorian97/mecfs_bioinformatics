@@ -10,15 +10,10 @@ their tests) depend on it without dragging in rpy2.
 
 from __future__ import annotations
 
-from typing import Final, Literal
-
 from attrs import frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
-    PhenotypeInfo,
-)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 
@@ -70,57 +65,32 @@ SUBTRACTION_P_COL = "Pval_Estimate"
 SUBTRACTION_N_EFF_COL = "N_eff"
 SUBTRACTION_FAIL_COL = "fail"
 
-# How the source GWAS was estimated. Controls the per-trait flag (one of
-# se.logit / OLS / linprob) passed to GenomicSEM::sumstats.
-OLS: Final = "ols"
-LOGISTIC: Final = "logistic"
-LINEAR_PROB: Final = "linear_prob"
-
-# `ty` requires the type arguments to Literal to be inline literals rather
-# than Final-typed names, so the strings are repeated here.
-GWASMethod = Literal["ols", "logistic", "linear_prob"]
-
 
 @frozen
 class GenomicSEMSumstatsSource:
     """
-    A single trait sumstats source for GenomicSEM.
+    A single trait sumstats source for GWAS-by-subtraction.
 
     The source Task is expected to produce tabular GWAS summary statistics
     with columns named according to gwaslab conventions
     (see mecfs_bio.constants.gwaslab_constants).
+
+    Every trait is standardised on a single linear (OLS-style) scale and no
+    liability conversion is applied.
+
+    sample_size is the total GWAS sample size, used to standardise the
+    per-SNP effects.
+
+
+    NOTE: sample_size affects intermediate calculations, but (except in some special cases)
+    does not affect the final output.
     """
 
     task: Task
     alias: str
-    sample_info: PhenotypeInfo
+    sample_size: float | None = None
     pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def asset_id(self) -> AssetId:
         return self.task.asset_id
-
-
-@frozen
-class GenomicSEMGWASSumstatsSource:
-    """
-    A source trait for GenomicSEM GWAS-extension workflows.
-
-    Wraps the existing GenomicSEMSumstatsSource and adds the per-trait
-    estimation method that sumstats() needs.
-    """
-
-    source: GenomicSEMSumstatsSource
-    gwas_method: GWASMethod
-
-    @property
-    def task(self) -> Task:
-        return self.source.task
-
-    @property
-    def alias(self) -> str:
-        return self.source.alias
-
-    @property
-    def asset_id(self) -> AssetId:
-        return self.source.asset_id

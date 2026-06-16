@@ -223,6 +223,11 @@ class GenePValueTableSource(GeneManhattanSource):
     ``gene_col``. The locations reference must contain a matching column:
     Ensembl IDs (``"ensembl_id"``) join on the reference's Ensembl-ID column,
     gene symbols (``"gene_name"``) join on the reference's gene-name column.
+
+    max_p_value, when not None, drops genes whose p-value is greater than or
+    equal to it before plotting, keeping the figure free of the many
+    uninformative high-p-value points. The default of 0.01 retains only the
+    nominally interesting tail.
     """
 
     table_task: Task
@@ -231,6 +236,7 @@ class GenePValueTableSource(GeneManhattanSource):
     p_col: str
     genome_build: GenomeBuild
     gene_id_kind: GeneIdKind = "ensembl_id"
+    max_p_value: float | None = 0.01
 
     @property
     def deps(self) -> list[Task]:
@@ -265,6 +271,16 @@ class GenePValueTableSource(GeneManhattanSource):
                 _P: p_df[self.p_col].astype(float),
             }
         )
+
+        if self.max_p_value is not None:
+            num_before = len(p_df)
+            p_df = p_df[p_df[_P] < self.max_p_value]
+            logger.info(
+                "Filtered genes by maximum p-value",
+                max_p_value=self.max_p_value,
+                num_dropped=num_before - len(p_df),
+                num_kept=len(p_df),
+            )
 
         loc_asset = fetch(self.gene_locations_task.asset_id)
         loc_df = (

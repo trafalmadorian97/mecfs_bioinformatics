@@ -1,9 +1,21 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 import pytest
 
+from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
+from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
+from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gene_manhattan_plot_task import (
+    GenePValueTableSource,
     build_manhattan_plot,
 )
 
@@ -158,6 +170,65 @@ def test_build_manhattan_plot_drops_nonpositive_and_null_pvalues():
     chr1_trace = next(t for t in fig.data if t.name == "chr1")
     # Original 4 chr1 points, no extras for the bad rows.
     assert len(chr1_trace.y) == 4
+
+
+def _write_gene_pvalue_source(
+    tmp_path: Path,
+    max_p_value: float | None,
+) -> tuple[GenePValueTableSource, Fetch]:
+    """Build a GenePValueTableSource over four genes with p-values 0.5, 0.02, 1e-3, 1e-9.
+
+    Returns the source plus a fetch callable that resolves its two task assets.
+    """
+    read_spec = DataFrameReadSpec(DataFrameParquetFormat())
+
+    ensembl_ids = ["ENSG000", "ENSG001", "ENSG002", "ENSG003"]
+    table_df = pd.DataFrame({"gene": ensembl_ids, "pval": [0.5, 0.02, 1e-3, 1e-9]})
+    table_path = tmp_path / "table.parquet"
+    table_df.to_parquet(table_path)
+
+    loc_df = pd.DataFrame(
+        {
+            "ensembl_name": ensembl_ids,
+            "chrom": ["1", "1", "2", "X"],
+            "gene_start": [100_000.0, 200_000.0, 100_000.0, 100_000.0],
+            "gene_end": [150_000.0, 250_000.0, 150_000.0, 150_000.0],
+            "gene_name": ["GENE0", "GENE1", "GENE2", "GENE3"],
+        }
+    )
+    loc_path = tmp_path / "loc.parquet"
+    loc_df.to_parquet(loc_path)
+
+    source = GenePValueTableSource(
+        table_task=FakeTask(SimpleFileMeta("table", read_spec=read_spec)),
+        gene_locations_task=FakeTask(SimpleFileMeta("loc", read_spec=read_spec)),
+        gene_col="gene",
+        p_col="pval",
+        genome_build="19",
+        max_p_value=max_p_value,
+    )
+
+    def fetch(asset_id: AssetId):
+        if asset_id == "table":
+            return FileAsset(table_path)
+        if asset_id == "loc":
+            return FileAsset(loc_path)
+        raise ValueError(f"Unknown asset id {asset_id}")
+
+    return source, fetch
+
+
+def test_gene_pvalue_source_filters_by_max_p_value(tmp_path: Path):
+    source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=0.01)
+    df = source.load_df(fetch=fetch)
+    # 0.5 and 0.02 are at or above 0.01 and dropped; 1e-3 and 1e-9 remain.
+    assert sorted(df["p_value"].tolist()) == [1e-9, 1e-3]
+
+
+def test_gene_pvalue_source_no_filter_when_max_p_value_none(tmp_path: Path):
+    source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=None)
+    df = source.load_df(fetch=fetch)
+    assert len(df) == 4
 
 
 def test_build_manhattan_plot_empty_df_raises():
