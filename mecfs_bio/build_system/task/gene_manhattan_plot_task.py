@@ -94,6 +94,22 @@ _CANONICAL_CHROM_ORDER: list[str] = [str(i) for i in range(1, 23)] + ["X", "Y", 
 GeneIdKind = Literal["ensembl_id", "gene_name"]
 
 
+@frozen
+class GeneManhattanData:
+    """The genes to plot plus the multiple-testing count for the significance line.
+
+    df holds the rows to plot, after any max_p_value filtering.
+
+    num_genes_for_correction is the number of genes with a valid (positive,
+    non-null) p-value before max_p_value filtering. It drives the default
+    Bonferroni threshold so that the significance line stays invariant to the
+    purely visual max_p_value filter.
+    """
+
+    df: pd.DataFrame
+    num_genes_for_correction: int
+
+
 class GeneManhattanSource(ABC):
     """A source that yields rows of (chrom, pos, ensembl_id, gene_name, p) for a Manhattan plot."""
 
@@ -117,16 +133,54 @@ class GeneManhattanSource(ABC):
     @property
     @abstractmethod
     def genome_build(self) -> GenomeBuild:
-        """Genome build of the chromosomal positions exposed by ``load_df``.
+        """Genome build of the chromosomal positions exposed by load_df.
 
-        Drives the hover-text position label (``pos_hg19`` vs ``pos_hg38``).
+        Drives the hover-text position label (pos_hg19 vs pos_hg38).
+        """
+        pass
+
+    @property
+    @abstractmethod
+    def max_p_value(self) -> float | None:
+        """Drop genes whose p-value is at or above this before plotting.
+
+        None disables filtering. Filtering is purely a visual simplification:
+        it does not affect the Bonferroni significance threshold, which is based
+        on the gene count before filtering.
         """
         pass
 
     @abstractmethod
-    def load_df(self, fetch: Fetch) -> pd.DataFrame:
-        """Materialize a pandas DataFrame with columns ``chrom``, ``pos``, ``ensembl_id``, ``gene_name``, ``p_value``."""
+    def _load_full_df(self, fetch: Fetch) -> pd.DataFrame:
+        """Materialize all candidate rows with columns chrom, pos, ensembl_id, gene_name, p_value.
+
+        Returns every gene the source knows about, with no max_p_value filtering
+        applied; the base load_df applies that filter and counts genes for the
+        multiple-testing correction.
+        """
         pass
+
+    def load_df(self, fetch: Fetch) -> GeneManhattanData:
+        """Load the full table, then apply the optional max_p_value filter.
+
+        The multiple-testing count is taken before filtering so that the
+        significance threshold is unaffected by max_p_value.
+        """
+        df = self._load_full_df(fetch)
+        valid_p = df[_P].notna() & (df[_P] > 0)
+        num_genes_for_correction = int(valid_p.sum())
+        if self.max_p_value is not None:
+            num_before = len(df)
+            df = df[df[_P] < self.max_p_value]
+            logger.info(
+                "Filtered genes by maximum p-value",
+                max_p_value=self.max_p_value,
+                num_dropped=num_before - len(df),
+                num_kept=len(df),
+            )
+        return GeneManhattanData(
+            df=df, num_genes_for_correction=num_genes_for_correction
+        )
 
 
 @frozen
@@ -137,11 +191,17 @@ class MagmaGeneSource(GeneManhattanSource):
     gene names are joined in from ``gene_thesaurus_task`` by Ensembl ID. When
     a gene is missing from the thesaurus, the Ensembl ID is used as the
     display name.
+
+    max_p_value, when not None, drops genes whose p-value is at or above it
+    before plotting, keeping the figure free of the many uninformative
+    high-p-value points. The default of 0.01 retains only the nominally
+    interesting tail. Filtering does not affect the significance threshold.
     """
 
     magma_task: Task
     gene_thesaurus_task: Task
     genome_build: GenomeBuild
+    max_p_value: float | None = 0.01
 
     @property
     def deps(self) -> list[Task]:
@@ -161,7 +221,7 @@ class MagmaGeneSource(GeneManhattanSource):
     def project(self) -> str:
         return self._magma_meta.project
 
-    def load_df(self, fetch: Fetch) -> pd.DataFrame:
+    def _load_full_df(self, fetch: Fetch) -> pd.DataFrame:
         magma_asset = fetch(self.magma_task.asset_id)
         assert isinstance(magma_asset, DirectoryAsset)
         magma_path = magma_asset.path / (GENE_ANALYSIS_OUTPUT_STEM_NAME + ".genes.out")
@@ -224,10 +284,10 @@ class GenePValueTableSource(GeneManhattanSource):
     Ensembl IDs (``"ensembl_id"``) join on the reference's Ensembl-ID column,
     gene symbols (``"gene_name"``) join on the reference's gene-name column.
 
-    max_p_value, when not None, drops genes whose p-value is greater than or
-    equal to it before plotting, keeping the figure free of the many
-    uninformative high-p-value points. The default of 0.01 retains only the
-    nominally interesting tail.
+    max_p_value, when not None, drops genes whose p-value is at or above it
+    before plotting, keeping the figure free of the many uninformative
+    high-p-value points. The default of 0.01 retains only the nominally
+    interesting tail. Filtering does not affect the significance threshold.
     """
 
     table_task: Task
@@ -256,7 +316,7 @@ class GenePValueTableSource(GeneManhattanSource):
     def project(self) -> str:
         return self._table_meta.project
 
-    def load_df(self, fetch: Fetch) -> pd.DataFrame:
+    def _load_full_df(self, fetch: Fetch) -> pd.DataFrame:
         join_col = _ENSEMBL_ID if self.gene_id_kind == "ensembl_id" else _GENE_NAME
 
         table_asset = fetch(self.table_task.asset_id)
@@ -271,16 +331,6 @@ class GenePValueTableSource(GeneManhattanSource):
                 _P: p_df[self.p_col].astype(float),
             }
         )
-
-        if self.max_p_value is not None:
-            num_before = len(p_df)
-            p_df = p_df[p_df[_P] < self.max_p_value]
-            logger.info(
-                "Filtered genes by maximum p-value",
-                max_p_value=self.max_p_value,
-                num_dropped=num_before - len(p_df),
-                num_kept=len(p_df),
-            )
 
         loc_asset = fetch(self.gene_locations_task.asset_id)
         loc_df = (
@@ -327,17 +377,21 @@ def build_manhattan_plot(
     sig_line_color: str,
     title: str | None,
     genome_build: GenomeBuild,
+    num_genes_for_correction: int | None = None,
 ) -> go.Figure:
     """Construct a Plotly figure containing a gene-level Manhattan plot.
 
-    Genes with non-positive or null p-values are dropped (``-log10`` is
-    undefined). If ``sig_threshold`` is ``None``, a Bonferroni-corrected
-    threshold ``0.05 / N_genes`` is used and a dashed horizontal line is drawn
-    at the corresponding ``-log10(p)``.
+    Genes with non-positive or null p-values are dropped (-log10 is undefined).
+    If sig_threshold is None, a Bonferroni-corrected threshold
+    0.05 / num_genes_for_correction is used and a dashed horizontal line is
+    drawn at the corresponding -log10(p). num_genes_for_correction should be the
+    number of genes tested, counted before any p-value filtering of df, so that
+    the threshold is invariant to such filtering; it falls back to the number of
+    plotted rows when not supplied.
 
-    ``genome_build`` selects the hover label for the gene's midpoint position
-    (``Position (hg19)`` for build 37, ``Position (hg38)`` for build 38).
-    Positions in ``df`` are assumed to already be in the declared build.
+    genome_build selects the hover label for the gene's midpoint position
+    (Position (hg19) for build 37, Position (hg38) for build 38). Positions in
+    df are assumed to already be in the declared build.
     """
     df = df.dropna(subset=[_P]).copy()
     df = df[df[_P] > 0]
@@ -367,7 +421,12 @@ def build_manhattan_plot(
     )
 
     if sig_threshold is None:
-        sig_threshold = 0.05 / len(df)
+        n_correction = (
+            num_genes_for_correction
+            if num_genes_for_correction is not None
+            else len(df)
+        )
+        sig_threshold = 0.05 / n_correction
     sig_y = float(-np.log10(sig_threshold))
 
     pos_label = f"position (hg{genome_build})"
@@ -453,15 +512,16 @@ class GeneManhattanPlotTask(Task):
         return self.source.deps
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        df = self.source.load_df(fetch=fetch)
+        data = self.source.load_df(fetch=fetch)
         fig = build_manhattan_plot(
-            df=df,
+            df=data.df,
             sig_threshold=self.sig_threshold,
             point_size=self.point_size,
             colors=self.colors,
             sig_line_color=self.sig_line_color,
             title=self.title,
             genome_build=self.source.genome_build,
+            num_genes_for_correction=data.num_genes_for_correction,
         )
         out_path = scratch_dir / "gene_manhattan.html"
         fig.write_html(out_path, include_plotlyjs=self.plotly_js_mode)
