@@ -71,46 +71,42 @@ class MagmaForwardStepwiseSelectTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         marginal_asset = fetch(self.marginal_asset_id)
         assert isinstance(marginal_asset, DirectoryAsset)
-        conditional_asset = fetch(self.conditional_asset_id)
-        assert isinstance(conditional_asset, DirectoryAsset)
         marginal_path = marginal_asset.path / (
             GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"
         )
+        df_marg = pd.read_csv(marginal_path, comment="#", sep=r"\s+")
+
+        sig_cluster_list = get_significant_clusters(
+            df_marg=df_marg, significance_threshold=self.significance_threshold
+        )
+
+        if len(sig_cluster_list) <= 1:
+            # With zero or one significant cluster there is nothing to disambiguate:
+            # a lone significant cluster is trivially independent and should be
+            # retained.  The pairwise conditional MAGMA analysis produces no rows in
+            # this case (it has no pairs to condition on), so we must not depend on
+            # it here.
+            logger.debug(
+                f"Found {len(sig_cluster_list)} significant cluster(s); "
+                "no conditional analysis needed."
+            )
+            return self._write_retained_clusters(scratch_dir, sig_cluster_list)
+
+        conditional_asset = fetch(self.conditional_asset_id)
+        assert isinstance(conditional_asset, DirectoryAsset)
         conditional_path = conditional_asset.path / (
             GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"
         )
-        df_marg = pd.read_csv(marginal_path, comment="#", sep=r"\s+")
         df_cond = pd.read_csv(conditional_path, comment="#", sep=r"\s+")
-        if (len(df_marg) == 0) or (len(df_cond) == 0):
+        if len(df_cond) == 0:
             logger.debug(
-                f"Marginal DF has {len(df_marg)} rows, while conditional df has {len(df_cond)} rows.  Cannot perform stepwise analysis. Skipping"
+                f"Found {len(sig_cluster_list)} significant clusters but the "
+                "conditional df is empty.  Cannot perform stepwise analysis. Skipping"
             )
-            retained_cluster_list: list = []
-            retained_cluster_df = pd.DataFrame(
-                {
-                    RETAINED_CLUSTERS_COLUMN: retained_cluster_list,
-                }
-            )
-            out_path = scratch_dir / self.asset_id
-            retained_cluster_df.to_csv(out_path, index=False)
-            return FileAsset(out_path)
+            return self._write_retained_clusters(scratch_dir, [])
 
         df_wide = generate_wide_dataframe(df_cond=df_cond, df_marg=df_marg)
-        p_marg_dict, prop_sig_dict = generate_mappers_from_wide_dataframe(
-            df_wide=df_wide
-        )
-
-        all_cluster_list = df_marg.sort_values(by=MAGMA_P_COLUMN)[
-            MAGMA_VARIABLE_COLUMN
-        ].tolist()
-        sig_cluster_set = set(
-            df_marg.loc[
-                df_marg[MAGMA_P_COLUMN] <= (self.significance_threshold / len(df_marg))
-            ][MAGMA_VARIABLE_COLUMN].tolist()
-        )
-        sig_cluster_list = [
-            item for item in all_cluster_list if item in sig_cluster_set
-        ]
+        _, prop_sig_dict = generate_mappers_from_wide_dataframe(df_wide=df_wide)
 
         retained_cluster_list = get_retained_clusters(
             all_cluster_list=sig_cluster_list,
@@ -118,9 +114,14 @@ class MagmaForwardStepwiseSelectTask(Task):
             min_prop_sig=self.min_prop_sig,
         )
         logger.debug(f"Number of retained clusters: {len(retained_cluster_list)}")
+        return self._write_retained_clusters(scratch_dir, retained_cluster_list)
+
+    def _write_retained_clusters(
+        self, scratch_dir: Path, retained_cluster_list: Sequence[str]
+    ) -> FileAsset:
         retained_cluster_df = pd.DataFrame(
             {
-                RETAINED_CLUSTERS_COLUMN: retained_cluster_list,
+                RETAINED_CLUSTERS_COLUMN: list(retained_cluster_list),
             }
         )
         out_path = scratch_dir / self.asset_id
@@ -152,6 +153,25 @@ class MagmaForwardStepwiseSelectTask(Task):
             min_prop_sig=min_prop_sig,
             significance_threshold=significance_threshold,
         )
+
+
+def get_significant_clusters(
+    df_marg: pd.DataFrame, significance_threshold: float
+) -> list[str]:
+    """
+    Return the clusters that are significant in the marginal analysis after a
+    Bonferroni correction, sorted from most to least significant.
+    """
+    if len(df_marg) == 0:
+        return []
+    all_cluster_list = df_marg.sort_values(by=MAGMA_P_COLUMN)[
+        MAGMA_VARIABLE_COLUMN
+    ].tolist()
+    alpha = significance_threshold / len(df_marg)
+    sig_cluster_set = set(
+        df_marg.loc[df_marg[MAGMA_P_COLUMN] <= alpha][MAGMA_VARIABLE_COLUMN].tolist()
+    )
+    return [item for item in all_cluster_list if item in sig_cluster_set]
 
 
 def get_retained_clusters(

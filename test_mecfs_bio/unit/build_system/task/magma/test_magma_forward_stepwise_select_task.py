@@ -12,6 +12,7 @@ from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMet
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.magma.magma_forward_stepwise_select_task import (
+    RETAINED_CLUSTERS_COLUMN,
     MagmaForwardStepwiseSelectTask,
     generate_mappers_from_wide_dataframe,
     generate_wide_dataframe,
@@ -84,3 +85,56 @@ def test_forward_stepwise_when_missing_data(tmp_path: Path):
     assert isinstance(result, FileAsset)
     result_df = pd.read_csv(result.path)
     assert len(result_df) == 0
+
+
+def test_forward_stepwise_single_significant_cluster(tmp_path: Path):
+    """
+    When only one cluster is significant the pairwise conditional analysis has no
+    pairs and produces an empty output.  The lone significant cluster should still
+    be retained rather than discarded.
+    """
+    marg_df = pd.DataFrame(
+        {
+            MAGMA_VARIABLE_COLUMN: ["Cluster1", "Cluster2", "Cluster3"],
+            MAGMA_P_COLUMN: [1e-6, 0.5, 0.8],
+        }
+    )
+    # Mirror the real pipeline: with a single significant cluster there are no
+    # pairs to condition on, so the conditional output is header-only.
+    empty_cond_df = pd.DataFrame(
+        {MAGMA_VARIABLE_COLUMN: [], MAGMA_MODEL_COLUMN: [], MAGMA_P_COLUMN: []}
+    )
+    marg_dir_path = tmp_path / "marg_df.parquet"
+    cond_dir_path = tmp_path / "cond_df.parquet"
+    marg_dir_path.mkdir()
+    cond_dir_path.mkdir()
+    marg_df.to_csv(
+        marg_dir_path / (GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"),
+        sep="\t",
+        index=False,
+    )
+    empty_cond_df.to_csv(
+        cond_dir_path / (GENE_SET_ANALYSIS_OUTPUT_STEM_NAME + ".gsa.out"),
+        sep="\t",
+        index=False,
+    )
+    scratch = tmp_path / "scratch"
+    scratch.mkdir()
+    tsk = MagmaForwardStepwiseSelectTask(
+        meta=SimpleFileMeta("stepwise"),
+        magma_marginal_output_task=FakeTask(SimpleDirectoryMeta("marginal")),
+        magma_conditional_output_task=FakeTask(SimpleDirectoryMeta("conditional")),
+        significance_threshold=0.01,
+    )
+
+    def fetch(asset_id: AssetId) -> Asset:
+        if asset_id == "marginal":
+            return DirectoryAsset(marg_dir_path)
+        if asset_id == "conditional":
+            return DirectoryAsset(cond_dir_path)
+        raise ValueError("Unknown asset id")
+
+    result = tsk.execute(fetch=fetch, scratch_dir=scratch, wf=SimpleWF())
+    assert isinstance(result, FileAsset)
+    result_df = pd.read_csv(result.path)
+    assert result_df[RETAINED_CLUSTERS_COLUMN].tolist() == ["Cluster1"]
