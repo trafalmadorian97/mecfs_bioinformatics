@@ -29,6 +29,10 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
+from mecfs_bio.build_system.task.gene_manhattan_plot_task import (
+    GeneManhattanPlotTask,
+    MagmaGeneSource,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GenomeBuildMode,
     GWASLabColumnSpecifiers,
@@ -82,11 +86,14 @@ class StandardMagmaTaskGenerator:
     thesaurus_labeled_filtered_gene_analysis_task: Task | None = None
     gget_labeled_filtered_gene_analysis_task: Task | None = None
     markdown_gget_labeled_filtered_gene_analysis_task: Task | None = None
+    gene_manhattan_plot_task: Task | None = None
 
     def terminal_tasks(self) -> list[Task]:
         result = [self.bar_plot_task, self.gene_analysis_task]
         if self.markdown_gget_labeled_filtered_gene_analysis_task is not None:
             result.append(self.markdown_gget_labeled_filtered_gene_analysis_task)
+        if self.gene_manhattan_plot_task is not None:
+            result.append(self.gene_manhattan_plot_task)
         return result
 
     @classmethod
@@ -210,6 +217,17 @@ class StandardMagmaTaskGenerator:
         else:
             gget_labeled_gene_task = None
             markdown_gget_labeled_task = None
+        if gene_thesaurus_task is not None:
+            gene_manhattan = GeneManhattanPlotTask.create(
+                asset_id=base_name + "_magma_gene_manhattan_plot",
+                source=MagmaGeneSource(
+                    magma_task=gene_analysis_task,
+                    gene_thesaurus_task=gene_thesaurus_task,
+                    genome_build="19",
+                ),
+            )
+        else:
+            gene_manhattan = None
 
         return cls(
             p_value_task=p_value_task,
@@ -223,6 +241,7 @@ class StandardMagmaTaskGenerator:
             gget_labeled_filtered_gene_analysis_task=gget_labeled_gene_task,
             markdown_gget_labeled_filtered_gene_analysis_task=markdown_gget_labeled_task,
             gene_analysis_extracted_result_task=extracted_gene_analysis_result_task,
+            gene_manhattan_plot_task=gene_manhattan,
         )
 
 

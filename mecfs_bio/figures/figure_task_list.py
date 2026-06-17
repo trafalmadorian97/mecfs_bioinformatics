@@ -89,6 +89,12 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.residual_genetic_corr_ols import (
+    DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.standard_analysis_decodeme_minus_pain_ols import (
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs_standard_analysis import (
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP,
 )
@@ -213,6 +219,11 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR.aggregation_markdown_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.magma_gene_manhattan_plot_unwrap,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
