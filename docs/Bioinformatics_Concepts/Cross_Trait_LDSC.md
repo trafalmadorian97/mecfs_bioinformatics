@@ -22,12 +22,12 @@ $$
 where:
 
 - There are $M  \gg 0$ genetic variants.  
-- There are $N_1 \gg 0$ individuals in the GWAS of trait 1 and $N_2 \gg 0$ individuals in the GWAS of trait 2.
+- There are $N_1 \gg 0$ individuals in the trait 1 GWAS and $N_2 \gg 0$ individuals in the trait 2 GWAS.
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
-- $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the vectors of phenotypes for the GWAS of trait 1 and the GWAS of trait 2, respectively.
+- $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
 - $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
 - $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits. 
-- $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of genetic effects in the two GWAS.
+- $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of per-individual genetic effects in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 
 We model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties:
