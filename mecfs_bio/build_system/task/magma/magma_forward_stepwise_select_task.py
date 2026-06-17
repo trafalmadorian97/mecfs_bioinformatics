@@ -81,6 +81,24 @@ class MagmaForwardStepwiseSelectTask(Task):
         )
         df_marg = pd.read_csv(marginal_path, comment="#", sep=r"\s+")
         df_cond = pd.read_csv(conditional_path, comment="#", sep=r"\s+")
+
+        sig_cluster_list = get_sig_cluster_list(
+            df_marg=df_marg, significance_threshold=self.significance_threshold
+        )
+
+        if len(sig_cluster_list) == 1:
+            logger.debug(
+                f"Only one significant cluster found ({sig_cluster_list}).  Skipping conditional analysis and returning this cluster"
+            )
+            retained_cluster_df = pd.DataFrame(
+                {
+                    RETAINED_CLUSTERS_COLUMN: sig_cluster_list,
+                }
+            )
+            out_path = scratch_dir / self.asset_id
+            retained_cluster_df.to_csv(out_path, index=False)
+            return FileAsset(out_path)
+
         if (len(df_marg) == 0) or (len(df_cond) == 0):
             logger.debug(
                 f"Marginal DF has {len(df_marg)} rows, while conditional df has {len(df_cond)} rows.  Cannot perform stepwise analysis. Skipping"
@@ -99,18 +117,6 @@ class MagmaForwardStepwiseSelectTask(Task):
         p_marg_dict, prop_sig_dict = generate_mappers_from_wide_dataframe(
             df_wide=df_wide
         )
-
-        all_cluster_list = df_marg.sort_values(by=MAGMA_P_COLUMN)[
-            MAGMA_VARIABLE_COLUMN
-        ].tolist()
-        sig_cluster_set = set(
-            df_marg.loc[
-                df_marg[MAGMA_P_COLUMN] <= (self.significance_threshold / len(df_marg))
-            ][MAGMA_VARIABLE_COLUMN].tolist()
-        )
-        sig_cluster_list = [
-            item for item in all_cluster_list if item in sig_cluster_set
-        ]
 
         retained_cluster_list = get_retained_clusters(
             all_cluster_list=sig_cluster_list,
@@ -239,6 +245,23 @@ def generate_wide_dataframe(
 
     assert (df_wide["P_MARG_a"] <= df_wide["P_MARG_b"]).all()
     return df_wide
+
+
+def get_sig_cluster_list(
+    df_marg: pd.DataFrame, significance_threshold: float
+) -> list[str]:
+    if len(df_marg) == 0:
+        return []
+    all_cluster_list = df_marg.sort_values(by=MAGMA_P_COLUMN)[
+        MAGMA_VARIABLE_COLUMN
+    ].tolist()
+    sig_cluster_set = set(
+        df_marg.loc[df_marg[MAGMA_P_COLUMN] <= (significance_threshold / len(df_marg))][
+            MAGMA_VARIABLE_COLUMN
+        ].tolist()
+    )
+    sig_cluster_list = [item for item in all_cluster_list if item in sig_cluster_set]
+    return sig_cluster_list
 
 
 def generate_mappers_from_wide_dataframe(
