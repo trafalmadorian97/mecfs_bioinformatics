@@ -29,7 +29,10 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
-from mecfs_bio.build_system.task.gene_manhattan_plot_task import GeneManhattanPlotTask, MagmaGeneSource
+from mecfs_bio.build_system.task.gene_manhattan_plot_task import (
+    GeneManhattanPlotTask,
+    MagmaGeneSource,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GenomeBuildMode,
     GWASLabColumnSpecifiers,
@@ -216,7 +219,7 @@ class StandardMagmaTaskGenerator:
             markdown_gget_labeled_task = None
         if gene_thesaurus_task is not None:
             gene_manhattan = GeneManhattanPlotTask.create(
-                asset_id=base_name+"_magma_gene_manhattan_plot",
+                asset_id=base_name + "_magma_gene_manhattan_plot",
                 source=MagmaGeneSource(
                     magma_task=gene_analysis_task,
                     gene_thesaurus_task=gene_thesaurus_task,

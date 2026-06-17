@@ -89,10 +89,12 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.residual_genetic_corr_ols import \
-    DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR
-from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.standard_analysis_decodeme_minus_pain_ols import \
-    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS
+from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.residual_genetic_corr_ols import (
+    DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.standard_analysis_decodeme_minus_pain_ols import (
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs_standard_analysis import (
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP,
 )
