@@ -1,12 +1,12 @@
-# GWAS By Subtraction
+# GWAS by Subtraction
 
-GWAS by subtraction[@demange2021investigating; @huang2024gwas] is a technique based on GenomicSEM[@grotzinger2019genomic] that orthogonally decomposes GWAS traits.
+GWAS by subtraction[@demange2021investigating; @huang2024gwas] is a GenomicSEM[@grotzinger2019genomic] technique that orthogonally decomposes GWAS traits.
 
-Here, we explain GWAS by subtraction twice: once at a high-level via linear algebra, and once a more granular level of detail via explicit probabilistic modeling.
+Here, we explain GWAS by subtraction twice: once at a high level via linear algebra, and more granularly via statistical modeling.
 
 ## Linear algebraic explanation
 
-### The Euclidian space of GWAS traits
+### Euclidian space
 
 A useful way to understand the GWAS-by-subtraction operation is via linear algebra.
 
@@ -23,15 +23,47 @@ From the above, it further follows that two traits are orthogonal ($\langle u,v 
 
 
 
-### GWAS by subtraction as perpendicular projection
+### Perpendicular projection
 
-Now suppose we have two GWAS traits $T_1, T_2$.  We aim to decompose $T_1$ into:
+Suppose we have two genetically correlated GWAS traits $T_1, T_2$. These traits are diagrammed as vectors below
 
-- A component $F'$ that is perfectly genetic correlated with $T_2$. 
-- A component $R'$ that is orthogonal (genetically uncorrelated) with $T_2$.
+![subtraction-vectors-1](https://github.com/user-attachments/assets/7c084d7b-bb4f-4eac-b118-7d993b5a8e7a)
 
+
+
+
+
+We aim to decompose $T_1$ into the sum of:
+
+- $F'$, which is perfectly genetically correlated with $T_2$, and
+- $R'$, which is orthogonal (genetically uncorrelated) to $T_2$.
+
+The orthogonal vector sum is diagrammed below:
+
+
+![subtraction-vectors-2](https://github.com/user-attachments/assets/a552ee13-08bb-41dd-b7d0-781e4088740b)
+
+
+Let $P$ denote the perpendicular projector[@halmos1958finite] onto the subspace spanned by $T_2$.  Then
+
+$$
+\begin{align}
+F'&= PT_1,\\
+R'&=(I-P)T_1.
+\end{align}
+$$
+
+### Interpretation
+
+The primary output of GWAS by subtraction is $R'$, the component of $T_1$ genetically uncorrelated with $T_2$. Studying $R'$ with standard post-GWAS analysis techniques like [MAGMA](MAGMA_Overview.md)[@de2015magma] and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] can shed light on the biological processes important to $T_1$ but absent from $T_2$.
+
+
+Note that as a linear-algebraic operation, GWAS by subtraction is valid insofar as trait genetics can be approximated by a simple linear model.  While the experience of the last decate and a half of genetics suggest that linear models are very useful, they are necessarily approximations of true biology, which is inherently nonlinear.
 
 
 
 
 ## Statistical explanation
+
+
+todo

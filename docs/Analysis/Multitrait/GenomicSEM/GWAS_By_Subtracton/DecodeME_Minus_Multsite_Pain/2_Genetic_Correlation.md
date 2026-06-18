@@ -1,7 +1,7 @@
 # Genetic Correlation
 
 
-[As mentioned previously](1_Overview_Subtraction.md), GWAS-by-subtraction[@demange2021investigating; @huang2024gwas] orthogonally decomposes a GWAS trait. As a test of my implementation, I measured the genetic correlation between ME/CFS[@genetics2025initial], multisite pain[@johnston2019genome], and their GWAS-by-subtraction residual $R$ (labeled as _"DecodeME_Minus_Pain_OLS"_  ). The results follow:
+[As mentioned previously](1_Overview_Subtraction.md), [GWAS by subtraction](../../../../../Bioinformatics_Concepts/GWAS_By_Subtraction.md)[@demange2021investigating; @huang2024gwas] orthogonally decomposes a GWAS trait. As a test of my implementation, I measured the [genetic correlation](../../../../../Bioinformatics_Concepts/Genetic_Correlation.md) between ME/CFS[@genetics2025initial], multisite pain[@johnston2019genome], and their GWAS-by-subtraction residual $R$ (labeled as _"DecodeME_Minus_Pain_OLS"_  ). The results follow:
 
 {{ markdown_table("docs/_figs/decode_me_minus_pain_ols_genetic_corr_ct_ldsc_corr_agg_markdown.mdx", title="GWAS-by-subtraction genetic correlations") }}
 
