@@ -1,6 +1,6 @@
 # MAGMA HBA
 
-I applied Human Brain Atlas[@siletti2023transcriptomic] (HBA) [MAGMA](../../../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] gene property analysis to the GWAS-by-subtraction[@demange2021investigating; @huang2024gwas] residual of [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] minus Johnston et al.'s GWAS of multisite pain[@johnston2019genome].  The results are plotted twice, first as a static plot, then as an interactive plot.
+I applied Human Brain Atlas[@siletti2023transcriptomic] (HBA) [MAGMA](../../../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] gene property analysis to the [GWAS-by-subtraction](../../../../../Bioinformatics_Concepts/GWAS_By_Subtraction.md)[@demange2021investigating; @huang2024gwas] residual of [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] minus Johnston et al.'s GWAS of multisite pain[@johnston2019genome].  The results are plotted twice, first as a static plot, then as an interactive plot.
 
 
 
