@@ -47,7 +47,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_BTN1A
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabgap1l_locus_37 import (
     DECODE_ME_RABGAP1L_REGION_PLOT_37,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import (
