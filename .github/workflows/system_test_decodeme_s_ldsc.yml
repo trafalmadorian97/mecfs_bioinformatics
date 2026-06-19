@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Git repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
       - name: Run S-LSDC integration test
         uses: ./.github/actions/run-system-test
         with:
