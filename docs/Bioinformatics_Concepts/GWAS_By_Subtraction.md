@@ -14,7 +14,7 @@ A useful way to understand the GWAS-by-subtraction operation is via linear algeb
 Consider a [Euclidian space](https://en.wikipedia.org/wiki/Euclidean_space) in which:
 
 - GWAS traits are vectors.
-- The [inner product](https://en.wikipedia.org/wiki/Inner_product_space) of two traits is their [genetic covariance](Genetic_Correlation.md).  Denote this inner product as $\langle \cdot,\cdot \rangle$.
+- The [inner product](https://en.wikipedia.org/wiki/Inner_product_space) of two traits is their [genetic covariance](Genetic_Correlation.md).  Denote the inner product of $u$ and $v$ as $\langle u,v \rangle$.
 - We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, the squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) of a trait is that trait's heritability: $\lVert v \rVert^2=h^2_v$ where $h^2_v$ is the heritability of $v$.
 
 
@@ -66,4 +66,66 @@ Note that as a linear-algebraic operation, GWAS by subtraction is valid insofar 
 ## Statistical explanation
 
 
-todo
+### Joint model
+
+We assume the following data-generating model
+
+$$
+\begin{align}
+F &=  x^T \beta_{F} + \epsilon_F\\
+R &=  x^T \beta_{R} + \epsilon_R\\
+T_1 &= \underbrace{a_F F}_{=:F'} + \underbrace{a_R R}_{=:R'}\\
+T_2&= bF\\
+\mathbb{Cov}(F,R)&=0\\
+\mathbb{Var}(F)&=1\\
+\mathbb{Var}(R)&=1
+\end{align}
+$$
+
+Where:
+- $T_1,T_2$ are the two traits of interest. We them them as random variables in $\mathbb{R}$.
+- There are $M\gg 0$ genetic variants.
+- $x\in\mathbb{R}^M$ is the random genotype. We assume $x$ has mean zero, but unlike in [LDSC](LDSC.md), we do not assume it has been variance standardized.  
+- $\beta_F,\beta_R\in\mathbb{R}^M$ are the underlying causal effects of the genetic variants.
+- $F,R$ are the two orthonormal underlying factors.
+
+
+### Marginal Model
+
+
+Let's now focus on SNP $i$, and develop a model around the marginal GWAS regression on this SNP.
+
+
+Define
+
+$$
+\begin{align}
+\hat\beta_{F,i}&= \frac{\mathrm{Cov}(F, x_i)}{\mathrm{Var}(x_i)}\\
+\zeta_{F,i}&=F-\hat\beta_{F,i} x_i\\
+\hat\beta_{R,i}&= \frac{\mathrm{Cov}(R, x_i)}{\mathrm{Var}(x_i)}\\
+\zeta_{R,i}&=R-\hat\beta_{R,i} x_i\\
+\end{align}
+$$
+
+
+This yields the re-written model
+
+$$
+\begin{align}
+T_1&=a_F F + a_R R\\
+T_2& = b F\\
+F&= \hat\beta_{F,i}x_i+\zeta_{F,i}\\
+R &= \hat\beta_{R,i}x_i+\zeta_{R,i}\\
+\mathrm{Cov}(F,R)&=0\\
+\mathrm{Cov}(F)&=1\\
+\mathrm{Cov}(R)&=1
+\end{align}
+$$
+
+### Theoretical covariance matrix
+
+Next, let us examine the covariance structure of the random variables $(x_i, T_1, T_2)$.  
+
+
+To be continued $\ldots$
+
