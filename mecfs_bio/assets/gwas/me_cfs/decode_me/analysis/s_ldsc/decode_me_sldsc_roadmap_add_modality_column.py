@@ -41,19 +41,29 @@ array(['DNase', 'H3K27ac', 'H3K4me3', 'H3K4me1', 'H3K9ac', 'H3K36me3'],
 """
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc import DECODE_ME_S_LDSC
 from mecfs_bio.build_system.task.pipe_dataframe_task import PipeDataFrameTask, CSVOutFormat
+from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
 
-DECODE_ME_S_LDSC_DNASE = PipeDataFrameTask.create(
+HYPOTHESIS_TESTING_COLUMNS = [
+    "_Corrected P Value_",
+    "Reject Null"
+]
+
+DROP_HP_COLS_PIPE = DropColPipe(
+    cols_to_drop=HYPOTHESIS_TESTING_COLUMNS,
+)
+
+DECODE_ME_S_LDSC_ASSAY_SPECIFIC = [PipeDataFrameTask.create(
     source_task=DECODE_ME_S_LDSC.partitioned_tasks["multi_tissue_chromatin"].add_categories_task_unwrap,
-    asset_id="decode_me_s_ldsc_dnase_results_only",
+    asset_id=f"decode_me_s_ldsc_result_multi_tissue_chromatin_{assay}_only",
     out_format=CSVOutFormat(sep=","),
     pipes=[
         FilterRowsByValue(
             target_column="Epigenetic_Assay",
-            valid_values=['DNase']
-        )
+            valid_values=[assay]
+        ),
+        DROP_HP_COLS_PIPE
     ]
-)
+) for assay in ["DNase","H3K27ac","H3K4me3","H3K4me1","H3K9ac","H3K36me3"]]
 
-DECODE_ME_S_LDSC_H3K27AC = PipeDataFrameTask.create()
 
