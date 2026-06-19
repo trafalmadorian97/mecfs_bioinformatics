@@ -39,7 +39,7 @@ $$
 Where:
 
 
-- The $\{C_k\}$ are sub of genetic variants.  The $C_k$ can describe functional chromosomal regions, like promoters, enhancers, or other regulatory regions.  They can also reflect gene-tissue expression.  For instance, a $C_k$ could mark SNPs that are near genes that have been observed to be over-expressed in the liver according to a [GTEx RNAseq dataset](../Data_Sources/GTEx_RNAseq_Data.md). The $C_k$ may overlap.
+- The $\{C_k\}$ are sets of genetic variants.  The $C_k$ can describe functional chromosomal regions, like promoters, enhancers, or other regulatory regions.  They can also reflect gene-tissue expression.  For instance, a $C_k$ could mark SNPs that are near genes that have been observed to be over-expressed in the liver according to a [GTEx RNAseq dataset](../Data_Sources/GTEx_RNAseq_Data.md). The $C_k$ may overlap.
 - The $\{\tau_k\}$ are heritability weights. $\tau_k\in\mathbb{R}$ measures the effect on the GWAS signal of a genetic variant belonging to category $C_k$.
 
 ## Procedure
