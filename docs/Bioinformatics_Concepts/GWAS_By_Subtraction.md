@@ -194,11 +194,14 @@ $$
 
 Re-arranging, we have
 
-$$
 
+
+
+
+$$
 \begin{align}
-\frac{\mathrm{Cov}(T_1, x_i) &=  \hat\beta_{T_1,i} H_i
-\frac{\mathrm{Cov}(T_2, x_i) &=  \hat\beta_{T_2,i} H_i.
+\mathrm{Cov}(T_1, x_i) &=  \hat\beta_{T_1,i} H_i\\
+\mathrm{Cov}(T_2, x_i) &=  \hat\beta_{T_2,i} H_i.
 \end{align}
 $$
 
