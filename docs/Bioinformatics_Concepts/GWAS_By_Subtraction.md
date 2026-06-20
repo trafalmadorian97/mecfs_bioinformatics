@@ -4,7 +4,7 @@ GWAS by subtraction[@demange2021investigating; @huang2024gwas] is a GenomicSEM[@
 
 Here, we explain GWAS by subtraction twice: once at a high level via linear algebra, and more granularly via statistical modeling.
 
-## Linear algebraic explanation
+## Linear algebra
 
 ### Euclidian space
 
@@ -63,7 +63,7 @@ Note that as a linear-algebraic operation, GWAS by subtraction is valid insofar 
 
 
 
-## Statistical explanation
+## Statistics 
 
 
 ### Joint model
@@ -83,9 +83,11 @@ T_2&= bF\\
 $$
 
 Where:
+
+
 - $T_1,T_2$ are the two traits of interest. We them them as random variables in $\mathbb{R}$.
 - There are $M\gg 0$ genetic variants.
-- $x\in\mathbb{R}^M$ is the random genotype. We assume $x$ has mean zero, but unlike in [LDSC](LDSC.md), we do not assume it has been variance standardized.  
+- $x\in\mathbb{R}^M$ is the random genotype. We assume $x$ has mean zero, but unlike in [LDSC](LDSC.md), we do not assume it has been variance standardized.  Let $H_i$ be the variance of the $i$th variant.
 - $\beta_F,\beta_R\in\mathbb{R}^M$ are the underlying causal effects of the genetic variants.
 - $F,R$ are the two orthonormal underlying factors.
 
@@ -101,9 +103,9 @@ Define
 $$
 \begin{align}
 \hat\beta_{F,i}&= \frac{\mathrm{Cov}(F, x_i)}{\mathrm{Var}(x_i)}\\
-\zeta_{F,i}&=F-\hat\beta_{F,i} x_i\\
+\zeta_{F,i}&=F-\beta_{F,i} x_i\\
 \hat\beta_{R,i}&= \frac{\mathrm{Cov}(R, x_i)}{\mathrm{Var}(x_i)}\\
-\zeta_{R,i}&=R-\hat\beta_{R,i} x_i\\
+\zeta_{R,i}&=R-\beta_{R,i} x_i\\
 \end{align}
 $$
 
@@ -122,10 +124,88 @@ R &= \hat\beta_{R,i}x_i+\zeta_{R,i}\\
 \end{align}
 $$
 
-### Theoretical covariance matrix
+We assume $\zeta_{F,i},\zeta_{R_i}$ are approximately independent $x_i$.  This is a good approximation so long as individual variant effects ($\beta_{R,i},\beta_{R,i}$) are small, as is the case for most non-Mendelian traits.
 
-Next, let us examine the covariance structure of the random variables $(x_i, T_1, T_2)$.  
+### Theoretical covariance
+
+Next, let us examine the genetic covariance structure of the random variables $(x_i, T_1, T_2)$.  
+
+
+$$
+\begin{align}
+&\mathrm{GCov}(X_i, T_1)\\
+&=\mathrm{GCov}(X_i, a_F F + a_R R)\\
+&=\mathrm{GCov}(X_i, a_F (\hat\beta_{F,i}X_i+\zeta_{F,i}) + a_R (\hat\beta_{R,i}X_i+\zeta_{R,i}))\\
+&\approx \left(a_F\hat\beta_{F,i}+a_R\hat\beta_{R,i}\right) H_i & \text{By approximate independence}
+\end{align}
+$$
+
+
+$$
+\begin{align}
+&\mathrm{Cov}(X_i, T_2)\\
+&=\mathrm{Cov}(X_i, b F)\\
+&=\mathrm{Cov}(X_i, b (\hat\beta_{F,i}X_i+\zeta_{F,i}))\\
+&\approx b\hat\beta_{F,i} H_i  & \text{By approximate independence}
+\end{align}
+$$
+
+
+$$
+\begin{align}
+&\mathrm{Var}(T_1)\\
+&=\mathrm{Var}(a_F F + a_R R)\\
+&=a_F^2+a_R^2 & \text{Since $F$ and $R$ are uncorrelated}
+\end{align}
+$$
+
+$$
+\begin{align}
+&\mathrm{Cov}(T_1,T_2)\\
+&= \mathrm{Cov}(a_F F + a_R R, bF)\\
+&=a_Fb & \text{Since $F$ and $R$ are uncorrelated}
+\end{align}
+$$
+
+
+Combining the above yields the following covariance matrix for $(x_i, T_1, T_2)$
+
+
+$$
+\begin{align}
+\Sigma_{\text{Theoretical}} &= \begin{bmatrix}
+H_i & (a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i & b\hat\beta_{F,i}H_i \\
+(a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i&  a_F^2+a_R^2 & a_F b   \\
+b\hat\beta_{F,i}H_i &a_F b & b^2
+\end{bmatrix}
+\end{align}
+$$
+
+### Empirical covariance
+
+The inputs to GWAS by subtraction are summary statistics for the traits $T_1,T_2$. For SNP i, these will include marginal regression coefficients
+
+$$
+\begin{align}
+\hat\beta_{T_1,i}&= \frac{\mathrm{Cov}(T_1, x_i)}{H_i}\\
+\hat\beta_{T_2,i}&= \frac{\mathrm{Cov}(T_2, x_i)}{H_i}.
+\end{align}
+$$
+
+Re-arranging, we have
+
+$$
+
+\begin{align}
+\frac{\mathrm{Cov}(T_1, x_i) &=  \hat\beta_{T_1,i} H_i
+\frac{\mathrm{Cov}(T_2, x_i) &=  \hat\beta_{T_2,i} H_i.
+\end{align}
+$$
+
+
 
 
 To be continued $\ldots$
+
+todo: Separate genetic noise $\zeta$ from non-genetic noise.  This is required when computing the genetic correlation
 
