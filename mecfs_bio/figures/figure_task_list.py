@@ -47,9 +47,6 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_BTN1A
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabgap1l_locus_37 import (
     DECODE_ME_RABGAP1L_REGION_PLOT_37,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc import (
-    DECODE_ME_S_LDSC,
-)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import (
     DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES,
 )
@@ -88,6 +85,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.mixer.decode_me_univariate_mixer import (
     DECODE_ME_UNIVARIATE_MIXER,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc import (
+    DECODE_ME_S_LDSC,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.residual_genetic_corr_ols import (
     DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR,
