@@ -4,9 +4,14 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc_export.decode_me_sld
     DECODE_ME_S_LDSC_ALL_TABLES_BONFERRONI_ZIP
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc_export.decode_me_sldsc_all_tables_combined import \
     DECODE_ME_SLDSC_ALL_TABLES_COMBINED
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc_export.decode_me_sldsc_all_tables_fdr import \
     DECODE_ME_S_LDSC_ALL_TABLES_FDR_ZIP
+"""
 
+array(['DNase', 'H3K27ac', 'H3K4me3', 'H3K4me1', 'H3K9ac', 'H3K36me3'],
+      dtype=object)
+"""
 
 def go():
     # task = DECODE_ME_S_LDSC.partitioned_tasks["multi_tissue_chromatin"].add_categories_task_unwrap

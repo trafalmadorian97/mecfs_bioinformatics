@@ -1,3 +1,7 @@
+"""
+Tasks to add FDR multiple testing correction to S-LDSC results, then export them as a zipped archive.
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc_export.decode_me_sldsc_all_tables import (

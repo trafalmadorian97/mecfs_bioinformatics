@@ -1,3 +1,7 @@
+"""
+Tasks to rename the individual S-LDSC result tables, and drop extraneous columns
+"""
+
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
