@@ -11,7 +11,13 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
 )
 
 DECODE_ME_SLDSC_TABLES_NO_EXTRA_LABELS = [
-    DECODE_ME_S_LDSC.partitioned_tasks[ref].cell_analysis_task
+   PipeDataFrameTask.create(
+    source_task=DECODE_ME_S_LDSC.partitioned_tasks[ref].cell_analysis_task,
+       pipes=[],
+       out_format=CSVOutFormat(","),
+       asset_id=f"decode_me_s_ldsc_{ref}_results",
+       backend="polars",
+   )
     for ref in ["cahoy_cns", "gtex_brain", "corces_atac"]
 ]
 
