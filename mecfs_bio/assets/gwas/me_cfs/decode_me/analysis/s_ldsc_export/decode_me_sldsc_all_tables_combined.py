@@ -1,6 +1,6 @@
 from wcmatch.pathlib import PurePath
 
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc_all_tables import (
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc_export.decode_me_sldsc_all_tables import (
     DECODE_ME_SLDSC_ALL_TABLES,
 )
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta

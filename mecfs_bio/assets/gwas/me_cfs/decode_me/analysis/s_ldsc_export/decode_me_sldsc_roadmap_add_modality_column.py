@@ -42,7 +42,7 @@ array(['DNase', 'H3K27ac', 'H3K4me3', 'H3K4me1', 'H3K9ac', 'H3K36me3'],
       dtype=object)
 """
 
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc import (
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
@@ -69,6 +69,7 @@ DECODE_ME_S_LDSC_ASSAY_SPECIFIC = [
         pipes=[
             FilterRowsByValue(target_column="Epigenetic_Assay", valid_values=[assay]),
             DROP_HP_COLS_PIPE,
+            DropColPipe(cols_to_drop=["Cell"]),
         ],
     )
     for assay in ["DNase", "H3K27ac", "H3K4me3", "H3K4me1", "H3K9ac", "H3K36me3"]

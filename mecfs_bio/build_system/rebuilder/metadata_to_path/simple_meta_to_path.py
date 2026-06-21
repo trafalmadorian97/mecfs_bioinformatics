@@ -30,6 +30,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta im
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
+from mecfs_bio.build_system.meta.result_archive_meta import ResultArchiveMeta
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
@@ -166,5 +167,15 @@ class SimpleMetaToPath(MetaToPath):
             return pth
         if isinstance(m, ResultDirectoryMeta):
             pth = self.root / "gwas" / m.trait / m.project / m.sub_dir / m.id
+            return pth
+        if isinstance(m, ResultArchiveMeta):
+            pth = (
+                self.root
+                / "gwas"
+                / m.trait
+                / m.project
+                / m.sub_dir
+                / (m.id + m.extension)
+            )
             return pth
         raise ValueError(f"Unknown meta {m} of type {type(m)}.")

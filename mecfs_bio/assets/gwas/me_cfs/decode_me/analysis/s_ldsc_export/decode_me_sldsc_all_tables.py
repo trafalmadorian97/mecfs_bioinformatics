@@ -1,7 +1,7 @@
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc import (
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc.decode_me_sldsc_roadmap_add_modality_column import (
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc_export.decode_me_sldsc_roadmap_add_modality_column import (
     DECODE_ME_S_LDSC_ASSAY_SPECIFIC,
     DROP_HP_COLS_PIPE,
 )
@@ -11,13 +11,13 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
 )
 
 DECODE_ME_SLDSC_TABLES_NO_EXTRA_LABELS = [
-   PipeDataFrameTask.create(
-    source_task=DECODE_ME_S_LDSC.partitioned_tasks[ref].cell_analysis_task,
-       pipes=[],
-       out_format=CSVOutFormat(","),
-       asset_id=f"decode_me_s_ldsc_{ref}_results",
-       backend="polars",
-   )
+    PipeDataFrameTask.create(
+        source_task=DECODE_ME_S_LDSC.partitioned_tasks[ref].cell_analysis_task,
+        pipes=[],
+        out_format=CSVOutFormat(","),
+        asset_id=f"decode_me_s_ldsc_{ref}_results",
+        backend="polars",
+    )
     for ref in ["cahoy_cns", "gtex_brain", "corces_atac"]
 ]
 
