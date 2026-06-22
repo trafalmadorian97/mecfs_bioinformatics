@@ -15,7 +15,7 @@ Consider a [Euclidian space](https://en.wikipedia.org/wiki/Euclidean_space) in w
 
 - GWAS traits are vectors.
 - The [inner product](https://en.wikipedia.org/wiki/Inner_product_space) of two traits is their [genetic covariance](Genetic_Correlation.md).  Denote the inner product of $u$ and $v$ as $\langle u,v \rangle$.
-- We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, the squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) of a trait is that trait's heritability: $\lVert v \rVert^2=h^2_v$ where $h^2_v$ is the heritability of $v$.
+- We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, a trait's squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) is its heritability: $\lVert v \rVert^2=h^2_v$ where $h^2_v$ is the heritability of $v$.
 
 
 
@@ -25,7 +25,7 @@ From the above, it further follows that two traits are orthogonal ($\langle u,v 
 
 ### Perpendicular projection
 
-Suppose we have two genetically correlated GWAS traits $T_1, T_2$. These traits are diagrammed as vectors below
+Let $T_1$ and $T_2$ be the two genetically correlated traits diagrammed as vectors below:
 
 ![subtraction-vectors-1](https://github.com/user-attachments/assets/7c084d7b-bb4f-4eac-b118-7d993b5a8e7a)
 
