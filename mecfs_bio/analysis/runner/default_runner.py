@@ -1,3 +1,10 @@
+"""
+Code configuring the default runner, which is used to run the main standard analysis
+
+Some of the default runner options can bet overridden by adding a yaml file at
+_DEFAULT_RUNNER_CONFIG_PATH.yaml
+"""
+
 import functools
 from pathlib import Path
 
