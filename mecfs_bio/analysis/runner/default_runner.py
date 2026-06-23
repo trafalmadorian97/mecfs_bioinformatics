@@ -22,7 +22,7 @@ logger = structlog.get_logger(__name__)
 _DEFAULT_RUNNER_CONFIG_PATH = Path("default_runner_config.yaml")
 
 _ASSET_ROOT_KEY = "asset_root"
-_INFO_STORE_KEY = "info_stor"
+_INFO_STORE_KEY = "info_store"
 
 
 @functools.cache
