@@ -265,3 +265,8 @@ gh_token_config.yaml
 link_check_state.json
 lychee_report.json
 .lycheecache/
+
+
+# Configuration of default runner.  Specifies location of asset store
+
+default_runner_config.yaml`
