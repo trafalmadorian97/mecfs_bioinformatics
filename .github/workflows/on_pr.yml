@@ -44,7 +44,7 @@ jobs:
           cache: true
       - name: Cache R Packages
         if: steps.changes.outputs.nonmark == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         id: cache-r
         with:
          path: r-libs
@@ -98,7 +98,7 @@ jobs:
         run: echo "date=$(date -u +'%Y-%m-%d')" >> "$GITHUB_OUTPUT"
       - name: Restore testmon cache # testmon cache can be used to skip tests if their dependencies have not changed
         if: steps.changes.outputs.nonmark == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           # SQLite runs in WAL mode on CI; the actual data lives in .testmondata-wal
           # until checkpointed, so we must cache the WAL/SHM sidecars too.
