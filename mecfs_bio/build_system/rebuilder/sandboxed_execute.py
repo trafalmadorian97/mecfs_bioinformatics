@@ -1,3 +1,5 @@
+import errno
+import os
 import shutil
 import tempfile
 from pathlib import Path
@@ -52,11 +54,40 @@ def sandboxed_execute(
 
 
 def _move_asset[A: Asset](asset: A, dst: Path) -> A:
-    if isinstance(asset, (FileAsset, DirectoryAsset)):
-        if dst.is_dir():
-            shutil.rmtree(dst)
-        return attr.evolve(
-            asset,
-            path=asset.path.rename(dst),
-        )
-    raise ValueError("Unknown Asset Type")
+    if not isinstance(asset, (FileAsset, DirectoryAsset)):
+        raise ValueError("Unknown Asset Type")
+    if dst.is_dir():
+        shutil.rmtree(dst)
+    try:
+        new_path = asset.path.rename(dst)
+    except OSError as exc:
+        if exc.errno != errno.EXDEV:
+            raise
+        new_path = _cross_device_move(asset.path, dst)
+    return attr.evolve(asset, path=new_path)
+
+
+def _cross_device_move(src: Path, dst: Path) -> Path:
+    """
+    Move src to dst when they live on different filesystems, where os.rename fails with
+    EXDEV.  The asset is first copied to a temporary sibling on dst's filesystem and then
+    atomically swapped into place with os.replace, so the canonical asset path never holds
+    a partially written asset.  The staging copy is removed if the copy itself fails.
+
+    src is left in place; it lives in the caller's scratch directory, which is cleaned up
+    separately.
+    """
+    staging = dst.parent / f".{dst.name}.partial-{os.getpid()}"
+    try:
+        if src.is_dir():
+            shutil.copytree(src, staging)
+        else:
+            shutil.copy2(src, staging)
+    except BaseException:
+        if staging.is_dir():
+            shutil.rmtree(staging, ignore_errors=True)
+        else:
+            staging.unlink(missing_ok=True)
+        raise
+    os.replace(staging, dst)
+    return dst
