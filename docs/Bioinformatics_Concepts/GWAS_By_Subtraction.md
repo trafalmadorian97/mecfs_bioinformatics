@@ -306,7 +306,16 @@ L_{2,2}
 \end{align}
 $$
 
-Let $g$
+Let $\theta\in\mathbb{R}^5$ denote the key parameters we solve for. That is,
+
+$$
+\begin{align}
+\theta&:= (a_F,a_R,b, \hat\beta_{F,i}, \hat\beta_{R,i})
+\end{align}
+$$
+
+
+Let $g:\mathbb{R}^5$
 
 
 
