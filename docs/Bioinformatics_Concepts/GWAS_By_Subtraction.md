@@ -228,6 +228,13 @@ H_i & \hat\beta_{T_1,i} H_i & \hat\beta_{T_2,i} H_i\\
 \end{align}
 $$
 
+### Solution
+
+
+We can equate $\Sigma_{\text{Empirical}}$ and $\Sigma_{\text{Theoretical}}$ to solve for $a_F, a_R, b, \hat\beta_{F,i}, \hat\beta_{R,i}$. We have:
+
+
+
 
 
 
