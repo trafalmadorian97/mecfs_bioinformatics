@@ -74,8 +74,8 @@ $$
 \begin{align}
 F &=  x^T \beta_{F} \\
 R &=  x^T \beta_{R} \\
-T_1 &= \underbrace{a_F F}_{=:F'} + \underbrace{a_R R}_{=:R'} + \delta_1 \\
-T_2&= bF +\delta_2  \\
+T_1 &= \underbrace{a_F F}_{=:F'} + \underbrace{a_R R}_{=:R'} + \delta_1 \label{joint_t_1} \\
+T_2&= bF +\delta_2 \label{joint_t_2}  \\
 \mathbb{Cov}(F,R)&=0\\
 \mathbb{Var}(F)&=1\\
 \mathbb{Var}(R)&=1.
@@ -234,9 +234,79 @@ $$
 We can equate $\Sigma_{\text{Empirical}}$ and $\Sigma_{\text{Theoretical}}$ to solve for $a_F, a_R, b, \hat\beta_{F,i}, \hat\beta_{R,i}$. We have:
 
 
+$$
+\begin{align}
+\Sigma_{\text{Theoretical}} & = \Sigma_{\text{Empirical}}\\
+\begin{bmatrix}
+H_i & (a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i & b\hat\beta_{F,i}H_i \\
+(a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i&  a_F^2+a_R^2 & a_F b   \\
+b\hat\beta_{F,i}H_i &a_F b & b^2
+\end{bmatrix}
+&=
+\begin{bmatrix}
+H_i & \hat\beta_{T_1,i} H_i & \hat\beta_{T_2,i} H_i\\
+\hat\beta_{T_1,i}H_i & L_{1,1} & L_{1,2}\\
+\hat\beta_{T_2,i} H_i & L_{1,2} & L_{2,2}
+\end{bmatrix}
+\end{align}
+$$
+
+Solving the lower-right $2\times 2$ submatrix, we have:
+
+$$
+\begin{align}
+b&=\sqrt{L_{2,2}} \label{b_solve} \\
+a_F&= \frac{L_{1,2}}{\sqrt{L_{2,2}}} \label{a_F_solve} \\
+a_R&=\sqrt{L_{1,1}-\frac{L_{1,2}^2}{L_{2,2}}}  \label{a_R_solve} .
+\end{align}
+$$
 
 
+Equating the first columns of the two matrices yields
 
+$$
+\begin{align}
+\hat\beta_{F,i}&=\frac{\hat\beta_{ T_2,i} }{b} \label{beta_F_solve}\\
+\hat\beta_{R,i}&=\frac{1}{a_R}\left(\hat\beta_{ T_1,i} -a_F\frac{\hat\beta_{ T_2,i} }{b}\right) \label{beta_R_solve}.
+\end{align}
+$$
+
+Note from $(\ref{b_solve}, \ref{a_F_solve}, \ref{a_R_solve})$ that $a_F, a_R$ and $b$ do not depend on the specific genetic variant $i$ under consideration.  This is consistent with the model specified in $(\ref{joint_t_1}, \ref{joint_t_2})$, in which $a_F, a_R$ and $b$ are global constants.
+
+
+To recap, given summary statistics for traits $T_1$ and $T_2$, we can:
+
+- Run LDSC and CT-LDSC to estimate $L_{1,1},L_{1,2}, L_{2,2}$.
+- Apply $(\ref{b_solve},\ref{a_F_solve}, \ref{a_R_solve})$ to estimate $a_F,a_R,$ and $b$.
+- Apply $(\ref{beta_F_solve, beta_R_solve})$ to estimate $\hat\beta_{F,i}, \hat\beta_{R,i}$ for each genetic variant $i$.
+
+
+We would like to pass the $\hat\beta_{R,i}$ to downstream analysis tools like [MAGMA](MAGMA_Overview.md) and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md).  Doing this requires estimates of standard errors.
+
+
+### Uncertainty
+
+Define $\nu\in\mathbb{R}^5$ to be the key non-redundant entries of $\Sigma_{\text{Empirical}}$.  That is
+
+$$
+\begin{align}
+\nu:= (\Sigma_{\text{Empirical}, (1,2) },
+\Sigma_{\text{Empirical}, (1,3),
+\Sigma_{\text{Empirical}, (2,2),
+\Sigma_{\text{Empirical}, (2,3),
+\Sigma_{\text{Empirical}, (3,3),
+)\\
+&= (
+\hat\beta_{T_1,i}H_i,
+\hat\beta_{T_2,i}H_i,
+L_{1,1},
+L_{1,2},
+L_{2,2}
+).
+\end{align}
+$$
+
+Let $g$
 
 
 
