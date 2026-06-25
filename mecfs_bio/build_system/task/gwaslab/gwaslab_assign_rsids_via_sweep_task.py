@@ -23,6 +23,7 @@ class GWASLabRSIDAssignmentOptions:
 class GWASLabAssignRSIDSViaSweepTask(Task):
     """
     Task to use GWASLab's sweep functionality to assign RSIDs
+    Note that this uses bcftools under the hood
     """
     sumstats_task: Task
     vcf_dir_task: Task
@@ -46,7 +47,7 @@ class GWASLabAssignRSIDSViaSweepTask(Task):
         vcf_path = vcf_asset.path/ self.vcf_filename
         sumstats.assign_rsid2(
             vcf_path=str(vcf_path),
-            thead=self.options.threads
+            threads=self.options.threads
         )
 
 
