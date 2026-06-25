@@ -159,8 +159,8 @@ $$
 $$
 \begin{align}
 &\mathrm{GVar}(T_1)\\
-&=\mathrm{GVar}(a_F F + a_R R+\delta_1) & \text{Since $\delta_1,\delta_2$ are non-genetic}\\
-&=\mathrm{Var}(a_F F + a_R R)\\
+&=\mathrm{GVar}(a_F F + a_R R+\delta_1) \\
+&=\mathrm{Var}(a_F F + a_R R)& \text{Since $\delta_1$ is non-genetic}\\
 &=a_F^2+a_R^2 & \text{Since $F$ and $R$ are uncorrelated}
 \end{align}
 $$
@@ -169,7 +169,7 @@ $$
 \begin{align}
 &\mathrm{GCov}(T_1,T_2)\\
 &= \mathrm{GCov}(a_F F + a_R R+\delta_1, bF+\delta_2)\\
-&= \mathrm{Cov}(a_F F + a_R R, bF)\\
+&= \mathrm{Cov}(a_F F + a_R R, bF) & \text{Since $\delta_1,\deta_2$ are non-genetic}\\
 &=a_Fb & \text{Since $F$ and $R$ are uncorrelated}
 \end{align}
 $$
@@ -212,7 +212,7 @@ $$
 \end{align}
 $$
 
-Furthermore, we can apply [LDSC](LDSC.md) and [CT-LDSC](Cross_Trait_LDSC.md) to the trait 1 and trait 2 summary statistics to estimate their genetic covariance and heritabilities (which equal their genetic variances, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$,
+Furthermore, we can apply [LDSC](LDSC.md) and [CT-LDSC](Cross_Trait_LDSC.md) to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
 
 
 Combining the above, we have that the empirical covariance matrix of $(x_i, T_1, T_2)$ is 
@@ -222,9 +222,8 @@ $$
 \Sigma_{\text{Empirical}} &= 
 \begin{bmatrix}
 H_i & \hat\beta_{T_1,i} H_i & \hat\beta_{T_2,i} H_i\\
-\hat\beta_{T_1,i} & L_{1,1} & L_{1,2}\\
+\hat\beta_{T_1,i}H_i & L_{1,1} & L_{1,2}\\
 \hat\beta_{T_2,i} H_i & L_{1,2} & L_{2,2}
-\end{align}
 \end{bmatrix}
 \end{align}
 $$
