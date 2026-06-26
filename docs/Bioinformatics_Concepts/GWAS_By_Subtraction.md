@@ -278,7 +278,7 @@ To recap, given summary statistics for traits $T_1$ and $T_2$, we can:
 
 - Run LDSC and CT-LDSC to estimate $L_{1,1},L_{1,2}, L_{2,2}$.
 - Apply $(\ref{b_solve},\ref{a_F_solve}, \ref{a_R_solve})$ to estimate $a_F,a_R,$ and $b$.
-- Apply $(\ref{beta_F_solve, beta_R_solve})$ to estimate $\hat\beta_{F,i}, \hat\beta_{R,i}$ for each genetic variant $i$.
+- Apply $(\ref{beta_F_solve}, \ref{beta_R_solve})$ to estimate $\hat\beta_{F,i}, \hat\beta_{R,i}$ for each genetic variant $i$.
 
 
 We would like to pass the $\hat\beta_{R,i}$ to downstream analysis tools like [MAGMA](MAGMA_Overview.md) and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md).  Doing this requires estimates of standard errors.
@@ -290,11 +290,10 @@ Define $\nu\in\mathbb{R}^5$ to be the key non-redundant entries of $\Sigma_{\tex
 
 $$
 \begin{align}
-\nu:= (\Sigma_{\text{Empirical}, (1,2) },
-\Sigma_{\text{Empirical}, (1,3),
-\Sigma_{\text{Empirical}, (2,2),
-\Sigma_{\text{Empirical}, (2,3),
-\Sigma_{\text{Empirical}, (3,3),
+\nu &:= (\Sigma_{\text{Empirical}, (1,2) }, \Sigma_{\text{Empirical}, (1,3)},
+\Sigma_{\text{Empirical}, (2,2)},
+\Sigma_{\text{Empirical}, (2,3)},
+\Sigma_{\text{Empirical}, (3,3)},
 )\\
 &= (
 \hat\beta_{T_1,i}H_i,
@@ -315,7 +314,50 @@ $$
 $$
 
 
-Let $g:\mathbb{R}^5$
+Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu$ to $\theta$ via the solution method [above](#solution).
+
+We can estimate the standard error of $\theta$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
+
+Roughly speaking, the delta method says that if $K$ is the sampling covariance matrix of $\nu$, and $J$ is the Jacobian of $g$, then the sampling covariance matrix of $theta$ can be estimated as
+
+$$
+\begin{align}
+JKJ^T
+\end{align}
+$$
+
+
+- Computing $J$ requires only elementary calculus.
+- To simplify matters, we approximate $K$ as being block diagonal.  That is,
+
+$$
+\begin{align}
+K \approx 
+\begin{bmatrix}
+V_{\text{SNP}} & 0 \\
+0 & V_{\text{LD}}
+\end{bmatrix}
+\end{align}
+$$
+
+where $V_{\text{SNP}}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^{2 \times 2}$. This amounts to the assumption that, to a first approximation, the global linkage-disequilibrium score regression outputs and the local $\beta$ outputs do no covary.
+
+- Standard linkage-disequilibrium score regression uses [the jackknife](https://en.wikipedia.org/wiki/Jackknife_resampling) to generate estimates of the sampling covariation of its output. We can use these estimates to populate $V_{\text{LD}}$.
+
+- We can estimate $V_{\text{SNP}}$ using the approach described in [my notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
+
+
+Using the above, we can apply the delta method to estimate the sampling covariance of $\theta$.
+
+
+### Output
+
+
+The main useful output of GWAS by subtraction is a full set of GWAS summary statistics for $R$ the component of trait $T_1$ orthogonal to trait  $T_2$.  We can then analyze these summary statistics using standard post-GWAS tools.
+
+
+
+
 
 
 
