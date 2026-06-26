@@ -79,10 +79,7 @@ def _cross_device_move(src: Path, dst: Path) -> Path:
     """
     staging = dst.parent / f".{dst.name}.partial-{os.getpid()}"
     try:
-        if src.is_dir():
-            shutil.copytree(src, staging)
-        else:
-            shutil.copy2(src, staging)
+        _copy_without_metadata(src, staging)
     except BaseException:
         if staging.is_dir():
             shutil.rmtree(staging, ignore_errors=True)
@@ -91,3 +88,22 @@ def _cross_device_move(src: Path, dst: Path) -> Path:
         raise
     os.replace(staging, dst)
     return dst
+
+
+def _copy_without_metadata(src: Path, dst: Path) -> None:
+    """
+    Copy a file or directory tree's contents without replicating source timestamps or
+    permissions.  Asset integrity is tracked by the build system's trace, not by
+    filesystem metadata, and some asset stores live on mounts (for example Windows drives
+    mounted in WSL via DrvFs) that reject utime/chmod, which makes shutil.copy2 and
+    shutil.copytree fail in copystat after the data has already been copied.  Copying data
+    only keeps cross-device moves working on those filesystems.
+    """
+    if src.is_dir():
+        for dirpath, _dirnames, filenames in os.walk(src):
+            rel = Path(dirpath).relative_to(src)
+            (dst / rel).mkdir(parents=True, exist_ok=True)
+            for name in filenames:
+                shutil.copyfile(Path(dirpath) / name, dst / rel / name)
+    else:
+        shutil.copyfile(src, dst)

@@ -33,7 +33,7 @@ class DownloadEntry:
     post_download_command: Callable[[Path], list[str]] | None
 
     @classmethod
-    def create_with_bcftools_index(cls, url: str, filename: str, md5hash: str|None):
+    def create_with_bcftools_index(cls, url: str, filename: str, md5hash: str | None):
         return cls(
             url=url,
             filename=filename,

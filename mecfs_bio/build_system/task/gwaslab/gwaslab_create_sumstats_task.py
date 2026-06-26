@@ -139,7 +139,6 @@ def _do_harmonization(
         ref_seq=gl.get_path(options.ref_seq),
         ref_infer=gl.get_path(options.ref_infer.name),
         ref_alt_freq=options.ref_infer.ref_alt_freq,
-
     )
     # gwaslab v4+ stores STATUS as Int64; cast to string for character-level access
     status_str = sumstats.data[GWASLAB_STATUS_COL].astype(str)
