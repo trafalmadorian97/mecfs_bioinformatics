@@ -271,7 +271,7 @@ $$
 \end{align}
 $$
 
-Note from $(\ref{b_solve}, \ref{a_F_solve}, \ref{a_R_solve})$ that $a_F, a_R$ and $b$ do not depend on the specific genetic variant $i$ under consideration.  This is consistent with the model specified in $(\ref{joint_t_1}, \ref{joint_t_2})$, in which $a_F, a_R$ and $b$ are global constants.
+Note from $(\ref{b_solve}, \ref{a_F_solve}, \ref{a_R_solve})$ that $a_F, a_R$ and $b$ do not depend on the specific genetic variant $i$ under consideration.  This is consistent with the model specified in $(\ref{joint_t_1}, \ref{joint_t_2})$, in which $a_F, a_R$ and $b$ are global.
 
 
 To recap, given summary statistics for traits $T_1$ and $T_2$, we can:
@@ -281,27 +281,27 @@ To recap, given summary statistics for traits $T_1$ and $T_2$, we can:
 - Apply $(\ref{beta_F_solve}, \ref{beta_R_solve})$ to estimate $\hat\beta_{F,i}, \hat\beta_{R,i}$ for each genetic variant $i$.
 
 
-We would like to pass the $\hat\beta_{R,i}$ to downstream analysis tools like [MAGMA](MAGMA_Overview.md) and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md).  Doing this requires estimates of standard errors.
+We would like to synthesize summary statistics for $R$ in order to pass them to downstream analysis tools like [MAGMA](MAGMA_Overview.md) and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md).  This requires estimates of the standard errors of $\hat\beta_{R,i}$.
 
 
 ### Uncertainty
 
-Define $\nu\in\mathbb{R}^5$ to be the key non-redundant entries of $\Sigma_{\text{Empirical}}$.  That is
+To estimate these standard errors, define $\nu\in\mathbb{R}^5$ to be the key non-redundant entries of $\Sigma_{\text{Empirical}}$.  That is
 
 $$
 \begin{align}
-\nu &:= (\Sigma_{\text{Empirical}, (1,2) }, \Sigma_{\text{Empirical}, (1,3)},
+\nu_i &:= (\Sigma_{\text{Empirical}, (1,2) }, \Sigma_{\text{Empirical}, (1,3)},
 \Sigma_{\text{Empirical}, (2,2)},
 \Sigma_{\text{Empirical}, (2,3)},
 \Sigma_{\text{Empirical}, (3,3)},
-)\\
+)^T\\
 &= (
 \hat\beta_{T_1,i}H_i,
 \hat\beta_{T_2,i}H_i,
 L_{1,1},
 L_{1,2},
 L_{2,2}
-).
+)^T.
 \end{align}
 $$
 
@@ -309,20 +309,20 @@ Let $\theta\in\mathbb{R}^5$ denote the key parameters we solve for. That is,
 
 $$
 \begin{align}
-\theta&:= (a_F,a_R,b, \hat\beta_{F,i}, \hat\beta_{R,i})
+\theta_i&:= (a_F,a_R,b, \hat\beta_{F,i}, \hat\beta_{R,i})^T
 \end{align}
 $$
 
 
-Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu$ to $\theta$ via the solution method [above](#solution).
+Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu_i$ to $\theta_i$ via the solution method [above](#solution).
 
-We can estimate the standard error of $\theta$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
+We estimate the standard error of $\theta$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
 
-Roughly speaking, the delta method says that if $K$ is the sampling covariance matrix of $\nu$, and $J$ is the Jacobian of $g$, then the sampling covariance matrix of $theta$ can be estimated as
+The delta method says that if $K$ is the sampling covariance matrix of $\nu$, and $J$ is the Jacobian of $g$, then the sampling covariance matrix of $\theta$ can be estimated as
 
 $$
 \begin{align}
-JKJ^T
+JKJ^T.
 \end{align}
 $$
 
@@ -344,16 +344,18 @@ where $V_{\text{SNP}}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^
 
 - Standard linkage-disequilibrium score regression uses [the jackknife](https://en.wikipedia.org/wiki/Jackknife_resampling) to generate estimates of the sampling covariation of its output. We can use these estimates to populate $V_{\text{LD}}$.
 
-- We can estimate $V_{\text{SNP}}$ using the approach described in [my notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
+- We can populate $V_{\text{SNP}}$ using the approach described in [the notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
 
 
-Using the above, we can apply the delta method to estimate the sampling covariance of $\theta$.
+Combining the above produces an estimate of $K$, to which we can apply the delta method to estimate the sampling covariance of $\theta_i$.
 
 
 ### Output
 
+We can use the above-described approach to estimate $\theta_i$ and its sampling covariance for each genetic variant $i$. 
 
-The main useful output of GWAS by subtraction is a full set of GWAS summary statistics for $R$ the component of trait $T_1$ orthogonal to trait  $T_2$.  We can then analyze these summary statistics using standard post-GWAS tools.
+
+The main useful output of GWAS by subtraction is a full set of GWAS summary statistics for $R$ the component of trait $T_1$ orthogonal to trait $T_2$.  We can then analyze these summary statistics using standard post-GWAS tools.
 
 
 
