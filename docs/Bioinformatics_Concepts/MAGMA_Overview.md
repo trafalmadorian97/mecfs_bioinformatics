@@ -107,5 +107,9 @@ The above discussion is based on:
 
 [Paper Critiquing the original MAGMA SNP-wise model](https://web.archive.org/web/20240724122326/https://www.biorxiv.org/content/10.1101/2020.08.20.260224v1) (MAGMA was updated in response to this critique.)
 
+[Talk by Rachel Brouwer on limitations of cell-type enrichment methods like MAGMA](https://youtu.be/ONfQTGR6FZI?si=DiEQeqRWFwUPZcx8)  (The speaker points out that for narrowly defined cell types like those found in the [Human Brain Atlas](../Data_Sources/HBA_scRNAseq.md), cell type enrichment analysis methods like MAGMA can be very sensitive to seemingly small parameter choices.  One should thus treat results with caution, unless they hold over a wide range of plausible parameter choices.)
+
+
+
 
 \bibliography
