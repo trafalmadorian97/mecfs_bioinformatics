@@ -676,7 +676,7 @@ $$
 [^MHC_Note]: LDSC implementations usually exclude the MHC region, partially for this reason.
 
 
-## Sampling noise and LDSC 
+## Sampling noise and LDSC
 
 
 For some applications such as Genomic SEM[@grotzinger2019genomic], it is of interest to use terms in the LDSC equation to

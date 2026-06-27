@@ -74,8 +74,8 @@ $$
 \begin{align}
 F &=  x^T \beta_{F} \\
 R &=  x^T \beta_{R} \\
-T_1 &= \underbrace{a_F F}_{=:F'} + \underbrace{a_R R}_{=:R'} + \delta_1 \\
-T_2&= bF +\delta_2  \\
+T_1 &= \underbrace{a_F F}_{=:F'} + \underbrace{a_R R}_{=:R'} + \delta_1 \label{joint_t_1} \\
+T_2&= bF +\delta_2 \label{joint_t_2}  \\
 \mathbb{Cov}(F,R)&=0\\
 \mathbb{Var}(F)&=1\\
 \mathbb{Var}(R)&=1.
@@ -169,7 +169,7 @@ $$
 \begin{align}
 &\mathrm{GCov}(T_1,T_2)\\
 &= \mathrm{GCov}(a_F F + a_R R+\delta_1, bF+\delta_2)\\
-&= \mathrm{Cov}(a_F F + a_R R, bF) & \text{Since $\delta_1,\deta_2$ are non-genetic}\\
+&= \mathrm{Cov}(a_F F + a_R R, bF) & \text{Since $\delta_1,\delta_2$ are non-genetic}\\
 &=a_Fb & \text{Since $F$ and $R$ are uncorrelated}
 \end{align}
 $$
@@ -212,7 +212,7 @@ $$
 \end{align}
 $$
 
-Furthermore, we can apply [LDSC](LDSC.md) and [CT-LDSC](Cross_Trait_LDSC.md) to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
+Furthermore, we can apply [LDSC](LDSC.md)[@bulik2015ld] and [CT-LDSC](Cross_Trait_LDSC.md)[@bulik2015atlas] to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
 
 
 Combining the above, we have that the empirical covariance matrix of $(x_i, T_1, T_2)$ is 
@@ -228,11 +228,136 @@ H_i & \hat\beta_{T_1,i} H_i & \hat\beta_{T_2,i} H_i\\
 \end{align}
 $$
 
+### Solution
+
+
+We can equate $\Sigma_{\text{Empirical}}$ and $\Sigma_{\text{Theoretical}}$ to solve for $a_F, a_R, b, \hat\beta_{F,i}, \hat\beta_{R,i}$. We have:
+
+
+$$
+\begin{align}
+\Sigma_{\text{Theoretical}} & = \Sigma_{\text{Empirical}}\\
+\begin{bmatrix}
+H_i & (a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i & b\hat\beta_{F,i}H_i \\
+(a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i&  a_F^2+a_R^2 & a_F b   \\
+b\hat\beta_{F,i}H_i &a_F b & b^2
+\end{bmatrix}
+&=
+\begin{bmatrix}
+H_i & \hat\beta_{T_1,i} H_i & \hat\beta_{T_2,i} H_i\\
+\hat\beta_{T_1,i}H_i & L_{1,1} & L_{1,2}\\
+\hat\beta_{T_2,i} H_i & L_{1,2} & L_{2,2}
+\end{bmatrix}
+\end{align}
+$$
+
+Solving the lower-right $2\times 2$ submatrix, we have:
+
+$$
+\begin{align}
+b&=\sqrt{L_{2,2}} \label{b_solve} \\
+a_F&= \frac{L_{1,2}}{\sqrt{L_{2,2}}} \label{a_F_solve} \\
+a_R&=\sqrt{L_{1,1}-\frac{L_{1,2}^2}{L_{2,2}}}  \label{a_R_solve} .
+\end{align}
+$$
+
+
+Equating the first columns of the two matrices yields
+
+$$
+\begin{align}
+\hat\beta_{F,i}&=\frac{\hat\beta_{ T_2,i} }{b} \label{beta_F_solve}\\
+\hat\beta_{R,i}&=\frac{1}{a_R}\left(\hat\beta_{ T_1,i} -a_F\frac{\hat\beta_{ T_2,i} }{b}\right) \label{beta_R_solve}.
+\end{align}
+$$
+
+Note from $(\ref{b_solve}, \ref{a_F_solve}, \ref{a_R_solve})$ that $a_F, a_R$ and $b$ do not depend on the specific genetic variant $i$ under consideration.  This is consistent with the model specified in $(\ref{joint_t_1}, \ref{joint_t_2})$, in which $a_F, a_R$ and $b$ are global.
+
+
+To recap, given summary statistics for traits $T_1$ and $T_2$, we can:
+
+- Run LDSC and CT-LDSC to estimate $L_{1,1},L_{1,2}, L_{2,2}$.
+- Apply $(\ref{b_solve},\ref{a_F_solve}, \ref{a_R_solve})$ to estimate $a_F,a_R,$ and $b$.
+- Apply $(\ref{beta_F_solve}, \ref{beta_R_solve})$ to estimate $\hat\beta_{F,i}, \hat\beta_{R,i}$ for each genetic variant $i$.
+
+
+We would like to synthesize summary statistics for $R$ in order to pass them to downstream analysis tools like [MAGMA](MAGMA_Overview.md) and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md).  This requires estimates of the standard errors of $\hat\beta_{R,i}$.
+
+
+### Uncertainty
+
+To estimate these standard errors, define $\nu\in\mathbb{R}^5$ to be the key non-redundant entries of $\Sigma_{\text{Empirical}}$.  That is
+
+$$
+\begin{align}
+\nu_i &:= (\Sigma_{\text{Empirical}, (1,2) }, \Sigma_{\text{Empirical}, (1,3)},
+\Sigma_{\text{Empirical}, (2,2)},
+\Sigma_{\text{Empirical}, (2,3)},
+\Sigma_{\text{Empirical}, (3,3)},
+)^T\\
+&= (
+\hat\beta_{T_1,i}H_i,
+\hat\beta_{T_2,i}H_i,
+L_{1,1},
+L_{1,2},
+L_{2,2}
+)^T.
+\end{align}
+$$
+
+Let $\theta\in\mathbb{R}^5$ denote the key parameters we solve for. That is,
+
+$$
+\begin{align}
+\theta_i&:= (a_F,a_R,b, \hat\beta_{F,i}, \hat\beta_{R,i})^T
+\end{align}
+$$
+
+
+Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu_i$ to $\theta_i$ via the solution method [above](#solution).
+
+We estimate the standard error of $\theta$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
+
+The delta method says that if $K_i$ is the sampling covariance matrix of $\nu_i$, and $J_i$ is the Jacobian of $g$ evaluated at $\nu_i$, then the sampling covariance matrix of $\theta$ can be estimated as
+
+$$
+\begin{align}
+Q_i:=J_iK_iJ_i^T.
+\end{align}
+$$
+
+
+- Computing $J_i$ requires only elementary calculus.
+- To simplify matters, we approximate $K_i$ as block diagonal.  That is,
+
+$$
+\begin{align}
+K_i \approx 
+\begin{bmatrix}
+V_{\text{SNP},i} & 0 \\
+0 & V_{\text{LD}}
+\end{bmatrix}
+\end{align}
+$$
+
+where $V_{\text{SNP},i}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^{2 \times 2}$. This amounts to the assumption that, to a first approximation, the global linkage-disequilibrium score regression outputs and the local $\hat\beta_i$ do no covary.
+
+- Standard linkage-disequilibrium score regression uses [the jackknife](https://en.wikipedia.org/wiki/Jackknife_resampling) to generate estimates of the sampling covariation of its output. We can use these estimates to populate $V_{\text{LD}}$.
+- We can populate $V_{\text{SNP},i}$ using the approach described in [the notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
+
+
+Combining the above produces an estimate of $K_i$, to which we can apply the delta method to estimate $Q_i$, the sampling covariance of $\theta_i$.
+
+
+### Output
+
+Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R,i}$ and its standard error.  By repeating the above-described procedure for each variant $i$, we can estimate $\hat\beta_{R,i}$ and its standard error for all variants $i$.  This provides us with a full set of GWAS summary statistics for $R$, the GWAS-by-subtraction  component of $T_1$ orthogonal to $T_2$. We can then analyze these summary statistics using standard post-GWAS tools.
 
 
 
 
 
-To be continued $\ldots$
+
+
 
 
