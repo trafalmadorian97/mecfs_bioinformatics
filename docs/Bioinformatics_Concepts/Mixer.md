@@ -12,7 +12,7 @@ MiXeR[@holland2020beyond;@frei2019bivariate;@frei2022improved] is a parametric m
 
 Univariate MiXeR[@holland2020beyond] models effect sizes in a GWAS of a single trait.
 
-Like [LDSC](LDSC.md), MiXeR assumes a linear data generating model:
+Like [LDSC](LDSC.md)[@bulik2015ld], MiXeR assumes a linear data generating model:
 
 
 $$
@@ -23,7 +23,7 @@ $$
 
 where 
 
-
+- There are $M$ genetic variants and $N$ individuals.
 - $y\in\mathbb{R}^N$ is the vector of phenotypes of study participants.  $y$ is normalized to have sample mean 0 and sample variance 1.
 - $G \in \mathbb{R}^{N \times M}$ is the genotype matrix of the study participants.  
 - $\beta\in\mathbb{R}^M$ is vector of causal regression coefficients of genetic variants.
@@ -50,11 +50,11 @@ Define:
 
 $$
 \begin{align}
-H_i&:= \mathrm{Var}(g_{j,i}) \text{ }\forall j.
+H_i&:= \mathrm{Var}(g_{k,i}) \text{ }\forall k.
 \end{align}
 $$
 
-
+where $g_{k,i}$ is the genotype of the $k$th individual at the $i$th variant.
 
 
 - The sample variance of genetic variant $i$,
@@ -102,7 +102,7 @@ $$
 Where:
 
 
-- $C$ is a Bernoulli random variable with parameter $\pi_1 \in (0,1)$.  
+- $C$ is a [Bernoulli random variable](https://en.wikipedia.org/wiki/Bernoulli_distribution) with parameter $\pi_1 \in (0,1)$.  
 - $\mathcal{N}(0,\sigma_\beta^2)$ is a Gaussian distribution with variance $\sigma_\beta^2>0$, and $\mathcal{N}(0,0)$ is a Dirac delta distribution[^dirac_note].
 - The Bernoulli and Gaussian distributions are independent of one another.
 
@@ -111,12 +111,12 @@ Where:
 By allowing some variants to have no effect, $(\ref{uni_mixer_core})$ is more general than the commonly used infinitesimal genomic model, which assumes that all variants affect the phenotype.
 
 
-### Next Steps
+[//]: # (### Next Steps)
 
 
 $(\ref{mixer_dgm})$ and $(\ref{uni_mixer_core})$ specify the core univariate MiXeR model. We now need a strategy to fit this model to data. The next steps are:
 
-- Write this model as a probability distribution over observed GWAS $z$-scores of genetic variants.
+- Write the MiXeR model as a probability distribution over observed GWAS $z$-scores of genetic variants.
 - Using this probability distribution, derive an efficient algorithm to fit the MiXeR model by maximum likelihood.
 
 
@@ -155,7 +155,7 @@ It follows that the $z$-score of variant $i$ is:
 $$
 \begin{align}
 z_i&:=\frac{\hat{\beta}_i}{\mathrm{SE}(\hat\beta_i) }\\
-&=\sum_j \beta_j \hat r_{i,j}\sqrt{\hat H_jN} + \frac{\epsilon^T g_i}{\sqrt{N \hat H_i}} \label{mixer_zscore_eq}
+&=\sum_j \beta_j \hat r_{i,j}\sqrt{\hat H_jN} + \frac{\epsilon^T g_i}{\sqrt{N \hat H_i}}. \label{mixer_zscore_eq}
 \end{align}
 $$
 
@@ -220,4 +220,4 @@ $$
 
 to be continued
 
-[^dirac_note]: $\beta_i\sim \mathcal{N}(0,0)$ means $P(\beta=0)=1$.
+[^dirac_note]: $\beta_i\sim \mathcal{N}(0,0)$ means $P(\beta_i=0)=1$.
