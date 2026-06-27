@@ -226,6 +226,7 @@ data/*
 output/*
 
 assets/*
+assets_2/*
 asset_store/*
 build_system/*
 
