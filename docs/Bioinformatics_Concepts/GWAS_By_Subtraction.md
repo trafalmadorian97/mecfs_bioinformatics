@@ -169,7 +169,7 @@ $$
 \begin{align}
 &\mathrm{GCov}(T_1,T_2)\\
 &= \mathrm{GCov}(a_F F + a_R R+\delta_1, bF+\delta_2)\\
-&= \mathrm{Cov}(a_F F + a_R R, bF) & \text{Since $\delta_1,\deta_2$ are non-genetic}\\
+&= \mathrm{Cov}(a_F F + a_R R, bF) & \text{Since $\delta_1,\delta_2$ are non-genetic}\\
 &=a_Fb & \text{Since $F$ and $R$ are uncorrelated}
 \end{align}
 $$
@@ -212,7 +212,7 @@ $$
 \end{align}
 $$
 
-Furthermore, we can apply [LDSC](LDSC.md) and [CT-LDSC](Cross_Trait_LDSC.md) to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
+Furthermore, we can apply [LDSC](LDSC.md)[@bulik2015ld] and [CT-LDSC](Cross_Trait_LDSC.md)[@bulik2015atlas] to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
 
 
 Combining the above, we have that the empirical covariance matrix of $(x_i, T_1, T_2)$ is 
@@ -318,44 +318,40 @@ Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu_i$ to $\t
 
 We estimate the standard error of $\theta$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
 
-The delta method says that if $K$ is the sampling covariance matrix of $\nu$, and $J$ is the Jacobian of $g$, then the sampling covariance matrix of $\theta$ can be estimated as
+The delta method says that if $K_i$ is the sampling covariance matrix of $\nu_i$, and $J_i$ is the Jacobian of $g$ evaluated at $\nu_i$, then the sampling covariance matrix of $\theta$ can be estimated as
 
 $$
 \begin{align}
-JKJ^T.
+Q_i:=J_iK_iJ_i^T.
 \end{align}
 $$
 
 
-- Computing $J$ requires only elementary calculus.
-- To simplify matters, we approximate $K$ as being block diagonal.  That is,
+- Computing $J_i$ requires only elementary calculus.
+- To simplify matters, we approximate $K_i$ as block diagonal.  That is,
 
 $$
 \begin{align}
-K \approx 
+K_i \approx 
 \begin{bmatrix}
-V_{\text{SNP}} & 0 \\
+V_{\text{SNP},i} & 0 \\
 0 & V_{\text{LD}}
 \end{bmatrix}
 \end{align}
 $$
 
-where $V_{\text{SNP}}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^{2 \times 2}$. This amounts to the assumption that, to a first approximation, the global linkage-disequilibrium score regression outputs and the local $\beta$ outputs do no covary.
+where $V_{\text{SNP},i}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^{2 \times 2}$. This amounts to the assumption that, to a first approximation, the global linkage-disequilibrium score regression outputs and the local $\hat\beta_i$ do no covary.
 
 - Standard linkage-disequilibrium score regression uses [the jackknife](https://en.wikipedia.org/wiki/Jackknife_resampling) to generate estimates of the sampling covariation of its output. We can use these estimates to populate $V_{\text{LD}}$.
+- We can populate $V_{\text{SNP},i}$ using the approach described in [the notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
 
-- We can populate $V_{\text{SNP}}$ using the approach described in [the notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
 
-
-Combining the above produces an estimate of $K$, to which we can apply the delta method to estimate the sampling covariance of $\theta_i$.
+Combining the above produces an estimate of $K_i$, to which we can apply the delta method to estimate $Q_i$, the sampling covariance of $\theta_i$.
 
 
 ### Output
 
-We can use the above-described approach to estimate $\theta_i$ and its sampling covariance for each genetic variant $i$. 
-
-
-The main useful output of GWAS by subtraction is a full set of GWAS summary statistics for $R$ the component of trait $T_1$ orthogonal to trait $T_2$.  We can then analyze these summary statistics using standard post-GWAS tools.
+Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R,i}$ and its standard error.  By repeating the above-described procedure for each variant $i$, we can estimate $\hat\beta_{R,i}$ and its standard error for all variants $i$.  This provides us with a full set of GWAS summary statistics for $R$, the GWAS-by-subtraction  component of $T_1$ orthogonal to $T_2$. We can then analyze these summary statistics using standard post-GWAS tools.
 
 
 
@@ -363,6 +359,5 @@ The main useful output of GWAS by subtraction is a full set of GWAS summary stat
 
 
 
-To be continued $\ldots$
 
 
