@@ -11,6 +11,13 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
     CSVOutFormat,
     PipeDataFrameTask,
 )
+from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
+
+DROP_LOWER_CASE_NAME_PIPE = DropColPipe(
+    cols_to_drop=["lower case name"]
+)
+
+
 
 BUILD_38_DECODE_ME_SLDSC_TABLES_NO_EXTRA_LABELS = [
     PipeDataFrameTask.create(
@@ -28,12 +35,23 @@ BUILD_38_DECODE_ME_SLDSC_TABLES_EXTRA_WITH_EXTRA_LABELS = [
         source_task=DECODE_ME_S_LDSC_BUILD_38.partitioned_tasks[
             ref
         ].add_categories_task_unwrap,
+        pipes=[DROP_HP_COLS_PIPE, DROP_LOWER_CASE_NAME_PIPE],
+        out_format=CSVOutFormat(","),
+        asset_id=f"build_38_decode_me_s_ldsc_{ref}_results",
+        backend="polars",
+    )
+    for ref in ["immgen"]
+] + [
+    PipeDataFrameTask.create(
+        source_task=DECODE_ME_S_LDSC_BUILD_38.partitioned_tasks[
+            ref
+        ].add_categories_task_unwrap,
         pipes=[DROP_HP_COLS_PIPE],
         out_format=CSVOutFormat(","),
         asset_id=f"build_38_decode_me_s_ldsc_{ref}_results",
         backend="polars",
     )
-    for ref in ["immgen", "multi_tissue_gene_expression"]
+    for ref in [ "multi_tissue_gene_expression"]
 ]
 
 
