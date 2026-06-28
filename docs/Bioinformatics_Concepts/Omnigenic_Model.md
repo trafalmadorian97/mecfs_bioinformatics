@@ -1,7 +1,7 @@
 
 # Omnigenic Model
 
-In a [small-world network](https://en.wikipedia.org/wiki/Small-world_network), the number of steps between two random nodes  grows at a rate proportional to the logarithm of the number of nodes.  Consequently, even in very large small-world networks, nodes are separated by few steps.  The game [Six Degrees of Kevin Bacon](https://en.wikipedia.org/wiki/Six_degrees_of_separation#Kevin_Bacon_Game) is a classic illustration.
+In a [small-world network](https://en.wikipedia.org/wiki/Small-world_network), the number of steps between two random nodes  grows at a rate proportional to the logarithm of the number of nodes.  Consequently, even in very large small-world networks, nodes are separated by only a few steps.  The game [Six Degrees of Kevin Bacon](https://en.wikipedia.org/wiki/Six_degrees_of_separation#Kevin_Bacon_Game) is a classic illustration.
 
 
 The Omnigenic Model[@boyle2017expanded]  proposes that gene regulatory pathways constitute a small-world network.  For a typical trait, even though only a small number of **core genes** directly control the trait, a large number of **peripheral genes** are within a few regulatory steps of the core genes.  Genetic variants that affect the peripheral genes produce cascading effects through the regulatory network that ultimately affect the core genes and therefore the trait.  

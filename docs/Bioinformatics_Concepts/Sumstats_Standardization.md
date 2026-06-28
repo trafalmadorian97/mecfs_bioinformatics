@@ -65,7 +65,7 @@ This principle is demonstrated by the following examples from the [Center for St
 ![example_2_normalization](https://github.com/user-attachments/assets/962344dd-4ce7-42a1-8912-27448c96cfc7)
 
 
-Clearly, what is needed is a unique canonical form to which all equivalent variants can be normalized.  Fortunately, there is a algorithm[@tan2015unified] called *left-normalization* that does just this. While many modern GWAS pre-left-normalize their alleles, it is often advisable to run this left-normalization algorithm, just to be sure.
+What is needed is a unique canonical form to which all equivalent variants can be normalized.  Fortunately, there is an algorithm[@tan2015unified] called *left-normalization* that converts variant to such a canonical form. While many modern GWAS pre-left-normalize their alleles, it is often advisable to run the left-normalization algorithm, just to be sure.
 
 ### Algorithm details
 
