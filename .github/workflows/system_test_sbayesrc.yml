@@ -1,0 +1,20 @@
+name: system_test_sbayesrc
+on:
+  schedule:
+    - cron: "0 5 * * 4"   #Run Thursday at 5 UTC
+  workflow_dispatch: {}
+
+jobs:
+  sbayesrc_system_test:
+    timeout-minutes: 600
+    name: Run SBayesRC system test
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7
+      - name: Run SBayesRC system test
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_sbayesrc.py
