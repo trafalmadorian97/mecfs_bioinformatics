@@ -43,6 +43,7 @@ class ZipDirTask(Task):
                 id=AssetId(asset_id),
                 trait=source_meta.trait,
                 project=source_meta.project,
+                # sub_dir=source_meta.sub_dir,
                 extension=".zip",
             )
         else:
