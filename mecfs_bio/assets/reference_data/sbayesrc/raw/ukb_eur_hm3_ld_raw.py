@@ -24,5 +24,5 @@ SBAYESRC_UKB_EUR_HM3_LD_RAW = DownloadFileTask(
         extension=".zip",
     ),
     url="https://gctbhub.cloud.edu.au/data/SBayesRC/resources/v2.0/LD/HapMap3/ukbEUR_HM3.zip",
-    md5_hash=None,
+    md5_hash="773d1001afe8a113b90016a27858b0a2",
 )
