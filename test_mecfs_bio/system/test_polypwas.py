@@ -123,9 +123,11 @@ def test_polypwas_train_then_assoc(tmp_path: Path):
     """
     Train ANGPTL3 weights via the SBayesRC Docker path, then run assoc.
 
-    SBayesRC's random seed makes the exact Z-scores vary, so we assert the cis
-    signal is strongly positive and the trans signal strongly negative rather than
-    pinning exact values.
+    SBayesRC uses a fixed default seed (22), but the wrapper exposes no seed flag
+    and the multithreaded MCMC can introduce small run-to-run float differences
+    (and our weights differ slightly from the published pre-trained ones).  So we
+    assert the cis signal is strongly positive and the trans signal strongly
+    negative rather than pinning exact values.
     """
     resources = prepare_example_resources(include_weights=False)
 
