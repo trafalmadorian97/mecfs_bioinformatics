@@ -63,7 +63,7 @@ def test_sbayesrc_example(tmp_path: Path):
             ),
             external_path=ma_path,
         ),
-        filename=ma_path.name,
+        filename=None,
         alias="sbayesrc_example",
     )
     sbayesrc_task = SBayesRCTask.create(

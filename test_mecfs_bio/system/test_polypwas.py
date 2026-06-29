@@ -56,8 +56,9 @@ def _ma_source(ma_path: Path, trait: str) -> PreformattedSBayesRCDataSource:
         ),
         external_path=ma_path,
     )
-    # filename keeps the .ma.gz suffix so polypwas reads the gzip correctly.
-    return PreformattedSBayesRCDataSource(task=task, filename=ma_path.name, alias=trait)
+    # The task produces a file asset, so filename is None; prepare_cojo_ma_input_file
+    # preserves the source name (and its .ma.gz suffix) when staging it.
+    return PreformattedSBayesRCDataSource(task=task, filename=None, alias=trait)
 
 
 def _gene_info_task(gene_info_path: Path) -> StampedExternalFileTask:

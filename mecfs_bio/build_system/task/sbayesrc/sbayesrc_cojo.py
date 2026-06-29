@@ -61,9 +61,9 @@ def _with_sample_size_column(
     """
     Add the COJO N column from the phenotype info.
 
-    For a quantitative phenotype with no recorded total sample size we assume the
-    incoming frame already carries an N column (gwaslab names it N as well).  For
-    a binary phenotype we use the effective sample size, consistent with how the
+    For a quantitative phenotype with no recorded total sample size the incoming
+    frame must already carry an N column (gwaslab names it N as well).  For a
+    binary phenotype we use the effective sample size, consistent with how the
     rest of the codebase prepares per-SNP sample sizes.
     """
     if isinstance(phenotype, QuantPhenotype):
@@ -71,6 +71,12 @@ def _with_sample_size_column(
             return frame.with_columns(
                 nw.lit(phenotype.total_sample_size).alias(COJO_N_COL)
             )
+        # Fail fast (shift-left) rather than silently produce a frame missing N.
+        columns = frame.collect_schema().names()
+        assert COJO_N_COL in columns, (
+            f"QuantPhenotype has no total_sample_size and the input frame has no "
+            f"'{COJO_N_COL}' column (columns: {columns}); cannot determine per-SNP N."
+        )
         return frame
     if isinstance(phenotype, BinaryPhenotypeSampleInfo):
         return frame.with_columns(

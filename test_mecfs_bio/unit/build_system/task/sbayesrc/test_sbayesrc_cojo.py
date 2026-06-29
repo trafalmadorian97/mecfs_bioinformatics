@@ -4,6 +4,7 @@ from pathlib import Path
 
 import narwhals as nw
 import polars as pl
+import pytest
 
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     BinaryPhenotypeSampleInfo,
@@ -52,6 +53,24 @@ def test_write_cojo_ma_quant_without_total_keeps_existing_n(tmp_path: Path):
     result = pl.read_csv(out_path, separator="\t")
     assert result.columns == COJO_COLUMN_ORDER
     assert result["N"].to_list() == [129850, 129799, 129830]
+
+
+def test_write_cojo_ma_quant_without_total_and_no_n_fails_fast(tmp_path: Path):
+    frame = nw.from_native(
+        pl.DataFrame(
+            {
+                "rsID": ["rs1"],
+                "EA": ["A"],
+                "NEA": ["G"],
+                "EAF": [0.5],
+                "BETA": [0.1],
+                "SE": [0.05],
+                "P": [0.1],
+            }
+        )
+    ).lazy()
+    with pytest.raises(AssertionError):
+        write_cojo_ma(frame, QuantPhenotype(), tmp_path / "trait.ma")
 
 
 def test_write_cojo_ma_binary_uses_effective_sample_size(tmp_path: Path):

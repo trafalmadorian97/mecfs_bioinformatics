@@ -37,7 +37,7 @@ def _gwas_summary_source(trait: str) -> PreformattedSBayesRCDataSource:
                 extension=".ma",
             )
         ),
-        filename=f"{trait}.ma",
+        filename=None,
         alias=trait,
     )
 
