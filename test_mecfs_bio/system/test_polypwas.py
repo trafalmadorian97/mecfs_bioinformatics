@@ -1,20 +1,21 @@
 """
 System tests for the polypwas tasks (train + assoc).
 
-These are slow-tier tests: they run polypwas download-example, which fetches the
-HapMap3 LD reference (~3 GB) plus the bundled ANGPTL3 + LDL example, and the train
-test additionally drives SBayesRC through the Docker image.  They are intended for
+These are slow-tier tests: prepare_example_resources fetches the HapMap3 LD
+reference (~3 GB) plus the bundled ANGPTL3 + LDL example, and the train test
+additionally drives SBayesRC through the Docker image.  They are intended for
 scheduled / on-demand runs, not the default fast suite.
 
 Reference (polypwas README, Option A/B): the bundled ANGPTL3 + LDL example yields
 CIS_Z ~ 17.21 and TRANS_Z ~ -45.68 when using the published pre-trained weights.
 """
 
-import subprocess
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import polars as pl
+from polypwas.resource import prepare_example_resources
 
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
@@ -36,25 +37,14 @@ from test_mecfs_bio.system.util import (
 _PROJECT = "polypwas_example"
 
 
-def _download_example(tmp_path: Path, include_weights: bool) -> Path:
-    """Run polypwas download-example in tmp_path and return its data directory."""
-    args = ["polypwas", "download-example"]
-    if include_weights:
-        args.append("--include-weights")
-    subprocess.run(args, cwd=tmp_path, check=True)
-    return tmp_path / "data"
-
-
-def _ld_task(data_dir: Path) -> StampedExternalDirectoryTask:
+def _ld_task(ldm_dir: Path) -> StampedExternalDirectoryTask:
     return StampedExternalDirectoryTask(
         meta=SimpleDirectoryMeta(id="polypwas_example_ld"),
-        external_path=data_dir / "ldm" / "ukbEUR_HM3",
+        external_path=ldm_dir,
     )
 
 
-def _ma_source(
-    data_dir: Path, filename: str, trait: str
-) -> PreformattedSBayesRCDataSource:
+def _ma_source(ma_path: Path, trait: str) -> PreformattedSBayesRCDataSource:
     task = StampedExternalFileTask(
         meta=GWASSummaryDataFileMeta(
             id=f"polypwas_example_{trait}_ma",
@@ -64,9 +54,17 @@ def _ma_source(
             project_path=None,
             extension=".ma.gz",
         ),
-        external_path=data_dir / "examples" / filename,
+        external_path=ma_path,
     )
-    return PreformattedSBayesRCDataSource(task=task, filename=filename, alias=trait)
+    # filename keeps the .ma.gz suffix so polypwas reads the gzip correctly.
+    return PreformattedSBayesRCDataSource(task=task, filename=ma_path.name, alias=trait)
+
+
+def _gene_info_task(gene_info_path: Path) -> StampedExternalFileTask:
+    return StampedExternalFileTask(
+        meta=SimpleFileMeta(id="polypwas_example_angptl3_gene_info"),
+        external_path=gene_info_path,
+    )
 
 
 def _make_runner(tmp_path: Path) -> SimpleRunner:
@@ -86,22 +84,26 @@ def test_polypwas_assoc_pretrained(tmp_path: Path):
     polypwas assoc needs no R, so this exercises PolypwasAssocTask end-to-end
     against the readme's reference Z-scores.
     """
-    data_dir = _download_example(tmp_path, include_weights=True)
+    resources = prepare_example_resources(include_weights=True)
 
     weights_task = StampedExternalFileTask(
-        meta=SimpleFileMeta(id="polypwas_example_angptl3_weights"),
-        external_path=data_dir / "examples" / "angptl3.wgts.gz",
-    )
-    gene_info_task = StampedExternalFileTask(
-        meta=SimpleFileMeta(id="polypwas_example_angptl3_gene_info"),
-        external_path=data_dir / "examples" / "angptl3.gene.tsv",
+        # Keep the .wgts.gz suffix: polypwas reads weights with pandas, which
+        # decompresses by extension.
+        meta=FilteredGWASDataMeta(
+            id="polypwas_example_angptl3_weights",
+            trait="angptl3",
+            project=_PROJECT,
+            sub_dir=PurePath("processed"),
+            extension=".wgts.gz",
+        ),
+        external_path=resources["weights"],
     )
     assoc_task = PolypwasAssocTask.create(
         asset_id="polypwas_assoc_angptl3_ldl_pretrained",
         weights_task=weights_task,
-        gwas_source=_ma_source(data_dir, "ldl.ma.gz", "ldl"),
-        ld_reference_directory_task=_ld_task(data_dir),
-        gene_info_task=gene_info_task,
+        gwas_source=_ma_source(resources["gwas"], "ldl"),
+        ld_reference_directory_task=_ld_task(resources["ldm_dir"]),
+        gene_info_task=_gene_info_task(resources["gene_info"]),
     )
 
     info_store = tmp_path / "info_store.yaml"
@@ -124,24 +126,20 @@ def test_polypwas_train_then_assoc(tmp_path: Path):
     signal is strongly positive and the trans signal strongly negative rather than
     pinning exact values.
     """
-    data_dir = _download_example(tmp_path, include_weights=False)
+    resources = prepare_example_resources(include_weights=False)
 
     train_task = PolypwasTrainTask.create(
         asset_id="polypwas_train_angptl3",
-        pqtl_source=_ma_source(data_dir, "angptl3.ma.gz", "angptl3"),
-        ld_reference_directory_task=_ld_task(data_dir),
+        pqtl_source=_ma_source(resources["pqtl"], "angptl3"),
+        ld_reference_directory_task=_ld_task(resources["ldm_dir"]),
         threads=4,
-    )
-    gene_info_task = StampedExternalFileTask(
-        meta=SimpleFileMeta(id="polypwas_example_angptl3_gene_info"),
-        external_path=data_dir / "examples" / "angptl3.gene.tsv",
     )
     assoc_task = PolypwasAssocTask.create(
         asset_id="polypwas_assoc_angptl3_ldl_trained",
         weights_task=train_task,
-        gwas_source=_ma_source(data_dir, "ldl.ma.gz", "ldl"),
-        ld_reference_directory_task=_ld_task(data_dir),
-        gene_info_task=gene_info_task,
+        gwas_source=_ma_source(resources["gwas"], "ldl"),
+        ld_reference_directory_task=_ld_task(resources["ldm_dir"]),
+        gene_info_task=_gene_info_task(resources["gene_info"]),
     )
 
     info_store = tmp_path / "info_store.yaml"

@@ -22,7 +22,12 @@ SBAYESRC_IMAGE = "zhiliz/sbayesrc:0.2.6"
 
 
 def _get_docker_command(extra_mounts: Mapping[Path, Path]) -> list[str]:
-    inner_docker_command = "docker run --rm --shm-size=2g -v $PWD:/home"
+    # Run as the host user so container outputs are not root-owned (this Docker is
+    # not rootless); set HOME to the writable working dir for R.
+    inner_docker_command = (
+        "docker run --rm --shm-size=2g "
+        "--user $(id -u):$(id -g) -e HOME=/home -v $PWD:/home"
+    )
     for key, value in extra_mounts.items():
         inner_docker_command += f" -v {str(key)}:{str(value)}"
     inner_docker_command += " -w /home"
@@ -68,10 +73,13 @@ def write_docker_rscript_shim(
         mounts.append(f'-v "{resolved}":"{resolved}"')
     mount_str = " ".join(mounts)
     # The image entrypoint is the SBayesRC wrapper, so override it to run Rscript.
+    # Run as the host user (this Docker is not rootless) so SBayesRC's output files
+    # are not root-owned, which would otherwise break polypwas's tempdir cleanup.
     shim_path.write_text(
         "#!/usr/bin/env bash\n"
         "set -euo pipefail\n"
-        f'exec docker run --rm {mount_str} -w "$PWD" '
+        f'exec docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp '
+        f'{mount_str} -w "$PWD" '
         f'--entrypoint Rscript {SBAYESRC_IMAGE} "$@"\n'
     )
     shim_path.chmod(shim_path.stat().st_mode | stat.S_IEXEC | stat.S_IXGRP)
