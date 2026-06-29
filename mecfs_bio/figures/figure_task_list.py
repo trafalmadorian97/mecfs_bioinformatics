@@ -224,6 +224,24 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "adult_brain"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "cortical_neuron"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "fetal_brain"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "midbrain_da"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "ipsc_derived_astro"
+    ].gene_manhattan_plot_task,
+    DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
+        "ipsc_derived_neuro"
+    ].gene_manhattan_plot_task,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,

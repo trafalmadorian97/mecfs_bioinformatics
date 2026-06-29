@@ -201,7 +201,7 @@ class MagmaGeneSource(GeneManhattanSource):
     magma_task: Task
     gene_thesaurus_task: Task
     genome_build: GenomeBuild
-    max_p_value: float | None = 0.1
+    max_p_value: float | None = 0.01
 
     @property
     def deps(self) -> list[Task]:
