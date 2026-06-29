@@ -13,10 +13,7 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
 )
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 
-DROP_LOWER_CASE_NAME_PIPE = DropColPipe(
-    cols_to_drop=["lower case name"]
-)
-
+DROP_LOWER_CASE_NAME_PIPE = DropColPipe(cols_to_drop=["lower case name"])
 
 
 BUILD_38_DECODE_ME_SLDSC_TABLES_NO_EXTRA_LABELS = [
@@ -51,7 +48,7 @@ BUILD_38_DECODE_ME_SLDSC_TABLES_EXTRA_WITH_EXTRA_LABELS = [
         asset_id=f"build_38_decode_me_s_ldsc_{ref}_results",
         backend="polars",
     )
-    for ref in [ "multi_tissue_gene_expression"]
+    for ref in ["multi_tissue_gene_expression"]
 ]
 
 
