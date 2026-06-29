@@ -25,5 +25,5 @@ SBAYESRC_BASELINE_2_2_ANNOTATION_RAW = DownloadFileTask(
         extension=".zip",
     ),
     url="https://gctbhub.cloud.edu.au/data/SBayesRC/resources/v2.0/Annotation/annot_baseline2.2.zip",
-    md5_hash=None,
+    md5_hash="1956fad0d5f89ffbe35e2655a6882ca8",
 )
