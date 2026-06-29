@@ -14,6 +14,7 @@ from structlog import get_logger
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.base_meta import DirMeta, FileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
@@ -63,6 +64,21 @@ class PolypwasAssocTask(Task):
     gene_info_task: Task
     threads: int = 4
     weights_filename: str | None = None
+
+    def __attrs_post_init__(self) -> None:
+        # weights_filename selects the weights file only when the weights task
+        # produces a directory; it must be absent when the task is the file itself.
+        weights_meta = self.weights_task.meta
+        if isinstance(weights_meta, DirMeta):
+            assert self.weights_filename is not None, (
+                "weights_filename is required when the weights task produces a "
+                "directory asset"
+            )
+        elif isinstance(weights_meta, FileMeta):
+            assert self.weights_filename is None, (
+                "weights_filename must be None when the weights task produces a "
+                "file asset"
+            )
 
     @property
     def deps(self) -> list["Task"]:

@@ -7,6 +7,8 @@ Docker.
 
 from pathlib import PurePath
 
+import pytest
+
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
@@ -81,3 +83,28 @@ def test_polypwas_assoc_create_derives_result_table_meta():
     assert task.meta.trait == "ldl"
     assert task.meta.extension == ".tsv"
     assert task.meta.read_spec is not None
+
+
+def _assoc_task(weights_task, weights_filename):
+    return PolypwasAssocTask.create(
+        asset_id="assoc_run",
+        weights_task=weights_task,
+        gwas_source=_gwas_summary_source("ldl"),
+        ld_reference_directory_task=_ld_task(),
+        gene_info_task=FakeTask(meta=SimpleFileMeta("gene_info")),
+        weights_filename=weights_filename,
+    )
+
+
+def test_assoc_weights_filename_invariant():
+    file_weights = FakeTask(meta=SimpleFileMeta("weights"))
+    dir_weights = FakeTask(meta=SimpleDirectoryMeta("weights_dir"))
+
+    # Valid combinations construct fine.
+    _assoc_task(file_weights, None)
+    _assoc_task(dir_weights, "weights.wgts.gz")
+
+    with pytest.raises(AssertionError):
+        _assoc_task(file_weights, "weights.wgts.gz")
+    with pytest.raises(AssertionError):
+        _assoc_task(dir_weights, None)
