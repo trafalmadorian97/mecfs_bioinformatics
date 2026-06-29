@@ -154,6 +154,8 @@ class StandardAnalysisTaskGroup:
             result.append(self.heritability_task)
         if self.gene_set_analysis_tasks is not None:
             result.extend(self.gene_set_analysis_tasks.terminal_tasks())
+        if self.h_magma_tasks is not None:
+            result.extend(self.h_magma_tasks.terminal_tasks())
         return result
 
 

@@ -445,7 +445,7 @@ def publish_figures(c):
     confirming no docs still reference them), then update the manifest
     and push new blobs to the GitHub release.
     """
-    c.run(f"python {PUBLISH_FIGURES_SCRIPT_PATH}")
+    c.run(f"python {PUBLISH_FIGURES_SCRIPT_PATH}", pty=True)
 
 
 @task
