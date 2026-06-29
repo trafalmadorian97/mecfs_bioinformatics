@@ -31,6 +31,7 @@ class ExtractAllFromZipTask(Task):
 
     meta: Meta
     source_file_task: Task
+    sub_folder_name_inside_zip: str | None = None
 
     @property
     def _source_meta(self) -> Meta:
@@ -53,11 +54,21 @@ class ExtractAllFromZipTask(Task):
             zip_file.extractall(
                 target_dir,
             )
+        if self.sub_folder_name_inside_zip is not None:
+            result_dir = target_dir / self.sub_folder_name_inside_zip
+            assert result_dir.is_dir(), (
+                f"Expected sub folder {self.sub_folder_name_inside_zip} "
+                f"inside the archive, but {result_dir} is not a directory."
+            )
+            return DirectoryAsset(result_dir)
         return DirectoryAsset(target_dir)
 
     @classmethod
     def create_from_zipped_reference_file(
-        cls, source_task: Task, asset_id: str
+        cls,
+        source_task: Task,
+        asset_id: str,
+        sub_folder_name_inside_zip: str | None = None,
     ) -> Task:
         src_meta = source_task.meta
         assert isinstance(src_meta, ReferenceFileMeta)
@@ -71,4 +82,5 @@ class ExtractAllFromZipTask(Task):
         return cls(
             meta=meta,
             source_file_task=source_task,
+            sub_folder_name_inside_zip=sub_folder_name_inside_zip,
         )

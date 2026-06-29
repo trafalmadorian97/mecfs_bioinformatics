@@ -150,6 +150,7 @@ frozendict = ">=2.4.7,<3"
 mkdocs-git-committers-plugin-2 = ">=2.5.0,<3"
 pytest-testmon = ">=2.2.0,<3"
 mkdocs-awesome-nav = ">=3.3.0, <4"
+polypwas = { git = "https://github.com/kangchenghou/polypwas.git" }
 
 [tool.ty.environment]
 python = ".pixi/envs/default"

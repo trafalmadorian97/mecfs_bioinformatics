@@ -632,6 +632,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/54/20/4d324d65cc6d9205fabedc306948156824eb9f0ee1633355a8f7ec5c66bf/pluggy-1.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c3/c8/5807714256c5f3de08593113df17f14f99417a451cb2d91530ad94785003/polars-1.41.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/53/18/5a04b06b773047cbf43912ab802eef3c1d50ef7e66d51a41b16726f9bc62/polars_runtime_32-1.41.0-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: git+https://github.com/kangchenghou/polypwas.git#02ac22d44b381ad44a546411b88a2a77da0fe624
       - pypi: https://files.pythonhosted.org/packages/ee/94/448f037fb0ffd0e8a63b625cf9f5b13494b88d15573a987be8aaa735579d/progressbar2-4.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/46/4b/3aae6835b8e5f44ea6a68348ad90f78134047b503765087be2f9912140ea/propcache-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/bd/4d/fc923f5c85318ee8cc903566dc4e0ebe41b2dfc1d2ecf5546db232397ed6/properdocs-1.6.7-py3-none-any.whl
@@ -2006,7 +2007,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: ab5041c2f0a0f75488e275d48f74657241854c4bc7676e36426bd946176ca12c
+  sha256: d20f756b2872c5e9ea31182ed8980ed759ab030736cc853cd279b340867fa67d
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -5997,6 +5998,24 @@ packages:
   version: 1.41.0
   sha256: e72269f768c57229190dba0cb5abb8a1b228e96cc6331273a77a7957576885bd
   requires_python: '>=3.10'
+- pypi: git+https://github.com/kangchenghou/polypwas.git#02ac22d44b381ad44a546411b88a2a77da0fe624
+  name: polypwas
+  version: 0.1.0
+  requires_dist:
+  - numpy
+  - pandas
+  - scipy
+  - pyyaml
+  - tqdm
+  - pyarrow>=21.0.0
+  - statsmodels ; extra == 'full'
+  - submitit>=1.5.4 ; extra == 'full'
+  - pgenlib>=0.93.0 ; extra == 'full'
+  - scikit-learn>=1.6.1 ; extra == 'full'
+  - matplotlib ; extra == 'plot'
+  - pytest ; extra == 'dev'
+  - ruff ; extra == 'dev'
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/ee/94/448f037fb0ffd0e8a63b625cf9f5b13494b88d15573a987be8aaa735579d/progressbar2-4.5.0-py3-none-any.whl
   name: progressbar2
   version: 4.5.0
