@@ -226,6 +226,8 @@ data/*
 output/*
 
 assets/*
+assets_2/*
+merge_overwrite_backup_*
 asset_store/*
 build_system/*
 
