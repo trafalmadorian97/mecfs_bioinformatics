@@ -1,6 +1,8 @@
 # UK Biobank
 
-The UK Biobank[@sudlow2015uk] is a British prospective health study with with more than 500,000 participants. The UK Biobank was established with the aim of facilitating research on the causes of diseases of middle and old age.  As such, it recruited participants aged 40-69 years.  Running such a large study required the use of industrial-scale sample-processing and streamlined management.
+The UK Biobank[@sudlow2015uk] is a British prospective health study with more than 500,000 participants.
+
+[//]: # (The UK Biobank was established with the aim of facilitating research on the causes of diseases of middle and old age.  As such, it recruited participants aged 40-69 years.  Running such a large study required the use of industrial-scale sample-processing and streamlined management.)
 
 
 ## Phenotype
