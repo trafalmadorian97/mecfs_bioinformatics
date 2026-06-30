@@ -90,7 +90,7 @@ While MAGMA is a very useful approach for detecting the key biological systems i
 
 ## Gene set analysis with MAGMA
 
-MAGMA can also be used for gene-set analysis, which is implemented as a special case of gene property analysis.  In perform gene set analysis, we simply set $E_{i,j}=1$ if gene $i$ is a member of gene set $j$, and 0 otherwise.
+MAGMA can also be used for gene-set analysis, which is implemented as a special case of gene property analysis.  To perform gene set analysis, we simply set $E_{i,j}=1$ if gene $i$ is a member of gene set $j$, and 0 otherwise.
 
 ## References
 The above discussion is based on:
