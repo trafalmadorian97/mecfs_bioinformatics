@@ -8,8 +8,8 @@ The model is
 
 $$
 \begin{align}
-Y_A &= E_A + G_A,\\
-Y_B &= E_B + G_B.
+Y_A &= E_A + G_A,  \label{model1} \\ 
+Y_B &= E_B + G_B.  \label{model2}
 \end{align}
 $$
 
@@ -28,3 +28,7 @@ Besides these straightforward cases, there are more exotic possible causes of ge
 
 - Two traits can be genetically correlated because genetics affects the behavior of a parent, which affects the phenotype of their child.
 - Two traits can be genetically correlated because individuals with these traits tend to mate at a higher rate than would be expected under random mating.
+
+## Genetic Covariance
+
+Some applications require the calculation of the genetic covariance between two traits.  In the context of the model of $(\ref{model1},\ref{model2})$, the genetic covariance is $\mathbb{Cov}(G_A, G_B)$.  Note that genetic covariance depends strongly on how the traits are scaled.
