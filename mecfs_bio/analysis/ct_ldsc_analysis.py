@@ -7,13 +7,24 @@ Bulik-Sullivan, Brendan, et al. "An atlas of genetic correlations across human d
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initial_asset_generator import (
+    CT_LDSC_INITIAL_ASSET_GENERATOR,
+)
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import (
     CT_LDSC_INITIAL_PLOT,
+)
+from mecfs_bio.build_system.scheduler.topological_scheduler import (
+    TopologicalSchedulerSettings,
 )
 
 
 def initial_ct_ldsc_analysis():
-    DEFAULT_RUNNER.run([CT_LDSC_INITIAL_PLOT], incremental_save=True)
+    DEFAULT_RUNNER.run(
+        [CT_LDSC_INITIAL_PLOT],
+        incremental_save=True,
+        must_rebuild_transitive=[CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task],
+        settings=TopologicalSchedulerSettings(print_progress=True),
+    )
 
 
 if __name__ == "__main__":

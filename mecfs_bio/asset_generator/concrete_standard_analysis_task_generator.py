@@ -357,6 +357,7 @@ def concrete_standard_analysis_generator_no_rsid(
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
     drop_palindromic_in_harmonized: bool = False,
+    filter_indels_in_harmonized: bool = False,
     include_hba_magma_tasks: bool = True,
     include_independent_cluster_plot_in_hba: bool = True,
     hbp_plot_settings: PlotSettings = PlotSettings("plotly_white"),
@@ -382,6 +383,7 @@ def concrete_standard_analysis_generator_no_rsid(
         base_name=base_name,
         use_gwaslab_rsids_convention=True,
         drop_palindromic_ambiguous=drop_palindromic_in_harmonized,
+        filter_indels_in_harmonized=filter_indels_in_harmonized,
     )
     standard_tasks = concrete_standard_analysis_generator_assume_already_has_rsid(
         base_name=base_name,
