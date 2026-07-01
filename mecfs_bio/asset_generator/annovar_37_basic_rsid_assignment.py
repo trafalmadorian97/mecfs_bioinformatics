@@ -45,14 +45,22 @@ def annovar_37_basic_rsid_assignment(
     base_name: str,
     use_gwaslab_rsids_convention: bool = False,
     drop_palindromic_ambiguous: bool = True,
+    filter_indels_in_harmonized: bool = False,
 ) -> RSIDAssignmentTaskGroup:
     """
     Asset generator that creates a chain of tasks to assign rsids to existing build 37 sumstats datasets using the annovar dbSNP reference data
+
+    Set filter_indels_in_harmonized to drop indels before harmonization.  This is
+    useful for datasets containing very long indel/structural-variant alleles: gwaslab
+    harmonization materializes the allele columns as fixed-width numpy unicode arrays,
+    so a single very long allele can blow up memory across every row.  Indels are not
+    used by the downstream SNP-based analyses (LDSC genetic correlation, MAGMA).
     """
     harmonized_task = GWASLabTransformSumstatsTask.create_from_source_task(
         sumstats_task,
         asset_id=base_name + "__harmonized",
         spec=GwasLabTransformSpec(
+            filter_indels=filter_indels_in_harmonized,
             harmonize_options=HarmonizationOptions(
                 ref_infer=GWASLabVCFRef(name="1kg_eur_hg19", ref_alt_freq="AF"),
                 ref_seq="ucsc_genome_hg19",
@@ -60,7 +68,7 @@ def annovar_37_basic_rsid_assignment(
                 drop_missing_from_ref_seq=True,
                 drop_missing_from_ref_infer_or_ambiguous=drop_palindromic_ambiguous,
                 cores=4,
-            )
+            ),
         ),
     )
     dump_parquet_task = GwasLabSumstatsToTableTask.create_from_source_task(
