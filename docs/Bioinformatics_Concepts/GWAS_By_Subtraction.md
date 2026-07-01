@@ -14,8 +14,8 @@ It is useful to understand GWAS-by-subtraction via linear algebra.
 Consider a [Euclidian space](https://en.wikipedia.org/wiki/Euclidean_space) in which:
 
 - GWAS traits are vectors.
-- The [inner product](https://en.wikipedia.org/wiki/Inner_product_space) of two traits is their [genetic covariance](Genetic_Correlation.md).  Denote the inner product of $u$ and $v$ as $\langle u,v \rangle$.
-- We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, a trait's squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) is its heritability: $\lVert v \rVert^2=h^2_v$ where $h^2_v$ is the heritability of $v$.
+- The [inner product](https://en.wikipedia.org/wiki/Inner_product_space) of two traits is their [genetic covariance](Genetic_Correlation.md#genetic-covariance).  Denote the inner product of traits $u$ and $v$ as $\langle u,v \rangle$.
+- We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, a trait's squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) is its heritability: $\lVert v \rVert^2=h^2_v$ where $h^2_v$ is the heritability of trait $v$.
 
 
 
@@ -90,13 +90,14 @@ Where:
 - $x\in\mathbb{R}^M$ is the random genotype. We assume $x$ has mean zero, but unlike in [LDSC](LDSC.md), we do not assume it has been variance standardized.  Let $H_i$ be the variance of the $i$th variant.
 - $\beta_F,\beta_R\in\mathbb{R}^M$ are the underlying causal effects of the genetic variants.
 - $F,R$ are the two orthonormal underlying factors.
-- $\delta_1, \delta_2$ are the non-genetic components of the two traits.  We assume these effects are independent of all genotypes.
+- $a_F,a_R,b\in\mathbb{R}$ are the scalar multipliers that relate the normalized factors $F,R$ to the unnormalized factors $F',R'$.
+- $\delta_1, \delta_2\in\mathbb{R}$ are the random non-genetic components of the two traits.  We assume these effects are independent of all genotypes.
 
 
 ### Marginal Model
 
 
-Let's now focus on SNP $i$, and develop a model around the marginal GWAS regression on this SNP.
+Let's now focus on arbitrary SNP $i$, and model the marginal GWAS regression on this SNP.
 
 
 Define
@@ -125,21 +126,21 @@ R &= \hat\beta_{R,i}x_i+\zeta_{R,i}\\
 \end{align}
 $$
 
-We assume $\zeta_{F,i},\zeta_{R_i}$ are approximately independent of $x_i$.  This is a good approximation so long as individual variant effects ($\beta_{R,i},\beta_{R,i}$) are small, as is the case for most non-Mendelian traits.
+We assume $\zeta_{F,i},\zeta_{R_i}$ are approximately independent of $x_i$.  While not strictly true, this is a good approximation so long as individual variant effects ($\beta_{R,i},\beta_{R,i}$) are small, as is the case for polygenic traits.
 
 ### Theoretical covariance
 
-Next, let us examine the genetic covariance structure of the random variables $(x_i, T_1, T_2)$.  
+Next, let us examine the genetic covariance structure of the scalar random variables $(x_i, T_1, T_2)$.  
 
-We will denote by  $\mathrm{GCov}$ and $\mathrm{GVar}$ the genetic covariance and variance respectively\footnote{Because of our earlier assumption that phenotype variance has been normalized to 1, genetic variance equals heritability.}.
+We will denote by  $\mathrm{GCov}$ and $\mathrm{GVar}$ the genetic covariance and variance respectively[^covnote].  
 
 
 $$
 \begin{align}
-&\mathrm{GCov}(X_i, T_1)\\
-&=\mathrm{GCov}(X_i, a_F F + a_R R + \delta_1)\\
-&=\mathrm{Cov}(X_i, a_F F + a_R R ) & \text{Since $\delta_1$ is non-genetic}\\
-&=\mathrm{Cov}(X_i, a_F (\hat\beta_{F,i}X_i+\zeta_{F,i}) + a_R (\hat\beta_{R,i}X_i+\zeta_{R,i})+\delta_1)\\
+&\mathrm{GCov}(x_i, T_1)\\
+&=\mathrm{GCov}(x_i, a_F F + a_R R + \delta_1)\\
+&=\mathrm{Cov}(x_i, a_F F + a_R R ) & \text{Since $\delta_1$ is non-genetic}\\
+&=\mathrm{Cov}(x_i, a_F (\hat\beta_{F,i}x_i+\zeta_{F,i}) + a_R (\hat\beta_{R,i}x_i+\zeta_{R,i})+\delta_1)\\
 &\approx \left(a_F\hat\beta_{F,i}+a_R\hat\beta_{R,i}\right) H_i & \text{By approximate independence}
 \end{align}
 $$
@@ -147,10 +148,10 @@ $$
 
 $$
 \begin{align}
-&\mathrm{GCov}(X_i, T_2)\\
-&=\mathrm{GCov}(X_i, b F+\delta_2)\\
-&=\mathrm{Cov}(X_i, b F) & \text{Since $\delta_2$ is non-genetic}\\
-&=\mathrm{Cov}(X_i, b (\hat\beta_{F,i}X_i+\zeta_{F,i}))\\
+&\mathrm{GCov}(x_i, T_2)\\
+&=\mathrm{GCov}(x_i, b F+\delta_2)\\
+&=\mathrm{Cov}(x_i, b F) & \text{Since $\delta_2$ is non-genetic}\\
+&=\mathrm{Cov}(x_i, b (\hat\beta_{F,i}x_i+\zeta_{F,i}))\\
 &\approx b\hat\beta_{F,i} H_i  & \text{By approximate independence}
 \end{align}
 $$
@@ -361,3 +362,4 @@ Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R
 
 
 
+[^covnote]: Because of our earlier assumption that phenotype variance has been normalized to 1, genetic variance equals heritability.
