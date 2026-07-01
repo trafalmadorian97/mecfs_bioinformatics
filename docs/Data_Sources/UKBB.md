@@ -23,7 +23,7 @@ The genetics of UK Biobank participants has been extensively analyzed. This incl
 - Subsequent exome sequencing of all participants[@wang2021rare].
 - Subsequent short-read whole-genome sequencing of all participants[@uk2025whole].
 
-There is [an ongoing project](https://community.ukbiobank.ac.uk/hc/en-gb/articles/34007463768221-Upcoming-data#:~:text=First%20release%20of%20Olink%20proteomics,read%20whole%20genome%20sequencing%E2%80%8B) to apply long-read whole genome sequencing to a subset of UK Biobank participants.
+There is [an ongoing project](https://community.ukbiobank.ac.uk/hc/en-gb/articles/34007463768221-Upcoming-data#:~:text=First%20release%20of%20Olink%20proteomics,read%20whole%20genome%20sequencing%E2%80%8B) to apply long-read whole-genome sequencing to a subset of UK Biobank participants.
 
 
 
