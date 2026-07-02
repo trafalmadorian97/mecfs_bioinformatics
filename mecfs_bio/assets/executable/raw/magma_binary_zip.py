@@ -1,3 +1,15 @@
+"""
+Task to download the MAGMA binary.
+
+The main citation for MAGMA is
+ "MAGMA: generalized gene-set analysis of GWAS data."
+PLoS computational biology 11.4 (2015): e1004219.
+
+Previously, this Task downloaded MAGMA from the official site.  I changed it to download from my dropbox, since the official
+link seemed to have become flaky.
+
+"""
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.executable_meta import ExecutableMeta
