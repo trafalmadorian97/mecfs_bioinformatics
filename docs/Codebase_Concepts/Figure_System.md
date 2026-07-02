@@ -47,10 +47,10 @@ Suppose that you have analyzed a genomic dataset and generated figures.  You wis
 
 To remove a figure, delete the corresponding Task from `ALL_FIGURE_TASKS`, then use `publish_figures.py`
 
-Suppose that there is an existing figure you wish to update.  You have already rerun the relevant tasks to crete the new version of the figure in the asset directory.  The subsequent steps are:
+Suppose that there is an existing figure you wish to update.  If have already rerun the relevant tasks to crete the new version of the figure in the asset directory, the subsequent steps are:
 
 - Call `regenerate_figures` on a list consisting of the figure of interest.  This will copy the new figure to the figure directory.
-- Call 'push_figures(figure_tasks=ALL_FIGURE_TASKS)'.  This will push the updated figure to the github release, and update `figures_manifest.json`
+- Call  `push_figures(figure_tasks=ALL_FIGURE_TASKS)`.  This will push the updated figure to the github release, and update `figures_manifest.json`
 - Commit the `figures_manifest.json` to a branch, and create a pull request with your changes.
 
 ### Advantages
