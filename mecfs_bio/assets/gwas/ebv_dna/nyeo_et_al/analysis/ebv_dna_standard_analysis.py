@@ -29,6 +29,11 @@ EBV_DNA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
     sample_size=490_560,
     pre_pipe_after_rsid_assignment=CompositePipe([ComputePPipe()]),
     drop_palindromic_in_harmonized=False,
+    # The Nyeo EBV DNA sumstats contain very long indel/structural-variant alleles
+    # (up to 662 bp).  gwaslab harmonization materializes the allele columns as
+    # fixed-width numpy unicode arrays, so a single long allele blows up memory across
+    # all ~17M rows.  Indels are not used by the downstream SNP-based analyses.
+    filter_indels_in_harmonized=True,
     include_hba_magma_tasks=True,
     include_independent_cluster_plot_in_hba=True,
     hbp_plot_settings=PlotSettings("plotly_white"),

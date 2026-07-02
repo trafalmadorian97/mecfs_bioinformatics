@@ -25,6 +25,7 @@ from typing import Literal, Sequence
 import gwaslab
 import gwaslab as gl
 import narwhals
+import pandas as pd
 from attrs import frozen
 from gwaslab.util.util_in_filter_value import _exclude_sexchr
 
@@ -340,6 +341,27 @@ class GwasLabTransformSpec:
     liftover_to: GenomeBuild | None = None
 
 
+def _prune_unused_allele_categories(sumstats: gl.Sumstats) -> None:
+    """
+    Drop unused categories from the EA and NEA columns in place.
+
+    gwaslab stores alleles as pandas category dtype.  Filtering out rows (e.g. indels)
+    removes the rows but leaves the now-unused categories in place, including any very
+    long indel or structural-variant alleles.  Harmonization later calls astype(str) on
+    these columns, which materializes a fixed-width numpy unicode array sized to the
+    longest category across every remaining row, blowing up memory even when no long
+    allele is actually present.  Pruning unused categories keeps that array narrow.
+
+    remove_unused_categories operates on the (small) category index and integer codes,
+    so it never materializes the large per-row string array that astype(str) would.
+    """
+    for col in ("EA", "NEA"):
+        if col in sumstats.data.columns and isinstance(
+            sumstats.data[col].dtype, pd.CategoricalDtype
+        ):
+            sumstats.data[col] = sumstats.data[col].cat.remove_unused_categories()
+
+
 def transform_gwaslab_sumstats(
     sumstats: gl.Sumstats,
     spec: GwasLabTransformSpec,
@@ -373,6 +395,7 @@ def transform_gwaslab_sumstats(
     if spec.exclude_sexchr:
         sumstats = _exclude_sexchr(sumstats)
     if spec.harmonize_options is not None:
+        _prune_unused_allele_categories(sumstats)
         _do_harmonization(
             sumstats,
             basic_check=(not spec.basic_check),
