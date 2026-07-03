@@ -197,9 +197,6 @@ ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
 
 
 def _validate_eaf_in_range(sumstats: gl.Sumstats) -> None:
-    """
-    Fail fast if the effect-allele-frequency column is not on the [0, 1] fraction scale.
-    """
     if GWASLAB_EFFECT_ALLELE_FREQ_COL not in sumstats.data.columns:
         return
     eaf = sumstats.data[GWASLAB_EFFECT_ALLELE_FREQ_COL]
