@@ -1,5 +1,7 @@
 # UK Biobank
 
+![ukbb_logo](https://github.com/user-attachments/assets/2ef01e68-6225-4ca8-9f3c-db3e88e04702)
+
 The UK Biobank[@sudlow2015uk] is a British prospective health study with more than 500,000 participants.
 
 [//]: # (The UK Biobank was established with the aim of facilitating research on the causes of diseases of middle and old age.  As such, it recruited participants aged 40-69 years.  Running such a large study required the use of industrial-scale sample-processing and streamlined management.)

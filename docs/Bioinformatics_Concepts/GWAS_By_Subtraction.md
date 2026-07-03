@@ -44,7 +44,7 @@ The decomposition is diagrammed below:
 ![subtraction-vectors-2](https://github.com/user-attachments/assets/a552ee13-08bb-41dd-b7d0-781e4088740b)
 
 
-Let $P$ denote the perpendicular projector[@halmos1958finite] onto the subspace spanned by $T_2$.  Then
+Let $P$ denote the perpendicular projector[^projector_note] onto the subspace spanned by $T_2$.  Then
 
 $$
 \begin{align}
@@ -140,7 +140,7 @@ $$
 &\mathrm{GCov}(x_i, T_1)\\
 &=\mathrm{GCov}(x_i, a_F F + a_R R + \delta_1)\\
 &=\mathrm{Cov}(x_i, a_F F + a_R R ) & \text{Since $\delta_1$ is non-genetic}\\
-&=\mathrm{Cov}(x_i, a_F (\hat\beta_{F,i}x_i+\zeta_{F,i}) + a_R (\hat\beta_{R,i}x_i+\zeta_{R,i})+\delta_1)\\
+&=\mathrm{Cov}(x_i, a_F (\hat\beta_{F,i}x_i+\zeta_{F,i}) + a_R (\hat\beta_{R,i}x_i+\zeta_{R,i}))\\
 &\approx \left(a_F\hat\beta_{F,i}+a_R\hat\beta_{R,i}\right) H_i & \text{By approximate independence}
 \end{align}
 $$
@@ -176,6 +176,16 @@ $$
 $$
 
 
+$$
+\begin{align}
+\mathrm{GVar} (T_2)\\
+&=\mathrm{GVar} (b F + \delta_2)\\
+&= \mathrm{Var}  (bF) \text{Since $\delta_2$ is non-genetic}\\
+&= b^2
+\end{align}
+$$
+
+
 Combining the above yields the following covariance matrix for $(x_i, T_1, T_2)$
 
 
@@ -191,7 +201,7 @@ $$
 
 ### Empirical covariance
 
-The inputs to GWAS by subtraction are summary statistics for the traits $T_1$ and $T_2$. For SNP i, these will include marginal regression coefficients
+The inputs to GWAS by subtraction are summary statistics for the traits $T_1$ and $T_2$.  These summary statistics include marginal regression coefficients for SNP $i$:
 
 $$
 \begin{align}
@@ -213,10 +223,10 @@ $$
 \end{align}
 $$
 
-Furthermore, we can apply [LDSC](LDSC.md)[@bulik2015ld] and [CT-LDSC](Cross_Trait_LDSC.md)[@bulik2015atlas] to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
+We can apply [LDSC](LDSC.md)[@bulik2015ld] and [CT-LDSC](Cross_Trait_LDSC.md)[@bulik2015atlas] to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
 
 
-Combining the above, we have that the empirical covariance matrix of $(x_i, T_1, T_2)$ is 
+Combining the above we have another expression for the covariance matrix of $(x_i, T_1, T_2)$
 
 $$
 \begin{align}
@@ -287,7 +297,7 @@ We would like to synthesize summary statistics for $R$ in order to pass them to 
 
 ### Uncertainty
 
-To estimate these standard errors, define $\nu\in\mathbb{R}^5$ to be the key non-redundant entries of $\Sigma_{\text{Empirical}}$.  That is
+To estimate these standard errors, define $\nu_i\in\mathbb{R}^5$ to be the vector of key non-redundant entries of $\Sigma_{\text{Empirical}}$.  That is
 
 $$
 \begin{align}
@@ -306,7 +316,7 @@ L_{2,2}
 \end{align}
 $$
 
-Let $\theta\in\mathbb{R}^5$ denote the key parameters we solve for. That is,
+Let $\theta_i\in\mathbb{R}^5$ denote the key parameters we solved for [above](#solution):
 
 $$
 \begin{align}
@@ -315,11 +325,11 @@ $$
 $$
 
 
-Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu_i$ to $\theta_i$ via the solution method [above](#solution).
+Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu_i$ to $\theta_i$ via the solution method above.
 
-We estimate the standard error of $\theta$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
+We estimate the samples covariance of $\theta_i$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
 
-The delta method says that if $K_i$ is the sampling covariance matrix of $\nu_i$, and $J_i$ is the Jacobian of $g$ evaluated at $\nu_i$, then the sampling covariance matrix of $\theta$ can be estimated as
+The delta method says that if $K_i$ is the sampling covariance matrix of $\nu_i$, and $J_i$ is the Jacobian of $g$ evaluated at $\nu_i$, then the sampling covariance matrix of $\theta_i$ can be estimated as
 
 $$
 \begin{align}
@@ -341,18 +351,20 @@ V_{\text{SNP},i} & 0 \\
 \end{align}
 $$
 
-where $V_{\text{SNP},i}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^{2 \times 2}$. This amounts to the assumption that, to a first approximation, the global linkage-disequilibrium score regression outputs and the local $\hat\beta_i$ do no covary.
+where $V_{\text{SNP},i}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^{2 \times 2}$. This amounts to the assumption that, to a first approximation, the LDSC outputs do not covary with the SNP-specific $\hat\beta_i$.
 
-- Standard linkage-disequilibrium score regression uses [the jackknife](https://en.wikipedia.org/wiki/Jackknife_resampling) to generate estimates of the sampling covariation of its output. We can use these estimates to populate $V_{\text{LD}}$.
-- We can populate $V_{\text{SNP},i}$ using the approach described in [the notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
+- Standard linkage-disequilibrium score regression uses [the jackknife](https://en.wikipedia.org/wiki/Jackknife_resampling) to estimate the sampling covariation of its output. We use these jackknife estimates to populate $V_{\text{LD}}$.
+- We populate $V_{\text{SNP},i}$ using the approach described in [the notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
 
 
 Combining the above produces an estimate of $K_i$, to which we can apply the delta method to estimate $Q_i$, the sampling covariance of $\theta_i$.
 
 
-### Output
+### Result
 
-Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R,i}$ and its standard error.  By repeating the above-described procedure for each variant $i$, we can estimate $\hat\beta_{R,i}$ and its standard error for all variants $i$.  This provides us with a full set of GWAS summary statistics for $R$, the GWAS-by-subtraction  component of $T_1$ orthogonal to $T_2$. We can then analyze these summary statistics using standard post-GWAS tools.
+Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R,i}$ and its standard error.  By repeating the above-described procedure for each variant $i$, we can estimate $\hat\beta_{R,i}$ and its standard error for all variants $i$.  This provides us with a full set of GWAS summary statistics for $R$, the GWAS-by-subtraction  component of $T_1$ orthogonal to $T_2$. We can then analyze these summary statistics using standard post-GWAS tools to glean insights into the genetic component of $T_1$ that is independent of $T_2$.
+
+
 
 
 
@@ -363,3 +375,5 @@ Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R
 
 
 [^covnote]: Because of our earlier assumption that phenotype variance has been normalized to 1, genetic variance equals heritability.
+
+[^projector_note]: Perpendicular projectors are described in most textbooks on linear algebra.  Halmos[@halmos1958finite] is a classic
