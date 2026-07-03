@@ -35,7 +35,7 @@ The components of the programmatic figure system are:
 - The script {{ api_link("push_figures.py", "mecfs_bio.figures.key_scripts.push_figures") }} hashes the contents of `docs/_figs`, updates the manifest, and uploads any blobs not yet present on the release. Each blob is stored on the release as a content-addressed asset (asset name = SHA-256), so pushes never overwrite existing blobs and concurrent updates by different collaborators surface as ordinary git merge conflicts on the manifest. Pass `prune=True` to drop manifest entries whose files are no longer present locally. Running this script may require permission from a repository maintainer.
 
 
-### Standard Workflow
+### Standard workflow
 
 Suppose that you have analyzed a genomic dataset and generated figures.  You wish to publish these figures and an associated write-up to the project documentation page.  Follow these steps:
 
@@ -46,6 +46,12 @@ Suppose that you have analyzed a genomic dataset and generated figures.  You wis
 - Create a pull request with your changes (see [Standard Workflow](../Getting_Started/b_Standard_Workflow.md)).
 
 To remove a figure, delete the corresponding Task from `ALL_FIGURE_TASKS`, then use `publish_figures.py`
+
+Suppose that there is an existing figure you wish to update.  If have already rerun the relevant tasks to crete the new version of the figure in the asset directory, the subsequent steps are:
+
+- Call `regenerate_figures` on a list consisting of the figure of interest.  This will copy the new figure to the figure directory.
+- Call  `push_figures(figure_tasks=ALL_FIGURE_TASKS)`.  This will push the updated figure to the github release, and update `figures_manifest.json`
+- Commit the `figures_manifest.json` to a branch, and create a pull request with your changes.
 
 ### Advantages
 
