@@ -199,15 +199,6 @@ ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
 def _validate_eaf_in_range(sumstats: gl.Sumstats) -> None:
     """
     Fail fast if the effect-allele-frequency column is not on the [0, 1] fraction scale.
-
-    gwaslab (and everything downstream) assumes allele frequencies are fractions. A
-    column reported as a percentage (0-100) passes through gwaslab silently but corrupts
-    every MAF-dependent step. This runs after sumstats construction, so gwaslab has
-    already renamed whichever source column held the frequency (be it explicit column
-    specifiers or a named format such as regenie) to its standard EAF column. Checking
-    that standardized column makes the guard format-agnostic. Variants with no reported
-    frequency are stored as NaN; those are ignored here (nanmin/nanmax) since they are a
-    separate concern from a wrong scale.
     """
     if GWASLAB_EFFECT_ALLELE_FREQ_COL not in sumstats.data.columns:
         return
@@ -215,13 +206,11 @@ def _validate_eaf_in_range(sumstats: gl.Sumstats) -> None:
     eaf_min = float(eaf.min(skipna=True))
     eaf_max = float(eaf.max(skipna=True))
     if pd.isna(eaf_min) or pd.isna(eaf_max):
-        # Column is present but entirely NaN; nothing to validate.
+        logger.debug("EAF column present, but entirely NAN")
         return
     assert 0 <= eaf_min <= 1 and 0 <= eaf_max <= 1, (
         f"Effect allele frequency column {GWASLAB_EFFECT_ALLELE_FREQ_COL!r} has values "
         f"outside the [0, 1] fraction range (observed min={eaf_min}, max={eaf_max}). "
-        "Allele frequencies must be fractions, not percentages. If the source reports a "
-        "percentage (0-100), scale it by 1/100 before creating the sumstats."
     )
 
 

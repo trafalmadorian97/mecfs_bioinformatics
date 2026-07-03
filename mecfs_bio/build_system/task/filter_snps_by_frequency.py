@@ -52,17 +52,12 @@ class FilterSNPsFrequencyTask(Task):
         )
 
         # Fail fast if the frequency column is not on the [0, 1] fraction scale that
-        # this task (and every downstream consumer) assumes. The most common upstream
-        # mistake is a column reported as a percentage (0-100), which silently passes
-        # the MAF filter but corrupts every downstream analysis. Check the raw column
-        # bounds directly so the error message can point at the likely cause.
+        # this task (and every downstream consumer) assumes.
         raw_min = float(df.select(nw.col(self.allele_freq_col).min()).collect().item())
         raw_max = float(df.select(nw.col(self.allele_freq_col).max()).collect().item())
         assert 0 <= raw_min <= 1 and 0 <= raw_max <= 1, (
             f"Allele frequency column {self.allele_freq_col!r} has values outside the "
-            f"[0, 1] fraction range (observed min={raw_min}, max={raw_max}). Allele "
-            "frequencies must be fractions, not percentages. If the source reports a "
-            "percentage (0-100), scale it by 1/100 before this task."
+            f"[0, 1] fraction range (observed min={raw_min}, max={raw_max})."
         )
 
         freq = nw.min_horizontal(
