@@ -41,6 +41,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_EFFECT_ALLELE_FREQ_COL,
     GWASLAB_STATUS_COL,
     GwaslabKnownFormat,
 )
@@ -195,28 +196,32 @@ class GWASLabColumnSpecifiers:
 ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
 
 
-def _validate_eaf_in_range(x: narwhals.LazyFrame, fmt: ValidGwaslabFormat) -> None:
+def _validate_eaf_in_range(sumstats: gl.Sumstats) -> None:
     """
     Fail fast if the effect-allele-frequency column is not on the [0, 1] fraction scale.
 
     gwaslab (and everything downstream) assumes allele frequencies are fractions. A
     column reported as a percentage (0-100) passes through gwaslab silently but corrupts
-    MAF-dependent steps. We only know which column holds the EAF when the caller supplies
-    explicit column specifiers, so this check is limited to the GWASLabColumnSpecifiers case.
+    every MAF-dependent step. This runs after sumstats construction, so gwaslab has
+    already renamed whichever source column held the frequency (be it explicit column
+    specifiers or a named format such as regenie) to its standard EAF column. Checking
+    that standardized column makes the guard format-agnostic. Variants with no reported
+    frequency are stored as NaN; those are ignored here (nanmin/nanmax) since they are a
+    separate concern from a wrong scale.
     """
-    if not isinstance(fmt, GWASLabColumnSpecifiers) or fmt.eaf is None:
+    if GWASLAB_EFFECT_ALLELE_FREQ_COL not in sumstats.data.columns:
         return
-    stats = x.select(
-        narwhals.col(fmt.eaf).min().alias("eaf_min"),
-        narwhals.col(fmt.eaf).max().alias("eaf_max"),
-    ).collect()
-    eaf_min = float(stats["eaf_min"].item())
-    eaf_max = float(stats["eaf_max"].item())
+    eaf = sumstats.data[GWASLAB_EFFECT_ALLELE_FREQ_COL]
+    eaf_min = float(eaf.min(skipna=True))
+    eaf_max = float(eaf.max(skipna=True))
+    if pd.isna(eaf_min) or pd.isna(eaf_max):
+        # Column is present but entirely NaN; nothing to validate.
+        return
     assert 0 <= eaf_min <= 1 and 0 <= eaf_max <= 1, (
-        f"Effect allele frequency column {fmt.eaf!r} has values outside the [0, 1] "
-        f"fraction range (observed min={eaf_min}, max={eaf_max}). Allele frequencies "
-        "must be fractions, not percentages. If the source reports a percentage "
-        "(0-100), scale it by 1/100 before creating the sumstats."
+        f"Effect allele frequency column {GWASLAB_EFFECT_ALLELE_FREQ_COL!r} has values "
+        f"outside the [0, 1] fraction range (observed min={eaf_min}, max={eaf_max}). "
+        "Allele frequencies must be fractions, not percentages. If the source reports a "
+        "percentage (0-100), scale it by 1/100 before creating the sumstats."
     )
 
 
@@ -326,9 +331,9 @@ class GWASLabCreateSumstatsTask(Task):
         df = scan_dataframe_asset(asset=fetch(self._source_id), meta=self._source_meta)
         logger.debug("Applying pre-pipe")
         df = self.pre_pipe.process(df)
-        _validate_eaf_in_range(df, self.fmt)
         logger.debug("Fetching source dataframe asset...")
         sumstats = _get_sumstats(df, self.fmt, drop_cols=self.drop_col_list)
+        _validate_eaf_in_range(sumstats)
         transform_spec = GwasLabTransformSpec(
             basic_check=self.basic_check,
             genome_build=self.genome_build,
