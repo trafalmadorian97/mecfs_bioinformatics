@@ -2,7 +2,9 @@ import pickle
 from pathlib import Path
 
 import gwaslab
+import gwaslab as gl
 import pandas as pd
+import pytest
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -16,6 +18,7 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
+    _validate_eaf_in_range,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
@@ -71,3 +74,56 @@ def test_gwaslab_sumstats(
     )
     asset_2 = task_2.execute(scratch_dir=scratch_loc_2, wf=SimpleWF(), fetch=fetch_2)
     scan_dataframe_asset(asset=asset_2, meta=task_2.meta)
+
+
+def _regenie_sumstats_with_a1freq(a1freq: list[float]) -> gl.Sumstats:
+    n = len(a1freq)
+    df = pd.DataFrame(
+        {
+            "CHROM": [1] * n,
+            "GENPOS": list(range(100, 100 + n)),
+            "ID": [f"rs{i}" for i in range(n)],
+            "ALLELE0": ["A"] * n,
+            "ALLELE1": ["T"] * n,
+            "A1FREQ": a1freq,
+            "BETA": [0.1] * n,
+            "SE": [0.01] * n,
+            "LOG10P": [2.0] * n,
+            "N": [1000] * n,
+        }
+    )
+    return gl.Sumstats(df, fmt="regenie", verbose=False)
+
+
+def test_validate_eaf_in_range_rejects_percentage():
+    """
+    EAF supplied as a percentage (0-100) must fail fast, even via a named format where
+    gwaslab renames the source column (A1FREQ) to its standard EAF column.
+    """
+    sumstats = _regenie_sumstats_with_a1freq([0.1, 25.0, 50.0])
+    with pytest.raises(AssertionError):
+        _validate_eaf_in_range(sumstats)
+
+
+def test_validate_eaf_in_range_accepts_fraction():
+    sumstats = _regenie_sumstats_with_a1freq([0.001, 0.25, 0.5, 0.999])
+    _validate_eaf_in_range(sumstats)
+
+
+def test_validate_eaf_in_range_no_eaf_column_is_noop():
+    """A sumstats with no EAF column must not raise."""
+    df = pd.DataFrame(
+        {
+            "CHROM": [1, 1],
+            "GENPOS": [100, 200],
+            "ID": ["rs1", "rs2"],
+            "ALLELE0": ["A", "C"],
+            "ALLELE1": ["T", "G"],
+            "BETA": [0.1, 0.1],
+            "SE": [0.01, 0.01],
+            "LOG10P": [2.0, 3.0],
+            "N": [1000, 1000],
+        }
+    )
+    sumstats = gl.Sumstats(df, fmt="regenie", verbose=False)
+    _validate_eaf_in_range(sumstats)
