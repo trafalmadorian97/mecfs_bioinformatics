@@ -20,7 +20,7 @@ Eukaryotic DNA is tightly wound around spool-like complexes of proteins called h
 [Image Source: David O Morgan](https://en.wikipedia.org/wiki/Nucleosome#/media/File:Basic_units_of_chromatin_structure.svg).
 ///
 
-Histones can covalently bond to a variety of molecules.  These bonds are called "histone marks".  Histone marks affect the three-dimensional structure of chromatin.  For example, certain histone marks cause DNA to be tightly wound, so that the genes it contains cannot be transcribed, while other histone marks cause DNA to open up, allowing genes to be readily transcribed (see Alberts et al. pg 220[@alberts2022molecular]).
+Histones can covalently bond to a variety of molecules.  These bonds are called "histone marks".  Histone marks affect the three-dimensional structure of chromatin.  For example, certain histone marks cause DNA to be tightly wound, so that the genes it contains cannot be transcribed, while other histone marks cause DNA to open up, allowing genes to be readily transcribed[^histone_note] .
 
 
 Here are some examples of histone marks with known effects:
@@ -39,14 +39,14 @@ Here are some examples of histone marks with known effects:
 [//]: # (Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.)
 
 
-Assays that report histone marks are a key method for understanding epigenetic regulation.
+Assays reporting histone marks are important to the study of epigenetic regulation.
 
 
 ## ATAC-seq
 
-Besides assays that report histone marks, assays that directly measure chromatin accessibility are also informative about epigenetic regulation. ATAC-seq is an important example of such an accessibility assay.
+Besides assays that report histone marks, another important group of epigenetic assays are assays that directly measure chromatin accessibility. ATAC-seq is an example of such an accessibility assay.
 
-ATAC-seq  repurposes [transposase](https://en.wikipedia.org/wiki/Transposase), the enzyme responsible for the movement of transposons, or "jumping genes".  It works on the principle that transposase can interact with open chromatin, but not closed chromatin.  This explains the name: Assay for Transposase Accessible Chromatin (ATAC).
+ATAC-seq  repurposes [transposase](https://en.wikipedia.org/wiki/Transposase), the enzyme responsible for the movement of transposons, or "jumping genes"[^transposons].  It works on the principle that transposase can interact with open chromatin, but not closed chromatin.  This explains the name: Assay for Transposase Accessible Chromatin (ATAC).
 
 
 ## Hi-C
@@ -60,4 +60,8 @@ Hi-C[^textbookref] is an assay that partially solves this problem. It works by u
 - For a popular science discussion of epigenetics, see Chapter 10 of [Herding Hemmingway's Cats](https://a.co/d/08XMYqfU).
 
 
-[^textbookref]: See pg 221-222 of Molecular Biology of the Cell[@alberts2022molecular].
+[^histone_note]: See pg. 220 of Molecular Biology of the Cell[@alberts2022molecular].
+
+[^transposons]: See pg 306-314 of Molecular Biology of the Cell[@alberts2022molecular].
+
+[^textbookref]: See pg. 221-222 of Molecular Biology of the Cell[@alberts2022molecular].
