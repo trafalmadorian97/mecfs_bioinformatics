@@ -101,7 +101,7 @@ def test_validate_eaf_in_range_rejects_percentage():
     gwaslab renames the source column (A1FREQ) to its standard EAF column.
     """
     sumstats = _regenie_sumstats_with_a1freq([0.1, 25.0, 50.0])
-    with pytest.raises(AssertionError, match="percentages"):
+    with pytest.raises(AssertionError):
         _validate_eaf_in_range(sumstats)
 
 

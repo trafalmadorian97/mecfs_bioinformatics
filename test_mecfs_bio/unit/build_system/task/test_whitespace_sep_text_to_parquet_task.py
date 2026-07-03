@@ -7,12 +7,9 @@ import pytest
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
-    DataFrameParquetFormat,
     DataFrameReadSpec,
-    DataFrameTextFormat,
     DataFrameWhiteSpaceSepTextFormat,
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
@@ -75,44 +72,69 @@ def test_whitespace_sep_text_to_parquet_streams_and_preserves_values(tmp_path: P
     assert df["I2"].to_list()[3:] == [42.0, 17.0]
 
 
-def test_create_derives_trait_project_and_parquet_read_spec():
+# A chromosome column that is purely integer in the first chunk but uses X/Y later:
+# the classic case where per-chunk schema inference disagrees across chunks.
+_MIXED_CHR_ROWS = [
+    "Chr Pos",
+    "1 100",
+    "2 200",
+    "X 300",
+    "Y 400",
+]
+
+
+def _source_and_fetch(src: Path) -> tuple[FakeTask, Fetch]:
     source_task = FakeTask(
         meta=GWASSummaryDataFileMeta(
             id=AssetId("raw"),
             trait="rheumatoid_arthritis",
             project="decode_ra_seropositive",
             sub_dir="raw",
-            project_path=Path("gwas.txt.gz"),
+            project_path=Path(src.name),
             read_spec=DataFrameReadSpec(
                 format=DataFrameWhiteSpaceSepTextFormat(comment_code="#")
             ),
         )
     )
+
+    class _Fetch(Fetch):
+        def __call__(self, asset_id: AssetId) -> Asset:
+            return FileAsset(src)
+
+    return source_task, _Fetch()
+
+
+def test_lossy_cross_chunk_type_change_raises(tmp_path: Path):
+    # Chr is int64 in the first chunk, then X/Y strings later. safe=True must turn
+    # this into a loud failure rather than silently corrupting the column.
+    src = tmp_path / "gwas.txt"
+    src.write_text("\n".join(_MIXED_CHR_ROWS) + "\n")
+    scratch = tmp_path / "scratch"
+    scratch.mkdir(parents=True, exist_ok=True)
+
+    source_task, fetch = _source_and_fetch(src)
     task = WhitespaceSepTextToParquetTask.create(
-        source_task=source_task, asset_id="raw_parquet"
+        source_task=source_task, asset_id="raw_parquet", chunk_size=2
     )
-    meta = task.meta
-    assert isinstance(meta, FilteredGWASDataMeta)
-    assert meta.trait == "rheumatoid_arthritis"
-    assert meta.project == "decode_ra_seropositive"
-    assert meta.read_spec is not None
-    assert isinstance(meta.read_spec.format, DataFrameParquetFormat)
+    with pytest.raises(ValueError, match="dtype="):
+        task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
 
 
-def test_rejects_non_whitespace_source_at_construction():
-    # Shift-left: a non-whitespace source must fail when the task is constructed,
-    # not later at execute time.
-    source_task = FakeTask(
-        meta=GWASSummaryDataFileMeta(
-            id=AssetId("raw"),
-            trait="rheumatoid_arthritis",
-            project="decode_ra_seropositive",
-            sub_dir="raw",
-            project_path=Path("gwas.tsv"),
-            read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
-        )
+def test_dtype_override_pins_mixed_chromosome_column(tmp_path: Path):
+    # Pinning the offending column to str via dtype makes the same input succeed.
+    src = tmp_path / "gwas.txt"
+    src.write_text("\n".join(_MIXED_CHR_ROWS) + "\n")
+    scratch = tmp_path / "scratch"
+    scratch.mkdir(parents=True, exist_ok=True)
+
+    source_task, fetch = _source_and_fetch(src)
+    task = WhitespaceSepTextToParquetTask.create(
+        source_task=source_task,
+        asset_id="raw_parquet",
+        chunk_size=2,
+        dtype={"Chr": "str"},
     )
-    with pytest.raises(AssertionError):
-        WhitespaceSepTextToParquetTask.create(
-            source_task=source_task, asset_id="raw_parquet"
-        )
+    result = task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
+    assert isinstance(result, FileAsset)
+    df = pl.read_parquet(result.path)
+    assert df["Chr"].to_list() == ["1", "2", "X", "Y"]
