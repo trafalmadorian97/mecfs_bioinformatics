@@ -98,7 +98,11 @@ class WhitespaceSepTextToParquetTask(Task):
         rows = 0
         # sep=r"\s+" matches read_dataframe.scan_dataframe; pandas infers gzip from the
         # path extension. The first chunk fixes the schema; later chunks are cast to it
-        # (safe=False) so an all-null column that pandas widens later cannot drift.
+        # with safe=True. Because pandas infers dtypes per chunk, a column whose values
+        # widen later (X/Y in a numeric chromosome column, or a decimal in a column the
+        # first chunk saw as integer) would not fit the first chunk's schema; safe=True
+        # makes that a loud failure instead of silently truncating. Widenings and
+        # NaN-as-missing are still handled without error.
         reader = pd.read_csv(
             source_asset.path,
             sep=r"\s+",
@@ -114,9 +118,20 @@ class WhitespaceSepTextToParquetTask(Task):
                     out_path, schema, compression=self.compression
                 )
             else:
-                table = pa.Table.from_pandas(
-                    chunk, schema=schema, preserve_index=False, safe=False
-                )
+                try:
+                    table = pa.Table.from_pandas(
+                        chunk, schema=schema, preserve_index=False, safe=True
+                    )
+                except pa.ArrowInvalid as exc:
+                    raise ValueError(
+                        f"Chunk starting at row {rows} does not fit the schema "
+                        f"inferred from the first chunk ({schema}). pandas infers "
+                        "dtypes per chunk, so a column whose values widen later "
+                        "(e.g. X/Y in a numeric chromosome column, or a decimal in "
+                        "a column the first chunk saw as integer) will not fit. Pass "
+                        "dtype={...} to pin the affected column's type. Underlying "
+                        f"error: {exc}"
+                    ) from exc
             assert writer is not None
             writer.write_table(table)
             rows += chunk.shape[0]

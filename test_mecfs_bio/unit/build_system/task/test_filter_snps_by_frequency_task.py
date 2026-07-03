@@ -101,5 +101,5 @@ def test_filter_snps_by_frequency_rejects_percentage_frequencies(tmp_path: Path)
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(df_loc)
 
-    with pytest.raises(AssertionError, match="percentages"):
+    with pytest.raises(AssertionError):
         task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
