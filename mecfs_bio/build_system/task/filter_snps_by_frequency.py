@@ -51,8 +51,6 @@ class FilterSNPsFrequencyTask(Task):
             meta=self.raw_gwas_task.meta,
         )
 
-        # Fail fast if the frequency column is not on the [0, 1] fraction scale that
-        # this task (and every downstream consumer) assumes.
         raw_min = float(df.select(nw.col(self.allele_freq_col).min()).collect().item())
         raw_max = float(df.select(nw.col(self.allele_freq_col).max()).collect().item())
         assert 0 <= raw_min <= 1 and 0 <= raw_max <= 1, (
