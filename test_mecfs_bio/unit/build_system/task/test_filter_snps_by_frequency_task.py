@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -68,3 +69,37 @@ def test_filter_snps_by_frequency_task(tmp_path: Path):
             "rs13_common",
         ]
     )
+
+
+def test_filter_snps_by_frequency_rejects_percentage_frequencies(tmp_path: Path):
+    """A frequency column reported as a percentage (0-100) must fail fast."""
+    df_loc = tmp_path / "df.csv"
+    pd.DataFrame(
+        {
+            "variant_id": ["rs1", "rs2", "rs3"],
+            # Percentage-encoded frequencies (max 50.0) rather than fractions.
+            "effect_allele_frequency": [0.1, 25.0, 50.0],
+        }
+    ).to_csv(df_loc, index=False)
+    scratch_loc = tmp_path / "scratch"
+    scratch_loc.mkdir(exist_ok=True, parents=True)
+    task = FilterSNPsFrequencyTask(
+        meta=SimpleFileMeta(
+            AssetId("fake"),
+            read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=",")),
+        ),
+        raw_gwas_task=FakeTask(
+            SimpleFileMeta(
+                AssetId("dummy"),
+                read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator=",")),
+            ),
+        ),
+        allele_freq_col="effect_allele_frequency",
+        freq_thresh=0.01,
+    )
+
+    def fetch(asset_id: AssetId) -> Asset:
+        return FileAsset(df_loc)
+
+    with pytest.raises(AssertionError, match="percentages"):
+        task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())

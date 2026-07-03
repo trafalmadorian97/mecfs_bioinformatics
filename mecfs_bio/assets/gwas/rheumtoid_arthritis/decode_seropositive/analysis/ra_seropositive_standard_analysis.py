@@ -12,6 +12,10 @@ from mecfs_bio.build_system.task.filter_snps_by_frequency import FilterSNPsFrequ
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
 )
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
+    ParquetOutFormat,
+    PipeDataFrameTask,
+)
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.compute_beta_pipe import ComputeBetaPipe
 from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
@@ -19,6 +23,7 @@ from mecfs_bio.build_system.task.pipes.effective_n_from_cohort_string_pipe impor
     EffectiveNFromCohortStringPipe,
 )
 from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
+from mecfs_bio.build_system.task.pipes.scale_col_pipe import ScaleColPipe
 from mecfs_bio.build_system.task.whitespace_sep_text_to_parquet_task import (
     WhitespaceSepTextToParquetTask,
 )
@@ -63,15 +68,25 @@ PARQUET_SEROPOS_RA = WhitespaceSepTextToParquetTask.create(
     asset_id="parquet_ra_seropositive",
 )
 
-SCALED_PARQUET
+# deCODE reports EAFrq as a percentage (0-100), whereas gwaslab and every downstream
+# frequency-dependent step (MAF filter, harmonization allele-frequency checks) assume a
+# fraction (0-1). Scale it by 1/100 once here, before the frequency filter reads it, so
+# the rest of the pipeline sees fractions. FilterSNPsFrequencyTask and
+# GWASLabCreateSumstatsTask now assert this range and would otherwise fail loudly.
+SEROPOS_RA_EAF_SCALED = PipeDataFrameTask.create(
+    source_task=PARQUET_SEROPOS_RA,
+    asset_id="ra_seropos_eaf_scaled",
+    out_format=ParquetOutFormat(),
+    pipes=[ScaleColPipe(col="EAFrq", scale_factor=0.01)],
+)
 
-SEROPOS_RA_FILTERED_FOR_FREQ = (
-    FilterSNPsFrequencyTask.create(
+
+SEROPOS_RA_FILTERED_FOR_FREQ = FilterSNPsFrequencyTask.create(
     id=("ra_seropos_filter_for_freq"),
-    raw_gwas_task=PARQUET_SEROPOS_RA,
+    raw_gwas_task=SEROPOS_RA_EAF_SCALED,
     allele_freq_col="EAFrq",
     freq_thresh=0.05,
-))
+)
 
 DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
     base_name="decode_ra_seropositive",

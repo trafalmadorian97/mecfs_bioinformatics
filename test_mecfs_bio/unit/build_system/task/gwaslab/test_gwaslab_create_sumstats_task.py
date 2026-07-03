@@ -2,7 +2,9 @@ import pickle
 from pathlib import Path
 
 import gwaslab
+import narwhals
 import pandas as pd
+import pytest
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -15,7 +17,9 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
+    GWASLabColumnSpecifiers,
     GWASLabCreateSumstatsTask,
+    _validate_eaf_in_range,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
@@ -71,3 +75,22 @@ def test_gwaslab_sumstats(
     )
     asset_2 = task_2.execute(scratch_dir=scratch_loc_2, wf=SimpleWF(), fetch=fetch_2)
     scan_dataframe_asset(asset=asset_2, meta=task_2.meta)
+
+
+def test_validate_eaf_in_range_rejects_percentage():
+    """EAF supplied as a percentage (0-100) must fail fast before sumstats creation."""
+    df = narwhals.from_native(
+        pd.DataFrame({"EAFrq": [0.1, 25.0, 50.0]}), pass_through=False
+    ).lazy()
+    fmt = GWASLabColumnSpecifiers(eaf="EAFrq")
+    with pytest.raises(AssertionError, match="percentages"):
+        _validate_eaf_in_range(df, fmt)
+
+
+def test_validate_eaf_in_range_accepts_fraction():
+    df = narwhals.from_native(
+        pd.DataFrame({"EAFrq": [0.001, 0.25, 0.5, 0.999]}), pass_through=False
+    ).lazy()
+    _validate_eaf_in_range(df, GWASLabColumnSpecifiers(eaf="EAFrq"))
+    # No eaf specifier -> nothing to validate, must not raise.
+    _validate_eaf_in_range(df, GWASLabColumnSpecifiers())
