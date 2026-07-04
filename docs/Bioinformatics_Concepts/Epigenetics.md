@@ -32,19 +32,19 @@ Here are some examples of histone marks with known effects:
 | H4K4me3      | Open, accessible chromatin[@alberts2022molecular]                              |
 | H3K9ac       | Open, accessible chromatin[@alberts2022molecular]                              |
 | H3K9me3      | Closed, inaccessible chromatin[@alberts2022molecular]                          |
-| [H3K27ac]      | [Associated with higher activation of transcription](https://en.wikipedia.org/wiki/H3K27ac) |
+| H3K27ac      | [Associated with higher activation of transcription](https://en.wikipedia.org/wiki/H3K27ac) |
 | H3K27me3     | Closed, inaccessible chromatin[@alberts2022molecular]                          |  
 
 
 [//]: # (Thus, histone marks constitute part of the answer to the question of how gene expression is controlled.)
 
 
-Assays reporting histone marks are important to the study of epigenetic regulation.
+Assays reporting these histone marks are important to the study of epigenetic regulation.
 
 
 ## ATAC-seq
 
-Besides assays that report histone marks, another important group of epigenetic assays are assays that directly measure chromatin accessibility. ATAC-seq is an example of such an accessibility assay.
+Besides assays reporting histone marks, another important group of epigenetic assays are assays that directly measure chromatin accessibility. ATAC-seq is an example of such an accessibility assay.
 
 ATAC-seq  repurposes [transposase](https://en.wikipedia.org/wiki/Transposase), the enzyme responsible for the movement of transposons, or "jumping genes"[^transposons].  It works on the principle that transposase can interact with open chromatin, but not closed chromatin.  This explains the name: Assay for Transposase Accessible Chromatin (ATAC).
 
@@ -62,6 +62,6 @@ Hi-C[^textbookref] is an assay that partially solves this problem. It works by u
 
 [^histone_note]: See pg. 220 of Molecular Biology of the Cell[@alberts2022molecular].
 
-[^transposons]: See pg 306-314 of Molecular Biology of the Cell[@alberts2022molecular].
+[^transposons]: See pg. 306-314 of Molecular Biology of the Cell[@alberts2022molecular].
 
 [^textbookref]: See pg. 221-222 of Molecular Biology of the Cell[@alberts2022molecular].
