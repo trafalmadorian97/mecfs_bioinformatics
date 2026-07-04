@@ -1,8 +1,8 @@
 """
 Preprocessing step that
-- Converts the whitespace-separated text-format summary statistics file to parquet, which is easier to work with
-- Scale the effect allele frequency column so that it is expressed as a proportion, not a fraction.
-- Restricts to variants with MAF>=0.05
+- Converts the whitespace-separated text-format summary statistics file to parquet, which is easier to work with.
+- Scale the effect allele frequency column so that it is expressed as a proportion, not a percentage.
+- Restricts to variants with MAF>=0.05.
 """
 
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.raw.download_raw_ra_seropositive import (
