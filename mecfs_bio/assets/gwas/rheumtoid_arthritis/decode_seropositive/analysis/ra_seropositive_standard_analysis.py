@@ -1,7 +1,7 @@
 """
 Task generator to run standard analysis on DECODE's meta-gwas of rheumatoid arthritis.
 Additional preprocessing steps:
-- Filter out non-SNP variants for simplicity, and to save memory (GWASLab 4.1.9) has a memory issue when running harmonization on long indels
+- Filter out non-SNP variants for simplicity, and to save memory. GWASLab 4.1.9 has a memory issue when running harmonization on long indels
 - Compute effective N for each variant, based on the column that indicates which cohorts are used to compute which variants.
 """
 
