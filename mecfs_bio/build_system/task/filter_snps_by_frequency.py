@@ -50,12 +50,19 @@ class FilterSNPsFrequencyTask(Task):
             asset=fetch(self.raw_gwas_task.asset_id),
             meta=self.raw_gwas_task.meta,
         )
-        result = df.filter(
-            nw.min_horizontal(
-                nw.col(self.allele_freq_col), 1 - nw.col(self.allele_freq_col)
-            )
-            >= self.freq_thresh
+
+        raw_min = float(df.select(nw.col(self.allele_freq_col).min()).collect().item())
+        raw_max = float(df.select(nw.col(self.allele_freq_col).max()).collect().item())
+        assert 0 <= raw_min <= 1 and 0 <= raw_max <= 1, (
+            f"Allele frequency column {self.allele_freq_col!r} has values outside the "
+            f"[0, 1] fraction range (observed min={raw_min}, max={raw_max})."
         )
+
+        freq = nw.min_horizontal(
+            nw.col(self.allele_freq_col), 1 - nw.col(self.allele_freq_col)
+        )
+
+        result = df.filter(freq >= self.freq_thresh)
         target_path = scratch_dir / "tmp.parqet"
         result.sink_parquet(target_path)
         return FileAsset(target_path)
@@ -69,7 +76,7 @@ class FilterSNPsFrequencyTask(Task):
         freq_thresh: float = 0.05,
     ) -> Task:
         source_meta = raw_gwas_task.meta
-        assert isinstance(source_meta, GWASSummaryDataFileMeta)
+        assert isinstance(source_meta, (GWASSummaryDataFileMeta, FilteredGWASDataMeta))
         meta = FilteredGWASDataMeta(
             id=AssetId(id),
             trait=source_meta.trait,

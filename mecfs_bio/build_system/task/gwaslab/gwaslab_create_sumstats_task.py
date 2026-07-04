@@ -41,6 +41,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_EFFECT_ALLELE_FREQ_COL,
     GWASLAB_STATUS_COL,
     GwaslabKnownFormat,
 )
@@ -195,6 +196,21 @@ class GWASLabColumnSpecifiers:
 ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
 
 
+def _validate_eaf_in_range(sumstats: gl.Sumstats) -> None:
+    if GWASLAB_EFFECT_ALLELE_FREQ_COL not in sumstats.data.columns:
+        return
+    eaf = sumstats.data[GWASLAB_EFFECT_ALLELE_FREQ_COL]
+    eaf_min = float(eaf.min(skipna=True))
+    eaf_max = float(eaf.max(skipna=True))
+    if pd.isna(eaf_min) or pd.isna(eaf_max):
+        logger.debug("EAF column present, but entirely NAN")
+        return
+    assert 0 <= eaf_min <= 1 and 0 <= eaf_max <= 1, (
+        f"Effect allele frequency column {GWASLAB_EFFECT_ALLELE_FREQ_COL!r} has values "
+        f"outside the [0, 1] fraction range (observed min={eaf_min}, max={eaf_max}). "
+    )
+
+
 def _get_sumstats(
     x: narwhals.LazyFrame,
     fmt: ValidGwaslabFormat,
@@ -303,6 +319,7 @@ class GWASLabCreateSumstatsTask(Task):
         df = self.pre_pipe.process(df)
         logger.debug("Fetching source dataframe asset...")
         sumstats = _get_sumstats(df, self.fmt, drop_cols=self.drop_col_list)
+        _validate_eaf_in_range(sumstats)
         transform_spec = GwasLabTransformSpec(
             basic_check=self.basic_check,
             genome_build=self.genome_build,
