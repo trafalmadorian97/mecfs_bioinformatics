@@ -2,7 +2,7 @@
 Task to download DECODE GWAS of seropositive Rheumatoid arthritis.
 Citation:
 Saevarsdottir, Saedis, et al. "Multiomics analysis of rheumatoid arthritis yields sequence variants that have large effects on risk of the seropositive subset."i
-Annals of the rheumatic diseases81.8 (2022): 1085-1095.
+Annals of the rheumatic diseases 81.8 (2022): 1085-1095.
 """
 
 from pathlib import PurePath
