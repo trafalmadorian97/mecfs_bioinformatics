@@ -32,7 +32,7 @@ The plot and expandable table below show the results of S-LDSC applied to Decode
 As we saw in [GTEx MAGMA analysis](g_MAGMA_DecodeME_Analysis.md), the significant tissues are all CNS-related.
 
 
-### Roadmap Chromatin data
+### Roadmap/ ENCODE Chromatin data
 
 I next applied S-LDSC using the Roadmap epigenetic reference dataset.  The results are in the plot and expandable table below:
 

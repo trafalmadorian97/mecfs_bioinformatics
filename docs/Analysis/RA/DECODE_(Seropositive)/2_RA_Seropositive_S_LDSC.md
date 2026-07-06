@@ -1,10 +1,6 @@
 # S-LDSC
 
-<<<<<<< HEAD
 I applied stratified linkage disequilibrium score regression (S-LDSC)[@finucane2018heritability] to summary statistics from DECODE's meta-GWAS of seropositive rheumatoid arthritis (RA)[@saevarsdottir2022multiomics].
-=======
-I applied stratified linkage disequilibrium score regression (S-LDSC)[@finucane2018heritability] to summary statistics from DECODE's meta-GWAS of seropositive rheumatoid arthritis[@saevarsdottir2022multiomics].
->>>>>>> main
 
 
 ## Reference Data Sources
@@ -25,4 +21,32 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 ### GTEx and Franke lab tissue expression data
 
 The plot and expandable table below show the results of S-LDSC applied to the seropositive RA GWAS using the GTEx and Franke lab gene expression reference datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to tissue category.  Large points indicate cell/tissue types deemed significant by the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling]. 
+
+{{ plotly_embed("docs/_figs/decode_ra_seropositive_multi_tissue_gene_expression_cell_analysis_s_ld sc_plot/sldsc_scatter.html", id="seropositive-ra-sldsc-gene-expression") }}
+
+
+{{ markdown_table("docs/_figs/decode_ra_seropositive_multi_tissue_gene_expression_s_ldsc_cell_analysis_md_table.mdx", title="GTEx and Franke lab tissue expression — full results", collapse_threshold=0) }}
+
+As would be expected for an immune trait, the significant cells/tissue are immune-related.
+
+
+### Roadmap/ ENCODE Chromatin data
+
+I next applied S-LDSC using the Roadmap epigenetic reference dataset.  The results are in the plot and expandable table below:
+
+{{ plotly_embed("docs/_figs/decode_ra_seropositive_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-ra-sldsc-chromatin") }}
+
+{{ markdown_table("docs/_figs/decode_ra_seropositive_multi_tissue_chromatin_s_ldsc_cell_analysis_md_table.mdx", title="Roadmap/ ENCPDE chromatin — full results", collapse_threshold=0) }}
+
+
+Epigenic reference data reinforces the point made by the GTEx and Franke lab reference data: the key cell types pertain to the immune system.
+
+
+### ImmGen data
+
+Next, I applied S-LDSC using the ImmGen project reference dataset.
+
+{{ plotly_embed("", id="decode-ra-sldsc-chromatin") }}
+
+{{ markdown_table("", title="Roadmap chromatin — full results", collapse_threshold=0) }}
 
