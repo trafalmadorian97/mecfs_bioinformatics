@@ -1,6 +1,10 @@
 # S-LDSC
 
+<<<<<<< HEAD
 I applied stratified linkage disequilibrium score regression (S-LDSC)[@finucane2018heritability] to summary statistics from DECODE's meta-GWAS of seropositive rheumatoid arthritis (RA)[@saevarsdottir2022multiomics].
+=======
+I applied stratified linkage disequilibrium score regression (S-LDSC)[@finucane2018heritability] to summary statistics from DECODE's meta-GWAS of seropositive rheumatoid arthritis[@saevarsdottir2022multiomics].
+>>>>>>> main
 
 
 ## Reference Data Sources
