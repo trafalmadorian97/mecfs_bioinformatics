@@ -126,6 +126,9 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.magma.johnston
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import (
     JOHNSTON_ET_AL_UNIVARIATE_MIXER,
 )
+from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_standard_analysis import (
+    DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
 )
@@ -327,4 +330,10 @@ ALL_FIGURE_TASKS: list[Task] = [
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
     UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].plot_task_unwrap,
+    DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].multiple_testing_task_markdown,
 ]
