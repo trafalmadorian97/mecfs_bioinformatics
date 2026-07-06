@@ -46,7 +46,8 @@ Epigenic reference data reinforces the point made by the GTEx and Franke lab ref
 
 Next, I applied S-LDSC using the ImmGen project reference dataset.
 
-{{ plotly_embed("", id="decode-ra-sldsc-chromatin") }}
+{{ plotly_embed("docs/_figs/decode_ra_seropositive_immgen_cell_analysis_s_ldsc_plot/sldsc_scatter
+.html", id="decode-ra-sldsc-immgen") }}
 
-{{ markdown_table("", title="Roadmap chromatin — full results", collapse_threshold=0) }}
+{{ markdown_table("docs/_figs/decode_ra_seropositive_immgen_s_ldsc_cell_analysis_md_table.mdx", title="Immgen — full results", collapse_threshold=0) }}
 
