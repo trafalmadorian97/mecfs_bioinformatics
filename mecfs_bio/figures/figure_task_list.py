@@ -127,7 +127,7 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston
     JOHNSTON_ET_AL_UNIVARIATE_MIXER,
 )
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_standard_analysis import (
-    DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS,
 )
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
@@ -330,10 +330,35 @@ ALL_FIGURE_TASKS: list[Task] = [
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
     UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
-    DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
-    DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].multiple_testing_task_markdown,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF
+    ].plot_task_unwrap,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF
+    ].multiple_testing_task_markdown,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        IMMGEN_REF
+    ].plot_task_unwrap,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        IMMGEN_REF
+    ].multiple_testing_task_markdown,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        CORCES_ATAC_REF
+    ].multiple_testing_task_markdown,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        GTEX_BRAIN_REF
+    ].multiple_testing_task_markdown,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+        CAHOY_CNS_REF
+    ].multiple_testing_task_markdown,
 ]
+# CAHOY_CNS_REF = "cahoy_cns"
+# GTEX_BRAIN_REF = "gtex_brain"
+# IMMGEN_REF = "immgen"
+# CORCES_ATAC_REF = "corces_atac"

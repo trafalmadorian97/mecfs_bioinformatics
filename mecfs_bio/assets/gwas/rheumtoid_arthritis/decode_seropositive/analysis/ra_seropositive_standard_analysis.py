@@ -41,7 +41,7 @@ _pre_gwaslab_pipe = CompositePipe(
         _add_effective_n,
     ]
 )
-DECODE_SEROPOSITIVE_RA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
+SEROPOSITIVE_RA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
     base_name="decode_ra_seropositive",
     raw_gwas_data_task=SEROPOS_RA_FILTERED_FOR_FREQ,  # PARQUET_SEROPOS_RA,
     fmt=GWASLabColumnSpecifiers(
