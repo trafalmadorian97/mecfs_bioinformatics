@@ -357,6 +357,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         CAHOY_CNS_REF
     ].multiple_testing_task_markdown,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.magma_gene_manhattan_plot_unwrap,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
