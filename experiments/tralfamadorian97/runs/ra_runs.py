@@ -9,7 +9,7 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.raw.download_
 
 def go():
     DEFAULT_RUNNER.run(
-        targets=SEROPOSITIVE_RA_STANDARD_ANALYSIS.terminal_tasks(),
+        targets=SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.terminal_tasks(),
         must_rebuild_transitive=[
             # SEROPOS_RA_FILTERED_FOR_FREQ,
         ],
