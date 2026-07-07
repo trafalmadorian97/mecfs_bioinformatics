@@ -36,7 +36,7 @@ I next applied S-LDSC using the Roadmap/ ENCODE epigenetic reference dataset.  T
 
 {{ plotly_embed("docs/_figs/decode_ra_seropositive_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-ra-sldsc-chromatin") }}
 
-{{ markdown_table("docs/_figs/decode_ra_seropositive_multi_tissue_chromatin_s_ldsc_cell_analysis_md_table.mdx", title="Roadmap/ ENCPDE chromatin — full results", collapse_threshold=0) }}
+{{ markdown_table("docs/_figs/decode_ra_seropositive_multi_tissue_chromatin_s_ldsc_cell_analysis_md_table.mdx", title="Roadmap/ ENCODE chromatin — full results", collapse_threshold=0) }}
 
 
 Epigenic reference data reinforces the point made by the GTEx and Franke lab reference data: the key cell types pertain to the immune system.
