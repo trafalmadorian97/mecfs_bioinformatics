@@ -24,6 +24,7 @@ import narwhals
 from attrs import frozen
 
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
 
 
 @frozen
@@ -56,7 +57,7 @@ class EffectiveNFromCohortStringPipe(DataProcessingPipe):
 
     cohorts: list[CohortCaseControl]
     cohort_string_col: str
-    out_col: str = "N"
+    out_col: str = GWASLAB_SAMPLE_SIZE_COLUMN
     missing_char: str = "?"
 
     def __attrs_post_init__(self) -> None:
