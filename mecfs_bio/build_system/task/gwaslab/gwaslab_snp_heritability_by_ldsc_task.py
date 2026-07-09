@@ -16,6 +16,7 @@ Chapter authors are S. Burgess, C.N. Foley and V. Zuber
 
 from pathlib import Path, PurePath
 
+import numpy as np
 import pandas as pd
 import structlog
 from attrs import frozen
@@ -44,8 +45,11 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_BETA_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
+    GWASLAB_SE_COL,
 )
+from mecfs_bio.constants.ldsc_constants import LDSC_Z_COL
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 logger = structlog.get_logger()
@@ -77,6 +81,7 @@ class SNPHeritabilityByLDSCTask(Task):
         sumstats_asset = fetch(self._source_sumstats_id)
         sumstats = read_sumstats(sumstats_asset)
         sumstats.data = self.pipe.process_pandas(sumstats.data)
+        sumstats.data = _drop_variants_with_degenerate_z(sumstats.data)
         ref_id = self._ld_ref_id()
         ref_asset = fetch(ref_id)
         assert isinstance(ref_asset, DirectoryAsset)
@@ -137,6 +142,43 @@ class SNPHeritabilityByLDSCTask(Task):
             pipe=pipe,
             build=build,
         )
+
+
+def _drop_variants_with_degenerate_z(data: pd.DataFrame) -> pd.DataFrame:
+    """Drop variants whose LDSC Z score would be non-finite.
+
+    gwaslab builds the LDSC Z score as BETA / SE (or uses an existing Z column). A
+    variant with SE == 0 therefore yields an infinite Z (or NaN, when BETA is also 0,
+    as happens when a source reports an odds ratio rounded to 1.00). deCODE summary
+    statistics contain many such variants: odds ratios rounded to 1.00 give BETA == 0
+    and SE == 0, and underflowed p-values give SE == 0 with a non-zero BETA. A
+    non-finite Z makes the single-trait two-step estimator's IRWLS reweighting produce
+    a non-finite design matrix, which aborts the underlying SVD.
+
+    LDSC's own munge step drops these variants; single-trait estimate_h2_by_ldsc does
+    not (unlike the stratified path, which caps chi-square unconditionally), so we drop
+    them here rather than at the call site, since the requirement is intrinsic to this
+    regression. Variants are matched to gwaslab's Z-resolution order: prefer an existing
+    Z column, otherwise derive the finiteness requirement from BETA and SE.
+    """
+    if LDSC_Z_COL in data.columns:
+        keep = np.isfinite(data[LDSC_Z_COL])
+    elif GWASLAB_BETA_COL in data.columns and GWASLAB_SE_COL in data.columns:
+        keep = (
+            np.isfinite(data[GWASLAB_BETA_COL])
+            & np.isfinite(data[GWASLAB_SE_COL])
+            & (data[GWASLAB_SE_COL] > 0)
+        )
+    else:
+        return data
+    n_dropped = int((~keep).sum())
+    if n_dropped:
+        logger.info(
+            "Dropped variants with degenerate (non-finite) LDSC Z score",
+            n_dropped=n_dropped,
+            n_remaining=int(keep.sum()),
+        )
+    return data.loc[keep].copy()
 
 
 def _get_prev_params(phenotype_info: PhenotypeInfo) -> dict:

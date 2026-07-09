@@ -18,6 +18,9 @@ from mecfs_bio.build_system.sample_size_spec import PerVariantSampleSize
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
 )
+from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    BinaryPhenotypeSampleInfo,
+)
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.compute_beta_pipe import ComputeBetaPipe
 from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
@@ -58,4 +61,8 @@ SEROPOSITIVE_RA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid
     pre_pipe_before_rsid_assignment=_pre_gwaslab_pipe,
     pre_pipe_after_rsid_assignment=CompositePipe([ComputeBetaPipe(), ComputeSEPipe()]),
     filter_indels_in_harmonized=True,
+    phenotype_info_for_ldsc=BinaryPhenotypeSampleInfo(
+        sample_prevalence=0.5, estimated_population_prevalence=0.005
+    ),  # Sample prevalence must be set to 0.5 since we are working with effective sample sizes.
+    # Pop prevalence comes from https://pmc.ncbi.nlm.nih.gov/articles/PMC8053349/ which estimates 1% for RA in general.  Divide by 2 for a rough estimate for seropositive RA.
 )
