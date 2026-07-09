@@ -6,8 +6,8 @@ manuscript results. It is NOT in POPs' munged format: it must still be processed
 PopsMungeFeatureDirectoryTask before pops.py can consume it. Hosted by the authors
 on Dropbox (linked from the POPs README).
 
-md5_hash is left as None because the file is multiple gigabytes and the authors do
-not publish a checksum; pin one here if the download proves unstable.
+The authors do not publish a checksum, so the md5 pinned here was computed from a
+manual download of the file (~7.2 GB, gzip of full_features_jul17.txt).
 """
 
 from pathlib import PurePath
@@ -31,5 +31,5 @@ POPS_FEATURES_RAW = DownloadFileTask(
         "AFKkJu7ACaun1uuE99kmTkc/data/PoPS.features.txt.gz"
         "?rlkey=ltdbcld1enyr1zefg1lfqm61i&dl=1"
     ),
-    md5_hash=None,
+    md5_hash="ca4df85846b3619c787fb6c9dc75b26c",
 )
