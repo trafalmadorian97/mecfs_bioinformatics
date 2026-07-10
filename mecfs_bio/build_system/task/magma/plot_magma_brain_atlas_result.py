@@ -45,6 +45,7 @@ KEY_HBA_ANNOTATION_COLUMNS = [
 @frozen
 class PlotSettings:
     plot_mode: PlotMode = "plotly_dark"
+    include_top_annotation: bool = False
 
 
 @frozen
@@ -63,6 +64,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
     cluster_annotation_task: Task
     meta: Meta
     plot_mode: PlotMode = "plotly_dark"
+    include_top_annotation: bool = False
 
     @property
     def annotation_id(self) -> AssetId:
@@ -89,11 +91,6 @@ class PlotMagmaBrainAtlasResultTask(Task):
         annotation_asset = fetch(self.annotation_id)
         table = (
             scan_dataframe_asset(asset=source_asset, meta=self.source_meta)
-            .collect()
-            .to_pandas()
-        )
-        annotation_table = (
-            scan_dataframe_asset(asset=annotation_asset, meta=self.annotation_meta)
             .collect()
             .to_pandas()
         )
@@ -157,21 +154,22 @@ class PlotMagmaBrainAtlasResultTask(Task):
             line_dash="dot",
             opacity=0.5,
         )
-        plot = plot.add_annotation(
-            x=float(top_cluster["CLUSTER"]),
-            y=float(top_cluster["MLOG10P"]),
-            text=top_cluster_label,
-            font=dict(  # Customize font properties
-                size=15,
-                color=colormap[top_cluster["Supercluster"]],
-            ),
-            arrowhead=2,  # Style of the arrowhead
-            arrowsize=1,  # Size of the arrowhead
-            arrowwidth=2,  # Width of the arrow line
-            arrowcolor=colormap[top_cluster["Supercluster"]],
-            ay=-60,  # Y-component of the arrow tail offset (pixels from head)
-            standoff=10,
-        )
+        if self.include_top_annotation:
+            plot = plot.add_annotation(
+                x=float(top_cluster["CLUSTER"]),
+                y=float(top_cluster["MLOG10P"]),
+                text=top_cluster_label,
+                font=dict(  # Customize font properties
+                    size=15,
+                    color=colormap[top_cluster["Supercluster"]],
+                ),
+                arrowhead=2,  # Style of the arrowhead
+                arrowsize=1,  # Size of the arrowhead
+                arrowwidth=2,  # Width of the arrow line
+                arrowcolor=colormap[top_cluster["Supercluster"]],
+                ay=-60,  # Y-component of the arrow tail offset (pixels from head)
+                standoff=10,
+            )
         plots = {BRAIN_ATLAS_PLOT_NAME: plot}
         write_plots_to_dir(scratch_dir, plots)
         return DirectoryAsset(scratch_dir)
@@ -197,6 +195,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
             result_table_task=result_table_task,
             cluster_annotation_task=cluster_annotation_task,
             plot_mode=plot_settings.plot_mode,
+            include_top_annotation=plot_settings.include_top_annotation,
         )
 
 
