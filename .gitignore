@@ -275,3 +275,4 @@ default_runner_config.yaml`
 # POPs feature-cap experiment outputs (large, regenerable)
 experiments/claude/pops_feature_cap/
 experiments/claude/pops_ibd/
+experiments/claude/pops_lowmem/

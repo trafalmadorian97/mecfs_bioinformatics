@@ -19,6 +19,7 @@ def concrete_pops_assets_generate(
     base_name: str,
     magma_gene_analysis_task: Task,
     pops_extra_args: tuple[str, ...] = (),
+    low_mem: bool = False,
 ) -> PopsTaskGenerator:
     """
     Function to generate tasks that run POPs on top of a MAGMA gene analysis using
@@ -27,6 +28,10 @@ def concrete_pops_assets_generate(
 
     magma_gene_analysis_task must be the ensembl MAGMA gene-analysis variant, since
     POPs matches genes on Ensembl gene IDs.
+
+    Set low_mem=True to use the streaming kernel-ridge reimplementation, whose peak
+    memory is independent of the selected-feature count. It is model-identical to
+    stock POPs and lets high-feature traits run uncapped without OOMing the box.
     """
     return PopsTaskGenerator.create(
         base_name=base_name,
@@ -34,4 +39,5 @@ def concrete_pops_assets_generate(
         munged_features_task=POPS_FEATURES_MUNGED,
         magma_gene_analysis_task=magma_gene_analysis_task,
         pops_extra_args=pops_extra_args,
+        low_mem=low_mem,
     )

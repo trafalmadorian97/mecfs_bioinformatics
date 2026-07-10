@@ -28,6 +28,11 @@ NanPolicy = Literal["raise", "ignore", "mean", "zero"]
 MUNGE_SCRIPT_NAME = "munge_feature_directory.py"
 POPS_SCRIPT_NAME = "pops.py"
 
+# Our low-peak-memory reimplementation of POPs' ridge fit. Unlike the stock scripts
+# this lives inside our package (not the extracted source); it imports the pinned
+# stock pops.py as a module via --pops_source_dir and reuses its front-end.
+POPS_LOWMEM_SCRIPT_PATH = Path(__file__).parent / "lowmem" / "pops_lowmem.py"
+
 # Canonical utility files shipped inside the POPs source tarball. These are
 # genome-wide (gene_annot_jun10.txt covers ~18k genes) and are the files the POPs
 # authors use for their own runs, so they are appropriate for real analyses.
@@ -69,5 +74,25 @@ def invoke_pops_script(
     script_path = pops_source_dir / script_name
     assert script_path.is_file(), f"POPs script not found: {script_path}"
     cmd = ["pixi", "r", "python", str(script_path), *args]
+    logger.debug(f"Running command: {' '.join(cmd)}")
+    execute_command(cmd)
+
+
+def invoke_pops_lowmem_script(pops_source_dir: Path, args: Sequence[str]) -> None:
+    """Run our low-memory POPs script via pixi r python, passing the extracted POPs
+    source directory (so it can import the stock front-end) followed by the same
+    arguments the stock pops.py accepts. Streams output and raises on nonzero exit."""
+    assert POPS_LOWMEM_SCRIPT_PATH.is_file(), (
+        f"Low-memory POPs script not found: {POPS_LOWMEM_SCRIPT_PATH}"
+    )
+    cmd = [
+        "pixi",
+        "r",
+        "python",
+        str(POPS_LOWMEM_SCRIPT_PATH),
+        "--pops_source_dir",
+        str(pops_source_dir),
+        *args,
+    ]
     logger.debug(f"Running command: {' '.join(cmd)}")
     execute_command(cmd)

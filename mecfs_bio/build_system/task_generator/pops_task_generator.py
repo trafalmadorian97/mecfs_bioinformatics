@@ -16,6 +16,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
+from mecfs_bio.build_system.task.pops.pops_lowmem_run_task import PopsLowMemRunTask
 from mecfs_bio.build_system.task.pops.pops_run_task import PopsRunTask
 from mecfs_bio.build_system.task.pops.pops_utils import (
     POPS_OUTPUT_STEM_NAME,
@@ -48,8 +49,13 @@ class PopsTaskGenerator:
         munged_features_task: Task,
         magma_gene_analysis_task: Task,
         pops_extra_args: tuple[str, ...] = (),
+        low_mem: bool = False,
     ) -> "PopsTaskGenerator":
-        pops_run_task = PopsRunTask.create(
+        # The low-memory implementation is model-identical to stock POPs but its
+        # peak memory is independent of the selected-feature count, so it is used
+        # for high-feature traits that would otherwise OOM the box.
+        run_task_cls = PopsLowMemRunTask if low_mem else PopsRunTask
+        pops_run_task = run_task_cls.create(
             asset_id=base_name + "_pops_run",
             pops_source_task=pops_source_task,
             munged_features_task=munged_features_task,
