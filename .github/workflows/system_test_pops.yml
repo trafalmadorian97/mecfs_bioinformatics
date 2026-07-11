@@ -1,0 +1,18 @@
+name: system_test_pops
+on:
+  schedule:
+    - cron: "0 4 * * 5"   #Run Friday at 4 UTC
+  workflow_dispatch: {}
+
+jobs:
+  pops:
+    timeout-minutes: 600
+    name: POPs gene prioritization
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7
+      - name: Run POPs system test
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_pops.py
