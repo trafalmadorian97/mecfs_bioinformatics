@@ -271,8 +271,16 @@ lychee_report.json
 
 # Configuration of default runner.  Specifies location of asset store
 
-default_runner_config.yaml`
+default_runner_config.yaml
+
 # POPs feature-cap experiment outputs (large, regenerable)
 experiments/claude/pops_feature_cap/
 experiments/claude/pops_ibd/
 experiments/claude/pops_lowmem/
+experiments/claude/pops_standalone/
+#lychee
+.lycheecache
+
+
+# token
+.ieugwaspy.json
