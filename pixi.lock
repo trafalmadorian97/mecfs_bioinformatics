@@ -430,8 +430,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml-0.17.17-py312h4c3975b_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruamel.yaml.clib-0.2.12-py312h4c3975b_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/ruff-0.15.11-h7805a7d_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.96.0-h53717f1_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.96.0-h2c6d0dc_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.97.0-h53717f1_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.97.0-h2c6d0dc_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/s2n-1.7.0-ha63dd3a_1.conda
       - conda: https://conda.anaconda.org/bioconda/linux-64/samtools-1.22.1-h96c455f_0.tar.bz2
       - conda: https://conda.anaconda.org/conda-forge/linux-64/sed-4.9-h6688a6e_0.conda
@@ -2006,7 +2006,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 2e67c13c3e2cc46b8377c7efb11971126e99f6e41d0e3e4f15bf256d38f6d69f
+  sha256: 9a83b92a51956e00aaf676510e7f60e1619d2875d771fbe9674e7dd379c7314f
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -9902,33 +9902,33 @@ packages:
   - pkg:pypi/ruff?source=compressed-mapping
   size: 9327937
   timestamp: 1776378777189
-- conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.96.0-h53717f1_0.conda
-  sha256: d084a53a1ce2cea8d6f9cf45108e516a629118dd3f8fb3113d87d1dcd3eea669
-  md5: 5b80270d422d9fddf028cb4ce68370b2
+- conda: https://conda.anaconda.org/conda-forge/linux-64/rust-1.97.0-h53717f1_0.conda
+  sha256: 2ffb498d537f5d555956d27003f8d922504c295e260c9e5360caf1344771ba51
+  md5: 3719d40bc183aafc8cfc539f0f9f8cdf
   depends:
   - __glibc >=2.17,<3.0.a0
   - gcc_impl_linux-64
   - libgcc >=14
   - libzlib >=1.3.2,<2.0a0
-  - rust-std-x86_64-unknown-linux-gnu 1.96.0 h2c6d0dc_0
+  - rust-std-x86_64-unknown-linux-gnu 1.97.0 h2c6d0dc_0
   - sysroot_linux-64 >=2.17
   license: MIT
   license_family: MIT
   purls: []
-  size: 171986391
-  timestamp: 1780046427552
-- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.96.0-h2c6d0dc_0.conda
-  sha256: e8c453fc331eedd6b7a02356d177802a2c03b0bc6490d86c0e63c15ef172d53f
-  md5: cbbc8546ba8381cb792744564cec0430
+  size: 173622696
+  timestamp: 1783711533417
+- conda: https://conda.anaconda.org/conda-forge/noarch/rust-std-x86_64-unknown-linux-gnu-1.97.0-h2c6d0dc_0.conda
+  sha256: 9b7d75e7466f5651cb78c871b85318368769761657cb29c98c2d22aa578764b7
+  md5: 1b62b82641a649fa440d492fa083a069
   depends:
   - __unix
   constrains:
-  - rust >=1.96.0,<1.96.1.0a0
+  - rust >=1.97.0,<1.97.1.0a0
   license: MIT
   license_family: MIT
   purls: []
-  size: 36676677
-  timestamp: 1780046295074
+  size: 36746381
+  timestamp: 1783711449395
 - conda: https://conda.anaconda.org/conda-forge/linux-64/s2n-1.7.0-ha63dd3a_1.conda
   sha256: 37b2d9768f205f497f5af48cc9e83ca8a5e15c9ba5493f6c0835fff9a6503e66
   md5: f9bb0a7187f2e25b19cde17aa8c846c4
