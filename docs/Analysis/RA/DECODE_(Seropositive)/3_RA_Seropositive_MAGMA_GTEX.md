@@ -31,7 +31,7 @@ I next applied [MAGMA's](../../../Bioinformatics_Concepts/MAGMA_Overview.md) gen
 The results are plotted below:
 
 {{ plotly_embed("docs/_figs/decode_ra_seropositive_magma_bar_plot/magma_gene_set_plot.html", id="seropositive-ra-magma-gtex-tissue-bar-plot") }}
-In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p value meets Bonferroni-corrected significance threshold,
+In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p value meets the Bonferroni-corrected significance threshold,
 
 
 The tissue types _Whole blood_, _Spleen_, and _EBV-transformed lymphocytes_ make sense, given that RA is an immune-related condition.  The other tissues are less clear.  The presence of lung tissue can be explained by the observation that post-mortem GTEx lung samples may contain blood [@finucane2018heritability].  The gut-related tissue could reflect presence of important immune-related cells in the gut.

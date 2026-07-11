@@ -365,37 +365,37 @@ ALL_FIGURE_TASKS: list[Task] = [
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap,
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_GENE_EXPRESSION_REF
-    ].plot_task_unwrap,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_GENE_EXPRESSION_REF
-    ].multiple_testing_task_markdown,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_CHROMATIN_REF
-    ].plot_task_unwrap,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        MULTI_TISSUE_CHROMATIN_REF
-    ].multiple_testing_task_markdown,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        IMMGEN_REF
-    ].plot_task_unwrap,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        IMMGEN_REF
-    ].multiple_testing_task_markdown,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        CORCES_ATAC_REF
-    ].multiple_testing_task_markdown,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        GTEX_BRAIN_REF
-    ].multiple_testing_task_markdown,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
-        CAHOY_CNS_REF
-    ].multiple_testing_task_markdown,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     MULTI_TISSUE_GENE_EXPRESSION_REF
+    # ].plot_task_unwrap,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     MULTI_TISSUE_GENE_EXPRESSION_REF
+    # ].multiple_testing_task_markdown,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     MULTI_TISSUE_CHROMATIN_REF
+    # ].plot_task_unwrap,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     MULTI_TISSUE_CHROMATIN_REF
+    # ].multiple_testing_task_markdown,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     IMMGEN_REF
+    # ].plot_task_unwrap,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     IMMGEN_REF
+    # ].multiple_testing_task_markdown,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     CORCES_ATAC_REF
+    # ].multiple_testing_task_markdown,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     GTEX_BRAIN_REF
+    # ].multiple_testing_task_markdown,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
+    #     CAHOY_CNS_REF
+    # ].multiple_testing_task_markdown,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_gene_manhattan_plot_unwrap,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap,
-    SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
+    # SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
