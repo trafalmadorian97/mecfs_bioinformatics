@@ -29,3 +29,14 @@ EXTENDED_MHC_BUILD_37 = GenomicInterval(
     chrom=6,
 )
 GenomeBuild = Literal["19", "38"]
+
+
+def extended_mhc_interval(build: GenomeBuild) -> GenomicInterval:
+    """Return the extended MHC region for the given genome build.
+
+    Only build 19 (equivalently GRCh37) is currently supported; build-38
+    coordinates have not been added yet, so this raises for build 38.
+    """
+    if build == "19":
+        return EXTENDED_MHC_BUILD_37
+    raise ValueError(f"Extended MHC region not implemented for genome build {build}")

@@ -24,6 +24,7 @@ from mecfs_bio.build_system.task.gene_manhattan_plot_task import (
 from mecfs_bio.build_system.task.magma.magma_gene_analysis_task import (
     GENE_ANALYSIS_OUTPUT_STEM_NAME,
 )
+from mecfs_bio.constants.genomic_coordinate_constants import EXTENDED_MHC_BUILD_37
 
 
 def _synthetic_df() -> pd.DataFrame:
@@ -336,6 +337,103 @@ def test_magma_source_no_filter_when_max_p_value_none(tmp_path: Path):
     data = source.load_df(fetch=fetch)
     assert len(data.df) == 4
     assert data.num_genes_for_correction == 4
+
+
+def test_build_manhattan_plot_y_axis_start_sets_lower_bound():
+    df = _synthetic_df()
+    y_axis_start = float(-np.log10(0.1))
+    fig = build_manhattan_plot(
+        df=df,
+        sig_threshold=5e-8,
+        point_size=5,
+        colors=("#1f77b4", "#ff7f0e"),
+        sig_line_color="red",
+        title=None,
+        genome_build="19",
+        y_axis_start=y_axis_start,
+    )
+    y_range = fig.layout.yaxis.range
+    assert y_range is not None
+    assert float(y_range[0]) == pytest.approx(y_axis_start)
+    # The upper bound stays above the most significant point (-log10(1e-9)).
+    assert float(y_range[1]) > 9.0
+
+
+def test_build_manhattan_plot_no_y_range_without_start():
+    df = _synthetic_df()
+    fig = build_manhattan_plot(
+        df=df,
+        sig_threshold=5e-8,
+        point_size=5,
+        colors=("#1f77b4", "#ff7f0e"),
+        sig_line_color="red",
+        title=None,
+        genome_build="19",
+    )
+    # Without y_axis_start the axis is left to auto-range.
+    assert fig.layout.yaxis.range is None
+
+
+def _synthetic_df_with_hla() -> pd.DataFrame:
+    """One chr6 gene inside the extended MHC region and one outside it."""
+    in_pos = float((EXTENDED_MHC_BUILD_37.start + EXTENDED_MHC_BUILD_37.end) / 2)
+    out_pos = float(EXTENDED_MHC_BUILD_37.end + 1_000_000)
+    return pd.DataFrame(
+        [
+            {
+                "chrom": "6",
+                "pos": in_pos,
+                "ensembl_id": "ENSG_HLA",
+                "gene_name": "HLA_GENE",
+                "p_value": 1e-6,
+            },
+            {
+                "chrom": "6",
+                "pos": out_pos,
+                "ensembl_id": "ENSG_OUT",
+                "gene_name": "OUT_GENE",
+                "p_value": 1e-4,
+            },
+        ]
+    )
+
+
+def test_build_manhattan_plot_marks_hla_region_genes():
+    df = _synthetic_df_with_hla()
+    fig = build_manhattan_plot(
+        df=df,
+        sig_threshold=5e-8,
+        point_size=5,
+        colors=("#1f77b4", "#ff7f0e"),
+        sig_line_color="red",
+        title=None,
+        genome_build="19",
+        hla_interval=EXTENDED_MHC_BUILD_37,
+        hla_marker_symbol="diamond",
+    )
+    chr6_trace = next(t for t in fig.data if t.name == "chr6")
+    # The in-region gene sorts before the out-of-region gene by position, so the
+    # symbol array is (diamond, circle).
+    assert tuple(chr6_trace.marker.symbol) == ("diamond", "circle")
+    # A legend entry describing the HLA marker is added.
+    legend_names = [t.name for t in fig.data if t.showlegend]
+    assert "Extended HLA/MHC region" in legend_names
+
+
+def test_build_manhattan_plot_no_hla_marking_by_default():
+    df = _synthetic_df_with_hla()
+    fig = build_manhattan_plot(
+        df=df,
+        sig_threshold=5e-8,
+        point_size=5,
+        colors=("#1f77b4", "#ff7f0e"),
+        sig_line_color="red",
+        title=None,
+        genome_build="19",
+    )
+    chr6_trace = next(t for t in fig.data if t.name == "chr6")
+    # No hla_interval => plain circle marker (scalar symbol, not an array).
+    assert chr6_trace.marker.symbol is None or chr6_trace.marker.symbol == "circle"
 
 
 def test_build_manhattan_plot_empty_df_raises():
