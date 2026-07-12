@@ -451,7 +451,6 @@ def build_manhattan_plot(
     sig_y = float(-np.log10(sig_threshold))
 
     pos_label = f"position (hg{genome_build})"
-    any_hla_marked = False
     fig = go.Figure()
     for idx, chrom in enumerate(chroms):
         chrom_df = df[df[_CHROM] == chrom]
@@ -461,7 +460,6 @@ def build_manhattan_plot(
             in_hla = chrom_df[_POS].between(
                 hla_interval.start, hla_interval.end, inclusive="left"
             )
-            any_hla_marked = any_hla_marked or bool(in_hla.any())
             symbol: str | list[str] = np.where(
                 in_hla.to_numpy(), hla_marker_symbol, "circle"
             ).tolist()
@@ -503,21 +501,6 @@ def build_manhattan_plot(
         annotation_position="top left",
     )
 
-    # A points-free trace purely so the HLA marker symbol appears in the legend
-    # and viewers can read what the differently-shaped points mean.
-    if any_hla_marked:
-        fig.add_trace(
-            go.Scattergl(
-                x=[None],
-                y=[None],
-                mode="markers",
-                marker=dict(size=point_size, color="grey", symbol=hla_marker_symbol),
-                name="Extended HLA/MHC region",
-                hoverinfo="skip",
-                showlegend=True,
-            )
-        )
-
     yaxis: dict[str, object] = dict(title="-log<sub>10</sub>(p)", zeroline=False)
     if y_axis_start is not None:
         y_top = max(float(df["_mlog10p"].max()), sig_y)
@@ -537,7 +520,7 @@ def build_manhattan_plot(
         yaxis=yaxis,
         plot_bgcolor="white",
         hovermode="closest",
-        showlegend=any_hla_marked,
+        showlegend=False,
     )
     return fig
 

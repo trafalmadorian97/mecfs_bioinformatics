@@ -415,9 +415,10 @@ def test_build_manhattan_plot_marks_hla_region_genes():
     # The in-region gene sorts before the out-of-region gene by position, so the
     # symbol array is (diamond, circle).
     assert tuple(chr6_trace.marker.symbol) == ("diamond", "circle")
-    # A legend entry describing the HLA marker is added.
-    legend_names = [t.name for t in fig.data if t.showlegend]
-    assert "Extended HLA/MHC region" in legend_names
+    # No legend trace is added; the symbol's meaning is explained in the
+    # surrounding documentation rather than spending plot real estate on it.
+    assert all(not t.showlegend for t in fig.data)
+    assert fig.layout.showlegend is False
 
 
 def test_build_manhattan_plot_no_hla_marking_by_default():
