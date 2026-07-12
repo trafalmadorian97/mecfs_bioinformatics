@@ -400,10 +400,12 @@ def build_manhattan_plot(
     (Position (hg19) for build 37, Position (hg38) for build 38). Positions in
     df are assumed to already be in the declared build.
 
-    y_axis_start, when not None, fixes the lower bound of the -log10(p) axis
+    y_axis_start, when not None, anchors the lower bound of the -log10(p) axis
     (drawn vertically). It is intended to be -log10(max_p_value) so that a
     p-value-filtered plot uses its full vertical extent instead of leaving empty
-    space below the lowest surviving point. The upper bound stays data-driven.
+    space below the lowest surviving point. A small padding is subtracted so
+    points sitting right at the cutoff are not sliced by the x-axis; the upper
+    bound stays data-driven.
 
     hla_interval, when not None, marks genes falling inside it (matched on
     chromosome and midpoint position) with hla_marker_symbol instead of the
@@ -505,7 +507,9 @@ def build_manhattan_plot(
     if y_axis_start is not None:
         y_top = max(float(df["_mlog10p"].max()), sig_y)
         pad = 0.05 * max(y_top - y_axis_start, 1.0)
-        yaxis["range"] = [y_axis_start, y_top + pad]
+        # Drop the lower bound a little below y_axis_start so points sitting right
+        # at the cutoff are not sliced in half by the x-axis.
+        yaxis["range"] = [y_axis_start - pad, y_top + pad]
 
     fig.update_layout(
         title=title,
