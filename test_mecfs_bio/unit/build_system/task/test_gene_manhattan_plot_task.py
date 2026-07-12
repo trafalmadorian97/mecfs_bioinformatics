@@ -354,7 +354,11 @@ def test_build_manhattan_plot_y_axis_start_sets_lower_bound():
     )
     y_range = fig.layout.yaxis.range
     assert y_range is not None
-    assert float(y_range[0]) == pytest.approx(y_axis_start)
+    # The lower bound sits just below y_axis_start (a small padding is subtracted
+    # so cutoff-hugging points are not sliced by the x-axis), but well above 0.
+    assert float(y_range[0]) < y_axis_start
+    assert float(y_range[0]) == pytest.approx(y_axis_start, abs=0.5)
+    assert float(y_range[0]) > 0.0
     # The upper bound stays above the most significant point (-log10(1e-9)).
     assert float(y_range[1]) > 9.0
 
