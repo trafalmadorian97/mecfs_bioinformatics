@@ -384,7 +384,7 @@ def build_manhattan_plot(
     num_genes_for_correction: int | None = None,
     y_axis_start: float | None = None,
     hla_interval: GenomicInterval | None = None,
-    hla_marker_symbol: str = "diamond",
+    hla_marker_symbol: str | None = "diamond",
 ) -> go.Figure:
     """Construct a Plotly figure containing a gene-level Manhattan plot.
 
@@ -408,8 +408,12 @@ def build_manhattan_plot(
     hla_interval, when not None, marks genes falling inside it (matched on
     chromosome and midpoint position) with hla_marker_symbol instead of the
     default circle, so that extended-HLA/MHC-region genes stand out. Those genes
-    keep their chromosome's color; only the symbol changes.
+    keep their chromosome's color; only the symbol changes. hla_marker_symbol
+    must be a valid Plotly symbol whenever hla_interval is given.
     """
+    assert hla_interval is None or hla_marker_symbol is not None, (
+        "hla_marker_symbol is required when hla_interval is given"
+    )
     df = df.dropna(subset=[_P]).copy()
     df = df[df[_P] > 0]
     df[_CHROM] = df[_CHROM].astype(str)
@@ -453,6 +457,7 @@ def build_manhattan_plot(
         chrom_df = df[df[_CHROM] == chrom]
         color = colors[idx % 2]
         if hla_interval is not None and chrom == str(hla_interval.chrom):
+            assert hla_marker_symbol is not None  # guaranteed by the top assert
             in_hla = chrom_df[_POS].between(
                 hla_interval.start, hla_interval.end, inclusive="left"
             )
@@ -548,10 +553,10 @@ class GeneManhattanPlotTask(Task):
     -log10(max_p_value) rather than 0, so the filtered plot uses its full
     vertical extent.
 
-    mark_extended_hla_region (on by default) draws genes in the extended
-    HLA/MHC region with hla_marker_symbol instead of a circle so they stand
-    out. It relies on extended_mhc_interval, which currently only supports
-    genome build 19.
+    hla_marker_symbol (a diamond by default) draws genes in the extended
+    HLA/MHC region with that Plotly symbol instead of a circle so they stand
+    out; set it to None to disable the marking entirely. It relies on
+    extended_mhc_interval, which currently only supports genome build 19.
     """
 
     meta: Meta
@@ -562,8 +567,7 @@ class GeneManhattanPlotTask(Task):
     sig_line_color: str = "red"
     title: str | None = None
     plotly_js_mode: bool | PlotlyWriteMode = "cdn"
-    mark_extended_hla_region: bool = True
-    hla_marker_symbol: str = "diamond"
+    hla_marker_symbol: str | None = "diamond"
 
     @property
     def deps(self) -> list[Task]:
@@ -577,7 +581,7 @@ class GeneManhattanPlotTask(Task):
         )
         hla_interval = (
             extended_mhc_interval(self.source.genome_build)
-            if self.mark_extended_hla_region
+            if self.hla_marker_symbol is not None
             else None
         )
         fig = build_manhattan_plot(
