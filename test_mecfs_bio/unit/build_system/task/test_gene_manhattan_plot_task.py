@@ -342,25 +342,30 @@ def test_magma_source_no_filter_when_max_p_value_none(tmp_path: Path):
 def test_build_manhattan_plot_y_axis_start_sets_lower_bound():
     df = _synthetic_df()
     y_axis_start = float(-np.log10(0.1))
+    point_size = 5
+    plot_area_height_px = 700.0
     fig = build_manhattan_plot(
         df=df,
         sig_threshold=5e-8,
-        point_size=5,
+        point_size=point_size,
         colors=("#1f77b4", "#ff7f0e"),
         sig_line_color="red",
         title=None,
         genome_build="19",
         y_axis_start=y_axis_start,
+        plot_area_height_px=plot_area_height_px,
     )
     y_range = fig.layout.yaxis.range
     assert y_range is not None
-    # The lower bound sits just below y_axis_start (a small padding is subtracted
-    # so cutoff-hugging points are not sliced by the x-axis), but well above 0.
-    assert float(y_range[0]) < y_axis_start
-    assert float(y_range[0]) == pytest.approx(y_axis_start, abs=0.5)
-    assert float(y_range[0]) > 0.0
+    # The lower bound sits one marker diameter below y_axis_start so cutoff-hugging
+    # points are not sliced by the x-axis. That padding is the marker's pixel
+    # diameter converted to data units via the visible span and plot height.
+    y_top = float(y_range[1])
+    visible_span = y_top - y_axis_start
+    expected_bottom_pad = point_size / plot_area_height_px * visible_span
+    assert float(y_range[0]) == pytest.approx(y_axis_start - expected_bottom_pad)
     # The upper bound stays above the most significant point (-log10(1e-9)).
-    assert float(y_range[1]) > 9.0
+    assert y_top > 9.0
 
 
 def test_build_manhattan_plot_no_y_range_without_start():
