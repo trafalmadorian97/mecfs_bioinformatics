@@ -8,7 +8,7 @@ def go():
     regenerate_figures(
         [SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_gene_manhattan_plot_unwrap]
     )
-    push_figures()
+    # push_figures()
 
 if __name__ == '__main__':
     go()
