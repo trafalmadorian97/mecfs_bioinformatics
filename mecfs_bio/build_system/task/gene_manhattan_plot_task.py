@@ -385,6 +385,7 @@ def build_manhattan_plot(
     y_axis_start: float | None = None,
     hla_interval: GenomicInterval | None = None,
     hla_marker_symbol: str | None = "diamond",
+    plot_area_height_px: float = 700.0,
 ) -> go.Figure:
     """Construct a Plotly figure containing a gene-level Manhattan plot.
 
@@ -403,9 +404,12 @@ def build_manhattan_plot(
     y_axis_start, when not None, anchors the lower bound of the -log10(p) axis
     (drawn vertically). It is intended to be -log10(max_p_value) so that a
     p-value-filtered plot uses its full vertical extent instead of leaving empty
-    space below the lowest surviving point. A small padding is subtracted so
-    points sitting right at the cutoff are not sliced by the x-axis; the upper
-    bound stays data-driven.
+    space below the lowest surviving point. One marker diameter is subtracted so
+    points sitting right at the cutoff clear the x-axis instead of being sliced;
+    the upper bound stays data-driven. plot_area_height_px is the assumed
+    rendered plotting-area height in pixels, used only to convert the marker's
+    pixel diameter into that data-unit padding (the docs embed iframe is
+    ~775px tall).
 
     hla_interval, when not None, marks genes falling inside it (matched on
     chromosome and midpoint position) with hla_marker_symbol instead of the
@@ -506,10 +510,13 @@ def build_manhattan_plot(
     yaxis: dict[str, object] = dict(title="-log<sub>10</sub>(p)", zeroline=False)
     if y_axis_start is not None:
         y_top = max(float(df["_mlog10p"].max()), sig_y)
-        pad = 0.05 * max(y_top - y_axis_start, 1.0)
-        # Drop the lower bound a little below y_axis_start so points sitting right
-        # at the cutoff are not sliced in half by the x-axis.
-        yaxis["range"] = [y_axis_start - pad, y_top + pad]
+        top_pad = 0.05 * max(y_top - y_axis_start, 1.0)
+        # Drop the lower bound by one marker diameter so points sitting right at
+        # the cutoff clear the x-axis. point_size is a pixel diameter, so convert
+        # it to data units via the visible span and the assumed plot-area height.
+        visible_span = (y_top + top_pad) - y_axis_start
+        bottom_pad = point_size / plot_area_height_px * visible_span
+        yaxis["range"] = [y_axis_start - bottom_pad, y_top + top_pad]
 
     fig.update_layout(
         title=title,
