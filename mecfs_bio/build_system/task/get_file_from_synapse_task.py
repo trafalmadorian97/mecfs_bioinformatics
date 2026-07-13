@@ -5,8 +5,6 @@ Task to get a file from synapse.org, a scientific data repository.
 from pathlib import Path
 
 import structlog
-import synapseclient
-import synapseutils
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -35,9 +33,6 @@ class GetFileFromSynapseTask(Task):
         return []
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        syn = synapseclient.login()
-        files = synapseutils.syncFromSynapse(syn, self.synid, path=str(scratch_dir))
-        logger.debug(f"downloaded: {files}")
-        assert len(files) == 1
-        assert files[0].name == self.expected_filename
-        return FileAsset(Path(files[0].path))
+        path = wf.download_from_synapse(self.synid, scratch_dir, self.expected_filename)
+        logger.debug(f"downloaded: {path}")
+        return FileAsset(path)
