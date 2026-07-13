@@ -542,15 +542,6 @@ class GeneManhattanPlotTask(Task):
 
     Backed by Plotly's WebGL renderer (Scattergl) so that hover stays
     responsive at gene-scale point counts (~20k-30k).
-
-    When the source declares a max_p_value, the -log10(p) axis starts at
-    -log10(max_p_value) rather than 0, so the filtered plot uses its full
-    vertical extent.
-
-    hla_marker_symbol (a diamond by default) draws genes in the extended
-    HLA/MHC region with that Plotly symbol instead of a circle so they stand
-    out; set it to None to disable the marking entirely. It relies on
-    extended_mhc_interval, which currently only supports genome build 19.
     """
 
     meta: Meta
@@ -561,7 +552,7 @@ class GeneManhattanPlotTask(Task):
     sig_line_color: str = "red"
     title: str | None = None
     plotly_js_mode: bool | PlotlyWriteMode = "cdn"
-    hla_marker_symbol: str | None = "diamond"
+    hla_marker_symbol: str | None = None
 
     @property
     def deps(self) -> list[Task]:
