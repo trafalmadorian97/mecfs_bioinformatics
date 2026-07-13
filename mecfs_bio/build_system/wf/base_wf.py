@@ -16,13 +16,6 @@ from mecfs_bio.util.download.verify import verify_hash
 class WF(ABC):
     """
     An interface to the external world.
-
-    External-world capabilities are composed in rather than baked into each
-    subclass: download_from_synapse delegates to a SynapseDownloader, so the
-    delivery strategy varies independently of the WF subclass and adding future
-    capabilities does not multiply subclasses. Downloading from a URL is still
-    the subclass's own concern (it is what the delivery-strategy subclasses
-    actually differ on).
     """
 
     synapse_downloader: SynapseDownloader = Factory(SharedClientSynapseDownloader)
