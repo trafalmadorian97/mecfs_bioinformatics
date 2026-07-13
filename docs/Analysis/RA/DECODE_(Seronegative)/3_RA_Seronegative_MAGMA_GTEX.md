@@ -22,7 +22,7 @@ The plot below shows the results of MAGMA gene-level analysis
 
 It is interesting to note the p-value spike in the HLA region of chromosome 6, consistent with immune pathogenesis. Thus even though there [S-LDSC failed to identify heritability enrichment in immune cells](2_RA_Seronegative_S_LDSC.md), gene-level analysis does point to immune etiology.
 
-Contrasting the above graph with the [corresponding one for seropositive RA](../DECODE_(Seropositive)/3_RA_Seropositive_MAGMA_GTEX.md) we observe both produce spikes 
+Contrasting the above graph with the [corresponding one for seropositive RA](../DECODE_(Seropositive)/3_RA_Seropositive_MAGMA_GTEX.md) we observe both conditions produce spikes in the HLA region of chromosome 6, but the seropositive RA Manhattan plot has more significant genes outside of chromosome 6, and so is less concentrated at that locus.
 
 ## MAGMA Gene Property Analysis
 
@@ -37,7 +37,7 @@ The results are plotted below:
 
 In this plot, the y-axis corresponds to $-\log_{10}(p)$ values, the x-axis corresponds to tissue type (only tissues with the smallest p values are shown), and bars are colored according to whether their p value meets Bonferroni-corrected significance threshold.
 
-Interestingly, and consistent with the earlier S-LDSC analysis, no tissue types are significant.
+Interestingly, and consistent with the earlier S-LDSC analysis, no tissue types are significant. This may be a consequence of the lack of strong signal outside of the HLA region, in contrast to seropositive RA.
 
 [//]: # (2026-07-11 17:42:40 [debug    ] Figure asset decode_ra_seronegative_magma_gene_manhattan_plot copied to docs/_figs/decode_ra_seronegative_magma_gene_manhattan_plot.html.)
 [//]: # (2026-07-11 17:42:40 [debug    ] Figure asset decode_ra_seronegative_ldsc_heritability_markdown copied to docs/_figs/decode_ra_seronegative_ldsc_heritability_markdown.mdx.)
