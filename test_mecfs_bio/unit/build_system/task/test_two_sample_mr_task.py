@@ -27,7 +27,7 @@ from mecfs_bio.build_system.task.two_sample_mr_task import (
     TwoSampleMRTask,
     run_two_sample_mr,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 dummy_exposure = pd.DataFrame(
     {
@@ -139,7 +139,7 @@ def test_two_sample_mr_task(tmp_path: Path):
             return FileAsset(dummy_exposure_path)
         raise ValueError("unknown asset id")
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, DirectoryAsset)
     loaded_result = pd.read_csv((result.path) / MAIN_RESULT_DF_PATH)
     assert loaded_result[TSM_OUTPUT_B_COL].item() == pytest.approx(2, abs=0.1)

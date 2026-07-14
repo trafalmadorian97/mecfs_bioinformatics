@@ -39,7 +39,8 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import (
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
-from mecfs_bio.build_system.wf.base_wf import RobustDownloadWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.build_system.wf.wf_downloader import RobustWFDownloader
 
 
 @frozen
@@ -88,8 +89,7 @@ class SimpleRunner:
         rebuilder = VerifyingTraceRebuilder(
             tracer=self.tracer, post_execute=self.post_execute
         )
-        wf = RobustDownloadWF()
-        # wf= SimpleWF()
+        wf = make_wf(downloader=RobustWFDownloader())
         meta_to_path = self.meta_to_path
         tasks = find_tasks(targets)
         must_rebuild_graph = dependees_of_targets_from_tasks(

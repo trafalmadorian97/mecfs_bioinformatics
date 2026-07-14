@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.whitespace_sep_text_to_parquet_task import (
     WhitespaceSepTextToParquetTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 # Variable-width spacing (like the deCODE alignment padding) plus a column that is "NA"
 # in early rows and numeric later, to exercise streaming parse and cross-chunk schema.
@@ -59,7 +59,7 @@ def test_whitespace_sep_text_to_parquet_streams_and_preserves_values(tmp_path: P
         def __call__(self, asset_id: AssetId) -> Asset:
             return FileAsset(src)
 
-    result = task.execute(scratch_dir=scratch, fetch=_Fetch(), wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch, fetch=_Fetch(), wf=make_wf())
     assert isinstance(result, FileAsset)
 
     df = pl.read_parquet(result.path)
@@ -117,7 +117,7 @@ def test_lossy_cross_chunk_type_change_raises(tmp_path: Path):
         source_task=source_task, asset_id="raw_parquet", chunk_size=2
     )
     with pytest.raises(ValueError, match="dtype="):
-        task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
+        task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
 
 
 def test_dtype_override_pins_mixed_chromosome_column(tmp_path: Path):
@@ -134,7 +134,7 @@ def test_dtype_override_pins_mixed_chromosome_column(tmp_path: Path):
         chunk_size=2,
         dtype={"Chr": "str"},
     )
-    result = task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     df = pl.read_parquet(result.path)
     assert df["Chr"].to_list() == ["1", "2", "X", "Y"]

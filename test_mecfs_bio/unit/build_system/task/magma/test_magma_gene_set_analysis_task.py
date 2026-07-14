@@ -14,7 +14,7 @@ from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
     MagmaGeneSetAnalysisTask,
     ModelParams,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 _dummy_spec_data_1 = """GENE
 1
@@ -69,6 +69,6 @@ def test_gene_set_analysis_empty_gene_sets(
             )
 
     result = gene_set_covar_analysis_task.execute(
-        scratch_dir=scratch, fetch=fetch, wf=SimpleWF()
+        scratch_dir=scratch, fetch=fetch, wf=make_wf()
     )
     assert isinstance(result, DirectoryAsset)

@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.upset_plot_task import (
     FileSetSource,
     UpSetPlotTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 @pytest.mark.parametrize(
@@ -73,5 +73,5 @@ def test_upset_plot_task(
             return DirectoryAsset(dir1_path)
         raise ValueError(f"Unknown asset id {asset_id}")
 
-    result = plot_task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
+    result = plot_task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
