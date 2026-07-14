@@ -59,7 +59,11 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_START_COL,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
+from mecfs_bio.constants.genomic_coordinate_constants import (
+    GenomeBuild,
+    extended_mhc_interval,
+)
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.util.plotting.save_fig import PlotlyWriteMode
 
 logger = structlog.get_logger()
@@ -378,6 +382,10 @@ def build_manhattan_plot(
     title: str | None,
     genome_build: GenomeBuild,
     num_genes_for_correction: int | None = None,
+    y_axis_start: float | None = None,
+    hla_interval: GenomicInterval | None = None,
+    hla_marker_symbol: str | None = "diamond",
+    plot_area_height_px: float = 700.0,
 ) -> go.Figure:
     """Construct a Plotly figure containing a gene-level Manhattan plot.
 
@@ -392,7 +400,26 @@ def build_manhattan_plot(
     genome_build selects the hover label for the gene's midpoint position
     (Position (hg19) for build 37, Position (hg38) for build 38). Positions in
     df are assumed to already be in the declared build.
+
+    y_axis_start, when not None, anchors the lower bound of the -log10(p) axis
+    (drawn vertically). It is intended to be -log10(max_p_value) so that a
+    p-value-filtered plot uses its full vertical extent instead of leaving empty
+    space below the lowest surviving point. One marker diameter is subtracted so
+    points sitting right at the cutoff clear the x-axis instead of being sliced;
+    the upper bound stays data-driven. plot_area_height_px is the assumed
+    rendered plotting-area height in pixels, used only to convert the marker's
+    pixel diameter into that data-unit padding (the docs embed iframe is
+    ~775px tall).
+
+    hla_interval, when not None, marks genes falling inside it (matched on
+    chromosome and midpoint position) with hla_marker_symbol instead of the
+    default circle, so that extended-HLA/MHC-region genes stand out. Those genes
+    keep their chromosome's color; only the symbol changes. hla_marker_symbol
+    must be a valid Plotly symbol whenever hla_interval is given.
     """
+    assert hla_interval is None or hla_marker_symbol is not None, (
+        "hla_marker_symbol is required when hla_interval is given"
+    )
     df = df.dropna(subset=[_P]).copy()
     df = df[df[_P] > 0]
     df[_CHROM] = df[_CHROM].astype(str)
@@ -434,12 +461,22 @@ def build_manhattan_plot(
     for idx, chrom in enumerate(chroms):
         chrom_df = df[df[_CHROM] == chrom]
         color = colors[idx % 2]
+        if hla_interval is not None and chrom == str(hla_interval.chrom):
+            assert hla_marker_symbol is not None  # guaranteed by the top assert
+            in_hla = chrom_df[_POS].between(
+                hla_interval.start, hla_interval.end, inclusive="left"
+            )
+            symbol: str | list[str] = np.where(
+                in_hla.to_numpy(), hla_marker_symbol, "circle"
+            ).tolist()
+        else:
+            symbol = "circle"
         fig.add_trace(
             go.Scattergl(
                 x=chrom_df["_x"],
                 y=chrom_df["_mlog10p"],
                 mode="markers",
-                marker=dict(size=point_size, color=color),
+                marker=dict(size=point_size, color=color, symbol=symbol),
                 name=f"chr{chrom}",
                 customdata=list(
                     zip(
@@ -470,6 +507,17 @@ def build_manhattan_plot(
         annotation_position="top left",
     )
 
+    yaxis: dict[str, object] = dict(title="-log<sub>10</sub>(p)", zeroline=False)
+    if y_axis_start is not None:
+        y_top = max(float(df["_mlog10p"].max()), sig_y)
+        top_pad = 0.05 * max(y_top - y_axis_start, 1.0)
+        # Drop the lower bound by one marker diameter so points sitting right at
+        # the cutoff clear the x-axis. point_size is a pixel diameter, so convert
+        # it to data units via the visible span and the assumed plot-area height.
+        visible_span = (y_top + top_pad) - y_axis_start
+        bottom_pad = point_size / plot_area_height_px * visible_span
+        yaxis["range"] = [y_axis_start - bottom_pad, y_top + top_pad]
+
     fig.update_layout(
         title=title,
         xaxis=dict(
@@ -480,12 +528,10 @@ def build_manhattan_plot(
             showgrid=False,
             zeroline=False,
         ),
-        yaxis=dict(
-            title="-log<sub>10</sub>(p)",
-            zeroline=False,
-        ),
+        yaxis=yaxis,
         plot_bgcolor="white",
         hovermode="closest",
+        showlegend=False,
     )
     return fig
 
@@ -494,7 +540,7 @@ def build_manhattan_plot(
 class GeneManhattanPlotTask(Task):
     """Create an interactive HTML gene-level Manhattan plot.
 
-    Backed by Plotly's WebGL renderer (``Scattergl``) so that hover stays
+    Backed by Plotly's WebGL renderer (Scattergl) so that hover stays
     responsive at gene-scale point counts (~20k-30k).
     """
 
@@ -506,6 +552,7 @@ class GeneManhattanPlotTask(Task):
     sig_line_color: str = "red"
     title: str | None = None
     plotly_js_mode: bool | PlotlyWriteMode = "cdn"
+    hla_marker_symbol: str | None = None
 
     @property
     def deps(self) -> list[Task]:
@@ -513,6 +560,15 @@ class GeneManhattanPlotTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         data = self.source.load_df(fetch=fetch)
+        max_p_value = self.source.max_p_value
+        y_axis_start = (
+            float(-np.log10(max_p_value)) if max_p_value is not None else None
+        )
+        hla_interval = (
+            extended_mhc_interval(self.source.genome_build)
+            if self.hla_marker_symbol is not None
+            else None
+        )
         fig = build_manhattan_plot(
             df=data.df,
             sig_threshold=self.sig_threshold,
@@ -522,6 +578,9 @@ class GeneManhattanPlotTask(Task):
             title=self.title,
             genome_build=self.source.genome_build,
             num_genes_for_correction=data.num_genes_for_correction,
+            y_axis_start=y_axis_start,
+            hla_interval=hla_interval,
+            hla_marker_symbol=self.hla_marker_symbol,
         )
         out_path = scratch_dir / "gene_manhattan.html"
         fig.write_html(out_path, include_plotlyjs=self.plotly_js_mode)

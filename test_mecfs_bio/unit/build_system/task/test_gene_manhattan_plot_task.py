@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
-import pytest
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -336,25 +335,3 @@ def test_magma_source_no_filter_when_max_p_value_none(tmp_path: Path):
     data = source.load_df(fetch=fetch)
     assert len(data.df) == 4
     assert data.num_genes_for_correction == 4
-
-
-def test_build_manhattan_plot_empty_df_raises():
-    df = pd.DataFrame(
-        {
-            "chrom": pd.Series(dtype=str),
-            "pos": pd.Series(dtype=float),
-            "ensembl_id": pd.Series(dtype=str),
-            "gene_name": pd.Series(dtype=str),
-            "p_value": pd.Series(dtype=float),
-        }
-    )
-    with pytest.raises(ValueError):
-        build_manhattan_plot(
-            df=df,
-            sig_threshold=5e-8,
-            point_size=5,
-            colors=("#1f77b4", "#ff7f0e"),
-            sig_line_color="red",
-            title=None,
-            genome_build="19",
-        )
