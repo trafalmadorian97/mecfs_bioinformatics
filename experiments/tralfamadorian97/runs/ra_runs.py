@@ -1,6 +1,4 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seronegative.analysis.ra_seronegative_standard_analysis import \
-    SERONEGATIVE_RA_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_standard_analysis import \
     SEROPOSITIVE_RA_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.processed.ra_seropositive_preprocess import \
@@ -11,9 +9,7 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.raw.download_
 
 def go():
     DEFAULT_RUNNER.run(
-        targets=
-            []
-        ,
+        targets=[SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap],
         must_rebuild_transitive=[
             # SEROPOS_RA_FILTERED_FOR_FREQ,
         ],
