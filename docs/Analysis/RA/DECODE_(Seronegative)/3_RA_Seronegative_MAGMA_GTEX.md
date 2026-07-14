@@ -20,7 +20,7 @@ The plot below shows the results of MAGMA gene-level analysis
 
 {{ plotly_embed("docs/_figs/decode_ra_seronegative_magma_gene_manhattan_plot.html", id="magma-ra-neg-gene-manhattan-gene-manhattan-window") }}
 
-It is interesting to note the p-value spike in the HLA region of chromosome 6, consistent with immune pathogenesis. Thus even though there [S-LDSC failed to identify heritability enrichment in immune cells](2_RA_Seronegative_S_LDSC.md), gene-level analysis does point to immune etiology.
+It is interesting to note the p-value spike in the HLA region of chromosome 6, consistent with immune pathogenesis. Thus even though [S-LDSC failed to identify heritability enrichment in immune cells](2_RA_Seronegative_S_LDSC.md), gene-level analysis does point to immune etiology.
 
 Contrasting the above graph with the [corresponding one for seropositive RA](../DECODE_(Seropositive)/3_RA_Seropositive_MAGMA_GTEX.md) we observe both conditions produce spikes in the HLA region of chromosome 6, but the seropositive RA Manhattan plot has more significant genes outside of chromosome 6, and so is less concentrated at that locus.
 
