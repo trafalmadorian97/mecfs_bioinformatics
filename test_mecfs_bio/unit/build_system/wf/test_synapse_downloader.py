@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.build_system.wf.synapse_downloader import SynapseDownloader
 
 
@@ -17,7 +17,7 @@ class _RecordingDownloader(SynapseDownloader):
 
 def test_wf_delegates_download_from_synapse(tmp_path: Path):
     fake = _RecordingDownloader()
-    wf = SimpleWF(synapse_downloader=fake)
+    wf = make_wf(synapse_downloader=fake)
 
     out = wf.download_from_synapse("syn123", tmp_path, "protein.tar")
 

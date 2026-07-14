@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
     ConsolidateLDScoresTask,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def _write_ld_score_gz(path: Path, rows: list[tuple[int, str, int, float]]):
@@ -67,7 +67,7 @@ def test_consolidate_ld_scores(tmp_path: Path):
     scratch_dir = tmp_path / "scratch"
     scratch_dir.mkdir()
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
 
     df = pl.read_parquet(result.path)

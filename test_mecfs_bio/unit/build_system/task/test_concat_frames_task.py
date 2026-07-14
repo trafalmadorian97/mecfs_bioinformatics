@@ -13,7 +13,7 @@ from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_concat_frames_in_dir_task(tmp_path: Path):
@@ -52,7 +52,7 @@ def test_concat_frames_in_dir_task(tmp_path: Path):
             return FileAsset(df_2_loc)
         raise ValueError("unknown asset id")
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     result_df = pd.read_parquet(result.path)
     assert len(result_df) == 6

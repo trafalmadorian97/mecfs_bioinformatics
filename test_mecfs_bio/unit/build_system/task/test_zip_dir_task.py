@@ -9,7 +9,7 @@ from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMet
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.zip_dir_task import ZipDirTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_zip_dir_task(tmp_path: Path):
@@ -29,7 +29,7 @@ def test_zip_dir_task(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         return DirectoryAsset(to_zip)
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     shutil.unpack_archive(result.path, unpacked_result)
     assert (unpacked_result / "file_1.txt").read_text() == "hello"

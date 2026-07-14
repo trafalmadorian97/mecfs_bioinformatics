@@ -15,7 +15,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.magma.prepare_gene_sets_for_magma_task import (
     PrepareGeneSetsForMagmaTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.magma_constants import MAGMA_GENE_COL
 from mecfs_bio.constants.msigdb_columns import (
     EXACT_SOURCE,
@@ -87,7 +87,7 @@ def test_output_is_tab_separated_with_gene_column(tmp_path: Path):
     )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-    result = task.execute(scratch, _FileFetch(db_path), SimpleWF())
+    result = task.execute(scratch, _FileFetch(db_path), make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_csv(result.path, sep="\t")
@@ -105,7 +105,7 @@ def test_gene_column_contains_entrez_ids(tmp_path: Path):
     )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-    result = task.execute(scratch, _FileFetch(db_path), SimpleWF())
+    result = task.execute(scratch, _FileFetch(db_path), make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_csv(result.path, sep="\t")
@@ -122,7 +122,7 @@ def test_binary_indicators_are_correct(tmp_path: Path):
     )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-    result = task.execute(scratch, _FileFetch(db_path), SimpleWF())
+    result = task.execute(scratch, _FileFetch(db_path), make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_csv(result.path, sep="\t").set_index(MAGMA_GENE_COL)
@@ -146,7 +146,7 @@ def test_genes_are_union_across_all_sets(tmp_path: Path):
     )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-    result = task.execute(scratch, _FileFetch(db_path), SimpleWF())
+    result = task.execute(scratch, _FileFetch(db_path), make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_csv(result.path, sep="\t")
@@ -162,7 +162,7 @@ def test_values_are_only_zero_or_one(tmp_path: Path):
     )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-    result = task.execute(scratch, _FileFetch(db_path), SimpleWF())
+    result = task.execute(scratch, _FileFetch(db_path), make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_csv(result.path, sep="\t")
@@ -199,7 +199,7 @@ def test_unknown_gene_set_raises(tmp_path: Path):
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     with pytest.raises(ValueError, match="NONEXISTENT"):
-        task.execute(scratch, _FileFetch(db_path), SimpleWF())
+        task.execute(scratch, _FileFetch(db_path), make_wf())
 
 
 def test_none_ncbi_ids_are_dropped(tmp_path: Path):
@@ -217,7 +217,7 @@ def test_none_ncbi_ids_are_dropped(tmp_path: Path):
     )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-    result = task.execute(scratch, _FileFetch(db_path), SimpleWF())
+    result = task.execute(scratch, _FileFetch(db_path), make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_csv(result.path, sep="\t")
@@ -231,7 +231,7 @@ def test_genes_outside_selected_sets_are_included(tmp_path: Path):
     )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-    result = task.execute(scratch, _FileFetch(db_path), SimpleWF())
+    result = task.execute(scratch, _FileFetch(db_path), make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_csv(result.path, sep="\t").set_index(MAGMA_GENE_COL)
