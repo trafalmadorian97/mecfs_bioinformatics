@@ -15,7 +15,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.filter_snps_by_frequency import (
     FilterSNPsFrequencyTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_filter_snps_by_frequency_task(tmp_path: Path):
@@ -57,7 +57,7 @@ def test_filter_snps_by_frequency_task(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(df_1_loc)
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     assert result.path.is_file()
 
@@ -102,4 +102,4 @@ def test_filter_snps_by_frequency_rejects_percentage_frequencies(tmp_path: Path)
         return FileAsset(df_loc)
 
     with pytest.raises(AssertionError):
-        task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+        task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
