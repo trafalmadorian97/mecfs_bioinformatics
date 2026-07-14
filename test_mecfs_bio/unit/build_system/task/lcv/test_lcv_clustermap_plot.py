@@ -26,7 +26,7 @@ from mecfs_bio.build_system.task.lcv.lcv_task import (
     UPSTREAM_TRAIT_COL,
 )
 from mecfs_bio.build_system.task.xr_pipes.xr_identity import XRIdentityPipe
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_lcv_clustermap(tmp_path: Path):
@@ -69,7 +69,7 @@ def test_lcv_clustermap(tmp_path: Path):
             return FileAsset(df_loc)
         raise NotImplementedError()
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     assert result.path.exists()
     assert result.path.stat().st_size > 0

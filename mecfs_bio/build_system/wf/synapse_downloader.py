@@ -1,5 +1,5 @@
 """
-Synapse download capability for the WF external-world interface.
+Synapse download capability
 """
 
 from __future__ import annotations

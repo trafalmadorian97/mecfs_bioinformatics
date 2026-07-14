@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.copy_files_into_directory_task import (
     CopySource,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_copy_files(tmp_path: Path):
@@ -39,7 +39,7 @@ def test_copy_files(tmp_path: Path):
             return FileAsset(file_2_loc)
         raise ValueError("Invalid asset_id")
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, DirectoryAsset)
     assert (result.path / file_1_in_dir_name).exists()
     assert (result.path / file_2_in_dir_name).exists()

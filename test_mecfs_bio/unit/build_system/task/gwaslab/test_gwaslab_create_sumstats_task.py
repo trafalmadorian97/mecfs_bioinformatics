@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_STATUS_COL
 
 
@@ -52,7 +52,7 @@ def test_gwaslab_sumstats(
             Path("test_mecfs_bio/unit/build_system/task/dummy_data.regenie")
         )
 
-    asset_result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    asset_result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     with open(asset_result.path, "rb") as f:
         loaded = pickle.load(
             f,
@@ -72,7 +72,7 @@ def test_gwaslab_sumstats(
     task_2 = GwasLabSumstatsToTableTask.create_from_source_task(
         source_tsk=task, asset_id="table_task", sub_dir="processed"
     )
-    asset_2 = task_2.execute(scratch_dir=scratch_loc_2, wf=SimpleWF(), fetch=fetch_2)
+    asset_2 = task_2.execute(scratch_dir=scratch_loc_2, wf=make_wf(), fetch=fetch_2)
     scan_dataframe_asset(asset=asset_2, meta=task_2.meta)
 
 

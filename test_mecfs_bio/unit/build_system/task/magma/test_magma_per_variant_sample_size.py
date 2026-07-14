@@ -26,7 +26,7 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import topological
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.magma.magma_snp_location_task import MagmaSNPFileTask
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_P_COL,
     GWASLAB_RSID_COL,
@@ -55,7 +55,7 @@ def test_pval_file_includes_n_column(tmp_path: Path, assign_rsids_task: Task):
         rebuilder=rebuilder,
         tasks=tasks,
         targets=[p_value_task.meta.asset_id],
-        wf=SimpleWF(),
+        wf=make_wf(),
         info=VerifyingTraceInfo.empty(),
         meta_to_path=SimpleMetaToPath(root=asset_dir),
     )

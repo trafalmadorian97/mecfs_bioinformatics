@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.fixed_effect_meta_analysis_task import (
     FixedEffectsMetaAnalysisTask,
     GwasSource,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -76,7 +76,7 @@ def _run_two_source_task(
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(paths[str(asset_id)])
 
-    result = task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     return pd.read_parquet(result.path)
 
@@ -176,7 +176,7 @@ def test_fixed_effect_meta_analysis_task(tmp_path: Path):
             return FileAsset(df_3_path)
         raise ValueError("unknown asset id")
 
-    result = task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     df = pd.read_parquet(result.path)
     assert df["SE"].item() == pytest.approx(0.2235, abs=0.01)

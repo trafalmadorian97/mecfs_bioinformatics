@@ -20,7 +20,7 @@ from mecfs_bio.build_system.task.magma.magma_forward_stepwise_select_task import
 from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
     GENE_SET_ANALYSIS_OUTPUT_STEM_NAME,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.magma_constants import (
     MAGMA_MODEL_COLUMN,
     MAGMA_P_COLUMN,
@@ -81,7 +81,7 @@ def test_forward_stepwise_when_missing_data(tmp_path: Path):
             return DirectoryAsset(conf_dir_path)
         raise ValueError("Unknown asset id")
 
-    result = tsk.execute(fetch=fetch, scratch_dir=scratch, wf=SimpleWF())
+    result = tsk.execute(fetch=fetch, scratch_dir=scratch, wf=make_wf())
     assert isinstance(result, FileAsset)
     result_df = pd.read_csv(result.path)
     assert len(result_df) == 0
@@ -136,7 +136,7 @@ def test_forward_stepwise_single_significant_cluster(tmp_path: Path):
             return DirectoryAsset(cond_dir_path)
         raise ValueError("Unknown asset id")
 
-    result = tsk.execute(fetch=fetch, scratch_dir=scratch, wf=SimpleWF())
+    result = tsk.execute(fetch=fetch, scratch_dir=scratch, wf=make_wf())
     assert isinstance(result, FileAsset)
     result_df = pd.read_csv(result.path)
     assert result_df[RETAINED_CLUSTERS_COLUMN].tolist() == ["Cluster1"]
