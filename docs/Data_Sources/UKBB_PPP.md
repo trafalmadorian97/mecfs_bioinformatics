@@ -1,6 +1,6 @@
 # UKBB PPP
 
-The UK Biobank Pharma Proteomics Project (PPP)[@sun2023plasma] is an effort to characterize the plasma proteomes of a sample of UK Biobank participants.  The PPP was funded and organized by a consortium of major pharmaceutical companies.  The aim was to produce datasets suitable for drug-discovery research.
+The [UK Biobank](UKBB.md) Pharma Proteomics Project (PPP)[@sun2023plasma] is an effort to characterize the plasma proteomes of a sample of UK Biobank participants.  The PPP was funded and organized by a consortium of major pharmaceutical companies.  The aim was to produce datasets suitable for drug-discovery research.
 
 ## Motivation
 

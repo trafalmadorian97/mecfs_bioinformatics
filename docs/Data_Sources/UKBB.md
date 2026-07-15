@@ -9,9 +9,9 @@ The UK Biobank[@sudlow2015uk] is a British prospective health study with more th
 
 ## Phenotype
 
-A key advantage of the UK biobank is its extensive phenotypic data.  This includes:
+The UK biobank holds extensive phenotypic data including:
 
-- Linked medical records from the UK's National Health Service.
+- Linked medical records from the National Health Service.
 - Responses to surveys, both at the initial enrollment visit and on follow-up.
 - Test results, such as cardiac MRI[@pirruccello2022genetic] and exercise testing[@verweij2018genetic].
 - [Proteomics assay data](UKBB_PPP.md)[@sun2023plasma].
@@ -19,7 +19,7 @@ A key advantage of the UK biobank is its extensive phenotypic data.  This includ
 
 ## Genotype
 
-The genetics of UK Biobank participants has been extensively analyzed. This includes
+The genomes of UK Biobank participants have been analyzed. These analyses include:
 
 - Initial chip-based genotyping of all participants[@bycroft2018uk].
 - Subsequent exome sequencing of all participants[@wang2021rare].
