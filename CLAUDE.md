@@ -1,6 +1,6 @@
-- This is a bioinformatics repo
-- We use the pixi package manager, so all commands should be run via 'pixi r <command>'.  Python files should be run via `pixi r python <script>`.
-- Bioinformatics workflows are executed via a "build system" described here: `docs/Codebase_Concepts/Build_System.md`.  The central class is the Task.
+- This is a bioinformatics repo.
+- We use the pixi package manager, so all commands should be run via `pixi r <command>`.  Python files should be run via `pixi r python <script>`.
+- Bioinformatics workflows are executed via a build system described here: `docs/Codebase_Concepts/Build_System.md`.  The central class is the `Task`.
 - `tasks.py` stores repo-level commands for running tasks, typechecking, generating documentation, etc.
-- After making any significant change, always run `pixi r invoke green` to lint, format, and test.  Note that pytest-testmon will skip tests that do not need to be run based on latest changes.
-- In module/class/function doc strings, do not use `backticks` to enclose inline code.  Do not use RST.
+- After making any significant change, always run `pixi r invoke green` to lint, format, and test.  Note that `pytest-testmon` will skip tests unaffected by the latest changes.
+- In module/class/function doc strings, do not use backticks to enclose inline code.  Do not use RST.
