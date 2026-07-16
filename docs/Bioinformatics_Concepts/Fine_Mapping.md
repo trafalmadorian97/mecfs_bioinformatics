@@ -39,7 +39,7 @@ LD patterns can obscure the true causal variant. To illustrate the point, Wang a
 
 In the example, the left and right variants are causal, while the central variant is not.  The left and right variants are correlated with the central variant, but not one another.  As a result, the raw GWAS signal is misleading: if we were to select the candidate causal variant according to p value, we would select the central variant.
 
-Wang and Huang's example reflects a phenomenon seen in real GWAS.  For instance, in a large scale UK Biobank fine-mapping study of 49 traits, Weisbrod et al.[@weissbrod2020functionally] report that "Only 39% of the 2,225 \[likely-causal\] SNPs were also lead GWAS SNPs".
+Wang and Huang's example reflects a phenomenon seen in real GWAS.  For instance, in a large scale [UK Biobank](../Data_Sources/UKBB.md) fine-mapping study of 49 traits, Weisbrod et al.[@weissbrod2020functionally] report that "Only 39% of the 2,225 \[likely-causal\] SNPs were also lead GWAS SNPs".
 
 
 
