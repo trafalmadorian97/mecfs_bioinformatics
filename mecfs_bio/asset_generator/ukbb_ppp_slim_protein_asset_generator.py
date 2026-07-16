@@ -14,6 +14,11 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     BuildSlimProteinParquetTask,
 )
+from mecfs_bio.build_system.task.ppp_database.protein_sample_size_task import (
+    DEFAULT_HEAD_BYTES,
+    PppProteinRef,
+    PppProteinSampleSizeTask,
+)
 
 PPP_MANIFEST_PATH = Path(ppp_assets.__file__).parent / "ppp_manifest.csv"
 
@@ -60,3 +65,23 @@ def generate_ppp_slim_protein_tasks(
         for row in manifest.iter_rows(named=True)
     )
     return PppSlimProteinTaskCollection(protein_tasks=protein_tasks)
+
+
+def generate_ppp_sample_size_task(
+    asset_id: str,
+    manifest_path: Path = PPP_MANIFEST_PATH,
+    head_bytes: int = DEFAULT_HEAD_BYTES,
+) -> PppProteinSampleSizeTask:
+    """Build the per-protein sample-size task from the manifest. The sample sizes are a
+    property of the protein GWAS, independent of which variant index the database uses, so
+    this takes no index."""
+    manifest = pl.read_csv(manifest_path)
+    protein_refs = tuple(
+        PppProteinRef(
+            oid=row[_OID_COL], gene=row[_GENE_COL], synid=row[_SYNAPSE_ID_COL]
+        )
+        for row in manifest.iter_rows(named=True)
+    )
+    return PppProteinSampleSizeTask.create(
+        asset_id=asset_id, protein_refs=protein_refs, head_bytes=head_bytes
+    )
