@@ -1,3 +1,8 @@
+[files]
+# Data file of UKB-PPP gene symbols; not prose, and full of legitimate gene names
+# (SORD, SPRED2, STIP1, WNT9A, ...) that trip the spellchecker.
+extend-exclude = ["**/ppp_manifest.csv"]
+
 [default.extend-words]
 ser="ser"
 setp="setp"
