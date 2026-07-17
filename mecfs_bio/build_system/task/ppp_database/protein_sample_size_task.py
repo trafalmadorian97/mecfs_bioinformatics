@@ -20,6 +20,7 @@ from pathlib import Path, PurePath
 import polars as pl
 import structlog
 from attrs import frozen
+from tqdm import tqdm
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -81,7 +82,9 @@ def _first_regular_member_data_offset(head: bytes) -> int:
         size_field = header[_TAR_SIZE_OFFSET : _TAR_SIZE_OFFSET + _TAR_SIZE_LEN].rstrip(
             b"\x00 "
         )
-        size = int(size_field or b"0", 8)
+        size = int(
+            size_field or b"0", 8
+        )  # size field is a string representing an octal (base 8) number.  int(...,8) converts this base 8 number to an int
         data_offset = offset + _TAR_BLOCK
         if typeflag in _TAR_REGULAR_TYPEFLAGS and size > 0:
             return data_offset
@@ -128,7 +131,7 @@ class PppProteinSampleSizeTask(GeneratingTask):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         records = []
-        for ref in self.protein_refs:
+        for ref in tqdm(self.protein_refs):
             head = wf.fetch_synapse_file_head(ref.synid, self.head_bytes)
             n = extract_regenie_n_from_tar_head(head)
             records.append(
