@@ -113,7 +113,15 @@ class PppHeritabilityConfig:
 
 
 def _parse_chrom(value: object) -> int | None:
-    """Chromosome label -> int (X -> 23); None for unparseable/non-standard labels."""
+    """Chromosome label -> int (X -> 23); None for unparseable/non-standard labels.
+
+    NOTE:
+        - There are a few "proteins" in PPP that are actually multi-protein complexes.
+        - These multi-protein complexes do not correspond to a unique gene on a single chromosome.
+        - In the Excel sheet, these proteins have entries in the chromosome column like chrom1;chrom2
+        - We return None for these proteins.
+
+    """
     text = str(value).strip()
     if text.isdigit():
         return int(text)
