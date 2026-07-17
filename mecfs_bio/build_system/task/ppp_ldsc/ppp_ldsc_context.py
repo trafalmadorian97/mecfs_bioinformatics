@@ -2,7 +2,7 @@
 Shared, protein-invariant context for LDSC over the UKB-PPP database.
 
 Every per-protein slim file stores beta/se in the SAME variant-index row order, so the
-alignment of index variants to LD scores, the regression LD scores (ld / wLD), the total
+alignment of index variants to LD scores, the regression LD scores (ld), the total
 reference-SNP count M, and the genome-sorted order used for contiguous jackknife blocks are
 all identical across proteins. We therefore build them ONCE and reuse them for every
 protein (and, later, for cross-trait rg and LCV).
@@ -48,14 +48,36 @@ _ROW_POS_COL = "__ctx_row__"
 @frozen
 class PppLdscContext:
     """The shared regression SNP set, genome-sorted. All arrays are parallel (one entry per
-    retained variant, in (chromosome, position) order)."""
+    retained variant, in (chromosome, position) order).
 
-    row_pos: np.ndarray  # (S,) int: position of each variant in the slim-file row order
+    We do not carry a separate regression-weight LD score (wLD): with sep_weights=False the
+    weight LD score equals ld, and the batched kernel reuses ld directly. Reinstate a wld
+    array here only if a future path (e.g. externally supplied regression weights) needs it.
+    """
+
+    row_pos: (
+        np.ndarray
+    )  # (S,) int64: position of each variant in the slim-file row order
     ld: np.ndarray  # (S,) float: LD score (L2)
-    wld: np.ndarray  # (S,) float: regression-weight LD score (== ld, sep_weights=False)
-    chrom: np.ndarray  # (S,) int: chromosome
-    pos: np.ndarray  # (S,) int: hg38 position (for cis masks)
+    chrom: np.ndarray  # (S,) int64: chromosome
+    pos: np.ndarray  # (S,) int64: hg38 position (for cis masks)
     m: float  # total reference-SNP count (sum of M_5_50)
+
+    def __attrs_post_init__(self) -> None:
+        # Make invalid states unrepresentable: every array is 1-D, the same length, and the
+        # expected dtype. Constructing a context that violates these is a bug, not a warning.
+        s = self.row_pos.shape[0]
+        for name, arr, kind in (
+            ("row_pos", self.row_pos, "i"),
+            ("ld", self.ld, "f"),
+            ("chrom", self.chrom, "i"),
+            ("pos", self.pos, "i"),
+        ):
+            assert arr.ndim == 1, f"{name} must be 1-D, got shape {arr.shape}"
+            assert arr.shape[0] == s, f"{name} has length {arr.shape[0]}, expected {s}"
+            assert arr.dtype.kind == kind, (
+                f"{name} must be {kind!r}-kind, got dtype {arr.dtype}"
+            )
 
     @property
     def n_snps(self) -> int:
@@ -117,11 +139,9 @@ def build_ppp_ldsc_context(
         )
         joined = joined.filter(~in_mhc)
 
-    ld = joined[LD_SCORE_L2_COL].to_numpy().astype(float)
     return PppLdscContext(
         row_pos=joined[_ROW_POS_COL].to_numpy().astype(np.int64),
-        ld=ld,
-        wld=ld.copy(),
+        ld=joined[LD_SCORE_L2_COL].to_numpy().astype(float),
         chrom=joined[GWASLAB_CHROM_COL].to_numpy().astype(np.int64),
         pos=joined[GWASLAB_POS_COL].to_numpy().astype(np.int64),
         m=m_total,

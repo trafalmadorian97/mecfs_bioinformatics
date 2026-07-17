@@ -9,13 +9,13 @@ are encoded as ZERO regression weights rather than by dropping rows, so all prot
 the same row set and the same shared contiguous jackknife blocks.
 
 This is validated (experiments/claude/ppp_ldsc/batched_vs_exact_h2_probe.py) to agree with
-the repo's exact per-protein GenomicSEM port (_genomic_sem_ldsc._estimate_h2): the h2 point
+the repo's exact per-protein GenomicSEM port (genomic_sem_ldsc.estimate_h2): the h2 point
 estimate is machine-identical and the jackknife SE agrees to <=~1.5% (the only difference is
 that the exact method cuts the KEPT SNPs into blocks whereas the shared-block method cuts the
 FULL set, shifting block membership by a few SNPs).
 
 Weighting note (the one easy bug): the effective WLS weight is omega = het * oc (the
-PRODUCT), because _estimate_h2 multiplies BOTH the design and the response by
+PRODUCT), because estimate_h2 multiplies BOTH the design and the response by
 initial_w = sqrt(het * oc). The sum-to-1 normalization is a common scalar that cancels in
 the 2x2 slope solve, so it is omitted here.
 """
@@ -25,9 +25,9 @@ from __future__ import annotations
 import numpy as np
 from attrs import frozen
 
-from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import (
-    _block_bounds,
-    _estimate_h2,
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import (
+    block_bounds,
+    estimate_h2,
 )
 
 DEFAULT_N_BLOCKS = 200
@@ -45,6 +45,24 @@ class BatchedH2Result:
     mean_chi2: np.ndarray
     lambda_gc: np.ndarray
     n_snps: np.ndarray  # kept SNP count per protein
+
+    def __attrs_post_init__(self) -> None:
+        # Make invalid states unrepresentable: every array is 1-D of the same length K, the
+        # float diagnostics are float-kind, and the kept-SNP count is integer-kind.
+        k = self.h2.shape[0]
+        for name, arr, kind in (
+            ("h2", self.h2, "f"),
+            ("h2_se", self.h2_se, "f"),
+            ("intercept", self.intercept, "f"),
+            ("mean_chi2", self.mean_chi2, "f"),
+            ("lambda_gc", self.lambda_gc, "f"),
+            ("n_snps", self.n_snps, "i"),
+        ):
+            assert arr.ndim == 1, f"{name} must be 1-D, got shape {arr.shape}"
+            assert arr.shape[0] == k, f"{name} has length {arr.shape[0]}, expected {k}"
+            assert arr.dtype.kind == kind, (
+                f"{name} must be {kind!r}-kind, got dtype {arr.dtype}"
+            )
 
 
 def _chisq_threshold(n: np.ndarray) -> np.ndarray:
@@ -69,6 +87,10 @@ def batched_h2(
     n: (K,) per-protein sample size (constant across a protein's SNPs).
     m: total reference-SNP count.
     exclude: optional (S, K) boolean; True drops that variant for that protein (e.g. cis).
+
+
+    NOTE:
+        - To understand the weighting, see the docstring for _het_oc_initial_weight in genomic_sem_ldsc.
     """
     s, k = chi2.shape
     keep = np.isfinite(chi2) & (chi2 <= _chisq_threshold(n)[None, :])
@@ -96,7 +118,7 @@ def batched_h2(
     #   a = sum w*ld^2, b = sum w*ld, d = sum w ; e = sum w*ld*chi, f = sum w*chi.
     ld2 = (ld * ld)[:, None]
     blk = np.empty((n_blocks, k, 5))
-    for i, (lo, hi) in enumerate(_block_bounds(s, n_blocks)):
+    for i, (lo, hi) in enumerate(block_bounds(s, n_blocks)):
         wb = w[lo:hi]
         cb = chi[lo:hi]
         blk[i, :, 0] = (wb * ld2[lo:hi]).sum(0)
@@ -159,7 +181,7 @@ def exact_h2_single(
         keep &= ~exclude
     chi = chi2[keep]
     ld_kept = ld[keep]
-    est = _estimate_h2(
+    est = estimate_h2(
         chi=chi,
         ld_raw=ld_kept,
         wld_raw=ld_kept,

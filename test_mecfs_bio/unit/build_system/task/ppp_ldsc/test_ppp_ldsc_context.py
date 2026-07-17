@@ -49,7 +49,6 @@ def test_context_sorts_filters_and_maps_row_positions():
     assert list(ctx.chrom) == [1, 1, 2]
     assert list(ctx.pos) == [100, 200, 300]
     assert list(ctx.ld) == [1.0, 3.0, 2.0]
-    assert list(ctx.wld) == [1.0, 3.0, 2.0]
     # row_pos points back to the original (unsorted) index rows: rs1=1, rs3=2, rs2=0.
     assert list(ctx.row_pos) == [1, 2, 0]
     assert ctx.m == 1000.0

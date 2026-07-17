@@ -1,6 +1,6 @@
 """
 Validate a batched, vectorized LDSC heritability kernel against the repo's exact
-per-protein implementation (GenomicSEM port, _genomic_sem_ldsc._estimate_h2).
+per-protein implementation (GenomicSEM port, genomic_sem_ldsc.estimate_h2).
 
 Motivation (see plan): all PPP proteins share one variant-index row order, so the
 index<->LD-score alignment, ld/wLD/M and the jackknife blocks are protein-invariant.
@@ -34,8 +34,8 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 
-from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import (
-    _estimate_h2,
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import (
+    estimate_h2,
 )
 
 REPO = Path(__file__).resolve().parents[3]
@@ -125,7 +125,7 @@ def exact_h2(chi2: np.ndarray, ld: np.ndarray, n_scalar: float, m: float) -> tup
     chi = chi2[keep]
     ldk = ld[keep]
     n = np.full(chi.shape, n_scalar)
-    est = _estimate_h2(chi=chi, ld_raw=ldk, wld_raw=ldk, n=n, m=m, n_blocks=N_BLOCKS)
+    est = estimate_h2(chi=chi, ld_raw=ldk, wld_raw=ldk, n=n, m=m, n_blocks=N_BLOCKS)
     # run_ldsc: V_h2 = var(pseudo, ddof=1) / (n_bar*sqrt(n_blocks)/m)^2 ; se = sqrt(V).
     denom = (est.n_bar * np.sqrt(N_BLOCKS) / m) ** 2
     se = float(np.sqrt(np.var(est.pseudo_coef, ddof=1) / denom))
@@ -136,7 +136,7 @@ def exact_h2(chi2: np.ndarray, ld: np.ndarray, n_scalar: float, m: float) -> tup
 # Batched vectorized kernel: K proteins on the shared row set, drops as zero weights,
 # shared contiguous blocks over the FULL set.
 # --------------------------------------------------------------------------------------
-def _block_bounds(n_snps: int, n_blocks: int) -> list[tuple[int, int]]:
+def block_bounds(n_snps: int, n_blocks: int) -> list[tuple[int, int]]:
     sf = np.floor(np.linspace(1, n_snps, n_blocks + 1)).astype(int)
     out = []
     for p in range(n_blocks):
@@ -163,7 +163,7 @@ def batched_h2(
     mean_ldn = (np.where(keep, ld_col, 0.0).sum(0) * n) / cnt  # mean(ld)*N == mean(ld*N)
     tot_agg = np.clip(m * (mean_chi - 1.0) / mean_ldn, 0.0, 1.0)  # (K,)
 
-    # WLS weight omega = het*oc, zeroed on non-kept. NOTE: _estimate_h2 multiplies BOTH
+    # WLS weight omega = het*oc, zeroed on non-kept. NOTE: estimate_h2 multiplies BOTH
     # design and response by initial_w = sqrt(het*oc), so the effective normal-equation
     # weight is (sqrt(het*oc))^2 = het*oc. The sum-to-1 normalization it applies is a
     # common scalar that cancels in solve(XtWX, XtWy), so we omit it here.
@@ -176,7 +176,7 @@ def batched_h2(
     # Per-block weighted sums for the 2x2 normal equations of design [ld, 1]:
     #   a=sum w*ld^2, b=sum w*ld, d=sum w ; e=sum w*ld*chi, f=sum w*chi.
     ld2 = (ld * ld)[:, None]
-    bounds = _block_bounds(s, N_BLOCKS)
+    bounds = block_bounds(s, N_BLOCKS)
     blk = np.empty((N_BLOCKS, k, 5))  # a,b,d,e,f
     for i, (lo, hi) in enumerate(bounds):
         wb = w[lo:hi]  # (rows,K)
@@ -235,7 +235,7 @@ def main() -> None:
     chi2_mat = np.column_stack(chi2_cols)  # (S, K)
     n_arr = np.array(n_list)
 
-    # Exact (per-protein loop, repo _estimate_h2).
+    # Exact (per-protein loop, repo estimate_h2).
     t1 = time.time()
     ex_h2, ex_se = [], []
     for j in range(len(files)):

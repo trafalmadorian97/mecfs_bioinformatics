@@ -127,7 +127,7 @@ def _liability_conversion_factor(
     return (pop**2 * (1.0 - pop) ** 2) / (samp * (1.0 - samp) * z**2)
 
 
-def _block_bounds(n_snps: int, n_blocks: int) -> list[tuple[int, int]]:
+def block_bounds(n_snps: int, n_blocks: int) -> list[tuple[int, int]]:
     """
     Contiguous block boundaries matching R's
     ``floor(seq(1, n, length.out = n_blocks + 1))`` scheme. Returns a list of
@@ -162,7 +162,7 @@ def _regress_jackknife(
     """
     assert weighted_ld.ndim == 2 and weighted_ld.shape[1] == 2
     assert weighted_chi.shape == (weighted_ld.shape[0],)
-    bounds = _block_bounds(weighted_ld.shape[0], n_blocks)
+    bounds = block_bounds(weighted_ld.shape[0], n_blocks)
 
     block_xty = np.empty((n_blocks, 2))
     block_xtx = np.empty((n_blocks, 2, 2))
@@ -228,7 +228,7 @@ def _het_oc_initial_weight(
 
     The computation of the het_w weights takes advantage of the fact that in the LDSC model, the chi^2 statistics are distributed
     according to a standard chi^2 distributed scaled by factor = h^2*m/n*l_j +1.  A standard chi^2 random variable has
-    variance of twice its mean.  Scaling the random variable by factor scales its variance by factor**2A.
+    variance of twice its mean.  Scaling the random variable by a factor scales its variance by factor**2.
 
     """
     ld = np.maximum(ld_raw, 1.0)
@@ -239,7 +239,7 @@ def _het_oc_initial_weight(
     return np.sqrt(het_w * oc_w)
 
 
-def _estimate_h2(
+def estimate_h2(
     *,
     chi: np.ndarray,
     ld_raw: np.ndarray,
@@ -394,7 +394,7 @@ def run_ldsc(
     for s, (j, kk) in enumerate(pairs):
         if j == kk:
             yj = trait_frames[j]
-            est = _estimate_h2(
+            est = estimate_h2(
                 chi=yj[MUNGE_Z_COL].to_numpy() ** 2,
                 ld_raw=yj[LDSC_L2_COL].to_numpy(),
                 wld_raw=yj[_WLD_COL].to_numpy(),

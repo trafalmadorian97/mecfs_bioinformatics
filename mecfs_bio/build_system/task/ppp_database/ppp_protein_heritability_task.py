@@ -41,6 +41,7 @@ from mecfs_bio.build_system.task.ppp_database.protein_sample_size_task import (
 )
 from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import (
     DEFAULT_N_BLOCKS,
+    BatchedH2Result,
     batched_h2,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
@@ -76,6 +77,7 @@ from mecfs_bio.constants.ppp_ldsc_constants import (
     PPP_VARIANT_SET_ALL,
     PPP_VARIANT_SET_CIS_EXCLUDED,
 )
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 logger = structlog.get_logger()
 
@@ -95,21 +97,23 @@ _ST3_GENE_END_COL = "Gene end"
 
 
 @frozen
-class GeneCoords:
-    chrom: int
-    start: int
-    end: int
-
-
-@frozen
 class PppHeritabilityConfig:
     drop_strand_ambiguous: bool = True
     exclude_mhc: bool = True
     cis_window_bp: int = 1_000_000
     n_blocks: int = DEFAULT_N_BLOCKS
     # Proteins processed together per batched regression. Peak memory ~ n_snps * batch *
-    # a few float64 arrays; 50 keeps peak comfortably within a 16 GB budget.
+    # a few float64 arrays
     batch_size: int = 50
+
+
+@frozen
+class ProteinSampleInfo:
+    """Per-protein identity and sample size, keyed by Synapse id in the sample-size table."""
+
+    oid: str
+    gene: str
+    n: int
 
 
 def _parse_chrom(value: object) -> int | None:
@@ -130,7 +134,7 @@ def _parse_chrom(value: object) -> int | None:
     return None
 
 
-def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GeneCoords]:
+def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GenomicInterval]:
     """Map Olink ID (OID) -> hg38 gene coordinates from Sun et al. 2023 supplementary ST3.
 
     Proteins whose chromosome label is non-standard are skipped (they then get only the
@@ -138,7 +142,7 @@ def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GeneCoords]:
     workbook = openpyxl.load_workbook(xlsx_path, read_only=True, data_only=True)
     sheet = workbook[_ST3_SHEET]
     header_index: dict[str, int] | None = None
-    coords: dict[str, GeneCoords] = {}
+    coords: dict[str, GenomicInterval] = {}
     for row in sheet.iter_rows(values_only=True):
         if header_index is None:
             if row and _ST3_OLINK_ID_COL in row:
@@ -152,7 +156,7 @@ def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GeneCoords]:
         end = row[header_index[_ST3_GENE_END_COL]]
         if oid is None or chrom is None or start is None or end is None:
             continue
-        coords[str(oid)] = GeneCoords(chrom=chrom, start=int(start), end=int(end))
+        coords[str(oid)] = GenomicInterval(chrom=chrom, start=int(start), end=int(end))
     assert header_index is not None, f"could not find header row in sheet {_ST3_SHEET}"
     return coords
 
@@ -187,9 +191,9 @@ class PppProteinHeritabilityTask(GeneratingTask):
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        context = self._build_context(fetch)
-        sample_sizes = self._read_sample_sizes(fetch)  # synid -> (oid, gene, n)
-        gene_coords = read_st3_gene_coords(self._st3_path(fetch))
+        context = _build_context(self.index_task, self.ld_ref_task, self.config, fetch)
+        sample_sizes = _read_sample_sizes(self.sample_size_task, fetch)
+        gene_coords = read_st3_gene_coords(_st3_path(self.st3_task, fetch))
         logger.info(
             "built ppp ldsc context",
             n_snps=context.n_snps,
@@ -202,162 +206,15 @@ class PppProteinHeritabilityTask(GeneratingTask):
         for start in range(0, len(tasks), self.config.batch_size):
             batch = tasks[start : start + self.config.batch_size]
             rows.extend(
-                self._process_batch(batch, context, sample_sizes, gene_coords, fetch)
+                _process_batch(
+                    batch, context, sample_sizes, gene_coords, self.config, fetch
+                )
             )
 
         table = pl.DataFrame(rows)
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet"
         table.write_parquet(out_path)
         return FileAsset(out_path)
-
-    def _build_context(self, fetch: Fetch) -> PppLdscContext:
-        index_df = (
-            scan_dataframe_asset(
-                fetch(self.index_task.asset_id),
-                meta=self.index_task.meta,
-                parquet_backend="polars",
-            )
-            .to_native()
-            .select(_INDEX_CONTEXT_COLUMNS)
-            .collect()
-        )
-        ld_asset = fetch(self.ld_ref_task.asset_id)
-        assert isinstance(ld_asset, DirectoryAsset)
-        ld_df, m_total = read_ld_scores(ld_asset.path)
-        return build_ppp_ldsc_context(
-            index_df,
-            ld_df,
-            m_total,
-            drop_strand_ambiguous=self.config.drop_strand_ambiguous,
-            exclude_mhc=self.config.exclude_mhc,
-        )
-
-    def _read_sample_sizes(self, fetch: Fetch) -> dict[str, tuple[str, str, int]]:
-        table = (
-            scan_dataframe_asset(
-                fetch(self.sample_size_task.asset_id),
-                meta=self.sample_size_task.meta,
-                parquet_backend="polars",
-            )
-            .to_native()
-            .collect()
-        )
-        return {
-            row[PPP_N_SYNID_COL]: (
-                row[PPP_N_OID_COL],
-                row[PPP_N_GENE_COL],
-                int(row[PPP_N_SAMPLE_SIZE_COL]),
-            )
-            for row in table.iter_rows(named=True)
-        }
-
-    def _st3_path(self, fetch: Fetch) -> Path:
-        asset = fetch(self.st3_task.asset_id)
-        assert isinstance(asset, FileAsset)
-        return asset.path
-
-    def _process_batch(
-        self,
-        batch: list,
-        context: PppLdscContext,
-        sample_sizes: dict[str, tuple[str, str, int]],
-        gene_coords: dict[str, GeneCoords],
-        fetch: Fetch,
-    ) -> list[dict]:
-        oids, genes, n_vec, chi2_cols = [], [], [], []
-        for protein_task in batch:
-            oid, gene, n = sample_sizes[protein_task.synid]
-            oids.append(oid)
-            genes.append(gene)
-            n_vec.append(float(n))
-            chi2_cols.append(self._read_protein_chi2(protein_task, context, fetch))
-        chi2 = np.column_stack(chi2_cols)
-        n_arr = np.asarray(n_vec)
-
-        cis_exclude = self._build_cis_exclude(oids, context, gene_coords)
-        has_coords = [oid in gene_coords for oid in oids]
-
-        all_res = batched_h2(
-            chi2, context.ld, n_arr, context.m, n_blocks=self.config.n_blocks
-        )
-        cis_res = batched_h2(
-            chi2,
-            context.ld,
-            n_arr,
-            context.m,
-            n_blocks=self.config.n_blocks,
-            exclude=cis_exclude,
-        )
-
-        rows: list[dict] = []
-        for j, oid in enumerate(oids):
-            rows.append(
-                self._row(oids[j], genes[j], n_arr[j], PPP_VARIANT_SET_ALL, all_res, j)
-            )
-            if has_coords[j]:
-                rows.append(
-                    self._row(
-                        oids[j],
-                        genes[j],
-                        n_arr[j],
-                        PPP_VARIANT_SET_CIS_EXCLUDED,
-                        cis_res,
-                        j,
-                    )
-                )
-        return rows
-
-    def _read_protein_chi2(
-        self, protein_task: Task, context: PppLdscContext, fetch: Fetch
-    ) -> np.ndarray:
-        frame = (
-            scan_dataframe_asset(
-                fetch(protein_task.asset_id),
-                meta=protein_task.meta,
-                parquet_backend="polars",
-            )
-            .to_native()
-            .select(GWASLAB_BETA_COL, GWASLAB_SE_COL)
-            .collect()
-        )
-        beta = frame[GWASLAB_BETA_COL].to_numpy().astype(float)[context.row_pos]
-        se = frame[GWASLAB_SE_COL].to_numpy().astype(float)[context.row_pos]
-        with np.errstate(invalid="ignore", divide="ignore"):
-            return (beta / se) ** 2
-
-    def _build_cis_exclude(
-        self,
-        oids: list[str],
-        context: PppLdscContext,
-        gene_coords: dict[str, GeneCoords],
-    ) -> np.ndarray:
-        exclude = np.zeros((context.n_snps, len(oids)), dtype=bool)
-        for j, oid in enumerate(oids):
-            coords = gene_coords.get(oid)
-            if coords is not None:
-                exclude[:, j] = build_cis_mask(
-                    context,
-                    coords.chrom,
-                    coords.start,
-                    coords.end,
-                    self.config.cis_window_bp,
-                )
-        return exclude
-
-    @staticmethod
-    def _row(oid: str, gene: str, n: float, variant_set: str, res, j: int) -> dict:
-        return {
-            PPP_H2_OID_COL: oid,
-            PPP_H2_GENE_COL: gene,
-            PPP_H2_VARIANT_SET_COL: variant_set,
-            PPP_H2_H2_COL: float(res.h2[j]),
-            PPP_H2_H2_SE_COL: float(res.h2_se[j]),
-            PPP_H2_INTERCEPT_COL: float(res.intercept[j]),
-            PPP_H2_MEAN_CHI2_COL: float(res.mean_chi2[j]),
-            PPP_H2_LAMBDA_GC_COL: float(res.lambda_gc[j]),
-            PPP_H2_N_SNPS_COL: int(res.n_snps[j]),
-            PPP_H2_N_BAR_COL: float(n),
-        }
 
     @classmethod
     def create(
@@ -387,3 +244,171 @@ class PppProteinHeritabilityTask(GeneratingTask):
             st3_task=st3_task,
             config=config,
         )
+
+
+def _build_context(
+    index_task: Task,
+    ld_ref_task: Task,
+    config: PppHeritabilityConfig,
+    fetch: Fetch,
+) -> PppLdscContext:
+    index_df = (
+        scan_dataframe_asset(
+            fetch(index_task.asset_id),
+            meta=index_task.meta,
+            parquet_backend="polars",
+        )
+        .to_native()
+        .select(_INDEX_CONTEXT_COLUMNS)
+        .collect()
+    )
+    ld_asset = fetch(ld_ref_task.asset_id)
+    assert isinstance(ld_asset, DirectoryAsset)
+    ld_df, m_total = read_ld_scores(ld_asset.path)
+    return build_ppp_ldsc_context(
+        index_df,
+        ld_df,
+        m_total,
+        drop_strand_ambiguous=config.drop_strand_ambiguous,
+        exclude_mhc=config.exclude_mhc,
+    )
+
+
+def _read_sample_sizes(
+    sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
+) -> dict[str, ProteinSampleInfo]:
+    """Synapse id -> ProteinSampleInfo (oid, gene, n) from the sample-size table."""
+    table = (
+        scan_dataframe_asset(
+            fetch(sample_size_task.asset_id),
+            meta=sample_size_task.meta,
+            parquet_backend="polars",
+        )
+        .to_native()
+        .collect()
+    )
+    return {
+        row[PPP_N_SYNID_COL]: ProteinSampleInfo(
+            oid=row[PPP_N_OID_COL],
+            gene=row[PPP_N_GENE_COL],
+            n=int(row[PPP_N_SAMPLE_SIZE_COL]),
+        )
+        for row in table.iter_rows(named=True)
+    }
+
+
+def _st3_path(st3_task: Task, fetch: Fetch) -> Path:
+    asset = fetch(st3_task.asset_id)
+    assert isinstance(asset, FileAsset)
+    return asset.path
+
+
+def _process_batch(
+    batch: list[BuildSlimProteinParquetTask],
+    context: PppLdscContext,
+    sample_sizes: dict[str, ProteinSampleInfo],
+    gene_coords: dict[str, GenomicInterval],
+    config: PppHeritabilityConfig,
+    fetch: Fetch,
+) -> list[dict]:
+    oids, genes, n_vec, chi2_cols = [], [], [], []
+    for protein_task in batch:
+        info = sample_sizes[protein_task.synid]
+        oids.append(info.oid)
+        genes.append(info.gene)
+        n_vec.append(float(info.n))
+        chi2_cols.append(_read_protein_chi2(protein_task, context, fetch))
+    chi2 = np.column_stack(chi2_cols)
+    n_arr = np.asarray(n_vec)
+
+    cis_exclude = _build_cis_exclude(oids, context, gene_coords, config.cis_window_bp)
+    has_coords = [oid in gene_coords for oid in oids]
+
+    all_res = batched_h2(chi2, context.ld, n_arr, context.m, n_blocks=config.n_blocks)
+    cis_excluded_res = batched_h2(
+        chi2,
+        context.ld,
+        n_arr,
+        context.m,
+        n_blocks=config.n_blocks,
+        exclude=cis_exclude,
+    )
+
+    rows: list[dict] = []
+    for j in range(len(oids)):
+        rows.append(
+            _make_row(oids[j], genes[j], n_arr[j], PPP_VARIANT_SET_ALL, all_res, j)
+        )
+        if has_coords[j]:
+            rows.append(
+                _make_row(
+                    oids[j],
+                    genes[j],
+                    n_arr[j],
+                    PPP_VARIANT_SET_CIS_EXCLUDED,
+                    cis_excluded_res,
+                    j,
+                )
+            )
+    return rows
+
+
+def _read_protein_chi2(
+    protein_task: BuildSlimProteinParquetTask, context: PppLdscContext, fetch: Fetch
+) -> np.ndarray:
+    frame = (
+        scan_dataframe_asset(
+            fetch(protein_task.asset_id),
+            meta=protein_task.meta,
+            parquet_backend="polars",
+        )
+        .to_native()
+        .select(GWASLAB_BETA_COL, GWASLAB_SE_COL)
+        .collect()
+    )
+    beta = frame[GWASLAB_BETA_COL].to_numpy().astype(float)[context.row_pos]
+    se = frame[GWASLAB_SE_COL].to_numpy().astype(float)[context.row_pos]
+    with np.errstate(invalid="ignore", divide="ignore"):
+        return (beta / se) ** 2
+
+
+def _build_cis_exclude(
+    oids: list[str],
+    context: PppLdscContext,
+    gene_coords: dict[str, GenomicInterval],
+    cis_window_bp: int,
+) -> np.ndarray:
+    exclude = np.zeros((context.n_snps, len(oids)), dtype=bool)
+    for j, oid in enumerate(oids):
+        coords = gene_coords.get(oid)
+        if coords is not None:
+            exclude[:, j] = build_cis_mask(
+                context,
+                coords.chrom,
+                coords.start,
+                coords.end,
+                cis_window_bp,
+            )
+    return exclude
+
+
+def _make_row(
+    oid: str,
+    gene: str,
+    n: float,
+    variant_set: str,
+    res: BatchedH2Result,
+    j: int,
+) -> dict:
+    return {
+        PPP_H2_OID_COL: oid,
+        PPP_H2_GENE_COL: gene,
+        PPP_H2_VARIANT_SET_COL: variant_set,
+        PPP_H2_H2_COL: float(res.h2[j]),
+        PPP_H2_H2_SE_COL: float(res.h2_se[j]),
+        PPP_H2_INTERCEPT_COL: float(res.intercept[j]),
+        PPP_H2_MEAN_CHI2_COL: float(res.mean_chi2[j]),
+        PPP_H2_LAMBDA_GC_COL: float(res.lambda_gc[j]),
+        PPP_H2_N_SNPS_COL: int(res.n_snps[j]),
+        PPP_H2_N_BAR_COL: float(n),
+    }

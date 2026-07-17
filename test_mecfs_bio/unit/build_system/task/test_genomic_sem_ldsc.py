@@ -1,6 +1,6 @@
 """
 Pure-numpy unit tests for the LD-score regression building blocks
-(`_genomic_sem_ldsc`). The headline comparison against GenomicSEM::ldsc lives in
+(`genomic_sem_ldsc`). The headline comparison against GenomicSEM::ldsc lives in
 test_genomic_sem_ldsc_r_comparison.py.
 """
 
@@ -9,16 +9,16 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import (
-    _block_bounds,
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import (
     _liability_conversion_factor,
     _regress_jackknife,
+    block_bounds,
 )
 
 
 def test_block_bounds_partition_is_contiguous_and_complete():
     n, n_blocks = 1000, 50
-    bounds = _block_bounds(n, n_blocks)
+    bounds = block_bounds(n, n_blocks)
     assert len(bounds) == n_blocks
     assert bounds[0][0] == 0
     assert bounds[-1][1] == n
