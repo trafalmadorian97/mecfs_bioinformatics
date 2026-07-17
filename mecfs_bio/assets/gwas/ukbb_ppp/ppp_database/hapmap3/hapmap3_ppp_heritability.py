@@ -19,7 +19,7 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 from mecfs_bio.assets.reference_data.pqtls.raw.sun_et_al_2023_pqtls import (
     SUN_ET_AL_2023_PQTL_SUPPLEMENTARY_RAW,
 )
-from mecfs_bio.build_system.task.ppp_database.ppp_protein_heritability_task import (
+from mecfs_bio.build_system.task.ppp_ldsc.ppp_protein_heritability_task import (
     PppProteinHeritabilityTask,
 )
 
