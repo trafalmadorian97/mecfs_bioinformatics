@@ -284,3 +284,8 @@ experiments/claude/pops_standalone/
 
 # token
 .ieugwaspy.json
+
+
+# no pdfs
+
+*.pdf
