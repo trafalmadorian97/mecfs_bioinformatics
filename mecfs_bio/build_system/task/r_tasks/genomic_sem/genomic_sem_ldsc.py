@@ -264,7 +264,7 @@ def estimate_h2(
     )
 
 
-def _estimate_cov(
+def estimate_cov(
     *,
     zz: np.ndarray,
     chi1: np.ndarray,
@@ -422,7 +422,7 @@ def run_ldsc(
             # Flip trait-j Z where the reference alleles disagree.
             same_allele = (merged[_A1_Y_COL] == merged[_A1_X_COL]).to_numpy()
             z_x = np.where(same_allele, z_x, -z_x)
-            est = _estimate_cov(
+            est = estimate_cov(
                 zz=z_y * z_x,
                 chi1=z_x**2,
                 chi2=z_y**2,
