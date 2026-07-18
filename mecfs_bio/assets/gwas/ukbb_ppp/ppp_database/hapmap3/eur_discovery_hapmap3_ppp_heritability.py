@@ -1,13 +1,18 @@
 """
-Per-protein LDSC heritability over the HapMap3 UKB-PPP database: all-variants and
-cis-excluded heritability for every protein, plus the per-protein sample-size table it
-depends on.
+Per-protein LDSC heritability over the HapMap3 UKB-PPP database for the European
+(discovery) cohort (n = 34,557): all-variants and cis-excluded heritability for every
+protein, plus the per-protein sample-size table it depends on.
+
+Pinned to the discovery cohort (manifest passed explicitly) to stay consistent with the
+slim files already built for it; new work should prefer the full European (combined)
+cohort in eur_combined_hapmap3_ppp_heritability.
 """
 
 from mecfs_bio.asset_generator.ukbb_ppp_slim_protein_asset_generator import (
+    EUR_DISCOVERY_PPP_MANIFEST_PATH,
     generate_ppp_sample_size_task,
 )
-from mecfs_bio.assets.gwas.ukbb_ppp.ppp_database.hapmap3.hapmap3_ppp_database_protein_files import (
+from mecfs_bio.assets.gwas.ukbb_ppp.ppp_database.hapmap3.eur_discovery_hapmap3_ppp_database_protein_files import (
     HAPMAP_3_PPP_DATABASE,
 )
 from mecfs_bio.assets.gwas.ukbb_ppp.ppp_database.hapmap3.hapmap_3_ppp_index import (
@@ -25,7 +30,10 @@ from mecfs_bio.build_system.task.ppp_ldsc.ppp_protein_heritability_task import (
 
 # Sample sizes are index-independent (a property of each protein's GWAS), so the asset id
 # carries no index label.
-PPP_SAMPLE_SIZES = generate_ppp_sample_size_task(asset_id="ppp_sample_size")
+PPP_SAMPLE_SIZES = generate_ppp_sample_size_task(
+    asset_id="ppp_sample_size",
+    manifest_path=EUR_DISCOVERY_PPP_MANIFEST_PATH,
+)
 
 HAPMAP_3_PPP_HERITABILITY = PppProteinHeritabilityTask.create(
     asset_id="ppp_heritability_hapmap_3",
