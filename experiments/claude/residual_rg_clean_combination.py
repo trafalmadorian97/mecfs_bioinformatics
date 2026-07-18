@@ -32,7 +32,7 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
-from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import run_ldsc
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import run_ldsc
 
 ASSET = Path(
     "assets/base_asset_store/gwas/multi_trait/genomic_sem/analysis/"
