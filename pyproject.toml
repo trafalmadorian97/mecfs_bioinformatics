@@ -157,7 +157,16 @@ python = ".pixi/envs/default"
 [tool.pixi.feature.download.dependencies]
 aria2 = { channel = "conda-forge" }
 
+# Tools for reading PDFs (e.g. journal papers) when a design decision hinges on a paper's
+# text. Kept out of the analysis env so it is not contaminated. pymupdf (imported as fitz)
+# does high-quality programmatic text extraction; poppler provides the pdftotext CLI for
+# quick text dumps to grep.
+[tool.pixi.feature.pdf.dependencies]
+pymupdf = { channel = "conda-forge" }
+poppler = { channel = "conda-forge" }
+
 [tool.pixi.environments]
 default = ["analysis"]
 
 download-env = ["download"]
+pdf-env = ["pdf"]
