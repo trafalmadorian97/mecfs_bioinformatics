@@ -56,6 +56,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
+    GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
 from mecfs_bio.constants.ppp_index_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
@@ -70,8 +71,6 @@ from mecfs_bio.constants.ppp_ldsc_constants import (
     PPP_H2_N_SNPS_COL,
     PPP_H2_OID_COL,
     PPP_H2_VARIANT_SET_COL,
-    PPP_N_GENE_COL,
-    PPP_N_OID_COL,
     PPP_N_SAMPLE_SIZE_COL,
     PPP_N_SYNID_COL,
     PPP_VARIANT_SET_ALL,
@@ -107,13 +106,17 @@ class PppHeritabilityConfig:
     batch_size: int = 50
 
 
-@frozen
-class ProteinSampleInfo:
-    """Per-protein identity and sample size, keyed by Synapse id in the sample-size table."""
-
-    oid: str
-    gene: str
-    n: int
+def constant_sample_size(n_at_context: np.ndarray, label: str) -> float:
+    """The single N shared by every present variant. Absent variants are NaN; the present
+    ones must all agree (UKB-PPP N is constant per protein), else something is wrong. label
+    identifies the protein in the failure message."""
+    finite = n_at_context[np.isfinite(n_at_context)]
+    unique = np.unique(finite)
+    assert unique.size == 1, (
+        f"protein {label} has {unique.size} distinct sample sizes ({unique.tolist()}) "
+        "among its context variants; expected exactly one constant N"
+    )
+    return float(unique[0])
 
 
 def _parse_chrom(value: object) -> int | None:
@@ -168,7 +171,9 @@ class PppProteinHeritabilityTask(GeneratingTask):
     protein_tasks: the slim per-protein beta/se tasks (aligned to index_task).
     index_task: the shared ConstructPppVariantIndexTask (variant identity / rsID / alleles).
     ld_ref_task: an extracted reference LD-score directory (LDscore.<chr>.l2.* files).
-    sample_size_task: the per-protein N table (PppProteinSampleSizeTask).
+    sample_size_task: the per-protein N table (PppProteinSampleSizeTask), or None to read the
+        constant per-protein N from the slim parquet's sample-size column instead (which fails
+        if the slim files were built without one, i.e. include_sample_size=False).
     st3_task: Sun et al. 2023 supplementary xlsx (ST3 hg38 gene coordinates).
     """
 
@@ -176,23 +181,29 @@ class PppProteinHeritabilityTask(GeneratingTask):
     protein_tasks: tuple[BuildSlimProteinParquetTask, ...]
     index_task: Task
     ld_ref_task: Task
-    sample_size_task: PppProteinSampleSizeTask
+    sample_size_task: PppProteinSampleSizeTask | None
     st3_task: Task
     config: PppHeritabilityConfig
 
     @property
     def deps(self) -> list[Task]:
-        return [
+        tasks: list[Task] = [
             *self.protein_tasks,
             self.index_task,
             self.ld_ref_task,
-            self.sample_size_task,
             self.st3_task,
         ]
+        if self.sample_size_task is not None:
+            tasks.append(self.sample_size_task)
+        return tasks
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         context = _build_context(self.index_task, self.ld_ref_task, self.config, fetch)
-        sample_sizes = _read_sample_sizes(self.sample_size_task, fetch)
+        sample_sizes = (
+            _read_sample_sizes(self.sample_size_task, fetch)
+            if self.sample_size_task is not None
+            else None
+        )
         gene_coords = read_st3_gene_coords(_st3_path(self.st3_task, fetch))
         logger.info(
             "built ppp ldsc context",
@@ -223,7 +234,7 @@ class PppProteinHeritabilityTask(GeneratingTask):
         protein_tasks: tuple[BuildSlimProteinParquetTask, ...],
         index_task: Task,
         ld_ref_task: Task,
-        sample_size_task: PppProteinSampleSizeTask,
+        sample_size_task: PppProteinSampleSizeTask | None,
         st3_task: Task,
         config: PppHeritabilityConfig = PppHeritabilityConfig(),
     ) -> PppProteinHeritabilityTask:
@@ -276,8 +287,9 @@ def _build_context(
 
 def _read_sample_sizes(
     sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
-) -> dict[str, ProteinSampleInfo]:
-    """Synapse id -> ProteinSampleInfo (oid, gene, n) from the sample-size table."""
+) -> dict[str, int]:
+    """Synapse id -> sample size N from the sample-size table. The oid/gene it also carries
+    are ignored here: they come from each protein task's structured identity instead."""
     table = (
         scan_dataframe_asset(
             fetch(sample_size_task.asset_id),
@@ -288,11 +300,7 @@ def _read_sample_sizes(
         .collect()
     )
     return {
-        row[PPP_N_SYNID_COL]: ProteinSampleInfo(
-            oid=row[PPP_N_OID_COL],
-            gene=row[PPP_N_GENE_COL],
-            n=int(row[PPP_N_SAMPLE_SIZE_COL]),
-        )
+        row[PPP_N_SYNID_COL]: int(row[PPP_N_SAMPLE_SIZE_COL])
         for row in table.iter_rows(named=True)
     }
 
@@ -306,18 +314,26 @@ def _st3_path(st3_task: Task, fetch: Fetch) -> Path:
 def _process_batch(
     batch: list[BuildSlimProteinParquetTask],
     context: PppLdscContext,
-    sample_sizes: dict[str, ProteinSampleInfo],
+    sample_sizes: dict[str, int] | None,
     gene_coords: dict[str, GenomicInterval],
     config: PppHeritabilityConfig,
     fetch: Fetch,
 ) -> list[dict]:
     oids, genes, n_vec, chi2_cols = [], [], [], []
     for protein_task in batch:
-        info = sample_sizes[protein_task.synid]
-        oids.append(info.oid)
-        genes.append(info.gene)
-        n_vec.append(float(info.n))
-        chi2_cols.append(_read_protein_chi2(protein_task, context, fetch))
+        chi2_col, parquet_n = _read_protein_chi2(
+            protein_task, context, fetch, read_sample_size=sample_sizes is None
+        )
+        # oid/gene always come from the protein's structured identity; only N's source
+        # differs (the sample-size table when provided, else the slim parquet).
+        oids.append(protein_task.protein.oid)
+        genes.append(protein_task.protein.gene)
+        if sample_sizes is not None:
+            n_vec.append(float(sample_sizes[protein_task.protein.synid]))
+        else:
+            assert parquet_n is not None
+            n_vec.append(parquet_n)
+        chi2_cols.append(chi2_col)
     chi2 = np.column_stack(chi2_cols)
     n_arr = np.asarray(n_vec)
 
@@ -354,22 +370,43 @@ def _process_batch(
 
 
 def _read_protein_chi2(
-    protein_task: BuildSlimProteinParquetTask, context: PppLdscContext, fetch: Fetch
-) -> np.ndarray:
-    frame = (
-        scan_dataframe_asset(
-            fetch(protein_task.asset_id),
-            meta=protein_task.meta,
-            parquet_backend="polars",
+    protein_task: BuildSlimProteinParquetTask,
+    context: PppLdscContext,
+    fetch: Fetch,
+    *,
+    read_sample_size: bool,
+) -> tuple[np.ndarray, float | None]:
+    """Return the protein's chi^2 at the context SNPs, plus its constant sample size N when
+    read_sample_size (else None). Reading N requires the slim parquet to carry a sample-size
+    column (i.e. built with include_sample_size=True)."""
+    lazy = scan_dataframe_asset(
+        fetch(protein_task.asset_id),
+        meta=protein_task.meta,
+        parquet_backend="polars",
+    ).to_native()
+    columns = [GWASLAB_BETA_COL, GWASLAB_SE_COL]
+    if read_sample_size:
+        available = lazy.collect_schema().names()
+        assert GWASLAB_SAMPLE_SIZE_COLUMN in available, (
+            f"protein {protein_task.asset_id} slim parquet has no "
+            f"'{GWASLAB_SAMPLE_SIZE_COLUMN}' column; rebuild it with include_sample_size=True "
+            "or pass a sample_size_task"
         )
-        .to_native()
-        .select(GWASLAB_BETA_COL, GWASLAB_SE_COL)
-        .collect()
-    )
+        columns.append(GWASLAB_SAMPLE_SIZE_COLUMN)
+    frame = lazy.select(*columns).collect()
+
     beta = frame[GWASLAB_BETA_COL].to_numpy().astype(float)[context.row_pos]
     se = frame[GWASLAB_SE_COL].to_numpy().astype(float)[context.row_pos]
     with np.errstate(invalid="ignore", divide="ignore"):
-        return (beta / se) ** 2
+        chi2 = (beta / se) ** 2
+
+    n: float | None = None
+    if read_sample_size:
+        n_at_context = (
+            frame[GWASLAB_SAMPLE_SIZE_COLUMN].to_numpy().astype(float)[context.row_pos]
+        )
+        n = constant_sample_size(n_at_context, protein_task.asset_id)
+    return chi2, n
 
 
 def _build_cis_exclude(
