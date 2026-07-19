@@ -269,7 +269,7 @@ def define_env(env):
         barely affects page weight.
 
         Parquet rather than CSV because the values stay exactly as the build
-        system produced them: full float64 precision, no rounding decision baked
+        system produced them: full precision, no rounding decision baked
         into the published file. Displayed values are rounded to ``precision``
         for legibility, but the underlying data --- and therefore the table's
         CSV download button --- remains exact.
