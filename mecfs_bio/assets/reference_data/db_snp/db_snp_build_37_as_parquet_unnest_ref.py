@@ -11,8 +11,10 @@ from mecfs_bio.build_system.reference.nc_chrom_mapping import (
     NC_CHROM_MAPPING,
     NC_CHROM_TABLE,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
