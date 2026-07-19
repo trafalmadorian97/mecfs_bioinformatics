@@ -30,3 +30,5 @@ In addition to tables of pQTLs, the PPP has also released full GWAS summary stat
 ## Links
 
 [Genetics Podcast Interview About PPP](https://www.youtube.com/watch?v=nSJJjU61JAk)
+
+[Proteomics in Proximity Interview about PPP](https://open.spotify.com/episode/1SuvJvyA2DSwk2H3tL9EO6)
