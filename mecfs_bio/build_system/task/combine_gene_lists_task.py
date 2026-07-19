@@ -87,8 +87,6 @@ class CombineGeneListsTask(Task):
             .collect()
             .to_pandas()
         )
-        # No extension: the build system renames the file according to the
-        # task's meta, so a hardcoded one here only misleads the reader.
         out_path = scratch_dir / self.meta.asset_id
         write_df_according_to_format(
             df=narwhals.from_native(result_df).lazy(),
