@@ -4,8 +4,10 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.build_38.decode_me_build_38
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.s_ldsc_export.decode_me_sldsc_roadmap_add_modality_column import (
     DROP_HP_COLS_PIPE,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     CSVOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe

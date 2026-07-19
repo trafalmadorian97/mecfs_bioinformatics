@@ -58,6 +58,13 @@ extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort-scinum.js
   - javascripts/tablesort-init.js
+  # Backs the data_table macro in main.py. Loaded globally (UMD, so it lands on
+  # window) because the macro's own script is an ES module and cannot export
+  # Tabulator to the page scope itself.
+  - https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js
+
+extra_css:
+  - https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css
 
 markdown_extensions:
   - admonition

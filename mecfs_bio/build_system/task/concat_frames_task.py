@@ -17,11 +17,10 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    CSVOutFormat,
+from mecfs_bio.build_system.task.dataframe_output import (
     OutFormat,
-    ParquetOutFormat,
     get_extension_and_read_spec_from_format,
+    write_df_according_to_format,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -64,12 +63,9 @@ class ConcatFramesTask(Task):
             frames.append(frame)
         result = narwhals.concat(frames, how="vertical")
         out_path = scratch_dir / f"{self.meta.asset_id}"
-        if isinstance(self.out_format, CSVOutFormat):
-            result.collect().to_pandas().to_csv(
-                out_path, index=False, sep=self.out_format.sep
-            )
-        elif isinstance(self.out_format, ParquetOutFormat):
-            result.sink_parquet(out_path)
+        write_df_according_to_format(
+            df=result, out_path=out_path, out_format=self.out_format
+        )
         return FileAsset(out_path)
 
     @classmethod

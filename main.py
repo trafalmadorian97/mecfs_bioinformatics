@@ -34,6 +34,30 @@ def _assert_macro_call_at_margin(page, macro: str, arg: str) -> None:
     )
 
 
+def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
+    """Convert a project-root-relative asset path to a URL relative to the served page.
+
+    Files under ``docs_dir`` are served from the site root, so the docs_dir
+    prefix is stripped and the result re-expressed relative to the page being
+    rendered. This avoids hard-to-read, page-relative
+    ``../../../../../_figs/...`` links in the page source: callers pass a
+    repo-root-relative path and the macro works out the URL.
+
+    Parameters
+    ----------
+    src : str
+        Path to the asset, relative to the project root
+        (e.g. "docs/_figs/my_plot.png").
+    docs_dir : str
+        The mkdocs ``docs_dir`` (``env.conf["docs_dir"]``).
+    page_dest_uri : str
+        Destination URI of the page being rendered
+        (``env.page.file.dest_uri``).
+    """
+    site_path = Path(src).resolve().relative_to(Path(docs_dir).resolve())
+    return os.path.relpath(site_path, Path(page_dest_uri).parent)
+
+
 def define_env(env):
     @env.macro
     def api_link(text, module_path):
@@ -161,12 +185,9 @@ def define_env(env):
                 f"(referenced from page '{env.page.file.src_uri}')"
             )
 
-        # Convert project-root-relative path to a URL relative to the served page.
-        # Files under docs/ are served from the site root, so strip the docs_dir prefix.
-        docs_dir = Path(env.conf["docs_dir"])
-        site_path = Path(src).resolve().relative_to(docs_dir.resolve())
-        page_dir = Path(env.page.file.dest_uri).parent
-        relative_url = os.path.relpath(site_path, page_dir)
+        relative_url = _site_relative_url(
+            src, env.conf["docs_dir"], env.page.file.dest_uri
+        )
 
         # Use max-width (not width) so the image renders at its natural size and
         # only shrinks when it would overflow the page — matching how a plain
@@ -208,12 +229,9 @@ def define_env(env):
                 f"(referenced from page '{env.page.file.src_uri}')"
             )
 
-        # Convert project-root-relative path to a URL relative to the served page.
-        # Files under docs/ are served from the site root, so strip the docs_dir prefix.
-        docs_dir = Path(env.conf["docs_dir"])
-        site_path = Path(src).resolve().relative_to(docs_dir.resolve())
-        page_dir = Path(env.page.file.dest_uri).parent
-        relative_url = os.path.relpath(site_path, page_dir)
+        relative_url = _site_relative_url(
+            src, env.conf["docs_dir"], env.page.file.dest_uri
+        )
 
         button = (
             f'<div style="display:flex; justify-content:flex-end; margin:.25rem 0;">\n'
@@ -239,3 +257,163 @@ def define_env(env):
                 f"</div>"
             )
         return button + iframe
+
+    @env.macro
+    def data_table(src, id, height="600px", precision=4, caption=""):
+        """Embed a large tabular asset as a sortable, filterable, virtualised table.
+
+        For tables too large for markdown_table --- which renders every row into
+        the page DOM at build time, and becomes unworkable in the thousands ---
+        this instead ships the data as a parquet asset and renders it client-side
+        with Tabulator. Only the visible rows exist in the DOM, so row count
+        barely affects page weight.
+
+        Parquet rather than CSV because the values stay exactly as the build
+        system produced them: full precision, no rounding decision baked
+        into the published file. Displayed values are rounded to ``precision``
+        for legibility, but the underlying data --- and therefore the table's
+        CSV download button --- remains exact.
+
+        The parquet should be written with the integer columns as Int32. Parquet
+        INT64 decodes to JavaScript BigInt, which Tabulator cannot format; the
+        script below coerces BigInt defensively, but doing it at the source
+        avoids relying on that.
+
+        Like markdown_table, the ``{{ data_table(...) }}`` call must start at
+        column 0, since an indented block-level HTML element is reinterpreted as
+        an indented code block.
+
+        Parameters
+        ----------
+        src : str
+            Path to the parquet file, relative to the project root
+            (e.g. "docs/_figs/my_table.parquet").
+        id : str
+            A unique HTML id for the table container (must be unique per page).
+        height : str
+            CSS height of the table viewport, e.g. "600px". Virtualisation keys
+            off this, so it must be a fixed height rather than "auto".
+        precision : int
+            Decimal places used when *displaying* non-integer values. Does not
+            affect the underlying data or the CSV download.
+        caption : str
+            Optional caption rendered below the table.
+        """
+        if not Path(src).is_file():
+            raise FileNotFoundError(
+                f"data_table: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+        _assert_macro_call_at_margin(env.page, macro="data_table", arg=src)
+
+        relative_url = _site_relative_url(
+            src, env.conf["docs_dir"], env.page.file.dest_uri
+        )
+        download_name = Path(src).with_suffix(".csv").name
+
+        # Built by token substitution rather than an f-string: the script is
+        # dense with JS object literals, and doubling every brace to escape them
+        # would make it unreadable.
+        script = _DATA_TABLE_SCRIPT
+        for token, value in (
+            ("__TABLE_ID__", id),
+            ("__DATA_URL__", relative_url),
+            ("__PRECISION__", str(precision)),
+            ("__DOWNLOAD_NAME__", download_name),
+            ("__HEIGHT__", height),
+        ):
+            script = script.replace(token, value)
+
+        caption_html = (
+            f'<p style="width:100%; text-align:center; font-style:italic; '
+            f'margin-top:0.5em;">{caption}</p>\n'
+            if caption
+            else ""
+        )
+        return (
+            f'<div style="display:flex; justify-content:flex-end; margin:.25rem 0;">\n'
+            f'<button id="{id}-download"\n'
+            f'  style="cursor:pointer; background:none; border:1px solid #ccc; '
+            f'padding:4px 12px; border-radius:4px;">\n'
+            f"  Download CSV &#x2913;\n"
+            f"</button>\n"
+            f"</div>\n"
+            f'<div id="{id}" style="height:{height};">'
+            f'<em id="{id}-status">Loading table…</em></div>\n'
+            f"{caption_html}"
+            f"{script}"
+        )
+
+
+# Client-side loader for :func:`data_table`. Tabulator itself is loaded globally
+# via extra_javascript in mkdocs.yml (it ships UMD, so it lands on window);
+# hyparquet is ESM-only and so is imported here from a CDN that serves it as a
+# browser-consumable module.
+_DATA_TABLE_SCRIPT = """<script type="module">
+(async () => {
+  const container = document.getElementById("__TABLE_ID__");
+  const status = document.getElementById("__TABLE_ID__-status");
+  try {
+    const { parquetReadObjects } = await import("https://esm.sh/hyparquet@1.26.2");
+    const { compressors } = await import("https://esm.sh/hyparquet-compressors@1.1.1");
+
+    const response = await fetch("__DATA_URL__");
+    if (!response.ok) throw new Error(`fetch failed: ${response.status}`);
+    const rows = await parquetReadObjects({
+      file: await response.arrayBuffer(),
+      compressors,
+    });
+
+    // Parquet INT64 decodes to BigInt, which Tabulator cannot format (it throws
+    // and silently renders zero rows). Coerce to Number; the magnitudes in these
+    // tables are far inside the safe-integer range.
+    for (const row of rows) {
+      for (const key in row) {
+        if (typeof row[key] === "bigint") row[key] = Number(row[key]);
+      }
+    }
+
+    // Round only for display. The value Tabulator holds --- and downloads ---
+    // stays exact, and sorting still compares the underlying numbers.
+    const display = (cell) => {
+      const value = cell.getValue();
+      return typeof value === "number" && !Number.isInteger(value)
+        ? value.toFixed(__PRECISION__)
+        : value;
+    };
+
+    const table = new Tabulator(container, {
+      data: rows,
+      // Must be a concrete CSS length, not "100%": Tabulator only virtualises
+      // when it can resolve the viewport height, and silently falls back to
+      // rendering every row when it cannot.
+      height: "__HEIGHT__",
+      layout: "fitDataFill",
+      autoColumns: true,
+      autoColumnsDefinitions: (definitions) =>
+        definitions.map((definition) => {
+          const sample = rows[0][definition.field];
+          const numeric = typeof sample === "number";
+          return {
+            ...definition,
+            headerFilter: numeric ? "number" : "input",
+            headerFilterFunc: numeric ? ">=" : "like",
+            headerFilterPlaceholder: numeric ? ">=" : "filter",
+            sorter: numeric ? "number" : "string",
+            formatter: numeric ? display : undefined,
+          };
+        }),
+    });
+
+    table.on("tableBuilt", () => status?.remove());
+    document
+      .getElementById("__TABLE_ID__-download")
+      .addEventListener("click", () => table.download("csv", "__DOWNLOAD_NAME__"));
+  } catch (error) {
+    // Surface failures in the page rather than only the console, so a broken
+    // table is obvious when reviewing docs.
+    if (status) status.textContent = `Failed to load table: ${error.message}`;
+    throw error;
+  }
+})();
+</script>"""

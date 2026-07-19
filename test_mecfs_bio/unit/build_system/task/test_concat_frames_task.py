@@ -11,8 +11,10 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 )
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 

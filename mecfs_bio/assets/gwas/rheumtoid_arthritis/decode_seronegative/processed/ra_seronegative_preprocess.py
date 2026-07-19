@@ -8,9 +8,11 @@ Preprocessing step that
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seronegative.raw.download_raw_ra_seronegative import (
     DECODE_SERONEGATIVE_RA_RAW,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.filter_snps_by_frequency import FilterSNPsFrequencyTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    ParquetOutFormat,
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.scale_col_pipe import ScaleColPipe

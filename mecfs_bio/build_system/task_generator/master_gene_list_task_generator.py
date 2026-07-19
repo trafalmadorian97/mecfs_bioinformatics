@@ -11,8 +11,10 @@ from mecfs_bio.build_system.task.combine_gene_lists_task import (
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_null_pipe import DropNullsPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
