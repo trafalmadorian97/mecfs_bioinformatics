@@ -2,10 +2,6 @@
 How a task writes a dataframe asset: the output format types, and the single
 writer that interprets them.
 
-Tasks that emit a dataframe take an OutFormat and hand it, with the frame, to
-write_df_according_to_format. Keeping one writer means an option added to a
-format takes effect everywhere rather than only in whichever task happened to
-implement it.
 """
 
 from pathlib import Path
@@ -27,20 +23,7 @@ ParquetCompression = Literal["snappy", "zstd", "gzip", "brotli", "lz4", "none"]
 
 @frozen
 class ParquetWriteOptions:
-    """How to encode a parquet output, when the defaults are not good enough.
-
-    Supplying these switches the write from sink_parquet to the pyarrow writer,
-    which exposes per-column encoding control that sink_parquet does not. The
-    trade-off is that the pyarrow path must materialize the frame in memory, so
-    prefer the default (no options) for large outputs.
-
-    byte_stream_split_floats is the reason this exists. It transposes the bytes
-    of each floating-point value so that like-significance bytes sit together,
-    which a general-purpose compressor exploits far better than interleaved
-    IEEE754 bytes. On a table of GWAS statistics this cuts the compressed size
-    by roughly a third over plain encoding, which matters for tables shipped to
-    the documentation site and downloaded by readers' browsers.
-    """
+    """How to encode a parquet output, when the defaults are not good enough."""
 
     compression: ParquetCompression = "zstd"
     compression_level: int | None = None
@@ -103,11 +86,8 @@ def write_df_according_to_format(
     df: narwhals.LazyFrame, out_path: Path, out_format: OutFormat
 ) -> None:
     """Write a dataframe to out_path in the requested format.
-
     The frame's backend is preserved: narwhals dispatches to the underlying
-    library's own writer, so a pandas-backed frame is written by pandas and a
-    polars-backed frame by polars. Routing an existing task's write through
-    here therefore does not change its output.
+    library's own writer
     """
     if isinstance(out_format, CSVOutFormat):
         df.collect().to_pandas().to_csv(out_path, index=False, sep=out_format.sep)
