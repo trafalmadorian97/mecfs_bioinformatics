@@ -21,15 +21,16 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
+from mecfs_bio.constants.ppp_ldsc_constants import PPP_H2_N_SNPS_COL
 
 HAPMAP_3_PPP_HERITABILITY_FIGURE_TABLE = PipeDataFrameTask.create(
     asset_id="ppp_heritability_hapmap_3_eur_discovery_table",
     source_task=HAPMAP_3_PPP_HERITABILITY,
     pipes=[
         CastPipe(
-            target_column="n_snps",
+            target_column=PPP_H2_N_SNPS_COL,
             type=narwhals.Int32(),
-            new_col_name="n_snps",
+            new_col_name=PPP_H2_N_SNPS_COL,
         )
     ],
     out_format=ParquetOutFormat(
