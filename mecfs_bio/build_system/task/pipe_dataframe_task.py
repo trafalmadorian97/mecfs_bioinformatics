@@ -3,8 +3,10 @@ Task to transform a dataframe asset using a DataProcessingPipes.
 """
 
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Literal, Sequence
 
+import pyarrow
+import pyarrow.parquet
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -32,9 +34,34 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
+ParquetCompression = Literal["snappy", "zstd", "gzip", "brotli", "lz4", "none"]
 
+
+@frozen
+class ParquetWriteOptions:
+    """How to encode a parquet output, when the defaults are not good enough.
+
+    Supplying these switches the write from polars sink_parquet to the pyarrow
+    writer, which exposes per-column encoding control that sink_parquet does
+    not. The trade-off is that the pyarrow path must materialize the frame in
+    memory, so prefer the default (no options) for large outputs.
+
+    byte_stream_split_floats is the reason this exists. It transposes the bytes
+    of each floating-point value so that like-significance bytes sit together,
+    which a general-purpose compressor exploits far better than interleaved
+    IEEE754 bytes. On a table of GWAS statistics this cuts the compressed size
+    by roughly a third over plain encoding, which matters for tables shipped to
+    the documentation site and downloaded by readers' browsers.
+    """
+
+    compression: ParquetCompression = "zstd"
+    compression_level: int | None = None
+    byte_stream_split_floats: bool = False
+
+
+@frozen
 class ParquetOutFormat:
-    pass
+    write_options: ParquetWriteOptions | None = None
 
 
 @frozen
@@ -86,7 +113,14 @@ class PipeDataFrameTask(Task):
                 out_path, index=False, sep=self.out_format.sep
             )
         elif isinstance(self.out_format, ParquetOutFormat):
-            df.sink_parquet(out_path)
+            if self.out_format.write_options is None:
+                df.sink_parquet(out_path)
+            else:
+                write_parquet_with_options(
+                    table=df.collect().to_arrow(),
+                    out_path=out_path,
+                    options=self.out_format.write_options,
+                )
         return FileAsset(out_path)
 
     @classmethod
@@ -146,6 +180,37 @@ class PipeDataFrameTask(Task):
             out_format=out_format,
             backend=backend,
         )
+
+
+def write_parquet_with_options(
+    table: pyarrow.Table, out_path: Path, options: ParquetWriteOptions
+) -> None:
+    """Write a parquet file with explicit encoding control.
+
+    Dictionary encoding takes precedence over BYTE_STREAM_SPLIT in the parquet
+    writer: a column left dictionary-enabled is written as RLE_DICTIONARY and
+    the requested split is silently dropped, producing a file byte-identical to
+    one written without it. Dictionary encoding is therefore disabled on exactly
+    the float columns and left on for the rest, where it is what makes
+    low-cardinality string columns small.
+    """
+    float_cols = [
+        field.name for field in table.schema if pyarrow.types.is_floating(field.type)
+    ]
+    other_cols = [
+        field.name
+        for field in table.schema
+        if not pyarrow.types.is_floating(field.type)
+    ]
+    split = options.byte_stream_split_floats
+    pyarrow.parquet.write_table(
+        table,
+        out_path,
+        compression=options.compression,
+        compression_level=options.compression_level,
+        use_byte_stream_split=float_cols if split else False,
+        use_dictionary=other_cols if split else True,
+    )
 
 
 def get_extension_and_read_spec_from_format(
