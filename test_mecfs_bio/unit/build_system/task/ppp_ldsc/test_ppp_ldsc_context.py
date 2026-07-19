@@ -10,7 +10,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
 )
-from mecfs_bio.constants.ppp_index_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
+from mecfs_bio.constants.ppp_database_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
 
 # A row inside the extended MHC on hg38 (chr6, ~28 Mb) to prove MHC exclusion.
 _MHC_POS = 28_000_000

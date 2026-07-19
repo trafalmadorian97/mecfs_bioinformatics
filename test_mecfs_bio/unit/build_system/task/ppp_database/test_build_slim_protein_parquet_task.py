@@ -23,6 +23,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.constants.ppp_database_constants import Oid, SynID
 
 _REGENIE_HEADER = (
     "CHROM GENPOS ID ALLELE0 ALLELE1 A1FREQ INFO N TEST BETA SE CHISQ LOG10P EXTRA"
@@ -35,10 +36,10 @@ def test_ppp_protein_file_tar_filename():
     protein = PppProteinFile(
         gene="A1BG",
         uniprot="P04217",
-        oid="OID30771",
+        oid=Oid("OID30771"),
         version="v1",
         panel="Inflammation_II",
-        synid="syn52359450",
+        synid=SynID("syn52359450"),
     )
     assert protein.tar_filename == "A1BG_P04217_OID30771_v1_Inflammation_II.tar"
 

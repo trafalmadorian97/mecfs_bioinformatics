@@ -59,7 +59,6 @@ from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
     read_ld_scores,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.ppp_protein_heritability_task import (
-    ProteinSampleInfo,
     read_st3_gene_coords,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.trait_alignment import align_trait_to_context
@@ -73,10 +72,12 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
     GWASLAB_SE_COL,
 )
-from mecfs_bio.constants.ppp_index_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
+from mecfs_bio.constants.ppp_database_constants import (
+    PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
+    Oid,
+    SynID,
+)
 from mecfs_bio.constants.ppp_ldsc_constants import (
-    PPP_N_GENE_COL,
-    PPP_N_OID_COL,
     PPP_N_SAMPLE_SIZE_COL,
     PPP_N_SYNID_COL,
     PPP_RG_GCOV_COL,
@@ -116,6 +117,26 @@ _CONTEXT_VARIANT_COLUMNS = [
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
 ]
+
+
+def _read_sample_sizes(
+    sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
+) -> dict[SynID, int]:
+    """Synapse id -> sample size N from the sample-size table. The oid/gene it also carries
+    are ignored here: they come from each protein task's structured identity instead."""
+    table = (
+        scan_dataframe_asset(
+            fetch(sample_size_task.asset_id),
+            meta=sample_size_task.meta,
+            parquet_backend="polars",
+        )
+        .to_native()
+        .collect()
+    )
+    return {
+        row[PPP_N_SYNID_COL]: int(row[PPP_N_SAMPLE_SIZE_COL])
+        for row in table.iter_rows(named=True)
+    }
 
 
 @frozen
@@ -184,7 +205,9 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
         gene_coords = read_st3_gene_coords(_st3_path(self.st3_task, fetch))
 
         tasks = _proteins_to_process(
-            self.protein_tasks, sample_sizes, gene_coords, self.config.variant_set
+            self.protein_tasks,
+            gene_coords=gene_coords,
+            variant_set=self.config.variant_set,
         )
         logger.info(
             "built ppp cross-trait rg context",
@@ -227,16 +250,15 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
         st3_task: Task,
         config: PppRgConfig = PppRgConfig(),
     ) -> PppProteinCrossTraitRgTask:
-        # The trait identity comes from the trait task's meta (never passed in), per convention.
         trait_meta = trait_task.meta
         assert isinstance(
             trait_meta, (FilteredGWASDataMeta, GWASSummaryDataFileMeta)
         ), f"trait_task must produce a GWAS dataframe meta, got {type(trait_meta)}"
         meta = ResultTableMeta(
-            id=f"{asset_id}_{config.variant_set}",
+            id=f"{asset_id}",
             trait=trait_meta.trait,
-            project="ppp_genetic_correlation",
-            sub_dir=PurePath("analysis"),
+            project=trait_meta.project,
+            sub_dir=PurePath(f"analysis/ppp_genetic_correlation/{config.variant_set}"),
             extension=".parquet",
             read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
         )
@@ -298,29 +320,6 @@ def _build_trait_context(
     )
 
 
-def _read_sample_sizes(
-    sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
-) -> dict[str, ProteinSampleInfo]:
-    """Synapse id -> ProteinSampleInfo (oid, gene, n) from the sample-size table."""
-    table = (
-        scan_dataframe_asset(
-            fetch(sample_size_task.asset_id),
-            meta=sample_size_task.meta,
-            parquet_backend="polars",
-        )
-        .to_native()
-        .collect()
-    )
-    return {
-        row[PPP_N_SYNID_COL]: ProteinSampleInfo(
-            oid=row[PPP_N_OID_COL],
-            gene=row[PPP_N_GENE_COL],
-            n=int(row[PPP_N_SAMPLE_SIZE_COL]),
-        )
-        for row in table.iter_rows(named=True)
-    }
-
-
 def _st3_path(st3_task: Task, fetch: Fetch) -> Path:
     asset = fetch(st3_task.asset_id)
     assert isinstance(asset, FileAsset)
@@ -329,34 +328,31 @@ def _st3_path(st3_task: Task, fetch: Fetch) -> Path:
 
 def _proteins_to_process(
     protein_tasks: tuple[BuildSlimProteinParquetTask, ...],
-    sample_sizes: dict[str, ProteinSampleInfo],
-    gene_coords: dict[str, GenomicInterval],
+    gene_coords: dict[Oid, GenomicInterval],
     variant_set: PppVariantSet,
 ) -> list[BuildSlimProteinParquetTask]:
     """In cis-excluded mode, skip proteins with no ST3 gene coordinates (no cis window to
     exclude); in all-variants mode, keep every protein."""
     if variant_set == PPP_VARIANT_SET_ALL:
         return list(protein_tasks)
-    return [
-        task for task in protein_tasks if sample_sizes[task.synid].oid in gene_coords
-    ]
+    return [task for task in protein_tasks if task.protein.oid in gene_coords]
 
 
 def _process_batch(
     batch: list[BuildSlimProteinParquetTask],
     context: PppLdscContext,
     trait_ctx: TraitLdscContext,
-    sample_sizes: dict[str, ProteinSampleInfo],
-    gene_coords: dict[str, GenomicInterval],
+    sample_sizes: dict[SynID, int],
+    gene_coords: dict[Oid, GenomicInterval],
     config: PppRgConfig,
     fetch: Fetch,
 ) -> list[dict]:
     oids, genes, n_vec, z_cols = [], [], [], []
     for protein_task in batch:
-        info = sample_sizes[protein_task.synid]
-        oids.append(info.oid)
-        genes.append(info.gene)
-        n_vec.append(float(info.n))
+        sample_size = sample_sizes[protein_task.protein.synid]
+        oids.append(protein_task.protein.oid)
+        genes.append(protein_task.protein.gene)
+        n_vec.append(float(sample_size))
         z_cols.append(_read_protein_z(protein_task, context, fetch))
     z_protein = np.column_stack(z_cols)
     n_arr = np.asarray(n_vec)
@@ -402,9 +398,9 @@ def _read_protein_z(
 
 
 def _build_cis_exclude(
-    oids: list[str],
+    oids: list[Oid],
     context: PppLdscContext,
-    gene_coords: dict[str, GenomicInterval],
+    gene_coords: dict[Oid, GenomicInterval],
     cis_window_bp: int,
 ) -> np.ndarray:
     exclude = np.zeros((context.n_snps, len(oids)), dtype=bool)

@@ -59,7 +59,11 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
-from mecfs_bio.constants.ppp_index_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
+from mecfs_bio.constants.ppp_database_constants import (
+    PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
+    Oid,
+    SynID,
+)
 from mecfs_bio.constants.ppp_ldsc_constants import (
     PPP_H2_GENE_COL,
     PPP_H2_H2_COL,
@@ -142,7 +146,7 @@ def _parse_chrom(value: object) -> int | None:
     return None
 
 
-def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GenomicInterval]:
+def read_st3_gene_coords(xlsx_path: Path) -> dict[Oid, GenomicInterval]:
     """Map Olink ID (OID) -> hg38 gene coordinates from Sun et al. 2023 supplementary ST3.
 
     Proteins whose chromosome label is non-standard are skipped (they then get only the
@@ -150,7 +154,7 @@ def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GenomicInterval]:
     workbook = openpyxl.load_workbook(xlsx_path, read_only=True, data_only=True)
     sheet = workbook[_ST3_SHEET]
     header_index: dict[str, int] | None = None
-    coords: dict[str, GenomicInterval] = {}
+    coords: dict[Oid, GenomicInterval] = {}
     for row in sheet.iter_rows(values_only=True):
         if header_index is None:
             if row and _ST3_OLINK_ID_COL in row:
@@ -164,7 +168,7 @@ def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GenomicInterval]:
         end = row[header_index[_ST3_GENE_END_COL]]
         if oid is None or chrom is None or start is None or end is None:
             continue
-        coords[str(oid)] = GenomicInterval(chrom=chrom, start=int(start), end=int(end))
+        coords[Oid(oid)] = GenomicInterval(chrom=chrom, start=int(start), end=int(end))
     assert header_index is not None, f"could not find header row in sheet {_ST3_SHEET}"
     return coords
 
@@ -292,7 +296,7 @@ def _build_context(
 
 def _read_sample_sizes(
     sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
-) -> dict[str, int]:
+) -> dict[SynID, int]:
     """Synapse id -> sample size N from the sample-size table. The oid/gene it also carries
     are ignored here: they come from each protein task's structured identity instead."""
     table = (
@@ -319,8 +323,8 @@ def _st3_path(st3_task: Task, fetch: Fetch) -> Path:
 def _process_batch(
     batch: list[BuildSlimProteinParquetTask],
     context: PppLdscContext,
-    sample_sizes: dict[str, int] | None,
-    gene_coords: dict[str, GenomicInterval],
+    sample_sizes: dict[SynID, int] | None,
+    gene_coords: dict[Oid, GenomicInterval],
     config: PppHeritabilityConfig,
     fetch: Fetch,
 ) -> list[dict]:
@@ -415,9 +419,9 @@ def _read_protein_chi2(
 
 
 def _build_cis_exclude(
-    oids: list[str],
+    oids: list[Oid],
     context: PppLdscContext,
-    gene_coords: dict[str, GenomicInterval],
+    gene_coords: dict[Oid, GenomicInterval],
     cis_window_bp: int,
 ) -> np.ndarray:
     exclude = np.zeros((context.n_snps, len(oids)), dtype=bool)

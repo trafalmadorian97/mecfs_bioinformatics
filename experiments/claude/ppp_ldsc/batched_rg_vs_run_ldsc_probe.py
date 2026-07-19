@@ -42,7 +42,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
-from mecfs_bio.constants.ppp_index_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
+from mecfs_bio.constants.ppp_database_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
 
 _LOG = Path(__file__).resolve().parent / "logs" / "batched_rg_vs_run_ldsc_probe.log"
 
