@@ -56,7 +56,7 @@ HAPMAP_3_PPP_HERITABILITY_FIGURE_TABLE = PipeDataFrameTask.create(
             mean_chi_col=PPP_H2_MEAN_CHI2_COL, intercept_col=PPP_H2_INTERCEPT_COL
         ),
         DropColPipe([PPP_H2_LAMBDA_GC_COL]),
-        CastToFloat32Pipe(), # the input data for PPP LDSC is float32, so it is reasonable to cast the output to float32 as well
+        CastToFloat32Pipe(),  # the input data for PPP LDSC is float32, so it is reasonable to cast the output to float32 as well
     ],
     out_format=ParquetOutFormat(
         write_options=ParquetWriteOptions(
