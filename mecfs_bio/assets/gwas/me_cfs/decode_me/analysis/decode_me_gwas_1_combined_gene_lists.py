@@ -12,7 +12,9 @@ from mecfs_bio.build_system.task.combine_gene_lists_task import (
     CombineGeneListsTask,
     SrcGeneList,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 
 DECODE_ME_GWAS_1_COMBINED_GENE_LISTS = CombineGeneListsTask.create(
     asset_id="decode_me_gwas_1_combined_gene_list",

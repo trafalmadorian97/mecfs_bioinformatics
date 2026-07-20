@@ -1,8 +1,10 @@
 from mecfs_bio.assets.reference_data.db_snp.db_snp_build_37_as_parquet_unnest_ref import (
     PARQUET_DBSNP_37_UNNESTED,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.sort_pipe import SortPipe

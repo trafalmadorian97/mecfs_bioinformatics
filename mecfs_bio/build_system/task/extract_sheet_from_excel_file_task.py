@@ -5,6 +5,7 @@ Task to extract sheet from excel file.
 from pathlib import Path, PurePath
 from typing import Mapping
 
+import narwhals
 import pandas as pd
 from attrs import frozen
 
@@ -17,11 +18,10 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    CSVOutFormat,
+from mecfs_bio.build_system.task.dataframe_output import (
     OutFormat,
-    ParquetOutFormat,
     get_extension_and_read_spec_from_format,
+    write_df_according_to_format,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
@@ -63,10 +63,11 @@ class ExtractSheetFromExelFileTask(Task):
                 df[col] = df[col].astype(self.col_type_mapping[col])
 
         df = self.post_pipe.process_pandas(df)
-        if isinstance(self.out_format, CSVOutFormat):
-            df.to_csv(out_path, index=False, sep=self.out_format.sep)
-        elif isinstance(self.out_format, ParquetOutFormat):
-            df.to_parquet(out_path)
+        write_df_according_to_format(
+            df=narwhals.from_native(df).lazy(),
+            out_path=out_path,
+            out_format=self.out_format,
+        )
         return FileAsset(out_path)
 
     @classmethod

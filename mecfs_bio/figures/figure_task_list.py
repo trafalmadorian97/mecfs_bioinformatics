@@ -141,6 +141,9 @@ from mecfs_bio.assets.gwas.triglycerides.willer_et_al.analysis.triglycide_standa
 from mecfs_bio.assets.gwas.ukbb_ppp.btn1a1.generator.retrieve_and_process import (
     BTN1A1_UKBB_PPP_GWAS_PROCESS,
 )
+from mecfs_bio.assets.gwas.ukbb_ppp.ppp_database.hapmap3.eur_discovery_hapmap_3_heritability_figure_table import (
+    HAPMAP_3_PPP_HERITABILITY_FIGURE_TABLE,
+)
 from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.analysis.ukbb_rabgap1l_region_plot_37 import (
     UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37,
 )
@@ -300,6 +303,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     ].plot_task_unwrap,
     MECFS_PAIN_BIVARIATE_MIXER.result_table_markdown_task,
     MV_LDL_LDSC_RESULTS_MARKDOWN,
+    HAPMAP_3_PPP_HERITABILITY_FIGURE_TABLE,
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[

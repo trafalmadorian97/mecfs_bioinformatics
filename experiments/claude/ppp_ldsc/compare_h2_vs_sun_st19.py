@@ -87,10 +87,12 @@ def _report(label: str, x: np.ndarray, y: np.ndarray) -> None:
     x, y = x[mask], y[mask]
     pr = pearsonr(x, y)
     sr = spearmanr(x, y)
+    mean_diff = np.abs(x-y).mean()
     print(
         f"{label:38s} n={x.size:4d}  "
         f"Pearson r={pr.statistic:+.3f} (p={pr.pvalue:.1e})  "
         f"Spearman rho={sr.statistic:+.3f} (p={sr.pvalue:.1e})"
+        f"Mean diff ={mean_diff}"
     )
 
 

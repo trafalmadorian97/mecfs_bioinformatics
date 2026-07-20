@@ -5,8 +5,10 @@ Split roadmap into different tables.  One per modality.
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     CSVOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe

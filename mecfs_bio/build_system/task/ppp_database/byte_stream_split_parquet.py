@@ -11,7 +11,8 @@ beta/se files.
 from pathlib import Path
 
 import polars as pl
-import pyarrow.parquet as pq
+
+from mecfs_bio.build_system.task.dataframe_output import write_parquet_table
 
 
 def write_byte_stream_split_parquet(
@@ -27,15 +28,10 @@ def write_byte_stream_split_parquet(
     """
     missing = set(float_columns) - set(df.columns)
     assert not missing, f"float_columns not in frame: {missing}"
-    # Dictionary encoding takes precedence over byte-stream-split, so the split
-    # columns must have dictionary disabled for BYTE_STREAM_SPLIT to be applied;
-    # dictionary-encode only the remaining columns.
-    dictionary_columns = [c for c in df.columns if c not in float_columns]
-    pq.write_table(
-        df.to_arrow(),
-        str(path),
+    write_parquet_table(
+        table=df.to_arrow(),
+        out_path=path,
         compression="zstd",
         compression_level=compression_level,
-        use_dictionary=dictionary_columns,
-        use_byte_stream_split=float_columns,
+        byte_stream_split_columns=float_columns,
     )

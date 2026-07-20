@@ -4,8 +4,10 @@ from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.raw.yu_drg_metadata_table import (
     YU_DRG_METADATA_TABLE,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.rename_col_by_position_pipe import (
     RenameColByPositionPipe,
