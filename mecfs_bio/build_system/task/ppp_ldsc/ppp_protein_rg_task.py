@@ -29,6 +29,7 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
@@ -254,8 +255,9 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
         assert isinstance(
             trait_meta, (FilteredGWASDataMeta, GWASSummaryDataFileMeta)
         ), f"trait_task must produce a GWAS dataframe meta, got {type(trait_meta)}"
+        assert isinstance(trait_meta.read_spec, DataFrameReadSpec)
         meta = ResultTableMeta(
-            id=f"{asset_id}",
+            id=AssetId(f"{asset_id}"),
             trait=trait_meta.trait,
             project=trait_meta.project,
             sub_dir=PurePath(f"analysis/ppp_genetic_correlation/{config.variant_set}"),
