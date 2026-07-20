@@ -98,7 +98,10 @@ def _aggregate_h2(
 ) -> np.ndarray:
     """Aggregate-h2 per column over the kept SNPs (GenomicSEM tot.agg), clamped to [0, 1]. chi,
     n, keep are (S, K); ld is (S,). Uses raw ld (not clamped) for mean(ld*N), matching
-    genomic_sem_ldsc._aggregate_h2."""
+    genomic_sem_ldsc._aggregate_h2.
+
+    Note: idea is to compute a rough estimate of heritability that can be used for variant weighting
+    """
     cnt = np.maximum(keep.sum(0).astype(float), 1.0)
     mean_chi = np.where(keep, chi, 0.0).sum(0) / cnt
     mean_ldn = np.where(keep, ld[:, None] * n, 0.0).sum(0) / cnt
