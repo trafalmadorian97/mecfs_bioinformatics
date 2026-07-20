@@ -377,9 +377,14 @@ _DATA_TABLE_SCRIPT = """<script type="module">
     // stays exact, and sorting still compares the underlying numbers.
     const display = (cell) => {
       const value = cell.getValue();
-      return typeof value === "number" && !Number.isInteger(value)
-        ? value.toFixed(__PRECISION__)
-        : value;
+      if (typeof value !== "number" || Number.isInteger(value)) return value;
+      // toFixed collapses anything smaller than the last retained decimal place
+      // to "0.0000", which is where p-values live. Switch to exponential so the
+      // magnitude survives; exact zero stays fixed, since "0.000e+0" is noise.
+      if (value !== 0 && Math.abs(value) < 10 ** -__PRECISION__) {
+        return value.toExponential(Math.max(__PRECISION__ - 1, 0));
+      }
+      return value.toFixed(__PRECISION__);
     };
 
     const table = new Tabulator(container, {

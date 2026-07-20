@@ -20,8 +20,23 @@ from mecfs_bio.build_system.task.dataframe_output import (
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
+from mecfs_bio.build_system.task.pipes.attenuation_ratio_pipe import (
+    AttenuationRatioPipe,
+)
 from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
-from mecfs_bio.constants.ppp_ldsc_constants import PPP_H2_N_SNPS_COL
+from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import CastToFloat32Pipe
+from mecfs_bio.build_system.task.pipes.compute_p_from_beta_se import (
+    ComputePFromBetaSEPipeIfNeeded,
+)
+from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
+from mecfs_bio.constants.ppp_ldsc_constants import (
+    PPP_H2_H2_COL,
+    PPP_H2_H2_SE_COL,
+    PPP_H2_INTERCEPT_COL,
+    PPP_H2_LAMBDA_GC_COL,
+    PPP_H2_MEAN_CHI2_COL,
+    PPP_H2_N_SNPS_COL,
+)
 
 HAPMAP_3_PPP_HERITABILITY_FIGURE_TABLE = PipeDataFrameTask.create(
     asset_id="ppp_heritability_hapmap_3_eur_discovery_table",
@@ -31,13 +46,21 @@ HAPMAP_3_PPP_HERITABILITY_FIGURE_TABLE = PipeDataFrameTask.create(
             target_column=PPP_H2_N_SNPS_COL,
             type=narwhals.Int32(),
             new_col_name=PPP_H2_N_SNPS_COL,
-        )
+        ),
+        ComputePFromBetaSEPipeIfNeeded(
+            p_col="p",
+            se_col=PPP_H2_H2_SE_COL,
+            beta_col=PPP_H2_H2_COL,
+        ),
+        AttenuationRatioPipe(
+            mean_chi_col=PPP_H2_MEAN_CHI2_COL, intercept_col=PPP_H2_INTERCEPT_COL
+        ),
+        DropColPipe([PPP_H2_LAMBDA_GC_COL]),
+        CastToFloat32Pipe(), # the input data for PPP LDSC is float32, so it is reasonable to cast the output to float32 as well
     ],
     out_format=ParquetOutFormat(
         write_options=ParquetWriteOptions(
             compression="zstd",
-            # Level 22 costs a few seconds on a table this size and is paid once
-            # at build time, against a file every reader of the page downloads.
             compression_level=22,
             byte_stream_split_floats=True,
         )
