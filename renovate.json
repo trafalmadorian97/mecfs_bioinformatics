@@ -40,6 +40,25 @@
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
+    },
+    {
+      "description": "Leaf deps with no dependents: pin exactly so every release gets its own PR. Do NOT add tightly-coupled scientific-stack packages (numpy, pandas, matplotlib, scipy, xarray) here -- gwaslab constrains them, and per-package pin PRs would be individually unsatisfiable.",
+      "matchManagers": ["pixi"],
+      "matchPackageNames": [
+        "narwhals",
+        "polars",
+        "loguru",
+        "structlog",
+        "tqdm",
+        "invoke",
+        "ruff",
+        "typeguard"
+      ],
+      "rangeStrategy": "pin"
     }
-  ]
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 4am on monday"]
+  }
 }
