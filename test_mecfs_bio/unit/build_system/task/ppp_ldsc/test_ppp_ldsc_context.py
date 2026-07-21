@@ -1,6 +1,12 @@
 import numpy as np
 import polars as pl
 
+from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
+    LD_SCORE_CHROM_COL,
+    LD_SCORE_LD_SCORE_COL,
+    LD_SCORE_M_5_50_COL,
+    LD_SCORE_RSID_COL,
+)
 from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
     build_cis_mask,
     build_ppp_ldsc_context,
@@ -31,17 +37,20 @@ def _index() -> pl.DataFrame:
 
 def _ld() -> pl.DataFrame:
     # rs4 is absent from the index (inner join drops it); every index rsID is present.
+    # M_5_50 is constant within a chromosome: chr1 = 600, chr2 = 300, chr6 = 100.
     return pl.DataFrame(
         {
-            "SNP": ["rs1", "rs2", "rs3", "rs_mhc", "rs_ambig", "rs4"],
-            "L2": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+            LD_SCORE_RSID_COL: ["rs1", "rs2", "rs3", "rs_mhc", "rs_ambig", "rs4"],
+            LD_SCORE_CHROM_COL: [1, 2, 1, 6, 1, 1],
+            LD_SCORE_LD_SCORE_COL: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0],
+            LD_SCORE_M_5_50_COL: [600.0, 300.0, 600.0, 100.0, 600.0, 600.0],
         }
     )
 
 
 def test_context_sorts_filters_and_maps_row_positions():
     ctx = build_ppp_ldsc_context(
-        _index(), _ld(), m_total=1000.0, drop_strand_ambiguous=True, exclude_mhc=True
+        _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
     # rs_ambig (strand-ambiguous) and rs_mhc (MHC) dropped -> rs1, rs3, rs2 remain,
     # sorted by (CHR, POS): chr1:100 (rs1), chr1:200 (rs3), chr2:300 (rs2).
@@ -51,19 +60,21 @@ def test_context_sorts_filters_and_maps_row_positions():
     assert list(ctx.ld) == [1.0, 3.0, 2.0]
     # row_pos points back to the original (unsorted) index rows: rs1=1, rs3=2, rs2=0.
     assert list(ctx.row_pos) == [1, 2, 0]
+    # M is summed per chromosome over the FULL LD table (600 + 300 + 100), not over the
+    # variants that survived the join: it counts reference variants, not regression ones.
     assert ctx.m == 1000.0
 
 
 def test_context_can_keep_strand_ambiguous_and_mhc():
     ctx = build_ppp_ldsc_context(
-        _index(), _ld(), m_total=1.0, drop_strand_ambiguous=False, exclude_mhc=False
+        _index(), _ld(), drop_strand_ambiguous=False, exclude_mhc=False
     )
     assert ctx.n_snps == 5  # nothing dropped (rs4 still absent from the index)
 
 
 def test_build_cis_mask():
     ctx = build_ppp_ldsc_context(
-        _index(), _ld(), m_total=1.0, drop_strand_ambiguous=True, exclude_mhc=True
+        _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
     # Gene on chr1 at [150, 160]; window 60 -> cis covers [90, 220]: rs1(100), rs3(200).
     mask = build_cis_mask(ctx, gene_chrom=1, gene_start=150, gene_end=160, window_bp=60)

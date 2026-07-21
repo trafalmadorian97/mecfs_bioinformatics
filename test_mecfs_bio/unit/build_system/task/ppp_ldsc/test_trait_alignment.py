@@ -1,6 +1,8 @@
 """Trait-to-context alignment: allele orientation, N sourcing, and the min-overlap guard."""
 
+import narwhals
 import numpy as np
+import pandas as pd
 import polars as pl
 import pytest
 
@@ -38,7 +40,10 @@ def test_orientation_match_flip_mismatch_and_absent():
         }
     )
     aligned = align_trait_to_context(
-        trait, ctx, trait_total_sample_size=None, min_trait_snps=1
+        narwhals.from_native(trait.lazy()),
+        ctx,
+        trait_total_sample_size=None,
+        min_trait_snps=1,
     )
     # rs0 same orientation -> +2; rs1 swapped -> -2; rs2 allele mismatch -> NaN; rs3 absent -> NaN.
     assert aligned.z[0] == pytest.approx(2.0)
@@ -61,7 +66,10 @@ def test_constant_n_when_column_absent():
         }
     )
     aligned = align_trait_to_context(
-        trait, ctx, trait_total_sample_size=50_000, min_trait_snps=1
+        narwhals.from_native(trait.lazy()),
+        ctx,
+        trait_total_sample_size=50_000,
+        min_trait_snps=1,
     )
     assert np.all(aligned.n == 50_000.0)
 
@@ -79,7 +87,10 @@ def test_missing_n_source_raises():
     )
     with pytest.raises(AssertionError):
         align_trait_to_context(
-            trait, ctx, trait_total_sample_size=None, min_trait_snps=1
+            narwhals.from_native(trait.lazy()),
+            ctx,
+            trait_total_sample_size=None,
+            min_trait_snps=1,
         )
 
 
@@ -97,5 +108,82 @@ def test_min_overlap_guard_raises():
     )
     with pytest.raises(AssertionError):
         align_trait_to_context(
-            trait, ctx, trait_total_sample_size=None, min_trait_snps=5
+            narwhals.from_native(trait.lazy()),
+            ctx,
+            trait_total_sample_size=None,
+            min_trait_snps=5,
         )
+
+
+def _duplicated_trait(order: list[int]) -> pl.DataFrame:
+    """A trait carrying rs0 twice with different effect sizes, emitted in the given row order."""
+    rows = [
+        {
+            GWASLAB_RSID_COL: "rs0",
+            GWASLAB_EFFECT_ALLELE_COL: "A",
+            GWASLAB_NON_EFFECT_ALLELE_COL: "G",
+            GWASLAB_BETA_COL: 1.0,
+            GWASLAB_SE_COL: 1.0,
+            GWASLAB_SAMPLE_SIZE_COLUMN: 100.0,
+        },
+        {
+            GWASLAB_RSID_COL: "rs0",
+            GWASLAB_EFFECT_ALLELE_COL: "A",
+            GWASLAB_NON_EFFECT_ALLELE_COL: "G",
+            GWASLAB_BETA_COL: 5.0,
+            GWASLAB_SE_COL: 1.0,
+            GWASLAB_SAMPLE_SIZE_COLUMN: 100.0,
+        },
+    ]
+    return pl.DataFrame([rows[i] for i in order])
+
+
+def test_duplicate_rsids_resolve_independently_of_input_order():
+    """Which duplicate survives must depend on the data, not on the order the rows arrive in:
+    a streaming scan makes no promise about that order, and an order-dependent answer would make
+    the whole result -- and the asset built from it -- irreproducible."""
+    ctx = _context(1)
+    first = align_trait_to_context(
+        narwhals.from_native(_duplicated_trait([0, 1]).lazy()),
+        ctx,
+        trait_total_sample_size=None,
+        min_trait_snps=0,
+    )
+    reversed_input = align_trait_to_context(
+        narwhals.from_native(_duplicated_trait([1, 0]).lazy()),
+        ctx,
+        trait_total_sample_size=None,
+        min_trait_snps=0,
+    )
+    assert first.z[0] == reversed_input.z[0]
+    # The smallest z-score wins, being first in sorted order.
+    assert first.z[0] == pytest.approx(1.0)
+
+
+def test_alignment_works_on_a_non_polars_backend():
+    """The trait reaches alignment through a DataProcessingPipe, which may leave it on any
+    narwhals backend, so the function must not assume the frame is polars-backed."""
+    ctx = _context(2)
+    trait = {
+        GWASLAB_RSID_COL: ["rs0", "rs1"],
+        GWASLAB_EFFECT_ALLELE_COL: ["A", "G"],  # match, flipped
+        GWASLAB_NON_EFFECT_ALLELE_COL: ["G", "A"],
+        GWASLAB_BETA_COL: [2.0, 2.0],
+        GWASLAB_SE_COL: [1.0, 1.0],
+        GWASLAB_SAMPLE_SIZE_COLUMN: [100.0, 100.0],
+    }
+    from_pandas = align_trait_to_context(
+        narwhals.from_native(pd.DataFrame(trait)).lazy(),
+        ctx,
+        trait_total_sample_size=None,
+        min_trait_snps=1,
+    )
+    from_polars = align_trait_to_context(
+        narwhals.from_native(pl.DataFrame(trait).lazy()),
+        ctx,
+        trait_total_sample_size=None,
+        min_trait_snps=1,
+    )
+    assert from_pandas.z == pytest.approx([2.0, -2.0])
+    assert from_pandas.z == pytest.approx(from_polars.z)
+    assert from_pandas.n == pytest.approx(from_polars.n)

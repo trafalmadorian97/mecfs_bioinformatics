@@ -28,7 +28,6 @@ import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
-from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
@@ -56,14 +55,11 @@ from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_rg import (
     batched_rg,
     estimate_trait_context,
 )
+from mecfs_bio.build_system.task.ppp_ldsc.gene_coords import read_gene_coords
 from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
     PppLdscContext,
     build_cis_mask,
     build_ppp_ldsc_context,
-    read_ld_scores,
-)
-from mecfs_bio.build_system.task.ppp_ldsc.ppp_protein_heritability_task import (
-    read_st3_gene_coords,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.trait_alignment import align_trait_to_context
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -125,7 +121,8 @@ _CONTEXT_VARIANT_COLUMNS = [
 
 # Stable phrase in the st3_task/variant_set invariant, shared with the tests.
 ST3_VARIANT_SET_MISMATCH_ERR = (
-    f"st3_task is required if and only if variant_set is {PPP_VARIANT_SET_CIS_EXCLUDED}"
+    f"gene_coords_task is required if and only if variant_set is "
+    f"{PPP_VARIANT_SET_CIS_EXCLUDED}"
 )
 
 
@@ -172,24 +169,25 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
         NEA, BETA, SE, and optionally N).
     protein_tasks: the slim per-protein beta/se tasks (aligned to index_task).
     index_task: the shared ConstructPppVariantIndexTask (variant identity / rsID / alleles).
-    ld_ref_task: an extracted reference LD-score directory (LDscore.<chr>.l2.* files).
+    ld_scores_task: consolidated reference LD scores (ConsolidateLDScoresTask: CHR, SNP, L2,
+        M_5_50).
     sample_size_task: the per-protein N table (PppProteinSampleSizeTask).
-    st3_task: Sun et al. 2023 supplementary xlsx (ST3 hg38 gene coordinates). Required only in
-        cis-excluded mode, which needs each protein's gene window; None in all-variants mode.
+    gene_coords_task: the extracted Sun et al. 2023 ST3 sheet (hg38 gene coordinates). Required
+        only in cis-excluded mode, which needs each protein's gene window; None otherwise.
     """
 
     meta: Meta
     trait_task: Task
     protein_tasks: tuple[BuildSlimProteinParquetTask, ...]
     index_task: Task
-    ld_ref_task: Task
+    ld_scores_task: Task
     sample_size_task: PppProteinSampleSizeTask
-    st3_task: Task | None
+    gene_coords_task: Task | None
     config: PppRgConfig
     trait_pipe: DataProcessingPipe = IdentityPipe()
 
     def __attrs_post_init__(self) -> None:
-        assert (self.st3_task is not None) == (
+        assert (self.gene_coords_task is not None) == (
             self.config.variant_set == PPP_VARIANT_SET_CIS_EXCLUDED
         ), ST3_VARIANT_SET_MISMATCH_ERR
 
@@ -199,18 +197,18 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
             self.trait_task,
             *self.protein_tasks,
             self.index_task,
-            self.ld_ref_task,
+            self.ld_scores_task,
             self.sample_size_task,
         ]
-        if self.st3_task is not None:
-            tasks.append(self.st3_task)
+        if self.gene_coords_task is not None:
+            tasks.append(self.gene_coords_task)
         return tasks
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         index_df = _read_index(self.index_task, fetch)
         context = build_ppp_ldsc_context(
             index_df,
-            *_read_ld(self.ld_ref_task, fetch),
+            _read_table(self.ld_scores_task, fetch),
             drop_strand_ambiguous=self.config.drop_strand_ambiguous,
             exclude_mhc=self.config.exclude_mhc,
         )
@@ -228,8 +226,8 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
         sample_sizes = _read_sample_sizes(self.sample_size_task, fetch)
         # Empty in all-variants mode: nothing there consults a gene window.
         gene_coords = (
-            read_st3_gene_coords(_st3_path(self.st3_task, fetch))
-            if self.st3_task is not None
+            read_gene_coords(_read_table(self.gene_coords_task, fetch))
+            if self.gene_coords_task is not None
             else {}
         )
 
@@ -274,9 +272,9 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
         trait_task: Task,
         protein_tasks: tuple[BuildSlimProteinParquetTask, ...],
         index_task: Task,
-        ld_ref_task: Task,
+        ld_scores_task: Task,
         sample_size_task: PppProteinSampleSizeTask,
-        st3_task: Task | None = None,
+        gene_coords_task: Task | None = None,
         config: PppRgConfig = PppRgConfig(),
         trait_pipe: DataProcessingPipe = IdentityPipe(),
     ) -> PppProteinCrossTraitRgTask:
@@ -298,9 +296,9 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
             trait_task=trait_task,
             protein_tasks=protein_tasks,
             index_task=index_task,
-            ld_ref_task=ld_ref_task,
+            ld_scores_task=ld_scores_task,
             sample_size_task=sample_size_task,
-            st3_task=st3_task,
+            gene_coords_task=gene_coords_task,
             config=config,
             trait_pipe=trait_pipe,
         )
@@ -319,10 +317,17 @@ def _read_index(index_task: Task, fetch: Fetch) -> pl.DataFrame:
     )
 
 
-def _read_ld(ld_ref_task: Task, fetch: Fetch) -> tuple[pl.DataFrame, float]:
-    ld_asset = fetch(ld_ref_task.asset_id)
-    assert isinstance(ld_asset, DirectoryAsset)
-    return read_ld_scores(ld_asset.path)
+def _read_table(task: Task, fetch: Fetch) -> pl.DataFrame:
+    """A dependency's whole dataframe asset, in memory."""
+    return (
+        scan_dataframe_asset(
+            fetch(task.asset_id),
+            meta=task.meta,
+            parquet_backend="polars",
+        )
+        .to_native()
+        .collect()
+    )
 
 
 def _get_trait_columns(trait_lazy_df: narwhals.LazyFrame) -> list[str]:
@@ -356,10 +361,11 @@ def _build_trait_context(
         )
     )
     trait_cols = _get_trait_columns(trait_lazy_df)
-    trait_lazy_df = trait_lazy_df.select(trait_cols)
-    trait_df = trait_lazy_df.collect().to_polars()
+    # Left lazy, and left in narwhals: align_trait_to_context filters down to the context variants
+    # before collecting, so a trait far larger than memory is never materialized in full, and the
+    # pipe above may have moved the frame to a non-polars backend.
     aligned = align_trait_to_context(
-        trait_df,
+        trait_lazy_df.select(trait_cols),
         context_variants,
         trait_total_sample_size=config.trait_total_sample_size,
         min_trait_snps=config.min_trait_snps,
@@ -367,12 +373,6 @@ def _build_trait_context(
     return estimate_trait_context(
         aligned.z, aligned.n, context.ld, context.m, n_blocks=config.n_blocks
     )
-
-
-def _st3_path(st3_task: Task, fetch: Fetch) -> Path:
-    asset = fetch(st3_task.asset_id)
-    assert isinstance(asset, FileAsset)
-    return asset.path
 
 
 def _proteins_to_process(

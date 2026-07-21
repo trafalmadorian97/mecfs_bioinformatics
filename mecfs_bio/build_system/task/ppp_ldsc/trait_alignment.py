@@ -13,10 +13,22 @@ The trait sample size is taken per-SNP from the trait's N column when present, o
 caller-supplied constant. A collapsed trait/context overlap almost always means a harmonization
 failure upstream (wrong genome build, malformed rsIDs, or systematic allele mismatch), so we fail
 fast when fewer than min_trait_snps context variants match.
+
+The trait arrives lazily and is narrowed to the context variants before anything is materialized.
+Only a small fraction of a trait's variants are HapMap3 ones, and a GWAS on whole-genome sequencing
+data can carry hundreds of millions of rows, so restricting to the context first is what keeps that
+input's size off the peak memory of the run.
+
+The trait is a narwhals LazyFrame because it has been through a DataProcessingPipe, which is free
+to change the backend. The filter is therefore expressed in narwhals and only the (small) filtered
+result is collected into polars, where the allele-orientation helpers live. Converting to polars
+any earlier would mean collecting the whole trait first, which is exactly what the filter exists to
+avoid.
 """
 
 from __future__ import annotations
 
+import narwhals
 import numpy as np
 import polars as pl
 import structlog
@@ -63,7 +75,7 @@ class TraitAligned:
 
 
 def align_trait_to_context(
-    trait_df: pl.DataFrame,
+    trait_df: narwhals.LazyFrame,
     context_variants: pl.DataFrame,
     *,
     trait_total_sample_size: int | None,
@@ -71,11 +83,13 @@ def align_trait_to_context(
 ) -> TraitAligned:
     """Align a trait sumstats dataframe onto the context SNP set.
 
-    trait_df: gwaslab-standard columns rsID, EA, NEA, BETA, SE, and optionally N.
+    trait_df: a LAZY narwhals frame with gwaslab-standard columns rsID, EA, NEA, BETA, SE, and
+        optionally N. Kept lazy so the filter down to the context variants happens during the scan,
+        and backend-agnostic because a DataProcessingPipe may have produced it.
     context_variants: the context SNPs in row order, with rsID and the index EA/NEA.
     trait_total_sample_size: constant N to use when trait_df has no N column (else None).
     """
-    has_n = GWASLAB_SAMPLE_SIZE_COLUMN in trait_df.columns
+    has_n = GWASLAB_SAMPLE_SIZE_COLUMN in trait_df.collect_schema().names()
     if has_n:
         n_expr = pl.col(GWASLAB_SAMPLE_SIZE_COLUMN).cast(pl.Float64)
     else:
@@ -83,13 +97,42 @@ def align_trait_to_context(
             "trait sumstats lack an N column; supply trait_total_sample_size in the config"
         )
         n_expr = pl.lit(float(trait_total_sample_size))
-    trait = trait_df.select(
-        pl.col(GWASLAB_RSID_COL),
-        pl.col(GWASLAB_EFFECT_ALLELE_COL),
-        pl.col(GWASLAB_NON_EFFECT_ALLELE_COL),
-        (pl.col(GWASLAB_BETA_COL) / pl.col(GWASLAB_SE_COL)).alias(_TRAIT_Z),
-        n_expr.alias(_TRAIT_N),
-    ).unique(subset=[GWASLAB_RSID_COL], keep="first")
+    projected = [
+        GWASLAB_RSID_COL,
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+        _TRAIT_Z,
+        _TRAIT_N,
+    ]
+    trait = (
+        trait_df
+        # Applied while lazy, so a polars-backed scan evaluates it as a parquet SELECTION and only
+        # context variants are ever materialized. The rsIDs go in as a plain list: it is the one
+        # form every narwhals backend accepts, and it avoids polars' ambiguous-elementwise
+        # deprecation for a bare Series.
+        .filter(
+            narwhals.col(GWASLAB_RSID_COL).is_in(
+                context_variants[GWASLAB_RSID_COL].to_list()
+            )
+        )
+        # Small by now -- at most one row per context variant, plus any duplicates -- so
+        # collecting into polars here costs little and gives the rest of the function the polars
+        # expressions the orientation helpers are written in.
+        .collect(backend="polars")
+        .to_polars()
+        .select(
+            pl.col(GWASLAB_RSID_COL),
+            pl.col(GWASLAB_EFFECT_ALLELE_COL),
+            pl.col(GWASLAB_NON_EFFECT_ALLELE_COL),
+            (pl.col(GWASLAB_BETA_COL) / pl.col(GWASLAB_SE_COL)).alias(_TRAIT_Z),
+            n_expr.alias(_TRAIT_N),
+        )
+        # Sorting on every projected column before dropping duplicate rsIDs makes the survivor a
+        # function of the data alone. Taking whichever row the scan happened to emit first would
+        # leave the result -- and so the asset's hash -- dependent on how the file was read.
+        .sort(projected)
+        .unique(subset=[GWASLAB_RSID_COL], keep="first", maintain_order=True)
+    )
 
     joined = (
         context_variants.select(
