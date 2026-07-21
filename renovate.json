@@ -47,7 +47,6 @@
       "matchPackageNames": [
         "narwhals",
         "polars",
-        "loguru",
         "structlog",
         "tqdm",
         "invoke",
