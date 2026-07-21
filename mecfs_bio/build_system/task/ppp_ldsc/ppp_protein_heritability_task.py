@@ -30,7 +30,10 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
-from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
+from mecfs_bio.build_system.task.base_task import (
+    GeneratingTask,
+    Task,
+)
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     BuildSlimProteinParquetTask,
 )
@@ -48,6 +51,7 @@ from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
     build_cis_mask,
     build_ppp_ldsc_context,
 )
+from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -196,6 +200,12 @@ class PppProteinHeritabilityTask(GeneratingTask):
         gene_coords_task: Task,
         config: PppHeritabilityConfig = PppHeritabilityConfig(),
     ) -> PppProteinHeritabilityTask:
+        assert produces_dataframe(ld_scores_task), (
+            f"ld_scores_task {ld_scores_task.asset_id} must produce a dataframe "
+        )
+        assert produces_dataframe(gene_coords_task), (
+            f"gene_coords_task {gene_coords_task.asset_id} must produce a dataframe "
+        )
         meta = ResultTableMeta(
             id=asset_id,
             trait="ukbb_ppp",

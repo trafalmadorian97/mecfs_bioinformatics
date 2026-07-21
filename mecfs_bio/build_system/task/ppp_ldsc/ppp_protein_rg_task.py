@@ -40,7 +40,10 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
-from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
+from mecfs_bio.build_system.task.base_task import (
+    GeneratingTask,
+    Task,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
@@ -62,6 +65,7 @@ from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
     build_ppp_ldsc_context,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.trait_alignment import align_trait_to_context
+from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -283,6 +287,12 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
             trait_meta, (FilteredGWASDataMeta, GWASSummaryDataFileMeta)
         ), f"trait_task must produce a GWAS dataframe meta, got {type(trait_meta)}"
         assert isinstance(trait_meta.read_spec, DataFrameReadSpec)
+        assert produces_dataframe(ld_scores_task), (
+            f"ld_scores_task {ld_scores_task.asset_id} must produce a dataframe "
+        )
+        assert gene_coords_task is None or produces_dataframe(gene_coords_task), (
+            f"gene_coords_task {gene_coords_task.asset_id} must produce a dataframe "
+        )
         meta = ResultTableMeta(
             id=AssetId(f"{asset_id}"),
             trait=trait_meta.trait,
