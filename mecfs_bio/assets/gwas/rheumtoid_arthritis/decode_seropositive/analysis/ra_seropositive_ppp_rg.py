@@ -17,7 +17,5 @@ SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED = generate_ppp_rg_assets(
     "seropositive_ra_ppp_rg_cis_excluded",
     trait_task=SEROPOSITIVE_RA_STANDARD_ANALYSIS.assign_rsids_task_group.join_task,
     trait_pipe=CompositePipe([ComputeBetaPipe(), ComputeSEPipe()]),
-    config=PppRgConfig(
-        variant_set="cis_excluded"
-    ),
+    config=PppRgConfig(variant_set="cis_excluded"),
 )
