@@ -4,7 +4,7 @@ Cross-trait genetic correlation of one trait against every UKB-PPP protein via L
 Given a trait's hg38 summary statistics, this computes the genetic correlation (rg) of the trait
 with each protein for a single variant set -- all variants, or cis-excluded (variants within a
 window of the protein's gene, from Sun et al. 2023 ST3 hg38 gene coordinates) -- selected by the
-config. Run the task twice to get both variant sets; each run's asset id encodes the variant set.
+config. Run the task twice to get both variant sets.
 
 All proteins share one variant-index row order, so the index<->LD-score alignment, LD scores, M and
 jackknife blocks are built once (PppLdscContext), the trait is aligned onto that set once
@@ -21,6 +21,7 @@ from __future__ import annotations
 
 from pathlib import Path, PurePath
 
+import narwhals
 import numpy as np
 import polars as pl
 import structlog
@@ -41,6 +42,8 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     BuildSlimProteinParquetTask,
 )
@@ -71,6 +74,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
+    GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
 from mecfs_bio.constants.ppp_database_constants import (
@@ -119,6 +123,11 @@ _CONTEXT_VARIANT_COLUMNS = [
     GWASLAB_NON_EFFECT_ALLELE_COL,
 ]
 
+# Stable phrase in the st3_task/variant_set invariant, shared with the tests.
+ST3_VARIANT_SET_MISMATCH_ERR = (
+    f"st3_task is required if and only if variant_set is {PPP_VARIANT_SET_CIS_EXCLUDED}"
+)
+
 
 def _read_sample_sizes(
     sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
@@ -159,13 +168,14 @@ class PppRgConfig:
 class PppProteinCrossTraitRgTask(GeneratingTask):
     """Compute the trait-vs-protein genetic correlation for every UKB-PPP protein.
 
-    trait_task: a task producing the trait's hg38 sumstats dataframe (gwaslab columns rsID, EA,
+    trait_task: a task producing the trait's sumstats dataframe (gwaslab columns rsID, EA,
         NEA, BETA, SE, and optionally N).
     protein_tasks: the slim per-protein beta/se tasks (aligned to index_task).
     index_task: the shared ConstructPppVariantIndexTask (variant identity / rsID / alleles).
     ld_ref_task: an extracted reference LD-score directory (LDscore.<chr>.l2.* files).
     sample_size_task: the per-protein N table (PppProteinSampleSizeTask).
-    st3_task: Sun et al. 2023 supplementary xlsx (ST3 hg38 gene coordinates).
+    st3_task: Sun et al. 2023 supplementary xlsx (ST3 hg38 gene coordinates). Required only in
+        cis-excluded mode, which needs each protein's gene window; None in all-variants mode.
     """
 
     meta: Meta
@@ -174,19 +184,27 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
     index_task: Task
     ld_ref_task: Task
     sample_size_task: PppProteinSampleSizeTask
-    st3_task: Task
+    st3_task: Task | None
     config: PppRgConfig
+    trait_pipe: DataProcessingPipe = IdentityPipe()
+
+    def __attrs_post_init__(self) -> None:
+        assert (self.st3_task is not None) == (
+            self.config.variant_set == PPP_VARIANT_SET_CIS_EXCLUDED
+        ), ST3_VARIANT_SET_MISMATCH_ERR
 
     @property
     def deps(self) -> list[Task]:
-        return [
+        tasks = [
             self.trait_task,
             *self.protein_tasks,
             self.index_task,
             self.ld_ref_task,
             self.sample_size_task,
-            self.st3_task,
         ]
+        if self.st3_task is not None:
+            tasks.append(self.st3_task)
+        return tasks
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         index_df = _read_index(self.index_task, fetch)
@@ -200,10 +218,20 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
             pl.Series(context.row_pos)
         )
         trait_ctx = _build_trait_context(
-            self.trait_task, context, context_variants, self.config, fetch
+            self.trait_task,
+            context,
+            context_variants,
+            self.config,
+            fetch,
+            trait_pipe=self.trait_pipe,
         )
         sample_sizes = _read_sample_sizes(self.sample_size_task, fetch)
-        gene_coords = read_st3_gene_coords(_st3_path(self.st3_task, fetch))
+        # Empty in all-variants mode: nothing there consults a gene window.
+        gene_coords = (
+            read_st3_gene_coords(_st3_path(self.st3_task, fetch))
+            if self.st3_task is not None
+            else {}
+        )
 
         tasks = _proteins_to_process(
             self.protein_tasks,
@@ -234,7 +262,7 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
                 )
             )
 
-        table = pl.DataFrame(rows)
+        table = pl.DataFrame(rows).sort(by=PPP_RG_RG_P_COL)
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet"
         table.write_parquet(out_path)
         return FileAsset(out_path)
@@ -248,8 +276,9 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
         index_task: Task,
         ld_ref_task: Task,
         sample_size_task: PppProteinSampleSizeTask,
-        st3_task: Task,
+        st3_task: Task | None = None,
         config: PppRgConfig = PppRgConfig(),
+        trait_pipe: DataProcessingPipe = IdentityPipe(),
     ) -> PppProteinCrossTraitRgTask:
         trait_meta = trait_task.meta
         assert isinstance(
@@ -273,6 +302,7 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
             sample_size_task=sample_size_task,
             st3_task=st3_task,
             config=config,
+            trait_pipe=trait_pipe,
         )
 
 
@@ -295,22 +325,39 @@ def _read_ld(ld_ref_task: Task, fetch: Fetch) -> tuple[pl.DataFrame, float]:
     return read_ld_scores(ld_asset.path)
 
 
+def _get_trait_columns(trait_lazy_df: narwhals.LazyFrame) -> list[str]:
+    schema = trait_lazy_df.collect_schema()
+    has_n = GWASLAB_SAMPLE_SIZE_COLUMN in schema
+    cols = [
+        GWASLAB_RSID_COL,
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+        GWASLAB_BETA_COL,
+        GWASLAB_SE_COL,
+    ]
+    if has_n:
+        cols.append(GWASLAB_SAMPLE_SIZE_COLUMN)
+    return cols
+
+
 def _build_trait_context(
     trait_task: Task,
     context: PppLdscContext,
     context_variants: pl.DataFrame,
     config: PppRgConfig,
     fetch: Fetch,
+    trait_pipe: DataProcessingPipe,
 ) -> TraitLdscContext:
-    trait_df = (
+    trait_lazy_df = trait_pipe.process(
         scan_dataframe_asset(
             fetch(trait_task.asset_id),
             meta=trait_task.meta,
             parquet_backend="polars",
         )
-        .to_native()
-        .collect()
     )
+    trait_cols = _get_trait_columns(trait_lazy_df)
+    trait_lazy_df = trait_lazy_df.select(trait_cols)
+    trait_df = trait_lazy_df.collect().to_polars()
     aligned = align_trait_to_context(
         trait_df,
         context_variants,

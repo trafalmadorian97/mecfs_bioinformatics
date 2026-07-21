@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import numpy as np
 import polars as pl
+import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
@@ -34,6 +35,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 
+logger = structlog.get_logger()
 _CTX_ROW = "__ctx_row__"
 _REF_EA = "__ref_ea__"
 _REF_NEA = "__ref_nea__"
@@ -130,4 +132,5 @@ def align_trait_to_context(
         f"(<= min_trait_snps={min_trait_snps}); this usually means a harmonization failure "
         "in the trait input (wrong genome build, malformed rsIDs, or systematic allele mismatch)"
     )
+    logger.debug(f"Trait matched {present} of {context_variants.height} context SNPs")
     return TraitAligned(z=z, n=n)
