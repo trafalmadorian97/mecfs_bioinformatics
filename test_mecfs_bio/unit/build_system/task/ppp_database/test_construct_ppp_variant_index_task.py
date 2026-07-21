@@ -25,7 +25,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
 )
-from mecfs_bio.constants.ppp_index_constants import (
+from mecfs_bio.constants.ppp_database_constants import (
     PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
     PPP_INDEX_POS_HG19_COL,
 )

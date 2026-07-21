@@ -15,33 +15,35 @@ index.
 Built by intersecting the variant index (rsID) with the reference LD scores (SNP), then
 optionally dropping strand-ambiguous variants and the extended MHC region (on the index's
 primary hg38 POS), and sorting by (chromosome, position).
+
+The reference LD scores arrive as a consolidated dataframe (ConsolidateLDScoresTask), which also
+carries the common-variant count M_5_50 the regression normalizes by, so this module reads
+dataframes rather than the LDSC authors' per-chromosome file layout.
 """
 
 from __future__ import annotations
 
-from pathlib import Path
-
+import narwhals
 import numpy as np
 import polars as pl
 from attrs import frozen
 
+from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
+    LD_SCORE_LD_SCORE_COL,
+    LD_SCORE_RSID_COL,
+    total_m_5_50,
+)
 from mecfs_bio.constants.genomic_coordinate_constants import extended_mhc_interval
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
 )
-from mecfs_bio.constants.ppp_index_constants import (
+from mecfs_bio.constants.ppp_database_constants import (
     PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
 )
 
-# LD-score file schema (standard eur_w_ld_chr / 1000G-phase3 format: SNP, CHR, BP, L2).
-LD_SCORE_SNP_COL = "SNP"
-LD_SCORE_L2_COL = "L2"
-
 # The reference LD scores are hg19-coordinate; the index (and thus our exclusions) use hg38.
-_LD_SCORE_FILENAME_PREFIX = "LDscore."
-_N_AUTOSOMES = 22
 _ROW_POS_COL = "__ctx_row__"
 
 
@@ -84,33 +86,9 @@ class PppLdscContext:
         return int(self.row_pos.shape[0])
 
 
-def read_ld_scores(
-    ld_dir: Path, n_chrom: int = _N_AUTOSOMES
-) -> tuple[pl.DataFrame, float]:
-    """Read LDscore.<chr>.l2.ldscore.gz (SNP, CHR, BP, L2) and .l2.M_5_50 for chromosomes
-    1..n_chrom, returning (ld_df[SNP, L2], m_total). Mirrors the reference-LD-score reading
-    in genomic_sem's _read_ld_scores, but in polars and keeping the file prefix."""
-    frames = []
-    m_total = 0.0
-    for chrom in range(1, n_chrom + 1):
-        score = pl.read_csv(
-            ld_dir / f"{_LD_SCORE_FILENAME_PREFIX}{chrom}.l2.ldscore.gz",
-            separator="\t",
-        ).select(LD_SCORE_SNP_COL, LD_SCORE_L2_COL)
-        frames.append(score)
-        m_val = pl.read_csv(
-            ld_dir / f"{_LD_SCORE_FILENAME_PREFIX}{chrom}.l2.M_5_50",
-            separator="\t",
-            has_header=False,
-        )
-        m_total += float(m_val.to_numpy().sum())
-    return pl.concat(frames), m_total
-
-
 def build_ppp_ldsc_context(
     index_df: pl.DataFrame,
     ld_df: pl.DataFrame,
-    m_total: float,
     *,
     drop_strand_ambiguous: bool = True,
     exclude_mhc: bool = True,
@@ -120,12 +98,20 @@ def build_ppp_ldsc_context(
     index_df: the variant index, with columns CHR, POS (hg38), rsID, and
         is_strand_ambiguous, in its canonical row order (row i aligns to row i of every
         slim file).
-    ld_df: reference LD scores with columns SNP (rsID) and L2.
-    m_total: total reference-SNP count (sum of M_5_50).
+    ld_df: consolidated reference LD scores with columns CHR, SNP (rsID), L2 and M_5_50.
+
+    M is taken from the LD scores BEFORE the join, since it counts reference variants and must
+    not shrink to the subset the index happens to cover.
     """
+    m_total = total_m_5_50(narwhals.from_native(ld_df, eager_only=True))
     joined = (
         index_df.with_row_index(_ROW_POS_COL)
-        .join(ld_df, left_on=GWASLAB_RSID_COL, right_on=LD_SCORE_SNP_COL, how="inner")
+        .join(
+            ld_df.select(LD_SCORE_RSID_COL, LD_SCORE_LD_SCORE_COL),
+            left_on=GWASLAB_RSID_COL,
+            right_on=LD_SCORE_RSID_COL,
+            how="inner",
+        )
         .sort([GWASLAB_CHROM_COL, GWASLAB_POS_COL])
     )
     if drop_strand_ambiguous:
@@ -141,7 +127,7 @@ def build_ppp_ldsc_context(
 
     return PppLdscContext(
         row_pos=joined[_ROW_POS_COL].to_numpy().astype(np.int64),
-        ld=joined[LD_SCORE_L2_COL].to_numpy().astype(float),
+        ld=joined[LD_SCORE_LD_SCORE_COL].to_numpy().astype(float),
         chrom=joined[GWASLAB_CHROM_COL].to_numpy().astype(np.int64),
         pos=joined[GWASLAB_POS_COL].to_numpy().astype(np.int64),
         m=m_total,

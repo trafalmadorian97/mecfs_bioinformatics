@@ -32,3 +32,22 @@ PPP_H2_N_BAR_COL = "n_bar"
 PppVariantSet = Literal["all_variants", "cis_excluded"]
 PPP_VARIANT_SET_ALL: PppVariantSet = "all_variants"
 PPP_VARIANT_SET_CIS_EXCLUDED: PppVariantSet = "cis_excluded"
+
+# --- Cross-trait genetic-correlation table (one row per protein) ---
+# The trait-vs-protein genetic correlation (rg) with its jackknife SE and the two
+# heritabilities it is built from. gcov is the genetic covariance (rg numerator) and
+# gcov_intercept its cross-trait LDSC intercept (a sample-overlap diagnostic).
+PPP_RG_OID_COL = "oid"
+PPP_RG_GENE_COL = "gene"
+PPP_RG_VARIANT_SET_COL = "variant_set"
+PPP_RG_RG_COL = "rg"
+PPP_RG_RG_SE_COL = "rg_se"
+PPP_RG_RG_Z_COL = "rg_z"
+PPP_RG_RG_P_COL = "rg_p"
+PPP_RG_GCOV_COL = "gcov"
+PPP_RG_GCOV_INTERCEPT_COL = "gcov_intercept"
+PPP_RG_H2_TRAIT_COL = "h2_trait"
+PPP_RG_H2_PROTEIN_COL = "h2_protein"
+PPP_RG_N_SNPS_COL = "n_snps"
+PPP_RG_N_BAR_TRAIT_COL = "n_bar_trait"
+PPP_RG_N_BAR_PROTEIN_COL = "n_bar_protein"

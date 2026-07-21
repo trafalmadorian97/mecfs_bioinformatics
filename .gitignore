@@ -289,3 +289,7 @@ experiments/claude/pops_standalone/
 # no pdfs
 
 *.pdf
+
+
+#  No parquet datafiles
+*.parquet

@@ -52,6 +52,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.constants.ppp_database_constants import Oid, SynID
 from mecfs_bio.constants.regenie_constants import (
     REGENIE_ALLELE0_COL,
     REGENIE_ALLELE1_COL,
@@ -284,10 +285,10 @@ class PppProteinFile:
 
     gene: str
     uniprot: str
-    oid: str
+    oid: Oid
     version: str
     panel: str
-    synid: str
+    synid: SynID
 
     @property
     def tar_filename(self) -> str:

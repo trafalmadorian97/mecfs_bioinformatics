@@ -16,13 +16,11 @@ from __future__ import annotations
 from pathlib import Path, PurePath
 
 import numpy as np
-import openpyxl
 import polars as pl
 import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
-from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -32,7 +30,10 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
-from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
+from mecfs_bio.build_system.task.base_task import (
+    GeneratingTask,
+    Task,
+)
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     BuildSlimProteinParquetTask,
 )
@@ -44,12 +45,13 @@ from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import (
     BatchedH2Result,
     batched_h2,
 )
+from mecfs_bio.build_system.task.ppp_ldsc.gene_coords import read_gene_coords
 from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
     PppLdscContext,
     build_cis_mask,
     build_ppp_ldsc_context,
-    read_ld_scores,
 )
+from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -59,7 +61,11 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
-from mecfs_bio.constants.ppp_index_constants import PPP_INDEX_IS_STRAND_AMBIGUOUS_COL
+from mecfs_bio.constants.ppp_database_constants import (
+    PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
+    Oid,
+    SynID,
+)
 from mecfs_bio.constants.ppp_ldsc_constants import (
     PPP_H2_GENE_COL,
     PPP_H2_H2_COL,
@@ -86,13 +92,6 @@ _INDEX_CONTEXT_COLUMNS = [
     GWASLAB_RSID_COL,
     PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
 ]
-
-# Sun et al. 2023 supplementary sheet / column labels (hg38 gene coordinates).
-_ST3_SHEET = "ST3"
-_ST3_OLINK_ID_COL = "Olink ID"
-_ST3_GENE_CHROM_COL = "Gene CHROM"
-_ST3_GENE_START_COL = "Gene start"
-_ST3_GENE_END_COL = "Gene end"
 
 
 @frozen
@@ -124,70 +123,26 @@ def constant_sample_size(n_at_context: np.ndarray, label: str) -> float:
     return float(unique[0])
 
 
-def _parse_chrom(value: object) -> int | None:
-    """Chromosome label -> int (X -> 23); None for unparseable/non-standard labels.
-
-    NOTE:
-        - There are a few "proteins" in PPP that are actually multi-protein complexes.
-        - These multi-protein complexes do not correspond to a unique gene on a single chromosome.
-        - In the Excel sheet, these proteins have entries in the chromosome column like chrom1;chrom2
-        - We return None for these proteins.
-
-    """
-    text = str(value).strip()
-    if text.isdigit():
-        return int(text)
-    if text.upper() == "X":
-        return 23
-    return None
-
-
-def read_st3_gene_coords(xlsx_path: Path) -> dict[str, GenomicInterval]:
-    """Map Olink ID (OID) -> hg38 gene coordinates from Sun et al. 2023 supplementary ST3.
-
-    Proteins whose chromosome label is non-standard are skipped (they then get only the
-    all-variants heritability row)."""
-    workbook = openpyxl.load_workbook(xlsx_path, read_only=True, data_only=True)
-    sheet = workbook[_ST3_SHEET]
-    header_index: dict[str, int] | None = None
-    coords: dict[str, GenomicInterval] = {}
-    for row in sheet.iter_rows(values_only=True):
-        if header_index is None:
-            if row and _ST3_OLINK_ID_COL in row:
-                header_index = {
-                    str(name): i for i, name in enumerate(row) if name is not None
-                }
-            continue
-        oid = row[header_index[_ST3_OLINK_ID_COL]]
-        chrom = _parse_chrom(row[header_index[_ST3_GENE_CHROM_COL]])
-        start = row[header_index[_ST3_GENE_START_COL]]
-        end = row[header_index[_ST3_GENE_END_COL]]
-        if oid is None or chrom is None or start is None or end is None:
-            continue
-        coords[str(oid)] = GenomicInterval(chrom=chrom, start=int(start), end=int(end))
-    assert header_index is not None, f"could not find header row in sheet {_ST3_SHEET}"
-    return coords
-
-
 @frozen
 class PppProteinHeritabilityTask(GeneratingTask):
     """Compute all-variants and cis-excluded LDSC heritability for every UKB-PPP protein.
 
     protein_tasks: the slim per-protein beta/se tasks (aligned to index_task).
     index_task: the shared ConstructPppVariantIndexTask (variant identity / rsID / alleles).
-    ld_ref_task: an extracted reference LD-score directory (LDscore.<chr>.l2.* files).
+    ld_scores_task: consolidated reference LD scores (ConsolidateLDScoresTask: CHR, SNP, L2,
+        M_5_50).
     sample_size_task: the per-protein N table (PppProteinSampleSizeTask), or None to read the
         constant per-protein N from the slim parquet's sample-size column instead (which fails
         if the slim files were built without one, i.e. include_sample_size=False).
-    st3_task: Sun et al. 2023 supplementary xlsx (ST3 hg38 gene coordinates).
+    gene_coords_task: the extracted Sun et al. 2023 ST3 sheet (hg38 gene coordinates).
     """
 
     meta: Meta
     protein_tasks: tuple[BuildSlimProteinParquetTask, ...]
     index_task: Task
-    ld_ref_task: Task
+    ld_scores_task: Task
     sample_size_task: PppProteinSampleSizeTask | None
-    st3_task: Task
+    gene_coords_task: Task
     config: PppHeritabilityConfig
 
     @property
@@ -195,21 +150,23 @@ class PppProteinHeritabilityTask(GeneratingTask):
         tasks: list[Task] = [
             *self.protein_tasks,
             self.index_task,
-            self.ld_ref_task,
-            self.st3_task,
+            self.ld_scores_task,
+            self.gene_coords_task,
         ]
         if self.sample_size_task is not None:
             tasks.append(self.sample_size_task)
         return tasks
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        context = _build_context(self.index_task, self.ld_ref_task, self.config, fetch)
+        context = _build_context(
+            self.index_task, self.ld_scores_task, self.config, fetch
+        )
         sample_sizes = (
             _read_sample_sizes(self.sample_size_task, fetch)
             if self.sample_size_task is not None
             else None
         )
-        gene_coords = read_st3_gene_coords(_st3_path(self.st3_task, fetch))
+        gene_coords = read_gene_coords(_read_table(self.gene_coords_task, fetch))
         logger.info(
             "built ppp ldsc context",
             n_snps=context.n_snps,
@@ -238,11 +195,17 @@ class PppProteinHeritabilityTask(GeneratingTask):
         asset_id: str,
         protein_tasks: tuple[BuildSlimProteinParquetTask, ...],
         index_task: Task,
-        ld_ref_task: Task,
+        ld_scores_task: Task,
         sample_size_task: PppProteinSampleSizeTask | None,
-        st3_task: Task,
+        gene_coords_task: Task,
         config: PppHeritabilityConfig = PppHeritabilityConfig(),
     ) -> PppProteinHeritabilityTask:
+        assert produces_dataframe(ld_scores_task), (
+            f"ld_scores_task {ld_scores_task.asset_id} must produce a dataframe "
+        )
+        assert produces_dataframe(gene_coords_task), (
+            f"gene_coords_task {gene_coords_task.asset_id} must produce a dataframe "
+        )
         meta = ResultTableMeta(
             id=asset_id,
             trait="ukbb_ppp",
@@ -255,16 +218,16 @@ class PppProteinHeritabilityTask(GeneratingTask):
             meta=meta,
             protein_tasks=protein_tasks,
             index_task=index_task,
-            ld_ref_task=ld_ref_task,
+            ld_scores_task=ld_scores_task,
             sample_size_task=sample_size_task,
-            st3_task=st3_task,
+            gene_coords_task=gene_coords_task,
             config=config,
         )
 
 
 def _build_context(
     index_task: Task,
-    ld_ref_task: Task,
+    ld_scores_task: Task,
     config: PppHeritabilityConfig,
     fetch: Fetch,
 ) -> PppLdscContext:
@@ -278,13 +241,9 @@ def _build_context(
         .select(_INDEX_CONTEXT_COLUMNS)
         .collect()
     )
-    ld_asset = fetch(ld_ref_task.asset_id)
-    assert isinstance(ld_asset, DirectoryAsset)
-    ld_df, m_total = read_ld_scores(ld_asset.path)
     return build_ppp_ldsc_context(
         index_df,
-        ld_df,
-        m_total,
+        _read_table(ld_scores_task, fetch),
         drop_strand_ambiguous=config.drop_strand_ambiguous,
         exclude_mhc=config.exclude_mhc,
     )
@@ -292,7 +251,7 @@ def _build_context(
 
 def _read_sample_sizes(
     sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
-) -> dict[str, int]:
+) -> dict[SynID, int]:
     """Synapse id -> sample size N from the sample-size table. The oid/gene it also carries
     are ignored here: they come from each protein task's structured identity instead."""
     table = (
@@ -310,17 +269,24 @@ def _read_sample_sizes(
     }
 
 
-def _st3_path(st3_task: Task, fetch: Fetch) -> Path:
-    asset = fetch(st3_task.asset_id)
-    assert isinstance(asset, FileAsset)
-    return asset.path
+def _read_table(task: Task, fetch: Fetch) -> pl.DataFrame:
+    """A dependency's whole dataframe asset, in memory."""
+    return (
+        scan_dataframe_asset(
+            fetch(task.asset_id),
+            meta=task.meta,
+            parquet_backend="polars",
+        )
+        .to_native()
+        .collect()
+    )
 
 
 def _process_batch(
     batch: list[BuildSlimProteinParquetTask],
     context: PppLdscContext,
-    sample_sizes: dict[str, int] | None,
-    gene_coords: dict[str, GenomicInterval],
+    sample_sizes: dict[SynID, int] | None,
+    gene_coords: dict[Oid, GenomicInterval],
     config: PppHeritabilityConfig,
     fetch: Fetch,
 ) -> list[dict]:
@@ -415,9 +381,9 @@ def _read_protein_chi2(
 
 
 def _build_cis_exclude(
-    oids: list[str],
+    oids: list[Oid],
     context: PppLdscContext,
-    gene_coords: dict[str, GenomicInterval],
+    gene_coords: dict[Oid, GenomicInterval],
     cis_window_bp: int,
 ) -> np.ndarray:
     exclude = np.zeros((context.n_snps, len(oids)), dtype=bool)
