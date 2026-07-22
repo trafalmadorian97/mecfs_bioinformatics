@@ -36,7 +36,14 @@
         "actions/cache",
         "actions/setup-python",
         "dorny/paths-filter",
-        "actionlint"
+        "actionlint",
+        "narwhals",
+        "polars",
+        "structlog",
+        "tqdm",
+        "invoke",
+        "ruff",
+        "typeguard"
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
