@@ -24,4 +24,7 @@ The x-axis corresponds to HBA cluster number[@siletti2023transcriptomic], while 
 {{ markdown_table("docs/_figs/decode_me_hba_magma_tasks_hba_magma_independent_clusters_markdown.mdx", title="Independent Clusters") }}⏎                      
 
 
+The independent significance of the "Eccentric Medium Spiny Neuron" (EMSN) cluster is interesting.  As discussed in [this blog post](https://mecfsscience.org/cell-and-tissue-enrichment-in-me-cfs/) the EMSN is a relatively newly-discovered cell type that shows up in a few alternative cell-type-enrichment analyses of DecodeME.
+
+
 [^matrix_prep]:  Duncan et al.[@duncan2025mapping] first log-transform the raw RNAseq matrix, and then row-normalize it.  Note that this differs from the FUMA approach.  See the Section "Gene expression data" from their paper.  See also their [GitHub repo](https://github.com/Integrative-Mental-Health-Lab/linking_cell_types_to_brain_phenotypes?tab=readme-ov-file).
