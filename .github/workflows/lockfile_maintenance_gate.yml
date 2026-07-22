@@ -1,10 +1,4 @@
 name: lockfile_maintenance_gate
-# Runs the standard decodeme system test ONLY on Renovate's lockFileMaintenance
-# PRs (branch `renovate/lock-file-maintenance`). On every other PR the job is
-# skipped, so normal PRs are unaffected. With `platformAutomerge: false` on the
-# lockFileMaintenance rule, Renovate-managed automerge blocks on all check runs
-# present on the branch head -- including this one -- so a failure here prevents
-# the lock refresh from automerging. See renovate.json.
 on:
   pull_request:
     branches:
