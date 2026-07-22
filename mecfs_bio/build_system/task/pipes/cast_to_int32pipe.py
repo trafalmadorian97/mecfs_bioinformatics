@@ -5,12 +5,12 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 
 
 @frozen
-class CastFloatsToFloat32Pipe(DataProcessingPipe):
+class CastIntsToInt32Pipe(DataProcessingPipe):
     """
-    Convert all float64 columns to float32
+    Convert all int64 to int32
     """
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         return x.with_columns(
-            narwhals.selectors.by_dtype(narwhals.Float64).cast(narwhals.Float32)
+            narwhals.selectors.by_dtype(narwhals.Int64).cast(narwhals.Int32)
         )

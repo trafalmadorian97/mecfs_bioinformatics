@@ -24,7 +24,7 @@ from mecfs_bio.build_system.task.pipes.attenuation_ratio_pipe import (
     AttenuationRatioPipe,
 )
 from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
-from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import CastToFloat32Pipe
+from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import CastFloatsToFloat32Pipe
 from mecfs_bio.build_system.task.pipes.compute_p_from_beta_se import (
     ComputePFromBetaSEPipeIfNeeded,
 )
@@ -56,7 +56,7 @@ HAPMAP_3_PPP_HERITABILITY_FIGURE_TABLE = PipeDataFrameTask.create(
             mean_chi_col=PPP_H2_MEAN_CHI2_COL, intercept_col=PPP_H2_INTERCEPT_COL
         ),
         DropColPipe([PPP_H2_LAMBDA_GC_COL]),
-        CastToFloat32Pipe(),  # the input data for PPP LDSC is float32, so it is reasonable to cast the output to float32 as well
+        CastFloatsToFloat32Pipe(),  # the input data for PPP LDSC is float32, so it is reasonable to cast the output to float32 as well
     ],
     out_format=ParquetOutFormat(
         write_options=ParquetWriteOptions(

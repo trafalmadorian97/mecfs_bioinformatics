@@ -13,13 +13,13 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 
 def go():
     DEFAULT_RUNNER.run(
-        targets=[
+        targets=
             # SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap
             # SEROPOSITIVE_RA_PPP_RG_TASKS.rg_task
-            SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED.rg_task
-        ],
+            SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED.get_terminal_tasks()
+        ,
         must_rebuild_transitive=[
-            THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_CONSOLIDATE
+            # THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_CONSOLIDATE
             # SEROPOS_RA_FILTERED_FOR_FREQ,
         ],
     )
