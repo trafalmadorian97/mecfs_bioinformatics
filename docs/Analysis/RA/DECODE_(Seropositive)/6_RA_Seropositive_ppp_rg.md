@@ -5,6 +5,7 @@ I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinfo
 
 Note that because of its assumptions of uniform polygenicity, CT-LDSC mostly measures genetic correlation due to diffuse polygenic effects.  It does not accurately measure genetic correlation due to highly-concentrated locus-specific effects.
 
+## Results
 
 As is standard for LDSC analysis, I restricted to the statistics to Hapmap3 variants, and excluded the MHC region.  I used the standard thousand genomes linkage disequilibrium scores provided by the authors of LDSC. Because my [previous heritability experiment](../../Proteomics/UKBB_PPP/PPP_LDSC.md) suggested little difference between using all SNPs and excluding the cis-region near the protein of interest, I only ran this experiment with the cis region excluded.
 
@@ -21,6 +22,8 @@ The proteins with the most significant genetic correlations are consistent with 
 
 
 These results are impressive, but it is important to keep in mind the limitations of the quantity we are calculating.  A significant genetic correlation tells us that there is a partially shared genetic architecture between rheumatoid arthritis and the plasma level of a protein of interest. However,
+
+## Caveats
 
 - A significant genetic correlation does not directly inform us about the causal relationship between RA and the protein.
 - 
