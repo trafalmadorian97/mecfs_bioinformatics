@@ -1,0 +1,19 @@
+name: lockfile_maintenance_gate
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  lead_variants:
+    if: github.head_ref == 'renovate/lock-file-maintenance'
+    timeout-minutes: 600
+    name: Compute Lead Variants
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7
+      - name: Run lead variants integration test
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_decode_me_initial_analysis.py
