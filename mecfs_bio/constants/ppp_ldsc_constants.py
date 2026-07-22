@@ -56,5 +56,5 @@ PPP_RG_N_BAR_PROTEIN_COL = "n_bar_protein"
 # A protein measured on several Olink panels contributes several assay rows (same UniProt,
 # different OID); the collapse combines them (see CollapseMultiAssayProteinsPipe). n_assays is
 # how many assay rows were combined; rg_spread is their max-min rg (a discordance diagnostic).
-PPP_RG_N_ASSAYS_COL = "n_assays"
-PPP_RG_RG_SPREAD_COL = "rg_spread"
+PPP_RG_N_ASSAYS_COL = "n_a"
+PPP_RG_RG_SPREAD_COL = "spr"

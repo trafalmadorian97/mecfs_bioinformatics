@@ -129,12 +129,12 @@ class CollapseMultiAssayProteinsPipe(DataProcessingPipe):
             PPP_RG_RG_COL,
             PPP_RG_RG_SE_COL,
             PPP_RG_RG_P_COL,
-            PPP_RG_RG_SPREAD_COL,
-            PPP_RG_N_ASSAYS_COL,
             PPP_RG_GCOV_COL,
             PPP_RG_GCOV_INTERCEPT_COL,
             PPP_RG_H2_TRAIT_COL,
             PPP_RG_H2_PROTEIN_COL,
             PPP_RG_N_SNPS_COL,
+            PPP_RG_RG_SPREAD_COL,
+            PPP_RG_N_ASSAYS_COL,
         ).sort(PPP_RG_RG_P_COL)
         return narwhals.from_native(ordered).lazy()
