@@ -24,7 +24,9 @@ from mecfs_bio.build_system.task.pipes.attenuation_ratio_pipe import (
     AttenuationRatioPipe,
 )
 from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
-from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import CastFloatsToFloat32Pipe
+from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import (
+    CastFloatsToFloat32Pipe,
+)
 from mecfs_bio.build_system.task.pipes.compute_p_from_beta_se import (
     ComputePFromBetaSEPipeIfNeeded,
 )

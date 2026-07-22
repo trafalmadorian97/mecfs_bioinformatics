@@ -1,7 +1,9 @@
 import narwhals
 import polars as pl
 
-from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import CastFloatsToFloat32Pipe
+from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import (
+    CastFloatsToFloat32Pipe,
+)
 
 
 def test_cast_to_float32():

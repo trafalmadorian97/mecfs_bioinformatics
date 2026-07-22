@@ -6,11 +6,9 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 
 @frozen
 class DropNanPipe(DataProcessingPipe):
-    cols: list[str] = None
+    cols: list[str]
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         for col in self.cols:
-            x= x.filter(
-                ~ narwhals.col(col).is_nan()
-            )
+            x = x.filter(~narwhals.col(col).is_nan())
         return x

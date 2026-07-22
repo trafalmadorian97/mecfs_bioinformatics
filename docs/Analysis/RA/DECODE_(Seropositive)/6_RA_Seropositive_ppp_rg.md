@@ -1,6 +1,6 @@
 # PPP Genetic Correlation
 
-I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate genetic correlation between the DECODE meta-GWAS of seropositive rheumatoid arthritis[@saevarsdottir2022multiomics] and proteomic GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
+I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the DECODE meta-GWAS of seropositive rheumatoid arthritis[@saevarsdottir2022multiomics] and proteomic GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
 
 
 Note that because of its assumptions of uniform polygenicity, CT-LDSC mostly measures genetic correlation due to diffuse polygenic effects.  It does not accurately measure genetic correlation due to highly-concentrated locus-specific effects.
@@ -21,9 +21,7 @@ The proteins with the most significant genetic correlations are consistent with 
 - [TNFRSF9](https://en.wikipedia.org/wiki/TNFRSF9) and [PDCD1](https://en.wikipedia.org/wiki/Programmed_cell_death_protein_1) are important immune checkpoint molecules.
 
 
-These results are impressive, but it is important to keep in mind the limitations of the quantity we are calculating.  A significant genetic correlation tells us that there is a partially shared genetic architecture between rheumatoid arthritis and the plasma level of a protein of interest. However,
-
 ## Caveats
 
-- A significant genetic correlation does not directly inform us about the causal relationship between RA and the protein.
-- 
+These results are impressive, but it is important to keep in mind the limitations of the quantity we are calculating.  A significant genetic correlation tells us that there is a partially shared genetic architecture between rheumatoid arthritis and the plasma level of a protein of interest. However, genetic correlation by itself tells us nothing about the causal relationship between the protein and the trait.
+

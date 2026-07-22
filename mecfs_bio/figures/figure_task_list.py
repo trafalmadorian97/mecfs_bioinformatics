@@ -129,8 +129,9 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seronegative.analysis.ra_seronegative_standard_analysis import (
     SERONEGATIVE_RA_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_rg import \
-    SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED
+from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_rg import (
+    SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_standard_analysis import (
     SEROPOSITIVE_RA_STANDARD_ANALYSIS,
 )
