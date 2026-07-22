@@ -1,5 +1,6 @@
 from collections import Counter
 
+import narwhals
 from attrs import frozen
 
 from mecfs_bio.assets.gwas.ukbb_ppp.ppp_database.hapmap3.eur_discovery_hapmap3_ppp_database_protein_files import (
@@ -37,17 +38,21 @@ from mecfs_bio.build_system.task.pipes.filter_rows_by_min_in_col import (
     FilterRowsByMinInCol,
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.pipes.multiple_testing_pipe import MultipleTestingPipe
+from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
+from mecfs_bio.build_system.task.pipes.replace_pipe import ReplaceStrictPipe
 from mecfs_bio.build_system.task.ppp_ldsc.ppp_protein_rg_task import (
     PppProteinCrossTraitRgTask,
     PppRgConfig,
 )
 from mecfs_bio.constants.ppp_ldsc_constants import (
+    PPP_RG_GCOV_INTERCEPT_COL,
     PPP_RG_H2_PROTEIN_COL,
-    PPP_RG_N_BAR_PROTEIN_COL,
-    PPP_RG_N_BAR_TRAIT_COL,
+    PPP_RG_N_ASSAYS_COL,
     PPP_RG_RG_COL,
+    PPP_RG_RG_P_COL,
     PPP_RG_RG_SE_COL,
-    PPP_RG_RG_Z_COL,
+    PPP_RG_VARIANT_SET_COL,
     PPP_VARIANT_SET_CIS_EXCLUDED,
 )
 
@@ -86,7 +91,7 @@ def generate_ppp_rg_assets(
     trait_task: Task,
     config: PppRgConfig = PppRgConfig(),
     trait_pipe: DataProcessingPipe = IdentityPipe(),
-):
+) -> PppRgTasks:
     rg_task = PppProteinCrossTraitRgTask.create(
         asset_id=base_name + "_rg_task",
         trait_task=trait_task,
@@ -107,18 +112,38 @@ def generate_ppp_rg_assets(
     display_frame_task = PipeDataFrameTask.create(
         source_task=rg_task,
         pipes=[
-            DropColPipe(
-                [PPP_RG_RG_Z_COL, PPP_RG_N_BAR_PROTEIN_COL, PPP_RG_N_BAR_TRAIT_COL]
-            ),
-            DropNanPipe(cols=[PPP_RG_RG_COL, PPP_RG_RG_SE_COL]),
             # Combine assay rows of the same protein (measured on multiple Olink panels) into one
             # row before ranking/filtering
             CollapseMultiAssayProteinsPipe(
                 duplicate_oid_to_group=_duplicate_oid_to_uniprot()
             ),
+            ReplaceStrictPipe(
+                target_column=PPP_RG_RG_P_COL,
+                new_column_name=PPP_RG_RG_P_COL,
+                replace_mapping={float("nan"): 1},
+                default=narwhals.col(PPP_RG_RG_P_COL),
+            ),  # nan values contaminate the multiple testing correction
+            MultipleTestingPipe(
+                p_col=PPP_RG_RG_P_COL, reject_name="s_bh", method="fdr_bh"
+            ),
+            MultipleTestingPipe(
+                p_col=PPP_RG_RG_P_COL, reject_name="s_bon", method="bonferroni"
+            ),
+            DropNanPipe(cols=[PPP_RG_RG_COL, PPP_RG_RG_SE_COL]),
             FilterRowsByMinInCol(min_value=0.02, col=PPP_RG_H2_PROTEIN_COL),
+            DropColPipe(
+                [
+                    # PPP_RG_RG_Z_COL, PPP_RG_N_BAR_PROTEIN_COL, PPP_RG_N_BAR_TRAIT_COL,
+                    PPP_RG_VARIANT_SET_COL,
+                    PPP_RG_N_ASSAYS_COL,  # PPP_RG_N_SNPS_COL
+                ]
+            ),
             CastFloatsToFloat32Pipe(),
             CastIntsToInt32Pipe(),
+            RenameColPipe(
+                PPP_RG_GCOV_INTERCEPT_COL, "inter"
+            ),  # shorten column names so table fits on screen in docs
+            RenameColPipe(PPP_RG_H2_PROTEIN_COL, "h2_prot"),
         ],
         asset_id=base_name + "_display_frame",
         out_format=ParquetOutFormat(

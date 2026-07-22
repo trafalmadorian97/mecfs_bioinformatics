@@ -11,10 +11,11 @@ class ReplaceStrictPipe(DataProcessingPipe):
     target_column: str
     new_column_name: str
     replace_mapping: Mapping
+    default: narwhals.Expr | None = None
 
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         return x.with_columns(
             narwhals.col(self.target_column)
-            .replace_strict(self.replace_mapping)
+            .replace_strict(self.replace_mapping, default=self.default)
             .alias(self.new_column_name)
         )
