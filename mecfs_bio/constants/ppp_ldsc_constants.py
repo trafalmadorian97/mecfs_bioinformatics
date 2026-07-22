@@ -51,3 +51,10 @@ PPP_RG_H2_PROTEIN_COL = "h2_protein"
 PPP_RG_N_SNPS_COL = "n_snps"
 PPP_RG_N_BAR_TRAIT_COL = "n_bar_trait"
 PPP_RG_N_BAR_PROTEIN_COL = "n_bar_protein"
+
+# --- Extra columns added when the per-assay rg table is collapsed to one row per protein ---
+# A protein measured on several Olink panels contributes several assay rows (same UniProt,
+# different OID); the collapse combines them (see CollapseMultiAssayProteinsPipe). n_assays is
+# how many assay rows were combined; rg_spread is their max-min rg (a discordance diagnostic).
+PPP_RG_N_ASSAYS_COL = "n_assays"
+PPP_RG_RG_SPREAD_COL = "rg_spread"
