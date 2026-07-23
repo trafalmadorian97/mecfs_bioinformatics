@@ -3,7 +3,7 @@
 # Project Outline
 ## Overview
 
-OnThe ME/CFS Biostatistics repo is a home for reproducible, open-source analysis of datasets pertaining to ME/CFS and other poorly-understood diseases.
+The ME/CFS Biostatistics repo is a home for reproducible, open-source analysis of datasets pertaining to ME/CFS and other poorly-understood diseases.
 
 ## Principles
 
