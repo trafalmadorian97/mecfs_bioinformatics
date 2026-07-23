@@ -25,7 +25,7 @@ To validate my results, I compared the all-variant heritabilities reported above
 As for stratification, the intercept and attenuation ratios generally indicate a low stratification effect for the proteins with strong polygenic heritability.  For some of the proteins with weaker polygenic heritability, there is evidence of a stratification effect.
 
 
-It is interesting to note that the all-variant and cis-excluded heritabilities are generally very similar.  In part, this can be explained by the implementation of LDSC we are using, which, consistent with LDSC's polygenic model, filters SNPs whose $\chi^2$ score exceeds $\max (0.001·N, 80) $.  Thus if proteins have large heritability spikes in their cis regions, these will be filtered out automatically even when we include all variants.
+It is interesting to note that the all-variant and cis-excluded heritabilities are generally very similar.  In part, this can be explained by the implementation of LDSC we are using, which, consistent with LDSC's polygenic model, filters SNPs whose $\chi^2$ score exceeds $\mathrm{max}(0.001 N, 80)$.  Thus if proteins have large heritability spikes in their cis regions, these will be filtered out automatically even when we include all variants.
 
 
 [//]: # (This suggests that, consistent with LDSC model, even when it is provided with summary statistics containing highly localized signal spikes, LDSC will mostly ignore these spikes and compute heritability from a diffuse polygenic signal.  This )
