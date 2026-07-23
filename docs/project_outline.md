@@ -3,7 +3,7 @@
 # Project Outline
 ## Overview
 
-The ME/CFS Biostatistics repo is a home for reproducible, open-source analysis of datasets pertaining to ME/CFS and other poorly-understood diseases.
+OnThe ME/CFS Biostatistics repo is a home for reproducible, open-source analysis of datasets pertaining to ME/CFS and other poorly-understood diseases.
 
 ## Principles
 
@@ -25,3 +25,7 @@ One such challenge is the tendency of new features to break previously-developed
 
 
 
+## AI Usage Rules
+
+- **AI for coding**:  There can be no doubt that AI coding agents are productivity-enhancing.  However, current agents demonstrate what has been called "jagged intelligence"\footnote{The phrase was coined by Andrej Karpathy.}: they can exhibit superhuman capabilities on one task and then make obvious mistakes on another.  For this reason, **AI-written code must be reviewed and understood in detail by a human.** 
+- **AI should not be used to generate write-ups for the `docs/` directory**: readers need to be able to trust that the discussions and analyses on the ME/CFS Bioinformatic site correspond to the thoughts of a human.

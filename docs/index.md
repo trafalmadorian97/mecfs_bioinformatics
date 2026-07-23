@@ -1,4 +1,4 @@
-# ME/CFS Bioinformatics Repository
+# ME/CFS Bioinformatics Home
 
 Welcome.  The ME/CFS Biostatistics repo is a home for reproducible, open-source analysis of biostatistical datasets pertaining to ME/CFS.
 
