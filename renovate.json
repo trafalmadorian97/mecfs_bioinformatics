@@ -53,6 +53,5 @@
     "enabled": true,
     "schedule": ["before 4am on saturday"],
     "automerge": true,
-    "platformAutomerge": false
   }
 }
