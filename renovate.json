@@ -36,15 +36,7 @@
         "actions/cache",
         "actions/setup-python",
         "dorny/paths-filter",
-        "actionlint"
-      ],
-      "matchUpdateTypes": ["major","minor", "patch"],
-      "automerge": true
-    },
-    {
-      "description": "Leaf deps with no dependents: pin exactly so every release gets its own PR. Do NOT add tightly-coupled scientific-stack packages (numpy, pandas, matplotlib, scipy, xarray) here -- gwaslab constrains them, and per-package pin PRs would be individually unsatisfiable.",
-      "matchManagers": ["pixi"],
-      "matchPackageNames": [
+        "actionlint",
         "narwhals",
         "polars",
         "structlog",
@@ -53,7 +45,8 @@
         "ruff",
         "typeguard"
       ],
-      "rangeStrategy": "pin"
+      "matchUpdateTypes": ["major","minor", "patch"],
+      "automerge": true
     }
   ],
   "lockFileMaintenance": {
