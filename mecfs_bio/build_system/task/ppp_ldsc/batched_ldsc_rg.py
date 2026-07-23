@@ -58,9 +58,49 @@ def _chisq_threshold(n: np.ndarray | float) -> np.ndarray:
 
 
 def _solve(sums: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-    """Solve the 2x2 weighted normal equations for design [ld, 1] from the packed block sums
-    (a, b, d, e, f) = (sum w*ld^2, sum w*ld, sum w, sum w*ld*y, sum w*y). Returns (slope,
-    intercept), broadcasting over any leading axes."""
+    r"""Solve the 2x2 weighted normal equations for design [ld, 1] from the packed block sums
+       (a, b, d, e, f) = (sum w*ld^2, sum w*ld, sum w, sum w*ld*y, sum w*y). Returns (slope,
+       intercept), broadcasting over any leading axes.
+
+       NOTES:
+
+       This solves the 2x2 weighted normal equations.
+       We have:
+
+       The weighted normal equations are
+
+       A^TWy = A^TWAb
+
+       In our case:
+
+       A = [L  1] \in \R^{nx2}
+       A^TWY = [L^T]   W   y
+               [1^T]
+             = [L^TWy]
+               [1^TWy]
+
+             =:[e]     \in R^2
+               [f]
+
+
+       A^TWA  =  [L^T] W   [ L  1]
+                 [1^T]
+              =  [ L^TWL     L^TW1]
+                [ 1^TWL     1^Twq]
+              =: [a   b]    \in R^{2x2}
+                 [c   d]
+
+
+
+        (A^TWA)^{-1} = 1/(ad-b^2)    [d    -b]
+                                     [-b    a]
+
+
+        (A^TWA)^{-1}A^TWY = 1/(ad-b^2)  [de-bf]
+                                        [af-be]
+
+    Which is the solution of the normal equations
+    """
     a, b, d, e, f = (sums[..., j] for j in range(5))
     det = a * d - b * b
     slope = (d * e - b * f) / det
