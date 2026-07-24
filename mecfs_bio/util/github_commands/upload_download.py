@@ -2,6 +2,7 @@ import json
 import shutil
 import tempfile
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from subprocess import CalledProcessError
 
@@ -224,6 +225,55 @@ def upload_blob_to_release(
             repo_name,
         ]
         execute_command(cmd=cmd)
+
+
+def download_release_assets_chunked(
+    release_tag: str,
+    repo_name: str,
+    asset_names: list[str],
+    dest_dir: Path,
+    chunk_size: int = 20,
+    chunk_workers: int = 4,
+) -> None:
+    """
+    Download many named assets from a release into dest_dir, writing one file
+    per asset name.
+
+    Assets are fetched in chunks: each chunk is a single gh release download
+    invocation with one repeated --pattern per asset name, which amortizes gh's
+    per-call process startup and release-asset-list lookup over the whole chunk
+    (a per-asset invocation pays both costs once per asset). A small pool of
+    chunks runs concurrently, since gh downloads a chunk's assets serially.
+    Each chunk invocation is retried with backoff to absorb the transient
+    GitHub HTTP 500s that the per-asset burst used to surface as hard failures.
+
+    Benchmarked at ~6x faster than per-asset parallel downloads with ~20x fewer
+    asset-list API calls; see experiments/claude/figure_download_benchmark.
+    """
+    assert chunk_size >= 1, f"chunk_size must be >= 1, got {chunk_size}"
+    assert chunk_workers >= 1, f"chunk_workers must be >= 1, got {chunk_workers}"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    chunks = [
+        asset_names[i : i + chunk_size] for i in range(0, len(asset_names), chunk_size)
+    ]
+
+    def _download_chunk(chunk: list[str]) -> None:
+        cmd = ["gh", "release", "download", release_tag]
+        for asset_name in chunk:
+            cmd += ["--pattern", asset_name]
+        cmd += ["--dir", str(dest_dir), "--clobber", "-R", repo_name]
+        execute_command_with_retries(cmd)
+        for asset_name in chunk:
+            asset_path = dest_dir / asset_name
+            assert asset_path.is_file(), (
+                f"gh did not produce {asset_path} for asset {asset_name}"
+            )
+
+    workers = min(chunk_workers, len(chunks))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_download_chunk, chunk) for chunk in chunks]
+        for fut in as_completed(futures):
+            fut.result()
 
 
 def download_release_asset(
