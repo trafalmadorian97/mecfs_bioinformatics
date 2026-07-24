@@ -12,7 +12,7 @@ doc references).
 """
 
 import shutil
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Sequence
 
 import structlog
@@ -31,7 +31,7 @@ class OrphanReferencedInDocsError(ValueError):
 
 
 def find_doc_references(
-    rel_path: Path, docs_dir: Path, fig_dir_name: str
+    rel_path: PurePath, docs_dir: Path, fig_dir_name: str
 ) -> list[Path]:
     """
     Return every ``.md`` file under ``docs_dir`` whose contents mention
@@ -95,9 +95,9 @@ def prune_orphan_figures(
         logger.debug("No orphan figure-manifest entries to prune.")
         return
 
-    blockers_present: dict[Path, list[Path]] = {}
-    blockers_missing: dict[Path, list[Path]] = {}
-    safe_to_remove: list[Path] = []
+    blockers_present: dict[PurePath, list[Path]] = {}
+    blockers_missing: dict[PurePath, list[Path]] = {}
+    safe_to_remove: list[PurePath] = []
     for rel_path in orphans:
         refs = find_doc_references(
             rel_path=rel_path, docs_dir=docs_dir, fig_dir_name=fig_dir.name
@@ -138,8 +138,8 @@ def prune_orphan_figures(
 
 
 def _format_blocked_message(
-    blockers_present: dict[Path, list[Path]],
-    blockers_missing: dict[Path, list[Path]],
+    blockers_present: dict[PurePath, list[Path]],
+    blockers_missing: dict[PurePath, list[Path]],
 ) -> str:
     lines = [
         "Cannot prune figure manifest: the following entries are not "
