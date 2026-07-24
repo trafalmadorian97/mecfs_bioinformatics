@@ -1,10 +1,14 @@
 # UKBB PPP
 
-The [UK Biobank](UKBB.md) Pharma Proteomics Project (PPP)[@sun2023plasma] is an effort to characterize the plasma proteomes of a sample of UK Biobank participants.  The PPP was funded and organized by a consortium of major pharmaceutical companies.  The aim was to produce datasets suitable for drug-discovery research.
+The [UK Biobank](UKBB.md) Pharma Proteomics Project (PPP)[@sun2023plasma] is an effort to characterize the plasma proteomes of UK Biobank participants.  The PPP was funded and organized by a consortium of major pharmaceutical companies.  The aim was to produce datasets suitable for drug-discovery research.
 
 ## Motivation
 
 Often, GWAS hits are mechanistically mysterious: it is unclear what biological pathway links a given genetic polymorphism with an associated phenotype.  At a high level the PPP is motivated by the observation that since proteins are the fundamental biological effector molecules, they can help explain GWAS hits.  If we observe that a GWAS hit for a phenotype is also associated with changed plasma levels of a protein, we may reason that the protein lies along the biological pathway leading to the GWAS hit.
+
+## Assay
+
+The current stage of the PPP used the Olink Explore multiplexed proteomics assay[@wik2021proximity] to measure around 2,923 proteins in 54,219 UK Biobank participants. Future stages will use a more advanced Olink assay to measure more than [5,400 proteins in more than 600,000 samples](https://olink.com/blog/ukb-announcement-jan-2025).
 
 ## Public Data
  
