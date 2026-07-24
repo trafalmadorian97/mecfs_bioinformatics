@@ -582,7 +582,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/51/62/9fffba5bb9ed3d31a932ad35038ba9483d59850256ee0fea7f1187173983/mkdocs_macros_plugin-1.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3e/32/ed071cb721aca8c227718cffcf7bd539620e9799bbf2619e90c757bfd030/mkdocs_material-9.7.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/5b/54/662a4743aa81d9582ee9339d4ffa3c8fd40a4965e033d77b9da9774d3960/mkdocs_material_extensions-1.3.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7b/2c/f0dc4e1ee7f618f5bff7e05898d20bf8b6e7fa612038f768bfa295f136a4/mkdocstrings-0.30.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/5d/5b/4c1902e8bdd5c4db63284e9d101dece4038d4025d6d88850ffe0a1578980/mkdocstrings-1.0.6-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/98/5c/2597cef67b6947b15c47f8dba967a0baf19fbdfdc86f6e4a8ba7af8b581a/mkdocstrings_python-1.19.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/65/92/a5100f7185a800a5d29f8d14041f61475b9de465ffcc0f3b9fba606e4505/msgpack-1.1.2-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/0d/e2/9baffdae21a76f77ef8447f1a05a96ec4bc0a24dae08767abc0a2fe680b8/multidict-6.7.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -2143,7 +2143,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: ea44425e5f21d5748306010c9e5200d1f9c55ecda67c71c73025dd4cfa41d881
+  sha256: 7115ed44a95030d58a4c21227150e33bdc63cfc119247d1aba9c9cb66ec395c0
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -5915,22 +5915,21 @@ packages:
   version: 1.3.1
   sha256: adff8b62700b25cb77b53358dad940f3ef973dd6db797907c49e3c2ef3ab4e31
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/7b/2c/f0dc4e1ee7f618f5bff7e05898d20bf8b6e7fa612038f768bfa295f136a4/mkdocstrings-0.30.1-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/5d/5b/4c1902e8bdd5c4db63284e9d101dece4038d4025d6d88850ffe0a1578980/mkdocstrings-1.0.6-py3-none-any.whl
   name: mkdocstrings
-  version: 0.30.1
-  sha256: 41bd71f284ca4d44a668816193e4025c950b002252081e387433656ae9a70a82
+  version: 1.0.6
+  sha256: 2703708697487d1b6d6d7b412e176fa436edf120c1bf81dc9e126b12d00893c7
   requires_dist:
-  - jinja2>=2.11.1
+  - jinja2>=3.1
   - markdown>=3.6
   - markupsafe>=1.1
   - mkdocs>=1.6
   - mkdocs-autorefs>=1.4
   - pymdown-extensions>=6.3
-  - importlib-metadata>=4.6 ; python_full_version < '3.10'
   - mkdocstrings-crystal>=0.3.4 ; extra == 'crystal'
   - mkdocstrings-python-legacy>=0.2.1 ; extra == 'python-legacy'
   - mkdocstrings-python>=1.16.2 ; extra == 'python'
-  requires_python: '>=3.9'
+  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/98/5c/2597cef67b6947b15c47f8dba967a0baf19fbdfdc86f6e4a8ba7af8b581a/mkdocstrings_python-1.19.0-py3-none-any.whl
   name: mkdocstrings-python
   version: 1.19.0
