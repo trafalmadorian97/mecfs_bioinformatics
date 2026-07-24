@@ -11,7 +11,7 @@ As is standard for LDSC analysis, I restricted to the statistics to Hapmap3 vari
 
 The results are below:
 
-{{ data_table("docs/_figs/seropositive_ra_ppp_rg_cis_excluded_display_frame.parquet", id="ukbb-ppp-ldsc-ra-rg", caption="Columns: oid: Olink assay ID; gene: name of gene/protein under study; rg: CT-LDSC genetic correlation estimate; rg_se: jackknife standard error of CT-LDSC genetic correlation estimate; rg_p: p value of test that rg is not zero; gcov: genetic covariance; inter: intercept term in CT-LDSC regression; h2_trait: trait heritability estimate; h2_prot: protein heritability estimate; n_snps: number of hapmap3 variants included; spr: for cases in which multiple rows corresponding to distinct Olink assays of the same protein have been merged into a single row, this gives the maximum spread between the rg values of the merged rows; s_bh: True if the null hypothesis is rejected under the Benjamini-Hochberg procedure at an FDR of 0.05; s_bon: True if the null hypothesis is rejected under the Bonferroni correction at a significance level of 0.05." )}}
+{{ ppp_rg_data_table("docs/_figs/seropositive_ra_ppp_rg_cis_excluded_display_frame.parquet", id="ukbb-ppp-ldsc-ra-rg" )}}
 
 Note that the trait heritability reported above differs from [what we found earlier](4_RA_Seropositive_LDSC.md).  This is because the implementation of LDSC used above excludes SNPs whose $\chi^2$ score exceeds $\mathrm{max}(0.001 N, 80)$ while the default GWASLab implementation of LDSC does not exclude these high-signal SNPs.
 

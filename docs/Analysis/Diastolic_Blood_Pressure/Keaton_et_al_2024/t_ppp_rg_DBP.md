@@ -8,3 +8,13 @@ As is standard for LDSC analysis, I restricted to the statistics to Hapmap3 vari
 
 The results are below:
 
+{{ ppp_rg_data_table("docs/_figs/keaton_dbp_ppp_rg_cis_excluded_display_frame.parquet", id="ukbb-ppp-ldsc-dbp-rg" )}}
+
+
+## Interpretation
+
+
+There is a single protein whose genetic correlation with DBP is Bonferroni-significant, and multiple proteins with genetic correlations significant according to the Benjamini-Hochberg[@benjamini1995controlling] procedure.
+
+
+CTSB (Cathepsin B), the Bonferroni-significant protein, makes biological sense: in a mouse model of [nephrotic syndrome](https://en.wikipedia.org/wiki/Nephrotic_syndrome), inhibition of CTSB prevented hypertension[@larionov2019cathepsin].
