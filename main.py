@@ -259,6 +259,16 @@ def define_env(env):
         return button + iframe
 
     @env.macro
+    def ppp_rg_data_table(src, id, height="775px", precision=4):
+        return data_table(
+            src=src,
+            id=id,
+            height=height,
+            precision=precision,
+            caption=PPP_RG_DATA_TABLE_CAPTION,
+        )
+
+    @env.macro
     def data_table(src, id, height="600px", precision=4, caption=""):
         """Embed a large tabular asset as a sortable, filterable, virtualised table.
 
@@ -422,3 +432,6 @@ _DATA_TABLE_SCRIPT = """<script type="module">
   }
 })();
 </script>"""
+
+
+PPP_RG_DATA_TABLE_CAPTION = "Columns: oid: Olink assay ID; gene: name of gene/protein under study; rg: CT-LDSC genetic correlation estimate; rg_se: jackknife standard error of CT-LDSC genetic correlation estimate; rg_p: p value of test that rg is not zero; gcov: genetic covariance; inter: intercept term in CT-LDSC regression; h2_trait: trait heritability estimate; h2_prot: protein heritability estimate; n_snps: number of hapmap3 variants included; spr: for cases in which multiple rows corresponding to distinct Olink assays of the same protein have been merged into a single row, this gives the maximum spread between the rg values of the merged rows; s_bh: True if the null hypothesis is rejected under the Benjamini-Hochberg procedure at an FDR of 0.05; s_bon: True if the null hypothesis is rejected under the Bonferroni correction at a significance level of 0.05."

@@ -2,6 +2,9 @@
 This file contains a list of figures to be exported for use in documentation
 """
 
+from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_ppp_rg import (
+    KEATON_DBP_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.brainstem.whole_brainstem.xue_et_al.analysis.xue_whole_brainstem_standard_analysis import (
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS,
 )
@@ -377,6 +380,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
+    # KEATON DBP
+    KEATON_DBP_PPP_RG_CIS_EXCLUDED.display_frame_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
