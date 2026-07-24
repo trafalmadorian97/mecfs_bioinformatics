@@ -1,4 +1,4 @@
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import pytest
 
@@ -24,7 +24,7 @@ def _file_task(asset_id: str, extension: str = ".png") -> FakeTask:
     )
 
 
-def _write_manifest(manifest_path: Path, entries: dict[Path, str]) -> None:
+def _write_manifest(manifest_path: Path, entries: dict[PurePath, str]) -> None:
     FigureManifest(figures=entries).save(manifest_path)
 
 
