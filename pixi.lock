@@ -534,7 +534,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/25/e8/eba9fece11d57a71e3e22ea672742c8f3cf23b35730c9e96db768b295216/googleapis_common_protos-1.71.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/9c/83/3b1d03d36f224edded98e9affd0467630fc09d766c0e56fb1498cbb04a9b/griffe-1.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/69/ac/42b4d6bc0ea119ce2e91e1788feabf32c5433e9617dbb495c2a3d0dc7f12/grimp-3.14-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/0d/6d/317b1c42af12f41a0e9aa09aea956079eb6708f76d1c5d015bf24bc96308/gwaslab-4.1.9-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/8a/3c/97b669f20ae989e770d3e1c649d93d29a671a7055341feff8f259573c7e6/gwaslab-4.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/04/4b/29cac41a4d98d144bf5f6d33995617b185d14b22401f75ca86f384e87ff1/h11-0.16.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3a/30/d1c94066343a98bb2cea40120873193a4fed68c4ad7f8935c11caf74c681/h5py-3.15.1-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/82/4d/1fcf74ad06b114f3ae4a528f582bba38330cb71a5c4afe58e4752a8a7dd0/HiCMatrix-17.2-py3-none-any.whl
@@ -566,6 +566,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/94/54/e7d793b573f298e1c9013b8c4dade17d481164aa517d1d7148619c2cedbf/markdown_it_py-4.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/3c/2e/8d0c2ab90a8c1d9a24f0399058ab8519a3279d1bd4289511d74e909f060e/markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/cd/ba/412149958e951876096198609b958b90a8a2c9bc07a96eeeaa9e2c480f30/matplotlib-3.8.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/e8/f7/47bddf95492f4d1370ed7164d2b16407805e8eeb38231361de65d387a562/matplotlib-venn-1.1.2.tar.gz
       - pypi: https://files.pythonhosted.org/packages/a6/2d/2230afd570c70074e80fd06857ba2bdc5f10c055bd9125665fe276fadb67/matplotlib_inline-0.1.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/2c/19/04f9b178c2d8a15b076c8b5140708fa6ffc5601fb6f1e975537072df5b2a/mergedeep-1.3.4-py3-none-any.whl
@@ -2143,7 +2144,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: ea44425e5f21d5748306010c9e5200d1f9c55ecda67c71c73025dd4cfa41d881
+  sha256: 61f98bec52dbd04c719d19bbfbfbdac47e39605743c7e0e286a12e0e8ebb233e
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/6c/93/38bc15cb097107d220a942eb66dc50882496d7da54f41e5eea6c31b1c443/bitarray-3.8.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -3357,14 +3358,15 @@ packages:
   purls: []
   size: 3376423
   timestamp: 1626369596591
-- pypi: https://files.pythonhosted.org/packages/0d/6d/317b1c42af12f41a0e9aa09aea956079eb6708f76d1c5d015bf24bc96308/gwaslab-4.1.9-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/8a/3c/97b669f20ae989e770d3e1c649d93d29a671a7055341feff8f259573c7e6/gwaslab-4.2.0-py3-none-any.whl
   name: gwaslab
-  version: 4.1.9
-  sha256: b70420b9af8f993562a2e2221cd659e6f6ac330dca1d40e3f39bda440cc23400
+  version: 4.2.0
+  sha256: 685fb6672fc3d042cf08529473bef24fe42d3a9137ce8a7e51914fa08e2aecd5
   requires_dist:
   - pandas>=1.3,!=1.5,<=2.3.3
   - numpy>=1.21.2,<2
   - matplotlib>=3.8,<3.9
+  - matplotlib-venn
   - seaborn>=0.12
   - scipy>=1.12
   - pysam==0.22.1
@@ -3378,7 +3380,9 @@ packages:
   - pyyaml
   - bitarray
   - platformdirs
+  - mkdocstrings-python>=1.0 ; extra == 'docs'
   - pytest>=7 ; extra == 'dev'
+  - pytest-xdist>=3 ; extra == 'dev'
   requires_python: '>=3.9'
 - conda: https://conda.anaconda.org/conda-forge/linux-64/gxx_impl_linux-64-15.2.0-h54ccb8d_7.conda
   sha256: 1fb7da99bcdab2ef8bd2458d8116600524207f3177d5c786d18f3dc5f824a4b8
@@ -5712,6 +5716,15 @@ packages:
   requires_dist:
   - traitlets
   requires_python: '>=3.5'
+- pypi: https://files.pythonhosted.org/packages/e8/f7/47bddf95492f4d1370ed7164d2b16407805e8eeb38231361de65d387a562/matplotlib-venn-1.1.2.tar.gz
+  name: matplotlib-venn
+  version: 1.1.2
+  sha256: 6f2b07a03e9bb5a62de2f32f965216739e175176f9d654dd19e7af2c22ec36e3
+  requires_dist:
+  - matplotlib
+  - numpy
+  - scipy
+  - shapely ; extra == 'shapely'
 - pypi: https://files.pythonhosted.org/packages/b3/38/89ba8ad64ae25be8de66a6d463314cf1eb366222074cfda9ee839c56a4b4/mdurl-0.1.2-py3-none-any.whl
   name: mdurl
   version: 0.1.2
