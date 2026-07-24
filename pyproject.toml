@@ -2,11 +2,19 @@
 name = "biostatistics"
 version = "0.1.0"
 readme = "README.md"
-requires-python = "==3.12"
+requires-python = "==3.13"
 
 ## pyproject.toml
 #[tool.pixi.pypi-options.dependency-overrides]
 #numpy = ">=2.0.0"
+
+[tool.pixi.pypi-options.dependency-overrides]
+# gwaslab pins pysam==0.22.1, which publishes no cp313 wheel. On Python 3.13 uv
+# falls back to the sdist, whose build re-cythonizes with Cython 3.x; there
+# "cpdef enum" no longer exports its members at module level, so the __all__ of
+# libcalignedsegment references a CMATCH that does not exist and "import pysam"
+# dies with AttributeError. Override the pin to match our conda pysam.
+pysam = ">=0.24,<0.25"
 
 [tool.pixi.workspace]
 channels = [
