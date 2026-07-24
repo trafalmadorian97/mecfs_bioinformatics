@@ -8,7 +8,10 @@ from subprocess import CalledProcessError
 import structlog
 
 from mecfs_bio.util.download.robust_download import robust_download_with_aria
-from mecfs_bio.util.subproc.run_command import execute_command
+from mecfs_bio.util.subproc.run_command import (
+    execute_command,
+    execute_command_with_retries,
+)
 
 logger = structlog.get_logger()
 
@@ -246,10 +249,11 @@ def download_release_asset(
                 asset_name,
                 "--dir",
                 str(tmp_dir),
+                "--clobber",
                 "-R",
                 repo_name,
             ]
-            execute_command(cmd)
+            execute_command_with_retries(cmd)
             downloaded = tmp_dir / asset_name
             assert downloaded.is_file(), (
                 f"gh did not produce {downloaded} for asset {asset_name}"
