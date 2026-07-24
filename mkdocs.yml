@@ -11,6 +11,9 @@ theme:
     - content.action.view
 plugins:
 - search
+- exclude-search:
+      exclude:
+        - reference/* # avoid cluttering search with code files
 - macros
 - glightbox
 - awesome-nav
