@@ -9,7 +9,7 @@ not listed in the manifest are left alone unless ``prune=True`` is passed.
 
 import shutil
 import tempfile
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import structlog
 
@@ -59,7 +59,7 @@ def pull_figures(
     if not manifest.figures:
         logger.debug(f"Manifest {manifest_path} is empty; nothing to download.")
 
-    to_download: list[tuple[Path, str]] = []
+    to_download: list[tuple[PurePath, str]] = []
     for rel_path, expected_hash in manifest.figures.items():
         dest = fig_dir / rel_path
         if dest.is_file() and sha256_of_file(dest) == expected_hash:
@@ -83,7 +83,7 @@ def pull_figures(
 
 
 def _download_blobs(
-    to_download: list[tuple[Path, str]],
+    to_download: list[tuple[PurePath, str]],
     tag: str,
     repo_name: str,
     fig_dir: Path,
@@ -148,7 +148,7 @@ def _stage_assets_individually(
 
 
 def _place_staged_blobs(
-    to_download: list[tuple[Path, str]],
+    to_download: list[tuple[PurePath, str]],
     staging_dir: Path,
     fig_dir: Path,
 ) -> None:
@@ -170,7 +170,7 @@ def _prune_unmanifested(fig_dir: Path, manifest: FigureManifest) -> None:
     for path in fig_dir.rglob("*"):
         if not path.is_file():
             continue
-        rel = path.relative_to(fig_dir)
+        rel = PurePath(path.relative_to(fig_dir))
         if rel not in managed:
             logger.debug(f"Pruning {rel} (not in manifest).")
             path.unlink()
