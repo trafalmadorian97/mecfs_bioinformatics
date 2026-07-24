@@ -43,7 +43,7 @@ env = { R_LIBS_USER = "r-libs" }
 pysam = ">=0.24,<0.25"
 pixi-pycharm = ">=0.0.12,<0.0.13"
 bedops = ">=2.4.42,<3"
-pyarrow = ">=22.0.0,<23"
+pyarrow = ">=25,<26"
 rust = ">=1.97,<1.98"
 duckdb = ">=1.4.1,<2"
 pandoc = ">=3.8.2.1,<4"
