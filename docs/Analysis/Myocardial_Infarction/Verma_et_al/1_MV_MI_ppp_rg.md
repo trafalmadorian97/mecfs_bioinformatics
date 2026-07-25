@@ -1,10 +1,10 @@
-# PPP Genetic Correlation
-I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the [Million Veterans Program](../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity] GWAS of myocardial infarction and GWAS of Olink proteomic assays[@wik2021proximity] from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
+# PPP CT-LDSC
+I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the [Million Veterans Program](../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity] GWAS of myocardial infarction and Olink proteomic assay[@wik2021proximity] GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
 
 
 ## Results
 
-As is standard for LDSC analysis, I restricted to the statistics to Hapmap3 variants, and excluded the MHC region.  I used the standard thousand genomes linkage disequilibrium scores provided by the authors of LDSC. Because my [previous heritability experiment](../../Proteomics/UKBB_PPP/PPP_LDSC.md) suggested little difference between using all SNPs and excluding the cis-region near the protein of interest, I only ran this experiment with the cis region excluded.
+As is standard for LDSC analysis, I restricted the summary statistics to Hapmap 3 variants, and excluded the MHC region.  I used the standard thousand genomes linkage disequilibrium scores provided by the authors of LDSC. Because my [previous heritability experiment](../../Proteomics/UKBB_PPP/PPP_LDSC.md) suggested little difference between using all SNPs and excluding the cis-region near the protein of interest, I only ran this experiment with the cis region excluded.
 
 The results are below:
 
@@ -17,8 +17,12 @@ The results are below:
 
 In contrast to some of my previous genetic correlation analysis against UKBB PPP data, here we see a very large number of Bonferroni-significant proteins.
 
+The protein with the most significant genetic correlation with myocardial infarction is GDF-15 (Growth differentiation factor 15).  This finding is consistent with known biology.  For instance, Kato et al.[@kato2023growth] found in a meta-analysis of data from 8 clinical trials that GDF-15 levels were strongly predictive of future myocardial infarction and other adverse cardiac events among patients with stable atherosclerotic cardiovascular disease or patients stabilized after acute coronary syndrome.  See the graphical abstract from this paper below:
+
+![kato-abstract](https://github.com/user-attachments/assets/29b267f9-c9a4-4db6-a965-46995027cd36)
+
 
 
 ## Caveats
 
-Recall that while genetic correlation excludes environmental confounding, it tells us nothing about the causal direction between myocardial infarction and the proteins of interest.
+Recall that while CT-LDSC is generally not vulnerable to environmental confounding, it tells us nothing about the causal direction between myocardial infarction and proteins of interest.
