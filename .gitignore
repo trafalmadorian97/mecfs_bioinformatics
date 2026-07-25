@@ -253,6 +253,8 @@ r-libs
 *.html
 *.png
 docs/_figs
+# ...but the Material theme override partials are source, not generated plots
+!overrides/partials/*.html
 
 # config file for storing github token
 gh_token_config.yaml
