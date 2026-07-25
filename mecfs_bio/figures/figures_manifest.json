@@ -1,6 +1,7 @@
 {
   "version": 1,
   "figures": {
+    "bellenguez_ppp_rg_cis_excluded_display_frame.parquet": "0340cd7118295f541fbb2fce74c7425a8eeddd57777c6517c231b667cd908b4f",
     "bentham_2015_lupus_hba_magma_plot_extracted.html": "3ffb43363136e85ff8c570619d3fae8b8fb8f3b0e5287c2f88f09897788dc66d",
     "bentham_2015_lupus_magma_bar_plot/magma_gene_set_plot.html": "4e950741f2a34e3a68bd9a1fabe58f98223376117327d71310700498a1ffd1b3",
     "bentham_2015_lupus_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html": "01a536d1536720b5a1a7e6ee54cd672dae9d89989e1d6ebc5480a61f49a77e05",
