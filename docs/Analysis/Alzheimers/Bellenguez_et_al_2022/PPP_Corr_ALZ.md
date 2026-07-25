@@ -15,4 +15,4 @@ The results are below:
 
 ## Interpretation
 
- Unlike some of the [other PPP genetic correlation analyses](../../RA/DECODE_(Seropositive)/6_RA_Seropositive_ppp_rg.md), I was not able to find strong biological or medical literature supporting the importance of the top most significant proteins.  WFIKKN2, the top hit, has some minor supporting evidence: a singaporean proteomic study of memory-clinic patients found in a secondary analysis that WFIKKN2 was associated with changes cognitive function over time across all cognitive subgroups[@sim2025plasma].
+ Unlike some of the [other PPP genetic correlation analyses](../../RA/DECODE_(Seropositive)/6_RA_Seropositive_ppp_rg.md), I was not able to find strong biological or medical literature supporting the importance of the top most significant proteins.  WFIKKN2, the top hit, has some minor supporting evidence: a Singaporean proteomic study of memory-clinic patients found in a secondary analysis that WFIKKN2 was associated with changes in cognitive function over time across all cognitive subgroups[@sim2025plasma].
