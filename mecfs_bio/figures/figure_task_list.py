@@ -2,6 +2,9 @@
 This file contains a list of figures to be exported for use in documentation
 """
 
+from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
+    BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_ppp_rg import (
     KEATON_DBP_PPP_RG_CIS_EXCLUDED,
 )
@@ -387,6 +390,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     KEATON_DBP_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # Million Veterans Program MI GWAS
     MV_MI_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # Bellenguez Alzheimer's GWAS
+    BELLENGUEZ_PPP_RG_CIS_EXCLUDED.display_frame_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
