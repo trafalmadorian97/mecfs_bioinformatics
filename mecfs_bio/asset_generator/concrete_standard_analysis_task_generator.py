@@ -301,7 +301,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         hba_magma = None
     if include_gene_set_analysis:
         assert include_hba_magma_tasks, (
-            "gene set analysis requires hba magma analysis, since the two analysis pathways make use of common MAGMA entrez gene analysis resulsts"
+            "gene set analysis requires hba magma analysis, since the two analysis pathways make use of common MAGMA entrez gene analysis results"
         )
         assert hba_magma is not None
         gene_set_analysis = curated_gene_set_analysis_magma_tasks_from_gene_analysis(
