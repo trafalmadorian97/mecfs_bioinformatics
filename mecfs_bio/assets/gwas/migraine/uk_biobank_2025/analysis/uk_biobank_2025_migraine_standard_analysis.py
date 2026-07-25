@@ -15,6 +15,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
 UK_BIOBANK_MIGRAINE_SAMPLE_INFO=BinaryPhenotypeSampleInfo(
         sample_prevalence=25393 / 458440,  # from gwas catalog page
         estimated_population_prevalence=0.104,  # UK prevalence from https://pmc.ncbi.nlm.nih.gov/articles/PMC11753071/
+        total_sample_size=458440
     )
 
 UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS = concrete_standard_analysis_generator_assume_already_has_rsid(
