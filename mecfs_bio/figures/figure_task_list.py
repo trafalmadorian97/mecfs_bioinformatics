@@ -129,6 +129,9 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.magma.johnston
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.mixer.johnston_et_al_univariate_mixer import (
     JOHNSTON_ET_AL_UNIVARIATE_MIXER,
 )
+from mecfs_bio.assets.gwas.myocardial_infarction.analysis.mi_ppp_rg import (
+    MV_MI_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seronegative.analysis.ra_seronegative_standard_analysis import (
     SERONEGATIVE_RA_STANDARD_ANALYSIS,
 )
@@ -382,6 +385,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
     # KEATON DBP
     KEATON_DBP_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # Million Veterans Program MI GWAS
+    MV_MI_PPP_RG_CIS_EXCLUDED.display_frame_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
