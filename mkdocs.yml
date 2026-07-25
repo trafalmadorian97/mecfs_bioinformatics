@@ -3,14 +3,23 @@ repo_url: https://github.com/trafalmadorian97/mecfs_bioinformatics
 edit_uri: edit/main/docs/
 theme:
   name: material
+  # Overrides the nav-item partial so the sidebar reads the short nav_title set
+  # by docs_hooks.py, while search/tags/browser-tab use the verbose page title.
+  custom_dir: overrides
   features:
 #    - navigation.indexes
     - toc.integrate
     - content.footnote.tooltips
     - content.action.edit
     - content.action.view
+# Build hooks. docs_hooks.py disambiguates analysis-page titles for search/tags.
+hooks:
+- docs_hooks.py
 plugins:
 - search
+- exclude-search:
+      exclude:
+        - reference/* # avoid cluttering search with code files
 - macros
 - glightbox
 - awesome-nav
