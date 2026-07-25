@@ -26,3 +26,8 @@ The protein with the most significant genetic correlation with myocardial infarc
 ## Caveats
 
 Recall that while CT-LDSC is generally not vulnerable to environmental confounding, it tells us nothing about the causal direction between myocardial infarction and proteins of interest.
+
+
+## How to reproduce
+
+To reproduce these results, run the script  {{api_link("here","mecfs_bio.analysis.myocardial_infarction_ppp_rg_analysis")}}.
