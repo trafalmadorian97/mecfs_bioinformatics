@@ -2133,7 +2133,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 872e490afe5d5e00035d27add7693e079ab97f962aa40252435759c9a82a9369
+  sha256: e54c6aec4c57eaf5b9b7f55efacb4e958497c9aa5a18b7e6e584892665d80abf
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/ca/9f/f1adeadf3ec4a3bd3d1d9c809bce8526ceb3b571e8dd8356c26de0dc699e/bitarray-3.9.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray

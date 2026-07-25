@@ -41,7 +41,7 @@ Rscript -e "if (!require('remotes', quietly=TRUE)) install.packages('remotes', r
 packages = ["mecfs_bio"]
 
 [tool.pixi.activation]
-env = { R_LIBS_USER = "r-libs" }
+env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1" }
 
 [tool.pixi.feature.analysis.dependencies]
 pysam = ">=0.24,<0.25"
