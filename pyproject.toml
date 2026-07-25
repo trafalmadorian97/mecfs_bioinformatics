@@ -17,6 +17,10 @@ platforms = ["linux-64"]
 
 [tool.pixi.pypi-dependencies]
 biostatistics = { path = ".", editable = true }
+# setuptools 82 removed pkg_resources, which zepid (and testmon) still import at
+# import time.  synapseclient >=4.13 requires setuptools>=80.10.1, which pushes
+# resolution off conda-forge's 80.9.0 and onto PyPI, so pin the upper bound here.
+setuptools = ">=80.10.1,<82"
 
 [tool.pixi.tasks]
 install-parquet-cli = { cmd = "bash -lc 'cargo install parquet@57.0.0 --features=cli --locked --root ${CONDA_PREFIX}'" }
