@@ -5,6 +5,7 @@ This file contains a list of figures to be exported for use in documentation
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
 )
+from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_ppp_rg import ASTHMA_PPP_RG_CIS_EXCLUDED
 from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_ppp_rg import (
     KEATON_DBP_PPP_RG_CIS_EXCLUDED,
 )
@@ -397,6 +398,9 @@ ALL_FIGURE_TASKS: list[Task] = [
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # PGC 2022 Schizophrenai
     PGC2022_SCH_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # asthma
+    ASTHMA_PPP_RG_CIS_EXCLUDED.display_frame_task
+
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
