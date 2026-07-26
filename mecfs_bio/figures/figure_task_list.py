@@ -144,6 +144,9 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_s
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_standard_analysis import (
     SEROPOSITIVE_RA_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.pgc2022_ppp_rg import (
+    PGC2022_SCH_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
 )
@@ -392,6 +395,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     MV_MI_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # Bellenguez Alzheimer's GWAS
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # PGC 2022 Schizophrenai
+    PGC2022_SCH_PPP_RG_CIS_EXCLUDED.display_frame_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
