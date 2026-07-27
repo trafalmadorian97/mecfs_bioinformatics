@@ -1,3 +1,7 @@
+---
+tags:
+  - MiXeR
+---
 # Univariate MiXeR
 
 Using [software provided by the authors](https://github.com/precimed/mixer), I ran univariate [MiXeR](../../../Bioinformatics_Concepts/Mixer.md)[@holland2020beyond] on the Johnston et al multsite pain summary statistics[@johnston2019genome].
