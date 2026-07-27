@@ -50,6 +50,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_varia
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_rg import (
+    DECODE_ME_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_BTN1A1_locus_37 import (
     DECODE_ME_BTN1A1_REGION_PLOT_37,
 )
@@ -246,6 +249,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
+    DECODE_ME_PPP_RG_CIS_EXCLUDED.display_frame_task,
     DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR.aggregation_markdown_task,
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.magma_gene_manhattan_plot_unwrap,
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
