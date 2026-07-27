@@ -1,3 +1,7 @@
+---
+tags:
+  - MAGMA
+---
 # MAGMA IBD Analysis
 After applying [MAGMA to the DecodeME summary statistics](../../ME_CFS/DecodeME/g_MAGMA_DecodeME_Analysis.md), I decided to apply it to summary statistics of a number of other conditions whose biology is better understood.  The aim here was to assess the reliability of MAGMA.  If MAGMA recapitulates known aspects of the pathophysiology of other diseases, this increases our confidence in the results of applying MAGMA to ME/CFS.
 

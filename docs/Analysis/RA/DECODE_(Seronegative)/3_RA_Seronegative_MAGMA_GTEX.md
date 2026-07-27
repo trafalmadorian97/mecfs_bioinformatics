@@ -1,3 +1,7 @@
+---
+tags:
+  - MAGMA
+---
 # MAGMA (GTEx)
 
 I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to the DECODE meta-GWAS of seronegative rheumatoid arthritis[@saevarsdottir2022multiomics]. 

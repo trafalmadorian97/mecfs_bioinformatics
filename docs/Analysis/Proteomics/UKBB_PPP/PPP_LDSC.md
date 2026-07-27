@@ -1,3 +1,7 @@
+---
+tags:
+  - LDSC
+---
 # LDSC
 
 I applied [Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/LDSC.md) (LDSC)[@bulik2015ld] to summary statistics of proteomic GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma]. My aim was to look for evidence of stratification and to estimate [heritability](../../../Bioinformatics_Concepts/Heritability.md).

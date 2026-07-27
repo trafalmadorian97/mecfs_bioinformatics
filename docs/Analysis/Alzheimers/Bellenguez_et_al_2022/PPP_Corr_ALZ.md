@@ -1,3 +1,7 @@
+---
+tags:
+  - CT-LDSC
+---
 # PPP CT-LDSC
 
 I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the Bellenguez et al.[@bellenguez2022new] meta-GWAS of Alzheimer's disease and Olink proteomic [@wik2021proximity] GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].

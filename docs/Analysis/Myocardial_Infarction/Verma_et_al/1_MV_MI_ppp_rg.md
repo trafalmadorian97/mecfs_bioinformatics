@@ -1,3 +1,7 @@
+---
+tags:
+  - CT-LDSC
+---
 # PPP CT-LDSC
 I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the [Million Veterans Program](../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity] GWAS of myocardial infarction and Olink proteomic assay[@wik2021proximity] GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
 
