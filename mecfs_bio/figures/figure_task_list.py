@@ -50,7 +50,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_varia
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_rg import DECODE_ME_PPP_RG_CIS_EXCLUDED
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_rg import (
+    DECODE_ME_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_BTN1A1_locus_37 import (
     DECODE_ME_BTN1A1_REGION_PLOT_37,
 )
