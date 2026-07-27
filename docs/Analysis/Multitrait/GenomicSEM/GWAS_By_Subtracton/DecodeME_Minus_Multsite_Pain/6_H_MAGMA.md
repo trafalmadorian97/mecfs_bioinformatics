@@ -3,7 +3,7 @@ tags:
   - H-MAGMA
 ---
 # H-MAGMA
-I applied H-MAGMA[@sey2020computational] to the [GWAS-by-subtraction](../../../../Bioinformatics_Concepts/GWAS_By_Subtraction.md)[@demange2021investigating; @huang2024gwas] residual of [DecodeME](../../../../Data_Sources/DecodeME.md)[@genetics2025initial] minus Johnston et al.'s GWAS of multisite pain[@johnston2019genome].
+I applied H-MAGMA[@sey2020computational] to the [GWAS-by-subtraction](../../../../../Bioinformatics_Concepts/GWAS_By_Subtraction.md)[@demange2021investigating; @huang2024gwas] residual of [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] minus Johnston et al.'s GWAS of multisite pain[@johnston2019genome].
 
 
 ## Results

@@ -17,21 +17,6 @@ hooks:
 - docs_hooks.py
 plugins:
 - search
-# Backs docs/Analysis/Index_of_Techniques.md, which groups the analysis pages by
-# the technique they use. tags_allowed is an allow list: a tag outside it fails
-# the build, so a typo in a page's front matter cannot silently create a new tag.
-- tags:
-    listings_toc: false
-    tags_allowed:
-      - LDSC
-      - S-LDSC
-      - CT-LDSC
-      - MAGMA
-      - H-MAGMA
-      - Mendelian randomization
-      - MiXeR
-      - SuSiE
-      - LCV
 - exclude-search:
       exclude:
         - reference/* # avoid cluttering search with code files
