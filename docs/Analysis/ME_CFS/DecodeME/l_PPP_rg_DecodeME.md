@@ -24,6 +24,6 @@ There are no significant genetic correlations.  Thoughts:
 
 # How to reproduce this
 
-To reproduce these results, run 
+To reproduce these results, run {{api_link("this script", "mecfs_bio.analysis.decode_me_ppp_rg_analysis")}}.
 
 
