@@ -22,5 +22,8 @@ There are no significant genetic correlations.  Thoughts:
 - This could simply be a power issue.  In the future, when we have ME/CFS GWAS with large sample sizes, we may be able to detect genetic correlations with plasma proteins.
 - Our [MAGMA](g_MAGMA_DecodeME_Analysis.md) and [S-LDSC](j_S-LDSC_DecodeME_Analysis.md)  analyses suggest that ME/CFS heritability is enriched in neural tissue. Thus, instead of looking for genetic correlations between ME/CFS and plasma protein levels, it could be more fruitful to look for genetic correlations between ME/CFS and cerebro-spinal fluid protein levels.
 
+# How to reproduce this
+
+To reproduce these results, run 
 
 
