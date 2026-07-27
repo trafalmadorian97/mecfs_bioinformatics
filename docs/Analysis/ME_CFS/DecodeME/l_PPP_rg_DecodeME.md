@@ -12,7 +12,7 @@ As is standard for LDSC analysis, I restricted the summary statistics to Hapmap 
 
 The results are below:
 
-{{ ppp_rg_data_table("ocs/_figs/decode_me_ppp_rg_cis_excluded_display_frame.parquet", id="ukbb-ppp-ldsc-decodeme-cis-excluded-rg" )}}
+{{ ppp_rg_data_table("docs/_figs/decode_me_ppp_rg_cis_excluded_display_frame.parquet", id="ukbb-ppp-ldsc-decodeme-cis-excluded-rg" )}}
 
 
 
