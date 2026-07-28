@@ -14,12 +14,11 @@ from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.compute_beta_pipe import ComputeBetaPipe
 from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
 
-
-MILLION_VETERANS_MIGRAINE_SAMPLE_INFO= BinaryPhenotypeSampleInfo(
-            sample_prevalence=31836 / 437667,  # from gwas catalog page
-            estimated_population_prevalence=0.14,  # from Google search
-    total_sample_size=437667
-        )
+MILLION_VETERANS_MIGRAINE_SAMPLE_INFO = BinaryPhenotypeSampleInfo(
+    sample_prevalence=31836 / 437667,  # from gwas catalog page
+    estimated_population_prevalence=0.14,  # from Google search
+    total_sample_size=437667,
+)
 
 MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS = (
     concrete_standard_analysis_generator_assume_already_has_rsid(
