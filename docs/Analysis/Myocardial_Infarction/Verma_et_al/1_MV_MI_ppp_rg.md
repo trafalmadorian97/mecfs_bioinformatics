@@ -1,3 +1,7 @@
+---
+tags:
+  - CT-LDSC
+---
 # PPP CT-LDSC
 I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the [Million Veterans Program](../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity] GWAS of myocardial infarction and Olink proteomic assay[@wik2021proximity] GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
 
@@ -21,6 +25,14 @@ The protein with the most significant genetic correlation with myocardial infarc
 
 ![kato-abstract](https://github.com/user-attachments/assets/29b267f9-c9a4-4db6-a965-46995027cd36)
 
+Note, however, that GDF-15 is highly nonspecific: a recent paper  constructed prognostic models for a range of diseases using plasma proteins and found that GDF-15 was a significant predictor across 9 different medical specialties[@carrasco2024proteomic].  
+
+
+See the figure below from that paper:
+
+![carrasco_predictor_fig](https://github.com/user-attachments/assets/c4f5b6e4-fdf6-438e-a245-5496d9239322)
+
+Thus GDF-15 may be a general stress-response protein seen in many diseases.
 
 
 ## Caveats

@@ -3,6 +3,15 @@ Code configuring the default runner, which is used to run the main standard anal
 
 Some of the default runner options can bet overridden by adding a yaml file at
 _DEFAULT_RUNNER_CONFIG_PATH.yaml
+
+The config is machine-local and is not checked in.  Every key is independently optional,
+so a config may set only the ones it wants to change:
+
+    asset_root:  root of the asset store
+    info_store:  path of the persistent verifying-trace cache
+    path_remap:  rules routing selected store subtrees to other filesystems, so that one
+                 logical store can span disks.  See the remapping_meta_to_path module for
+                 the schema and for guidance on which subtrees are worth remapping.
 """
 
 import functools
@@ -11,6 +20,9 @@ from pathlib import Path
 import structlog
 import yaml
 
+from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
+    PathRemapRule,
+)
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
@@ -30,6 +42,7 @@ _DEFAULT_RUNNER_CONFIG_PATH = Path("default_runner_config.yaml")
 
 _ASSET_ROOT_KEY = "asset_root"
 _INFO_STORE_KEY = "info_store"
+_PATH_REMAP_KEY = "path_remap"
 
 
 @functools.cache
@@ -50,20 +63,28 @@ def load_runner_config() -> dict | None:
 
 def _get_asset_root_path() -> Path:
     config = load_runner_config()
-    if config is None:
+    if config is None or _ASSET_ROOT_KEY not in config:
         return ASSET_ROOT
     return Path(config[_ASSET_ROOT_KEY])
 
 
 def _get_info_store_path() -> Path:
     config = load_runner_config()
-    if config is None:
+    if config is None or _INFO_STORE_KEY not in config:
         return IMO_128_INFO_STORE_PATH
     return Path(config[_INFO_STORE_KEY])
+
+
+def get_path_remap_rules() -> tuple[PathRemapRule, ...]:
+    config = load_runner_config()
+    if config is None or _PATH_REMAP_KEY not in config:
+        return ()
+    return PathRemapRule.tuple_from_config(config[_PATH_REMAP_KEY])
 
 
 DEFAULT_RUNNER = SimpleRunner(
     tracer=_imo_hasher_128,  # _imo_hasher_32,#SimpleHasher.md5_hasher(),
     info_store=_get_info_store_path(),  # IMO_32_INFO_STORE_PATH,#MD5_INFO_STORE_PATH,
     asset_root=_get_asset_root_path(),
+    path_remap=get_path_remap_rules(),
 )

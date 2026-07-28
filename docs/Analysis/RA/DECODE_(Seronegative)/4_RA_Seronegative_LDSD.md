@@ -1,3 +1,7 @@
+---
+tags:
+  - LDSC
+---
 # LDSC
 
 [Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] was applied to the DECODE meta-GWAS of seronegative rheumatoid arthritis[@saevarsdottir2022multiomics].  The aim was to estimate heritability and look for signs of stratification and confounding.

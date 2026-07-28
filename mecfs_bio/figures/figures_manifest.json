@@ -1,6 +1,7 @@
 {
   "version": 1,
   "figures": {
+    "bellenguez_ppp_rg_cis_excluded_display_frame.parquet": "0340cd7118295f541fbb2fce74c7425a8eeddd57777c6517c231b667cd908b4f",
     "bentham_2015_lupus_hba_magma_plot_extracted.html": "3ffb43363136e85ff8c570619d3fae8b8fb8f3b0e5287c2f88f09897788dc66d",
     "bentham_2015_lupus_magma_bar_plot/magma_gene_set_plot.html": "4e950741f2a34e3a68bd9a1fabe58f98223376117327d71310700498a1ffd1b3",
     "bentham_2015_lupus_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html": "01a536d1536720b5a1a7e6ee54cd672dae9d89989e1d6ebc5480a61f49a77e05",
@@ -45,6 +46,7 @@
     "decode_me_minus_johnston_ols_magma_bar_plot/magma_gene_set_plot.html": "f7ca0e4f2239f805e76b811500c6048fbd9e0d09070f4029743de8a5b50769d4",
     "decode_me_minus_johnston_ols_magma_gene_manhattan_plot.html": "913b2d078c23a6e638bcad87ba5f0a2d2875a480919dfbc6ad30dd26559cd14f",
     "decode_me_minus_pain_ols_genetic_corr_ct_ldsc_corr_agg_markdown.mdx": "b662399aa9bba6654337d770cc4784d47726c1a75f7141d78dad9a23106b2e83",
+    "decode_me_ppp_rg_cis_excluded_display_frame.parquet": "0f537d5858e9989fafc5adb88215183c4cc7ef16881ac0f2f84c18dca0339893",
     "decode_me_region_plot_btn1a1_locus/region_plot.png": "6404acc08c9809028f22836675f1183afa420c896f491858ea9a1975b8666933",
     "decode_me_region_plot_rabgap1l_locus/region_plot.png": "8e34eedaaa68f7dff9ddfab37234ce9dbdb106ed2eb18606ff6c157947dbe528",
     "decode_me_univariate_mixer_power_plot.png": "42a4bd8b32902295c2c408a4c2585855bc2943ef27a764a2dd9bc831ff7b3773",
@@ -89,6 +91,7 @@
     "decode_ra_seropositive_multi_tissue_chromatin_s_ldsc_cell_analysis_md_table.mdx": "7f07d0762039c89cb6a870af287773adb9242917605597dcc7b7b5173a765c47",
     "decode_ra_seropositive_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html": "866815427153c0238de2e20f90aee0fbf66f0de89daa22db2f8d6f951cf40b15",
     "decode_ra_seropositive_multi_tissue_gene_expression_s_ldsc_cell_analysis_md_table.mdx": "33a0aa61ca81bfee408e3a8d6ecbb5c6d85e4d3d9fdd6a66b89ad9887c28f2bd",
+    "han_asthma_ppp_rg_cis_excluded_display_frame.parquet": "7169e7f63c1208738e3e2785c075165501b2cd4d26215d9c43c6f8784cf66e31",
     "initial_bivariate_mixer_DecodeME_Multisite_pain_bivariate_mixer_results_table_as_markdown.mdx": "072f3ffe25031b19ed05da627b04abac3e0543ebc514907751d90bd2a2faeb4c",
     "initial_genetic_correlation_by_ct_ldsc_plot.html": "516676e19358ed100d398f2da57cb33651585b4134456abf6cca88268bdb8d08",
     "johnston_et_al_pain_h_magma_adult_brain_gene_manhattan_plot.html": "acca0ad8e8beb17ebb3fff47fe9979c322cb3b216d7a29fdc92fe89e3a6d3a77",
@@ -117,6 +120,7 @@
     "nyeo_ebv_dna_hba_magma_plot_extracted.html": "035767f42a08c0b4807400ed0bf568faba3ecdae991bb715e1e5cb83de8919db",
     "nyeo_ebv_dna_magma_bar_plot/magma_gene_set_plot.html": "e3756703e837801366b6d4120ab43d556186ce5a2c17e77f450fa19739ac3705",
     "nyeo_ebv_dna_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html": "676fd08c4092eac04f0d739dad425070f644349b6866518154bb3947763919e3",
+    "pgc2022_sch_ppp_rg_cis_excluded_display_frame.parquet": "b6f55985c6d301aa9f2e3bf1832618edec09c29e76cbd1779366f2f70eefec54",
     "ppp_heritability_hapmap_3_eur_discovery_table.parquet": "57dcbc2faa5c6ae3ae3b9786ffbf151c4963b56ad912f612ff8929ab68c04b19",
     "rabgap1l_region_plot_rabgap1l_locus/region_plot.png": "6772e34a9c1e5a892486c41742acb1ba88dfa281fa0092ffd9decc77643988f1",
     "said_et_al_2022_crp_eur_ldsc_heritability_markdown.mdx": "483e0bb12c95147f8c22175d22b1477dfc67065247fbf9e49072223067753cec",

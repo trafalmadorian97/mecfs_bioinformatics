@@ -1,3 +1,7 @@
+---
+tags:
+  - LDSC
+---
 # LDSC
 
 I applied [Linkage Disequlibirum Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to the Neale Lab's GWAS of self-reported chronic fatigue syndrome (CFS) in the UK Biobank.

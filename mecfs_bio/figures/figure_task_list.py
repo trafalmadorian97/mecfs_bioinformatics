@@ -2,6 +2,12 @@
 This file contains a list of figures to be exported for use in documentation
 """
 
+from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
+    BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
+)
+from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_ppp_rg import (
+    ASTHMA_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_ppp_rg import (
     KEATON_DBP_PPP_RG_CIS_EXCLUDED,
 )
@@ -43,6 +49,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_varia
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_rg import (
+    DECODE_ME_PPP_RG_CIS_EXCLUDED,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_BTN1A1_locus_37 import (
     DECODE_ME_BTN1A1_REGION_PLOT_37,
@@ -141,6 +150,9 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_s
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_standard_analysis import (
     SEROPOSITIVE_RA_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.pgc2022_ppp_rg import (
+    PGC2022_SCH_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
 )
@@ -237,6 +249,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
+    DECODE_ME_PPP_RG_CIS_EXCLUDED.display_frame_task,
     DECODE_ME_MINUS_PAIN_OLS_GENETIC_CORR_GENERATOR.aggregation_markdown_task,
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.magma_gene_manhattan_plot_unwrap,
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -387,6 +400,12 @@ ALL_FIGURE_TASKS: list[Task] = [
     KEATON_DBP_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # Million Veterans Program MI GWAS
     MV_MI_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # Bellenguez Alzheimer's GWAS
+    BELLENGUEZ_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # PGC 2022 Schizophrenai
+    PGC2022_SCH_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # asthma
+    ASTHMA_PPP_RG_CIS_EXCLUDED.display_frame_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
