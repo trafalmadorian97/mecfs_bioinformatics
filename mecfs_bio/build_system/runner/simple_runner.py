@@ -23,6 +23,7 @@ from mecfs_bio.build_system.rebuilder.metadata_to_path.base_meta_to_path import 
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
     PathRemapRule,
     RemappingMetaToPath,
+    check_remap_roots_available,
     warn_on_unmigrated_assets,
 )
 from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import (
@@ -94,7 +95,13 @@ class SimpleRunner:
            - This is particularly useful when you have changed the code that generates and asset, and so want it and its dependees to be regenerated.
         returns:
         mapping from asset id to file system information for all assets that were built or retrieved as part of the execution of the scheduler
+
+        Raises RemapRootUnavailableError, before any work is scheduled, if a configured
+        path_remap root is not present.  That case is checked rather than discovered
+        because it does not look like a failure: assets on a detached drive merely appear
+        unbuilt, and the run would rebuild them onto the default root.
         """
+        check_remap_roots_available(self.path_remap)
         warn_on_unmigrated_assets(self.asset_root, self.path_remap)
         if self.info_store.is_file():
             info = VerifyingTraceInfo.deserialize(self.info_store)

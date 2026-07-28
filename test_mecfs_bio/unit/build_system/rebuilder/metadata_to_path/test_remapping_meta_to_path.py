@@ -10,8 +10,11 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
+    MIGRATE_COMMAND,
     PathRemapRule,
     RemappingMetaToPath,
+    RemapRootUnavailableError,
+    check_remap_roots_available,
     stale_default_root_dirs,
 )
 from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import (
@@ -149,6 +152,65 @@ def test_tuple_from_config_rejects_unknown_keys() -> None:
         PathRemapRule.tuple_from_config(
             [{"root": "/mnt/d", "prefix": ["reference_data/db_snp_reference_data"]}]
         )
+
+
+def test_available_remap_root_passes_the_check(tmp_path: Path) -> None:
+    check_remap_roots_available(
+        (PathRemapRule(root=tmp_path, prefixes=(DB_SNP_PREFIX,)),)
+    )
+
+
+def test_no_rules_needs_no_roots() -> None:
+    check_remap_roots_available(())
+
+
+def test_missing_remap_root_is_reported_with_enough_detail_to_act_on(
+    tmp_path: Path,
+) -> None:
+    """
+    This is the detached-drive case, which is otherwise silent: the assets merely look
+    unbuilt.  The message has to name the root, say what is routed there, and give the
+    reader somewhere to go.
+    """
+    missing_root = tmp_path / "not_mounted"
+    with pytest.raises(RemapRootUnavailableError) as raised:
+        check_remap_roots_available(
+            (PathRemapRule(root=missing_root, prefixes=(DB_SNP_PREFIX,)),)
+        )
+
+    message = str(raised.value)
+    assert str(missing_root) in message
+    assert str(DB_SNP_PREFIX) in message
+    assert MIGRATE_COMMAND in message
+
+
+def test_remap_root_that_is_a_file_is_rejected(tmp_path: Path) -> None:
+    not_a_directory = tmp_path / "a_file"
+    not_a_directory.write_text("")
+    with pytest.raises(RemapRootUnavailableError):
+        check_remap_roots_available(
+            (PathRemapRule(root=not_a_directory, prefixes=(DB_SNP_PREFIX,)),)
+        )
+
+
+def test_every_missing_root_is_reported_at_once(tmp_path: Path) -> None:
+    """
+    Reporting one root at a time would have the user attach a drive, restart, and hit the
+    next failure.
+    """
+    first = tmp_path / "first_missing"
+    second = tmp_path / "second_missing"
+    with pytest.raises(RemapRootUnavailableError) as raised:
+        check_remap_roots_available(
+            (
+                PathRemapRule(root=first, prefixes=(DB_SNP_PREFIX,)),
+                PathRemapRule(root=second, prefixes=(PurePath("gwas/some_trait"),)),
+            )
+        )
+
+    message = str(raised.value)
+    assert str(first) in message
+    assert str(second) in message
 
 
 def test_stale_default_root_dirs_reports_unmigrated_subtrees(tmp_path: Path) -> None:
