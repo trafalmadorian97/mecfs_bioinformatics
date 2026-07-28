@@ -119,6 +119,9 @@ from mecfs_bio.assets.gwas.me_cfs.neale_lab.analysis.neale_lab_cfs_standard_anal
 from mecfs_bio.assets.gwas.migraine.million_veterans.analysis.million_veterans_migraine_standard_analysis import (
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.migraine.multistudy.ct_ldsc_migraine_studies import (
+    MIGRAINE_CROSS_STUDY_CT_LDSC_ASSET_GENERATOR,
+)
 from mecfs_bio.assets.gwas.migraine.uk_biobank_2025.analysis.uk_biobank_2025_migraine_standard_analysis import (
     UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS,
 )
@@ -347,6 +350,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
+    MIGRAINE_CROSS_STUDY_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task,
     CFS_CT_LDSC_ASSET_GENERATOR.aggregation_markdown_task,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     NEALE_LAB_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
