@@ -628,7 +628,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/20/e4/570aa02975bfb7382c80e4aab2da3c3a2c1fbdc0b85d004b7cbce3fd62d0/textalloc-1.2.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/32/d5/f9a850d79b0851d1d4ef6456097579a9005b31fea68726a4ae5f2d82ddd9/threadpoolctl-3.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fb/12/5911ae3eeec47800503a238d971e51722ccea5feb8569b735184d5fcdbc0/toolz-1.1.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/01/50/5817619a0fca56aff06383dbfde7ae017b3ca383915b3f1e4713164273cf/tqdm-4.69.1-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/f9/1c/01bfd571a64e7f270e6bab5e33777debe0edc56759233ce84f27dec92d14/tqdm-4.70.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/96/8d/1080ee4c231f361b6ce4470d556c8c435b67c7e0753aaa641497ee92f88b/traitlets-5.15.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8f/eb/461d5f167b6f5c7d97696f397c82f82e3480e003fce3f0a1cd1dd26e2eb2/typeguard-4.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1c/27/1a8b7a0f2a97db8e5f0092219dbfb2dea013f501d87c0c97ee9841b5902e/types_networkx-3.6.1.20260724-py3-none-any.whl
@@ -1931,7 +1931,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: 20671fed8a1e2bd2eb65deeabfc60434e67fc96272ef0fdda4f598958a0846d7
+  sha256: e98cccc792ec69432392d3cbcb3fa817c89c8145821ba96b528386f5e3404dce
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/ca/9f/f1adeadf3ec4a3bd3d1d9c809bce8526ceb3b571e8dd8356c26de0dc699e/bitarray-3.9.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -10023,10 +10023,10 @@ packages:
   version: 1.1.0
   sha256: 15ccc861ac51c53696de0a5d6d4607f99c210739caf987b5d2054f3efed429d8
   requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/01/50/5817619a0fca56aff06383dbfde7ae017b3ca383915b3f1e4713164273cf/tqdm-4.69.1-py3-none-any.whl
+- pypi: https://files.pythonhosted.org/packages/f9/1c/01bfd571a64e7f270e6bab5e33777debe0edc56759233ce84f27dec92d14/tqdm-4.70.0-py3-none-any.whl
   name: tqdm
-  version: 4.69.1
-  sha256: 0a654b96f7a2660cceb615b56f307ec2bef96c515409014a429a561981ab52b4
+  version: 4.70.0
+  sha256: 7f585706bfddbdebf89daac705b2dfcc16890130727d3197ca62c732b4310953
   requires_dist:
   - colorama ; sys_platform == 'win32'
   - requests ; extra == 'discord'
