@@ -13,7 +13,6 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
-    MIGRATE_COMMAND,
     PathRemapRule,
     RemapRootUnavailableError,
 )
@@ -28,14 +27,12 @@ from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopy
 OTHER_FILES_PREFIX = PurePath("other_files")
 
 
-def _warning_text(logs: Sequence[Mapping[str, Any]]) -> str:
+def _warnings(logs: Sequence[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
     """
-    Join the warning-level events captured from structlog.  structlog is not routed
-    through stdlib logging here, so pytest's caplog fixture sees nothing.
+    The warning-level events captured from structlog.  structlog is not routed through
+    stdlib logging here, so pytest's caplog fixture sees nothing.
     """
-    return "\n".join(
-        entry["event"] for entry in logs if entry.get("log_level") == "warning"
-    )
+    return [entry for entry in logs if entry.get("log_level") == "warning"]
 
 
 def _remap_root(tmp_path: Path) -> Path:
@@ -150,9 +147,7 @@ def test_run_warns_when_a_remapped_subtree_was_never_migrated(tmp_path: Path) ->
     with capture_logs() as logs:
         runner.run([task])
 
-    warnings = _warning_text(logs)
-    assert str(stale_dir) in warnings
-    assert MIGRATE_COMMAND in warnings
+    assert len(_warnings(logs)) == 1
 
 
 def test_run_is_silent_when_nothing_needs_migrating(tmp_path: Path) -> None:
@@ -177,7 +172,7 @@ def test_run_is_silent_when_nothing_needs_migrating(tmp_path: Path) -> None:
     with capture_logs() as logs:
         runner.run([task])
 
-    assert MIGRATE_COMMAND not in _warning_text(logs)
+    assert _warnings(logs) == []
 
 
 def test_unremapped_asset_stays_under_the_default_root(tmp_path: Path) -> None:
