@@ -61,10 +61,6 @@ _ALLOWED_RULE_KEYS = frozenset({_ROOT_KEY, _PREFIXES_KEY})
 # Repo-level command that reconciles the store on disk with the configured rules.
 MIGRATE_COMMAND = "pixi r invoke migrate-asset-store"
 
-# Machine-local file the rules are read from.  Named here only so that error messages can
-# point at it; the loader itself lives in the analysis layer, which this module must not
-# import.
-
 
 @frozen
 class PathRemapRule:
