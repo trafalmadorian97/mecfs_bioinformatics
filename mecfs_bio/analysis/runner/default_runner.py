@@ -23,7 +23,6 @@ import structlog
 import yaml
 
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
-    CONFIG_FILE_NAME,
     PathRemapRule,
 )
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
@@ -41,6 +40,7 @@ _imo_hasher_128 = ImoHasher.with_xxhash_128()
 
 logger = structlog.get_logger(__name__)
 
+CONFIG_FILE_NAME = "default_runner_config.yaml"
 _DEFAULT_RUNNER_CONFIG_PATH = Path(CONFIG_FILE_NAME)
 
 _ASSET_ROOT_KEY = "asset_root"

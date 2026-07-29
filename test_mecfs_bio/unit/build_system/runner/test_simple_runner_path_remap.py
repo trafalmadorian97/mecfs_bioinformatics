@@ -14,10 +14,12 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
     PathRemapRule,
-    RemapRootUnavailableError,
 )
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
+)
+from mecfs_bio.build_system.runner.check_roots_available import (
+    RemapRootUnavailableError,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
 from mecfs_bio.build_system.task.counting_task import CountingTask

@@ -12,13 +12,15 @@ from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
     PathRemapRule,
     RemappingMetaToPath,
-    RemapRootUnavailableError,
-    check_remap_roots_available,
     stale_default_root_dirs,
 )
 from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import (
     SimpleMetaToPath,
     simple_meta_to_relative_path,
+)
+from mecfs_bio.build_system.runner.check_roots_available import (
+    RemapRootUnavailableError,
+    check_remap_roots_available,
 )
 
 DEFAULT_ROOT = Path("/default_root")

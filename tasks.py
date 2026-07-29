@@ -550,7 +550,7 @@ def migrate_asset_store(
     # every repo command, so at module scope that noise and delay would land on unrelated
     # ones like `invoke format`.
     from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-    from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
+    from mecfs_bio.build_system.runner.check_roots_available import (
         RemapRootUnavailableError,
         check_remap_roots_available,
     )

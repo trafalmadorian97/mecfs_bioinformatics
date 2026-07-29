@@ -23,7 +23,6 @@ from mecfs_bio.build_system.rebuilder.metadata_to_path.base_meta_to_path import 
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
     PathRemapRule,
     RemappingMetaToPath,
-    check_remap_roots_available,
     warn_on_unmigrated_assets,
 )
 from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import (
@@ -40,6 +39,9 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_
 )
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import (
     VerifyingTraceRebuilder,
+)
+from mecfs_bio.build_system.runner.check_roots_available import (
+    check_remap_roots_available,
 )
 from mecfs_bio.build_system.scheduler.topological_scheduler import (
     TopologicalSchedulerSettings,
@@ -97,9 +99,7 @@ class SimpleRunner:
         mapping from asset id to file system information for all assets that were built or retrieved as part of the execution of the scheduler
 
         Raises RemapRootUnavailableError, before any work is scheduled, if a configured
-        path_remap root is not present.  That case is checked rather than discovered
-        because it does not look like a failure: assets on a detached drive merely appear
-        unbuilt, and the run would rebuild them onto the default root.
+        path_remap root is not present.
         """
         check_remap_roots_available(self.path_remap)
         warn_on_unmigrated_assets(self.asset_root, self.path_remap)

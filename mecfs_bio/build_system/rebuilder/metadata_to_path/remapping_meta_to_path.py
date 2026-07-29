@@ -64,14 +64,6 @@ MIGRATE_COMMAND = "pixi r invoke migrate-asset-store"
 # Machine-local file the rules are read from.  Named here only so that error messages can
 # point at it; the loader itself lives in the analysis layer, which this module must not
 # import.
-CONFIG_FILE_NAME = "default_runner_config.yaml"
-
-
-class RemapRootUnavailableError(RuntimeError):
-    """
-    A configured remap root is not present, so the subtrees routed there can be neither
-    read nor written.
-    """
 
 
 @frozen
@@ -186,47 +178,6 @@ def _check_prefixes_disjoint(rules: Sequence[PathRemapRule]) -> None:
                 f"{other_prefix} (root {other_root}).  One asset would match both, so "
                 f"its location would depend on rule order."
             )
-
-
-def _unavailable_root_message(rule: PathRemapRule) -> str:
-    if rule.root.exists():
-        cause = f"{rule.root} exists but is not a directory."
-    else:
-        cause = (
-            f"{rule.root} does not exist.  The usual cause is a removable drive that is "
-            f"not attached, or that is attached but has not been mounted in this session: "
-            f"an unmounted mount point is indistinguishable from a missing directory."
-        )
-    prefixes = ", ".join(str(prefix) for prefix in rule.prefixes)
-    return (
-        f"Asset store remap root unavailable: {cause}\n"
-        f"Subtrees routed there: {prefixes}.\n"
-        f"Continuing would treat those assets as missing and rebuild them under the "
-        f"default asset root, which is the disk the remapping exists to relieve, so this "
-        f"is an error rather than a warning.\n"
-        f"Attach or mount the drive and re-run.  If the root has moved for good, update "
-        f"the path_remap section of {CONFIG_FILE_NAME} and run '{MIGRATE_COMMAND}'."
-    )
-
-
-def check_remap_roots_available(rules: Sequence[PathRemapRule]) -> None:
-    """
-    Fail fast if any configured remap root is missing.
-
-    Without this check the failure is silent and expensive rather than loud: every asset
-    routed to the missing root simply looks unbuilt, so a run quietly re-downloads or
-    recomputes tens of gigabytes onto the default root.  The build system is behaving
-    correctly there, which is precisely why nothing would complain.
-
-    All unavailable roots are reported together, so a run is not restarted only to hit the
-    next one.  The cost is one stat per rule.
-    """
-    unavailable = [rule for rule in rules if not rule.root.is_dir()]
-    if not unavailable:
-        return
-    raise RemapRootUnavailableError(
-        "\n\n".join(_unavailable_root_message(rule) for rule in unavailable)
-    )
 
 
 def stale_default_root_dirs(
