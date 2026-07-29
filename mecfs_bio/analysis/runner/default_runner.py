@@ -11,7 +11,9 @@ so a config may set only the ones it wants to change:
     info_store:  path of the persistent verifying-trace cache
     path_remap:  rules routing selected store subtrees to other filesystems, so that one
                  logical store can span disks.  See the remapping_meta_to_path module for
-                 the schema and for guidance on which subtrees are worth remapping.
+                 the schema and for guidance on which subtrees are worth remapping.  Every
+                 configured root must be present when a run starts, so a detached drive
+                 aborts the run instead of silently rebuilding its assets elsewhere.
 """
 
 import functools
@@ -38,7 +40,8 @@ _imo_hasher_128 = ImoHasher.with_xxhash_128()
 
 logger = structlog.get_logger(__name__)
 
-_DEFAULT_RUNNER_CONFIG_PATH = Path("default_runner_config.yaml")
+CONFIG_FILE_NAME = "default_runner_config.yaml"
+_DEFAULT_RUNNER_CONFIG_PATH = Path(CONFIG_FILE_NAME)
 
 _ASSET_ROOT_KEY = "asset_root"
 _INFO_STORE_KEY = "info_store"

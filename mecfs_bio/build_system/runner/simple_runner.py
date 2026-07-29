@@ -40,6 +40,9 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import (
     VerifyingTraceRebuilder,
 )
+from mecfs_bio.build_system.runner.check_roots_available import (
+    check_remap_roots_available,
+)
 from mecfs_bio.build_system.scheduler.topological_scheduler import (
     TopologicalSchedulerSettings,
     dependees_of_targets_from_tasks,
@@ -94,7 +97,11 @@ class SimpleRunner:
            - This is particularly useful when you have changed the code that generates and asset, and so want it and its dependees to be regenerated.
         returns:
         mapping from asset id to file system information for all assets that were built or retrieved as part of the execution of the scheduler
+
+        Raises RemapRootUnavailableError, before any work is scheduled, if a configured
+        path_remap root is not present.
         """
+        check_remap_roots_available(self.path_remap)
         warn_on_unmigrated_assets(self.asset_root, self.path_remap)
         if self.info_store.is_file():
             info = VerifyingTraceInfo.deserialize(self.info_store)

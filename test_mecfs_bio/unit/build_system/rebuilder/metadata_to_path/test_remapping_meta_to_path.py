@@ -18,6 +18,10 @@ from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path impor
     SimpleMetaToPath,
     simple_meta_to_relative_path,
 )
+from mecfs_bio.build_system.runner.check_roots_available import (
+    RemapRootUnavailableError,
+    check_remap_roots_available,
+)
 
 DEFAULT_ROOT = Path("/default_root")
 REMAP_ROOT = Path("/remap_root")
@@ -148,6 +152,35 @@ def test_tuple_from_config_rejects_unknown_keys() -> None:
     with pytest.raises(AssertionError):
         PathRemapRule.tuple_from_config(
             [{"root": "/mnt/d", "prefix": ["reference_data/db_snp_reference_data"]}]
+        )
+
+
+def test_available_remap_root_passes_the_check(tmp_path: Path) -> None:
+    check_remap_roots_available(
+        (PathRemapRule(root=tmp_path, prefixes=(DB_SNP_PREFIX,)),)
+    )
+
+
+def test_no_rules_needs_no_roots() -> None:
+    check_remap_roots_available(())
+
+
+def test_missing_remap_root_is_rejected(tmp_path: Path) -> None:
+    """
+    The detached-drive case, which is otherwise silent: the assets merely look unbuilt.
+    """
+    with pytest.raises(RemapRootUnavailableError):
+        check_remap_roots_available(
+            (PathRemapRule(root=tmp_path / "not_mounted", prefixes=(DB_SNP_PREFIX,)),)
+        )
+
+
+def test_remap_root_that_is_a_file_is_rejected(tmp_path: Path) -> None:
+    not_a_directory = tmp_path / "a_file"
+    not_a_directory.write_text("")
+    with pytest.raises(RemapRootUnavailableError):
+        check_remap_roots_available(
+            (PathRemapRule(root=not_a_directory, prefixes=(DB_SNP_PREFIX,)),)
         )
 
 

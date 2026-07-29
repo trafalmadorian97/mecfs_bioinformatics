@@ -550,12 +550,26 @@ def migrate_asset_store(
     # every repo command, so at module scope that noise and delay would land on unrelated
     # ones like `invoke format`.
     from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+    from mecfs_bio.build_system.runner.check_roots_available import (
+        RemapRootUnavailableError,
+        check_remap_roots_available,
+    )
 
     asset_root = DEFAULT_RUNNER.asset_root
     rules = DEFAULT_RUNNER.path_remap
     if not rules:
         print("No path_remap rules configured; nothing to migrate.")
         return
+
+    # Checked here as well as in the runner, and before rsync gets a chance to mkdir the
+    # destination.  Copying to an absent remap root would materialize it on the local disk,
+    # after which it exists and the runner's identical check passes forever, sending the
+    # very assets this task moves back onto the disk being relieved.
+    try:
+        check_remap_roots_available(rules)
+    except RemapRootUnavailableError as error:
+        print(error)
+        sys.exit(1)
 
     print(f"default asset root: {asset_root}")
     print(f"mode: {'REVERSE (remap root -> default)' if reverse else 'remap'}")
