@@ -429,7 +429,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tktable-2.10-h5a7a40f_8.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomli-w-1.2.0-pyhd8ed1ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tomlkit-0.15.1-pyhcf101f3_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.63-h4e94fc0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.64-h4e94fc0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.48.0-hb17b654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/xmltodict-1.0.4-pyhcf101f3_0.conda
@@ -1931,7 +1931,7 @@ packages:
 - pypi: ./
   name: biostatistics
   version: 0.1.0
-  sha256: e98cccc792ec69432392d3cbcb3fa817c89c8145821ba96b528386f5e3404dce
+  sha256: 184700d61f703437559da1e4142bcd8dd5e8480a4974f41a3af5509eefd2fbf0
   requires_python: ==3.12
 - pypi: https://files.pythonhosted.org/packages/ca/9f/f1adeadf3ec4a3bd3d1d9c809bce8526ceb3b571e8dd8356c26de0dc699e/bitarray-3.9.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: bitarray
@@ -10052,10 +10052,10 @@ packages:
   - pytest-mypy-testing ; extra == 'test'
   - pytest>=7.0,<8.2 ; extra == 'test'
   requires_python: '>=3.9'
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.63-h4e94fc0_0.conda
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.64-h4e94fc0_0.conda
   noarch: python
-  sha256: 3340cef93f507e05f7243cb1f706a4fc273d591848073d8ab54b04a1357e0898
-  md5: 51139cd6c5ca525dec9b2f74c4e43d93
+  sha256: a4376d4e7be6b45a5c0de662e91892474828b2d05a279cf35a1f4aecd8c5223e
+  md5: 2185e5c08d7d72632a34986b12cb5438
   depends:
   - python
   - __glibc >=2.17,<3.0.a0
@@ -10065,11 +10065,10 @@ packages:
   constrains:
   - __glibc >=2.17
   license: MIT
-  license_family: MIT
   purls:
-  - pkg:pypi/ty?source=hash-mapping
-  size: 10529624
-  timestamp: 1784852395499
+  - pkg:pypi/ty?source=compressed-mapping
+  size: 10570158
+  timestamp: 1785217677198
 - pypi: https://files.pythonhosted.org/packages/8f/eb/461d5f167b6f5c7d97696f397c82f82e3480e003fce3f0a1cd1dd26e2eb2/typeguard-4.6.0-py3-none-any.whl
   name: typeguard
   version: 4.6.0
