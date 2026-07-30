@@ -12,7 +12,7 @@ I applied [cross-trait linkage disequilibrium score regression](../../../Bioinfo
 {{markdown_table("docs/_figs/migraine_ct_ldsc_ct_ldsc_corr_agg_markdown.mdx") }}
 
 
-The genetic correlation between the UK Biobank[@uk2025whole] and Million Veterans[@verma2024diversity] GWAS of Migraine exceeds 0.8.  This suggests that the two GWAS are measureing closely related pathological entities.
+The genetic correlation between the [UK Biobank](../../../Data_Sources/UKBB.md)[@uk2025whole] and [Million Veterans](../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity] GWAS of Migraine exceeds 0.8.  This suggests that the two GWAS are measureing closely related pathological entities.
 
 
 
