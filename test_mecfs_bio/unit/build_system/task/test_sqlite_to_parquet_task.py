@@ -17,7 +17,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.sqlite_to_parquet_task import SqliteToParquetTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def _make_sqlite_db(tmp_path: Path) -> Path:
@@ -73,7 +73,7 @@ def test_sqlite_to_parquet_simple_query(tmp_path: Path):
         asset_id="out",
         query="SELECT id, name, collection FROM _src.gene_set",
     )
-    result = task.execute(scratch_dir=scratch, fetch=_FileFetch(db_path), wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch, fetch=_FileFetch(db_path), wf=make_wf())
 
     assert isinstance(result, FileAsset)
     df = pd.read_parquet(result.path)
@@ -103,7 +103,7 @@ def test_sqlite_to_parquet_with_list_aggregation(tmp_path: Path):
             GROUP BY gs.id, gs.name\
         """,
     )
-    result = task.execute(scratch_dir=scratch, fetch=_FileFetch(db_path), wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch, fetch=_FileFetch(db_path), wf=make_wf())
     assert isinstance(result, FileAsset)
 
     df = pd.read_parquet(result.path)

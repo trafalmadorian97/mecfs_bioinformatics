@@ -7,6 +7,10 @@ This Task downloads this data, re-hosted on Dropbox.
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -20,6 +24,9 @@ GENOMES1K_REFERENCE_FOR_GENOMIC_SEM = DownloadFileTask(
         id=AssetId("1k_genomes_for_genomic_sem"),
         extension=".gz",
         filename="reference.1000G.maf.0.005.txt",
+        # Single-space-separated with a header (SNP, CHR, BP, MAF, A1, A2);
+        # polars transparently decompresses the .gz.
+        read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=" ")),
     ),
     url="https://www.dropbox.com/scl/fi/pp3iftty01ekhilk19gmx/reference.1000G.maf.0.005.txt.gz?rlkey=kgxww2tf7118j582jx46dq0rd&dl=1",
     md5_hash="b710949ecf4b7ff56c395a12174261b6",

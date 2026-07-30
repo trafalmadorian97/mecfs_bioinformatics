@@ -12,7 +12,7 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_copy_file_from_directory_task(tmp_path: Path):
@@ -40,5 +40,5 @@ def test_copy_file_from_directory_task(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         return DirectoryAsset(source_dir)
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)

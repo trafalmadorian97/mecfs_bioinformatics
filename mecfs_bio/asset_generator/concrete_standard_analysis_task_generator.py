@@ -14,6 +14,10 @@ from mecfs_bio.asset_generator.concrete_magma_asset_generator import (
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
 )
+from mecfs_bio.asset_generator.h_magma_asset_generator import (
+    HMagmaTasks,
+    generate_h_magma_tasks,
+)
 from mecfs_bio.asset_generator.hba_magma_asset_generator import (
     HBAMagmaTasks,
     generate_human_brain_atlas_magma_tasks,
@@ -30,6 +34,11 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.sample_size_spec import (
+    SampleSizeSpec,
+    ScalarSampleSize,
+    coerce_sample_size,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.combine_gene_lists_task import SrcGeneList
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
@@ -103,6 +112,11 @@ class StandardAnalysisTaskGroup:
     manhattan_task: Task | None = None
     heritability_task: Task | None = None
     gene_set_analysis_tasks: CuratedGeneSetAnalysisTasks | None = None
+    h_magma_tasks: HMagmaTasks | None = None
+
+    @property
+    def h_magma_tasks_unwrap(self) -> HMagmaTasks:
+        return unwrap(self.h_magma_tasks)
 
     @property
     def hba_magma_tasks_unwrap(self) -> HBAMagmaTasks:
@@ -120,6 +134,10 @@ class StandardAnalysisTaskGroup:
     def gene_set_analysis_unwrap(self) -> CuratedGeneSetAnalysisTasks:
         return unwrap(self.gene_set_analysis_tasks)
 
+    @property
+    def magma_gene_manhattan_plot_unwrap(self) -> Task:
+        return unwrap(self.magma_tasks.inner.gene_manhattan_plot_task)
+
     def get_terminal_tasks(self) -> list[Task]:
         result = (
             list(self.sldsc_tasks.get_terminal_tasks())
@@ -134,6 +152,10 @@ class StandardAnalysisTaskGroup:
             result.append(self.manhattan_task)
         if self.heritability_task is not None:
             result.append(self.heritability_task)
+        if self.gene_set_analysis_tasks is not None:
+            result.extend(self.gene_set_analysis_tasks.terminal_tasks())
+        if self.h_magma_tasks is not None:
+            result.extend(self.h_magma_tasks.terminal_tasks())
         return result
 
 
@@ -141,8 +163,8 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     base_name: str,
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
-    sample_size: int,
-    sample_size_for_sldsc: int | None = None,
+    sample_size: int | SampleSizeSpec,
+    sample_size_for_sldsc: int | SampleSizeSpec | None = None,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
@@ -155,11 +177,19 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     manhattan_settings: ManhattanPlotSettings | None = None,
     phenotype_info_for_ldsc: PhenotypeInfo | None = None,
     include_gene_set_analysis: bool = True,
+    include_h_magma_tasks: bool = False,
 ) -> StandardAnalysisTaskGroup:
     """
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
-    assuming that GWAS data already contains rsids
+    assuming that GWAS data already contains rsids.
+
+    ``sample_size`` may be a scalar (the common case) or a
+    `PerVariantSampleSize` when the GWAS already carries a per-variant N
+    column (e.g. meta-analysis or GenomicSEM output); in the latter case MAGMA,
+    S-LDSC, and LDSC heritability all read N from that column instead of a
+    constant.
     """
+    sample_size = coerce_sample_size(sample_size)
 
     labeled_lead_variant_task_group = generate_tasks_labeled_lead_variants(
         base_name=base_name,
@@ -177,16 +207,21 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         gget_settings=gget_settings,
     )
     sldsc_ss = (
-        sample_size_for_sldsc if sample_size_for_sldsc is not None else sample_size
+        coerce_sample_size(sample_size_for_sldsc)
+        if sample_size_for_sldsc is not None
+        else sample_size
     )
-    pre_sldsc_pipe = CompositePipe(
-        [
-            SetColToConstantPipe(
-                col_name=GWASLAB_SAMPLE_SIZE_COLUMN, constant=sldsc_ss
-            ),
-            pre_sldsc_pipe,
-        ]
-    )
+    if isinstance(sldsc_ss, ScalarSampleSize):
+        # Force a uniform N onto every variant. For a per-variant sample size the
+        # GWAS already carries an N column, which flows through to S-LDSC unchanged.
+        pre_sldsc_pipe = CompositePipe(
+            [
+                SetColToConstantPipe(
+                    col_name=GWASLAB_SAMPLE_SIZE_COLUMN, constant=sldsc_ss.n
+                ),
+                pre_sldsc_pipe,
+            ]
+        )
 
     sldsc_tasks = standard_sldsc_task_generator(
         sumstats_task=magma_tasks.sumstats_task,
@@ -227,7 +262,9 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             pipe=pre_sldsc_pipe,
             phenotype_info=phenotype_info_for_ldsc,
             build="19",
-            set_sample_size=sample_size,
+            set_sample_size=(
+                sample_size.n if isinstance(sample_size, ScalarSampleSize) else None
+            ),
             source_sumstats_task=magma_tasks.sumstats_task,
             ld_ref_task=THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
         )
@@ -264,7 +301,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         hba_magma = None
     if include_gene_set_analysis:
         assert include_hba_magma_tasks, (
-            "gene set analysis requires hba magma analysis, since the two analysis pathways make use of common MAGMA entrez gene analysis resulsts"
+            "gene set analysis requires hba magma analysis, since the two analysis pathways make use of common MAGMA entrez gene analysis results"
         )
         assert hba_magma is not None
         gene_set_analysis = curated_gene_set_analysis_magma_tasks_from_gene_analysis(
@@ -272,6 +309,15 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         )
     else:
         gene_set_analysis = None
+    h_magma_tasks = (
+        generate_h_magma_tasks(
+            base_name=base_name,
+            gwas_parquet_with_rsids_task=magma_tasks.parquet_file_task,
+            sample_size=sample_size,
+        )
+        if include_h_magma_tasks
+        else None
+    )
 
     return StandardAnalysisTaskGroup(
         sldsc_tasks=sldsc_tasks,
@@ -282,6 +328,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         manhattan_task=manhattan_task,
         heritability_task=heritability_md_task,
         gene_set_analysis_tasks=gene_set_analysis,
+        h_magma_tasks=h_magma_tasks,
     )
 
 
@@ -303,16 +350,18 @@ def concrete_standard_analysis_generator_no_rsid(
     base_name: str,
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
-    sample_size: int,
-    sample_size_for_sldsc: int | None = None,
+    sample_size: int | SampleSizeSpec,
+    sample_size_for_sldsc: int | SampleSizeSpec | None = None,
     pre_pipe_after_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_pipe_before_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_sldsc_pipe: DataProcessingPipe = IdentityPipe(),
     include_master_gene_lists: bool = True,
     drop_palindromic_in_harmonized: bool = False,
+    filter_indels_in_harmonized: bool = False,
     include_hba_magma_tasks: bool = True,
     include_independent_cluster_plot_in_hba: bool = True,
     hbp_plot_settings: PlotSettings = PlotSettings("plotly_white"),
+    phenotype_info_for_ldsc: PhenotypeInfo | None = None,
 ) -> StandardAnalysisTaskGroupAddRSIDS:
     """
 
@@ -334,6 +383,7 @@ def concrete_standard_analysis_generator_no_rsid(
         base_name=base_name,
         use_gwaslab_rsids_convention=True,
         drop_palindromic_ambiguous=drop_palindromic_in_harmonized,
+        filter_indels_in_harmonized=filter_indels_in_harmonized,
     )
     standard_tasks = concrete_standard_analysis_generator_assume_already_has_rsid(
         base_name=base_name,
@@ -347,6 +397,7 @@ def concrete_standard_analysis_generator_no_rsid(
         include_hba_magma_tasks=include_hba_magma_tasks,
         include_independent_cluster_plot_in_hba=include_independent_cluster_plot_in_hba,
         hba_plot_settings=hbp_plot_settings,
+        phenotype_info_for_ldsc=phenotype_info_for_ldsc,
     )
     return StandardAnalysisTaskGroupAddRSIDS(
         tasks=standard_tasks,

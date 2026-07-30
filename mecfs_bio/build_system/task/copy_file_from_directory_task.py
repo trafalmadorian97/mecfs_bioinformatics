@@ -11,6 +11,7 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
@@ -110,6 +111,33 @@ class CopyFileFromDirectoryTask(Task):
             )
         else:
             raise ValueError("Unknown source meta")
+        return cls(
+            meta=meta,
+            source_directory_task=source_directory_task,
+            path_inside_directory=path_inside_directory,
+        )
+
+    @classmethod
+    def create_from_gwas_data_in_directory(
+        cls,
+        asset_id: str,
+        source_directory_task: Task,
+        path_inside_directory: PurePath,
+        read_spec: DataFrameReadSpec | None,
+        trait: str,
+        project: str,
+        sub_dir: str,
+        extension: str,
+    ):
+        meta = GWASSummaryDataFileMeta(
+            id=AssetId(asset_id),
+            trait=trait,
+            project=project,
+            sub_dir=sub_dir,
+            project_path=None,
+            read_spec=read_spec,
+            extension=extension,
+        )
         return cls(
             meta=meta,
             source_directory_task=source_directory_task,

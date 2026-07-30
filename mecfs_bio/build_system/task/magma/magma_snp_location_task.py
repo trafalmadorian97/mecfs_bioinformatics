@@ -154,11 +154,20 @@ class MagmaSNPFileTask(Task):
         gwas_parquet_with_rsids_task: Task,
         asset_id: str,
         pipes: list[DataProcessingPipe] | None = None,
+        sample_size_column: str | None = None,
     ):
+        """Build the MAGMA p-value input file (``rsID P``, headerless).
+
+        When ``sample_size_column`` is given that column is appended (``rsID P
+        N``) so MAGMA can read a per-variant sample size via its ``ncol``
+        modifier instead of a scalar ``N``.
+        """
         if pipes is None:
             pipes = []
         pipes.append(ComputePIfNeededPipe())
         extra_cols = [GWASLAB_P_COL]
+        if sample_size_column is not None:
+            extra_cols.append(sample_size_column)
         source_meta = gwas_parquet_with_rsids_task.meta
         meta = create_new_meta(
             source_meta,

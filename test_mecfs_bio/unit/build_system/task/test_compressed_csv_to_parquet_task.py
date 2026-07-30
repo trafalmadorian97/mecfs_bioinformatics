@@ -22,7 +22,7 @@ from mecfs_bio.build_system.task.compressed_csv_to_parquet_task import (
     CompressedCSVToParquetTask,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def _gzip_file(src: Path, target: Path):
@@ -61,6 +61,6 @@ def test_compressed_csv_to_parquet_task(tmp_path: Path):
         def __call__(self, asset_id: AssetId) -> Asset:
             return FileAsset(gzip_loc)
 
-    result = task.execute(scratch_dir=scratch_dir, fetch=MyFetch(), wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_dir, fetch=MyFetch(), wf=make_wf())
     assert isinstance(result, FileAsset)
     pd.read_parquet(result.path)

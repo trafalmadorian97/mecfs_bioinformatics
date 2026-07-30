@@ -23,11 +23,11 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     CSVOutFormat,
     OutFormat,
-    ParquetOutFormat,
     get_extension_and_read_spec_from_format,
+    write_df_according_to_format,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
@@ -107,21 +107,20 @@ class FetchGGetInfoTask(Task):
         result_df = pd.merge(
             df, gene_info, left_on=self.ensembl_id_col, right_index=True, how="left"
         )
-        out_path = scratch_dir / f"{self.source_id}.csv"
+        # No extension: the build system renames the file according to the
+        # task's meta, so a hardcoded one here only misleads the reader.
+        out_path = scratch_dir / str(self.source_id)
         result_df = (
             self.post_pipe.process(narwhals.from_native(result_df).lazy())
             .collect()
             .to_pandas()
         )
         result_df = _preprocess_columns(result_df)
-        if isinstance(self.out_format, CSVOutFormat):
-            result_df.to_csv(out_path, index=False, sep=self.out_format.sep)
-        elif isinstance(self.out_format, ParquetOutFormat):
-            result_df.to_parquet(
-                out_path,
-            )
-        else:
-            raise ValueError(f"Unsupported output format: {self.out_format}")
+        write_df_according_to_format(
+            df=narwhals.from_native(result_df).lazy(),
+            out_path=out_path,
+            out_format=self.out_format,
+        )
         return FileAsset(out_path)
 
     @classmethod

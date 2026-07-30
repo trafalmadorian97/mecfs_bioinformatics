@@ -11,17 +11,16 @@ from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.download_file_task import (
     DownloadFileTask,
 )
-from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.build_system.wf.wf_downloader import WFDownloader
 from mecfs_bio.util.download.verify import calc_md5_checksum, head_file, verify_hash
 
 
 @frozen
-class FakeWF(WF):
+class FakeWFDownloader(WFDownloader):
     source_file: Path
 
-    def download_from_url(
-        self, url: str, local_path: Path, md5_hash: str | None
-    ) -> None:
+    def download(self, url: str, local_path: Path, md5_hash: str | None) -> None:
         shutil.copyfile(self.source_file, local_path)
         verify_hash(
             downloaded_file=local_path,
@@ -37,7 +36,7 @@ def test_md5_check_passes_fails_appropriately(tmp_path: Path):
     external_file_path.parent.mkdir(parents=True, exist_ok=True)
     external_file_path.write_text("yoyoyoy")
     hash_of_file = calc_md5_checksum(external_file_path)
-    wf = FakeWF(source_file=external_file_path)
+    wf = make_wf(downloader=FakeWFDownloader(source_file=external_file_path))
     scratch = tmp_path / "scratch"
     scratch.mkdir(parents=True, exist_ok=True)
     tsk_1 = DownloadFileTask(

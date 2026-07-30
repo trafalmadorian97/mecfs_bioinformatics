@@ -5,6 +5,10 @@ from typing import Any
 
 import yaml
 
+# Prefer the libyaml C dumper when available — typically ~6x faster than the
+# pure-Python SafeDumper, with identical output.
+_YAML_DUMPER = getattr(yaml, "CSafeDumper", yaml.SafeDumper)
+
 
 def atomic_write_yaml(
     path: str | Path,
@@ -48,6 +52,7 @@ def atomic_write_yaml(
                 sort_keys=sort_keys,
                 default_flow_style=False,
                 allow_unicode=True,
+                Dumper=_YAML_DUMPER,
             )
             f.write("\n")
             f.flush()

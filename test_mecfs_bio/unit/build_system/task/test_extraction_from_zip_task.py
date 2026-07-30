@@ -13,7 +13,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.make_executable_wrapper_task import (
     MakeExecutableWrapperTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_extract_from_zip_and_make_executable(tmp_path: Path):
@@ -33,7 +33,7 @@ def test_extract_from_zip_and_make_executable(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(source_zip_path)
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     assert result.path == scratch_dir / name_in_archive
     assert os.access(result.path, os.X_OK)

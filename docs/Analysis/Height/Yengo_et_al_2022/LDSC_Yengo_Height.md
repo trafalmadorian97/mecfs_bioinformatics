@@ -1,3 +1,7 @@
+---
+tags:
+  - LDSC
+---
 # LDSC Analysis
 
 I applied [Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to the non-23-and-me European subset of the adult height GWAS of Yengo et al.[@yengo2022saturated] to estimate [heritability](../../../Bioinformatics_Concepts/Heritability.md) and look for signs of population stratification or confounding.

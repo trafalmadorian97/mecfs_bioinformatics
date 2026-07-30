@@ -19,6 +19,9 @@ from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    CSVOutFormat,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     GeneticCorrelationByCTLDSCTask,
     SumstatsSource,
@@ -26,7 +29,6 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
 from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
     SNPHeritabilityByLDSCTask,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import CSVOutFormat
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.format_numbers_pipe import FormatFloatNumbersPipe

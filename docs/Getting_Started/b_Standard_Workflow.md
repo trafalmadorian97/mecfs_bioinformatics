@@ -3,6 +3,12 @@
 This page describes the standard workflow for contributing to the `mecfs_bioinformatics` repository.
 
 
+## Propose changes
+
+If your proposed contribution is small, skip this step.
+
+For larger proposed contributions, first [open an issue](https://github.com/trafalmadorian97/mecfs_bioinformatics/issues) describing what you want to add or change.  This allows discussion before you start implementation, and reduces wasted work
+
 
 ## Create a new branch
 

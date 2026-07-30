@@ -12,6 +12,9 @@ from mecfs_bio.build_system.task.concat_frames_task import ConcatFramesTask
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     HarmonizeGWASWithReferenceViaAlleles,
 )
@@ -27,7 +30,6 @@ from mecfs_bio.build_system.task.lcv.lcv_task import (
     LCVConfig,
     LCVTask,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue

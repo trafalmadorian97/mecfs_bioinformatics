@@ -1,4 +1,6 @@
 ---
+tags:
+- Mendelian randomization
 hide:
 - toc
 ---

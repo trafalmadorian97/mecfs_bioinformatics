@@ -14,7 +14,7 @@ from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_convert_dataframe_to_markdown_task(tmp_path: Path):
@@ -36,6 +36,6 @@ def test_convert_dataframe_to_markdown_task(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(df_1_loc)
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     assert result.path.is_file()

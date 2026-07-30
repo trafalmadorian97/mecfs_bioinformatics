@@ -13,6 +13,9 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash i
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
     GwasLabTransformSpec,
@@ -23,7 +26,6 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_transform_sumstats import (
     GWASLabTransformSumstatsTask,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    ParquetOutFormat,
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.head_pipe import HeadPipe
@@ -37,8 +39,8 @@ def count_ambiguous_or_missing_cases(sumstats: gwaslab.Sumstats) -> int:
     status code 7 indicates a strand-indistinguishable variant, while status code 8 indicates a variant not in the reference VCF
     """
     ambiguous_or_missing = (
-        (sumstats.data["STATUS"].str.slice(-1) == "7")
-        | (sumstats.data["STATUS"].str.slice(-1) == "8")
+        (sumstats.data["STATUS"].astype(str).str.slice(-1) == "7")
+        | (sumstats.data["STATUS"].astype(str).str.slice(-1) == "8")
     ).sum()
     return ambiguous_or_missing
 

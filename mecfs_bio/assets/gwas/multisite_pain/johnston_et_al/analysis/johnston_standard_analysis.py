@@ -32,5 +32,6 @@ JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS = (
         ),
         hba_plot_settings=PlotSettings("plotly_white"),
         include_independent_cluster_plot_in_hba=True,
+        include_h_magma_tasks=True,
     )
 )

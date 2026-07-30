@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
     Method,
     MultipleTestingTableTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 _dummy_df = pd.DataFrame({"p": [0.02, 0.02, 1, 1, 1]})
 
@@ -48,7 +48,7 @@ def test_multiple_testing(tmp_path: Path, procedure: Method, expected_passed: in
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(input_path)
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     result_df = pd.read_csv(result.path)
     assert len(result_df) == expected_passed

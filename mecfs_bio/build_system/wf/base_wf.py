@@ -1,46 +1,56 @@
-from abc import ABC
 from pathlib import Path
 
-import py3_wget
+from attrs import frozen
 
-from mecfs_bio.util.download.robust_download import robust_download_with_aria
-from mecfs_bio.util.download.verify import verify_hash
+from mecfs_bio.build_system.wf.synapse_downloader import (
+    SharedClientSynapseDownloader,
+    SynapseDownloader,
+)
+from mecfs_bio.build_system.wf.wf_downloader import (
+    SimpleWFDownloader,
+    WFDownloader,
+)
 
 
-class WF(ABC):
+@frozen
+class WF:
     """
     An interface to the external world.
-    Currently only used for downloading files.
-    May be extended in the future .
+
+    To add a new capability, add an attribute here and a corresponding parameter to make_wf
+    with an appropriate default.
     """
 
+    downloader: WFDownloader
+    synapse_downloader: SynapseDownloader
+
     def download_from_url(
         self, url: str, local_path: Path, md5_hash: str | None
     ) -> None:
-        pass
+        self.downloader.download(url, local_path, md5_hash)
+
+    def download_from_synapse(
+        self, synid: str, dest_dir: Path, expected_name: str
+    ) -> Path:
+        """Download the single file at synid into dest_dir and return its path."""
+        return self.synapse_downloader.download(synid, dest_dir, expected_name)
+
+    def fetch_synapse_file_head(self, synid: str, n_bytes: int) -> bytes:
+        """Return the first n_bytes of the Synapse file at synid without downloading the
+        whole file (via a pre-signed URL + HTTP Range request)."""
+        return self.synapse_downloader.fetch_file_head(synid, n_bytes)
 
 
-class SimpleWF(WF):
-    def download_from_url(
-        self, url: str, local_path: Path, md5_hash: str | None
-    ) -> None:
-        # py3_wget attempts to read the whole file to check md5.  doesn't work for large files.  So implement my own check
-        py3_wget.download_file(
-            url=url,
-            output_path=local_path,
-        )
-        verify_hash(
-            downloaded_file=local_path,
-            expected_hash=md5_hash,
-        )
-
-
-class RobustDownloadWF(WF):
-    def download_from_url(
-        self, url: str, local_path: Path, md5_hash: str | None
-    ) -> None:
-        robust_download_with_aria(
-            md5sum=md5_hash,
-            url=url,
-            dest=local_path,
-        )
+def make_wf(
+    downloader: WFDownloader | None = None,
+    synapse_downloader: SynapseDownloader | None = None,
+) -> WF:
+    """Construct a WF, defaulting any capability not explicitly supplied."""
+    return WF(
+        downloader=downloader if downloader is not None else SimpleWFDownloader(),
+        synapse_downloader=(
+            synapse_downloader
+            if synapse_downloader is not None
+            else SharedClientSynapseDownloader()
+        ),
+    )

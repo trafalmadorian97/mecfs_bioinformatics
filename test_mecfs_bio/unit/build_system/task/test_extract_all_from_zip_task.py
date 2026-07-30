@@ -9,7 +9,7 @@ from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMet
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.extract_all_from_zip_task import ExtractAllFromZipTask
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_extract_all_zip(tmp_path: Path):
@@ -28,6 +28,6 @@ def test_extract_all_zip(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(source_zip_path)
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, DirectoryAsset)
     assert len(list(result.path.iterdir())) == 2

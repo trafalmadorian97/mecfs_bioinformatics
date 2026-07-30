@@ -1,13 +1,18 @@
+import json
 import shutil
 import tempfile
 import zipfile
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from subprocess import CalledProcessError
 
 import structlog
 
 from mecfs_bio.util.download.robust_download import robust_download_with_aria
-from mecfs_bio.util.subproc.run_command import execute_command
+from mecfs_bio.util.subproc.run_command import (
+    execute_command,
+    execute_command_with_retries,
+)
 
 logger = structlog.get_logger()
 
@@ -121,3 +126,192 @@ def download_release_to_dir_no_auth(
 
 def get_release_url(release_tag: str, repo_name: str, title: str) -> str:
     return f"https://github.com/{repo_name}/releases/download/{release_tag}/{title}.zip"
+
+
+def delete_release(release_tag: str, repo_name: str, cleanup_tag: bool = True) -> None:
+    """
+    Delete a release. No-op if the release does not exist. By default, the
+    underlying git tag is also removed so the release name can be reused.
+    """
+    if not does_release_exist(repo_name=repo_name, release_tag=release_tag):
+        return
+    cmd = [
+        "gh",
+        "release",
+        "delete",
+        release_tag,
+        "-R",
+        repo_name,
+        "--yes",
+    ]
+    if cleanup_tag:
+        cmd.append("--cleanup-tag")
+    execute_command(cmd)
+
+
+def list_release_asset_names(release_tag: str, repo_name: str) -> set[str]:
+    """
+    Return the set of asset names attached to a release. Returns an empty set
+    if the release does not exist.
+    """
+    if not does_release_exist(repo_name=repo_name, release_tag=release_tag):
+        return set()
+    cmd = [
+        "gh",
+        "release",
+        "view",
+        release_tag,
+        "-R",
+        repo_name,
+        "--json",
+        "assets",
+    ]
+    output = execute_command(cmd)
+    payload = json.loads(output)
+    return {asset["name"] for asset in payload.get("assets", [])}
+
+
+def ensure_release_exists(
+    release_tag: str, repo_name: str, title: str | None = None
+) -> None:
+    """
+    Idempotently create the GitHub release if it does not already exist.
+
+    Callers that intend to upload many blobs should invoke this once up
+    front; subsequent ``upload_blob_to_release`` calls can then skip the
+    per-blob existence check (which previously doubled the number of
+    ``gh`` invocations).
+    """
+    if does_release_exist(release_tag=release_tag, repo_name=repo_name):
+        return
+    cmd = [
+        "gh",
+        "release",
+        "create",
+        release_tag,
+        "--title",
+        title if title is not None else release_tag,
+        "-R",
+        repo_name,
+    ]
+    execute_command(cmd=cmd)
+
+
+def upload_blob_to_release(
+    release_tag: str,
+    repo_name: str,
+    asset_name: str,
+    src_path: Path,
+) -> None:
+    """
+    Upload ``src_path`` to the release as an asset named ``asset_name``.
+
+    GitHub uses the local filename as the asset name, so the file is staged
+    under ``asset_name`` in a temp dir before upload. The release must
+    already exist; call ``ensure_release_exists`` once before the first
+    upload.
+    """
+    assert src_path.is_file()
+    with tempfile.TemporaryDirectory() as tmpdir:
+        staged = Path(tmpdir) / asset_name
+        shutil.copy(src_path, staged)
+        cmd = [
+            "gh",
+            "release",
+            "upload",
+            release_tag,
+            str(staged),
+            "-R",
+            repo_name,
+        ]
+        execute_command(cmd=cmd)
+
+
+def download_release_assets_chunked(
+    release_tag: str,
+    repo_name: str,
+    asset_names: list[str],
+    dest_dir: Path,
+    chunk_size: int = 20,
+    chunk_workers: int = 4,
+) -> None:
+    """
+    Download many named assets from a release into dest_dir, writing one file
+    per asset name.
+
+    Assets are fetched in chunks: each chunk is a single gh release download
+    invocation with one repeated --pattern per asset name, which amortizes gh's
+    per-call process startup and release-asset-list lookup over the whole chunk
+    (a per-asset invocation pays both costs once per asset). A small pool of
+    chunks runs concurrently, since gh downloads a chunk's assets serially.
+    Each chunk invocation is retried with backoff to absorb the transient
+    GitHub HTTP 500s that the per-asset burst used to surface as hard failures.
+
+    Benchmarked at ~6x faster than per-asset parallel downloads with ~20x fewer
+    asset-list API calls; see experiments/claude/figure_download_benchmark.
+    """
+    assert chunk_size >= 1, f"chunk_size must be >= 1, got {chunk_size}"
+    assert chunk_workers >= 1, f"chunk_workers must be >= 1, got {chunk_workers}"
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    chunks = [
+        asset_names[i : i + chunk_size] for i in range(0, len(asset_names), chunk_size)
+    ]
+
+    def _download_chunk(chunk: list[str]) -> None:
+        cmd = ["gh", "release", "download", release_tag]
+        for asset_name in chunk:
+            cmd += ["--pattern", asset_name]
+        cmd += ["--dir", str(dest_dir), "--clobber", "-R", repo_name]
+        execute_command_with_retries(cmd)
+        for asset_name in chunk:
+            asset_path = dest_dir / asset_name
+            assert asset_path.is_file(), (
+                f"gh did not produce {asset_path} for asset {asset_name}"
+            )
+
+    workers = min(chunk_workers, len(chunks))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        futures = [pool.submit(_download_chunk, chunk) for chunk in chunks]
+        for fut in as_completed(futures):
+            fut.result()
+
+
+def download_release_asset(
+    release_tag: str,
+    repo_name: str,
+    asset_name: str,
+    dest: Path,
+    use_gh_cli: bool = True,
+) -> None:
+    """
+    Download a single named asset from a release to ``dest``.
+    """
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    if use_gh_cli:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tmp_dir = Path(tmpdir)
+            cmd = [
+                "gh",
+                "release",
+                "download",
+                release_tag,
+                "--pattern",
+                asset_name,
+                "--dir",
+                str(tmp_dir),
+                "--clobber",
+                "-R",
+                repo_name,
+            ]
+            execute_command_with_retries(cmd)
+            downloaded = tmp_dir / asset_name
+            assert downloaded.is_file(), (
+                f"gh did not produce {downloaded} for asset {asset_name}"
+            )
+            shutil.move(str(downloaded), dest)
+    else:
+        url = (
+            f"https://github.com/{repo_name}/releases/download/"
+            f"{release_tag}/{asset_name}"
+        )
+        robust_download_with_aria(md5sum=None, dest=dest, url=url)

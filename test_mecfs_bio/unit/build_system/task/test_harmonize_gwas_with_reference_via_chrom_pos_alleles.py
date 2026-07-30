@@ -14,7 +14,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     HarmonizeGWASWithReferenceViaAlleles,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -151,7 +151,7 @@ def test_harmonize_gwas_with_reference_via_chrom_pos_alleles(tmp_path: Path):
             return FileAsset(reference_path)
         raise ValueError(f"Unknown asset {asset_id}")
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     result_df = pd.read_parquet(result.path)
     assert set(result_df[GWASLAB_RSID_COL].tolist()) == {"rs100", "rs300"}

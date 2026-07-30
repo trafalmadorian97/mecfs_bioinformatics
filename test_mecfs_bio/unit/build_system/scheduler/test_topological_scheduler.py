@@ -36,7 +36,7 @@ from mecfs_bio.build_system.task.discard_deps_task_wrapper import (
 from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
 from mecfs_bio.build_system.task.failing_task import FailingTask
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 #
 
@@ -84,7 +84,7 @@ def test_file_copying_task(tmp_path: Path, tracer: Tracer) -> None:
 
     tasks = find_tasks([task3])
 
-    wf = SimpleWF()
+    wf = make_wf()
     info: VerifyingTraceInfo = VerifyingTraceInfo.empty()
 
     asset_dir = tmp_path / "asset_dir"
@@ -291,7 +291,7 @@ def test_incremental_save_with_failing_task(tmp_path: Path) -> None:
 
     tasks = find_tasks([task2])
 
-    wf = SimpleWF()
+    wf = make_wf()
     info: VerifyingTraceInfo = VerifyingTraceInfo.empty()
 
     asset_dir = tmp_path / "asset_dir"

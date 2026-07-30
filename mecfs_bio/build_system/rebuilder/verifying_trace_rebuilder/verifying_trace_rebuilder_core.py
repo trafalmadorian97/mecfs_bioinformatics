@@ -15,6 +15,9 @@ from mecfs_bio.build_system.rebuilder.fetch.restricted_fetch import RestrictedFe
 from mecfs_bio.build_system.rebuilder.metadata_to_path.base_meta_to_path import (
     MetaToPath,
 )
+from mecfs_bio.build_system.rebuilder.sandboxed_execute import (
+    noop_post_execute_hook,
+)
 from mecfs_bio.build_system.rebuilder.tracking_sandboxed_execute import (
     tracking_sandboxed_execute,
 )
@@ -38,9 +41,15 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
     Mokhov, Andrey, Neil Mitchell, and Simon Peyton Jones.
     "Build systems à la carte: Theory and practice."
     Journal of Functional Programming 30 (2020): e11.
+
+    `post_execute` is a hook invoked with the task after each materialization
+    (after the asset has been moved into place). The default is a no-op. See
+    `mecfs_bio.build_system.runner.gc_post_execute_hook` for an implementation
+    that runs `gc.collect()` between tasks.
     """
 
     tracer: Tracer
+    post_execute: Callable[[Task], None] = noop_post_execute_hook
 
     def rebuild(
         self,
@@ -50,7 +59,7 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
         wf: WF,
         info: VerifyingTraceInfo,
         meta_to_path: MetaToPath,
-    ) -> tuple[Asset, VerifyingTraceInfo]:
+    ) -> tuple[Asset, VerifyingTraceInfo, bool]:
         must_rebuild = task.asset_id in info.must_rebuild
 
         def fetch_trace(asset_id: AssetId) -> str:
@@ -68,7 +77,7 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
                 logger.debug(
                     f"Successfully verified the trace of asset {task.asset_id}."
                 )
-                return asset, info
+                return asset, info, False
             logger.debug(f"Failed to verify the trace of asset {task.asset_id}.")
         logger.debug(f"Materializing asset {task.asset_id}....")
         new_value, deps = tracking_sandboxed_execute(
@@ -76,6 +85,7 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
             meta_to_path=meta_to_path,
             wf=wf,
             fetch=RestrictedFetch.from_task(fetch=fetch, task=task),
+            post_execute=self.post_execute,
         )
         deps_traced = [(k, self.tracer(v)) for k, v in deps]
         new_trace = self.tracer(new_value)
@@ -86,7 +96,7 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
             new_value_trace=new_trace,
             deps_traced=deps_traced,
         )
-        return new_value, info
+        return new_value, info, True
 
     @classmethod
     def save_info(cls, info: VerifyingTraceInfo, path: Path):

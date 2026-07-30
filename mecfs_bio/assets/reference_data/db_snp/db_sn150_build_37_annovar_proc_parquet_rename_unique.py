@@ -28,10 +28,12 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.discard_deps_task_wrapper import DiscardDepsWrapper
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    ParquetOutFormat,
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.duckdb_mem_limit_pipe import DuckdbMemLimitPipe

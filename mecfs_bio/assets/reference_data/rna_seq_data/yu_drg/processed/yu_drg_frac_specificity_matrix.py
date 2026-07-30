@@ -7,7 +7,9 @@ Here the specificity of gene X for cell Y is log(1+ expression of X in Y)/(sum_Z
 from mecfs_bio.assets.reference_data.rna_seq_data.yu_drg.processed.yu_drg_counts_long_with_cell_type import (
     YU_DRG_COUNTS_LONG_WITH_CELL_TYPE,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import CSVOutFormat
+from mecfs_bio.build_system.task.dataframe_output import (
+    CSVOutFormat,
+)
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.move_col_to_front_pipe import MoveColToFrontPipe
 from mecfs_bio.build_system.task.pipes.pivot_pipe import PivotPipe

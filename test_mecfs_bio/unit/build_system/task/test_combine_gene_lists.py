@@ -15,7 +15,7 @@ from mecfs_bio.build_system.task.combine_gene_lists_task import (
     SrcGeneList,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_combine_gene_lists(tmp_path: Path):
@@ -60,7 +60,7 @@ def test_combine_gene_lists(tmp_path: Path):
             return FileAsset(df_2_loc)
         raise ValueError(f"unknown asset id {asset_id}")
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     result_df = pd.read_csv(result.path)
     assert len(result_df) == 4

@@ -7,7 +7,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.magma.magma_plot_gene_set_result import (
     MAGMAPlotGeneSetResult,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_plot_gene_set_result(tmp_path: Path):
@@ -23,5 +23,5 @@ def test_plot_gene_set_result(tmp_path: Path):
             Path("test_mecfs_bio/unit/dummy_data/fake_gene_set_result")
         )
 
-    result = plot_task.execute(scratch_dir=scratch, fetch=fetch, wf=SimpleWF())
+    result = plot_task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
     assert isinstance(result, DirectoryAsset)

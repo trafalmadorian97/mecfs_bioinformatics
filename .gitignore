@@ -226,6 +226,8 @@ data/*
 output/*
 
 assets/*
+assets_2/*
+merge_overwrite_backup_*
 asset_store/*
 build_system/*
 
@@ -251,6 +253,8 @@ r-libs
 *.html
 *.png
 docs/_figs
+# ...but the Material theme override partials are source, not generated plots
+!overrides/partials/*.html
 
 # config file for storing github token
 gh_token_config.yaml
@@ -265,3 +269,29 @@ gh_token_config.yaml
 link_check_state.json
 lychee_report.json
 .lycheecache/
+
+
+# Configuration of default runner.  Specifies location of asset store
+
+default_runner_config.yaml
+
+# POPs feature-cap experiment outputs (large, regenerable)
+experiments/claude/pops_feature_cap/
+experiments/claude/pops_ibd/
+experiments/claude/pops_lowmem/
+experiments/claude/pops_standalone/
+#lychee
+.lycheecache
+
+
+# token
+.ieugwaspy.json
+
+
+# no pdfs
+
+*.pdf
+
+
+#  No parquet datafiles
+*.parquet

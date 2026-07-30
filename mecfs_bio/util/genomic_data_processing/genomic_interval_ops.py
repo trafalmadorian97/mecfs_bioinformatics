@@ -2,9 +2,9 @@ import narwhals
 import structlog
 
 from mecfs_bio.constants.genomic_coordinate_constants import (
-    EXTENDED_MHC_BUILD_37,
     GenomeBuild,
     MHCRegion,
+    extended_mhc_interval,
 )
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL, GWASLAB_POS_COL
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
@@ -31,9 +31,9 @@ def exclude_mhc(
 ) -> narwhals.LazyFrame:
     if region is None:
         return df
-    if region == "extended" and build == "19":
-        logger.debug("Excluding the build-19 extended MHC region")
-        interval = EXTENDED_MHC_BUILD_37
+    if region == "extended":
+        logger.debug("Excluding the extended MHC region", build=build)
+        interval = extended_mhc_interval(build)
     else:
         raise ValueError("Region/build combination not implemented")
 

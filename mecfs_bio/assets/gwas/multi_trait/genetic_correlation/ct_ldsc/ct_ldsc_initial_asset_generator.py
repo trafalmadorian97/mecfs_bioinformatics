@@ -36,6 +36,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_with_annovar_37_rsids_sumstats import (
     DECODEME_ME_SUMSTATS_37_WITH_ANNOVAR_RSID,
 )
+from mecfs_bio.assets.gwas.migraine.uk_biobank_2025.analysis.uk_biobank_2025_migraine_standard_analysis import (
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
 )
@@ -61,6 +64,7 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    BinaryPhenotypeSampleInfo,
     QuantPhenotype,
     SumstatsSource,
 )
@@ -182,6 +186,15 @@ CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
             sample_info=QuantPhenotype(),
             pipe=CompositePipe(
                 [SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN, 490_560)]
+            ),
+        ),
+        SumstatsSource(
+            UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+            alias="Migraine",
+            sample_info=BinaryPhenotypeSampleInfo(
+                sample_prevalence=25393 / 458440,  # from gwas catalog page
+                estimated_population_prevalence=0.104,  # UK prevalence from https://pmc.ncbi.nlm.nih.gov/articles/PMC11753071/
+                total_sample_size=458440,  # 25393 cases + 433047 controls; the UK Biobank migraine sumstats carry no per-SNP N column
             ),
         ),
         # SumstatsSource(

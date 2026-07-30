@@ -19,7 +19,7 @@ from mecfs_bio.build_system.task.genetic_correlation_clustermap_task import (
 from mecfs_bio.build_system.task.xr_pipes.xr_identity import (
     XRIdentityPipe,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 def test_genetic_correlation_clustermap(tmp_path: Path):
@@ -56,5 +56,5 @@ def test_genetic_correlation_clustermap(tmp_path: Path):
             return FileAsset(df_loc)
         raise NotImplementedError()
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)

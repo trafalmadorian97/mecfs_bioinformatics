@@ -1,0 +1,379 @@
+# GWAS by Subtraction
+
+GWAS by subtraction[@demange2021investigating; @huang2024gwas] is a GenomicSEM[@grotzinger2019genomic] technique that orthogonally decomposes GWAS traits.
+
+Here, we explain GWAS by subtraction twice: once at a high level via linear algebra, and more granularly via statistical modeling.
+
+## Linear algebra
+
+### Euclidian space
+
+It is useful to understand GWAS-by-subtraction via linear algebra.
+
+
+Consider a [Euclidian space](https://en.wikipedia.org/wiki/Euclidean_space) in which:
+
+- GWAS traits are vectors.
+- The [inner product](https://en.wikipedia.org/wiki/Inner_product_space) of two traits is their [genetic covariance](Genetic_Correlation.md#genetic-covariance).  Denote the inner product of traits $u$ and $v$ as $\langle u,v \rangle$.
+- We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, a trait's squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) is its heritability: $\lVert v \rVert^2=h^2_v$ where $h^2_v$ is the heritability of trait $v$.
+
+
+
+The above implies that two traits are orthogonal ($\langle u,v \rangle=0$) if and only if they are genetically uncorrelated.
+
+
+
+### Perpendicular projection
+
+Let $T_1$ and $T_2$ be the two genetically correlated traits diagrammed as vectors below:
+
+![subtraction-vectors-1](https://github.com/user-attachments/assets/7c084d7b-bb4f-4eac-b118-7d993b5a8e7a)
+
+
+
+
+
+We aim to decompose $T_1$ into the sum of:
+
+- $F'$, which is perfectly genetically correlated with $T_2$, and
+- $R'$, which is orthogonal to (genetically uncorrelated with) $T_2$.
+
+The decomposition is diagrammed below:
+
+
+![subtraction-vectors-2](https://github.com/user-attachments/assets/a552ee13-08bb-41dd-b7d0-781e4088740b)
+
+
+Let $P$ denote the perpendicular projector[^projector_note] onto the subspace spanned by $T_2$.  Then
+
+$$
+\begin{align}
+F'&= PT_1,\\
+R'&=(I-P)T_1.
+\end{align}
+$$
+
+### Interpretation
+
+The primary output of GWAS by subtraction is $R'$, the component of $T_1$ genetically uncorrelated with $T_2$. Studying $R'$ with standard post-GWAS analysis techniques like [MAGMA](MAGMA_Overview.md)[@de2015magma] and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] can shed light on the biological processes important to $T_1$ but absent from $T_2$.
+
+
+Note that as a linear-algebraic operation, GWAS by subtraction is valid insofar as trait genetics can be approximated by a simple linear model.  While the experience of the last decate and a half of genetics suggest that linear models are very useful, they are necessarily approximations of true biology, which is nonlinear.
+
+
+
+
+## Statistics 
+
+
+### Joint model
+
+We assume the following data-generating model:
+
+$$
+\begin{align}
+F &=  x^T \beta_{F} \\
+R &=  x^T \beta_{R} \\
+T_1 &= \underbrace{a_F F}_{=:F'} + \underbrace{a_R R}_{=:R'} + \delta_1 \label{joint_t_1} \\
+T_2&= bF +\delta_2 \label{joint_t_2}  \\
+\mathbb{Cov}(F,R)&=0\\
+\mathbb{Var}(F)&=1\\
+\mathbb{Var}(R)&=1.
+\end{align}
+$$
+
+Where:
+
+
+- $T_1,T_2$ are the two traits of interest. We them them as random variables in $\mathbb{R}$.
+- There are $M\gg 0$ genetic variants.
+- $x\in\mathbb{R}^M$ is the random genotype. We assume $x$ has mean zero, but unlike in [LDSC](LDSC.md), we do not assume it has been variance standardized.  Let $H_i$ be the variance of the $i$th variant.
+- $\beta_F,\beta_R\in\mathbb{R}^M$ are the underlying causal effects of the genetic variants.
+- $F,R$ are the two orthonormal underlying factors.
+- $a_F,a_R,b\in\mathbb{R}$ are the scalar multipliers that relate the normalized factors $F,R$ to the unnormalized factors $F',R'$.
+- $\delta_1, \delta_2\in\mathbb{R}$ are the random non-genetic components of the two traits.  We assume these effects are independent of all genotypes.
+
+
+### Marginal Model
+
+
+Let's now focus on arbitrary SNP $i$, and model the marginal GWAS regression on this SNP.
+
+
+Define
+
+$$
+\begin{align}
+\hat\beta_{F,i}&= \frac{\mathrm{Cov}(F, x_i)}{\mathrm{Var}(x_i)}\\
+\zeta_{F,i}&=F-\beta_{F,i} x_i\\
+\hat\beta_{R,i}&= \frac{\mathrm{Cov}(R, x_i)}{\mathrm{Var}(x_i)}\\
+\zeta_{R,i}&=R-\beta_{R,i} x_i\\
+\end{align}
+$$
+
+
+This yields the re-written model
+
+$$
+\begin{align}
+T_1&=a_F F + a_R R + \delta_1\\
+T_2& = b F + \delta_2\\
+F &= \hat\beta_{F,i}x_i+\zeta_{F,i}\\
+R &= \hat\beta_{R,i}x_i+\zeta_{R,i}\\
+\mathrm{Cov}(F,R)&=0\\
+\mathrm{Cov}(F)&=1\\
+\mathrm{Cov}(R)&=1
+\end{align}
+$$
+
+We assume $\zeta_{F,i},\zeta_{R_i}$ are approximately independent of $x_i$.  While not strictly true, this is a good approximation so long as individual variant effects ($\beta_{R,i},\beta_{R,i}$) are small, as is the case for polygenic traits.
+
+### Theoretical covariance
+
+Next, let us examine the genetic covariance structure of the scalar random variables $(x_i, T_1, T_2)$.  
+
+We will denote by  $\mathrm{GCov}$ and $\mathrm{GVar}$ the genetic covariance and variance respectively[^covnote].  
+
+
+$$
+\begin{align}
+&\mathrm{GCov}(x_i, T_1)\\
+&=\mathrm{GCov}(x_i, a_F F + a_R R + \delta_1)\\
+&=\mathrm{Cov}(x_i, a_F F + a_R R ) & \text{Since $\delta_1$ is non-genetic}\\
+&=\mathrm{Cov}(x_i, a_F (\hat\beta_{F,i}x_i+\zeta_{F,i}) + a_R (\hat\beta_{R,i}x_i+\zeta_{R,i}))\\
+&\approx \left(a_F\hat\beta_{F,i}+a_R\hat\beta_{R,i}\right) H_i & \text{By approximate independence}
+\end{align}
+$$
+
+
+$$
+\begin{align}
+&\mathrm{GCov}(x_i, T_2)\\
+&=\mathrm{GCov}(x_i, b F+\delta_2)\\
+&=\mathrm{Cov}(x_i, b F) & \text{Since $\delta_2$ is non-genetic}\\
+&=\mathrm{Cov}(x_i, b (\hat\beta_{F,i}x_i+\zeta_{F,i}))\\
+&\approx b\hat\beta_{F,i} H_i  & \text{By approximate independence}
+\end{align}
+$$
+
+
+$$
+\begin{align}
+&\mathrm{GVar}(T_1)\\
+&=\mathrm{GVar}(a_F F + a_R R+\delta_1) \\
+&=\mathrm{Var}(a_F F + a_R R)& \text{Since $\delta_1$ is non-genetic}\\
+&=a_F^2+a_R^2 & \text{Since $F$ and $R$ are uncorrelated}
+\end{align}
+$$
+
+$$
+\begin{align}
+&\mathrm{GCov}(T_1,T_2)\\
+&= \mathrm{GCov}(a_F F + a_R R+\delta_1, bF+\delta_2)\\
+&= \mathrm{Cov}(a_F F + a_R R, bF) & \text{Since $\delta_1,\delta_2$ are non-genetic}\\
+&=a_Fb & \text{Since $F$ and $R$ are uncorrelated}
+\end{align}
+$$
+
+
+$$
+\begin{align}
+\mathrm{GVar} (T_2)\\
+&=\mathrm{GVar} (b F + \delta_2)\\
+&= \mathrm{Var}  (bF) \text{Since $\delta_2$ is non-genetic}\\
+&= b^2
+\end{align}
+$$
+
+
+Combining the above yields the following covariance matrix for $(x_i, T_1, T_2)$
+
+
+$$
+\begin{align}
+\Sigma_{\text{Theoretical}} &= \begin{bmatrix}
+H_i & (a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i & b\hat\beta_{F,i}H_i \\
+(a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i&  a_F^2+a_R^2 & a_F b   \\
+b\hat\beta_{F,i}H_i &a_F b & b^2
+\end{bmatrix}
+\end{align}
+$$
+
+### Empirical covariance
+
+The inputs to GWAS by subtraction are summary statistics for the traits $T_1$ and $T_2$.  These summary statistics include marginal regression coefficients for SNP $i$:
+
+$$
+\begin{align}
+\hat\beta_{T_1,i}&= \frac{\mathrm{Cov}(T_1, x_i)}{H_i}\\
+\hat\beta_{T_2,i}&= \frac{\mathrm{Cov}(T_2, x_i)}{H_i}.
+\end{align}
+$$
+
+Re-arranging, we have
+
+
+
+
+
+$$
+\begin{align}
+\mathrm{Cov}(T_1, x_i) &=  \hat\beta_{T_1,i} H_i\\
+\mathrm{Cov}(T_2, x_i) &=  \hat\beta_{T_2,i} H_i.
+\end{align}
+$$
+
+We can apply [LDSC](LDSC.md)[@bulik2015ld] and [CT-LDSC](Cross_Trait_LDSC.md)[@bulik2015atlas] to the $T_1$ and $T_2$ summary statistics to estimate their [genetic covariance](Genetic_Correlation.md) and [heritabilities](Heritability.md) (again, heritability equals genetic variance, since we have assumed that phenotype variances are normalized to 1).  Denote these estimates as $L_{1,2},L_{1,1},L_{2,2}$.
+
+
+Combining the above we have another expression for the covariance matrix of $(x_i, T_1, T_2)$
+
+$$
+\begin{align}
+\Sigma_{\text{Empirical}} &= 
+\begin{bmatrix}
+H_i & \hat\beta_{T_1,i} H_i & \hat\beta_{T_2,i} H_i\\
+\hat\beta_{T_1,i}H_i & L_{1,1} & L_{1,2}\\
+\hat\beta_{T_2,i} H_i & L_{1,2} & L_{2,2}
+\end{bmatrix}
+\end{align}
+$$
+
+### Solution
+
+
+We can equate $\Sigma_{\text{Empirical}}$ and $\Sigma_{\text{Theoretical}}$ to solve for $a_F, a_R, b, \hat\beta_{F,i}, \hat\beta_{R,i}$. We have:
+
+
+$$
+\begin{align}
+\Sigma_{\text{Theoretical}} & = \Sigma_{\text{Empirical}}\\
+\begin{bmatrix}
+H_i & (a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i & b\hat\beta_{F,i}H_i \\
+(a_F\hat\beta_{F_i}+a_R\hat\beta_{R,i})H_i&  a_F^2+a_R^2 & a_F b   \\
+b\hat\beta_{F,i}H_i &a_F b & b^2
+\end{bmatrix}
+&=
+\begin{bmatrix}
+H_i & \hat\beta_{T_1,i} H_i & \hat\beta_{T_2,i} H_i\\
+\hat\beta_{T_1,i}H_i & L_{1,1} & L_{1,2}\\
+\hat\beta_{T_2,i} H_i & L_{1,2} & L_{2,2}
+\end{bmatrix}
+\end{align}
+$$
+
+Solving the lower-right $2\times 2$ submatrix, we have:
+
+$$
+\begin{align}
+b&=\sqrt{L_{2,2}} \label{b_solve} \\
+a_F&= \frac{L_{1,2}}{\sqrt{L_{2,2}}} \label{a_F_solve} \\
+a_R&=\sqrt{L_{1,1}-\frac{L_{1,2}^2}{L_{2,2}}}  \label{a_R_solve} .
+\end{align}
+$$
+
+
+Equating the first columns of the two matrices yields
+
+$$
+\begin{align}
+\hat\beta_{F,i}&=\frac{\hat\beta_{ T_2,i} }{b} \label{beta_F_solve}\\
+\hat\beta_{R,i}&=\frac{1}{a_R}\left(\hat\beta_{ T_1,i} -a_F\frac{\hat\beta_{ T_2,i} }{b}\right) \label{beta_R_solve}.
+\end{align}
+$$
+
+Note from $(\ref{b_solve}, \ref{a_F_solve}, \ref{a_R_solve})$ that $a_F, a_R$ and $b$ do not depend on the specific genetic variant $i$ under consideration.  This is consistent with the model specified in $(\ref{joint_t_1}, \ref{joint_t_2})$, in which $a_F, a_R$ and $b$ are global.
+
+
+To recap, given summary statistics for traits $T_1$ and $T_2$, we can:
+
+- Run LDSC and CT-LDSC to estimate $L_{1,1},L_{1,2}, L_{2,2}$.
+- Apply $(\ref{b_solve},\ref{a_F_solve}, \ref{a_R_solve})$ to estimate $a_F,a_R,$ and $b$.
+- Apply $(\ref{beta_F_solve}, \ref{beta_R_solve})$ to estimate $\hat\beta_{F,i}, \hat\beta_{R,i}$ for each genetic variant $i$.
+
+
+We would like to synthesize summary statistics for $R$ in order to pass them to downstream analysis tools like [MAGMA](MAGMA_Overview.md) and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md).  This requires estimates of the standard errors of $\hat\beta_{R,i}$.
+
+
+### Uncertainty
+
+To estimate these standard errors, define $\nu_i\in\mathbb{R}^5$ to be the vector of key non-redundant entries of $\Sigma_{\text{Empirical}}$.  That is
+
+$$
+\begin{align}
+\nu_i &:= (\Sigma_{\text{Empirical}, (1,2) }, \Sigma_{\text{Empirical}, (1,3)},
+\Sigma_{\text{Empirical}, (2,2)},
+\Sigma_{\text{Empirical}, (2,3)},
+\Sigma_{\text{Empirical}, (3,3)},
+)^T\\
+&= (
+\hat\beta_{T_1,i}H_i,
+\hat\beta_{T_2,i}H_i,
+L_{1,1},
+L_{1,2},
+L_{2,2}
+)^T.
+\end{align}
+$$
+
+Let $\theta_i\in\mathbb{R}^5$ denote the key parameters we solved for [above](#solution):
+
+$$
+\begin{align}
+\theta_i&:= (a_F,a_R,b, \hat\beta_{F,i}, \hat\beta_{R,i})^T
+\end{align}
+$$
+
+
+Let $g:\mathbb{R}^5 \to \mathbb{R}^5$ denote the function mapping $\nu_i$ to $\theta_i$ via the solution method above.
+
+We estimate the samples covariance of $\theta_i$ using the [delta method](https://en.wikipedia.org/wiki/Delta_method).  
+
+The delta method says that if $K_i$ is the sampling covariance matrix of $\nu_i$, and $J_i$ is the Jacobian of $g$ evaluated at $\nu_i$, then the sampling covariance matrix of $\theta_i$ can be estimated as
+
+$$
+\begin{align}
+Q_i:=J_iK_iJ_i^T.
+\end{align}
+$$
+
+
+- Computing $J_i$ requires only elementary calculus.
+- To simplify matters, we approximate $K_i$ as block diagonal.  That is,
+
+$$
+\begin{align}
+K_i \approx 
+\begin{bmatrix}
+V_{\text{SNP},i} & 0 \\
+0 & V_{\text{LD}}
+\end{bmatrix}
+\end{align}
+$$
+
+where $V_{\text{SNP},i}\in\mathbb{R}^{2\times 2}$ and $V_{\text{LD}}\in\mathbb{R}^{2 \times 2}$. This amounts to the assumption that, to a first approximation, the LDSC outputs do not covary with the SNP-specific $\hat\beta_i$.
+
+- Standard linkage-disequilibrium score regression uses [the jackknife](https://en.wikipedia.org/wiki/Jackknife_resampling) to estimate the sampling covariation of its output. We use these jackknife estimates to populate $V_{\text{LD}}$.
+- We populate $V_{\text{SNP},i}$ using the approach described in [the notes on LDSC](LDSC.md#sampling-noise-and-ldsc).
+
+
+Combining the above produces an estimate of $K_i$, to which we can apply the delta method to estimate $Q_i$, the sampling covariance of $\theta_i$.
+
+
+### Result
+
+Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R,i}$ and its standard error.  By repeating the above-described procedure for each variant $i$, we can estimate $\hat\beta_{R,i}$ and its standard error for all variants $i$.  This provides us with a full set of GWAS summary statistics for $R$, the GWAS-by-subtraction  component of $T_1$ orthogonal to $T_2$. We can then analyze these summary statistics using standard post-GWAS tools to glean insights into the genetic component of $T_1$ that is independent of $T_2$.
+
+
+
+
+
+
+
+
+
+
+
+[^covnote]: Because of our earlier assumption that phenotype variance has been normalized to 1, genetic variance equals heritability.
+
+[^projector_note]: Perpendicular projectors are described in most textbooks on linear algebra.  Halmos[@halmos1958finite] is a classic

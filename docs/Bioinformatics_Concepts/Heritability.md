@@ -22,7 +22,7 @@ Note that in the uncorrelated-additive model above, $h^2$ is equal to the [coeff
 
 $$
 \begin{align}
-\mathrm{cor}(G,Y)^2&=\frac{\mathrm{Cov}(Y,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}\\
+\mathrm{Corr}(G,Y)^2&=\frac{\mathrm{Cov}(Y,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}\\
 &=\frac{\mathrm{Cov}(E+G,G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}}& \text{ by }(\ref{model})\\
 &=\frac{\mathrm{Var}(G)^2}{\mathrm{Var}(G) \mathrm{Var(Y)}} & \text{$G$ and  $E$ uncorrelated}\\
 &=\frac{\mathrm{Var}(G)}{\mathrm{Var}(Y)}\\
@@ -74,7 +74,7 @@ $$
 \begin{align}
 G&:=\mathbb{E} (Y|g),\\
 E&:=Y-G,\\
-h^2&:= \frac{\mathbb{Var}(G) }{\mathbb{Var}(Y)}.
+h^2&:= \frac{\mathrm{Var}(G) }{\mathrm{Var}(Y)}.
 \end{align}
 $$
 
@@ -82,12 +82,12 @@ We have
 
 $$
 \begin{align}
-\mathbb{Cov}(G,E)&=\mathbb{E}(  \mathbb{E}(Y|g) -\mathbb{E}Y   )(  Y- \mathbb{E}(Y|g) )\\
+\mathrm{Cov}(G,E)&=\mathbb{E}(  \mathbb{E}(Y|g) -\mathbb{E}Y   )(  Y- \mathbb{E}(Y|g) )\\
 &=0,
 \end{align}
 $$
 
-where the last line follows from the Projection Theorem (pg. 345 in Grimmet and Stirzaker[@grimmett2020probability]).  Where before we needed to assume $\mathbb{Cov}(E,G)=0$, here this property is automatic.
+where the last line follows from the Projection Theorem (pg. 345 in Grimmet and Stirzaker[@grimmett2020probability]).  Where before we needed to assume $\mathrm{Cov}(E,G)=0$, here this property is automatic.
 
 
  - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this alternative definition is applicable to any phenotype representable by a random variable in $L_2$.  Mathematically, it is now crystal clear what we mean when we speak of $G$ and $E$.

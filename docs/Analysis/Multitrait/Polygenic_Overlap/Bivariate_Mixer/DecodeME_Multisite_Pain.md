@@ -1,3 +1,7 @@
+---
+tags:
+  - MiXeR
+---
 # DecodeME/Multisite Pain 
 
 I applied [Bivariate MiXeR](../../../../Bioinformatics_Concepts/Mixer.md)[@frei2019bivariate] to summary statistics from [DecodeME](../../../../Data_Sources/DecodeME.md)[@genetics2025initial] and Johnston et al.'s GWAS of multisite pain[@johnston2019genome] in an attempt to quantify their joint genetic architecture.

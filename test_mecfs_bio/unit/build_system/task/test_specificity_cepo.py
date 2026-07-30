@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.specificity_cepo_task import (
     DIFFERENTIAL_STABILITY,
     PrepareSpecificityCepo,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 _dummy_df = pd.DataFrame(  # X is stable in A.  Y is stable in B
@@ -69,7 +69,7 @@ def test_prepare_specificity_cepo(tmp_path: Path):
             return FileAsset(df_loc)
         raise ValueError("unknown asset id")
 
-    result = tsk.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
     result_df = pd.read_parquet(result.path)
 

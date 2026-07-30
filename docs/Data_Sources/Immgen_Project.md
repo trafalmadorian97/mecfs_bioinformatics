@@ -13,7 +13,7 @@ The ImmGen project[@aguilar2020immgen] is a public resource describing gene expr
 
 ## Uses 
 
-Because of its extreme granularity, and because of the similarity between the mouse and human immune systems, ImmGen reference data can be combined with GWAS summary statistics to suggest the key immune-system cells driving a phenotype.
+Because of its extreme granularity, and because of the similarity between the mouse and human immune systems, ImmGen reference data can be combined with GWAS summary statistics to suggest the key immune cells driving a phenotype.
 
 
 

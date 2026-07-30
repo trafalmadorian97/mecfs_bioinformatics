@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.sldsc_scatter_plot_task import (
     SLDSCScatterPlotTask,
 )
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 _dummy_data = {
     "Name": {
@@ -353,5 +353,5 @@ def test_sldsc_scatter(tmp_path: Path):
             return FileAsset(df_loc)
         raise ValueError("unknown asset id")
 
-    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=SimpleWF())
+    result = task.execute(scratch_dir=scratch_loc, fetch=fetch, wf=make_wf())
     assert isinstance(result, DirectoryAsset)

@@ -1,4 +1,5 @@
 import shutil
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Callable, Mapping, Sequence
 
@@ -12,9 +13,13 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_manhattan_plot_meta import (
     GWASLabManhattanQQPlotMeta,
 )
+from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_region_plots_meta import (
+    GWASLabRegionPlotsMeta,
+)
 from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.base_tracer import (
     Tracer,
 )
@@ -22,16 +27,26 @@ from mecfs_bio.build_system.task.base_task import Task
 
 logger = structlog.get_logger()
 
+# Metas whose asset is a directory of files copied wholesale into the figure dir.
+DirectoryFigureMeta = GWASPlotDirectoryMeta | GWASLabRegionPlotsMeta
+
 ValidFigureMeta = (
     GWASPlotFileMeta
-    | GWASPlotDirectoryMeta
+    | DirectoryFigureMeta
     | MarkdownFileMeta
     | GWASLabManhattanQQPlotMeta
+    | ResultTableMeta
 )
 
 
+class AbstractFigureExporter(ABC):
+    @abstractmethod
+    def export(self, to_export: Sequence[Task], fig_dir: Path) -> None:
+        pass
+
+
 @frozen
-class FigureExporter:
+class FigureExporter(AbstractFigureExporter):
     """
     Responsible for invoking the build system to generate Assets corresponding to figures, then copying those assets to the figure directory.
     """
@@ -50,27 +65,15 @@ class FigureExporter:
         )
         for task, meta in zip(to_export, meta_list):
             asset = result[task.asset_id]
-            if isinstance(meta, GWASPlotFileMeta | GWASLabManhattanQQPlotMeta):
-                assert isinstance(asset, FileAsset)
-                src = asset.path
-                dst = get_fig_file_path(meta=meta, fig_dir=fig_dir)
-                shutil.copy(src, dst)
-                logger.debug(f"Figure asset {task.asset_id} copied to {dst}.")
-            elif isinstance(meta, GWASPlotDirectoryMeta):
+            dst = get_figure_destination(meta=meta, fig_dir=fig_dir)
+            if isinstance(meta, DirectoryFigureMeta):
                 assert isinstance(asset, DirectoryAsset)
-                src = asset.path
-                assert isinstance(meta, GWASPlotDirectoryMeta)
-                dst = get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
-                shutil.copytree(src, dst, dirs_exist_ok=True)
+                shutil.copytree(asset.path, dst, dirs_exist_ok=True)
                 logger.debug(f"Directory figure asset {task.asset_id} copied to {dst}.")
-            elif isinstance(meta, MarkdownFileMeta):
-                assert isinstance(asset, FileAsset)
-                src = asset.path
-                dst = get_md_fig_file_path(meta=meta, fig_dir=fig_dir)
-                shutil.copy(src, dst)
-                logger.debug(f"Markdown figure asset {task.asset_id} copied to {dst}.")
             else:
-                raise ValueError(f"Unknown meta type {type(meta)}")
+                assert isinstance(asset, FileAsset)
+                shutil.copy(asset.path, dst)
+                logger.debug(f"Figure asset {task.asset_id} copied to {dst}.")
 
 
 def get_fig_file_path(
@@ -87,5 +90,36 @@ def get_md_fig_file_path(meta: MarkdownFileMeta, fig_dir: Path) -> Path:
     )  # Use .mdx instead of .md to prevent mkdocs from auto-generating a documentation page
 
 
-def get_fig_dir_meta(meta: GWASPlotDirectoryMeta, fig_dir: Path) -> Path:
+def get_fig_dir_meta(meta: DirectoryFigureMeta, fig_dir: Path) -> Path:
     return fig_dir / meta.id
+
+
+def get_result_table_fig_file_path(meta: ResultTableMeta, fig_dir: Path) -> Path:
+    """Where a result table lands in the figure directory.
+
+    Unlike MarkdownFileMeta --- whose extension is rewritten to .mdx so mkdocs
+    does not turn it into a documentation page --- a result table keeps its own
+    extension, since it is fetched by the page at runtime rather than included
+    into the markdown source.
+    """
+    return fig_dir / (meta.asset_id + meta.extension)
+
+
+def get_figure_destination(meta: ValidFigureMeta, fig_dir: Path) -> Path:
+    """
+    Single source of truth for "where in the figure directory does the figure
+    produced by a task with this meta land?".
+
+    For file-emitting metas this is an exact file path; for directory-emitting
+    metas (``DirectoryFigureMeta``) this is the destination directory (the
+    task's output files all live underneath it).
+    """
+    if isinstance(meta, GWASPlotFileMeta | GWASLabManhattanQQPlotMeta):
+        return get_fig_file_path(meta=meta, fig_dir=fig_dir)
+    if isinstance(meta, DirectoryFigureMeta):
+        return get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
+    if isinstance(meta, MarkdownFileMeta):
+        return get_md_fig_file_path(meta=meta, fig_dir=fig_dir)
+    if isinstance(meta, ResultTableMeta):
+        return get_result_table_fig_file_path(meta=meta, fig_dir=fig_dir)
+    raise ValueError(f"Unknown meta type {type(meta)}")

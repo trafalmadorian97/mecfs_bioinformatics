@@ -90,14 +90,14 @@ While MAGMA is a very useful approach for detecting the key biological systems i
 
 ## Gene set analysis with MAGMA
 
-MAGMA can also be used for gene-set analysis, which is implemented as a special case of gene property analysis.  In perform gene set analysis, we simply set $E_{i,j}=1$ if gene $i$ is a member of gene set $j$, and 0 otherwise.
+MAGMA can also be used for gene-set analysis, which is implemented as a special case of gene property analysis.  To perform gene set analysis, we simply set $E_{i,j}=1$ if gene $i$ is a member of gene set $j$, and 0 otherwise.
 
 ## References
 The above discussion is based on:
 
 [//]: # ( [Generalized chi-squared distribution]&#40;https://en.wikipedia.org/wiki/Generalized_chi-squared_distribution&#41;)
 
-[FUMA Tutorial](https://fuma.ctglab.nl/tutorial#snp2gene)
+[FUMA Tutorial](https://web.archive.org/web/20260313163356/https://fuma.ctglab.nl/tutorial#snp2gene)
 
 [MAGMA Paper](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.1004219) 
 
@@ -106,6 +106,10 @@ The above discussion is based on:
 [Note on Magma SNP-wise model](https://vu.data.surfsara.nl/s/VeuWKUwd0rz6AZD?dir=/&editing=false&openfile=true)
 
 [Paper Critiquing the original MAGMA SNP-wise model](https://web.archive.org/web/20240724122326/https://www.biorxiv.org/content/10.1101/2020.08.20.260224v1) (MAGMA was updated in response to this critique.)
+
+[Talk by Rachel Brouwer on limitations of cell-type enrichment methods like MAGMA](https://youtu.be/ONfQTGR6FZI?si=DiEQeqRWFwUPZcx8)  (The speaker points out that for narrowly defined cell types like those found in the [Human Brain Atlas](../Data_Sources/HBA_scRNAseq.md), cell type enrichment analysis methods like MAGMA can be very sensitive to seemingly small parameter choices.  One should thus treat results with caution, unless they hold over a wide range of plausible parameter choices.)
+
+
 
 
 \bibliography

@@ -28,6 +28,11 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameWhiteSpaceSepTextFormat,
 )
+from mecfs_bio.build_system.sample_size_spec import (
+    SampleSizeSpec,
+    coerce_sample_size,
+    per_variant_column,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
@@ -118,12 +123,13 @@ class HBAMagmaTasks:
 def generate_human_brain_atlas_magma_tasks(
     base_name: str,
     gwas_parquet_with_rsids_task: Task,
-    sample_size: int,
+    sample_size: int | SampleSizeSpec,
     plot_settings: PlotSettings,
     include_independent_cluster_plot: bool = False,
     pipes: list[DataProcessingPipe] | None = None,
     hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
 ) -> HBAMagmaTasks:
+    sample_size = coerce_sample_size(sample_size)
     magma_binary_task = MAGMA_1_1_BINARY_EXTRACTED
     gene_loc_file_task = MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_37_EXTRACTED
 
@@ -131,6 +137,7 @@ def generate_human_brain_atlas_magma_tasks(
         gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,
         asset_id=base_name + "_hba_magma_snp_p_values",
         pipes=pipes,
+        sample_size_column=per_variant_column(sample_size),
     )
     snp_loc_task = MagmaSNPFileTask.create_for_magma_snp_pos_file(
         gwas_parquet_with_rsids_task=gwas_parquet_with_rsids_task,

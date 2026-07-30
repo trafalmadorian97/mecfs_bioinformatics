@@ -10,9 +10,11 @@ from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parqu
 from mecfs_bio.build_system.reference.schemas.chrom_rename_rules import (
     CHROM_RENAME_DF_NUMERIC_X_Y_M,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.discard_deps_task_wrapper import DiscardDepsWrapper
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    ParquetOutFormat,
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.join_with_memory_table_pipe import (

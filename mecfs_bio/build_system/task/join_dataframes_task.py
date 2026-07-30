@@ -28,11 +28,11 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     CSVOutFormat,
     OutFormat,
-    ParquetOutFormat,
     get_extension_and_read_spec_from_format,
+    write_df_according_to_format,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
@@ -98,11 +98,9 @@ class JoinDataFramesTask(Task):
             df_2, how=self.how, left_on=list(self.left_on), right_on=list(self.right_on)
         )
         joined = self.out_pipe.process(joined)
-        if isinstance(self.out_format, CSVOutFormat):
-            result = joined.collect().to_pandas()
-            result.to_csv(result_path, index=False, sep=self.out_format.sep)
-        elif isinstance(self.out_format, ParquetOutFormat):
-            joined.sink_parquet(result_path)
+        write_df_according_to_format(
+            df=joined, out_path=result_path, out_format=self.out_format
+        )
         return FileAsset(result_path)
 
     @classmethod

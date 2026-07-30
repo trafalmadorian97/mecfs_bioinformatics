@@ -1,0 +1,6 @@
+# Keeps the technique index above the trait folders. The remaining entries are
+# matched by the glob and keep the inherited default sort, so traits stay
+# alphabetical.
+nav:
+  - Index_of_Techniques.md
+  - "*"

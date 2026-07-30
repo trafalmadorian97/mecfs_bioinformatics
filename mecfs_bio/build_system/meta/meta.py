@@ -29,6 +29,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta im
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
+from mecfs_bio.build_system.meta.result_archive_meta import ResultArchiveMeta
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
@@ -52,4 +53,5 @@ Meta = (
     | ResultTableMeta
     | ResultDirectoryMeta
     | MarkdownFileMeta
+    | ResultArchiveMeta
 )

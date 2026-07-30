@@ -5,10 +5,12 @@ Task to extract supplementary table 9 from the Sun et al paper.  This contains t
 from mecfs_bio.assets.reference_data.pqtls.raw.sun_et_al_2023_pqtls import (
     SUN_ET_AL_2023_PQTL_SUPPLEMENTARY_RAW,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.extract_sheet_from_excel_file_task import (
     ExtractSheetFromExelFileTask,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.str_split_exact_col import SplitExactColPipe
 
 SUN_ET_AL_2023_COMBINED_PQTLS_EXTRACTED = ExtractSheetFromExelFileTask.create(

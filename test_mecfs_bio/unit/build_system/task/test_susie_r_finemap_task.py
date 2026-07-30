@@ -63,7 +63,7 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     SusieStackPlotTask,
 )
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -276,7 +276,7 @@ def test_fine_mapping(
         heatmap_options=HeatmapOptions(BinOptions(num_bins=50), mode="ld2"),
     )
     tasks = find_tasks([susie_tsk, stack_plot_task])
-    wf = SimpleWF()
+    wf = make_wf()
     info: VerifyingTraceInfo = VerifyingTraceInfo.empty()
 
     asset_dir = tmp_path / "asset_dir"

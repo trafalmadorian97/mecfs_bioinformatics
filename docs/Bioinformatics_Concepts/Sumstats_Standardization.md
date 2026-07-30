@@ -1,10 +1,10 @@
 # Sumstats Standardization
 
-Before analyzing GWAS summary statistics, it is desirable to bring them to a standard form.  This is a complex, multi-step process.
+It is often useful to convert GWAS summary statistics to a standard form before analyzing them. The use of a standard form facilitates comparisons between GWAS, and is expected by certain post-GWAS analysis tools.  Summary-statistics standardization a complex, multi-step process.
 
 ## Step 1: Strand Standardization
 
-In the DNA double helix, the two strands are complementary: adenine (A) always pairs with thymine (T), and cytosine (C) always pairs with guanine (G).  This means that the same variant can be represented equivalently by describing its base sequence on either strand.
+In the DNA double helix, the two strands are complementary: adenine (A) always pairs with thymine (T), and cytosine (C) always pairs with guanine (G)\footnote{For a discussion of the structure of DNA, see Chapter 4 of _Molecular Biology of the Cell_[@alberts2022molecular].  For a historical account of the discovery of this structure, see Judson's book[@judson1996eighth]}.  This means that the same variant can be represented equivalently by describing its base sequence on either strand.
 
 For instance, suppose that a GWAS summary statistics file contains the following data: 
 
@@ -29,7 +29,7 @@ This data can be represented equivalently on the other strand as
 
 While GENPOS always refers to genomic coordinates in the $5'\to 3'$ direction along the forward strand, summary statistics files have been known to report alleles on either the forward or the reverse strand[@hartwig2016two]. This ambiguity is problematic when one seeks to jointly analyze two GWAS, or look up variants from a GWAS in a reference.
 
-In most cases, the ambiguity can be resolved by consulting a reference genome sequence [FASTA file](https://en.wikipedia.org/wiki/FASTA_format).  For each genetic variant, one compares the alleles to the reference sequence at the given genomic coordinate. If there is a match, we know the alleles are correctly represented on the forward strand.  If instead there is match with the complement of one the alleles, we know the alleles are represented on the reverse strand, and we can standardize the genetic variant by substituting the alleles for their complements.  If there is no match between the alleles and either the forward or reverse strand, this likely indicates an error.
+In most cases, the ambiguity can be resolved by consulting a reference genome sequence [FASTA file](https://en.wikipedia.org/wiki/FASTA_format).  For each genetic variant, one compares the alleles to the reference sequence at the given genomic coordinate. If there is a match, we know the alleles are correctly represented on the forward strand.  If instead there is match with the complement of one the alleles, we know the alleles are represented on the reverse strand, and we can standardize the genetic variant by substituting the alleles for their complements.  If there is no match between the alleles and either the forward or reverse strand, this indicates an error.
 
 
 ### Palindromic variants
@@ -65,7 +65,7 @@ This principle is demonstrated by the following examples from the [Center for St
 ![example_2_normalization](https://github.com/user-attachments/assets/962344dd-4ce7-42a1-8912-27448c96cfc7)
 
 
-Clearly, what is needed is a unique canonical form to which all equivalent variants can be normalized.  Fortunately, there is a left-normalization algorithm that does just this. While many modern GWAS pre-left-normalize their alleles, it is often advisable to run left-normalization, just to be sure.
+What is needed is a unique canonical form to which all equivalent variants can be normalized.  Fortunately, there is an algorithm[@tan2015unified] called *left-normalization* that converts variant to such a canonical form. While many modern GWAS pre-left-normalize their alleles, it is often advisable to run the left-normalization algorithm, just to be sure.
 
 ### Algorithm details
 

@@ -4,16 +4,20 @@ Citation:
 Trubetskoy, Vassily, et al. "Mapping genomic loci implicates genes and synaptic biology in schizophrenia." Nature 604.7906 (2022): 502-508.
 """
 
+import narwhals
+
 from mecfs_bio.asset_generator.concrete_standard_analysis_task_generator import (
     concrete_standard_analysis_generator_assume_already_has_rsid,
 )
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.raw.raw_sch_pgc2022 import (
     PGC_2022_SCH_RAW,
 )
+from mecfs_bio.build_system.sample_size_spec import PerVariantSampleSize
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabColumnSpecifiers,
 )
 from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import PlotSettings
+from mecfs_bio.build_system.task.pipes.expr_pipe import ExprPipe
 
 SCH_PGC_2022_STANDARD_ANALYSIS = concrete_standard_analysis_generator_assume_already_has_rsid(
     base_name="pgc_2022_sch",
@@ -28,13 +32,16 @@ SCH_PGC_2022_STANDARD_ANALYSIS = concrete_standard_analysis_generator_assume_alr
         beta="BETA",
         se="SE",
         p="PVAL",
-        n="NEFF",  # use effective sample size
+        n="NEFF",  # use effective sample size.  Note however, that the definition of NEFF in these summary statistics is 1/2 the standard definition of sample size
         snpid=None,
         OR=None,
     ),
-    sample_size=58749,  # from summary statistics file
+    sample_size=PerVariantSampleSize(),  # 58749,
     include_master_gene_lists=False,
     include_hba_magma_tasks=True,
     include_independent_cluster_plot_in_hba=True,
     hba_plot_settings=PlotSettings(),
+    pre_pipe=ExprPipe(
+        (2 * narwhals.col("NEFF")).alias("NEFF")
+    ),  # convert definition of effective sample size used here to the standard definition
 )

@@ -5,8 +5,10 @@ Keep only the essential columns from the filtered genelist
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.decode_me_filtered_gene_list_with_gene_metadata import (
     DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     CSVOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.log_markdown_pipe import LogMarkdownPipe

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Roadmap Epigenetics Project[@bernstein2010nih] was an NIH-funded initiative whose aim was to gather [epigenetic data](../Bioinformatics_Concepts/Epigenetics.md) such as:
+The Roadmap Epigenetics Project[@bernstein2010nih] was an NIH-funded initiative aimed at gathering [epigenetic data](../Bioinformatics_Concepts/Epigenetics.md) such as:
 
 - DNA methylation data
 - [Histone modification data](../Bioinformatics_Concepts/Epigenetics.md#histone-marks)
@@ -10,7 +10,7 @@ The Roadmap Epigenetics Project[@bernstein2010nih] was an NIH-funded initiative 
 
 from a wide variety of human tissue.
 
-A key feature of the Roadmap Project was its adherence to the principle of *In Vivo Veritas*.  Whereas previous epigenetics studies had studied immortalized cell lines that may not faithfully recapitulate normal biology, the Roadmap Project studied normal cells retrieved from donors.  
+A key feature of the Roadmap Project was its adherence to the principle of *In Vivo Veritas*.  Whereas previous epigenetics projects had studied immortalized cell lines that may not faithfully recapitulate normal biology, the Roadmap Project studied normal cells retrieved from donors.  
 
 
 ## Utility

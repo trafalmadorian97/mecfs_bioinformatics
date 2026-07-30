@@ -14,7 +14,7 @@ from mecfs_bio.build_system.task.extract_tar_gzip_task import (
     ReadMode,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import SimpleWF
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 WriteMode = Literal["w:gz", "w"]
 
@@ -56,7 +56,7 @@ def test_extract_tar_gzip_task(
     def fetch(asset_id: AssetId) -> Asset:
         return FileAsset(tar_loc)
 
-    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=SimpleWF())
+    result = tsk.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
     assert result.path == scratch_dir
     dir_contents = list(scratch_dir.glob("*"))
     print(dir_contents)

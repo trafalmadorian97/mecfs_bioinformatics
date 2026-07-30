@@ -196,7 +196,7 @@ def test_load_and_preprocess_sumstats(tmp_path: Path):
     sumstats = _sumstats_from_snps(real + fake, study="trait_a")
 
     pickle_path = tmp_path / "sumstats.pickle"
-    gl.dump_pickle(sumstats, path=pickle_path)
+    gl.dump_pickle(sumstats, path=str(pickle_path))
 
     source_id = AssetId("trait_a_sumstats")
     fake_task = FakeTask(

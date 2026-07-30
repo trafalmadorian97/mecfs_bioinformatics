@@ -15,8 +15,6 @@ from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASData
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
-    DataFrameParquetFormat,
-    DataFrameReadSpec,
     DataFrameTextFormat,
 )
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
@@ -29,20 +27,13 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.dataframe_output import (
+    OutFormat,
+    get_extension_and_read_spec_from_format,
+    write_df_according_to_format,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.wf.base_wf import WF
-
-
-class ParquetOutFormat:
-    pass
-
-
-@frozen
-class CSVOutFormat:
-    sep: str
-
-
-OutFormat = ParquetOutFormat | CSVOutFormat
 
 
 @frozen
@@ -81,12 +72,9 @@ class PipeDataFrameTask(Task):
         out_path = scratch_dir / "out_dataframe"
         for pipe in self.pipes:
             df = pipe.process(df)
-        if isinstance(self.out_format, CSVOutFormat):
-            df.collect().to_pandas().to_csv(
-                out_path, index=False, sep=self.out_format.sep
-            )
-        elif isinstance(self.out_format, ParquetOutFormat):
-            df.sink_parquet(out_path)
+        write_df_according_to_format(
+            df=df, out_path=out_path, out_format=self.out_format
+        )
         return FileAsset(out_path)
 
     @classmethod
@@ -146,22 +134,3 @@ class PipeDataFrameTask(Task):
             out_format=out_format,
             backend=backend,
         )
-
-
-def get_extension_and_read_spec_from_format(
-    out_format: OutFormat,
-) -> tuple[str, DataFrameReadSpec]:
-    if isinstance(out_format, CSVOutFormat):
-        read_spec = DataFrameReadSpec(DataFrameTextFormat(separator=out_format.sep))
-        if out_format.sep == "\t":
-            extension = ".tsv"
-        elif out_format.sep == ",":
-            extension = ".csv"
-        else:
-            raise ValueError("Unknown sep")
-    elif isinstance(out_format, ParquetOutFormat):
-        read_spec = DataFrameReadSpec(DataFrameParquetFormat())
-        extension = ".parquet"
-    else:
-        raise ValueError(f"Unknown format {out_format}")
-    return extension, read_spec

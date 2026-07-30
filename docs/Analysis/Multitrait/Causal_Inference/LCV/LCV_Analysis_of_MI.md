@@ -1,4 +1,8 @@
-#  Analysis of MI
+---
+tags:
+  - LCV
+---
+# LCV Analysis of MI
 
 To investigate the reliability of the Latent Causal Variable (LCV)[@o2018distinguishing] causal inference technique, I used LCV to estimate the Genetic Causality Proportion (GCP) of several well-known risk factors on the risk of myocardial infarction (MI). I also included educational attainment as a negative control.  The results are below.
 

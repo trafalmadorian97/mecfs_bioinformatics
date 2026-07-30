@@ -25,6 +25,7 @@ from typing import Literal, Sequence
 import gwaslab
 import gwaslab as gl
 import narwhals
+import pandas as pd
 from attrs import frozen
 from gwaslab.util.util_in_filter_value import _exclude_sexchr
 
@@ -40,6 +41,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_EFFECT_ALLELE_FREQ_COL,
     GWASLAB_STATUS_COL,
     GwaslabKnownFormat,
 )
@@ -135,22 +137,22 @@ def _do_harmonization(
 
     sumstats.harmonize(
         basic_check=basic_check,
-        n_cores=options.cores,
+        threads=options.cores,
         ref_seq=gl.get_path(options.ref_seq),
         ref_infer=gl.get_path(options.ref_infer.name),
         ref_alt_freq=options.ref_infer.ref_alt_freq,
     )
+    # gwaslab v4+ stores STATUS as Int64; cast to string for character-level access
+    status_str = sumstats.data[GWASLAB_STATUS_COL].astype(str)
     if options.drop_missing_from_ref_seq:
         # see meaning of status codes here: https://cloufield.github.io/gwaslab/StatusCode/
-        missing_from_ref_seq = sumstats.data[GWASLAB_STATUS_COL].str[5:6] == "8"
+        missing_from_ref_seq = status_str.str[5:6] == "8"
         logger.debug(
             f"Dropping {missing_from_ref_seq.sum()} variants that are missing from the sequence FASTA reference"
         )
         sumstats.data = sumstats.data.loc[~missing_from_ref_seq, :]
     if options.drop_missing_from_ref_infer_or_ambiguous:
-        missing_from_ref_infer = (sumstats.data[GWASLAB_STATUS_COL].str[6] == "8") | (
-            sumstats.data[GWASLAB_STATUS_COL].str[6] == "7"
-        )
+        missing_from_ref_infer = (status_str.str[6] == "8") | (status_str.str[6] == "7")
         logger.debug(
             f"Dropping {missing_from_ref_infer.sum()} variants that are missing from the VCF reference"
         )
@@ -180,6 +182,7 @@ class GWASLabColumnSpecifiers:
     or_95u: str | None = None
     chi_sq: str | None = None
     mlog10p: str | None = None
+    maf: str | None = None
 
     def get_selection_pipe(self) -> SelectColPipe:
         fields = attrs.asdict(self)
@@ -191,6 +194,21 @@ class GWASLabColumnSpecifiers:
 
 
 ValidGwaslabFormat = GwaslabKnownFormat | GWASLabColumnSpecifiers
+
+
+def _validate_eaf_in_range(sumstats: gl.Sumstats) -> None:
+    if GWASLAB_EFFECT_ALLELE_FREQ_COL not in sumstats.data.columns:
+        return
+    eaf = sumstats.data[GWASLAB_EFFECT_ALLELE_FREQ_COL]
+    eaf_min = float(eaf.min(skipna=True))
+    eaf_max = float(eaf.max(skipna=True))
+    if pd.isna(eaf_min) or pd.isna(eaf_max):
+        logger.debug("EAF column present, but entirely NAN")
+        return
+    assert 0 <= eaf_min <= 1 and 0 <= eaf_max <= 1, (
+        f"Effect allele frequency column {GWASLAB_EFFECT_ALLELE_FREQ_COL!r} has values "
+        f"outside the [0, 1] fraction range (observed min={eaf_min}, max={eaf_max}). "
+    )
 
 
 def _get_sumstats(
@@ -227,6 +245,7 @@ def _get_sumstats(
             OR_95U=fmt.or_95u,
             chisq=fmt.chi_sq,
             mlog10p=fmt.mlog10p,
+            maf=fmt.maf,
         )
 
     return gl.Sumstats(
@@ -300,6 +319,7 @@ class GWASLabCreateSumstatsTask(Task):
         df = self.pre_pipe.process(df)
         logger.debug("Fetching source dataframe asset...")
         sumstats = _get_sumstats(df, self.fmt, drop_cols=self.drop_col_list)
+        _validate_eaf_in_range(sumstats)
         transform_spec = GwasLabTransformSpec(
             basic_check=self.basic_check,
             genome_build=self.genome_build,
@@ -313,12 +333,12 @@ class GWASLabCreateSumstatsTask(Task):
         )
         sumstats = transform_gwaslab_sumstats(sumstats, spec=transform_spec)
         out_path = scratch_dir / "pickled_sumstats.pickle"
-        gl.dump_pickle(sumstats, path=out_path)
+        gl.dump_pickle(sumstats, path=str(out_path))
         return FileAsset(out_path)
 
 
 def _sumstats_raise_on_error(sumstats: gl.Sumstats):
-    error_status = sumstats.data[GWASLAB_STATUS_COL] == "9999999"
+    error_status = sumstats.data[GWASLAB_STATUS_COL].astype(str) == "9999999"
     if error_status.any():
         raise ValueError("GWASLAB Error")
     if len(sumstats.data) == 0:
@@ -336,6 +356,27 @@ class GwasLabTransformSpec:
     exclude_sexchr: bool = False
     harmonize_options: HarmonizationOptions | None = None
     liftover_to: GenomeBuild | None = None
+
+
+def _prune_unused_allele_categories(sumstats: gl.Sumstats) -> None:
+    """
+    Drop unused categories from the EA and NEA columns in place.
+
+    gwaslab stores alleles as pandas category dtype.  Filtering out rows (e.g. indels)
+    removes the rows but leaves the now-unused categories in place, including any very
+    long indel or structural-variant alleles.  Harmonization later calls astype(str) on
+    these columns, which materializes a fixed-width numpy unicode array sized to the
+    longest category across every remaining row, blowing up memory even when no long
+    allele is actually present.  Pruning unused categories keeps that array narrow.
+
+    remove_unused_categories operates on the (small) category index and integer codes,
+    so it never materializes the large per-row string array that astype(str) would.
+    """
+    for col in ("EA", "NEA"):
+        if col in sumstats.data.columns and isinstance(
+            sumstats.data[col].dtype, pd.CategoricalDtype
+        ):
+            sumstats.data[col] = sumstats.data[col].cat.remove_unused_categories()
 
 
 def transform_gwaslab_sumstats(
@@ -358,6 +399,8 @@ def transform_gwaslab_sumstats(
 
     if spec.liftover_to is not None and (build != spec.liftover_to):
         sumstats.liftover(to_build=spec.liftover_to, from_build=forced_build)
+        sumstats.infer_build()
+        assert sumstats.build == spec.liftover_to
     if spec.filter_hapmap3:
         sumstats.filter_hapmap3(inplace=True, build=forced_build)
     if spec.filter_indels:
@@ -369,6 +412,7 @@ def transform_gwaslab_sumstats(
     if spec.exclude_sexchr:
         sumstats = _exclude_sexchr(sumstats)
     if spec.harmonize_options is not None:
+        _prune_unused_allele_categories(sumstats)
         _do_harmonization(
             sumstats,
             basic_check=(not spec.basic_check),

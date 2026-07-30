@@ -1,4 +1,6 @@
 ---
+tags:
+- CT-LDSC
 hide:
 - toc
 ---
