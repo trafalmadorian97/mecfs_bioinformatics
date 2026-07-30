@@ -11,8 +11,8 @@ from mecfs_bio.assets.gwas.ankylosing_spondylitis.million_veterans.processed.mv_
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.ukbb.processed.ukbb_eur_ank_spond_parquet import (
     UKBB_ANK_SPOND_PARQUET,
 )
+from mecfs_bio.build_system.task.dataframe_output import ParquetOutFormat
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe

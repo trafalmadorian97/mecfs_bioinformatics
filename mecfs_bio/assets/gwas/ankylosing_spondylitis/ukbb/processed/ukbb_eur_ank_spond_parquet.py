@@ -1,8 +1,10 @@
 from mecfs_bio.assets.gwas.ankylosing_spondylitis.ukbb.raw.raw_ukbb_eur_ank_spond_data import (
     UK_BIOBANK_ANKYLOSING_SPONDYLITIS_EUR_DATA_RAW,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
