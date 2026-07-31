@@ -127,7 +127,7 @@ def gwaslab_download_ref_if_missing(
     # Besides actually downloading missing files, calling "download ref" can also sometimes update the config to point to
     # existing local files that are not in the config
     downloader(ref, False)
-    local_path = _usable_reference(ref, expected_md5, path_lookup, checksum)
+    local_path = _usable_reference(ref, expected_md5=expected_md5, path_lookup=path_lookup, checksum=checksum)
     if local_path is not None:
         return local_path
 
