@@ -1,6 +1,7 @@
 import json
 from collections.abc import Callable
 from pathlib import Path
+from typing import Protocol
 
 import gwaslab as gl
 import pandas as pd
@@ -21,8 +22,12 @@ logger = structlog.get_logger()
 _REFERENCE_MD5_KEY = "md5sum"
 
 RefPathLookup = Callable[[str], Path | None]
-RefDownloader = Callable[[str, bool], None]
 ChecksumCalculator = Callable[[Path], str]
+
+
+class RefDownloader(Protocol):
+    def __call__(self, ref: str, overwrite: bool) -> None:
+        pass
 
 
 @frozen
@@ -126,8 +131,10 @@ def gwaslab_download_ref_if_missing(
     # This object can grow out of date, meaning that the file exists but is not referenced in the config
     # Besides actually downloading missing files, calling "download ref" can also sometimes update the config to point to
     # existing local files that are not in the config
-    downloader(ref, False)
-    local_path = _usable_reference(ref, expected_md5=expected_md5, path_lookup=path_lookup, checksum=checksum)
+    downloader(ref, overwrite=False)
+    local_path = _usable_reference(
+        ref, expected_md5=expected_md5, path_lookup=path_lookup, checksum=checksum
+    )
     if local_path is not None:
         return local_path
 
@@ -138,7 +145,7 @@ def gwaslab_download_ref_if_missing(
         "gwaslab has no reference matching its recorded checksum, re-downloading",
         ref=ref,
     )
-    downloader(ref, True)
+    downloader(ref, overwrite=True)
 
     refreshed_path = path_lookup(ref)
     assert refreshed_path is not None, (
