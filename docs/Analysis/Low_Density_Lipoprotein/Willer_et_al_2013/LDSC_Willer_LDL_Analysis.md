@@ -1,3 +1,7 @@
+---
+tags:
+  - LDSC
+---
 # LDSC
 
 I applied [Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to the [LDL](../Verma_et_al/LDL_Overview.md) GWAS of Willer et al.[@global2013discovery].  The aim was to estimate heritability and look for signs of stratification and confounding.

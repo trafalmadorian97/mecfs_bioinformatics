@@ -3,7 +3,7 @@ Pure-Python (polars) re-implementation of ``GenomicSEM::munge``.
 
 ``munge`` QC's a single trait's GWAS summary statistics against a HapMap3
 reference and produces the ``.sumstats`` table (SNP, N, Z, A1, A2) that
-:func:`_genomic_sem_ldsc.run_ldsc` consumes. This port operates on a polars
+:func:`genomic_sem_ldsc.run_ldsc` consumes. This port operates on a polars
 DataFrame so the full pipeline can munge straight from the in-memory source
 (no multi-minute R read of giant text files).
 

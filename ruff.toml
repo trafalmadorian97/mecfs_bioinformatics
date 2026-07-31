@@ -32,3 +32,7 @@ select= ["I","F401","F541","UP", "W605", ]
 ignore =["UP007", "UP035"]
 [format]
 docstring-code-format = true
+# ruff >=0.16 formats Python code blocks in Markdown. Our fenced `python` blocks
+# hold pymdownx.snippets directives (`--8<-- "path.py"`), which parse as valid
+# Python and get mangled into `--8 < --"path.py"`.
+exclude = ["*.md"]

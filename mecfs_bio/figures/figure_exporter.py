@@ -19,6 +19,7 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_region_plots_meta import (
 from mecfs_bio.build_system.meta.markdown_file_meta import MarkdownFileMeta
 from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.base_tracer import (
     Tracer,
 )
@@ -34,6 +35,7 @@ ValidFigureMeta = (
     | DirectoryFigureMeta
     | MarkdownFileMeta
     | GWASLabManhattanQQPlotMeta
+    | ResultTableMeta
 )
 
 
@@ -92,6 +94,17 @@ def get_fig_dir_meta(meta: DirectoryFigureMeta, fig_dir: Path) -> Path:
     return fig_dir / meta.id
 
 
+def get_result_table_fig_file_path(meta: ResultTableMeta, fig_dir: Path) -> Path:
+    """Where a result table lands in the figure directory.
+
+    Unlike MarkdownFileMeta --- whose extension is rewritten to .mdx so mkdocs
+    does not turn it into a documentation page --- a result table keeps its own
+    extension, since it is fetched by the page at runtime rather than included
+    into the markdown source.
+    """
+    return fig_dir / (meta.asset_id + meta.extension)
+
+
 def get_figure_destination(meta: ValidFigureMeta, fig_dir: Path) -> Path:
     """
     Single source of truth for "where in the figure directory does the figure
@@ -107,4 +120,6 @@ def get_figure_destination(meta: ValidFigureMeta, fig_dir: Path) -> Path:
         return get_fig_dir_meta(meta=meta, fig_dir=fig_dir)
     if isinstance(meta, MarkdownFileMeta):
         return get_md_fig_file_path(meta=meta, fig_dir=fig_dir)
+    if isinstance(meta, ResultTableMeta):
+        return get_result_table_fig_file_path(meta=meta, fig_dir=fig_dir)
     raise ValueError(f"Unknown meta type {type(meta)}")

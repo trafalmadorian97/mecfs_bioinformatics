@@ -9,6 +9,9 @@ from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parqu
     PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GwasLabTransformSpec,
     GWASLabVCFRef,
@@ -21,7 +24,6 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_transform_sumstats import (
     GWASLabTransformSumstatsTask,
 )
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe

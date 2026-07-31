@@ -1,8 +1,10 @@
 from mecfs_bio.assets.reference_data.research_paper_supplementary_material.duncan_et_al_2025.processed.duncan_et_al_2025_st1_extracted import (
     DUNCAN_ET_AL_2025_ST1_EXTRACTED,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe

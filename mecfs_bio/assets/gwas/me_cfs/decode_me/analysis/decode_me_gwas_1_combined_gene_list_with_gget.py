@@ -6,8 +6,10 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_g
     DECODE_ME_GWAS_1_COMBINED_GENE_LISTS,
 )
 from mecfs_bio.build_system.task.combine_gene_lists_task import ENSEMBL_ID_LABEL
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.sort_pipe import SortPipe
 
 DECODE_ME_MASTER_GENE_LIST_WITH_GGET = FetchGGetInfoTask.create(

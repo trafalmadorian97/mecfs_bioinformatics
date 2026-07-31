@@ -1,4 +1,6 @@
 ---
+tags:
+- MAGMA
 hide:
 - toc
 ---

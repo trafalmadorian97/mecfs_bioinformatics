@@ -1,16 +1,40 @@
-site_name: ME/CFS Biostatistics Home
+site_name: ME/CFS Bioinformatics Home
 repo_url: https://github.com/trafalmadorian97/mecfs_bioinformatics
 edit_uri: edit/main/docs/
 theme:
   name: material
+  # Overrides the nav-item partial so the sidebar reads the short nav_title set
+  # by docs_hooks.py, while search/tags/browser-tab use the verbose page title.
+  custom_dir: overrides
   features:
 #    - navigation.indexes
     - toc.integrate
     - content.footnote.tooltips
     - content.action.edit
     - content.action.view
+# Build hooks. docs_hooks.py disambiguates analysis-page titles for search/tags.
+hooks:
+- docs_hooks.py
 plugins:
 - search
+# Backs docs/Analysis/Index_of_Techniques.md, which groups the analysis pages by
+# the technique they use. tags_allowed is an allow list: a tag outside it fails
+# the build, so a typo in a page's front matter cannot silently create a new tag.
+- tags:
+    listings_toc: false
+    tags_allowed:
+      - LDSC
+      - S-LDSC
+      - CT-LDSC
+      - MAGMA
+      - H-MAGMA
+      - Mendelian randomization
+      - MiXeR
+      - SuSiE
+      - LCV
+- exclude-search:
+      exclude:
+        - reference/* # avoid cluttering search with code files
 - macros
 - glightbox
 - awesome-nav
@@ -58,6 +82,13 @@ extra_javascript:
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort-scinum.js
   - javascripts/tablesort-init.js
+  # Backs the data_table macro in main.py. Loaded globally (UMD, so it lands on
+  # window) because the macro's own script is an ES module and cannot export
+  # Tabulator to the page scope itself.
+  - https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js
+
+extra_css:
+  - https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator.min.css
 
 markdown_extensions:
   - admonition

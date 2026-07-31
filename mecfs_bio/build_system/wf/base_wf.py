@@ -35,6 +35,11 @@ class WF:
         """Download the single file at synid into dest_dir and return its path."""
         return self.synapse_downloader.download(synid, dest_dir, expected_name)
 
+    def fetch_synapse_file_head(self, synid: str, n_bytes: int) -> bytes:
+        """Return the first n_bytes of the Synapse file at synid without downloading the
+        whole file (via a pre-signed URL + HTTP Range request)."""
+        return self.synapse_downloader.fetch_file_head(synid, n_bytes)
+
 
 def make_wf(
     downloader: WFDownloader | None = None,

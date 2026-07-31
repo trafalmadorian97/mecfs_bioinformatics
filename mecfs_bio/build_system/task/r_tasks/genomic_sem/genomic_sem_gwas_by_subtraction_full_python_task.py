@@ -67,10 +67,6 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_inputs import 
     read_dataframe_from_task,
     resolve_ld_path,
 )
-from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_ldsc import (
-    LDSCResult,
-    run_ldsc,
-)
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_munge import (
     munge_sumstats,
 )
@@ -84,6 +80,10 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._subtraction_result import (
     SubtractionFrames,
     make_result_df,
+)
+from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import (
+    LDSCResult,
+    run_ldsc,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 

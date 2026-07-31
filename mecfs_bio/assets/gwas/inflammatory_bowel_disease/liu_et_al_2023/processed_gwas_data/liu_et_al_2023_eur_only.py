@@ -10,8 +10,10 @@ drop any variants with null values in these columns, indicating they were not me
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.raw_gwas_data.liu_et_al_2023_meta import (
     LIU_ET_AL_2023_IBD_META,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
+from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
+)
+from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.drop_null_pipe import DropNullsPipe

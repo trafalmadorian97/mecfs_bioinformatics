@@ -17,6 +17,14 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.rebuilder.metadata_to_path.base_meta_to_path import (
+    MetaToPath,
+)
+from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
+    PathRemapRule,
+    RemappingMetaToPath,
+    warn_on_unmigrated_assets,
+)
 from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import (
     SimpleMetaToPath,
 )
@@ -31,6 +39,9 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_
 )
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import (
     VerifyingTraceRebuilder,
+)
+from mecfs_bio.build_system.runner.check_roots_available import (
+    check_remap_roots_available,
 )
 from mecfs_bio.build_system.scheduler.topological_scheduler import (
     TopologicalSchedulerSettings,
@@ -50,21 +61,28 @@ class SimpleRunner:
     an execution of the workflow build system with a topological scheduler and verifying trace rebuilder
 
     info_store: path at which to store persistent cash for build-system internal information
-    asset_root: root under which to create the asset store
+    asset_root: root under which to create the asset store, and the default root for any
+        subtree not claimed by path_remap
     tracer: algorithm uses to calculate verifying traces of assets.  An example would be a hashing algorithm.  changing this forces all assets to be rebuilt
     post_execute: hook invoked after each task materialization. Defaults to running `gc.collect()` and logging RSS,
         which keeps cycle-held memory from accumulating across long pipeline runs.  Pass `noop_post_execute_hook`
         from `mecfs_bio.build_system.rebuilder.sandboxed_execute` to disable.
+    path_remap: rules sending selected store subtrees to other filesystems.  Empty by
+        default, which keeps the whole store under asset_root.  See the
+        remapping_meta_to_path module for what is worth remapping and what is not.
     """
 
     info_store: Path
     asset_root: Path
     tracer: Tracer = SimpleHasher.md5_hasher()
     post_execute: Callable[[Task], None] = gc_collect_post_execute_hook
+    path_remap: tuple[PathRemapRule, ...] = ()
 
     @property
-    def meta_to_path(self) -> SimpleMetaToPath:
-        return SimpleMetaToPath(root=self.asset_root)
+    def meta_to_path(self) -> MetaToPath:
+        if not self.path_remap:
+            return SimpleMetaToPath(root=self.asset_root)
+        return RemappingMetaToPath(default_root=self.asset_root, rules=self.path_remap)
 
     def run(
         self,
@@ -79,7 +97,12 @@ class SimpleRunner:
            - This is particularly useful when you have changed the code that generates and asset, and so want it and its dependees to be regenerated.
         returns:
         mapping from asset id to file system information for all assets that were built or retrieved as part of the execution of the scheduler
+
+        Raises RemapRootUnavailableError, before any work is scheduled, if a configured
+        path_remap root is not present.
         """
+        check_remap_roots_available(self.path_remap)
+        warn_on_unmigrated_assets(self.asset_root, self.path_remap)
         if self.info_store.is_file():
             info = VerifyingTraceInfo.deserialize(self.info_store)
         else:

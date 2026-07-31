@@ -1,0 +1,38 @@
+---
+tags:
+  - CT-LDSC
+---
+# PPP CT-LDSC
+
+I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/Cross_Trait_LDSC.md) (CT-LDSC)[@bulik2015atlas] to estimate [genetic correlation](../../../Bioinformatics_Concepts/Genetic_Correlation.md) between the DECODE meta-GWAS of seropositive rheumatoid arthritis[@saevarsdottir2022multiomics] and proteomic GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
+
+
+Note that because of its assumptions of uniform polygenicity, CT-LDSC measures genetic correlation due to diffuse polygenic effects.  It does not measure genetic correlation due to highly-concentrated locus-specific effects.
+
+## Results
+
+As is standard for LDSC analysis, I restricted to the statistics to Hapmap3 variants, and excluded the MHC region.  I used the standard thousand genomes linkage disequilibrium scores provided by the authors of LDSC. Because my [previous heritability experiment](../../Proteomics/UKBB_PPP/PPP_LDSC.md) suggested little difference between using all SNPs and excluding the cis-region near the protein of interest, I only ran this experiment with the cis region excluded.
+
+The results are below:
+
+{{ ppp_rg_data_table("docs/_figs/seropositive_ra_ppp_rg_cis_excluded_display_frame.parquet", id="ukbb-ppp-ldsc-ra-rg" )}}
+
+Note that the trait heritability reported above differs from [what we found earlier](4_RA_Seropositive_LDSC.md).  This is because the implementation of LDSC used above excludes SNPs whose $\chi^2$ score exceeds $\mathrm{max}(0.001 N, 80)$ while the default GWASLab implementation of LDSC does not exclude these high-signal SNPs.
+
+
+## Interpretation
+
+
+The proteins with the most significant genetic correlations are consistent with known rheumatoid arthritis biology:
+
+- CCL19 and CCL21 are known to be over-expressed in the synovium of patients with rheumatoid arthritis [@pickens2011characterization].
+- [TNFRSF9](https://en.wikipedia.org/wiki/TNFRSF9) and [PDCD1](https://en.wikipedia.org/wiki/Programmed_cell_death_protein_1) are important immune checkpoint molecules.
+- [TNFRSF8](https://en.wikipedia.org/wiki/CD30), also known as CD30, is a receptor expressed by activated lymphocytes.
+
+
+## Caveats
+
+
+
+These results are intriguing, but it is important to keep in mind the limitations of the quantity we are calculating.  A significant genetic correlation tells us that there is a shared genetic architecture between rheumatoid arthritis and the plasma level of a protein of interest. However, genetic correlation does not inform us about the causal relationship between the protein and the trait.
+

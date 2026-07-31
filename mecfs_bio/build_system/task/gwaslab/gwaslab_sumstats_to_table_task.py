@@ -2,6 +2,12 @@ from pathlib import Path
 
 import structlog
 
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+    ParquetWriteOptions,
+    write_df_according_to_format,
+)
+
 logger = structlog.get_logger()
 
 import narwhals
@@ -37,6 +43,7 @@ class GwasLabSumstatsToTableTask(Task):
     meta: Meta
     source_sumstats_task: Task
     pipe: DataProcessingPipe = IdentityPipe()
+    write_options: ParquetWriteOptions | None = None
 
     @property
     def source_meta(self) -> Meta:
@@ -56,10 +63,16 @@ class GwasLabSumstatsToTableTask(Task):
         df: pd.DataFrame = sumstats.data
         logger.debug(f"Post sumstats df has shape {df.shape}")
         n_df = narwhals.from_native(df).lazy()
-        df = self.pipe.process(n_df).collect().to_pandas()
-        logger.debug(f"Post pipe df has shape {df.shape}")
+        df_nw = self.pipe.process(n_df)
+        # logger.debug(f"Post pipe df has shape {df.shape}")
         out_loc = scratch_dir / "data.parquet"
-        df.to_parquet(out_loc, index=False)
+        write_df_according_to_format(
+            df_nw,
+            out_path=out_loc,
+            out_format=ParquetOutFormat(write_options=self.write_options),
+            # narwhals.from_native(df).lazy()
+        )
+        # df.to_parquet(out_loc, index=False)
         return FileAsset(path=out_loc)
 
     @classmethod
@@ -69,6 +82,7 @@ class GwasLabSumstatsToTableTask(Task):
         asset_id: str,
         sub_dir: str,
         pipe: DataProcessingPipe = IdentityPipe(),
+        write_options: ParquetWriteOptions | None = None,
     ):
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
@@ -79,4 +93,9 @@ class GwasLabSumstatsToTableTask(Task):
             sub_dir=sub_dir,
             read_spec=DataFrameReadSpec(format=DataFrameParquetFormat()),
         )
-        return cls(meta=meta, source_sumstats_task=source_tsk, pipe=pipe)
+        return cls(
+            meta=meta,
+            source_sumstats_task=source_tsk,
+            pipe=pipe,
+            write_options=write_options,
+        )

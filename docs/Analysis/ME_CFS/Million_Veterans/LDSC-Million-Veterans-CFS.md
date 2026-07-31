@@ -1,3 +1,7 @@
+---
+tags:
+  - LDSC
+---
 # LDSC 
 
 I applied [Linkage Disequlibirum Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to the GWAS of chronic fatigue syndrome (CFS) performed as part of the [Million Veterans Program](../../../Data_Sources/Million_Veterans_Program.md)[@verma2024diversity].  Note that while [DecodeME](../../../Data_Sources/DecodeME.md)[@genetics2025initial] used a carefully constructed case definition, Million Veterans GWAS are based on PheCodes, which are aggregations of billing codes.  We can thus expect that the Million Veterans GWAS may be significantly more noisy than DecodeME.

@@ -10,7 +10,7 @@ already in the figure directory) but fail for any collaborator who has to
 pull and regenerate from scratch. This module catches that drift.
 """
 
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Iterable, Sequence
 
 from mecfs_bio.build_system.task.base_task import Task
@@ -27,10 +27,10 @@ class ManifestTaskMismatchError(ValueError):
 
 
 def find_orphan_paths(
-    paths: Iterable[Path],
+    paths: Iterable[PurePath],
     tasks: Sequence[Task],
     fig_dir: Path,
-) -> list[Path]:
+) -> list[PurePath]:
     """
     Return the paths in ``paths`` that no task in ``tasks`` produces.
 
@@ -42,19 +42,19 @@ def find_orphan_paths(
     for validation, or the union of manifest keys and on-disk files for
     pruning. Result is sorted for stable error messages and pruning order.
     """
-    file_destinations: set[Path] = set()
-    dir_destinations: list[Path] = []
+    file_destinations: set[PurePath] = set()
+    dir_destinations: list[PurePath] = []
     for task in tasks:
         meta = task.meta
         assert isinstance(meta, ValidFigureMeta)
         dst = get_figure_destination(meta=meta, fig_dir=fig_dir)
-        rel = dst.relative_to(fig_dir)
+        rel = PurePath(dst.relative_to(fig_dir))
         if isinstance(meta, DirectoryFigureMeta):
             dir_destinations.append(rel)
         else:
             file_destinations.add(rel)
 
-    orphan_paths: list[Path] = []
+    orphan_paths: list[PurePath] = []
     for path in paths:
         if path in file_destinations:
             continue

@@ -1,3 +1,7 @@
+---
+tags:
+  - CT-LDSC
+---
 # CT-LDSC
 
 

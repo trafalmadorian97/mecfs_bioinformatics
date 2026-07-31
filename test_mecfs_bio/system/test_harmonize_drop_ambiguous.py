@@ -13,6 +13,9 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash i
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
     GwasLabTransformSpec,
@@ -23,7 +26,6 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_transform_sumstats import (
     GWASLabTransformSumstatsTask,
 )
 from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    ParquetOutFormat,
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.head_pipe import HeadPipe

@@ -1,3 +1,7 @@
+---
+tags:
+  - LDSC
+---
 # LDSC
 
 I applied [Linkage Disequlibirum Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to [DecodeME](../../../Data_Sources/DecodeME.md) GWAS-1 to estimate heritability and look for evidence of stratification.

@@ -15,7 +15,7 @@ release for any past commit that still references them.
 """
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from pathlib import Path
+from pathlib import Path, PurePath
 from typing import Sequence
 
 import structlog
@@ -81,7 +81,7 @@ def push_figures(
     # Collect one (rel_path, src) per unique hash that needs uploading. The
     # release is content-addressed, so even if two figure paths share the
     # same blob it gets uploaded exactly once.
-    uploads_by_sha: dict[str, tuple[Path, Path]] = {}
+    uploads_by_sha: dict[str, tuple[PurePath, Path]] = {}
     for rel_path, sha in local_manifest.figures.items():
         if sha in new_hashes and sha not in uploads_by_sha:
             uploads_by_sha[sha] = (rel_path, fig_dir / rel_path)
@@ -116,12 +116,12 @@ def push_figures(
 
 
 def _upload_blobs_in_parallel(
-    uploads_by_sha: dict[str, tuple[Path, Path]],
+    uploads_by_sha: dict[str, tuple[PurePath, Path]],
     tag: str,
     repo_name: str,
     max_workers: int,
 ) -> None:
-    def _upload_one(sha: str, rel_path: Path, src: Path) -> None:
+    def _upload_one(sha: str, rel_path: PurePath, src: Path) -> None:
         logger.debug(f"Uploading blob {sha} (from {rel_path}) to release {tag}.")
         upload_blob_to_release(
             release_tag=tag, repo_name=repo_name, asset_name=sha, src_path=src
@@ -145,7 +145,7 @@ def _merge_manifests(
     present locally; paths only in ``old`` are dropped if ``prune`` is set,
     otherwise they are preserved.
     """
-    merged: dict[Path, str] = {} if prune else dict(old.figures)
+    merged: dict[PurePath, str] = {} if prune else dict(old.figures)
     merged.update(local.figures)
     return FigureManifest(figures=merged)
 

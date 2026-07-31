@@ -4,8 +4,10 @@ from mecfs_bio.assets.gwas.me_cfs.neale_lab.raw.neale_lab_cfs_gwas_download impo
 from mecfs_bio.assets.reference_data.neale_lab_reference_data.neale_lab_variant_list import (
     NEALE_LAB_VARIANTS_REFERENCE,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe

@@ -6,8 +6,10 @@ from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.mr.asthma_ppp_cis_mr_m
     HAN_2022_ASTHMA_CIS_PPP_TSMR_MULTIPLE_TESTING,
 )
 from mecfs_bio.assets.reference_data.uniprot.uniprot_lookup_table import UNIPROT_LOOKUP
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+)
 from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
-from mecfs_bio.build_system.task.pipe_dataframe_task import ParquetOutFormat
 from mecfs_bio.build_system.task.pipes.str_split_exact_col import SplitExactColPipe
 from mecfs_bio.build_system.task.two_sample_mr_task import TSM_OUTPUT_EXPOSURE_COL
 from mecfs_bio.constants.sun_et_al_pqtl_constants import (
