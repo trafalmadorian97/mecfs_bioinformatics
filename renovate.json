@@ -57,6 +57,11 @@
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
+    },
+    {
+      "description": "pixi upgrades change the pixi.lock format (v6 -> v7 at pixi 0.68.0) and must be coordinated with the pixi-version pins in .github/workflows/*.yml and with contributors' local pixi. Never automerge.",
+      "matchPackageNames": ["prefix-dev/pixi"],
+      "automerge": false
     }
   ],
   "lockFileMaintenance": {
