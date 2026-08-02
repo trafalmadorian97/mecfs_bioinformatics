@@ -65,11 +65,15 @@ jobs:
         run: |
           set -euo pipefail
 
+          # `gh` renders PR authors that are GitHub Apps as "app/<slug>" -- NOT
+          # "<slug>[bot]", which is the REST API form. Review authors use yet another
+          # form (plain login, no prefix and no [bot] suffix), hence the startswith
+          # below. Getting this wrong makes the filter silently match nothing.
           pr_numbers=$(gh pr list --state open --json number,author \
-            --jq '.[] | select(.author.login == "mecfs-bio-renovate[bot]") | .number')
+            --jq '.[] | select(.author.login == "app/mecfs-bio-renovate") | .number')
 
           if [ -z "$pr_numbers" ]; then
-            echo "No open PRs from mecfs-bio-renovate[bot]."
+            echo "No open PRs from app/mecfs-bio-renovate."
             exit 0
           fi
 

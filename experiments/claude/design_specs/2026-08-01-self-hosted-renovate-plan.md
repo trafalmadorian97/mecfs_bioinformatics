@@ -284,7 +284,7 @@ jobs:
           set -euo pipefail
 
           pr_numbers=$(gh pr list --state open --json number,author \
-            --jq '.[] | select(.author.login == "mecfs-bio-renovate[bot]") | .number')
+            --jq '.[] | select(.author.login == "app/mecfs-bio-renovate") | .number')
 
           if [ -z "$pr_numbers" ]; then
             echo "No open PRs from mecfs-bio-renovate[bot]."
@@ -339,7 +339,7 @@ standalone, against the live repo, before it has any authority.
 
 ```bash
 gh pr list --state open --json number,author \
-  --jq '.[] | select(.author.login == "mecfs-bio-renovate[bot]") | .number'
+  --jq '.[] | select(.author.login == "app/mecfs-bio-renovate") | .number'
 ```
 
 Expected: empty. No PRs exist from the App yet, so anything else means the filter is wrong.
@@ -351,7 +351,7 @@ gh pr list --state all --limit 20 --json number,author \
   --jq '.[] | [.number, .author.login] | @tsv'
 ```
 
-Read the logins. Confirm the historical Renovate PRs show `renovate[bot]` (Mend's, which the
+Read the logins. Confirm the historical Renovate PRs show `app/renovate` (Mend's, which the
 filter must **not** match) and your own PRs show your login. This proves Step 1's empty
 result is a real filter and not a broken query returning nothing regardless of input.
 
@@ -445,7 +445,7 @@ live bots target identical `renovate/*` branch names and will duplicate and figh
 gh pr list --state open --json number,author --jq '.[] | [.number, .author.login] | @tsv'
 ```
 
-Expected: no `renovate[bot]` rows. If any exist, close them — the new App's approve filter
+Expected: no `app/renovate` rows. If any exist, close them — the new App's approve filter
 will never approve them and they would sit forever.
 
 - [ ] **Step 3: Enable the cron**
@@ -492,7 +492,7 @@ gh run watch "$(gh run list --workflow=renovate.yml --limit 1 --json databaseId 
 gh pr list --state open --json number,author,title --jq '.[] | [.number, .author.login, .title] | @tsv'
 ```
 
-Expected: any new PRs show `mecfs-bio-renovate[bot]`. If they show your login, `gitAuthor` or
+Expected: any new PRs show `app/mecfs-bio-renovate`. If they show your login, `gitAuthor` or
 the token is wrong.
 
 - [ ] **Step 3: Confirm `pixi.lock` is included**

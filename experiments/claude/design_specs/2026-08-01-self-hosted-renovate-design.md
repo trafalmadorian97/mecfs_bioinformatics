@@ -203,7 +203,12 @@ the action tag auto-updates via the existing manager, but `renovate-version` nee
 Two required properties:
 
 - **Filtered to the App's PRs.** `gh pr list --json number,author`, selecting
-  `author.login == "mecfs-bio-renovate[bot]"`. Unfiltered, it would approve human PRs.
+  `author.login == "app/mecfs-bio-renovate"`. Unfiltered, it would approve human PRs.
+
+  Note the login formats differ by field and this is easy to get wrong: `gh` renders PR
+  authors that are Apps as `app/<slug>`, but *review* authors as a plain login with neither
+  the `app/` prefix nor the `[bot]` suffix (e.g. `renovate-approve`). A `<slug>[bot]` filter
+  matches nothing, silently.
 - **Idempotent.** It runs hourly and will see the same open PR repeatedly; re-approving
   errors. It queries existing reviews and skips PRs already approved by
   `github-actions[bot]`, rather than suppressing errors with `|| true`, which would also
@@ -218,7 +223,7 @@ cron means no attacker-controlled input is in scope.
 `renovate-approve` will **not** carry over. Its README states: "For self-hosted Renovate,
 you'll need to run one or more of your own Approve bots with appropriate permissions, as
 GitHub users and bots are not able to self-approve." It approves PRs from Mend's hosted
-`renovate[bot]`; our PRs will be authored by `mecfs-bio-renovate[bot]`, a different actor. Left
+`renovate[bot]`; our PRs will be authored by `app/mecfs-bio-renovate`, a different actor. Left
 unhandled, every PR would stall unapproved against the repo's one-approval requirement.
 
 `GITHUB_TOKEN` approvals do count toward required approvals — "Allow GitHub Actions reviews
