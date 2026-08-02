@@ -78,6 +78,10 @@ jobs:
             exit 0
           fi
 
+          # One un-approvable PR must not prevent the rest from being approved, but a
+          # failure must still surface -- so collect failures and report at the end
+          # rather than aborting on the first (set -e) or swallowing them (|| true).
+          failed=""
           while IFS= read -r pr; do
             [ -n "$pr" ] || continue
             already=$(gh pr view "$pr" --json reviews \
@@ -89,5 +93,13 @@ jobs:
               continue
             fi
             echo "PR #${pr}: approving."
-            gh pr review "$pr" --approve
+            if ! gh pr review "$pr" --approve; then
+              echo "PR #${pr}: approval FAILED."
+              failed="${failed} ${pr}"
+            fi
           done <<< "$pr_numbers"
+
+          if [ -n "$failed" ]; then
+            echo "Failed to approve:${failed}"
+            exit 1
+          fi
