@@ -226,9 +226,19 @@ GitHub users and bots are not able to self-approve." It approves PRs from Mend's
 `renovate[bot]`; our PRs will be authored by `app/mecfs-bio-renovate`, a different actor. Left
 unhandled, every PR would stall unapproved against the repo's one-approval requirement.
 
-`GITHUB_TOKEN` approvals do count toward required approvals — "Allow GitHub Actions reviews
-to count towards required approval" is enabled by default — and `github-actions[bot]` is a
-distinct actor from the App, so this is not self-approval.
+`GITHUB_TOKEN` approvals require **two** independent settings, which are easily confused
+(they were conflated in the original version of this spec, and the error only surfaced on the
+first live run):
+
+1. **"Allow GitHub Actions to create and approve pull requests"** (Settings -> Actions ->
+   General -> Workflow permissions) — whether Actions may approve at all. Defaults to
+   **disabled**; without it, `gh pr review --approve` fails with
+   `GitHub Actions is not permitted to approve pull requests`.
+2. **"Allow GitHub Actions reviews to count towards required approval"** — whether such an
+   approval satisfies branch protection. Defaults to enabled.
+
+Both must hold. `github-actions[bot]` is a distinct actor from the App, so this is not
+self-approval.
 
 This means the one-approval gate is satisfied by a bot. That is already true today via
 `renovate-approve`; this changes which bot, not whether the gate is real.

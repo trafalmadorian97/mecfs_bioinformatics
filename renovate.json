@@ -62,6 +62,11 @@
       "description": "pixi upgrades change the pixi.lock format (v6 -> v7 at pixi 0.68.0) and must be coordinated with the pixi-version pins in .github/workflows/*.yml and with contributors' local pixi. Never automerge.",
       "matchPackageNames": ["prefix-dev/pixi"],
       "automerge": false
+    },
+    {
+      "description": "gwaslab pins adjusttext >=0.7.3,<=0.8, so adjusttext 1.x can never resolve and pixi lock fails. Lift this ceiling only once gwaslab relaxes its pin.",
+      "matchPackageNames": ["adjusttext"],
+      "allowedVersions": "<=0.8"
     }
   ],
   "lockFileMaintenance": {
