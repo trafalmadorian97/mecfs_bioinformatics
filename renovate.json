@@ -5,6 +5,10 @@
   ],
   "minimumReleaseAge": "1 day",
   "prHourlyLimit": 10,
+  "description": [
+    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on."
+  ],
+  "rebaseWhen": "behind-base-branch",
   "enabledManagers": [
     "pixi",
     "github-actions",
