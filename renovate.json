@@ -7,7 +7,8 @@
   "prHourlyLimit": 10,
   "enabledManagers": [
     "pixi",
-    "github-actions"
+    "github-actions",
+    "custom.regex"
   ],
   "constraints": {
     "pixi": "0.67.2"
@@ -22,6 +23,15 @@
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "prefix-dev/pixi",
       "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/renovate\\.yml$/"],
+      "matchStrings": [
+        "renovate-version:\\s*(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/renovatebot/renovate"
     }
   ],
   "packageRules": [
@@ -51,7 +61,7 @@
   ],
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 4am on saturday"],
+    "schedule": ["* * * * 6"],
     "automerge": true,
     "platformAutomerge": false
   }

@@ -1,0 +1,92 @@
+name: renovate
+
+on:
+  workflow_dispatch:
+    inputs:
+      dryRun:
+        description: "Run without creating branches, PRs or merges"
+        type: boolean
+        default: false
+      logLevel:
+        description: "Renovate log level (info or debug)"
+        type: string
+        default: info
+  # schedule: added after dry-run validation.
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  renovate:
+    name: Renovate
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Mint App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.RENOVATE_APP_ID }}
+          private-key: ${{ secrets.RENOVATE_APP_PRIVATE_KEY }}
+
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Restore Renovate cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/renovate/cache
+          key: renovate-cache-${{ github.run_id }}
+          restore-keys: renovate-cache-
+
+      - name: Run Renovate
+        uses: renovatebot/github-action@v46.2.0
+        with:
+          configurationFile: .github/renovate-global.js
+          token: ${{ steps.app-token.outputs.token }}
+          renovate-version: 44.5.3
+        env:
+          RENOVATE_REPOSITORY_CACHE: enabled
+          RENOVATE_DRY_RUN: ${{ inputs.dryRun && 'full' || '' }}
+          # Fallback matters: on scheduled runs `inputs` is null, and LOG_LEVEL is read
+          # by the logger directly rather than through Renovate's option parsing (which
+          # skips empty values), so an empty string here would not be safely ignored.
+          LOG_LEVEL: ${{ inputs.logLevel || 'info' }}
+
+      - name: Approve Renovate PRs
+        if: ${{ !inputs.dryRun }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          # `gh` renders PR authors that are GitHub Apps as "app/<slug>" -- NOT
+          # "<slug>[bot]", which is the REST API form. Review authors use yet another
+          # form (plain login, no prefix and no [bot] suffix), hence the startswith
+          # below. Getting this wrong makes the filter silently match nothing.
+          pr_numbers=$(gh pr list --state open --json number,author \
+            --jq '.[] | select(.author.login == "app/mecfs-bio-renovate") | .number')
+
+          if [ -z "$pr_numbers" ]; then
+            echo "No open PRs from app/mecfs-bio-renovate."
+            exit 0
+          fi
+
+          while IFS= read -r pr; do
+            [ -n "$pr" ] || continue
+            already=$(gh pr view "$pr" --json reviews \
+              --jq '[.reviews[]
+                     | select((.author.login | startswith("github-actions"))
+                              and .state == "APPROVED")] | length')
+            if [ "$already" -gt 0 ]; then
+              echo "PR #${pr}: already approved, skipping."
+              continue
+            fi
+            echo "PR #${pr}: approving."
+            gh pr review "$pr" --approve
+          done <<< "$pr_numbers"
