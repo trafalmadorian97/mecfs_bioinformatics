@@ -72,7 +72,13 @@
       "description": "setuptools 82 removed pkg_resources, which zepid and testmon still import at import time. See the comment above the setuptools pin in pyproject.toml. Lift this ceiling only once zepid no longer imports pkg_resources.",
       "matchPackageNames": ["setuptools"],
       "allowedVersions": "<82"
-    }
+    },
+
+    {
+    "description": "upload pages v4 introduced a gotcha and potentially breaking change",
+    "matchPackageNames": ["actions/upload-pages-artifact@v3"],
+    "allowedVersions": "<v4"
+  ,}
   ],
   "lockFileMaintenance": {
     "enabled": true,
