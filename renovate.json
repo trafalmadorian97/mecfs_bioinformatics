@@ -6,7 +6,7 @@
   "minimumReleaseAge": "1 day",
   "prHourlyLimit": 10,
   "description": [
-    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on, when a keep-updated label is set, or when Renovate can see that branch protection requires up-to-date branches. The mecfs-bio-renovate App lacks Administration:read, so that last check logs 'Do not have permissions to detect branch-protection for main' and PRs awaiting manual review (major bumps of packages not on the automerge list) silently stop being rebased. Granting Administration:read would make 'auto' work by itself."
+    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on."
   ],
   "rebaseWhen": "behind-base-branch",
   "enabledManagers": [
