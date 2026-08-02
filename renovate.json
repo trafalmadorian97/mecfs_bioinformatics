@@ -76,7 +76,7 @@
 
     {
     "description": "upload pages v4 introduced a gotcha and potentially breaking change",
-    "matchPackageNames": ["actions/upload-pages-artifact@v3"],
+    "matchPackageNames": ["actions/upload-pages-artifact"],
     "allowedVersions": "<v4"
     }
   ],
