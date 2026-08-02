@@ -11,7 +11,8 @@ on:
         description: "Renovate log level (info or debug)"
         type: string
         default: info
-  # schedule: added after dry-run validation.
+  schedule:
+    - cron: "0 * * * *"
 
 concurrency:
   group: renovate
