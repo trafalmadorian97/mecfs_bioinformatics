@@ -27,7 +27,7 @@ restore the previous behaviour.
 | Decision | Choice | Rationale |
 |---|---|---|
 | Auth | GitHub App | Replaces a GitHub App (Mend's), so PR attribution and `gitAuthor` semantics are unchanged. No expiry cliff. Renovate's documented recommendation for bot accounts. |
-| Cadence | Daily, 03:00 UTC | Low noise. Actions minutes are free on a public repo, so cost was not a factor. |
+| Cadence | Hourly | Fast feedback while the setup is new; matches the hosted app's responsiveness. Actions minutes are free on a public repo. May be reduced later — see the `lockFileMaintenance` note. |
 | Cutover | Dry run, then switch | Validates against a live repo without opening PRs. |
 | Approvals | Approve step using `GITHUB_TOKEN` | `renovate-approve` does not work self-hosted (see below). No extra App or hosted service. |
 | Lock updates | Renovate does them in-process | Avoids a second workflow, `gitIgnoredAuthors`, and the branch-modified problem entirely. |
@@ -47,7 +47,7 @@ Rejected: raw `docker run` of the Renovate image. Hand-rolls what
 | Piece | New? | Purpose |
 |---|---|---|
 | Renovate GitHub App | new | Bot identity. Installed on this repo only. Supplies a 1-hour token per run. |
-| `.github/workflows/renovate.yml` | new | Daily cron + `workflow_dispatch`. Mints token, runs Renovate, approves PRs. |
+| `.github/workflows/renovate.yml` | new | Hourly cron + `workflow_dispatch`. Mints token, runs Renovate, approves PRs. |
 | `.github/renovate-global.js` | new | Self-hosted-only config (~10 lines). |
 | `renovate.json` | edited | Dependency policy. Two small edits. |
 | Repo secrets | new | `RENOVATE_APP_ID`, `RENOVATE_APP_PRIVATE_KEY`. |
@@ -55,7 +55,7 @@ Rejected: raw `docker run` of the Renovate image. Hand-rolls what
 ### Data flow
 
 ```
-03:00 UTC cron  (or manual workflow_dispatch)
+hourly cron  (or manual workflow_dispatch)
   -> actions/create-github-app-token  -> ghs_... token, valid 1h
   -> renovatebot/github-action (pinned)
        reads renovate.json from the repo
@@ -80,7 +80,8 @@ module.exports = {
   platform: 'github',
   repositories: ['trafalmadorian97/mecfs_bioinformatics'],
   allowedUnsafeExecutions: ['pixi'],
-  gitAuthor: '<app-slug>[bot] <ID+<app-slug>[bot]@users.noreply.github.com>',
+  gitAuthor:
+    'mecfs-bio-renovate[bot] <311934930+mecfs-bio-renovate[bot]@users.noreply.github.com>',
 };
 ```
 
@@ -88,8 +89,13 @@ module.exports = {
 
 1. Widen `lockFileMaintenance.schedule` from `"before 4am on saturday"` to all-day Saturday
    (`["* * * * 6"]`). Renovate schedules are filters, not triggers: they apply only if a run
-   occurs inside the window. GitHub scheduled runs are best-effort and often delayed, so a
-   03:00 UTC cron would eventually miss a narrow pre-04:00 window, silently skipping a week.
+   occurs inside the window.
+
+   At hourly cadence this is **not load-bearing** — runs at 00:00–03:00 UTC on Saturday fall
+   inside the existing narrow window regardless of scheduling delays. It is kept as insurance
+   against a later cadence reduction: at daily cadence a delayed run would miss a pre-04:00
+   window and silently skip a week, and that interaction is easy to forget when changing the
+   cron. Cost of keeping it is zero.
 
    Renovate accepts cron syntax here but **requires `*` in the minutes field** — verified in
    `lib/workers/repository/update/branch/schedule.ts`, which rejects anything else with
@@ -118,7 +124,7 @@ on:
       dryRun: { type: boolean, default: false }
       logLevel: { type: string, default: info }
   # schedule:            # second commit
-  #   - cron: "0 3 * * *"
+  #   - cron: "0 * * * *"
 
 concurrency: { group: renovate, cancel-in-progress: false }
 permissions:
@@ -184,8 +190,8 @@ the action tag auto-updates via the existing manager, but `renovate-version` nee
 Two required properties:
 
 - **Filtered to the App's PRs.** `gh pr list --json number,author`, selecting
-  `author.login == "<app-slug>[bot]"`. Unfiltered, it would approve human PRs.
-- **Idempotent.** It runs daily and will see the same open PR repeatedly; re-approving
+  `author.login == "mecfs-bio-renovate[bot]"`. Unfiltered, it would approve human PRs.
+- **Idempotent.** It runs hourly and will see the same open PR repeatedly; re-approving
   errors. It queries existing reviews and skips PRs already approved by
   `github-actions[bot]`, rather than suppressing errors with `|| true`, which would also
   swallow real failures.
@@ -199,7 +205,7 @@ cron means no attacker-controlled input is in scope.
 `renovate-approve` will **not** carry over. Its README states: "For self-hosted Renovate,
 you'll need to run one or more of your own Approve bots with appropriate permissions, as
 GitHub users and bots are not able to self-approve." It approves PRs from Mend's hosted
-`renovate[bot]`; our PRs will be authored by `<app-slug>[bot]`, a different actor. Left
+`renovate[bot]`; our PRs will be authored by `mecfs-bio-renovate[bot]`, a different actor. Left
 unhandled, every PR would stall unapproved against the repo's one-approval requirement.
 
 `GITHUB_TOKEN` approvals do count toward required approvals — "Allow GitHub Actions reviews
@@ -209,13 +215,17 @@ distinct actor from the App, so this is not self-approval.
 This means the one-approval gate is satisfied by a bot. That is already true today via
 `renovate-approve`; this changes which bot, not whether the gate is real.
 
-Consequence of daily cadence: Renovate's own automerge only runs when Renovate runs. GitHub
-native auto-merge (`platformAutomerge`, default on) sidesteps this, but `lockFileMaintenance`
-sets `platformAutomerge: false`, so those weekly PRs carry a one-day merge lag. Harmless.
+Renovate's own automerge only runs when Renovate runs. GitHub native auto-merge
+(`platformAutomerge`, default on) sidesteps this, but `lockFileMaintenance` sets
+`platformAutomerge: false`, so those weekly PRs wait for the next Renovate run — about an
+hour at hourly cadence. Worth revisiting if cadence is ever reduced.
 
 ## Cutover
 
 ### Phase 0 — GitHub UI (manual)
+
+**Status: App registered as `mecfs-bio-renovate` (bot user id `311934930`).** Remaining:
+confirm it is installed on `mecfs_bioinformatics`, and add the two repo secrets.
 
 Register the App: webhook **unchecked** (cron-driven, nothing listens), installable on this
 account only. Permissions:
@@ -234,9 +244,13 @@ account only. Permissions:
 Generate a private key, install on `mecfs_bioinformatics`, add `RENOVATE_APP_ID` and
 `RENOVATE_APP_PRIVATE_KEY` as repo secrets.
 
-Derive `gitAuthor` rather than hand-typing it: `gh api /users/<app-slug>%5Bbot%5D --jq .id`
-returns the numeric ID, giving `<id>+<app-slug>[bot]@users.noreply.github.com`. This is the
-design's most error-prone value; a mismatch silently disables automerge.
+`gitAuthor` was derived rather than hand-typed:
+`gh api /users/mecfs-bio-renovate%5Bbot%5D --jq .id` returned `311934930`, giving
+`311934930+mecfs-bio-renovate[bot]@users.noreply.github.com`. This is the design's most
+error-prone value; a mismatch silently disables automerge.
+
+The private key must be pasted directly into the repo secret by the repo owner. It should
+not be transmitted through any other channel.
 
 ### Phases 1–4
 
@@ -252,9 +266,22 @@ design's most error-prone value; a mismatch silently disables automerge.
    merges.
 
 **Prerequisite: zero open Renovate PRs at cutover.** Renovate finds PRs by branch name, so
-the new App would adopt `renovate/ty-0.x`, but that PR is authored by Mend's `renovate[bot]`
-and the approve step filters on our App's login — it would never be approved and would sit
-indefinitely. PR #983 must be merged or closed first.
+the new App would adopt existing `renovate/*` branches — but those PRs are authored by Mend's
+`renovate[bot]`, and the approve step filters on our App's login, so they would never be
+approved and would sit indefinitely.
+
+- **#983** (ty 0.0.65) — merged 2026-08-01. Cleared.
+- **#955** (Lock file maintenance, branch `renovate/lock-file-maintenance`) — **close it.**
+  Open since 2026-07-25, `mergeStateStatus: BEHIND`, last checks green on 2026-07-25. It
+  cannot self-heal: `updatePixiLockfile` returns `null` at the `allowedUnsafeExecutions`
+  gate *before* doing any work, and a lock-maintenance PR's only content is that lock
+  update — so a rebase under the current hosted app produces nothing. Once self-hosting is
+  live, the next Saturday window generates a fresh, up-to-date replacement, which strictly
+  dominates a week-stale one.
+
+  Merging it instead would be safe but pointless: its diff is 589 lines of `pixi.lock` only
+  and does not touch `ty`, so there is no risk of reverting the recent bump — it is simply
+  redundant with the refresh that self-hosting will produce.
 
 ## Failure modes
 
