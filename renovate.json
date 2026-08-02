@@ -67,6 +67,11 @@
       "description": "gwaslab pins adjusttext >=0.7.3,<=0.8, so adjusttext 1.x can never resolve and pixi lock fails. Lift this ceiling only once gwaslab relaxes its pin.",
       "matchPackageNames": ["adjusttext"],
       "allowedVersions": "<=0.8"
+    },
+    {
+      "description": "setuptools 82 removed pkg_resources, which zepid and testmon still import at import time. See the comment above the setuptools pin in pyproject.toml. Lift this ceiling only once zepid no longer imports pkg_resources.",
+      "matchPackageNames": ["setuptools"],
+      "allowedVersions": "<82"
     }
   ],
   "lockFileMaintenance": {
