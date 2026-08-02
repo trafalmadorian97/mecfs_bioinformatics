@@ -103,6 +103,19 @@ module.exports = {
    satisfies this.
 2. Add a `customManager` to keep the pinned `renovate-version` updated (see below).
 
+3. Add `"custom.regex"` to `enabledManagers`. Discovered during planning: `enabledManagers`
+   "disables all other managers", and custom managers are named `custom.regex` (the config
+   migration maps legacy `regex` to it). The current value `["pixi", "github-actions"]` omits
+   it, so the **existing pixi-version `customManager` has never run** — `constraints.pixi` is
+   pinned at `0.67.2` while pixi is at `0.75.0`, and the only commit ever touching that value
+   is `da0a1a5b` (a manual bump, not a Renovate PR). Without this edit the new
+   `renovate-version` customManager would be equally dead.
+
+   Consequence: once enabled, Renovate will propose `constraints.pixi` 0.67.2 -> 0.75.0, and
+   the existing `minor`/`patch` rule would automerge it. Since that changes which pixi
+   resolves `pixi.lock` in CI, decide deliberately whether to let it automerge or add a
+   `"automerge": false` rule for `prefix-dev/pixi` first.
+
 `constraints.pixi`, `packageRules`, `automerge`, `enabledManagers`, `minimumReleaseAge`,
 `prHourlyLimit` and the existing pixi-version `customManager` carry over unchanged.
 
