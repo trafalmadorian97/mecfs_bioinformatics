@@ -36,6 +36,16 @@
       ],
       "datasourceTemplate": "docker",
       "depNameTemplate": "ghcr.io/renovatebot/renovate"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/.+\\.yml$/"],
+      "matchStrings": [
+        "pixi-version:\\s*v(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "prefix-dev/pixi",
+      "extractVersionTemplate": "^v(?<version>.+)$"
     }
   ],
   "packageRules": [
@@ -63,9 +73,9 @@
       "automerge": true
     },
     {
-      "description": "pixi upgrades change the pixi.lock format (v6 -> v7 at pixi 0.68.0) and must be coordinated with the pixi-version pins in .github/workflows/*.yml and with contributors' local pixi. Never automerge.",
+      "description": "pixi bumps move the three workflow pixi-version pins and constraints.pixi together on one Renovate branch (same depName+datasource+currentValue). Automerge is on: every step is lock-format safe (newer pixi reads older locks), and a contributor on stale pixi gets pixi's native self-update message. See experiments/claude/design_specs/2026-08-02-renovate-pixi-workflow-version.md.",
       "matchPackageNames": ["prefix-dev/pixi"],
-      "automerge": false
+      "automerge": true
     },
     {
       "description": "gwaslab pins adjusttext >=0.7.3,<=0.8, so adjusttext 1.x can never resolve and pixi lock fails. Lift this ceiling only once gwaslab relaxes its pin.",
