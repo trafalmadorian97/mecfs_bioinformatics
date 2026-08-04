@@ -39,7 +39,7 @@
     },
     {
       "customType": "regex",
-      "managerFilePatterns": ["/^\\.github/workflows/.+\\.yml$/"],
+      "managerFilePatterns": ["/^\\.github/.+\\.ya?ml$/"],
       "matchStrings": [
         "pixi-version:\\s*v(?<currentValue>\\d+\\.\\d+\\.\\d+)"
       ],
