@@ -40,7 +40,7 @@ jobs:
         name: Setup Pixi Environment
         if: steps.changes.outputs.nonmark == 'true'
         with:
-          pixi-version: v0.75.0
+          pixi-version: v0.76.0
           cache: true
       - name: Cache R Packages
         if: steps.changes.outputs.nonmark == 'true'
