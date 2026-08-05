@@ -222,7 +222,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-fnn-1.1.4.1-r45h3697838_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-fs-2.1.0-r45h3697838_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-ggrepel-0.9.8-r45h3697838_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-4.1_10-r45ha36cffa_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-5.0-r45ha36cffa_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-glue-1.8.1-r45h54b55ab_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-gmp-0.7_5.1-r45h3697838_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-goftest-1.2_3-r45h54b55ab_4.conda
@@ -4286,9 +4286,9 @@ packages:
   purls: []
   size: 359391
   timestamp: 1775472008108
-- conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-4.1_10-r45ha36cffa_1.conda
-  sha256: 4971136fbcec60676d1671d513e88dffe495ff473868afd65611ad52c30f2dbf
-  md5: 3b87325916cb2f097eae73f531ff0ec1
+- conda: https://conda.anaconda.org/conda-forge/linux-64/r-glmnet-5.0-r45ha36cffa_0.conda
+  sha256: 27964f30dcfcf327bbbd6ac2d3c69a671a1df8bb3805181bcbb2cb409f59801e
+  md5: d8dd931172a54345283f7715b1b0a8f5
   depends:
   - __glibc >=2.17,<3.0.a0
   - libgcc >=14
@@ -4305,8 +4305,9 @@ packages:
   license: GPL-2.0-only
   license_family: GPL2
   purls: []
-  size: 1981308
-  timestamp: 1757514921805
+  run_exports: {}
+  size: 2428354
+  timestamp: 1778057485651
 - conda: https://conda.anaconda.org/conda-forge/linux-64/r-glue-1.8.1-r45h54b55ab_0.conda
   sha256: c2760270ffabd95e9d0a0caa9cc705c5a0370ad119ace5495acc043b1a35d198
   md5: 65911c2e9cac35ea0235d3d6d4aa9625
@@ -7644,7 +7645,7 @@ packages:
   license: MIT
   license_family: MIT
   purls:
-  - pkg:pypi/tomlkit?source=hash-mapping
+  - pkg:pypi/tomlkit?source=compressed-mapping
   size: 49054
   timestamp: 1784287707171
 - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2026c-h151e31d_0.conda
@@ -7680,7 +7681,7 @@ packages:
   license: Apache-2.0
   license_family: APACHE
   purls:
-  - pkg:pypi/yq?source=compressed-mapping
+  - pkg:pypi/yq?source=hash-mapping
   size: 33373
   timestamp: 1784296404889
 - pypi: ./
