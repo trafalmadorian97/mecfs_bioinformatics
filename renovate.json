@@ -83,9 +83,15 @@
       "allowedVersions": "<=0.8"
     },
     {
-      "description": "setuptools 82 removed pkg_resources, which zepid and testmon still import at import time. See the comment above the setuptools pin in pyproject.toml. Lift this ceiling only once zepid no longer imports pkg_resources.",
+      "description": "setuptools 82 removed pkg_resources, which zepid still imports at import time. See the comment above the setuptools pin in pyproject.toml. Lift this ceiling only once zepid no longer imports pkg_resources.",
       "matchPackageNames": ["setuptools"],
       "allowedVersions": "<82"
+    },
+
+    {
+      "description": "r-base>=4.6 seems currently incompatible with r-cpp11",
+      "matchPackageNames": ["r-base"],
+      "allowedVersions": "<4.6"
     },
 
     {
