@@ -57,7 +57,7 @@ bcftools = ">=1.22,<2"
 # Used by the migrate-asset-store task to move asset store subtrees between disks.
 rsync = ">=3.4.4,<4"
 typos = ">=1.41.0,<2"
-r-base = ">=4.0,<4.6"
+r-base = ">=4.6,<4.7"
 bioconductor-celldex = ">=1.16.0,<2"
 pixi = "*"
 make = ">=4.4.1,<5"
