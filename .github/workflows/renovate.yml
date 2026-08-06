@@ -12,8 +12,7 @@ on:
         type: string
         default: info
   schedule:
-    # Twice a day (UTC). Offset from the top of the hour because GitHub delays
-    # scheduled runs queued at :00 under peak load.
+    # Run 6:20 AM and 6:20 PM UTC
     - cron: "20 6,18 * * *"
 
 concurrency:
