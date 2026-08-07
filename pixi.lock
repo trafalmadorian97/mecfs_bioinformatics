@@ -332,7 +332,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tbb-devel-2023.0.0-hab88423_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_hd70dff1_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tktable-2.10-h5a7a40f_8.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.67-h4e94fc0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.68-h4e94fc0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.48.0-hb17b654_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libice-1.1.2-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libsm-1.2.6-he73a12e_0.conda
@@ -6059,24 +6059,24 @@ packages:
   purls: []
   size: 102544
   timestamp: 1773732786017
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.67-h4e94fc0_0.conda
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.68-h4e94fc0_0.conda
   noarch: python
-  sha256: b035619377a65aab3b9338c03fb23b4c15167187365586ceb723634fe8cf178e
-  md5: 4d524fbeebadd4e3ad25ad0592b4e8c9
+  sha256: 885152785c5ee900f4dd32335b40ec3fa51b89329e14ea9cf2bde3d5e8828ae0
+  md5: ead85a7bcc1d98fc51d0041ab30006c5
   depends:
   - python
-  - libgcc >=14
   - __glibc >=2.17,<3.0.a0
+  - libgcc >=14
   - _python_abi3_support 1.*
   - cpython >=3.10
   constrains:
   - __glibc >=2.17
   license: MIT
   purls:
-  - pkg:pypi/ty?source=hash-mapping
+  - pkg:pypi/ty?source=compressed-mapping
   run_exports: {}
-  size: 10771717
-  timestamp: 1785981452154
+  size: 10776686
+  timestamp: 1786001102832
 - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.48.0-hb17b654_0.conda
   sha256: b8cd6270cf71afa1ea5abb21c5ea65d9f4f0ec2614d3af3d0d2185011a1ff3b4
   md5: a66c11d121cd29ee901edb4eb50d1075
