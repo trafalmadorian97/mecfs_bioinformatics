@@ -12,7 +12,8 @@ on:
         type: string
         default: info
   schedule:
-    - cron: "0 * * * *"
+    # Run 6:20 AM and 6:20 PM UTC
+    - cron: "20 6,18 * * *"
 
 concurrency:
   group: renovate
