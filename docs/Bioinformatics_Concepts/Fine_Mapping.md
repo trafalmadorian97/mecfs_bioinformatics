@@ -22,7 +22,7 @@ Some facts about LD:
 - Genetic variants that are relatively recent tend to have low frequency in the population, and thus low LD with all other variants, regardless of distance.
 
 
-As an illustrative example, here is a plot of the absolute value of the correlation between genetic variants in a region of chromosome 1.  This plot was generated from the [UK Biobank LD matrices stored on AWS OpenData](https://registry.opendata.aws/ukbb-ld/).
+As an illustrative example, here is a plot of the absolute value of the correlation between genetic variants in a region of chromosome 1.  This plot was generated from the [UK Biobank LD matrices stored on AWS OpenData](https://registry.opendata.aws/ukbb-ld/).  In the plot, the x and y axes correspond genomic position, while color indicates absolute correlation.
 
 
 ![ld_example_plot](https://github.com/user-attachments/assets/a05681d5-91f3-4b89-8023-d3d50a22b8bd)
