@@ -20,7 +20,7 @@ GCTB_BINARY_URL: str = (
     "https://gctbhub.cloud.edu.au/software/gctb/download/gctb_2.5.5_Linux.zip"
 )
 GCTB_BINARY_SHA256: str = (
-    "ccc2752e1bc0d4a210bd9592d07c44468891677f8b2d5fc0a37aa2119c24c61"
+    "ccc2752e1bc0d4a210bd9592d07c44468891677f8b2d5fc0a37aa2119c24c61f"
 )
 
 GWFM_REFERENCE_VERSION: str = "Imputed13M/v1"

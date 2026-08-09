@@ -102,7 +102,7 @@ Downloaded once and hashed:
 
 ```
 sha256sum gctb.zip
-ccc2752e1bc0d4a210bd9592d07c44468891677f8b2d5fc0a37aa2119c24c61  gctb.zip
+ccc2752e1bc0d4a210bd9592d07c44468891677f8b2d5fc0a37aa2119c24c61f  gctb.zip
 ```
 
 Archive contents: `gctb_2.5.5_Linux/{gctb, LICENSE, README, .DS_Store}` plus
