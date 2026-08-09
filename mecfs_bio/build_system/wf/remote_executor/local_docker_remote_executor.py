@@ -1,3 +1,4 @@
+import shlex
 import shutil
 import tempfile
 from collections.abc import Callable
@@ -33,8 +34,20 @@ class LocalDockerRemoteExecutor(RemoteExecutor):
 
             for s3_uri, remote_dest in job.s3_inputs.items():
                 staged_dest = host_work_dir / remote_dest
-                staged_dest.parent.mkdir(parents=True, exist_ok=True)
-                self._runner(["aws", "s3", "cp", s3_uri, str(staged_dest)])
+                # s3_inputs are directory prefixes (e.g. s3://.../v1/ -> work/ref),
+                # so the destination itself must exist as a directory for a
+                # recursive copy, not just its parent.
+                staged_dest.mkdir(parents=True, exist_ok=True)
+                self._runner(
+                    [
+                        "aws",
+                        "s3",
+                        "cp",
+                        "--recursive",
+                        shlex.quote(s3_uri),
+                        shlex.quote(str(staged_dest)),
+                    ]
+                )
 
             inner_command: str = " && ".join(job.commands)
             docker_command: list[str] = [
@@ -42,13 +55,13 @@ class LocalDockerRemoteExecutor(RemoteExecutor):
                 "run",
                 "--rm",
                 "-v",
-                f"{host_work_dir}:/work",
+                shlex.quote(f"{host_work_dir}:/work"),
                 "-w",
                 "/work",
-                job.image,
+                shlex.quote(job.image),
                 "bash",
                 "-lc",
-                f'"{inner_command}"',
+                shlex.quote(inner_command),
             ]
             self._runner(docker_command)
 
