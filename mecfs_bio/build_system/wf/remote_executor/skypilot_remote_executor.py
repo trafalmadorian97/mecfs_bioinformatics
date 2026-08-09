@@ -13,18 +13,18 @@ Assumptions and environment:
 - On-demand instances only. Spot is intentionally not used (see design spec).
 - Because a real launch runs for many hours and costs real money, run() asks for
   interactive confirmation before launching. Set the environment variable
-  GWFM_ASSUME_YES=1 to skip the prompt in non-interactive contexts (CI smoke
-  tests, batch runs).
+  REMOTE_EXEC_ASSUME_YES=1 to skip the prompt in non-interactive contexts (CI
+  smoke tests, batch runs).
 - Output retrieval uses an S3 round-trip (see _retrieve_outputs): the on-instance
   run phase copies each output to a run-scoped S3 prefix, and run() downloads
   from that prefix. The scratch bucket/prefix is read from the environment
-  variable GWFM_REMOTE_SCRATCH_S3 (e.g. "s3://my-bucket/gwfm-scratch"). The
-  installed SkyPilot SDK exposes no clean, recursive, top-level file-download
+  variable REMOTE_EXEC_SCRATCH_S3 (e.g. "s3://my-bucket/remote-exec-scratch").
+  The installed SkyPilot SDK exposes no clean, recursive, top-level file-download
   API (only log download and Storage-mount helpers), so the documented S3
   fallback is used.
 
-Only the pure helpers build_sky_task and estimate_cost_usd are unit-tested; the
-live launch path is validated by a one-time manual maintainer smoke test.
+Only the pure helpers build_sky_task and estimate_usd_per_hour are unit-tested;
+the live launch path is validated by a one-time manual maintainer smoke test.
 """
 
 import os
@@ -53,12 +53,12 @@ logger = structlog.get_logger()
 _USD_PER_VCPU_HOUR = 0.03
 _USD_PER_GB_HOUR = 0.004
 
-_SCRATCH_S3_ENV_VAR = "GWFM_REMOTE_SCRATCH_S3"
-_ASSUME_YES_ENV_VAR = "GWFM_ASSUME_YES"
+_SCRATCH_S3_ENV_VAR = "REMOTE_EXEC_SCRATCH_S3"
+_ASSUME_YES_ENV_VAR = "REMOTE_EXEC_ASSUME_YES"
 
 
 def _prompt_confirm(prompt: str, read: Callable[[str], str] = input) -> bool:
-    """Return True if the user confirms the prompt (or GWFM_ASSUME_YES=1).
+    """Return True if the user confirms the prompt (or REMOTE_EXEC_ASSUME_YES=1).
 
     The environment override lets non-interactive callers proceed without a TTY;
     otherwise only an answer beginning with "y" (case-insensitive) confirms. read
@@ -70,18 +70,18 @@ def _prompt_confirm(prompt: str, read: Callable[[str], str] = input) -> bool:
     return answer.strip().lower().startswith("y")
 
 
-def estimate_cost_usd(job: RemoteJob, hours: float) -> float:
-    """Estimate the on-demand USD cost of running the job for the given hours.
+def estimate_usd_per_hour(job: RemoteJob) -> float:
+    """Estimate the on-demand USD-per-hour rate for the job's requested resources.
 
     A coarse guardrail for the confirmation prompt only: it scales linearly with
-    the requested runtime AND with the requested vCPU and memory, so larger jobs
-    are priced higher. Not a billing figure.
+    the requested vCPU and memory, so larger jobs are priced higher. There is no
+    per-job runtime estimate for an arbitrary job, so run() shows this rate rather
+    than a total. Not a billing figure.
     """
-    per_hour = (
+    return (
         _USD_PER_VCPU_HOUR * job.resources.vcpus
         + _USD_PER_GB_HOUR * job.resources.memory_gb
     )
-    return per_hour * hours
 
 
 def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.Task:
@@ -122,7 +122,7 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
             )
     run = " && ".join(run_parts)
 
-    task = sky.Task(name="gwfm", setup=setup, run=run)
+    task = sky.Task(name="remote-job", setup=setup, run=run)
     task.set_file_mounts(file_mounts)
     task.set_resources(
         sky.Resources(
@@ -139,7 +139,8 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
 class SkyPilotRemoteExecutor(RemoteExecutor):
     """Runs a RemoteJob on a transient AWS instance provisioned by SkyPilot.
 
-    Confirms before launch (interactively, or via GWFM_ASSUME_YES=1), provisions
+    Confirms before launch (interactively, or via REMOTE_EXEC_ASSUME_YES=1),
+    provisions
     an on-demand instance with an idle-autostop safety net, streams logs, pulls
     outputs back through an S3 scratch prefix, and always tears the cluster down.
     """
@@ -155,10 +156,9 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
         self._runner = runner
 
     def run(self, job: RemoteJob, local_output_dir: Path) -> None:
-        hours_est = 14.0
         prompt = (
-            f"Launch {job.resources.vcpus}vCPU/{job.resources.memory_gb}GB "
-            f"on-demand (~${estimate_cost_usd(job, hours_est):.0f})? [y/N] "
+            f"Launch {job.resources.vcpus} vCPU / {job.resources.memory_gb} GB "
+            f"on-demand (~${estimate_usd_per_hour(job):.1f}/hr)? [y/N] "
         )
         if not self._confirm(prompt):
             raise RuntimeError("Remote launch declined by user")
@@ -168,7 +168,7 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
             f"{_SCRATCH_S3_ENV_VAR} must be set to an s3:// scratch prefix so "
             f"remote outputs can be staged for download"
         )
-        cluster = f"gwfm-{uuid4().hex[:8]}"
+        cluster = f"remote-exec-{uuid4().hex[:8]}"
         output_s3_prefix = f"{scratch_root.rstrip('/')}/{cluster}"
         task = build_sky_task(job, output_s3_prefix=output_s3_prefix)
         try:

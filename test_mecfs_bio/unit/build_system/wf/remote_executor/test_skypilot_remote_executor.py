@@ -8,7 +8,7 @@ from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
     SkyPilotRemoteExecutor,
     _prompt_confirm,
     build_sky_task,
-    estimate_cost_usd,
+    estimate_usd_per_hour,
 )
 
 
@@ -55,18 +55,15 @@ def test_build_sky_task_reflects_resources_and_commands(tmp_path: Path) -> None:
     assert "docker run" in run
 
 
-def test_estimate_cost_usd_scales_with_hours(tmp_path: Path) -> None:
+def test_estimate_usd_per_hour_is_positive(tmp_path: Path) -> None:
     job = _make_job(
         tmp_path,
         RemoteResources(memory_gb=192, vcpus=24, disk_gb=500, region="us-east-1"),
     )
-    one_hour = estimate_cost_usd(job, 1.0)
-    ten_hours = estimate_cost_usd(job, 10.0)
-    assert one_hour > 0.0
-    assert ten_hours == 10.0 * one_hour
+    assert estimate_usd_per_hour(job) > 0.0
 
 
-def test_estimate_cost_usd_scales_with_resources(tmp_path: Path) -> None:
+def test_estimate_usd_per_hour_scales_with_resources(tmp_path: Path) -> None:
     small = _make_job(
         tmp_path,
         RemoteResources(memory_gb=96, vcpus=24, disk_gb=500, region="us-east-1"),
@@ -79,25 +76,25 @@ def test_estimate_cost_usd_scales_with_resources(tmp_path: Path) -> None:
         tmp_path,
         RemoteResources(memory_gb=96, vcpus=48, disk_gb=500, region="us-east-1"),
     )
-    # More memory (or more vCPU) at the same runtime must cost strictly more, so
+    # More memory (or more vCPU) must yield a strictly higher per-hour estimate, so
     # the estimate can never silently regress to a resource-independent constant.
-    assert estimate_cost_usd(big_memory, 1.0) > estimate_cost_usd(small, 1.0)
-    assert estimate_cost_usd(big_cpu, 1.0) > estimate_cost_usd(small, 1.0)
+    assert estimate_usd_per_hour(big_memory) > estimate_usd_per_hour(small)
+    assert estimate_usd_per_hour(big_cpu) > estimate_usd_per_hour(small)
 
 
 def test_prompt_confirm_honours_assume_yes_env(monkeypatch) -> None:
-    monkeypatch.setenv("GWFM_ASSUME_YES", "1")
+    monkeypatch.setenv("REMOTE_EXEC_ASSUME_YES", "1")
     # The env override wins even if the injected reader would decline.
     assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "n") is True
 
 
 def test_prompt_confirm_declines_on_non_yes_answer(monkeypatch) -> None:
-    monkeypatch.delenv("GWFM_ASSUME_YES", raising=False)
+    monkeypatch.delenv("REMOTE_EXEC_ASSUME_YES", raising=False)
     assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "n") is False
 
 
 def test_prompt_confirm_accepts_yes_answer(monkeypatch) -> None:
-    monkeypatch.delenv("GWFM_ASSUME_YES", raising=False)
+    monkeypatch.delenv("REMOTE_EXEC_ASSUME_YES", raising=False)
     assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "yes") is True
 
 
@@ -111,7 +108,7 @@ def test_retrieve_outputs_issues_recursive_s3_copies(tmp_path: Path) -> None:
     executor = SkyPilotRemoteExecutor(runner=fake_runner)
     output_files = [PurePath("work/out"), PurePath("work/log.txt")]
     executor._retrieve_outputs(
-        "s3://bucket/gwfm-scratch/gwfm-abcd1234",
+        "s3://bucket/remote-exec-scratch/remote-exec-abcd1234",
         output_files,
         tmp_path,
     )
