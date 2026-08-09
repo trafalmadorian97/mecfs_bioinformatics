@@ -9,7 +9,7 @@ Assumptions and environment:
 - AWS credentials are resolved through the standard AWS credential chain
   (environment variables, shared credentials file, or an instance profile);
   neither this module nor SkyPilot is passed explicit credentials. SkyPilot and
-  the on-instance `aws` CLI both rely on that chain.
+  the on-instance aws CLI both rely on that chain.
 - On-demand instances only. Spot is intentionally not used (see design spec).
 - Because a real launch runs for many hours and costs real money, run() asks for
   interactive confirmation before launching. Set the environment variable
@@ -34,6 +34,7 @@ from pathlib import Path, PurePath
 from uuid import uuid4
 
 import sky
+import structlog
 
 from mecfs_bio.build_system.wf.remote_executor.base_remote_executor import (
     RemoteExecutor,
@@ -41,35 +42,46 @@ from mecfs_bio.build_system.wf.remote_executor.base_remote_executor import (
 from mecfs_bio.build_system.wf.remote_executor.remote_job import RemoteJob
 from mecfs_bio.util.subproc.run_command import execute_command
 
-# Rough on-demand USD/hour used only for the confirmation prompt's cost estimate.
-# The GWFM instance is a memory-heavy general-purpose box (~192GB / 24 vCPU);
-# this is a deliberately conservative order-of-magnitude figure, not a quote.
-_ESTIMATED_USD_PER_HOUR = 1.5
+logger = structlog.get_logger()
+
+# Coarse AWS on-demand coefficients for the confirmation-prompt cost estimate only.
+# SkyPilot's Resources.get_cost needs a resolved instance type, which this executor
+# deliberately does not pin (it sizes by cpus/memory), so a linear guardrail model is
+# used instead. Coefficients are chosen so a 24 vCPU / 192 GB shape lands near the
+# ~$1.5/hr order of magnitude of a memory-heavy general-purpose EC2 box; this is an
+# approximate guardrail for a launch prompt, not a billing figure.
+_USD_PER_VCPU_HOUR = 0.03
+_USD_PER_GB_HOUR = 0.004
 
 _SCRATCH_S3_ENV_VAR = "GWFM_REMOTE_SCRATCH_S3"
 _ASSUME_YES_ENV_VAR = "GWFM_ASSUME_YES"
 
 
-def _prompt_confirm(prompt: str) -> bool:
+def _prompt_confirm(prompt: str, read: Callable[[str], str] = input) -> bool:
     """Return True if the user confirms the prompt (or GWFM_ASSUME_YES=1).
 
     The environment override lets non-interactive callers proceed without a TTY;
-    otherwise only a stdin answer beginning with "y" (case-insensitive) confirms.
+    otherwise only an answer beginning with "y" (case-insensitive) confirms. read
+    is injected (defaulting to input) so tests can supply their own reader.
     """
     if os.environ.get(_ASSUME_YES_ENV_VAR) == "1":
         return True
-    answer = input(prompt)
+    answer = read(prompt)
     return answer.strip().lower().startswith("y")
 
 
 def estimate_cost_usd(job: RemoteJob, hours: float) -> float:
     """Estimate the on-demand USD cost of running the job for the given hours.
 
-    A coarse estimate for the confirmation prompt only; it scales linearly with
-    the requested runtime and is not a billing figure.
+    A coarse guardrail for the confirmation prompt only: it scales linearly with
+    the requested runtime AND with the requested vCPU and memory, so larger jobs
+    are priced higher. Not a billing figure.
     """
-    del job  # A single conservative rate is used regardless of exact sizing.
-    return _ESTIMATED_USD_PER_HOUR * hours
+    per_hour = (
+        _USD_PER_VCPU_HOUR * job.resources.vcpus
+        + _USD_PER_GB_HOUR * job.resources.memory_gb
+    )
+    return per_hour * hours
 
 
 def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.Task:
@@ -170,8 +182,20 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
             sky.tail_logs(cluster, job_id, follow=True)
             self._retrieve_outputs(output_s3_prefix, job.output_files, local_output_dir)
         finally:
-            # Guaranteed teardown even on exception / Ctrl-C.
-            sky.down(cluster)
+            # Guaranteed teardown even on exception / Ctrl-C. sky.down is async and
+            # returns a request id; await it so a failed teardown surfaces instead of
+            # silently leaving a paid instance running (idle-autostop is only a
+            # backstop). Never let a teardown error mask the original exception.
+            try:
+                sky.get(sky.down(cluster))
+            except Exception:
+                logger.error(
+                    "remote_teardown_failed",
+                    cluster=cluster,
+                    hint="Instance may still be running; tear it down manually "
+                    "(e.g. `sky down <cluster>`) to stop incurring cost.",
+                    exc_info=True,
+                )
 
     def _retrieve_outputs(
         self,

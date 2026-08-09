@@ -1,4 +1,3 @@
-import os
 from pathlib import Path, PurePath
 
 from mecfs_bio.build_system.wf.remote_executor.remote_job import (
@@ -6,6 +5,8 @@ from mecfs_bio.build_system.wf.remote_executor.remote_job import (
     RemoteResources,
 )
 from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
+    SkyPilotRemoteExecutor,
+    _prompt_confirm,
     build_sky_task,
     estimate_cost_usd,
 )
@@ -65,22 +66,61 @@ def test_estimate_cost_usd_scales_with_hours(tmp_path: Path) -> None:
     assert ten_hours == 10.0 * one_hour
 
 
+def test_estimate_cost_usd_scales_with_resources(tmp_path: Path) -> None:
+    small = _make_job(
+        tmp_path,
+        RemoteResources(memory_gb=96, vcpus=24, disk_gb=500, region="us-east-1"),
+    )
+    big_memory = _make_job(
+        tmp_path,
+        RemoteResources(memory_gb=192, vcpus=24, disk_gb=500, region="us-east-1"),
+    )
+    big_cpu = _make_job(
+        tmp_path,
+        RemoteResources(memory_gb=96, vcpus=48, disk_gb=500, region="us-east-1"),
+    )
+    # More memory (or more vCPU) at the same runtime must cost strictly more, so
+    # the estimate can never silently regress to a resource-independent constant.
+    assert estimate_cost_usd(big_memory, 1.0) > estimate_cost_usd(small, 1.0)
+    assert estimate_cost_usd(big_cpu, 1.0) > estimate_cost_usd(small, 1.0)
+
+
 def test_prompt_confirm_honours_assume_yes_env(monkeypatch) -> None:
-    from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
-        _prompt_confirm,
-    )
-
     monkeypatch.setenv("GWFM_ASSUME_YES", "1")
-    assert _prompt_confirm("Launch? [y/N] ") is True
+    # The env override wins even if the injected reader would decline.
+    assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "n") is True
 
 
-def test_prompt_confirm_defaults_no_without_env(monkeypatch) -> None:
-    from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
-        _prompt_confirm,
+def test_prompt_confirm_declines_on_non_yes_answer(monkeypatch) -> None:
+    monkeypatch.delenv("GWFM_ASSUME_YES", raising=False)
+    assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "n") is False
+
+
+def test_prompt_confirm_accepts_yes_answer(monkeypatch) -> None:
+    monkeypatch.delenv("GWFM_ASSUME_YES", raising=False)
+    assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "yes") is True
+
+
+def test_retrieve_outputs_issues_recursive_s3_copies(tmp_path: Path) -> None:
+    calls: list[list[str]] = []
+
+    def fake_runner(command: list[str]) -> str:
+        calls.append(command)
+        return ""
+
+    executor = SkyPilotRemoteExecutor(runner=fake_runner)
+    output_files = [PurePath("work/out"), PurePath("work/log.txt")]
+    executor._retrieve_outputs(
+        "s3://bucket/gwfm-scratch/gwfm-abcd1234",
+        output_files,
+        tmp_path,
     )
 
-    monkeypatch.delenv("GWFM_ASSUME_YES", raising=False)
-    # Non-"y" stdin answer must decline.
-    monkeypatch.setattr("builtins.input", lambda _prompt: "n")
-    assert _prompt_confirm("Launch? [y/N] ") is False
-    assert os.environ.get("GWFM_ASSUME_YES") != "1"
+    assert len(calls) == len(output_files)
+    for command, output_file in zip(calls, output_files, strict=True):
+        assert command[:4] == ["aws", "s3", "cp", "--recursive"]
+        source, dest = command[4], command[5]
+        assert output_file.as_posix() in source
+        assert str(tmp_path / output_file) in dest
+    # Destination parent directories are created ahead of the copy.
+    assert (tmp_path / "work").is_dir()
