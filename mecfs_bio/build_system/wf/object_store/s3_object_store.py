@@ -6,6 +6,28 @@ staging run against real S3 (see design spec). The exact shape of
 get_object_attributes's Checksum payload is inferred from the boto3/S3 API
 docs rather than verified against a live bucket, so treat the sha256 return
 of head() as a best-effort convenience, not a guaranteed contract.
+
+Composite-checksum warning: upload_fileobj uses boto3's TransferManager,
+which multipart-uploads any file over roughly 8 MiB, and our reference files
+(hundreds of GB) always take that path. For a multipart upload, the
+ChecksumSHA256 that S3 stores and that get_object_attributes reports back is
+a COMPOSITE checksum (a hash of the per-part checksums), not a plain
+byte-for-byte SHA-256 of the object. Consequences for callers:
+
+- An S3-reported sha256 (from head() or upload_from_url()) may only be
+  compared against another S3-reported sha256 for the SAME object (e.g. a
+  dedup check comparing head().sha256 against a value previously returned by
+  upload_from_url()). Both sides go through the same composite scheme, so
+  the comparison is meaningful.
+- An S3-reported sha256 must NEVER be compared against an independently
+  computed local digest (e.g. `sha256sum` on the source file before upload);
+  for a multipart object those two values are not the same hash and a
+  mismatch does not indicate corruption, nor does a match guarantee byte
+  equality.
+- Forcing whole-object checksums (S3's ChecksumType=FULL_OBJECT) would avoid
+  this, but is deliberately not done here; whether it is worth the extra
+  configuration is left for validation during the real staging run, not
+  decided speculatively in this untested code path.
 """
 
 from typing import Any
@@ -20,6 +42,7 @@ from mecfs_bio.build_system.wf.object_store.base_object_store import (
 )
 
 _NOT_FOUND_ERROR_CODES = {"404", "NoSuchKey", "NotFound"}
+_URLOPEN_TIMEOUT_SECONDS = 60
 
 
 def _split_s3_uri(uri: str) -> tuple[str, str]:
@@ -36,13 +59,24 @@ class S3ObjectStore(ObjectStore):
 
     Uploads use ONEZONE_IA storage (this is scratch/staging data, not
     durable-tier) and request an S3-managed SHA-256 checksum so head() can
-    later report it without re-downloading the object.
+    later report it without re-downloading the object. See the module
+    docstring for the composite-checksum caveat on large (multipart)
+    objects: the returned sha256 is only safe to compare against another
+    S3-reported sha256, never against an independently computed local
+    digest.
     """
 
     def __init__(self, client: Any = None) -> None:
         self._client = client if client is not None else boto3.client("s3")
 
     def head(self, uri: str) -> ObjectHead | None:
+        """Return size and S3-reported checksum for uri, or None if absent.
+
+        The returned sha256 (if not None) is S3's checksum for the stored
+        object; for a multipart-uploaded object (see module docstring) that
+        is a composite checksum, not a plain SHA-256 of the bytes. Only
+        compare it against another S3-reported checksum.
+        """
         bucket, key = _split_s3_uri(uri)
         try:
             head_response = self._client.head_object(Bucket=bucket, Key=key)
@@ -62,8 +96,17 @@ class S3ObjectStore(ObjectStore):
         return ObjectHead(size_bytes=size_bytes, sha256=sha256)
 
     def upload_from_url(self, source_url: str, uri: str) -> str:
+        """Stream source_url's body into uri and return S3's stored sha256.
+
+        The returned string is S3's checksum for the stored object; for a
+        multipart upload (see module docstring, and note that our reference
+        files are always multipart) that is a composite checksum, not a
+        plain SHA-256 of source_url's bytes. Only compare it against another
+        S3-reported checksum (e.g. a later head() call), never against an
+        independently computed local digest of the source.
+        """
         bucket, key = _split_s3_uri(uri)
-        with urlopen(source_url) as response:  # noqa: S310
+        with urlopen(source_url, timeout=_URLOPEN_TIMEOUT_SECONDS) as response:  # noqa: S310
             self._client.upload_fileobj(
                 response,
                 bucket,
