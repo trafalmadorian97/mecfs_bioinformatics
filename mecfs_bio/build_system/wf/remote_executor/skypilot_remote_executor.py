@@ -23,8 +23,12 @@ Assumptions and environment:
   API (only log download and Storage-mount helpers), so the documented S3
   fallback is used.
 
-Only the pure helpers build_sky_task and estimate_usd_per_hour are unit-tested;
-the live launch path is validated by a one-time manual maintainer smoke test.
+The confirmation prompt shows a concrete on-demand price: the injected
+cost_estimator asks SkyPilot's optimizer for the cheapest matching instance and
+its hourly rate. The production estimator (estimate_cost_via_sky_optimize) needs
+SkyPilot cloud access, so it is injected on construction and replaced with a fake
+in unit tests; the pure helper build_sky_task is unit-tested directly, and the
+live launch path is validated by a one-time manual maintainer smoke test.
 """
 
 import os
@@ -35,26 +39,39 @@ from uuid import uuid4
 
 import sky
 import structlog
+from attrs import frozen
 
 from mecfs_bio.build_system.wf.remote_executor.base_remote_executor import (
     RemoteExecutor,
 )
-from mecfs_bio.build_system.wf.remote_executor.remote_job import RemoteJob
+from mecfs_bio.build_system.wf.remote_executor.remote_job import (
+    RemoteJob,
+    RemoteResources,
+)
 from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
 
-# Coarse AWS on-demand coefficients for the confirmation-prompt cost estimate only.
-# SkyPilot's Resources.get_cost needs a resolved instance type, which this executor
-# deliberately does not pin (it sizes by cpus/memory), so a linear guardrail model is
-# used instead. Coefficients are chosen so a 24 vCPU / 192 GB shape lands near the
-# ~$1.5/hr order of magnitude of a memory-heavy general-purpose EC2 box; this is an
-# approximate guardrail for a launch prompt, not a billing figure.
-_USD_PER_VCPU_HOUR = 0.03
-_USD_PER_GB_HOUR = 0.004
+_SECONDS_PER_HOUR = 3600
 
 _SCRATCH_S3_ENV_VAR = "REMOTE_EXEC_SCRATCH_S3"
 _ASSUME_YES_ENV_VAR = "REMOTE_EXEC_ASSUME_YES"
+
+
+@frozen
+class CostEstimate:
+    """The concrete on-demand instance SkyPilot's optimizer would pick, and its rate.
+
+    usd_per_hour is that instance's on-demand price for one hour; instance_type,
+    cloud, and region identify the machine so the launch prompt can show what will
+    actually be provisioned. Not a billing guarantee, but a catalog-derived figure
+    rather than a hand-tuned model.
+    """
+
+    usd_per_hour: float
+    instance_type: str
+    cloud: str
+    region: str | None
 
 
 def _prompt_confirm(prompt: str, read: Callable[[str], str] = input) -> bool:
@@ -70,17 +87,39 @@ def _prompt_confirm(prompt: str, read: Callable[[str], str] = input) -> bool:
     return answer.strip().lower().startswith("y")
 
 
-def estimate_usd_per_hour(job: RemoteJob) -> float:
-    """Estimate the on-demand USD-per-hour rate for the job's requested resources.
+def _build_resources(resources: RemoteResources) -> sky.Resources:
+    """Translate our RemoteResources into a SkyPilot Resources request on AWS."""
+    return sky.Resources(
+        cloud=sky.AWS(),
+        cpus=resources.vcpus,
+        memory=resources.memory_gb,
+        disk_size=resources.disk_gb,
+        region=resources.region,
+    )
 
-    A coarse guardrail for the confirmation prompt only: it scales linearly with
-    the requested vCPU and memory, so larger jobs are priced higher. There is no
-    per-job runtime estimate for an arbitrary job, so run() shows this rate rather
-    than a total. Not a billing figure.
+
+def estimate_cost_via_sky_optimize(job: RemoteJob) -> CostEstimate:
+    """Ask SkyPilot's optimizer for the cheapest matching instance and its rate.
+
+    Builds a resources-only probe task (no file mounts, so nothing is validated or
+    synced), runs it through sky.optimize, and reads the chosen best_resources and
+    its one-hour on-demand cost. This connects to the SkyPilot API server and needs
+    cloud access, which is why it is injected into SkyPilotRemoteExecutor and
+    replaced with a fake in unit tests.
     """
-    return (
-        _USD_PER_VCPU_HOUR * job.resources.vcpus
-        + _USD_PER_GB_HOUR * job.resources.memory_gb
+    probe = sky.Task(name="cost-estimate", run="true")
+    probe.set_resources(_build_resources(job.resources))
+    with sky.Dag() as dag:
+        dag.add(probe)
+    best = sky.get(sky.optimize(dag)).tasks[0].best_resources
+    assert best is not None and best.instance_type is not None, (
+        "sky.optimize returned no feasible instance for the requested resources"
+    )
+    return CostEstimate(
+        usd_per_hour=best.get_cost(_SECONDS_PER_HOUR),
+        instance_type=best.instance_type,
+        cloud=str(best.cloud),
+        region=best.region,
     )
 
 
@@ -124,15 +163,7 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
 
     task = sky.Task(name="remote-job", setup=setup, run=run)
     task.set_file_mounts(file_mounts)
-    task.set_resources(
-        sky.Resources(
-            cloud=sky.AWS(),
-            cpus=job.resources.vcpus,
-            memory=job.resources.memory_gb,
-            disk_size=job.resources.disk_gb,
-            region=job.resources.region,
-        )
-    )
+    task.set_resources(_build_resources(job.resources))
     return task
 
 
@@ -150,15 +181,21 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
         confirm: Callable[[str], bool] = _prompt_confirm,
         idle_minutes_to_autostop: int = 15,
         runner: Callable[[list[str]], str] = execute_command,
+        cost_estimator: Callable[[RemoteJob], CostEstimate] = (
+            estimate_cost_via_sky_optimize
+        ),
     ) -> None:
         self._confirm = confirm
         self._idle_minutes_to_autostop = idle_minutes_to_autostop
         self._runner = runner
+        self._cost_estimator = cost_estimator
 
     def run(self, job: RemoteJob, local_output_dir: Path) -> None:
+        estimate = self._cost_estimator(job)
         prompt = (
-            f"Launch {job.resources.vcpus} vCPU / {job.resources.memory_gb} GB "
-            f"on-demand (~${estimate_usd_per_hour(job):.1f}/hr)? [y/N] "
+            f"Launch {job.resources.vcpus} vCPU / {job.resources.memory_gb} GB on "
+            f"{estimate.instance_type} ({estimate.cloud}/{estimate.region}) on-demand "
+            f"(~${estimate.usd_per_hour:.2f}/hr)? [y/N] "
         )
         if not self._confirm(prompt):
             raise RuntimeError("Remote launch declined by user")

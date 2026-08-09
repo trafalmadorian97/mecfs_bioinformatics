@@ -1,14 +1,16 @@
 from pathlib import Path, PurePath
 
+import pytest
+
 from mecfs_bio.build_system.wf.remote_executor.remote_job import (
     RemoteJob,
     RemoteResources,
 )
 from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
+    CostEstimate,
     SkyPilotRemoteExecutor,
     _prompt_confirm,
     build_sky_task,
-    estimate_usd_per_hour,
 )
 
 
@@ -55,31 +57,37 @@ def test_build_sky_task_reflects_resources_and_commands(tmp_path: Path) -> None:
     assert "docker run" in run
 
 
-def test_estimate_usd_per_hour_is_positive(tmp_path: Path) -> None:
+def test_run_prompt_shows_injected_cost_estimate_and_decline_aborts(
+    tmp_path: Path,
+) -> None:
+    # The injected cost estimator stands in for the SkyPilot-optimizer call so the
+    # unit test never contacts a cloud; declining the prompt must abort before any
+    # launch, and the prompt must surface the concrete instance and rate.
+    estimate = CostEstimate(
+        usd_per_hour=1.53,
+        instance_type="m6i.8xlarge",
+        cloud="AWS",
+        region="us-east-1",
+    )
+    seen_prompts: list[str] = []
+
+    def decline(prompt: str) -> bool:
+        seen_prompts.append(prompt)
+        return False
+
+    executor = SkyPilotRemoteExecutor(
+        confirm=decline,
+        cost_estimator=lambda _job: estimate,
+    )
     job = _make_job(
         tmp_path,
         RemoteResources(memory_gb=192, vcpus=24, disk_gb=500, region="us-east-1"),
     )
-    assert estimate_usd_per_hour(job) > 0.0
-
-
-def test_estimate_usd_per_hour_scales_with_resources(tmp_path: Path) -> None:
-    small = _make_job(
-        tmp_path,
-        RemoteResources(memory_gb=96, vcpus=24, disk_gb=500, region="us-east-1"),
-    )
-    big_memory = _make_job(
-        tmp_path,
-        RemoteResources(memory_gb=192, vcpus=24, disk_gb=500, region="us-east-1"),
-    )
-    big_cpu = _make_job(
-        tmp_path,
-        RemoteResources(memory_gb=96, vcpus=48, disk_gb=500, region="us-east-1"),
-    )
-    # More memory (or more vCPU) must yield a strictly higher per-hour estimate, so
-    # the estimate can never silently regress to a resource-independent constant.
-    assert estimate_usd_per_hour(big_memory) > estimate_usd_per_hour(small)
-    assert estimate_usd_per_hour(big_cpu) > estimate_usd_per_hour(small)
+    with pytest.raises(RuntimeError):
+        executor.run(job, tmp_path)
+    assert len(seen_prompts) == 1
+    assert estimate.instance_type in seen_prompts[0]
+    assert f"{estimate.usd_per_hour:.2f}" in seen_prompts[0]
 
 
 def test_prompt_confirm_honours_assume_yes_env(monkeypatch) -> None:
