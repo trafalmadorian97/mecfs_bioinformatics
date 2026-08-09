@@ -148,6 +148,7 @@ mkdocs-git-committers-plugin-2 = ">=2.5.0,<3"
 pytest-testmon = ">=2.2.0,<3"
 mkdocs-awesome-nav = ">=3.3.0, <4"
 mkdocs-exclude-search = ">=0.6.6, <0.7"
+skypilot = { version = ">=0.13,<0.14", extras = ["aws"] }
 
 [tool.ty.environment]
 python = ".pixi/envs/default"
