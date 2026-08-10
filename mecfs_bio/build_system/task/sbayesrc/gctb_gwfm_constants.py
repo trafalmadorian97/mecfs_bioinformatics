@@ -79,3 +79,9 @@ DEFAULT_DISK_GB: int = 500
 MARKER_VERSION_KEY: str = "version"
 MARKER_PREFIX_KEY: str = "s3_prefix"
 MARKER_FILES_KEY: str = "files"
+
+# Column order for a GCTB/COJO .ma summary-statistics file (tab-separated, with
+# header). SNP carries the variant id (rsID) and must match the variant ids used by
+# the LD reference (Task 1's GWFM_REFERENCE_BUNDLE), since GCTB joins the .ma to the
+# LD matrix by this column.
+COJO_MA_COLUMNS: tuple[str, ...] = ("SNP", "A1", "A2", "freq", "b", "se", "p", "N")
