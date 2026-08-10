@@ -209,6 +209,18 @@ estimate, not a measurement** — the brief's ambiguity resolution already fixes
 task should verify empirically (actual unzip ratio, actual eigen/result sizes) and bump
 if needed.
 
+## 6. Zip inner structure (probed 2026-08-09 for Task 10, via HTTP Range on each zip's central directory — no full download)
+
+Both zips are single-root archives. Read by range-fetching the tail (End-Of-Central-Directory + central directory) of each file; see experiments/claude/logs/gwfm_zip_central_dir_probe.log.
+
+- `annot_baseline2.2_13M.zip` (1 entry) unzips to a single file: **`annot_baseline2.2_13M.txt`**. So GWFM step 2's `--annot` path is `annot_baseline2.2_13M.txt` (NOT the tutorial's generic "annot.txt").
+- `ukbEUR_13M_FullLDM.zip` (1592 entries, zip64) unzips to a single folder **`ldm13M/`** (NOT "ukbEUR_13M_FullLDM" as the tutorial example's `--ldm` arg loosely suggested). Its non-block members are `ldm13M/snp.info`, `ldm13M/ldm.info`, `ldm13M/rsq0.5.pwld`, plus 1588 `ldm13M/block<N>.ldm.bin`. So:
+  - GWFM step 1 `--ldm` (raw blockwise LD folder) = `ldm13M`
+  - GWFM step 3 `--pwld-file` = `ldm13M/rsq0.5.pwld` (it ships inside the LD folder; no separate `--get-pwld` step needed)
+- `ref_b37_1588blocks.pos` and `gene_map_hg38_hg19.txt` are staged as-is (no unzip); `gene_map_hg38_hg19.txt` is the `--gene-map` arg. `ref_b37_1588blocks.pos` is NOT referenced by any of the three CLI templates — staged for completeness / potential future `--block` use, flagged.
+
+These inner names are now pinned as constants consumed by Task 10's command construction; a toy Task-12 reference must reproduce the same names (a `ukbEUR_13M_FullLDM.zip` unzipping to `ldm13M/` with `snp.info`/`ldm.info`/`rsq0.5.pwld` + toy blocks, and an `annot_baseline2.2_13M.txt`).
+
 ## Open items / concerns for later tasks
 
 1. `eigen/blk1588_eigen.tar.gz` is 403-Forbidden on every request tried (HEAD, GET,
