@@ -2,6 +2,14 @@ from pathlib import Path
 
 from attrs import frozen
 
+from mecfs_bio.build_system.wf.object_store.base_object_store import ObjectStore
+from mecfs_bio.build_system.wf.object_store.s3_object_store import S3ObjectStore
+from mecfs_bio.build_system.wf.remote_executor.base_remote_executor import (
+    RemoteExecutor,
+)
+from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
+    SkyPilotRemoteExecutor,
+)
 from mecfs_bio.build_system.wf.synapse_downloader import (
     SharedClientSynapseDownloader,
     SynapseDownloader,
@@ -23,6 +31,8 @@ class WF:
 
     downloader: WFDownloader
     synapse_downloader: SynapseDownloader
+    remote_executor: RemoteExecutor
+    object_store: ObjectStore
 
     def download_from_url(
         self, url: str, local_path: Path, md5_hash: str | None
@@ -44,6 +54,8 @@ class WF:
 def make_wf(
     downloader: WFDownloader | None = None,
     synapse_downloader: SynapseDownloader | None = None,
+    remote_executor: RemoteExecutor | None = None,
+    object_store: ObjectStore | None = None,
 ) -> WF:
     """Construct a WF, defaulting any capability not explicitly supplied."""
     return WF(
@@ -53,4 +65,8 @@ def make_wf(
             if synapse_downloader is not None
             else SharedClientSynapseDownloader()
         ),
+        remote_executor=(
+            remote_executor if remote_executor is not None else SkyPilotRemoteExecutor()
+        ),
+        object_store=(object_store if object_store is not None else S3ObjectStore()),
     )

@@ -14,6 +14,9 @@ so a config may set only the ones it wants to change:
                  the schema and for guidance on which subtrees are worth remapping.  Every
                  configured root must be present when a run starts, so a detached drive
                  aborts the run instead of silently rebuilding its assets elsewhere.
+    remote_region:     AWS region used for remote compute and the S3 reference bucket.
+    remote_s3_bucket:  bucket holding the staged GWFM reference / scratch data.
+    gctb_image:        public GCTB container image reference.
 """
 
 import functools
@@ -46,6 +49,9 @@ _DEFAULT_RUNNER_CONFIG_PATH = Path(CONFIG_FILE_NAME)
 _ASSET_ROOT_KEY = "asset_root"
 _INFO_STORE_KEY = "info_store"
 _PATH_REMAP_KEY = "path_remap"
+_REMOTE_REGION_KEY = "remote_region"
+_REMOTE_BUCKET_KEY = "remote_s3_bucket"
+_GCTB_IMAGE_KEY = "gctb_image"
 
 
 @functools.cache
@@ -83,6 +89,27 @@ def get_path_remap_rules() -> tuple[PathRemapRule, ...]:
     if config is None or _PATH_REMAP_KEY not in config:
         return ()
     return PathRemapRule.tuple_from_config(config[_PATH_REMAP_KEY])
+
+
+def get_remote_region() -> str | None:
+    config = load_runner_config()
+    if config is None or _REMOTE_REGION_KEY not in config:
+        return None
+    return config[_REMOTE_REGION_KEY]
+
+
+def get_remote_s3_bucket() -> str | None:
+    config = load_runner_config()
+    if config is None or _REMOTE_BUCKET_KEY not in config:
+        return None
+    return config[_REMOTE_BUCKET_KEY]
+
+
+def get_gctb_image() -> str | None:
+    config = load_runner_config()
+    if config is None or _GCTB_IMAGE_KEY not in config:
+        return None
+    return config[_GCTB_IMAGE_KEY]
 
 
 DEFAULT_RUNNER = SimpleRunner(
