@@ -47,7 +47,7 @@ _MARKER_ASSET_ID = "gwfm_reference_marker"
 @frozen
 class StageGwfmReferenceTask(Task):
     """
-    Stages the pinned GWFM LD reference bundle into an S3 bucket, skipping files
+    Stages the pinned GWFM reference bundle into an S3 bucket, skipping files
     already present with a matching size and checksum, and produces a deterministic
     JSON marker asset recording the staged S3 prefix and file list.
     """
@@ -64,7 +64,7 @@ class StageGwfmReferenceTask(Task):
 
         for bundle_file in GWFM_REFERENCE_BUNDLE:
             uri = (
-                f"s3://{self.bucket}/sbayesrc/ld/{GWFM_REFERENCE_VERSION}/"
+                f"s3://{self.bucket}/sbayesrc/reference/{GWFM_REFERENCE_VERSION}/"
                 f"{bundle_file.filename}"
             )
             head = wf.object_store.head(uri)

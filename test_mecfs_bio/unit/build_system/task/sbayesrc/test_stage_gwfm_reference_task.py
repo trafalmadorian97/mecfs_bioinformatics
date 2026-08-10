@@ -18,7 +18,7 @@ from mecfs_bio.build_system.wf.object_store.fake_object_store import FakeObjectS
 
 
 def _uri(bucket: str, filename: str) -> str:
-    return f"s3://{bucket}/sbayesrc/ld/{GWFM_REFERENCE_VERSION}/{filename}"
+    return f"s3://{bucket}/sbayesrc/reference/{GWFM_REFERENCE_VERSION}/{filename}"
 
 
 def _noop_fetch(asset_id: AssetId) -> Asset:
