@@ -1,3 +1,4 @@
+import os
 import shlex
 import shutil
 import tempfile
@@ -19,6 +20,12 @@ class LocalDockerRemoteExecutor(RemoteExecutor):
     invocation, output retrieval) as a real cloud executor, but does all of
     it on the local machine with a local Docker daemon. RemoteResources is
     intentionally ignored, since there is no remote instance to size.
+
+    An s3_inputs key whose source is an existing local directory is staged
+    locally by copytree (a test seam, so a real reference directory can drive
+    the executor without S3); otherwise the source is treated as an S3 URI and
+    fetched with aws s3 cp --recursive. Directory outputs are retrieved with
+    copytree, plain-file outputs with copy.
     """
 
     def __init__(self, runner: Callable[[list[str]], str] = execute_command) -> None:
@@ -32,28 +39,36 @@ class LocalDockerRemoteExecutor(RemoteExecutor):
                 staged_dest.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy(local_source, staged_dest)
 
-            for s3_uri, remote_dest in job.s3_inputs.items():
+            for source, remote_dest in job.s3_inputs.items():
                 staged_dest = host_work_dir / remote_dest
                 # s3_inputs are directory prefixes (e.g. s3://.../v1/ -> work/ref),
                 # so the destination itself must exist as a directory for a
                 # recursive copy, not just its parent.
                 staged_dest.mkdir(parents=True, exist_ok=True)
-                self._runner(
-                    [
-                        "aws",
-                        "s3",
-                        "cp",
-                        "--recursive",
-                        shlex.quote(s3_uri),
-                        shlex.quote(str(staged_dest)),
-                    ]
-                )
+                if Path(source).is_dir():
+                    # Local-directory source (test seam): stage without S3.
+                    shutil.copytree(source, staged_dest, dirs_exist_ok=True)
+                else:
+                    self._runner(
+                        [
+                            "aws",
+                            "s3",
+                            "cp",
+                            "--recursive",
+                            shlex.quote(source),
+                            shlex.quote(str(staged_dest)),
+                        ]
+                    )
 
             inner_command: str = " && ".join(job.commands)
             docker_command: list[str] = [
                 "docker",
                 "run",
                 "--rm",
+                # Run as the host user so container-written outputs are owned by us;
+                # otherwise the root-owned files break the TemporaryDirectory cleanup.
+                "-u",
+                f"{os.getuid()}:{os.getgid()}",
                 "-v",
                 shlex.quote(f"{host_work_dir}:/work"),
                 "-w",
@@ -73,4 +88,7 @@ class LocalDockerRemoteExecutor(RemoteExecutor):
                 )
                 final_dest: Path = local_output_dir / output_file
                 final_dest.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy(staged_output, final_dest)
+                if staged_output.is_dir():
+                    shutil.copytree(staged_output, final_dest, dirs_exist_ok=True)
+                else:
+                    shutil.copy(staged_output, final_dest)
