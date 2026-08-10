@@ -100,7 +100,7 @@ REMOTE_MA_PATH: str = "work/sumstats.ma"
 MATCHED_LDM_OUT: str = "work/out/matched_ldm"
 GWFM_OUT_PREFIX: str = "work/out/gwfm"
 
-# Credible-set posterior-inclusion / posterior-exclusion probability thresholds
+# Credible-set posterior-inclusion / posterior-enrichment probability thresholds
 # (gctb --cs defaults documented for the pinned GWFM use case).
 DEFAULT_PIP: float = 0.9
 DEFAULT_PEP: float = 0.7

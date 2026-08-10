@@ -2,13 +2,6 @@
 Task assembling a RemoteJob that runs GCTB genome-wide fine-mapping (gctb --gwfm RC)
 and dispatching it via the WF's remote executor.
 
-The job unzips the staged GWFM LD reference and annotation bundle on the remote host,
-then runs the three documented gctb steps in order: make-ldm-eigen (matches and
-eigen-decomposes the raw blockwise LD reference to the trait's SNPs), gwfm RC (the heavy
-genome-wide fine-mapping step), and cs (credible-set recalculation). The exact command
-sequence, resolved reference-file paths, and the reasoning for always emitting the
-make-ldm-eigen step are recorded in
-experiments/claude/design_specs/2026-08-08-gwfm-recon-findings.md.
 """
 
 import json
@@ -56,10 +49,6 @@ def _build_commands(threads: int, pip: float, pep: float) -> list[str]:
     """
     Build the ordered gctb container command sequence for genome-wide fine-mapping.
 
-    The three unzip/mkdir setup lines are literal (not part of the gctb CLI templates);
-    the three gctb steps come from the pinned templates. Step 1's make-ldm-eigen consumes
-    the RAW blockwise LD folder as --ldm, while step 2's gwfm consumes step 1's output as
-    --ldm-eigen.
     """
     ref = PurePath(REMOTE_REF_DIR)
     raw_ldm = ref / GWFM_LDM_DIR_NAME
