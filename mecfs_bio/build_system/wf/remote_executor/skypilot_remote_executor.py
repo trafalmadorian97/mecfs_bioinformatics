@@ -167,6 +167,7 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
     return task
 
 
+@frozen
 class SkyPilotRemoteExecutor(RemoteExecutor):
     """Runs a RemoteJob on a transient AWS instance provisioned by SkyPilot.
 
@@ -174,30 +175,24 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
     provisions
     an on-demand instance with an idle-autostop safety net, streams logs, pulls
     outputs back through an S3 scratch prefix, and always tears the cluster down.
+
+    Frozen: the executor holds only its injected collaborators (confirm, runner,
+    cost_estimator) and the autostop setting; none is reassigned after construction.
     """
 
-    def __init__(
-        self,
-        confirm: Callable[[str], bool] = _prompt_confirm,
-        idle_minutes_to_autostop: int = 15,
-        runner: Callable[[list[str]], str] = execute_command,
-        cost_estimator: Callable[[RemoteJob], CostEstimate] = (
-            estimate_cost_via_sky_optimize
-        ),
-    ) -> None:
-        self._confirm = confirm
-        self._idle_minutes_to_autostop = idle_minutes_to_autostop
-        self._runner = runner
-        self._cost_estimator = cost_estimator
+    confirm: Callable[[str], bool] = _prompt_confirm
+    idle_minutes_to_autostop: int = 15
+    runner: Callable[[list[str]], str] = execute_command
+    cost_estimator: Callable[[RemoteJob], CostEstimate] = estimate_cost_via_sky_optimize
 
     def run(self, job: RemoteJob, local_output_dir: Path) -> None:
-        estimate = self._cost_estimator(job)
+        estimate = self.cost_estimator(job)
         prompt = (
             f"Launch {job.resources.vcpus} vCPU / {job.resources.memory_gb} GB on "
             f"{estimate.instance_type} ({estimate.cloud}/{estimate.region}) on-demand "
             f"(~${estimate.usd_per_hour:.2f}/hr)? [y/N] "
         )
-        if not self._confirm(prompt):
+        if not self.confirm(prompt):
             raise RuntimeError("Remote launch declined by user")
 
         scratch_root = os.environ.get(_SCRATCH_S3_ENV_VAR)
@@ -212,7 +207,7 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
             request_id = sky.launch(
                 task,
                 cluster_name=cluster,
-                idle_minutes_to_autostop=self._idle_minutes_to_autostop,
+                idle_minutes_to_autostop=self.idle_minutes_to_autostop,
                 down=True,
             )
             job_id, _ = sky.get(request_id)
@@ -252,7 +247,7 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
             )
             dest = local_output_dir / output_file
             dest.parent.mkdir(parents=True, exist_ok=True)
-            self._runner(
+            self.runner(
                 [
                     "aws",
                     "s3",
