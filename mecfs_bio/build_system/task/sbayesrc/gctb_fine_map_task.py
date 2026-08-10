@@ -38,6 +38,10 @@ from mecfs_bio.build_system.task.sbayesrc.gctb_gwfm_constants import (
     REMOTE_OUT_DIR,
     REMOTE_REF_DIR,
 )
+from mecfs_bio.build_system.task.sbayesrc.gctb_mcmc_options import (
+    GctbMcmcOptions,
+    render_mcmc_option_flags,
+)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.build_system.wf.remote_executor.remote_job import (
     RemoteJob,
@@ -45,16 +49,31 @@ from mecfs_bio.build_system.wf.remote_executor.remote_job import (
 )
 
 
-def _build_commands(threads: int, pip: float, pep: float) -> list[str]:
+def _build_commands(
+    threads: int, pip: float, pep: float, mcmc_options: GctbMcmcOptions
+) -> list[str]:
     """
     Build the ordered gctb container command sequence for genome-wide fine-mapping.
 
+    mcmc_options overrides apply only to the gwfm RC step (the MCMC step); an
+    all-default options object leaves that command unchanged.
     """
     ref = PurePath(REMOTE_REF_DIR)
     raw_ldm = ref / GWFM_LDM_DIR_NAME
     annot = ref / GWFM_ANNOT_FILE_NAME
     gene_map = ref / GWFM_GENE_MAP_FILE_NAME
     pwld = ref / GWFM_PWLD_RELPATH
+    gwfm_cmd = GCTB_GWFM_TEMPLATE.format(
+        ldm=MATCHED_LDM_OUT,
+        ma=REMOTE_MA_PATH,
+        annot=annot,
+        gene_map=gene_map,
+        threads=threads,
+        out=GWFM_OUT_PREFIX,
+    )
+    mcmc_flags = render_mcmc_option_flags(mcmc_options)
+    if mcmc_flags:
+        gwfm_cmd = f"{gwfm_cmd} {' '.join(mcmc_flags)}"
     return [
         f"unzip -o {ref / GWFM_LDM_ZIP_NAME} -d {ref}",
         f"unzip -o {ref / GWFM_ANNOT_ZIP_NAME} -d {ref}",
@@ -65,14 +84,7 @@ def _build_commands(threads: int, pip: float, pep: float) -> list[str]:
             threads=threads,
             out=MATCHED_LDM_OUT,
         ),
-        GCTB_GWFM_TEMPLATE.format(
-            ldm=MATCHED_LDM_OUT,
-            ma=REMOTE_MA_PATH,
-            annot=annot,
-            gene_map=gene_map,
-            threads=threads,
-            out=GWFM_OUT_PREFIX,
-        ),
+        gwfm_cmd,
         GCTB_CS_TEMPLATE.format(
             pwld=pwld,
             pip=pip,
@@ -98,6 +110,7 @@ class GctbFineMapTask(Task):
     region: str | None = None
     pip: float = DEFAULT_PIP
     pep: float = DEFAULT_PEP
+    mcmc_options: GctbMcmcOptions = GctbMcmcOptions()
 
     @property
     def deps(self) -> list["Task"]:
@@ -113,7 +126,9 @@ class GctbFineMapTask(Task):
 
         job = RemoteJob(
             image=self.image,
-            commands=_build_commands(self.threads, self.pip, self.pep),
+            commands=_build_commands(
+                self.threads, self.pip, self.pep, self.mcmc_options
+            ),
             input_files={ma_asset.path: PurePath(REMOTE_MA_PATH)},
             s3_inputs={s3_prefix: PurePath(REMOTE_REF_DIR)},
             output_files=[PurePath(REMOTE_OUT_DIR)],
@@ -135,6 +150,7 @@ class GctbFineMapTask(Task):
         region: str | None = None,
         pip: float = DEFAULT_PIP,
         pep: float = DEFAULT_PEP,
+        mcmc_options: GctbMcmcOptions = GctbMcmcOptions(),
     ) -> "GctbFineMapTask":
         ma_meta = ma_task.meta
         assert isinstance(ma_meta, FilteredGWASDataMeta)
@@ -153,4 +169,5 @@ class GctbFineMapTask(Task):
             region=region,
             pip=pip,
             pep=pep,
+            mcmc_options=mcmc_options,
         )

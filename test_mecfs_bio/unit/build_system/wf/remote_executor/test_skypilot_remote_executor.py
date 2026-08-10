@@ -1,6 +1,7 @@
 from pathlib import Path, PurePath
 
 import pytest
+import sky.exceptions
 
 from mecfs_bio.build_system.wf.remote_executor.remote_job import (
     RemoteJob,
@@ -10,6 +11,7 @@ from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
     CostEstimate,
     SkyPilotRemoteExecutor,
     _prompt_confirm,
+    _raise_on_failed_remote_job,
     build_sky_task,
 )
 
@@ -104,6 +106,19 @@ def test_prompt_confirm_declines_on_non_yes_answer(monkeypatch) -> None:
 def test_prompt_confirm_accepts_yes_answer(monkeypatch) -> None:
     monkeypatch.delenv("REMOTE_EXEC_ASSUME_YES", raising=False)
     assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "yes") is True
+
+
+def test_failed_remote_job_exit_code_raises() -> None:
+    # A remote gctb crash surfaces from sky.tail_logs as a nonzero exit code; the
+    # executor must turn that into a hard error instead of proceeding to retrieval.
+    failed = int(sky.exceptions.JobExitCode.FAILED)
+    with pytest.raises(RuntimeError):
+        _raise_on_failed_remote_job(failed, "remote-exec-abcd1234")
+
+
+def test_successful_remote_job_exit_code_does_not_raise() -> None:
+    succeeded = int(sky.exceptions.JobExitCode.SUCCEEDED)
+    _raise_on_failed_remote_job(succeeded, "remote-exec-abcd1234")
 
 
 def test_retrieve_outputs_issues_recursive_s3_copies(tmp_path: Path) -> None:

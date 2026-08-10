@@ -38,6 +38,7 @@ from pathlib import Path, PurePath
 from uuid import uuid4
 
 import sky
+import sky.exceptions
 import structlog
 from attrs import frozen
 
@@ -85,6 +86,23 @@ def _prompt_confirm(prompt: str, read: Callable[[str], str] = input) -> bool:
         return True
     answer = read(prompt)
     return answer.strip().lower().startswith("y")
+
+
+def _raise_on_failed_remote_job(exit_code: int, cluster: str) -> None:
+    """Raise if a finished remote job did not succeed.
+
+    sky.tail_logs(follow=True) returns the job's exit code (JobExitCode.SUCCEEDED
+    is 0; any other value means the job failed or was cancelled) rather than raising
+    on failure. Callers must not swallow that: a nonzero code here means the gctb
+    container crashed on the remote instance, and we surface it as a hard error so a
+    remote failure never masquerades as a successful (but output-less) run.
+    """
+    if exit_code != int(sky.exceptions.JobExitCode.SUCCEEDED):
+        raise RuntimeError(
+            f"Remote job on cluster {cluster} failed with exit code {exit_code} "
+            f"(sky.exceptions.JobExitCode); see the streamed logs above for the "
+            f"container error."
+        )
 
 
 def _build_resources(resources: RemoteResources) -> sky.Resources:
@@ -211,7 +229,11 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
                 down=True,
             )
             job_id, _ = sky.get(request_id)
-            sky.tail_logs(cluster, job_id, follow=True)
+            exit_code = sky.tail_logs(cluster, job_id, follow=True)
+            assert isinstance(exit_code, int), (
+                "sky.tail_logs(follow=True) must return the job exit code"
+            )
+            _raise_on_failed_remote_job(exit_code, cluster)
             self._retrieve_outputs(output_s3_prefix, job.output_files, local_output_dir)
         finally:
             # Guaranteed teardown even on exception / Ctrl-C. sky.down is async and
