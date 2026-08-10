@@ -36,6 +36,7 @@ from mecfs_bio.build_system.task.sbayesrc.gctb_gwfm_constants import (
     MARKER_FILES_KEY,
     MARKER_PREFIX_KEY,
     MARKER_VERSION_KEY,
+    gwfm_reference_prefix,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 
@@ -62,11 +63,9 @@ class StageGwfmReferenceTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         assert GWFM_REFERENCE_BUNDLE, "GWFM reference bundle is empty"
 
+        ref_prefix = gwfm_reference_prefix(GWFM_REFERENCE_VERSION)
         for bundle_file in GWFM_REFERENCE_BUNDLE:
-            uri = (
-                f"s3://{self.bucket}/sbayesrc/reference/{GWFM_REFERENCE_VERSION}/"
-                f"{bundle_file.filename}"
-            )
+            uri = f"s3://{self.bucket}/{ref_prefix}{bundle_file.filename}"
             head = wf.object_store.head(uri)
             needs_upload = (
                 head is None
@@ -98,7 +97,7 @@ class StageGwfmReferenceTask(Task):
 
         marker = {
             MARKER_VERSION_KEY: GWFM_REFERENCE_VERSION,
-            MARKER_PREFIX_KEY: f"s3://{self.bucket}/sbayesrc/ld/{GWFM_REFERENCE_VERSION}",
+            MARKER_PREFIX_KEY: f"s3://{self.bucket}/{ref_prefix}",
             MARKER_FILES_KEY: sorted(f.filename for f in GWFM_REFERENCE_BUNDLE),
         }
         target = scratch_dir / f"{_MARKER_ASSET_ID}.json"

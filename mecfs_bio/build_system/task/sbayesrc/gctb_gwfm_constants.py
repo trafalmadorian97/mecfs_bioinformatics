@@ -16,6 +16,18 @@ GCTB_BINARY_SHA256: str = (
 GWFM_REFERENCE_VERSION: str = "Imputed13M/v1"
 
 
+def gwfm_reference_prefix(version: str) -> str:
+    """Return the bucket-relative S3 key prefix for a staged GWFM reference version.
+
+    Both the staging upload (one object per bundle file) and the marker's consumer
+    prefix (used for a recursive download of the whole folder) must agree on this
+    location, so they compose it here rather than each hand-writing the path. The
+    trailing slash lets a filename be appended directly and scopes a recursive copy
+    to exactly this version's folder.
+    """
+    return f"sbayesrc/reference/{version}/"
+
+
 @frozen
 class GCTBReferenceBundleFile:
     filename: str

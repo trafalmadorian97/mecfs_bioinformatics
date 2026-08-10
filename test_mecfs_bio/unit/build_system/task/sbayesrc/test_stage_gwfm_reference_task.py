@@ -8,6 +8,7 @@ from mecfs_bio.build_system.task.sbayesrc.gctb_gwfm_constants import (
     GWFM_REFERENCE_BUNDLE,
     GWFM_REFERENCE_VERSION,
     MARKER_VERSION_KEY,
+    gwfm_reference_prefix,
 )
 from mecfs_bio.build_system.task.sbayesrc.stage_gwfm_reference_task import (
     StageGwfmReferenceTask,
@@ -18,7 +19,7 @@ from mecfs_bio.build_system.wf.object_store.fake_object_store import FakeObjectS
 
 
 def _uri(bucket: str, filename: str) -> str:
-    return f"s3://{bucket}/sbayesrc/reference/{GWFM_REFERENCE_VERSION}/{filename}"
+    return f"s3://{bucket}/{gwfm_reference_prefix(GWFM_REFERENCE_VERSION)}{filename}"
 
 
 def _noop_fetch(asset_id: AssetId) -> Asset:

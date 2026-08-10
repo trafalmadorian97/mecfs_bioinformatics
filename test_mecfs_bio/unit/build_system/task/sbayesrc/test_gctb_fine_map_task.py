@@ -32,7 +32,8 @@ def _dispatch_and_capture_commands(
     )
     ma_stub = FakeTask(meta=ma_meta)
     marker_path = tmp_path / "marker.json"
-    marker_path.write_text(json.dumps({c.MARKER_PREFIX_KEY: "s3://bucket/ref/v1"}))
+    s3_prefix = f"s3://bucket/{c.gwfm_reference_prefix(c.GWFM_REFERENCE_VERSION)}"
+    marker_path.write_text(json.dumps({c.MARKER_PREFIX_KEY: s3_prefix}))
     marker_stub = FakeTask(meta=SimpleFileMeta(AssetId("marker")))
 
     def _fetch(asset_id: AssetId) -> Asset:
@@ -93,7 +94,7 @@ def test_dispatches_a_wellformed_gwfm_job(tmp_path: Path) -> None:
     ma_stub = FakeTask(meta=ma_meta)
 
     marker_path = tmp_path / "marker.json"
-    s3_prefix = "s3://bucket/sbayesrc/ld/Imputed13M/v1"
+    s3_prefix = f"s3://bucket/{c.gwfm_reference_prefix(c.GWFM_REFERENCE_VERSION)}"
     marker_path.write_text(json.dumps({c.MARKER_PREFIX_KEY: s3_prefix}))
     marker_stub = FakeTask(meta=SimpleFileMeta(AssetId("marker")))
 
