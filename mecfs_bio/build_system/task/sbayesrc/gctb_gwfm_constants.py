@@ -1,16 +1,6 @@
 """
 Pinned constants for genome-wide fine-mapping (GWFM) with the GCTB binary's SBayesRC
 model (gctb --gwfm RC).
-
-Values here were recorded during reconnaissance of the gctbhub site
-(https://gctbhub.cloud.edu.au/software/gctb/) on 2026-08-09; see
-experiments/claude/design_specs/2026-08-08-gwfm-recon-findings.md for the sourced facts
-and reasoning behind each value, including why the GWFM_REFERENCE_BUNDLE excludes the
-precomputed eigen/blk1588_eigen.tar.gz download.
-
-sha256 fields on GWFM_REFERENCE_BUNDLE entries are None until the first real staging run
-(a later task) records and commits the true checksums; only filename, source_url, and
-size_bytes (from a HEAD request against gctbhub) are pinned now.
 """
 
 from attrs import frozen
@@ -27,34 +17,45 @@ GWFM_REFERENCE_VERSION: str = "Imputed13M/v1"
 
 
 @frozen
-class ReferenceBundleFile:
+class GCTBReferenceBundleFile:
     filename: str
     source_url: str
     size_bytes: int
     sha256: str | None  # None until first staging records it, then committed
 
 
-GWFM_REFERENCE_BUNDLE: tuple[ReferenceBundleFile, ...] = (
-    ReferenceBundleFile(
-        "ukbEUR_13M_FullLDM.zip",
+# Inner names of the pinned reference files once staged/unzipped on the remote host
+# The two zips are single-root archives:
+# ukbEUR_13M_FullLDM.zip -> ldm13M/ (snp.info, ldm.info, rsq0.5.pwld, block*.ldm.bin);
+# annot_baseline2.2_13M.zip -> the single file annot_baseline2.2_13M.txt.
+GWFM_LDM_ZIP_NAME: str = "ukbEUR_13M_FullLDM.zip"
+GWFM_ANNOT_ZIP_NAME: str = "annot_baseline2.2_13M.zip"
+GWFM_LDM_DIR_NAME: str = "ldm13M"
+GWFM_ANNOT_FILE_NAME: str = "annot_baseline2.2_13M.txt"
+GWFM_GENE_MAP_FILE_NAME: str = "gene_map_hg38_hg19.txt"
+GWFM_PWLD_RELPATH: str = "ldm13M/rsq0.5.pwld"
+
+GWFM_REFERENCE_BUNDLE: tuple[GCTBReferenceBundleFile, ...] = (
+    GCTBReferenceBundleFile(
+        GWFM_LDM_ZIP_NAME,
         "https://gctbhub.cloud.edu.au/data/SBayesRC/resources/GWFM/LD/Imputed13M/ukbEUR_13M_FullLDM.zip",
         206566549726,
         None,
     ),
-    ReferenceBundleFile(
+    GCTBReferenceBundleFile(
         "ref_b37_1588blocks.pos",
         "https://gctbhub.cloud.edu.au/data/SBayesRC/resources/GWFM/LD/Imputed13M/ref_b37_1588blocks.pos",
         40058,
         None,
     ),
-    ReferenceBundleFile(
-        "annot_baseline2.2_13M.zip",
+    GCTBReferenceBundleFile(
+        GWFM_ANNOT_ZIP_NAME,
         "https://gctbhub.cloud.edu.au/data/SBayesRC/resources/GWFM/Annotation/annot_baseline2.2_13M.zip",
         557227563,
         None,
     ),
-    ReferenceBundleFile(
-        "gene_map_hg38_hg19.txt",
+    GCTBReferenceBundleFile(
+        GWFM_GENE_MAP_FILE_NAME,
         "https://gctbhub.cloud.edu.au/software/gctb/download/gene_map_hg38_hg19.txt",
         5155268,
         None,
@@ -76,21 +77,6 @@ DEFAULT_MEMORY_GB: int = 192
 DEFAULT_VCPUS: int = 24
 DEFAULT_DISK_GB: int = 500
 
-# Inner names of the pinned reference files once staged/unzipped on the remote host
-# (source: recon findings section 6). The two zips are single-root archives:
-# ukbEUR_13M_FullLDM.zip -> ldm13M/ (snp.info, ldm.info, rsq0.5.pwld, block*.ldm.bin);
-# annot_baseline2.2_13M.zip -> the single file annot_baseline2.2_13M.txt.
-GWFM_LDM_ZIP_NAME: str = "ukbEUR_13M_FullLDM.zip"
-GWFM_ANNOT_ZIP_NAME: str = "annot_baseline2.2_13M.zip"
-GWFM_LDM_DIR_NAME: str = "ldm13M"
-GWFM_ANNOT_FILE_NAME: str = "annot_baseline2.2_13M.txt"
-GWFM_GENE_MAP_FILE_NAME: str = "gene_map_hg38_hg19.txt"
-GWFM_PWLD_RELPATH: str = "ldm13M/rsq0.5.pwld"
-
-# Fail fast if the role names above drift out of sync with the pinned bundle.
-assert {GWFM_LDM_ZIP_NAME, GWFM_ANNOT_ZIP_NAME, GWFM_GENE_MAP_FILE_NAME} <= {
-    f.filename for f in GWFM_REFERENCE_BUNDLE
-}
 
 # Remote container layout: the /work mount holds staged reference files under work/ref,
 # the .ma sumstats at work/sumstats.ma, and all gctb outputs under work/out.
