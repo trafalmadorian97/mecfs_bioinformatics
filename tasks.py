@@ -634,6 +634,38 @@ def migrate_asset_store(
     print("\nDone.  Re-run without --execute to confirm the store is consistent.")
 
 
+### GCTB image publishing
+
+
+@task
+def build_push_gctb_image(c, registry):
+    """
+    Build and push the public GCTB container image. Maintainer-only.
+
+    Builds docker/gctb with the pinned binary URL and sha256 from
+    gctb_gwfm_constants, tags it as {registry}/gctb:{GCTB_VERSION}, and pushes
+    it. Pass the destination registry/namespace as --registry, e.g.
+    invoke build-push-gctb-image --registry ghcr.io/my-org
+    """
+    from mecfs_bio.build_system.task.sbayesrc.gctb_gwfm_constants import (
+        GCTB_BINARY_SHA256,
+        GCTB_BINARY_URL,
+        GCTB_VERSION,
+    )
+
+    tag = f"{registry}/gctb:{GCTB_VERSION}"
+    print(f"Building {tag} from docker/gctb...")
+    c.run(
+        f"docker build "
+        f"--build-arg GCTB_URL={GCTB_BINARY_URL} "
+        f"--build-arg GCTB_SHA256={GCTB_BINARY_SHA256} "
+        f"-t {tag} docker/gctb",
+        pty=True,
+    )
+    print(f"Pushing {tag}...")
+    c.run(f"docker push {tag}", pty=True)
+
+
 # initialization
 @task(pre=[install_r_packages, pfig, green])
 def init(c):
