@@ -16,9 +16,10 @@ def test_fake_records_job_and_writes_declared_outputs(tmp_path: Path) -> None:
         commands=["gctb"],
         input_files={},
         s3_inputs={},
-        output_files=[PurePath("out/pip.txt")],
+        output_files=[PurePath("out")],
         resources=RemoteResources(1, 1, 1),
     )
     ex.run(job, tmp_path)
     assert ex.last_job is job
+    assert (tmp_path / "out").is_dir()
     assert (tmp_path / "out/pip.txt").read_text().startswith("SNP")

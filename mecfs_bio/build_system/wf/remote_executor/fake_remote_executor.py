@@ -14,7 +14,12 @@ class FakeRemoteExecutor(RemoteExecutor):
 
     def run(self, job: RemoteJob, local_output_dir: Path) -> None:
         self.last_job = job
+        # Declared output_files entries are directories (the real executors retrieve
+        # each via aws s3 cp --recursive), so create them as directories.
         for out in job.output_files:
-            dest = local_output_dir / out
+            (local_output_dir / out).mkdir(parents=True, exist_ok=True)
+        # Materialize any stub files within local_output_dir.
+        for rel_path, content in self._stub_outputs.items():
+            dest = local_output_dir / rel_path
             dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_text(self._stub_outputs.get(out, ""))
+            dest.write_text(content)

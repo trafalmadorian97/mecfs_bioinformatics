@@ -76,6 +76,35 @@ DEFAULT_MEMORY_GB: int = 192
 DEFAULT_VCPUS: int = 24
 DEFAULT_DISK_GB: int = 500
 
+# Inner names of the pinned reference files once staged/unzipped on the remote host
+# (source: recon findings section 6). The two zips are single-root archives:
+# ukbEUR_13M_FullLDM.zip -> ldm13M/ (snp.info, ldm.info, rsq0.5.pwld, block*.ldm.bin);
+# annot_baseline2.2_13M.zip -> the single file annot_baseline2.2_13M.txt.
+GWFM_LDM_ZIP_NAME: str = "ukbEUR_13M_FullLDM.zip"
+GWFM_ANNOT_ZIP_NAME: str = "annot_baseline2.2_13M.zip"
+GWFM_LDM_DIR_NAME: str = "ldm13M"
+GWFM_ANNOT_FILE_NAME: str = "annot_baseline2.2_13M.txt"
+GWFM_GENE_MAP_FILE_NAME: str = "gene_map_hg38_hg19.txt"
+GWFM_PWLD_RELPATH: str = "ldm13M/rsq0.5.pwld"
+
+# Fail fast if the role names above drift out of sync with the pinned bundle.
+assert {GWFM_LDM_ZIP_NAME, GWFM_ANNOT_ZIP_NAME, GWFM_GENE_MAP_FILE_NAME} <= {
+    f.filename for f in GWFM_REFERENCE_BUNDLE
+}
+
+# Remote container layout: the /work mount holds staged reference files under work/ref,
+# the .ma sumstats at work/sumstats.ma, and all gctb outputs under work/out.
+REMOTE_REF_DIR: str = "work/ref"
+REMOTE_OUT_DIR: str = "work/out"
+REMOTE_MA_PATH: str = "work/sumstats.ma"
+MATCHED_LDM_OUT: str = "work/out/matched_ldm"
+GWFM_OUT_PREFIX: str = "work/out/gwfm"
+
+# Credible-set posterior-inclusion / posterior-exclusion probability thresholds
+# (gctb --cs defaults documented for the pinned GWFM use case).
+DEFAULT_PIP: float = 0.9
+DEFAULT_PEP: float = 0.7
+
 MARKER_VERSION_KEY: str = "version"
 MARKER_PREFIX_KEY: str = "s3_prefix"
 MARKER_FILES_KEY: str = "files"
