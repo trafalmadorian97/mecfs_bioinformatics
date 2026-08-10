@@ -17,19 +17,3 @@
 #   - root: /mnt/d/asset_store_remote
 #     prefixes:
 #       - reference_data/db_snp_reference_data
-
-# --- Remote GWFM execution (SBayesRC / GCTB genome-wide fine-mapping) -----------
-# These drive the on-demand AWS remote-execution path.  Credentials are read only
-# from the standard AWS chain (see experiments/claude/gwfm_collaborator_setup.md);
-# never put access keys in this file.
-
-# AWS region used for remote compute and the S3 reference bucket.  Keep the bucket
-# and the compute in the same region so reference transfer stays intra-region.
-# remote_region: us-east-1
-
-# S3 bucket holding the staged GWFM reference bundle and scratch data.
-# remote_s3_bucket: my-gwfm-bucket
-
-# Public GCTB container image reference (built and pushed from docker/gctb via the
-# build_push_gctb_image invoke task).
-# gctb_image: my-registry/gctb:2.5.5

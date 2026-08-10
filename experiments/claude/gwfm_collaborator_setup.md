@@ -38,27 +38,17 @@ exists only for the duration of a job and is torn down afterwards.
 
    This must report AWS as enabled before any remote job will launch.
 
-4. **Fill in the machine-local config.** Copy the committed example to the real
-   (gitignored) config and edit it:
+There is no GWFM-specific machine-local config to fill in. The AWS region, the
+shared S3 reference bucket, and the GCTB container image are properties of the
+tasks themselves, not per-user settings: the reference bucket and image are shared
+across all collaborators, and compute runs in the region of the reference data
+(where the bulk of the data transfer is), so an individual user does not choose
+them. The only remote-exec setting a collaborator supplies is the scratch prefix
+below, via an environment variable.
 
-   ```
-   cp default_runner_config.example.yaml default_runner_config.yaml
-   ```
-
-   Set the three remote-exec keys:
-
-   - `remote_region` — the AWS region for compute and the S3 reference bucket. Keep
-     the bucket and compute in the same region so reference transfer stays
-     intra-region.
-   - `remote_s3_bucket` — the bucket holding the staged GWFM reference bundle and
-     scratch data.
-   - `gctb_image` — the public GCTB container image reference. Build and push it
-     once with `pixi r invoke build-push-gctb-image --registry <your-registry>`
-     (see `docker/gctb/`), then point this key at the resulting
-     `<your-registry>/gctb:<version>` tag.
-
-   `default_runner_config.yaml` stays gitignored — do not commit it or put
-   credentials in it.
+(`default_runner_config.example.yaml` still exists for the general asset-store keys
+— `asset_root`, `info_store`, `path_remap` — if you need to override those; copy it
+to the gitignored `default_runner_config.yaml`. It carries no remote-exec keys.)
 
 ## Environment variables for a run
 
@@ -73,8 +63,8 @@ The SkyPilot executor reads two environment variables at run time:
 
 ## Running
 
-With the config filled in and AWS reachable, run the GWFM task the same way as any
-other build-system task (through `pixi r`). Before launch the executor prints the
+With AWS reachable and `REMOTE_EXEC_SCRATCH_S3` set, run the GWFM task the same way
+as any other build-system task (through `pixi r`). Before launch the executor prints the
 chosen instance type and an estimated cost; unless `REMOTE_EXEC_ASSUME_YES=1` is
 set it waits for confirmation. The instance is torn down when the job finishes,
 including on failure.
