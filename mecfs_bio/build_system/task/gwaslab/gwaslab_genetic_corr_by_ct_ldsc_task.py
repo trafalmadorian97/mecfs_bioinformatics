@@ -41,6 +41,9 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.gwaslab.ldsc_degenerate_z import (
+    drop_variants_with_degenerate_z,
+)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     complement_reverse_expr,
     match_flipped_reference_expr,
@@ -308,6 +311,7 @@ def load_and_preprocess_sumstats(
     assert sumstats.build == build
     assert GWASLAB_RSID_COL in sumstats.data.columns
     sumstats.data = source.pipe.process_pandas(sumstats.data)
+    sumstats.data = drop_variants_with_degenerate_z(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)
     _add_N_column_if_missing(sumstats, source=source)
     return sumstats, name, source.sample_info

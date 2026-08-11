@@ -1,8 +1,8 @@
 import numpy as np
 import pandas as pd
 
-from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
-    _drop_variants_with_degenerate_z,
+from mecfs_bio.build_system.task.gwaslab.ldsc_degenerate_z import (
+    drop_variants_with_degenerate_z,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -24,7 +24,7 @@ def test_drops_zero_se_variants():
             GWASLAB_SE_COL: [0.05, 0.0, 0.0, 0.04],
         }
     )
-    result = _drop_variants_with_degenerate_z(data)
+    result = drop_variants_with_degenerate_z(data)
     assert result[_ID_COL].tolist() == ["a", "d"]
 
 
@@ -36,7 +36,7 @@ def test_keeps_all_finite_se_variants():
             GWASLAB_SE_COL: [0.05, 0.03],
         }
     )
-    result = _drop_variants_with_degenerate_z(data)
+    result = drop_variants_with_degenerate_z(data)
     assert result[_ID_COL].tolist() == ["a", "b"]
 
 
@@ -50,11 +50,11 @@ def test_prefers_existing_z_column():
             GWASLAB_SE_COL: [0.05, 0.05, 0.05],
         }
     )
-    result = _drop_variants_with_degenerate_z(data)
+    result = drop_variants_with_degenerate_z(data)
     assert result[_ID_COL].tolist() == ["a"]
 
 
 def test_noop_without_z_or_beta_se_columns():
     data = pd.DataFrame({_ID_COL: ["a", "b"], GWASLAB_P_COL: [0.1, 0.2]})
-    result = _drop_variants_with_degenerate_z(data)
+    result = drop_variants_with_degenerate_z(data)
     assert result[_ID_COL].tolist() == ["a", "b"]
