@@ -8,11 +8,15 @@ Kerrebijn, Isabel, et al. "The genetic architecture of fibromyalgia across 2.5 m
 See GWAS Catalog entry: https://www.ebi.ac.uk/gwas/studies/GCST90838603
 
 """
+
 from pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameTextFormat
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameReadSpec,
+    DataFrameTextFormat,
+)
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 
 KERREBIJN_ET_AL_FIBRO_EUR_RAW = DownloadFileTask(

@@ -19,7 +19,7 @@ Reproducibility is central to science, but a great deal of scientific data analy
 
 ### Automated Testing
 
-Software engineering is [programming integrated over time](https://abseil.io/resources/swe-book/html/ch01.html#:~:text=Within%20Google%2C%20we%20sometimes%20say,software%20in%20the%20first%20place.)[@winters2020software]. It thus involves challenges unseen in short-lived programming projects.
+Software engineering is [programming integrated over time](https://abseil.io/resources/swe-book/html/ch01.html#:~:text=Within%20Google%2C%20we%20sometimes%20say,software%20in%20the%20first%20place.)[@winters2020software][^cpp_con_video]. It thus involves challenges unseen in short-lived programming projects.
 
 One such challenge is the tendency of new features to break previously-developed features. A powerful mitigation against this risk is the use of automated unit and integration tests.  Automated tests can verify that old features continue to function as the codebase changes.  In this repo, we aim to **protect key features with automated testing.**  See[ Winters et al.](https://abseil.io/resources/swe-book/html/ch12.html)[@winters2020software] for discussion of the principles of software testing.
 
@@ -32,3 +32,6 @@ One such challenge is the tendency of new features to break previously-developed
 
 
 [^foot]: The phrase was coined by Andrej Karpathy.
+
+
+[^cpp_con_video]: See also Titus Winters' talk [here](https://www.youtube.com/watch?v=tISy7EJQPzI).

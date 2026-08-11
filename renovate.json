@@ -5,12 +5,17 @@
   ],
   "minimumReleaseAge": "1 day",
   "prHourlyLimit": 10,
+  "description": [
+    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on."
+  ],
+  "rebaseWhen": "behind-base-branch",
   "enabledManagers": [
     "pixi",
-    "github-actions"
+    "github-actions",
+    "custom.regex"
   ],
   "constraints": {
-    "pixi": "0.67.2"
+    "pixi": "0.76.2"
   },
   "customManagers": [
     {
@@ -18,6 +23,25 @@
       "managerFilePatterns": ["/^renovate\\.json$/"],
       "matchStrings": [
         "\"pixi\":\\s*\"(?<currentValue>\\d+\\.\\d+\\.\\d+)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "prefix-dev/pixi",
+      "extractVersionTemplate": "^v(?<version>.+)$"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/renovate\\.yml$/"],
+      "matchStrings": [
+        "renovate-version:\\s*(?<currentValue>\\d+\\.\\d+\\.\\d+)"
+      ],
+      "datasourceTemplate": "docker",
+      "depNameTemplate": "ghcr.io/renovatebot/renovate"
+    },
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/.+\\.ya?ml$/"],
+      "matchStrings": [
+        "pixi-version:\\s*v(?<currentValue>\\d+\\.\\d+\\.\\d+)"
       ],
       "datasourceTemplate": "github-releases",
       "depNameTemplate": "prefix-dev/pixi",
@@ -47,11 +71,38 @@
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
+    },
+    {
+      "description": "pixi bumps move the three workflow pixi-version pins and constraints.pixi together on one Renovate branch (same depName+datasource+currentValue). Automerge is on: every step is lock-format safe (newer pixi reads older locks), and a contributor on stale pixi gets pixi's native self-update message. See experiments/claude/design_specs/2026-08-02-renovate-pixi-workflow-version.md.",
+      "matchPackageNames": ["prefix-dev/pixi"],
+      "automerge": true
+    },
+    {
+      "description": "gwaslab pins adjusttext >=0.7.3,<=0.8, so adjusttext 1.x can never resolve and pixi lock fails. Lift this ceiling only once gwaslab relaxes its pin.",
+      "matchPackageNames": ["adjusttext"],
+      "allowedVersions": "<=0.8"
+    },
+    {
+      "description": "setuptools 82 removed pkg_resources, which zepid still imports at import time. See the comment above the setuptools pin in pyproject.toml. Lift this ceiling only once zepid no longer imports pkg_resources.",
+      "matchPackageNames": ["setuptools"],
+      "allowedVersions": "<82"
+    },
+
+    {
+      "description": "r-base>=4.6 seems currently incompatible with r-cpp11",
+      "matchPackageNames": ["r-base"],
+      "allowedVersions": "<4.6"
+    },
+
+    {
+    "description": "upload pages v4 introduced a gotcha and potentially breaking change",
+    "matchPackageNames": ["actions/upload-pages-artifact"],
+    "allowedVersions": "<v4"
     }
   ],
   "lockFileMaintenance": {
     "enabled": true,
-    "schedule": ["before 4am on saturday"],
+    "schedule": ["* * * * 6"],
     "automerge": true,
     "platformAutomerge": false
   }

@@ -13,7 +13,7 @@ The UK biobank holds extensive phenotypic data including:
 
 - Linked medical records from the National Health Service.
 - Responses to surveys, both at the initial enrollment visit and on follow-up.
-- Test results, such as cardiac MRI[@pirruccello2022genetic] and exercise testing[@verweij2018genetic].
+- Test results, such as cardiac MRI[@petersen2013imaging] and exercise testing[@verweij2018genetic].
 - [Proteomics assay data](UKBB_PPP.md)[@sun2023plasma].
 
 

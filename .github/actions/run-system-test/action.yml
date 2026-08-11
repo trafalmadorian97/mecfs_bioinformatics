@@ -40,9 +40,9 @@ runs:
         remove-browsers: true
         verbose: true
     - name: Setup Pixi Environment
-      uses: prefix-dev/setup-pixi@v0.10.0
+      uses: prefix-dev/setup-pixi@v0.10.1
       with:
-        pixi-version: v0.67.2
+        pixi-version: v0.76.2
         cache: true
     - name: Snapshot pre-test resources
       shell: bash
