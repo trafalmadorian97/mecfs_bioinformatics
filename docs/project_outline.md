@@ -31,6 +31,9 @@ One such challenge is the tendency of new features to break previously-developed
 - **AI should not be used to generate write-ups for the `docs/` directory**: readers need to be able to trust that the discussions and analyses on the ME/CFS Bioinformatic site correspond to the thoughts of a human.
 
 
+When using AI to code a major feature, it is of value to preserve plans or design specs generated as part of the implement process.  This facilitates audit of AI-implemented features.  Currently, AI-generated design specs are stored in `experiments/claude/design_specs`.
+
+
 [^foot]: The phrase was coined by Andrej Karpathy.
 
 
