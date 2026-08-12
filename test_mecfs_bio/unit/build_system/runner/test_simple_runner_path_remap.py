@@ -14,7 +14,6 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
     PathRemapRule,
-    RemapRootUnavailableError,
 )
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
@@ -36,16 +35,6 @@ def _warnings(logs: Sequence[Mapping[str, Any]]) -> list[Mapping[str, Any]]:
     stdlib logging here, so pytest's caplog fixture sees nothing.
     """
     return [entry for entry in logs if entry.get("log_level") == "warning"]
-
-
-def _remap_root(tmp_path: Path) -> Path:
-    """
-    Create the alternate root.  It has to exist before a run: an absent root is how a
-    detached drive presents itself, and the runner refuses to start in that state.
-    """
-    remap_root = tmp_path / "remote_asset_store"
-    remap_root.mkdir()
-    return remap_root
 
 
 def _remap_root(tmp_path: Path) -> Path:
