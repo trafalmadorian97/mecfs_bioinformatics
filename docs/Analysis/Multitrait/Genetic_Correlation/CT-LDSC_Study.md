@@ -25,6 +25,7 @@ The traits are:
 - **Fibromyalgia**, from the GWAS of Kerrebijn at al.[@kerrebijn2026genetic].  This GWAS has the advantage of having a fairly large number of Fibroymalgia cases, but the disadvantage that its phenotyping is ICD-based and thus imprecise.  In their paper, the authors noted some overlap between loci that were significant for Fibroymalgia and those reported by DecodeME.
 - **Lupus** from the GWAS of Bentham et al.[@bentham2015genetic] Lupus is immunological disease with a mechanism related to antibodies to nuclear proteins and immune complexes.
 - ME/CFS, from **DecodeME**[@genetics2025initial].
+- **Migraine**, from the UK biobank GWAS of Migraine[^migraine_note].
 - **Multi-site pain**, from Johnston et al.[@johnston2019genome] The DecodeME preprint reported colocalization between the ME/CFS signal and a multi-site chronic pain signal at a locus on chromosome 17.  I added multi-site pain to investigate whether there was evidence of genome-wide matching between pain and ME/CFS, in addition to localized matching.
 - **Schizophrenia** from the 2022 PGC study[@trubetskoy2022mapping]. Unlike certain other common complex diseases of the central nervous system, schizophrenia has a severe and relatively distinctive phenotype, which reduces the likelihood of diagnostic error.  In addition to involving genes active in neurons, genetic risk for schizophrenia appears to also be driven by the immunological genes[^sch_note].  It may thus be reasonable to describe schizophrenia as a neuroimmune condition. ME/CFS has also been called a neuroimmune condition, though the phenotypes of the two diseases are vastly different.
 - **Syncope** from the GWAS of Aegisdottir et al.[@aegisdottir2023genetic] ME/CFS is often categorized as a disease of the autonomic nervous system, and grouped with Syncope and POTs.
@@ -47,3 +48,6 @@ To reproduce these results, use {{ api_link("this script", "mecfs_bio.analysis.c
 [^sch_note]:  See _"Identification of Genes for Schizophrenia Highlights the Interplay of Rare and Common Risk Variants_" in Chapter 1 of Kandel et al.[@kandel2021principles] and also the [S-LDSC analysis of schizophrenia](../../Schizophrenia/PGC_2022/S-LDSC_SCH_Analysis.md) in this repo.
 
 [^asthma_note]: See _Janeway's Immunobiology,_[@murphy2022janeway] _Chapter 14: Allergic Diseases_.
+
+
+[^migraine_note]: See GWAS catalog the entry [here](https://www.ebi.ac.uk/gwas/studies/GCST90473326).
