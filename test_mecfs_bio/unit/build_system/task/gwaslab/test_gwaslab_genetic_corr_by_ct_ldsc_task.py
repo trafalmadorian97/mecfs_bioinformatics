@@ -81,6 +81,7 @@ def _make_sumstats(
     eas: list[str],
     neas: list[str],
     study: str = "trait1",
+    ses: list[float] | None = None,
 ) -> gl.Sumstats:
     n = len(rsids)
     df = pd.DataFrame(
@@ -91,7 +92,7 @@ def _make_sumstats(
             "EA": eas,
             "NEA": neas,
             "BETA": [0.01] * n,
-            "SE": [0.05] * n,
+            "SE": [0.05] * n if ses is None else ses,
             "P": [0.5] * n,
             "N": [10000] * n,
         }
@@ -217,3 +218,46 @@ def test_load_and_preprocess_sumstats(tmp_path: Path):
     )
 
     assert set(out_sumstats.data["rsID"]) == {s.rsid for s in real}
+
+
+def test_load_and_preprocess_sumstats_drops_degenerate_z(tmp_path: Path):
+    """Variants with SE == 0 give an infinite LDSC Z (BETA/SE) and abort the SVD
+    inside the cross-trait regression, so they must not reach LDSC.
+
+    Harmonised GWAS Catalog files do contain such variants: the Kerrebijn
+    fibromyalgia sumstats report BETA as the smallest normal double with SE == 0.
+    """
+    snps = _hapmap3_snps(4)
+    degenerate = {snps[1].rsid, snps[2].rsid}
+    sumstats = _make_sumstats(
+        rsids=[s.rsid for s in snps],
+        chroms=[s.chrom for s in snps],
+        positions=[s.pos for s in snps],
+        eas=[s.a1 for s in snps],
+        neas=[s.a2 for s in snps],
+        study="trait_a",
+        ses=[0.05, 0.0, 0.0, 0.05],
+    )
+
+    pickle_path = tmp_path / "sumstats.pickle"
+    gl.dump_pickle(sumstats, path=str(pickle_path))
+
+    source_id = AssetId("trait_a_sumstats")
+    fake_task = FakeTask(
+        meta=GWASLabSumStatsMeta(
+            id=source_id, trait="dummy_trait", project="dummy_project"
+        )
+    )
+    source = SumstatsSource(
+        task=fake_task, alias="trait_a", sample_info=QuantPhenotype()
+    )
+
+    def fetch(asset_id: AssetId) -> Asset:
+        assert asset_id == source_id
+        return FileAsset(pickle_path)
+
+    out_sumstats, _, _ = load_and_preprocess_sumstats(
+        source=source, fetch=fetch, settings=FilterSettings(), build="38"
+    )
+
+    assert set(out_sumstats.data["rsID"]) == {s.rsid for s in snps} - degenerate

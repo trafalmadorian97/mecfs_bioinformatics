@@ -22,20 +22,22 @@ The traits are:
 - **Educational attainment** from Lee et al[@lee2018gene], an example of an extremely complex trait with many determinants, some which lie in the central nervous system.
 - **Inflammatory bowel disease** from Liu et al.[@liu2023genetic] Like asthma, IBD is an immunological disease, but it operates via a different subsystem of the immune system.  I was interested in observing how this contrast is reflected in genetic correlations.
 - Levels of **Epstein-Barr Viral DNA**, from the GWAS of Nyeo et al.[@nyeo2026population].  Many ME/CFS patients report that their illness began with a serious infection. "Post-viral fatigue" lasting several months after EBV or another viral illness is well-known, and it has been speculated that ME/CFS is a severe form of this common condition.  Some researchers even theorize that ME/CFS is driven by latent viruses, though the evidence for this is inconclusive.  Given this background, it makes sense to compare the genetic architecture of ME/CFS to that of various infectious phenotypes.
+- **Fibromyalgia**, from the GWAS of Kerrebijn at al.[@kerrebijn2026genetic].  This GWAS has the advantage of having a fairly large number of Fibroymalgia cases, but the disadvantage that its phenotyping is ICD-based and thus imprecise.  In their paper, the authors noted some overlap between loci that were significant for Fibroymalgia and those reported by DecodeME.
 - **Lupus** from the GWAS of Bentham et al.[@bentham2015genetic] Lupus is immunological disease with a mechanism related to antibodies to nuclear proteins and immune complexes.
 - ME/CFS, from **DecodeME**[@genetics2025initial].
+- **Migraine**, from the UK biobank GWAS of Migraine[^migraine_note].
 - **Multi-site pain**, from Johnston et al.[@johnston2019genome] The DecodeME preprint reported colocalization between the ME/CFS signal and a multi-site chronic pain signal at a locus on chromosome 17.  I added multi-site pain to investigate whether there was evidence of genome-wide matching between pain and ME/CFS, in addition to localized matching.
 - **Schizophrenia** from the 2022 PGC study[@trubetskoy2022mapping]. Unlike certain other common complex diseases of the central nervous system, schizophrenia has a severe and relatively distinctive phenotype, which reduces the likelihood of diagnostic error.  In addition to involving genes active in neurons, genetic risk for schizophrenia appears to also be driven by the immunological genes[^sch_note].  It may thus be reasonable to describe schizophrenia as a neuroimmune condition. ME/CFS has also been called a neuroimmune condition, though the phenotypes of the two diseases are vastly different.
 - **Syncope** from the GWAS of Aegisdottir et al.[@aegisdottir2023genetic] ME/CFS is often categorized as a disease of the autonomic nervous system, and grouped with Syncope and POTs.
 
 ## Comment on results
-
-- The trait most strongly genetically correlated with ME/CFS is multi-site pain. This is consistent with the [observation](https://www.s4me.info/threads/genome-wide-association-study-of-multisite-chronic-pain-in-uk-biobank-2019-johnston.44973/post-674317) that the Manhattan plots for DecodeME and multi-site pain appear to match closely at several loci.  This intriguing finding  deserves follow-up.
-- ME/CFS has three other significant genetic correlations: with schizophrenia, with asthma, and with lupus.  As is often the case in genetic correlation studies, these correlations are difficult to interpret. There are numerous possible theories.  For instance, the correlation between asthma and ME/CFS could reflect an IgE-related immune etiology, while the correlation between ME/CFS and Schizophrenia could reflect neurological etiology; or all correlations could reflect some common immune pathway. 
+- Fibromyalgia is the trait most strongly genetically correlated with ME/CFS. This intriguing finding deserves follow-up.
+- The second most strongly genetically correlated trait is multi-site pain. This is consistent with the [observation](https://www.s4me.info/threads/genome-wide-association-study-of-multisite-chronic-pain-in-uk-biobank-2019-johnston.44973/post-674317) that the Manhattan plots for DecodeME and multi-site pain appear to match closely at several loci.  This finding also deserves follow-up.
+- ME/CFS also has significant genetic correlations with schizophrenia, syncope, migraine, asthma, and lupus.  As is often the case in genetic correlation studies, these correlations are difficult to interpret. There are numerous possible theories.  For instance, the correlation between asthma and ME/CFS could reflect an IgE-related immune etiology, while the correlation between ME/CFS and Schizophrenia could reflect neurological etiology; or all correlations could reflect some common immune pathway. 
 
 ## Next steps
 
-- Techniques like GenomicSEM[@grotzinger2019genomic], LCV[@o2018distinguishing], and MiXeR[@frei2019bivariate] may elucidate the causal structure of correlations discovered so far.
+- Techniques like GenomicSEM[@grotzinger2019genomic] (especially GWAS-by-subtraction[@demange2021investigating]), LCV[@o2018distinguishing], and MiXeR[@frei2019bivariate] may elucidate the causal structure of correlations discovered so far.
 -  The inclusion of additional well-chosen phenotypes in the correlation study may shed light through triangulation.
 
 ## Reproducing
@@ -46,3 +48,6 @@ To reproduce these results, use {{ api_link("this script", "mecfs_bio.analysis.c
 [^sch_note]:  See _"Identification of Genes for Schizophrenia Highlights the Interplay of Rare and Common Risk Variants_" in Chapter 1 of Kandel et al.[@kandel2021principles] and also the [S-LDSC analysis of schizophrenia](../../Schizophrenia/PGC_2022/S-LDSC_SCH_Analysis.md) in this repo.
 
 [^asthma_note]: See _Janeway's Immunobiology,_[@murphy2022janeway] _Chapter 14: Allergic Diseases_.
+
+
+[^migraine_note]: See GWAS catalog the entry [here](https://www.ebi.ac.uk/gwas/studies/GCST90473326).
