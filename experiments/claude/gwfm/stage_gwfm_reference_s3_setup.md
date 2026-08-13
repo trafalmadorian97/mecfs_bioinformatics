@@ -53,7 +53,7 @@ reference data, not your location.
 `LocationConstraint` quirk in Step 2). Whatever you pick, use it consistently for the
 bucket and for the SkyPilot launch region.
 
-## Step 2: Create the bucket
+## Step 2: Create the bucket and configure access
 
 Pick a globally-unique, DNS-compliant name (3-63 chars, lowercase, digits, hyphens;
 no underscores). Below, `<BUCKET>` and `<REGION>` are placeholders.
@@ -73,8 +73,77 @@ pixi r aws s3api create-bucket \
   --create-bucket-configuration LocationConstraint=<REGION>
 ```
 
-Leave Block Public Access at its default (fully on) — this data is private. No
-versioning, lifecycle, or bucket policy is required to stage.
+No versioning or lifecycle rule is required to stage. The two things that *do* need
+configuring are read access for collaborators and who pays for their downloads.
+
+### The access model: readable by any AWS account, Requester Pays
+
+The goal is: **any collaborator can pull the reference to their own EC2 instance
+using their own AWS credentials, while you (the owner) pay only for storage — not for
+their transfer.** That is exactly what S3 **Requester Pays** does: the downloader pays
+their own request and data-transfer costs; the owner keeps paying storage.
+
+Two facts about Requester Pays shape the rest of the setup:
+
+- It **rejects anonymous (unsigned) requests.** Every reader must be an authenticated
+  AWS principal and must opt in per request with `--request-payer requester`. This is
+  fine here — collaborators launch EC2 with their own credentials, so they are never
+  anonymous. You give up only credential-less public access, which this workflow does
+  not need.
+- Because reads are authenticated but you still want *any* AWS account to be able to
+  read, the read grant is a bucket policy with `Principal: "*"`. S3 treats a `"*"`
+  policy as "public", so Block Public Access must be relaxed enough to allow it (below).
+
+**Enable Requester Pays:**
+
+```
+pixi r aws s3api put-bucket-request-payment \
+  --bucket <BUCKET> \
+  --request-payment-configuration Payer=Requester
+```
+
+**Relax Block Public Access enough to attach the read policy.** Keep the two ACL
+blocks on (you are not using ACLs); turn off only the two that would block a `"*"`
+bucket *policy*:
+
+```
+pixi r aws s3api put-public-access-block \
+  --bucket <BUCKET> \
+  --public-access-block-configuration \
+  BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=false
+```
+
+**Attach a read-only bucket policy** granting `GetObject` / `ListBucket` to any AWS
+principal (replace `<BUCKET>`). Writes are *not* granted here, so the bucket stays
+writable only by your staging identity (Step 3):
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "GwfmPublicReadReference",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": ["s3:GetObject", "s3:ListBucket"],
+      "Resource": [
+        "arn:aws:s3:::<BUCKET>",
+        "arn:aws:s3:::<BUCKET>/*"
+      ]
+    }
+  ]
+}
+```
+
+```
+pixi r aws s3api put-bucket-policy --bucket <BUCKET> --policy file://read-policy.json
+```
+
+If you would rather not expose read to *every* AWS account, replace `"Principal": "*"`
+with `{"AWS": ["arn:aws:iam::<ACCOUNT_ID>:root", ...]}` listing each collaborator's
+account. A named-principal policy is **not** considered public, so you can then leave
+Block Public Access fully on and skip the `put-public-access-block` step above — at the
+cost of editing the policy whenever a collaborator joins.
 
 ## Step 3: Grant the staging identity permission
 
@@ -122,9 +191,12 @@ or role (replace `<BUCKET>`):
 }
 ```
 
-Note for later: the GWFM compute instances (launched by the SkyPilot executor) will
-also need **read** access to this bucket to pull the reference. That is granted
-separately via those instances' credentials/instance profile, not by this doc.
+Note for later: the GWFM compute instances (launched by the SkyPilot executor) pull
+the reference using the read grant from Step 2's bucket policy, under their own
+credentials/instance profile. Because the bucket is Requester Pays, those reads must
+pass `--request-payer requester` — the executor's reference-copy step
+(`aws s3 cp --recursive` for `s3_inputs` in `build_sky_task`) needs that flag added,
+or the copy returns 403. See the code follow-up noted at the end of this doc.
 
 ## Step 4: Where to run it
 
@@ -212,5 +284,19 @@ source timeout on the big file), just rerun:
   duration — negligible here.
 - **Upload transfer:** data *into* S3 is free; you are not charged for the
   gctbhub -> S3 ingest beyond any egress your runner's own network provider bills.
-- **Later reads:** bucket -> compute is free when they are in the same region — the
-  reason Step 1 co-locates them.
+- **Later reads (collaborators pulling the reference):** with Requester Pays enabled
+  (Step 2), the *downloader* pays their own request + transfer costs, not you. On top
+  of that, bucket -> compute is free when both are in the same region — the reason
+  Step 1 co-locates them, so an in-region collaborator pays essentially nothing and you
+  pay nothing beyond storage.
+
+## Code follow-up (not required to stage, required to *read* under Requester Pays)
+
+Enabling Requester Pays means every read must pass `--request-payer requester`. The
+SkyPilot executor's reference-copy step does not yet do this: `build_sky_task` in
+`mecfs_bio/build_system/wf/remote_executor/skypilot_remote_executor.py` emits
+`aws s3 cp --recursive <s3_uri> <dest>` for each `s3_inputs` entry, which will return
+403 against a Requester Pays bucket. Add `--request-payer requester` to that command
+before running GWFM compute against this bucket. Staging and the Step 6 verification
+are unaffected — they run under the bucket owner's own identity, and the owner is never
+charged as (nor required to declare itself) a requester.
