@@ -32,14 +32,14 @@ The canonical prefix is produced by `gwfm_reference_prefix(version)` =
 end up at:
 
 ```
-s3://<BUCKET>/sbayesrc/reference/Imputed13M/v1/ukbEUR_13M_FullLDM.zip     (~192 GiB)
-s3://<BUCKET>/sbayesrc/reference/Imputed13M/v1/ref_b37_1588blocks.pos     (~40 KiB)
-s3://<BUCKET>/sbayesrc/reference/Imputed13M/v1/annot_baseline2.2_13M.zip  (~531 MiB)
-s3://<BUCKET>/sbayesrc/reference/Imputed13M/v1/gene_map_hg38_hg19.txt     (~4.9 MiB)
+s3://mecfs-bio-reference-data/sbayesrc/reference/Imputed13M/v1/ukbEUR_13M_FullLDM.zip     (~192 GiB)
+s3://mecfs-bio-reference-data/sbayesrc/reference/Imputed13M/v1/ref_b37_1588blocks.pos     (~40 KiB)
+s3://mecfs-bio-reference-data/sbayesrc/reference/Imputed13M/v1/annot_baseline2.2_13M.zip  (~531 MiB)
+s3://mecfs-bio-reference-data/sbayesrc/reference/Imputed13M/v1/gene_map_hg38_hg19.txt     (~4.9 MiB)
 ```
 
 The marker's consumer prefix (what a later `GctbFineMapTask` recursively copies from)
-is `s3://<BUCKET>/sbayesrc/reference/Imputed13M/v1/` — the same folder.
+is `s3://mecfs-bio-reference-data/sbayesrc/reference/Imputed13M/v1/` — the same folder.
 
 ## Step 1: Choose a region
 
@@ -56,19 +56,19 @@ bucket and for the SkyPilot launch region.
 ## Step 2: Create the bucket and configure access
 
 Pick a globally-unique, DNS-compliant name (3-63 chars, lowercase, digits, hyphens;
-no underscores). Below, `<BUCKET>` and `<REGION>` are placeholders.
+no underscores). Below, `mecfs-bio-reference-data` and `<REGION>` are placeholders.
 
 For **us-east-1** (must NOT pass a location constraint):
 
 ```
-pixi r aws s3api create-bucket --bucket <BUCKET> --region us-east-1
+pixi r aws s3api create-bucket --bucket mecfs-bio-reference-data --region us-east-1
 ```
 
 For **any other region** (must pass the matching location constraint):
 
 ```
 pixi r aws s3api create-bucket \
-  --bucket <BUCKET> \
+  --bucket mecfs-bio-reference-data \
   --region <REGION> \
   --create-bucket-configuration LocationConstraint=<REGION>
 ```
@@ -98,7 +98,7 @@ Two facts about Requester Pays shape the rest of the setup:
 
 ```
 pixi r aws s3api put-bucket-request-payment \
-  --bucket <BUCKET> \
+  --bucket mecfs-bio-reference-data \
   --request-payment-configuration Payer=Requester
 ```
 
@@ -108,13 +108,13 @@ bucket *policy*:
 
 ```
 pixi r aws s3api put-public-access-block \
-  --bucket <BUCKET> \
+  --bucket mecfs-bio-reference-data \
   --public-access-block-configuration \
   BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=false,RestrictPublicBuckets=false
 ```
 
 **Attach a read-only bucket policy** granting `GetObject` / `ListBucket` to any AWS
-principal (replace `<BUCKET>`). Writes are *not* granted here, so the bucket stays
+principal (replace `mecfs-bio-reference-data`). Writes are *not* granted here, so the bucket stays
 writable only by your staging identity (Step 3):
 
 ```json
@@ -127,8 +127,8 @@ writable only by your staging identity (Step 3):
       "Principal": "*",
       "Action": ["s3:GetObject", "s3:ListBucket"],
       "Resource": [
-        "arn:aws:s3:::<BUCKET>",
-        "arn:aws:s3:::<BUCKET>/*"
+        "arn:aws:s3:::mecfs-bio-reference-data",
+        "arn:aws:s3:::mecfs-bio-reference-data/*"
       ]
     }
   ]
@@ -136,7 +136,7 @@ writable only by your staging identity (Step 3):
 ```
 
 ```
-pixi r aws s3api put-bucket-policy --bucket <BUCKET> --policy file://read-policy.json
+pixi r aws s3api put-bucket-policy --bucket mecfs-bio-reference-data --policy file://read-policy.json
 ```
 
 If you would rather not expose read to *every* AWS account, replace `"Principal": "*"`
@@ -157,9 +157,8 @@ pixi r aws sts get-caller-identity
 
 That identity needs the permissions the code exercises: `head_object` +
 `get_object_attributes` (dedup), a multipart `PutObject` (the large streamed
-uploads), and `AbortMultipartUpload` (cleanup if a stream fails mid-upload). This
-least-privilege policy, scoped to the one bucket, covers them — attach it to the user
-or role (replace `<BUCKET>`):
+uploads), and `AbortMultipartUpload` (cleanup if a stream fails mid-upload). Save this
+least-privilege policy, scoped to the one bucket, as `staging-policy.json`:
 
 ```json
 {
@@ -173,7 +172,7 @@ or role (replace `<BUCKET>`):
         "s3:GetBucketLocation",
         "s3:ListBucketMultipartUploads"
       ],
-      "Resource": "arn:aws:s3:::<BUCKET>"
+      "Resource": "arn:aws:s3:::mecfs-bio-reference-data"
     },
     {
       "Sid": "GwfmStagingObjectLevel",
@@ -185,11 +184,47 @@ or role (replace `<BUCKET>`):
         "s3:AbortMultipartUpload",
         "s3:ListMultipartUploadParts"
       ],
-      "Resource": "arn:aws:s3:::<BUCKET>/*"
+      "Resource": "arn:aws:s3:::mecfs-bio-reference-data/*"
     }
   ]
 }
 ```
+
+Now attach it as an **inline policy** on the identity `get-caller-identity` reported.
+The right command depends on whether that identity is an IAM **user** or a **role**;
+read the `Arn` in the previous output to tell which:
+
+- If the `Arn` looks like `arn:aws:iam::<ACCOUNT>:user/<NAME>` — an IAM user — use
+  `put-user-policy` with that `<NAME>`:
+
+  ```
+  pixi r aws iam put-user-policy \
+    --user-name <NAME> \
+    --policy-name GwfmStaging \
+    --policy-document file://staging-policy.json
+  ```
+
+- If the `Arn` looks like `arn:aws:sts::<ACCOUNT>:assumed-role/<ROLE>/<SESSION>` (an
+  assumed role — typical for SSO or an EC2 instance profile), attach to the **role**,
+  using the `<ROLE>` segment (not the session suffix):
+
+  ```
+  pixi r aws iam put-role-policy \
+    --role-name <ROLE> \
+    --policy-name GwfmStaging \
+    --policy-document file://staging-policy.json
+  ```
+
+Two notes:
+
+- Attaching a policy is itself an IAM-privileged action; the identity you run these
+  commands as needs `iam:PutUserPolicy` / `iam:PutRolePolicy` (an admin identity does).
+  If you administer IAM from a *different* identity than the one that will stage, run
+  the attach as the admin, naming the staging user/role.
+- If your staging identity is the **account root** or already has broad S3 admin
+  access, it can write to the bucket as-is and you can skip this attach entirely — the
+  policy above only matters when you want the staging identity locked down to
+  least privilege.
 
 Note for later: the GWFM compute instances (launched by the SkyPilot executor) pull
 the reference using the read grant from Step 2's bucket policy, under their own
@@ -225,7 +260,7 @@ from mecfs_bio.build_system.task.sbayesrc.stage_gwfm_reference_task import (
     StageGwfmReferenceTask,
 )
 
-BUCKET = "<BUCKET>"
+BUCKET = "mecfs-bio-reference-data"
 
 
 def main() -> None:
@@ -250,7 +285,7 @@ List the staged objects and confirm all four are present with sane sizes:
 
 ```
 pixi r aws s3 ls --recursive --human-readable \
-  s3://<BUCKET>/sbayesrc/reference/Imputed13M/v1/
+  s3://mecfs-bio-reference-data/sbayesrc/reference/Imputed13M/v1/
 ```
 
 You should see `ukbEUR_13M_FullLDM.zip` (~192 GiB), `annot_baseline2.2_13M.zip`
@@ -262,7 +297,7 @@ every file should now log `already staged` and nothing should re-upload.
 
 The marker asset is written into the local asset store (under the `sbayesrc_gwfm /
 ld_reference / Imputed13M/v1` reference path) as `gwfm_reference_marker.json`; its
-`s3_prefix` should read `s3://<BUCKET>/sbayesrc/reference/Imputed13M/v1/`.
+`s3_prefix` should read `s3://mecfs-bio-reference-data/sbayesrc/reference/Imputed13M/v1/`.
 
 ### Idempotency / resuming a failed run
 
