@@ -169,3 +169,6 @@ default = ["analysis"]
 
 download-env = ["download"]
 pdf-env = ["pdf"]
+
+[tool.pixi.dependencies]
+awscli = ">=2.36.21,<3"
