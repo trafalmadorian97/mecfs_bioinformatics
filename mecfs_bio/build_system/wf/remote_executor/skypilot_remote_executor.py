@@ -157,9 +157,12 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
 
     setup_lines: list[str] = []
     for s3_uri, remote_dest in job.s3_inputs.items():
+        # --request-payer requester is required to read the Requester Pays reference
+        # bucket: the downloading instance (not the bucket owner) is billed for the
+        # transfer, and the request is rejected with 403 without this flag.
         setup_lines.append(
-            f"aws s3 cp --recursive {shlex.quote(s3_uri)} "
-            f"{shlex.quote(str(remote_dest))}"
+            f"aws s3 cp --recursive --request-payer requester "
+            f"{shlex.quote(s3_uri)} {shlex.quote(str(remote_dest))}"
         )
     setup_lines.append(f"docker pull {shlex.quote(job.image)}")
     setup = "\n".join(setup_lines)

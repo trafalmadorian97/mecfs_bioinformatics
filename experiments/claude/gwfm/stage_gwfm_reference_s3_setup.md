@@ -193,10 +193,9 @@ or role (replace `<BUCKET>`):
 
 Note for later: the GWFM compute instances (launched by the SkyPilot executor) pull
 the reference using the read grant from Step 2's bucket policy, under their own
-credentials/instance profile. Because the bucket is Requester Pays, those reads must
-pass `--request-payer requester` — the executor's reference-copy step
-(`aws s3 cp --recursive` for `s3_inputs` in `build_sky_task`) needs that flag added,
-or the copy returns 403. See the code follow-up noted at the end of this doc.
+credentials/instance profile. Because the bucket is Requester Pays, those reads pass
+`--request-payer requester`; the executor's reference-copy step
+(`aws s3 cp --recursive` for `s3_inputs` in `build_sky_task`) already emits that flag.
 
 ## Step 4: Where to run it
 
@@ -290,13 +289,12 @@ source timeout on the big file), just rerun:
   Step 1 co-locates them, so an in-region collaborator pays essentially nothing and you
   pay nothing beyond storage.
 
-## Code follow-up (not required to stage, required to *read* under Requester Pays)
+## Reading under Requester Pays (already handled in code)
 
 Enabling Requester Pays means every read must pass `--request-payer requester`. The
-SkyPilot executor's reference-copy step does not yet do this: `build_sky_task` in
+SkyPilot executor already does this: `build_sky_task` in
 `mecfs_bio/build_system/wf/remote_executor/skypilot_remote_executor.py` emits
-`aws s3 cp --recursive <s3_uri> <dest>` for each `s3_inputs` entry, which will return
-403 against a Requester Pays bucket. Add `--request-payer requester` to that command
-before running GWFM compute against this bucket. Staging and the Step 6 verification
-are unaffected — they run under the bucket owner's own identity, and the owner is never
-charged as (nor required to declare itself) a requester.
+`aws s3 cp --recursive --request-payer requester <s3_uri> <dest>` for each `s3_inputs`
+entry, so GWFM compute reads the reference bucket without a 403. Staging and the Step 6
+verification are unaffected — they run under the bucket owner's own identity, and the
+owner is never charged as (nor required to declare itself) a requester.

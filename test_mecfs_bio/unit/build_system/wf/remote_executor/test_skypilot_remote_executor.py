@@ -54,6 +54,9 @@ def test_build_sky_task_reflects_resources_and_commands(tmp_path: Path) -> None:
     assert setup is not None
     assert "gctb --gwfm" in run
     assert "aws s3" in setup
+    # The reference bucket is Requester Pays, so the read must declare the requester
+    # as payer or S3 returns 403.
+    assert "--request-payer requester" in setup
     # The container image is pulled in setup and run inside the container in run.
     assert "docker pull" in setup
     assert "docker run" in run
