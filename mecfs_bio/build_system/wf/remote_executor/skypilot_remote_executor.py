@@ -157,6 +157,16 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
 
     setup_lines: list[str] = []
     for s3_uri, remote_dest in job.s3_inputs.items():
+        # This executor provisions AWS and stages inputs with `aws s3 cp`, so every
+        # declared input must be an s3:// URI. Assert it here rather than let a foreign
+        # scheme (e.g. a gs:// URI from a different ObjectStore) fail deep inside the
+        # remote aws CLI: the input store's cloud must match the executor's cloud, and
+        # that constraint is otherwise unexpressed in code.
+        assert s3_uri.startswith("s3://"), (
+            f"SkyPilotRemoteExecutor provisions AWS and can only stage s3:// inputs; "
+            f"got {s3_uri!r}. The reference ObjectStore's cloud must match the remote "
+            f"executor's cloud."
+        )
         # --request-payer requester is required to read the Requester Pays reference
         # bucket: the downloading instance (not the bucket owner) is billed for the
         # transfer, and the request is rejected with 403 without this flag.
