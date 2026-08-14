@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 
 from attrs import frozen
 
@@ -25,4 +26,19 @@ class ObjectStore(ABC):
     def head(self, uri: str) -> ObjectHead | None: ...
 
     @abstractmethod
-    def upload_from_url(self, source_url: str, uri: str) -> str: ...
+    def upload_from_url(
+        self,
+        source_url: str,
+        uri: str,
+        on_progress: Callable[[int], None] | None = None,
+    ) -> str:
+        """Stream source_url into uri and return the store's stored checksum.
+
+        on_progress, if given, is invoked during the transfer with the number of
+        bytes moved since the previous call (a delta, not a running total). It may be
+        called from several threads concurrently, so an implementation must accept
+        that and a callback must be thread-safe. The caller owns the callback and the
+        meaning of progress (e.g. a percentage against a size it knows); the store
+        only forwards byte deltas.
+        """
+        ...

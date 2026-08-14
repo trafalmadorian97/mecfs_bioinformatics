@@ -30,6 +30,7 @@ byte-for-byte SHA-256 of the object. Consequences for callers:
   decided speculatively in this untested code path.
 """
 
+from collections.abc import Callable
 from typing import Any
 from urllib.request import urlopen
 
@@ -56,6 +57,9 @@ def _split_s3_uri(uri: str) -> tuple[str, str]:
 
 class S3ObjectStore(ObjectStore):
     """ObjectStore backed by a real S3 bucket via boto3.
+
+
+
 
     Uploads use ONEZONE_IA storage (this is scratch/staging data, not
     durable-tier) and request an S3-managed SHA-256 checksum so head() can
@@ -95,8 +99,17 @@ class S3ObjectStore(ObjectStore):
 
         return ObjectHead(size_bytes=size_bytes, sha256=sha256)
 
-    def upload_from_url(self, source_url: str, uri: str) -> str:
+    def upload_from_url(
+        self,
+        source_url: str,
+        uri: str,
+        on_progress: Callable[[int], None] | None = None,
+    ) -> str:
         """Stream source_url's body into uri and return S3's stored sha256.
+        Summary:
+          urlopen returns an http.client.HTTPResponse, which is a file-like object: it exposes .read(n) that pulls the
+         next n bytes off the underlying TCP socket on demand. upload_fileobj pumps that file-like-object through a bounded,
+        concurrent S3 multipart upload
 
         The returned string is S3's checksum for the stored object; for a
         multipart upload (see module docstring, and note that our reference
@@ -104,6 +117,11 @@ class S3ObjectStore(ObjectStore):
         plain SHA-256 of source_url's bytes. Only compare it against another
         S3-reported checksum (e.g. a later head() call), never against an
         independently computed local digest of the source.
+
+        on_progress is forwarded to boto3 as the upload Callback: s3transfer
+        invokes it from its worker threads with the bytes moved per part, so a
+        supplied callback must be thread-safe. None (the default) means boto3
+        reports no progress.
         """
         bucket, key = _split_s3_uri(uri)
         with urlopen(source_url, timeout=_URLOPEN_TIMEOUT_SECONDS) as response:  # noqa: S310
@@ -115,6 +133,7 @@ class S3ObjectStore(ObjectStore):
                     "StorageClass": "ONEZONE_IA",
                     "ChecksumAlgorithm": "SHA256",
                 },
+                Callback=on_progress,
             )
 
         attributes_response = self._client.get_object_attributes(

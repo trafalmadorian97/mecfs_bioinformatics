@@ -17,6 +17,8 @@ run's logs).
 """
 
 import json
+import threading
+from collections.abc import Callable
 from pathlib import Path, PurePath
 
 import structlog
@@ -43,6 +45,50 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 _MARKER_ASSET_ID = "gwfm_reference_marker"
+
+# Log upload progress at most once per this fraction of the file, so the ~192 GiB LD
+# file yields a couple dozen lines rather than one per 8 MiB part.
+_PROGRESS_LOG_STEP_FRACTION = 0.05
+
+
+def make_upload_progress_logger(
+    filename: str,
+    total_bytes: int,
+    log: Callable[..., object] = logger.info,
+) -> Callable[[int], None]:
+    """Build a thread-safe on_progress callback that logs throttled upload percentage.
+
+    The object store invokes the returned callback from several worker threads, each
+    time with the number of bytes just transferred, so it accumulates under a lock and
+    emits a line only when the completed fraction crosses the next
+    _PROGRESS_LOG_STEP_FRACTION boundary (and once at completion). total_bytes is the
+    file's known size, used to turn the byte deltas into a percentage. log is injected
+    so tests can capture the calls.
+    """
+    lock = threading.Lock()
+    seen = 0
+    next_threshold = _PROGRESS_LOG_STEP_FRACTION
+
+    def on_progress(bytes_transferred: int) -> None:
+        nonlocal seen, next_threshold
+        with lock:
+            seen += bytes_transferred
+            fraction = seen / total_bytes if total_bytes else 1.0
+            if fraction < next_threshold and seen < total_bytes:
+                return
+            log(
+                "staging progress",
+                filename=filename,
+                percent=round(fraction * 100),
+                transferred_gib=round(seen / 1024**3, 2),
+                total_gib=round(total_bytes / 1024**3, 2),
+            )
+            # Advance past every band this delta crossed so a single large delta logs
+            # once, not once per band.
+            while next_threshold <= fraction:
+                next_threshold += _PROGRESS_LOG_STEP_FRACTION
+
+    return on_progress
 
 
 @frozen
@@ -79,7 +125,12 @@ class StageGwfmReferenceTask(Task):
                 # checksum); it is only ever compared against another S3-reported
                 # value, never against a locally computed digest.
                 sha256 = wf.object_store.upload_from_url(
-                    source_url=bundle_file.source_url, uri=uri
+                    source_url=bundle_file.source_url,
+                    uri=uri,
+                    on_progress=make_upload_progress_logger(
+                        filename=bundle_file.filename,
+                        total_bytes=bundle_file.size_bytes,
+                    ),
                 )
                 logger.info(
                     "uploaded GWFM reference file",

@@ -12,6 +12,7 @@ from mecfs_bio.build_system.task.sbayesrc.gctb_gwfm_constants import (
 )
 from mecfs_bio.build_system.task.sbayesrc.stage_gwfm_reference_task import (
     StageGwfmReferenceTask,
+    make_upload_progress_logger,
 )
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
 from mecfs_bio.build_system.wf.object_store.base_object_store import ObjectHead
@@ -64,3 +65,49 @@ def test_uploads_only_missing_files(tmp_path: Path, wf_one_missing: WF) -> None:
     object_store = wf_one_missing.object_store
     assert isinstance(object_store, FakeObjectStore)
     assert len(object_store.uploaded) == 1
+
+
+def test_upload_passes_a_progress_callback_for_the_uploaded_file(
+    tmp_path: Path, wf_one_missing: WF
+) -> None:
+    # The uploaded (missing) file gets a progress callback so the multi-hour transfer
+    # is observable; files that are skipped never trigger an upload and so get none.
+    task = StageGwfmReferenceTask.create(bucket="mybucket")
+    task.execute(tmp_path, fetch=_noop_fetch, wf=wf_one_missing)
+    object_store = wf_one_missing.object_store
+    assert isinstance(object_store, FakeObjectStore)
+    missing_uri = _uri("mybucket", GWFM_REFERENCE_BUNDLE[0].filename)
+    assert object_store.on_progress_for[missing_uri] is not None
+
+
+def test_progress_logger_throttles_to_band_boundaries_and_completion() -> None:
+    calls: list[dict] = []
+    on_progress = make_upload_progress_logger(
+        filename="f.zip",
+        total_bytes=1000,
+        log=lambda _event, **kwargs: calls.append(kwargs),
+    )
+    # 4% stays inside the first 5% band -> no log yet.
+    on_progress(40)
+    assert calls == []
+    # crossing to 8% emits exactly one line at the band boundary.
+    on_progress(40)
+    assert len(calls) == 1
+    assert calls[-1]["percent"] == 8
+    # a single delta that jumps straight to the end logs once at completion, not once
+    # per crossed band.
+    on_progress(920)
+    assert len(calls) == 2
+    assert calls[-1]["percent"] == 100
+
+
+def test_progress_logger_logs_once_when_a_single_delta_completes_the_file() -> None:
+    calls: list[dict] = []
+    on_progress = make_upload_progress_logger(
+        filename="f.zip",
+        total_bytes=1000,
+        log=lambda _event, **kwargs: calls.append(kwargs),
+    )
+    on_progress(1000)
+    assert len(calls) == 1
+    assert calls[0]["percent"] == 100
