@@ -35,6 +35,7 @@ from typing import Any
 from urllib.request import urlopen
 
 import boto3
+from attrs import Factory, frozen
 from botocore.exceptions import ClientError
 
 from mecfs_bio.build_system.wf.object_store.base_object_store import (
@@ -55,6 +56,7 @@ def _split_s3_uri(uri: str) -> tuple[str, str]:
     return bucket, key
 
 
+@frozen
 class S3ObjectStore(ObjectStore):
     """ObjectStore backed by a real S3 bucket via boto3.
 
@@ -70,8 +72,7 @@ class S3ObjectStore(ObjectStore):
     digest.
     """
 
-    def __init__(self, client: Any = None) -> None:
-        self._client = client if client is not None else boto3.client("s3")
+    _client: Any = Factory(lambda: boto3.client("s3"))
 
     def head(self, uri: str) -> ObjectHead | None:
         """Return size and S3-reported checksum for uri, or None if absent.
