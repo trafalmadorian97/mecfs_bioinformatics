@@ -72,7 +72,11 @@ class S3ObjectStore(ObjectStore):
     digest.
     """
 
-    _client: Any = Factory(lambda: boto3.client("s3"))
+    # Typed Any because boto3's S3 client class is generated at runtime; the only
+    # precise static type is mypy_boto3_s3.S3Client from boto3-stubs, not a dependency
+    # here. The name has no leading underscore: attrs' underscore-stripping for init
+    # args has tripped up the ty typechecker.
+    client: Any = Factory(lambda: boto3.client("s3"))
 
     def head(self, uri: str) -> ObjectHead | None:
         """Return size and S3-reported checksum for uri, or None if absent.
@@ -84,7 +88,7 @@ class S3ObjectStore(ObjectStore):
         """
         bucket, key = _split_s3_uri(uri)
         try:
-            head_response = self._client.head_object(Bucket=bucket, Key=key)
+            head_response = self.client.head_object(Bucket=bucket, Key=key)
         except ClientError as error:
             code = error.response.get("Error", {}).get("Code")
             if code in _NOT_FOUND_ERROR_CODES:
@@ -92,7 +96,7 @@ class S3ObjectStore(ObjectStore):
             raise
         size_bytes = head_response["ContentLength"]
 
-        attributes_response = self._client.get_object_attributes(
+        attributes_response = self.client.get_object_attributes(
             Bucket=bucket, Key=key, ObjectAttributes=["Checksum"]
         )
         checksum = attributes_response.get("Checksum") or {}
@@ -126,7 +130,7 @@ class S3ObjectStore(ObjectStore):
         """
         bucket, key = _split_s3_uri(uri)
         with urlopen(source_url, timeout=_URLOPEN_TIMEOUT_SECONDS) as response:  # noqa: S310
-            self._client.upload_fileobj(
+            self.client.upload_fileobj(
                 response,
                 bucket,
                 key,
@@ -137,7 +141,7 @@ class S3ObjectStore(ObjectStore):
                 Callback=on_progress,
             )
 
-        attributes_response = self._client.get_object_attributes(
+        attributes_response = self.client.get_object_attributes(
             Bucket=bucket, Key=key, ObjectAttributes=["Checksum"]
         )
         checksum = attributes_response.get("Checksum") or {}
