@@ -3,6 +3,7 @@ from pathlib import Path, PurePath
 import pytest
 import sky.exceptions
 
+from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.build_system.wf.remote_executor.remote_job import (
     RemoteJob,
     RemoteResources,
@@ -10,6 +11,7 @@ from mecfs_bio.build_system.wf.remote_executor.remote_job import (
 from mecfs_bio.build_system.wf.remote_executor.skypilot_remote_executor import (
     CostEstimate,
     SkyPilotRemoteExecutor,
+    _always_confirm,
     _prompt_confirm,
     _raise_on_failed_remote_job,
     build_sky_task,
@@ -82,6 +84,7 @@ def test_run_prompt_shows_injected_cost_estimate_and_decline_aborts(
 
     executor = SkyPilotRemoteExecutor(
         confirm=decline,
+        scratch_s3="s3://b/remote-exec-scratch",
         cost_estimator=lambda _job: estimate,
     )
     job = _make_job(
@@ -95,19 +98,45 @@ def test_run_prompt_shows_injected_cost_estimate_and_decline_aborts(
     assert f"{estimate.usd_per_hour:.2f}" in seen_prompts[0]
 
 
-def test_prompt_confirm_honours_assume_yes_env(monkeypatch) -> None:
-    monkeypatch.setenv("REMOTE_EXEC_ASSUME_YES", "1")
-    # The env override wins even if the injected reader would decline.
-    assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "n") is True
+def test_run_raises_immediately_when_scratch_s3_is_missing(tmp_path: Path) -> None:
+    # scratch_s3 is required to stage outputs. run() must fail before doing anything
+    # expensive, so an estimator that explodes if reached proves the scratch check
+    # comes first (before cost estimation, prompting, or launch).
+    def exploding_estimator(_job: RemoteJob) -> CostEstimate:
+        raise AssertionError("cost estimation must not run when scratch_s3 is unset")
+
+    executor = SkyPilotRemoteExecutor(
+        confirm=_always_confirm,
+        scratch_s3=None,
+        cost_estimator=exploding_estimator,
+    )
+    job = _make_job(
+        tmp_path,
+        RemoteResources(memory_gb=192, vcpus=24, disk_gb=500, region="us-east-1"),
+    )
+    with pytest.raises(AssertionError):
+        executor.run(job, tmp_path)
 
 
-def test_prompt_confirm_declines_on_non_yes_answer(monkeypatch) -> None:
-    monkeypatch.delenv("REMOTE_EXEC_ASSUME_YES", raising=False)
+def test_non_interactive_executor_auto_confirms() -> None:
+    executor = SkyPilotRemoteExecutor.non_interactive(scratch_s3="s3://b/scratch")
+    assert executor.confirm("Launch something expensive? [y/N] ") is True
+
+
+def test_make_wf_default_remote_executor_prompts_rather_than_auto_confirming() -> None:
+    # The default must prompt, never auto-confirm: a silent-yes default would launch
+    # paid infrastructure with no human in the loop. Identity check because the
+    # interactive prompter reads stdin and so cannot be invoked in a unit test.
+    executor = make_wf().remote_executor
+    assert isinstance(executor, SkyPilotRemoteExecutor)
+    assert executor.confirm is _prompt_confirm
+
+
+def test_prompt_confirm_declines_on_non_yes_answer() -> None:
     assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "n") is False
 
 
-def test_prompt_confirm_accepts_yes_answer(monkeypatch) -> None:
-    monkeypatch.delenv("REMOTE_EXEC_ASSUME_YES", raising=False)
+def test_prompt_confirm_accepts_yes_answer() -> None:
     assert _prompt_confirm("Launch? [y/N] ", read=lambda _prompt: "yes") is True
 
 
@@ -131,7 +160,7 @@ def test_retrieve_outputs_issues_recursive_s3_copies(tmp_path: Path) -> None:
         calls.append(command)
         return ""
 
-    executor = SkyPilotRemoteExecutor(runner=fake_runner)
+    executor = SkyPilotRemoteExecutor(confirm=_always_confirm, runner=fake_runner)
     output_files = [PurePath("work/out"), PurePath("work/log.txt")]
     executor._retrieve_outputs(
         "s3://bucket/remote-exec-scratch/remote-exec-abcd1234",

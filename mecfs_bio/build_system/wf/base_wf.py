@@ -66,7 +66,9 @@ def make_wf(
             else SharedClientSynapseDownloader()
         ),
         remote_executor=(
-            remote_executor if remote_executor is not None else SkyPilotRemoteExecutor()
+            remote_executor
+            if remote_executor is not None
+            else SkyPilotRemoteExecutor.interactive()
         ),
         object_store=(object_store if object_store is not None else S3ObjectStore()),
     )

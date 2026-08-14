@@ -38,34 +38,35 @@ exists only for the duration of a job and is torn down afterwards.
 
    This must report AWS as enabled before any remote job will launch.
 
-There is no GWFM-specific machine-local config to fill in. The AWS region, the
-shared S3 reference bucket, and the GCTB container image are properties of the
-tasks themselves, not per-user settings: the reference bucket and image are shared
-across all collaborators, and compute runs in the region of the reference data
-(where the bulk of the data transfer is), so an individual user does not choose
-them. The only remote-exec setting a collaborator supplies is the scratch prefix
-below, via an environment variable.
+The AWS region, the shared S3 reference bucket, and the GCTB container image are
+properties of the tasks themselves, not per-user settings: the reference bucket and
+image are shared across all collaborators, and compute runs in the region of the
+reference data (where the bulk of the data transfer is), so an individual user does
+not choose them. The one remote-exec setting a collaborator must supply is the
+scratch prefix, configured in the machine-local runner config (below).
 
-(`default_runner_config.example.yaml` still exists for the general asset-store keys
-— `asset_root`, `info_store`, `path_remap` — if you need to override those; copy it
-to the gitignored `default_runner_config.yaml`. It carries no remote-exec keys.)
+## Runner config for a run
 
-## Environment variables for a run
+Remote-exec settings live in the gitignored `default_runner_config.yaml` (copy it
+from `default_runner_config.example.yaml`), alongside the general asset-store keys
+(`asset_root`, `info_store`, `path_remap`). The default runner reads them and builds
+the SkyPilot executor accordingly:
 
-The SkyPilot executor reads two environment variables at run time:
-
-- `REMOTE_EXEC_SCRATCH_S3` — **required.** An `s3://` prefix the executor uses for
-  scratch (job inputs/outputs staged through S3), e.g.
-  `REMOTE_EXEC_SCRATCH_S3=s3://my-gwfm-bucket/remote-exec-scratch`.
-- `REMOTE_EXEC_ASSUME_YES=1` — **optional.** Skips the interactive pre-launch cost
-  confirmation prompt. Set it in non-interactive contexts (CI, batch runs); leave
-  it unset to review the instance type and estimated cost before each launch.
+- `remote_scratch_s3` — **required for remote runs.** An `s3://` prefix the executor
+  uses for scratch (job outputs staged through S3), e.g.
+  `remote_scratch_s3: s3://my-gwfm-bucket/remote-exec-scratch`. There is no default;
+  a remote task started without it fails fast at launch with a message naming this
+  key.
+- `remote_non_interactive` — **optional, defaults to false.** When true, the executor
+  auto-approves each paid launch instead of prompting. Set it only in unattended
+  contexts (CI, batch runs); leave it false so an interactive run always reviews the
+  instance type and estimated cost before spending money.
 
 ## Running
 
-With AWS reachable and `REMOTE_EXEC_SCRATCH_S3` set, run the GWFM task the same way
-as any other build-system task (through `pixi r`). Before launch the executor prints the
-chosen instance type and an estimated cost; unless `REMOTE_EXEC_ASSUME_YES=1` is
+With AWS reachable and `remote_scratch_s3` set, run the GWFM task the same way as any
+other build-system task (through `pixi r`). Before launch the executor prints the
+chosen instance type and an estimated cost; unless `remote_non_interactive: true` is
 set it waits for confirmation. The instance is torn down when the job finishes,
 including on failure.
 

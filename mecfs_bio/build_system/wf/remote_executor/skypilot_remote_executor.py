@@ -11,17 +11,18 @@ Assumptions and environment:
   neither this module nor SkyPilot is passed explicit credentials. SkyPilot and
   the on-instance aws CLI both rely on that chain.
 - On-demand instances only. Spot is intentionally not used (see design spec).
-- Because a real launch runs for many hours and costs real money, run() asks for
-  interactive confirmation before launching. Set the environment variable
-  REMOTE_EXEC_ASSUME_YES=1 to skip the prompt in non-interactive contexts (CI
-  smoke tests, batch runs).
+- Because a real launch runs for many hours and costs real money, run() asks the
+  injected confirm callable before launching. Construct via SkyPilotRemoteExecutor
+  .interactive() to prompt a human (the default), or .non_interactive() to
+  auto-approve in a pipeline with no user present. The confirm callable has no
+  default on the class, so the choice must be made explicitly at construction.
 - Output retrieval uses an S3 round-trip (see _retrieve_outputs): the on-instance
   run phase copies each output to a run-scoped S3 prefix, and run() downloads
-  from that prefix. The scratch bucket/prefix is read from the environment
-  variable REMOTE_EXEC_SCRATCH_S3 (e.g. "s3://my-bucket/remote-exec-scratch").
-  The installed SkyPilot SDK exposes no clean, recursive, top-level file-download
-  API (only log download and Storage-mount helpers), so the documented S3
-  fallback is used.
+  from that prefix. The scratch bucket/prefix is the executor's scratch_s3
+  attribute (e.g. "s3://my-bucket/remote-exec-scratch"), supplied on construction
+  (in production, from default_runner_config.yaml). The installed SkyPilot SDK
+  exposes no clean, recursive, top-level file-download API (only log download and
+  Storage-mount helpers), so the documented S3 fallback is used.
 
 The confirmation prompt shows a concrete on-demand price: the injected
 cost_estimator asks SkyPilot's optimizer for the cheapest matching instance and
@@ -31,7 +32,6 @@ in unit tests; the pure helper build_sky_task is unit-tested directly, and the
 live launch path is validated by a one-time manual maintainer smoke test.
 """
 
-import os
 import shlex
 from collections.abc import Callable, Sequence
 from pathlib import Path, PurePath
@@ -55,9 +55,6 @@ logger = structlog.get_logger()
 
 _SECONDS_PER_HOUR = 3600
 
-_SCRATCH_S3_ENV_VAR = "REMOTE_EXEC_SCRATCH_S3"
-_ASSUME_YES_ENV_VAR = "REMOTE_EXEC_ASSUME_YES"
-
 
 @frozen
 class CostEstimate:
@@ -76,16 +73,24 @@ class CostEstimate:
 
 
 def _prompt_confirm(prompt: str, read: Callable[[str], str] = input) -> bool:
-    """Return True if the user confirms the prompt (or REMOTE_EXEC_ASSUME_YES=1).
+    """Return True if the user answers the prompt affirmatively.
 
-    The environment override lets non-interactive callers proceed without a TTY;
-    otherwise only an answer beginning with "y" (case-insensitive) confirms. read
-    is injected (defaulting to input) so tests can supply their own reader.
+    Only an answer beginning with "y" (case-insensitive) confirms. read is injected
+    (defaulting to input) so tests can supply their own reader. This is the confirm
+    callable wired by SkyPilotRemoteExecutor.interactive().
     """
-    if os.environ.get(_ASSUME_YES_ENV_VAR) == "1":
-        return True
     answer = read(prompt)
     return answer.strip().lower().startswith("y")
+
+
+def _always_confirm(prompt: str) -> bool:
+    """Confirm callable that approves unconditionally, for non-interactive pipelines.
+
+    Wired by SkyPilotRemoteExecutor.non_interactive() so a batch/CI run with no user
+    present proceeds without prompting. Because this auto-approves a real, paid
+    launch, it must be selected explicitly (never a default).
+    """
+    return True
 
 
 def _raise_on_failed_remote_job(exit_code: int, cluster: str) -> None:
@@ -202,21 +207,50 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
 class SkyPilotRemoteExecutor(RemoteExecutor):
     """Runs a RemoteJob on a transient AWS instance provisioned by SkyPilot.
 
-    Confirms before launch (interactively, or via REMOTE_EXEC_ASSUME_YES=1),
-    provisions
-    an on-demand instance with an idle-autostop safety net, streams logs, pulls
+    Confirms before launch via the injected confirm callable, provisions an
+    on-demand instance with an idle-autostop safety net, streams logs, pulls
     outputs back through an S3 scratch prefix, and always tears the cluster down.
 
+    confirm has no class default: construct through the interactive() classmethod to
+    prompt a human, or non_interactive() to auto-approve in a pipeline with no user
+    present. Forcing that choice keeps a paid, unattended launch from ever being the
+    silent default.
+
+    scratch_s3 is the s3:// prefix under which remote outputs are staged for download
+    (see run and _retrieve_outputs). It has no sensible default (every user supplies
+    their own bucket), so it defaults to None and run() fails fast if it is still
+    None at launch time.
+
     Frozen: the executor holds only its injected collaborators (confirm, runner,
-    cost_estimator) and the autostop setting; none is reassigned after construction.
+    cost_estimator) and configuration (scratch_s3, autostop); none is reassigned
+    after construction.
     """
 
-    confirm: Callable[[str], bool] = _prompt_confirm
+    confirm: Callable[[str], bool]
+    scratch_s3: str | None = None
     idle_minutes_to_autostop: int = 15
     runner: Callable[[list[str]], str] = execute_command
     cost_estimator: Callable[[RemoteJob], CostEstimate] = estimate_cost_via_sky_optimize
 
+    @classmethod
+    def interactive(cls, scratch_s3: str | None = None) -> "SkyPilotRemoteExecutor":
+        """Build an executor that prompts a human to confirm each launch."""
+        return cls(confirm=_prompt_confirm, scratch_s3=scratch_s3)
+
+    @classmethod
+    def non_interactive(cls, scratch_s3: str | None = None) -> "SkyPilotRemoteExecutor":
+        """Build an executor that auto-approves launches, for unattended pipelines."""
+        return cls(confirm=_always_confirm, scratch_s3=scratch_s3)
+
     def run(self, job: RemoteJob, local_output_dir: Path) -> None:
+        # Fail fast, before cost estimation or any launch: staging outputs is
+        # impossible without a scratch prefix, so there is no point provisioning
+        # (or prompting to pay for) an instance whose outputs cannot be retrieved.
+        assert self.scratch_s3 is not None, (
+            "SkyPilotRemoteExecutor.scratch_s3 is not set; supply an s3:// scratch "
+            "prefix (in production via default_runner_config.yaml) so remote outputs "
+            "can be staged for download."
+        )
         estimate = self.cost_estimator(job)
         prompt = (
             f"Launch {job.resources.vcpus} vCPU / {job.resources.memory_gb} GB on "
@@ -226,13 +260,8 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
         if not self.confirm(prompt):
             raise RuntimeError("Remote launch declined by user")
 
-        scratch_root = os.environ.get(_SCRATCH_S3_ENV_VAR)
-        assert scratch_root, (
-            f"{_SCRATCH_S3_ENV_VAR} must be set to an s3:// scratch prefix so "
-            f"remote outputs can be staged for download"
-        )
         cluster = f"remote-exec-{uuid4().hex[:8]}"
-        output_s3_prefix = f"{scratch_root.rstrip('/')}/{cluster}"
+        output_s3_prefix = f"{self.scratch_s3.rstrip('/')}/{cluster}"
         task = build_sky_task(job, output_s3_prefix=output_s3_prefix)
         try:
             request_id = sky.launch(
