@@ -1,3 +1,5 @@
+# This dockerfile is used in genome-wide fine mapping with SBayesRC using the gctb software
+# See https://gctbhub.cloud.edu.au/software/gctb/ for information on the software
 FROM debian:stable-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
         libgomp1 ca-certificates curl unzip \
