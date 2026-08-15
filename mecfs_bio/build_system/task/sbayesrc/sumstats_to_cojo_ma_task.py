@@ -72,6 +72,7 @@ class SumstatsToCojoMaTask(Task):
     def create(cls, id: str, sumstats_task: Task) -> "SumstatsToCojoMaTask":
         source_meta = sumstats_task.meta
         assert isinstance(source_meta, (GWASSummaryDataFileMeta, FilteredGWASDataMeta))
+        assert isinstance(source_meta.read_spec, DataFrameReadSpec)
         meta = FilteredGWASDataMeta(
             id=AssetId(id),
             trait=source_meta.trait,
