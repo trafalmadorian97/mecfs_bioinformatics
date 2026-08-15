@@ -7,8 +7,7 @@
   "minimumReleaseAgeBehaviour": "timestamp-optional",
   "prHourlyLimit": 10,
   "description": [
-    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on.",
-    "Skip the release age check for release without timestamps.  The release age check is just a convenience, it is not crucial."
+    "Wait a day before upgrading a package.  Skip this release age check for release without timestamps."
   ],
   "rebaseWhen": "behind-base-branch",
   "enabledManagers": [
