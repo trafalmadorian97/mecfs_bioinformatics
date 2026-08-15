@@ -76,8 +76,6 @@ class SimpleRunner:
     remote_executor: the RemoteExecutor supplied to the WF for tasks that dispatch
         remote jobs.  None (the default) lets make_wf pick its own default (an
         interactive SkyPilotRemoteExecutor that prompts before each paid launch);
-        the analysis-layer default_runner injects a configured one from
-        default_runner_config.yaml.
     """
 
     info_store: Path

@@ -55,8 +55,7 @@ def _build_commands(
     """
     Build the ordered gctb container command sequence for genome-wide fine-mapping.
 
-    mcmc_options overrides apply only to the gwfm RC step (the MCMC step); an
-    all-default options object leaves that command unchanged.
+    mcmc_options overrides apply only to the MCMC step.
     """
     ref = PurePath(REMOTE_REF_DIR)
     raw_ldm = ref / GWFM_LDM_DIR_NAME
