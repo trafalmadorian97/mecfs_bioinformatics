@@ -4,9 +4,11 @@
     "config:recommended"
   ],
   "minimumReleaseAge": "1 day",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
   "prHourlyLimit": 10,
   "description": [
-    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on."
+    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on.",
+    "minimumReleaseAge exists to dodge a pixi resolution problem with conda packages published in the last hour. It is a convenience, not a correctness or supply-chain control, so the default minimumReleaseAgeBehaviour of timestamp-required is wrong for us: it marks any update WITHOUT a releaseTimestamp pending forever rather than for the soak window, and stabilityStatus yellow blocks automerge indefinitely. That silently stranded two things. A lockFileMaintenance upgrade is not a release at all (no version, no timestamp), so lock refresh PRs could never automerge; and the Docker datasource returns no timestamp for tag lists, which parked the renovate image bump to 44.30.3 in Pending Status Checks and pinned us to 44.5.3. timestamp-optional keeps the real soak wherever a timestamp exists and warns instead of blocking where one does not."
   ],
   "rebaseWhen": "behind-base-branch",
   "enabledManagers": [
@@ -98,20 +100,12 @@
     "description": "upload pages v4 introduced a gotcha and potentially breaking change",
     "matchPackageNames": ["actions/upload-pages-artifact"],
     "allowedVersions": "<v4"
-    },
-
-    {
-      "description": "The Docker datasource returns no releaseTimestamp for tag lists, and the default minimumReleaseAgeBehaviour of timestamp-required marks a timestamp-less release pending forever rather than for minimumReleaseAge. That silently pinned the renovate image at 44.5.3 with the 44.30.3 bump parked in Pending Status Checks. Scoped to the datasource rather than one package so a future Docker dep does not hit the same trap, and left at the fail-closed default elsewhere: conda, PyPI and github-releases all do return timestamps, so they keep the real soak.",
-      "matchDatasources": ["docker"],
-      "minimumReleaseAgeBehaviour": "timestamp-optional"
     }
   ],
   "lockFileMaintenance": {
-    "description": "minimumReleaseAgeBehaviour is relaxed because a lockFileMaintenance upgrade is not a release: it has no version and no releaseTimestamp, so the repo-level minimumReleaseAge combined with the default timestamp-required pinned stabilityStatus to yellow on every run. That left renovate/stability-days permanently pending and, since platformAutomerge is off, blocked Renovate's own automerge forever rather than for one day. The soak never applied to lock refreshes anyway -- pixi lock resolves against whatever is newest within the pyproject.toml ranges, which minimumReleaseAge does not constrain.",
     "enabled": true,
     "schedule": ["* * * * 6"],
     "automerge": true,
-    "platformAutomerge": false,
-    "minimumReleaseAgeBehaviour": "timestamp-optional"
+    "platformAutomerge": false
   }
 }
