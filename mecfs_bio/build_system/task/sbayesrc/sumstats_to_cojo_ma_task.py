@@ -63,9 +63,6 @@ class SumstatsToCojoMaTask(Task):
             nw.col(GWASLAB_P_COL).alias(_P_COL),
             nw.col(GWASLAB_SAMPLE_SIZE_COLUMN).alias(_N_COL),
         )
-        # to_polars(), not to_native(): narwhals guarantees a polars DataFrame back
-        # from to_polars() regardless of the source backend, whereas to_native() would
-        # return whatever backend scan_dataframe_asset happened to use.
         result_df = selection.collect().to_polars()
         target_path = scratch_dir / f"{self.meta.id}.ma"
         result_df.write_csv(target_path, separator="\t")
