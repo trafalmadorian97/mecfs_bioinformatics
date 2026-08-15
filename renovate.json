@@ -8,7 +8,7 @@
   "prHourlyLimit": 10,
   "description": [
     "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on.",
-    "minimumReleaseAge exists to dodge a pixi resolution problem with conda packages published in the last hour. It is a convenience, not a correctness or supply-chain control, so the default minimumReleaseAgeBehaviour of timestamp-required is wrong for us: it marks any update WITHOUT a releaseTimestamp pending forever rather than for the soak window, and stabilityStatus yellow blocks automerge indefinitely. That silently stranded two things. A lockFileMaintenance upgrade is not a release at all (no version, no timestamp), so lock refresh PRs could never automerge; and the Docker datasource returns no timestamp for tag lists, which parked the renovate image bump to 44.30.3 in Pending Status Checks and pinned us to 44.5.3. timestamp-optional keeps the real soak wherever a timestamp exists and warns instead of blocking where one does not."
+    "Skip the release age check for release without timestamps.  The release age check is just a convenience, it is not crucial."
   ],
   "rebaseWhen": "behind-base-branch",
   "enabledManagers": [
