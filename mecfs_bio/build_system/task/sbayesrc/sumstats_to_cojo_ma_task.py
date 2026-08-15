@@ -1,12 +1,7 @@
 """
 Task converting a GWAS summary statistics parquet asset into a GCTB/COJO .ma file.
 
-A .ma file is GCTB's plain-text input format for summary statistics: a tab-separated
-table with a header row and exactly the columns SNP A1 A2 freq b se p N (variant id,
-effect allele, non-effect allele, effect allele frequency, effect size, standard
-error, p-value, sample size). This Task selects, renames, and orders the relevant
-columns out of an existing gwaslab-style parquet sumstats asset so downstream GCTB
-GWFM fine-mapping (a later Task) can consume it directly.
+A .ma file is GCTB's plain-text input format for summary statistics.
 """
 
 from pathlib import Path, PurePath
@@ -34,8 +29,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 
-# COJO_MA_COLUMNS is ("SNP", "A1", "A2", "freq", "b", "se", "p", "N"); unpacked here so
-# each source-to-target mapping below reads as one line naming both sides.
 _SNP_COL, _A1_COL, _A2_COL, _FREQ_COL, _B_COL, _SE_COL, _P_COL, _N_COL = COJO_MA_COLUMNS
 
 
@@ -82,7 +75,7 @@ class SumstatsToCojoMaTask(Task):
             id=AssetId(id),
             trait=source_meta.trait,
             project=source_meta.project,
-            sub_dir=PurePath("gwfm") / "cojo_ma",
+            sub_dir=PurePath("processed")/"gwfm" / "cojo_ma",
             extension=".ma",
             read_spec=None,
         )
