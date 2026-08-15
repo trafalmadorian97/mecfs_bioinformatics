@@ -37,7 +37,7 @@ The traits are:
 
 ## Next steps
 
-- Techniques like GenomicSEM[@grotzinger2019genomic] (especially GWAS-by-subtraction[@demange2021investigating]), LCV[@o2018distinguishing], and MiXeR[@frei2019bivariate] may elucidate the causal structure of correlations discovered so far.
+- Techniques like GenomicSEM[@grotzinger2019genomic] (especially [GWAS by Subtraction](../../../Bioinformatics_Concepts/GWAS_By_Subtraction.md)[@demange2021investigating]), LCV[@o2018distinguishing], and MiXeR[@frei2019bivariate] may elucidate the causal structure of correlations discovered so far.
 -  The inclusion of additional well-chosen phenotypes in the correlation study may shed light through triangulation.
 
 ## Reproducing
