@@ -4,9 +4,10 @@
     "config:recommended"
   ],
   "minimumReleaseAge": "1 day",
+  "minimumReleaseAgeBehaviour": "timestamp-optional",
   "prHourlyLimit": 10,
   "description": [
-    "rebaseWhen is set explicitly because the default 'auto' only rebases behind-base branches when automerge is on."
+    "Wait a day before upgrading a package.  Skip this release age check for release without timestamps."
   ],
   "rebaseWhen": "behind-base-branch",
   "enabledManagers": [
