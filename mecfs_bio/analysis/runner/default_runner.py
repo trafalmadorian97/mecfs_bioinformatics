@@ -16,11 +16,8 @@ so a config may set only the ones it wants to change:
                  aborts the run instead of silently rebuilding its assets elsewhere.
     remote_scratch_s3:  s3:// prefix under which the SkyPilot remote executor stages
                  job outputs for download (e.g. s3://my-bucket/remote-exec-scratch).
-                 Required before any remote (GWFM) task can run; there is no default.
     remote_non_interactive:  bool.  When true, the remote executor auto-approves each
-                 paid launch instead of prompting.  Defaults to false so an interactive
-                 run always confirms before spending money; set it only for unattended
-                 pipelines (CI, batch).
+                 paid launch instead of prompting.
 """
 
 import functools
@@ -99,11 +96,6 @@ def get_path_remap_rules() -> tuple[PathRemapRule, ...]:
 
 def _get_remote_executor() -> SkyPilotRemoteExecutor:
     """Build the remote executor from config.
-
-    scratch_s3 comes from the remote_scratch_s3 key (None if unset; a remote task
-    then fails fast at launch). remote_non_interactive selects the auto-approving
-    executor for unattended pipelines; the default is the interactive one that
-    prompts before each paid launch.
     """
     config = load_runner_config() or {}
     scratch_s3 = config.get(_REMOTE_SCRATCH_S3_KEY)
