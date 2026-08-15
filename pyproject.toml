@@ -88,6 +88,7 @@ r-cpp11 = ">=0.5,<1"
 ty = ">=0.0.71,<0.0.72"
 actionlint = ">=1.7.12,<2"
 shellcheck = ">=0.11.0,<0.12"
+awscli = ">=2.36.21,<3"
 
 [tool.pixi.feature.analysis.pypi-dependencies]
 attrs = ">=25.3.0"
@@ -168,3 +169,4 @@ default = ["analysis"]
 
 download-env = ["download"]
 pdf-env = ["pdf"]
+

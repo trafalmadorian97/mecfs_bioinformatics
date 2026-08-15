@@ -1,0 +1,8 @@
+nav:
+  - a_setup.md
+  - b_Standard_Workflow.md
+  - c_Synapse.md
+  - d_adding_packages.md
+  - e_experiments_directory.md
+  - f_docker.md
+  - cloud_computation.md
