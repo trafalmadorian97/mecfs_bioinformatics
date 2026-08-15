@@ -1,5 +1,5 @@
 """
-Task converting a GWAS summary statistics parquet asset into a GCTB/COJO .ma file.
+Task converting a GWAS summary statistics asset into GCTB/COJO .ma format.
 
 A .ma file is GCTB's plain-text input format for summary statistics.
 """
@@ -13,6 +13,7 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameTextFormat
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -35,7 +36,7 @@ _SNP_COL, _A1_COL, _A2_COL, _FREQ_COL, _B_COL, _SE_COL, _P_COL, _N_COL = COJO_MA
 @frozen
 class SumstatsToCojoMaTask(Task):
     """
-    Reads a gwaslab-style parquet sumstats dependency and writes a GCTB/COJO .ma file.
+    Reads a tabular summary statistics file and writes it in GCTB/COJO .ma format.
     """
 
     sumstats_task: Task
@@ -77,6 +78,6 @@ class SumstatsToCojoMaTask(Task):
             project=source_meta.project,
             sub_dir=PurePath("processed")/"gwfm" / "cojo_ma",
             extension=".ma",
-            read_spec=None,
+            read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
         )
         return cls(sumstats_task=sumstats_task, meta=meta)
