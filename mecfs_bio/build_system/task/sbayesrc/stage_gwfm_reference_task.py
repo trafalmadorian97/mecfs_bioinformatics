@@ -124,7 +124,9 @@ class StageGwfmReferenceTask(Task):
                 # The returned sha256 is S3-reported (possibly a composite, multipart
                 # checksum); it is only ever compared against another S3-reported
                 # value, never against a locally computed digest.
-                logger.info(f"Uploading GFWM reference file, filename: {bundle_file.filename}, source url: {bundle_file.source_url}, uri :{uri}")
+                logger.info(
+                    f"Uploading GFWM reference file, filename: {bundle_file.filename}, source url: {bundle_file.source_url}, uri :{uri}"
+                )
                 sha256 = wf.object_store.upload_from_url(
                     source_url=bundle_file.source_url,
                     uri=uri,
