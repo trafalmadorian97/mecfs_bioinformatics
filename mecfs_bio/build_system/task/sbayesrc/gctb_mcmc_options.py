@@ -4,9 +4,8 @@ Optional overrides for the gctb genome-wide fine-mapping MCMC chain (gctb --gwfm
 These map to gctb's basic MCMC command-line options (documented at
 https://gctbhub.cloud.edu.au/software/gctb/). Every field is optional: a value of
 None leaves gctb's built-in default in place, so the assembled command only carries
-the flags that were explicitly overridden. The main use is a fast dummy run before a
-full multi-hour job: setting chain_length to a small value (e.g. 100) drives the
-whole pipeline end to end without paying for a full-length chain.
+the flags that were explicitly overridden. A main use is a fast dummy run before a
+full multi-hour job.
 """
 
 from attrs import frozen
@@ -48,9 +47,6 @@ class GctbMcmcOptions:
 
 def render_mcmc_option_flags(options: GctbMcmcOptions) -> list[str]:
     """Render the set overrides as a flat list of gctb command-line tokens.
-
-    Only fields that were set (non-None) contribute; an all-default options object
-    renders to an empty list, so the gwfm command is left exactly as it was.
     """
     flags: list[str] = []
     if options.chain_length is not None:

@@ -17,13 +17,8 @@ GWFM_REFERENCE_VERSION: str = "Imputed13M/v1"
 
 
 def gwfm_reference_prefix(version: str) -> str:
-    """Return the bucket-relative S3 key prefix for a staged GWFM reference version.
-
-    Both the staging upload (one object per bundle file) and the marker's consumer
-    prefix (used for a recursive download of the whole folder) must agree on this
-    location, so they compose it here rather than each hand-writing the path. The
-    trailing slash lets a filename be appended directly and scopes a recursive copy
-    to exactly this version's folder.
+    """Return the bucket-relative S3 key prefix for a staged GWFM reference.
+    The trailing slash lets a filename be appended directly .
     """
     return f"sbayesrc/reference/{version}/"
 
@@ -36,8 +31,8 @@ class GCTBReferenceBundleFile:
     sha256: str | None  # None until first staging records it, then committed
 
 
-# Inner names of the pinned reference files once staged/unzipped on the remote host
-# The two zips are single-root archives:
+# Inner names of the pinned reference files
+# Contents of zips:
 # ukbEUR_13M_FullLDM.zip -> ldm13M/ (snp.info, ldm.info, rsq0.5.pwld, block*.ldm.bin);
 # annot_baseline2.2_13M.zip -> the single file annot_baseline2.2_13M.txt.
 GWFM_LDM_ZIP_NAME: str = "ukbEUR_13M_FullLDM.zip"
@@ -99,7 +94,6 @@ MATCHED_LDM_OUT: str = "work/out/matched_ldm"
 GWFM_OUT_PREFIX: str = "work/out/gwfm"
 
 # Credible-set posterior-inclusion / posterior-enrichment probability thresholds
-# (gctb --cs defaults documented for the pinned GWFM use case).
 DEFAULT_PIP: float = 0.9
 DEFAULT_PEP: float = 0.7
 

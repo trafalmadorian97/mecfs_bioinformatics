@@ -1,0 +1,4 @@
+from mecfs_bio.assets.reference_data.sbayes_rc_gwfm_ref.sbayesrc_gwfm_reference_bucket import SBAYESRC_GWFM_REF_BUCKET
+from mecfs_bio.build_system.task.sbayesrc.stage_gwfm_reference_task import StageGwfmReferenceTask
+
+SBAYESRC_GWFM_IMPUTED13M_V1 = StageGwfmReferenceTask.create(bucket=SBAYESRC_GWFM_REF_BUCKET)

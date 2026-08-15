@@ -5,13 +5,11 @@ This Task uploads each file in GWFM_REFERENCE_BUNDLE (Task 1) to the bucket, ski
 files that are already present with a matching size (and checksum, once pinned), and
 writes a small JSON marker asset recording that staging happened.
 
-The marker content is derived only from the pinned bundle and the target bucket, never
-from an S3-reported checksum. S3-reported checksums are, for multipart uploads (the
-206GB LD matrix file), composite checksums of per-part hashes rather than a byte-for-byte
-SHA-256, and they can differ across machines and across re-uploads of the same bytes. If
-the marker embedded a live S3 checksum, the build system's trace (which hashes asset
-content) would be non-deterministic across collaborators and re-runs, forcing endless
-rebuilds. Dedup therefore only ever compares one S3-reported value (a stored object's
+
+S3-reported checksums are, for multipart uploads, composite checksums of
+per-part hashes rather than a byte-for-byteSHA-256, and they can differ across
+machines and across re-uploads of the same bytes.
+Dedup therefore only ever compares one S3-reported value (a stored object's
 head) against another S3-reported value (the pinned constant, once recorded from a prior
 run's logs).
 """
@@ -46,8 +44,7 @@ logger = structlog.get_logger()
 
 _MARKER_ASSET_ID = "gwfm_reference_marker"
 
-# Log upload progress at most once per this fraction of the file, so the ~192 GiB LD
-# file yields a couple dozen lines rather than one per 8 MiB part.
+# Log upload progress at most once per this fraction of the file
 _PROGRESS_LOG_STEP_FRACTION = 0.05
 
 
@@ -58,12 +55,7 @@ def make_upload_progress_logger(
 ) -> Callable[[int], None]:
     """Build a thread-safe on_progress callback that logs throttled upload percentage.
 
-    The object store invokes the returned callback from several worker threads, each
-    time with the number of bytes just transferred, so it accumulates under a lock and
-    emits a line only when the completed fraction crosses the next
-    _PROGRESS_LOG_STEP_FRACTION boundary (and once at completion). total_bytes is the
-    file's known size, used to turn the byte deltas into a percentage. log is injected
-    so tests can capture the calls.
+    The object store invokes the returned callback from several worker threads.
     """
     lock = threading.Lock()
     seen = 0
@@ -121,9 +113,6 @@ class StageGwfmReferenceTask(Task):
                 )
             )
             if needs_upload:
-                # The returned sha256 is S3-reported (possibly a composite, multipart
-                # checksum); it is only ever compared against another S3-reported
-                # value, never against a locally computed digest.
                 logger.info(
                     f"Uploading GFWM reference file, filename: {bundle_file.filename}, source url: {bundle_file.source_url}, uri :{uri}"
                 )
@@ -159,12 +148,13 @@ class StageGwfmReferenceTask(Task):
         return FileAsset(target)
 
     @classmethod
-    def create(cls, bucket: str) -> "StageGwfmReferenceTask":
+    def create(cls, bucket: str, asset_id: str|None=None) -> "StageGwfmReferenceTask":
+        asset_id = asset_id or _MARKER_ASSET_ID
         meta = ReferenceFileMeta(
             group="sbayesrc_gwfm",
             sub_group="ld_reference",
             sub_folder=PurePath(GWFM_REFERENCE_VERSION),
-            id=AssetId(_MARKER_ASSET_ID),
+            id=AssetId(asset_id),
             extension=".json",
         )
         return cls(meta=meta, bucket=bucket)
