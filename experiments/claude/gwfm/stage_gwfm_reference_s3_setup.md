@@ -306,10 +306,71 @@ source timeout on the big file), just rerun:
 
 - Files that fully uploaded are detected by the size check and skipped.
 - A multipart upload that never completed leaves **no** finished object, so `head`
-  returns nothing and that file is re-uploaded from scratch. (Incomplete multipart
-  parts can linger and accrue storage cost; a lifecycle rule to abort incomplete
-  multipart uploads after e.g. 7 days is a reasonable hygiene add, though not
-  required to stage.)
+  returns nothing and that file is re-uploaded from scratch. Its half-uploaded parts
+  are handled as described in "Incomplete multipart uploads" below.
+
+### Incomplete multipart uploads
+
+The big LD file goes up as a multipart upload. If one fails partway, its
+already-uploaded parts are stored and billed until the upload is aborted, and they
+are invisible to `s3 ls` (only completed objects show there).
+
+boto3 handles the common case for you: s3transfer registers an `AbortMultipartUpload`
+cleanup immediately after starting each multipart upload (its
+`CreateMultipartUploadTask` does this), so any error raised during the transfer — a
+source timeout, an S3 rejection — auto-aborts the upload as the exception unwinds. You
+do **not** need to abort those by hand, and the staging code deliberately adds no
+abort of its own (it would only duplicate this).
+
+The one gap is a hard stop where no client code runs at all: the process is
+`kill -9`'d or OOM-killed, or the box loses power mid-upload. That orphans the parts,
+because the abort cleanup never gets to run.
+
+**Check for orphans** (lists in-progress uploads; empty output means none):
+
+```
+pixi r aws s3api list-multipart-uploads --bucket mecfs-bio-reference-data
+```
+
+**Abort one manually**, using the `Key` and `UploadId` from that listing:
+
+```
+pixi r aws s3api abort-multipart-upload \
+  --bucket mecfs-bio-reference-data \
+  --key sbayesrc/reference/Imputed13M/v1/ukbEUR_13M_FullLDM.zip \
+  --upload-id <UploadId>
+```
+
+**Auto-clean going forward** with a lifecycle rule that aborts any incomplete
+multipart upload older than 7 days. This is the durable safety net: S3 enforces it
+server-side regardless of what the client does, so it also covers the hard-kill case
+above. Save as `abort-incomplete-mpu-lifecycle.json`:
+
+```json
+{
+  "Rules": [
+    {
+      "ID": "AbortIncompleteMultipartUploads",
+      "Status": "Enabled",
+      "Filter": {"Prefix": ""},
+      "AbortIncompleteMultipartUpload": {"DaysAfterInitiation": 7}
+    }
+  ]
+}
+```
+
+```
+pixi r aws s3api put-bucket-lifecycle-configuration \
+  --bucket mecfs-bio-reference-data \
+  --lifecycle-configuration file://abort-incomplete-mpu-lifecycle.json
+```
+
+Permissions: the Step 3 staging policy already allows the list and abort commands
+(`s3:ListBucketMultipartUploads`, `s3:AbortMultipartUpload`,
+`s3:ListMultipartUploadParts`). Putting the lifecycle rule needs
+`s3:PutLifecycleConfiguration`, which is **not** in that policy — it is a one-time
+owner/admin action, so run it as the bucket owner rather than the locked-down staging
+identity.
 
 ## Cost notes
 
