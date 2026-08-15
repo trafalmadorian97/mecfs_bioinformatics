@@ -11,4 +11,4 @@ Since it running these computationally costly operations locally would be imprac
 
 
 
-[^sbayesrc_note]: For instance, the SBayesRC fine-mapping paper reports that running SBayesRC on summary statistics with 13M bariants required *"150Gb of RAM and 13h of computation using 24 CPU cores"*
+[^sbayesrc_note]: For instance, the SBayesRC fine-mapping paper[wu2026genome] reports that running SBayesRC on summary statistics with 13M bariants required *"150Gb of RAM and 13h of computation using 24 CPU cores"*
