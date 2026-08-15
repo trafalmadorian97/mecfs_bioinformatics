@@ -132,7 +132,7 @@ class GctbFineMapTask(Task):
             s3_inputs={s3_prefix: PurePath(REMOTE_REF_DIR)},
             output_files=[PurePath(REMOTE_OUT_DIR)],
             resources=RemoteResources(
-                DEFAULT_MEMORY_GB, self.threads, DEFAULT_DISK_GB, self.region
+                memory_gb=DEFAULT_MEMORY_GB, vcpus=self.threads, disk_gb=DEFAULT_DISK_GB, region=self.region
             ),
         )
         wf.remote_executor.run(job, scratch_dir)
