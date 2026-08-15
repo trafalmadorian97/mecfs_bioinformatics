@@ -46,8 +46,7 @@ class GctbMcmcOptions:
 
 
 def render_mcmc_option_flags(options: GctbMcmcOptions) -> list[str]:
-    """Render the set overrides as a flat list of gctb command-line tokens.
-    """
+    """Render the set overrides as a flat list of gctb command-line tokens."""
     flags: list[str] = []
     if options.chain_length is not None:
         flags += ["--chain-length", str(options.chain_length)]

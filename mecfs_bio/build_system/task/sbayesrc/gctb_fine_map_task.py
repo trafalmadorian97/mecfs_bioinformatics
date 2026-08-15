@@ -126,13 +126,19 @@ class GctbFineMapTask(Task):
         job = RemoteJob(
             image=self.image,
             commands=_build_commands(
-                threads=self.threads, pip=self.pip, pep=self.pep, mcmc_options=self.mcmc_options
+                threads=self.threads,
+                pip=self.pip,
+                pep=self.pep,
+                mcmc_options=self.mcmc_options,
             ),
             input_files={ma_asset.path: PurePath(REMOTE_MA_PATH)},
             s3_inputs={s3_prefix: PurePath(REMOTE_REF_DIR)},
             output_files=[PurePath(REMOTE_OUT_DIR)],
             resources=RemoteResources(
-                memory_gb=DEFAULT_MEMORY_GB, vcpus=self.threads, disk_gb=DEFAULT_DISK_GB, region=self.region
+                memory_gb=DEFAULT_MEMORY_GB,
+                vcpus=self.threads,
+                disk_gb=DEFAULT_DISK_GB,
+                region=self.region,
             ),
         )
         wf.remote_executor.run(job, scratch_dir)

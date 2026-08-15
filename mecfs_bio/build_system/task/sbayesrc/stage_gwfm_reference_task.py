@@ -148,7 +148,9 @@ class StageGwfmReferenceTask(Task):
         return FileAsset(target)
 
     @classmethod
-    def create(cls, bucket: str, asset_id: str|None=None) -> "StageGwfmReferenceTask":
+    def create(
+        cls, bucket: str, asset_id: str | None = None
+    ) -> "StageGwfmReferenceTask":
         asset_id = asset_id or _MARKER_ASSET_ID
         meta = ReferenceFileMeta(
             group="sbayesrc_gwfm",

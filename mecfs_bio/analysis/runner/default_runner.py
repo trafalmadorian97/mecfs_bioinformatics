@@ -95,8 +95,7 @@ def get_path_remap_rules() -> tuple[PathRemapRule, ...]:
 
 
 def _get_remote_executor() -> SkyPilotRemoteExecutor:
-    """Build the remote executor from config.
-    """
+    """Build the remote executor from config."""
     config = load_runner_config() or {}
     scratch_s3 = config.get(_REMOTE_SCRATCH_S3_KEY)
     if config.get(_REMOTE_NON_INTERACTIVE_KEY):
