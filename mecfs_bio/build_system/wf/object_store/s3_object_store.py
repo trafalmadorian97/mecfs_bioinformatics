@@ -30,12 +30,14 @@ byte-for-byte SHA-256 of the object. Consequences for callers:
   decided speculatively in this untested code path.
 """
 
+import math
 from collections.abc import Callable
 from typing import Any
 from urllib.request import urlopen
 
 import boto3
 from attrs import Factory, frozen
+from boto3.s3.transfer import TransferConfig
 from botocore.exceptions import ClientError
 
 from mecfs_bio.build_system.wf.object_store.base_object_store import (
@@ -45,6 +47,35 @@ from mecfs_bio.build_system.wf.object_store.base_object_store import (
 
 _NOT_FOUND_ERROR_CODES = {"404", "NoSuchKey", "NotFound"}
 _URLOPEN_TIMEOUT_SECONDS = 60
+
+# s3transfer's default multipart part size. A multipart upload may have at most
+# _S3_MAX_PARTS parts, so this default caps an object at 10,000 * 8 MiB = 80 GiB;
+# a larger object overflows the part count and S3 rejects the UploadPart call.
+_DEFAULT_MULTIPART_CHUNKSIZE = 8 * 1024**2
+# S3's hard limit on parts per multipart upload.
+_S3_MAX_PARTS = 10_000
+# Aim well under the hard limit so a slightly-larger-than-reported source, or any
+# off-by-one in s3transfer's own part accounting, cannot push us over.
+_MULTIPART_PART_BUDGET = 8_000
+_MIB = 1024**2
+
+
+def multipart_chunksize_for_size(total_bytes: int) -> int:
+    """Choose an S3 multipart chunk size that fits total_bytes within the part limit.
+
+    S3 allows at most _S3_MAX_PARTS parts per multipart upload, so the default
+    _DEFAULT_MULTIPART_CHUNKSIZE only works up to about 80 GiB; a larger object needs
+    a bigger part size or S3 rejects it. This returns the larger of the default and
+    the smallest MiB-aligned chunk that splits total_bytes into at most
+    _MULTIPART_PART_BUDGET parts, so objects at or below the default's capacity are
+    left untouched while huge objects (the hundreds-of-GB LD matrices) stay well
+    within the part limit.
+    """
+    if total_bytes <= 0:
+        return _DEFAULT_MULTIPART_CHUNKSIZE
+    needed = math.ceil(total_bytes / _MULTIPART_PART_BUDGET)
+    mib_aligned = math.ceil(needed / _MIB) * _MIB
+    return max(_DEFAULT_MULTIPART_CHUNKSIZE, mib_aligned)
 
 
 def _split_s3_uri(uri: str) -> tuple[str, str]:
@@ -130,6 +161,11 @@ class S3ObjectStore(ObjectStore):
         """
         bucket, key = _split_s3_uri(uri)
         with urlopen(source_url, timeout=_URLOPEN_TIMEOUT_SECONDS) as response:  # noqa: S310
+            # response.length is the remaining Content-Length before any read, i.e.
+            # the object size (None for a chunked source, which falls back to the
+            # default). Size the multipart chunk from it so a hundreds-of-GB object
+            # does not overflow S3's 10,000-part limit at the default 8 MiB part size.
+            chunksize = multipart_chunksize_for_size(response.length or 0)
             self.client.upload_fileobj(
                 response,
                 bucket,
@@ -138,6 +174,7 @@ class S3ObjectStore(ObjectStore):
                     "StorageClass": "ONEZONE_IA",
                     "ChecksumAlgorithm": "SHA256",
                 },
+                Config=TransferConfig(multipart_chunksize=chunksize),
                 Callback=on_progress,
             )
 
