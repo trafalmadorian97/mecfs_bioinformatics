@@ -27,6 +27,9 @@ def call_with_retries[T](
     func takes no arguments: bind its arguments at the call site with
     functools.partial. The sleep function is injectable so tests can run
     without real delays.
+
+    NOTE: for discussion of the benefits of exponential backoff with jitter, see:
+    https://sre.google/sre-book/addressing-cascading-failures/
     """
     assert max_attempts >= 1, f"max_attempts must be >= 1, got {max_attempts}"
     assert len(retry_on) >= 1, "retry_on must name at least one exception type"
