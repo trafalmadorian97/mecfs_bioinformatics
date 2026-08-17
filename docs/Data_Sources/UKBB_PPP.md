@@ -33,9 +33,9 @@ In addition to tables of pQTLs, the PPP has also released full GWAS summary stat
 
 ## Links
 
-[Genetics Podcast Interview About PPP](https://www.youtube.com/watch?v=nSJJjU61JAk)
+[Genetics Podcast Interview about PPP](https://www.youtube.com/watch?v=nSJJjU61JAk)
 
 [Proteomics in Proximity Interview about PPP](https://open.spotify.com/episode/1SuvJvyA2DSwk2H3tL9EO6)
 
 
-[Talk on PPP by Melissa Miller of Pfizer at UK Biobank Scientific Conference](https://www.youtube.com/watch?v=tzTN1VNrGiQ)
+[Talk about PPP by Melissa Miller of Pfizer](https://www.youtube.com/watch?v=tzTN1VNrGiQ)
