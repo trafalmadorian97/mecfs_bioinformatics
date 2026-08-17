@@ -23,5 +23,4 @@ DUMMY_GCTB_RUN = GctbFineMapTask.create(
         out_freq=10,
         seed=42,
     ),
-
 )

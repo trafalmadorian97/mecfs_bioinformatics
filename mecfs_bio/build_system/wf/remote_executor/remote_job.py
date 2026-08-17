@@ -3,6 +3,8 @@ from pathlib import Path, PurePath
 
 from attrs import frozen
 
+from mecfs_bio.util.format_verify.docker_image import is_valid_docker_image_reference
+
 # No `use_spot` / `instance_type` (see design spec). If a named-instance override is
 # added later, refactor RemoteJob.resources to `RemoteResources | ExplicitInstance`
 # rather than adding optional fields, keeping invalid states unrepresentable.
@@ -33,3 +35,10 @@ class RemoteJob:
     def __attrs_post_init__(self) -> None:
         assert self.commands, "RemoteJob.commands must be non-empty"
         assert self.output_files, "RemoteJob.output_files must be non-empty"
+        # s3_inputs keys are intentionally NOT validated as s3:// URIs here:
+        # LocalDockerRemoteExecutor accepts a local directory path as an
+        # s3_inputs key (its test seam), so the s3-only requirement is enforced
+        # in the SkyPilot executor's build_sky_task instead.
+        assert is_valid_docker_image_reference(self.image), (
+            f"RemoteJob.image {self.image!r} is not a valid docker image reference"
+        )

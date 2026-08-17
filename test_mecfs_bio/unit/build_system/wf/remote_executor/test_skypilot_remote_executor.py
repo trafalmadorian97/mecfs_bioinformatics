@@ -23,7 +23,7 @@ def _make_job(tmp_path: Path, resources: RemoteResources) -> RemoteJob:
         image="img:1",
         commands=["gctb --gwfm RC ..."],
         input_files={tmp_path / "x.ma": PurePath("work/x.ma")},
-        s3_inputs={"s3://b/Imputed13M/v1": PurePath("work/ref")},
+        s3_inputs={"s3://ref-bucket/Imputed13M/v1": PurePath("work/ref")},
         output_files=[PurePath("work/out")],
         resources=resources,
     )
@@ -84,7 +84,7 @@ def test_run_prompt_shows_injected_cost_estimate_and_decline_aborts(
 
     executor = SkyPilotRemoteExecutor(
         confirm=decline,
-        scratch_s3="s3://b/remote-exec-scratch",
+        scratch_s3="s3://scratch-bucket/remote-exec-scratch",
         cost_estimator=lambda _job: estimate,
     )
     job = _make_job(
@@ -119,7 +119,9 @@ def test_run_raises_immediately_when_scratch_s3_is_missing(tmp_path: Path) -> No
 
 
 def test_non_interactive_executor_auto_confirms() -> None:
-    executor = SkyPilotRemoteExecutor.non_interactive(scratch_s3="s3://b/scratch")
+    executor = SkyPilotRemoteExecutor.non_interactive(
+        scratch_s3="s3://scratch-bucket/scratch"
+    )
     assert executor.confirm("Launch something expensive? [y/N] ") is True
 
 

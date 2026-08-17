@@ -49,6 +49,7 @@ from mecfs_bio.build_system.wf.remote_executor.remote_job import (
     RemoteJob,
     RemoteResources,
 )
+from mecfs_bio.util.format_verify.s3_uri import is_valid_s3_uri
 from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
@@ -167,10 +168,10 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
         # scheme (e.g. a gs:// URI from a different ObjectStore) fail deep inside the
         # remote aws CLI: the input store's cloud must match the executor's cloud, and
         # that constraint is otherwise unexpressed in code.
-        assert s3_uri.startswith("s3://"), (
-            f"SkyPilotRemoteExecutor provisions AWS and can only stage s3:// inputs; "
-            f"got {s3_uri!r}. The reference ObjectStore's cloud must match the remote "
-            f"executor's cloud."
+        assert is_valid_s3_uri(s3_uri), (
+            f"SkyPilotRemoteExecutor provisions AWS and can only stage valid s3:// "
+            f"inputs; got {s3_uri!r}. The reference ObjectStore's cloud must match "
+            f"the remote executor's cloud."
         )
         # --request-payer requester is required to read the Requester Pays reference
         # bucket: the downloading instance (not the bucket owner) is billed for the
@@ -231,6 +232,14 @@ class SkyPilotRemoteExecutor(RemoteExecutor):
     idle_minutes_to_autostop: int = 15
     runner: Callable[[list[str]], str] = execute_command
     cost_estimator: Callable[[RemoteJob], CostEstimate] = estimate_cost_via_sky_optimize
+
+    def __attrs_post_init__(self) -> None:
+        # scratch_s3 may be None (a runner without remote-exec configured); run()
+        # fails fast at launch in that case. But if one is supplied, catch a
+        # malformed prefix now rather than deep inside the on-instance aws CLI.
+        assert self.scratch_s3 is None or is_valid_s3_uri(self.scratch_s3), (
+            f"scratch_s3 {self.scratch_s3!r} is not a valid s3 URI"
+        )
 
     @classmethod
     def interactive(cls, scratch_s3: str | None = None) -> "SkyPilotRemoteExecutor":
