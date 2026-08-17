@@ -638,13 +638,14 @@ def migrate_asset_store(
 
 
 @task
-def build_push_gctb_image(c, registry):
+def build_push_gctb_image(c, registry=None):
     """
     Build and push the public GCTB container image. Maintainer-only.
 
     Builds docker/gctb with the pinned binary URL and sha256 from
     gctb_gwfm_constants, tags it as {registry}/gctb:{GCTB_VERSION}, and pushes
-    it. Pass the destination registry/namespace as --registry, e.g.
+    it. Defaults to the repo's GHCR namespace (GH_CONTAINER_REGISTRY); override
+    with --registry to push elsewhere, e.g.
     invoke build-push-gctb-image --registry ghcr.io/my-org
     """
     from mecfs_bio.build_system.task.sbayesrc.gctb_gwfm_constants import (
@@ -652,7 +653,10 @@ def build_push_gctb_image(c, registry):
         GCTB_BINARY_URL,
         GCTB_VERSION,
     )
+    from mecfs_bio.constants.gh_constants import GH_CONTAINER_REGISTRY
 
+    if registry is None:
+        registry = GH_CONTAINER_REGISTRY
     tag = f"{registry}/gctb:{GCTB_VERSION}"
     print(f"Building {tag} from docker/gctb...")
     c.run(

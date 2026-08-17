@@ -20,6 +20,8 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.sbayesrc.gctb_gwfm_constants import COJO_MA_COLUMNS
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -44,14 +46,17 @@ class SumstatsToCojoMaTask(Task):
 
     sumstats_task: Task
     meta: FilteredGWASDataMeta
+    pipe: DataProcessingPipe = IdentityPipe()
 
     @property
     def deps(self) -> list["Task"]:
         return [self.sumstats_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
-        source_lf = scan_dataframe_asset(
-            asset=fetch(self.sumstats_task.asset_id), meta=self.sumstats_task.meta
+        source_lf = self.pipe.process(
+            scan_dataframe_asset(
+                asset=fetch(self.sumstats_task.asset_id), meta=self.sumstats_task.meta
+            )
         )
         selection = source_lf.select(
             nw.col(GWASLAB_RSID_COL).alias(_SNP_COL),
@@ -69,7 +74,9 @@ class SumstatsToCojoMaTask(Task):
         return FileAsset(target_path)
 
     @classmethod
-    def create(cls, id: str, sumstats_task: Task) -> "SumstatsToCojoMaTask":
+    def create(
+        cls, id: str, sumstats_task: Task, pipe: DataProcessingPipe = IdentityPipe()
+    ) -> "SumstatsToCojoMaTask":
         source_meta = sumstats_task.meta
         assert isinstance(source_meta, (GWASSummaryDataFileMeta, FilteredGWASDataMeta))
         assert isinstance(source_meta.read_spec, DataFrameReadSpec)
@@ -81,4 +88,4 @@ class SumstatsToCojoMaTask(Task):
             extension=".ma",
             read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
         )
-        return cls(sumstats_task=sumstats_task, meta=meta)
+        return cls(sumstats_task=sumstats_task, meta=meta, pipe=pipe)
