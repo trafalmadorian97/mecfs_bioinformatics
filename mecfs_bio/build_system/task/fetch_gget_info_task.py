@@ -3,12 +3,14 @@ Task to use gget to annotate gene lists with annotations from genetics databases
 """
 
 import math
+from functools import partial
 from pathlib import Path
 
 import gget
 import narwhals
 import numpy as np
 import pandas as pd
+import requests
 import structlog
 from attrs import frozen
 
@@ -32,8 +34,16 @@ from mecfs_bio.build_system.task.dataframe_output import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 logger = structlog.getLogger()
+
+# gget queries the Ensembl, UniProt and NCBI REST APIs without retrying. It
+# raises a bare RuntimeError as soon as one of them answers with a non-2xx
+# status, and lets connection-level failures surface as requests exceptions.
+# Ensembl intermittently returns HTTP 500, which has flaked the DecodeME
+# system test, so both are worth another attempt.
+GGET_TRANSIENT_ERRORS = (RuntimeError, requests.exceptions.RequestException)
 
 _dummy_gget_result = pd.DataFrame(
     {
@@ -99,7 +109,9 @@ class FetchGGetInfoTask(Task):
             genes = genes[: self.genes_to_use]
         logger.debug(f"Using gget to retrieve info on {len(genes)} genes")
         logger.debug(f"Genes are: {genes}")
-        gget_result = gget.info(genes)
+        gget_result = call_with_retries(
+            partial(gget.info, genes), retry_on=GGET_TRANSIENT_ERRORS
+        )
         if isinstance(gget_result, pd.DataFrame):
             gene_info = gget_result
         else:
