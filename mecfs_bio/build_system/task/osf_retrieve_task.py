@@ -3,9 +3,9 @@ A task that fetches GWAS data from the Open Science data store
 """
 
 import shlex
+from collections.abc import Callable
 from pathlib import Path
 
-import invoke
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -14,6 +14,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.download.verify import verify_hash
+from mecfs_bio.util.subproc.run_command import execute_command_with_retries
 
 
 @frozen
@@ -25,6 +26,13 @@ class OSFRetrievalTask(GeneratingTask):
     meta: GWASSummaryDataFileMeta
     osf_project_id: str
     md5_hash: str | None = None
+    run_command: Callable[[list[str]], str] = execute_command_with_retries
+
+    def __attrs_post_init__(self):
+        assert self.meta.project_path is not None, (
+            f"{type(self).__name__} needs a project_path to fetch from OSF project "
+            f"{self.osf_project_id}, but meta {self.meta.asset_id} has none"
+        )
 
     @property
     def deps(self) -> list[Task]:
@@ -32,14 +40,19 @@ class OSFRetrievalTask(GeneratingTask):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:
         tmp_dst = scratch_dir / "tmp"
-
-        @invoke.task
-        def fetch_osf(c):
-            c.run(
-                f"pixi r osf -p {self.osf_project_id} fetch {str(shlex.quote(str(self.meta.project_path)))} {str(tmp_dst)}"
-            )
-
-        fetch_osf(invoke.Context())
+        self.run_command(
+            [
+                "pixi",
+                "r",
+                "osf",
+                "-p",
+                self.osf_project_id,
+                "fetch",
+                "--force",
+                shlex.quote(str(self.meta.project_path)),
+                shlex.quote(str(tmp_dst)),
+            ]
+        )
         verify_hash(tmp_dst, self.md5_hash)
 
         return FileAsset(
