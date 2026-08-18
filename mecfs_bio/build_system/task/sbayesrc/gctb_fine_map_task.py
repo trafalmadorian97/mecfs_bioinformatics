@@ -48,7 +48,6 @@ from mecfs_bio.build_system.wf.remote_executor.remote_job import (
     RemoteResources,
 )
 from mecfs_bio.util.format_verify.docker_image import is_valid_docker_image_reference
-from mecfs_bio.util.format_verify.s3_uri import is_valid_s3_uri
 
 
 def _build_commands(
@@ -132,10 +131,11 @@ class GctbFineMapTask(Task):
         marker_asset = fetch(self.reference_task.asset_id)
         assert isinstance(marker_asset, FileAsset)
         marker = json.loads(Path(marker_asset.path).read_text())
+        # The marker prefix is validated as an s3 URI by the SkyPilot executor's
+        # build_sky_task (where it becomes an s3_inputs key). It is deliberately
+        # NOT asserted s3:// here: LocalDockerRemoteExecutor uses a local
+        # directory prefix as its test seam, and this Task is executor-agnostic.
         s3_prefix = marker[MARKER_PREFIX_KEY]
-        assert is_valid_s3_uri(s3_prefix), (
-            f"reference marker s3 prefix {s3_prefix!r} is not a valid s3 URI"
-        )
 
         job = RemoteJob(
             image=self.image,

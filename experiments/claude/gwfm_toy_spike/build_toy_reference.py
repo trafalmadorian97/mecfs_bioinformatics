@@ -56,10 +56,7 @@ def main() -> None:
             [
                 "docker",
                 "build",
-                "--build-arg",
-                f"GCTB_URL={c.GCTB_BINARY_URL}",
-                "--build-arg",
-                f"GCTB_SHA256={c.GCTB_BINARY_SHA256}",
+                *c.gctb_image_build_args(),
                 "-t",
                 _IMAGE_TAG,
                 str(_DOCKER_CONTEXT),

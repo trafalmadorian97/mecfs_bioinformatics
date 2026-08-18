@@ -43,10 +43,7 @@ def test_gwfm_recovers_planted_causal_snps(tmp_path: Path) -> None:
         [
             "docker",
             "build",
-            "--build-arg",
-            f"GCTB_URL={c.GCTB_BINARY_URL}",
-            "--build-arg",
-            f"GCTB_SHA256={c.GCTB_BINARY_SHA256}",
+            *c.gctb_image_build_args(),
             "-t",
             _IMAGE_TAG,
             "docker/gctb",

@@ -5,13 +5,34 @@ model (gctb --gwfm RC).
 
 from attrs import frozen
 
+# Upstream base version the fork descends from (informational; the image is now
+# built from source, not from the pinned upstream binary).
 GCTB_VERSION: str = "2.5.5"
-GCTB_BINARY_URL: str = (
-    "https://gctbhub.cloud.edu.au/software/gctb/download/gctb_2.5.5_Linux.zip"
-)
-GCTB_BINARY_SHA256: str = (
-    "ccc2752e1bc0d4a210bd9592d07c44468891677f8b2d5fc0a37aa2119c24c61f"
-)
+
+# The gctb Docker image is built FROM SOURCE against our GCTB fork so we can
+# patch upstream bugs (the make-ldm-eigen concurrency race, etc.); see
+# plan_for_dummy_run_revised.txt. Bump GCTB_FORK_REF after each fork commit --
+# GCTB_IMAGE_TAG derives from it, so a new binary always gets a new, unambiguous
+# tag that `docker pull` fetches fresh.
+GCTB_FORK_REPO: str = "https://github.com/trafalmadorian97/GCTB_traf_fork.git"
+GCTB_FORK_REF: str = "86d3a03ac49dab5b18fc3fce42dd933e138b1db0"  # branch fix/gwfm-segfaults
+GCTB_IMAGE_TAG: str = f"{GCTB_VERSION}-fork-{GCTB_FORK_REF[:12]}"
+
+
+def gctb_image_build_args() -> list[str]:
+    """
+    Docker --build-arg pairs that build the gctb image from the pinned fork source.
+
+    Shared by every docker-build call site (the publish task, the toy-reference
+    builder, and the system tests) so they stay in lockstep on the fork/ref pin.
+    """
+    return [
+        "--build-arg",
+        f"GCTB_FORK_REPO={GCTB_FORK_REPO}",
+        "--build-arg",
+        f"GCTB_FORK_REF={GCTB_FORK_REF}",
+    ]
+
 
 GWFM_REFERENCE_VERSION: str = "Imputed13M/v1"
 
