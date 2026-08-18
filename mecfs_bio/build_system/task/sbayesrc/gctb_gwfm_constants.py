@@ -102,7 +102,13 @@ GCTB_CS_TEMPLATE: str = (
 )
 
 DEFAULT_MEMORY_GB: int = 192
-DEFAULT_VCPUS: int = 24
+# 32, not 24: the 192 GB memory requirement forces an r6i.8xlarge (32 vCPU / 256 GB),
+# so a 24-vCPU request left ~8 of the paid-for cores idle. make-ldm-eigen parallelises
+# across LD blocks and saturates every thread (measured: 24 threads -> ~2400% CPU), so
+# matching the request/threads to the whole instance is a free speedup at the same
+# hourly cost. (The tail of the eigen step -- a few giant blocks left -- still can't
+# fill all cores; that would need an intra-block threaded eigensolver.)
+DEFAULT_VCPUS: int = 32
 # The 13M reference unzips to ~260 GiB; peak disk is that plus the make-ldm-eigen
 # output (whose size is not published). Even with the zip deleted right after unzip
 # (see _build_commands), 500 GiB was insufficient. 1000 GiB is generous headroom;
