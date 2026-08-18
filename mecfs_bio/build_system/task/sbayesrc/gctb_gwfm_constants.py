@@ -15,7 +15,7 @@ GCTB_VERSION: str = "2.5.5"
 # GCTB_IMAGE_TAG derives from it, so a new binary always gets a new, unambiguous
 # tag that `docker pull` fetches fresh.
 GCTB_FORK_REPO: str = "https://github.com/trafalmadorian97/GCTB_traf_fork.git"
-GCTB_FORK_REF: str = "86d3a03ac49dab5b18fc3fce42dd933e138b1db0"  # branch fix/gwfm-segfaults
+GCTB_FORK_REF: str = "2465c51603c033d9ed81296ea477f6cb618bb004"  # branch fix/gwfm-segfaults
 GCTB_IMAGE_TAG: str = f"{GCTB_VERSION}-fork-{GCTB_FORK_REF[:12]}"
 
 
