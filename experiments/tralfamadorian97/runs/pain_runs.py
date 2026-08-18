@@ -1,5 +1,5 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_multisite_pain import \
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_ppp_rg import \
     JOHNSTON_ET_AL_PPP_RG_CIS_EXCLUDED
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.magma.johnston_gene_level_magma_plot import \
     JOHNSTON_MAGMA_GENE_PLOT

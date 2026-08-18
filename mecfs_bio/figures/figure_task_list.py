@@ -132,6 +132,9 @@ from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GR
 from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import (
     MECFS_PAIN_BIVARIATE_MIXER,
 )
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_ppp_rg import (
+    JOHNSTON_ET_AL_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
 )
@@ -317,6 +320,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
+    JOHNSTON_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.independent_clusters_markdown_task_unwrap,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
