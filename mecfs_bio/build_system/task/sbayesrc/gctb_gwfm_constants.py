@@ -82,7 +82,11 @@ GCTB_CS_TEMPLATE: str = (
 
 DEFAULT_MEMORY_GB: int = 192
 DEFAULT_VCPUS: int = 24
-DEFAULT_DISK_GB: int = 500
+# The 13M reference unzips to ~260 GiB; peak disk is that plus the make-ldm-eigen
+# output (whose size is not published). Even with the zip deleted right after unzip
+# (see _build_commands), 500 GiB was insufficient. 1000 GiB is generous headroom;
+# EBS is a few cents for a several-hour run, so over-provisioning is cheap insurance.
+DEFAULT_DISK_GB: int = 1000
 
 
 # Remote container layout: the /work mount holds staged reference files under work/ref,

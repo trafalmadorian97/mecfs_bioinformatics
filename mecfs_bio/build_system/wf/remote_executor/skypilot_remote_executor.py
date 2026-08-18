@@ -39,6 +39,8 @@ from uuid import uuid4
 
 import sky
 import sky.exceptions
+import sky.optimizer
+import sky.utils.common
 import structlog
 from attrs import frozen
 
@@ -112,11 +114,18 @@ def _raise_on_failed_remote_job(exit_code: int, cluster: str) -> None:
 
 
 def _build_resources(resources: RemoteResources) -> sky.Resources:
-    """Translate our RemoteResources into a SkyPilot Resources request on AWS."""
+    """Translate our RemoteResources into a SkyPilot Resources request on AWS.
+
+    RemoteResources are lower bounds on what the job needs, so cpus and memory are
+    passed with SkyPilot's "N+" minimum syntax rather than as exact integers. A
+    bare int is an exact-match request, and no AWS instance has, say, exactly 24
+    vCPU + 192 GB, so an exact request fails catalog selection; "24+"/"192+" lets
+    the optimizer pick the cheapest instance meeting at least those requirements.
+    """
     return sky.Resources(
         cloud=sky.AWS(),
-        cpus=resources.vcpus,
-        memory=resources.memory_gb,
+        cpus=f"{resources.vcpus}+",
+        memory=f"{resources.memory_gb}+",
         disk_size=resources.disk_gb,
         region=resources.region,
     )
@@ -126,18 +135,27 @@ def estimate_cost_via_sky_optimize(job: RemoteJob) -> CostEstimate:
     """Ask SkyPilot's optimizer for the cheapest matching instance and its rate.
 
     Builds a resources-only probe task (no file mounts, so nothing is validated or
-    synced), runs it through sky.optimize, and reads the chosen best_resources and
-    its one-hour on-demand cost. This connects to the SkyPilot API server and needs
-    cloud access, which is why it is injected into SkyPilotRemoteExecutor and
-    replaced with a fake in unit tests.
+    synced) and runs it through the local optimizer (sky.optimizer.Optimizer
+    .optimize), reading the chosen best_resources and its one-hour on-demand cost.
+
+    The optimizer is invoked directly rather than through the client sky.optimize:
+    in the client-server SkyPilot the /optimize endpoint is registered with
+    ignore_return_value=True, so sky.get(sky.optimize(dag)) resolves to None and
+    never hands back the optimized DAG. Optimizer.optimize is exactly what the
+    server runs (core.optimize calls it), so the estimate matches what sky.launch
+    will pick. It runs locally but needs cloud catalog access, which is why this is
+    injected into SkyPilotRemoteExecutor and replaced with a fake in unit tests.
     """
     probe = sky.Task(name="cost-estimate", run="true")
     probe.set_resources(_build_resources(job.resources))
     with sky.Dag() as dag:
         dag.add(probe)
-    best = sky.get(sky.optimize(dag)).tasks[0].best_resources
+    optimized = sky.optimizer.Optimizer.optimize(
+        dag, minimize=sky.utils.common.OptimizeTarget.COST, quiet=True
+    )
+    best = optimized.tasks[0].best_resources
     assert best is not None and best.instance_type is not None, (
-        "sky.optimize returned no feasible instance for the requested resources"
+        "the SkyPilot optimizer found no feasible instance for the requested resources"
     )
     return CostEstimate(
         usd_per_hour=best.get_cost(_SECONDS_PER_HOUR),
@@ -161,7 +179,18 @@ def build_sky_task(job: RemoteJob, output_s3_prefix: str | None = None) -> sky.T
         for local_source, remote_dest in job.input_files.items()
     }
 
-    setup_lines: list[str] = []
+    # set -e so any failing setup step (a missing tool, a rejected S3 read) aborts
+    # the job at setup instead of silently proceeding to run and failing later with
+    # a confusing downstream error. Without it, the script's exit code is only the
+    # last line's, masking earlier failures.
+    setup_lines: list[str] = ["set -e"]
+    # SkyPilot's base AMI does not ship the aws CLI, but the reference staging below
+    # needs it. Install it idempotently before first use; apt already knows the
+    # package on the base image, with an apt-get update fallback for a stale cache.
+    setup_lines.append(
+        "command -v aws >/dev/null 2>&1 || sudo apt-get install -y awscli || "
+        "{ sudo apt-get update && sudo apt-get install -y awscli; }"
+    )
     for s3_uri, remote_dest in job.s3_inputs.items():
         # This executor provisions AWS and stages inputs with `aws s3 cp`, so every
         # declared input must be an s3:// URI. Assert it here rather than let a foreign

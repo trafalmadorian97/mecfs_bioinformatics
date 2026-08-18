@@ -42,12 +42,13 @@ def test_build_sky_task_reflects_resources_and_commands(tmp_path: Path) -> None:
     )
     task = build_sky_task(job)
     res = list(task.resources)[0]
-    # SkyPilot normalizes memory/cpus to strings (e.g. "192"); compare on the
-    # requested-quantity intent rather than the exact attribute representation.
+    # cpus/memory are requested as SkyPilot "N+" minimums (see _build_resources),
+    # so the stored request is e.g. "24+"; compare on the requested-quantity intent
+    # after stripping the minimum marker.
     assert res.memory is not None
     assert res.cpus is not None
-    assert int(res.memory) == memory_gb
-    assert int(res.cpus) == vcpus
+    assert int(str(res.memory).rstrip("+")) == memory_gb
+    assert int(str(res.cpus).rstrip("+")) == vcpus
     assert res.disk_size == disk_gb
     assert res.region == region
     run = task.run
@@ -55,6 +56,9 @@ def test_build_sky_task_reflects_resources_and_commands(tmp_path: Path) -> None:
     assert run is not None
     assert setup is not None
     assert "gctb --gwfm" in run
+    # Setup is fail-fast: a failed staging step must abort the job at setup rather
+    # than let it proceed to run and fail confusingly on a missing file.
+    assert "set -e" in setup
     assert "aws s3" in setup
     # The reference bucket is Requester Pays, so the read must declare the requester
     # as payer or S3 returns 403.

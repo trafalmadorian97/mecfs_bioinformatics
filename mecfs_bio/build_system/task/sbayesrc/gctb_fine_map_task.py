@@ -78,6 +78,10 @@ def _build_commands(
     return [
         f"unzip -o {ref / GWFM_LDM_ZIP_NAME} -d {ref}",
         f"unzip -o {ref / GWFM_ANNOT_ZIP_NAME} -d {ref}",
+        # Reclaim the archives once extracted: the LD matrix zip alone is ~192 GiB
+        # and is dead weight after unzip, so deleting both before the eigen step
+        # frees the disk the eigen-decomposition output needs.
+        f"rm -f {ref / GWFM_LDM_ZIP_NAME} {ref / GWFM_ANNOT_ZIP_NAME}",
         f"mkdir -p {REMOTE_OUT_DIR}",
         GCTB_MAKE_LDM_EIGEN_TEMPLATE.format(
             ldm=raw_ldm,
