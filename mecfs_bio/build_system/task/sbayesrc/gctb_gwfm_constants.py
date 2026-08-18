@@ -111,11 +111,15 @@ DEFAULT_DISK_GB: int = 1000
 
 
 # Remote container layout: the /work mount holds staged reference files under work/ref,
-# the .ma sumstats at work/sumstats.ma, and all gctb outputs under work/out.
+# the .ma sumstats at work/sumstats.ma, and the small gctb result files under work/out
+# (the only directory retrieved back). The resized/eigen-decomposed LD matrices are a
+# large intermediate (tens of GiB) consumed only by the gwfm step on the same instance,
+# so they are written to work/matched_ldm -- a SIBLING of work/out, deliberately NOT
+# under it -- to keep them off the output round-trip (instance -> scratch S3 -> local).
 REMOTE_REF_DIR: str = "work/ref"
 REMOTE_OUT_DIR: str = "work/out"
 REMOTE_MA_PATH: str = "work/sumstats.ma"
-MATCHED_LDM_OUT: str = "work/out/matched_ldm"
+MATCHED_LDM_OUT: str = "work/matched_ldm"
 GWFM_OUT_PREFIX: str = "work/out/gwfm"
 
 # Credible-set posterior-inclusion / posterior-enrichment probability thresholds
