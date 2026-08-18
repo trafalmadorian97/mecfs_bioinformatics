@@ -21,15 +21,6 @@ from mecfs_bio.util.subproc.run_command import execute_command_with_retries
 class OSFRetrievalTask(GeneratingTask):
     """
     A task that fetches GWAS data from the Open Science data store
-
-    osfclient issues exactly one HTTP request per download and raises on any
-    non-200 response, so a transient error from OSF's file storage aborts the
-    whole fetch. The retries here supply the backoff osfclient lacks.
-
-    The fetch is forced because osfclient creates the local file before it
-    starts downloading into it: after a failed attempt an empty file is left
-    behind, and without --force osfclient refuses to overwrite it, which would
-    make every subsequent retry fail for a second, unrelated reason.
     """
 
     meta: GWASSummaryDataFileMeta
@@ -38,10 +29,6 @@ class OSFRetrievalTask(GeneratingTask):
     run_command: Callable[[list[str]], str] = execute_command_with_retries
 
     def __attrs_post_init__(self):
-        # project_path is optional on GWASSummaryDataFileMeta, since a GWAS that
-        # does not come from OSF has no path within an OSF project. This task
-        # cannot do anything without one, so reject it at construction rather
-        # than at execution, which may be a long build later.
         assert self.meta.project_path is not None, (
             f"{type(self).__name__} needs a project_path to fetch from OSF project "
             f"{self.osf_project_id}, but meta {self.meta.asset_id} has none"
