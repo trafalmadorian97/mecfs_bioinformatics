@@ -4,8 +4,19 @@
 Suppose that we run an observational study with the aim of understanding the effect of variable A on variable B.  When, in our observational study, we detect a statistical association between A and B, there are typically three possibilities:
 
 1.  Forward causality: A causes B.
+
+
+
 2.  Reverse causality: B causes A.
+
+
+
+
+
 3.  Confounding: A and B are both caused by a third factor C.
+
+
+
 
 Distinguishing between these possibilities is a very tough problem that frustrates much of traditional epidemiological research[@hernan2010causal].
 
