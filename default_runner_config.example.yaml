@@ -1,0 +1,31 @@
+# Example machine-local configuration for the default runner.
+#
+# Copy this file to default_runner_config.yaml (which is gitignored) and fill in
+# the values for your machine.  Every key is independently optional: omitting one
+# keeps the built-in default, so a real config need only set the keys it changes.
+#
+# The asset-store keys below mirror the built-in defaults; uncomment and edit them
+# only if your store lives elsewhere or spans multiple disks.
+
+# asset_root: assets/base_asset_store
+# info_store: build_system/verifying_trace_imo_xxh_128_info.yaml
+
+# Route large, few-file, infrequently-read subtrees to another filesystem so one
+# logical store can span disks.  Subtrees made of many small files must NOT be
+# listed here: the external mount's cost is per-file latency, not throughput.
+# path_remap:
+#   - root: /mnt/d/asset_store_remote
+#     prefixes:
+#       - reference_data/db_snp_reference_data
+
+# Remote execution (SkyPilot / GCTB genome-wide fine-mapping).
+#
+# remote_scratch_s3: an s3:// prefix the remote executor uses to stage job outputs
+# for download.  Required before any remote (GWFM) task can run; there is no
+# default, and a remote task started without it fails fast at launch.
+# remote_scratch_s3: s3://my-gwfm-bucket/remote-exec-scratch
+#
+# remote_non_interactive: when true, auto-approve each paid launch instead of
+# prompting.  Defaults to false so interactive runs always confirm before spending
+# money; set true only for unattended pipelines (CI, batch).
+# remote_non_interactive: false

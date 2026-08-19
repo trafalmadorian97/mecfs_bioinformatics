@@ -51,6 +51,9 @@ from mecfs_bio.build_system.scheduler.topological_scheduler import (
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.build_system.wf.remote_executor.base_remote_executor import (
+    RemoteExecutor,
+)
 from mecfs_bio.build_system.wf.wf_downloader import RobustWFDownloader
 
 
@@ -70,6 +73,9 @@ class SimpleRunner:
     path_remap: rules sending selected store subtrees to other filesystems.  Empty by
         default, which keeps the whole store under asset_root.  See the
         remapping_meta_to_path module for what is worth remapping and what is not.
+    remote_executor: the RemoteExecutor supplied to the WF for tasks that dispatch
+        remote jobs.  None (the default) lets make_wf pick its own default (an
+        interactive SkyPilotRemoteExecutor that prompts before each paid launch);
     """
 
     info_store: Path
@@ -77,6 +83,7 @@ class SimpleRunner:
     tracer: Tracer = SimpleHasher.md5_hasher()
     post_execute: Callable[[Task], None] = gc_collect_post_execute_hook
     path_remap: tuple[PathRemapRule, ...] = ()
+    remote_executor: RemoteExecutor | None = None
 
     @property
     def meta_to_path(self) -> MetaToPath:
@@ -112,7 +119,9 @@ class SimpleRunner:
         rebuilder = VerifyingTraceRebuilder(
             tracer=self.tracer, post_execute=self.post_execute
         )
-        wf = make_wf(downloader=RobustWFDownloader())
+        wf = make_wf(
+            downloader=RobustWFDownloader(), remote_executor=self.remote_executor
+        )
         meta_to_path = self.meta_to_path
         tasks = find_tasks(targets)
         must_rebuild_graph = dependees_of_targets_from_tasks(

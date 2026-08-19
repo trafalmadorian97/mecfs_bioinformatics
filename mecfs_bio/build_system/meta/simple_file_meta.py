@@ -1,5 +1,6 @@
 """
 Metadata describing a miscellaneous file.
+Use only in tests.
 """
 
 from attrs import field, frozen

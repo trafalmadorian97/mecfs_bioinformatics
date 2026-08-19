@@ -295,3 +295,5 @@ experiments/claude/pops_standalone/
 
 #  No parquet datafiles
 *.parquet
+# Git worktrees created for isolated agent work
+.claude/worktrees/

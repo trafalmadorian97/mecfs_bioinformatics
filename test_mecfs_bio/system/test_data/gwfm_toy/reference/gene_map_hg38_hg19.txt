@@ -1,0 +1,4 @@
+Ensgid	GeneName	GeneType	Chrom_hg38	Start_hg38	End_hg38	Chrom_hg19	Start_hg19	End_hg19
+ENSG0	GENE1	protein_coding	1	1	150000	1	1	150000
+ENSG1	GENE2	protein_coding	1	150001	300000	1	150001	300000
+ENSG2	GENE3	protein_coding	1	300001	450000	1	300001	450000
