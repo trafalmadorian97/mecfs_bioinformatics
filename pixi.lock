@@ -463,7 +463,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/0c/86/e2ffa604eacfbec3f430b1d850e7e04c4101eca1a5828f9ae54bf51dfba4/pypandoc-1.17-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0c/c3/44f3fbbfa403ea2a7c779186dc20772604442dde72947e7d01069cbe98e3/pycparser-3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0c/fe/ce252dce8e5dd7ae06fd2036b5a146c1200598346ee70cbeb0a44740aa6b/pysam-0.22.1-cp312-cp312-manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/0e/e7/3e8d34419d95566b958d22904a02f3717b6b56729e9a4f9c313b030f5a70/gwaslab-4.2.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/0f/50/de23fde84e45f5c4fda2488c759b69990fd4512387a8632860f3ac9cd225/numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/0f/7b/39c34ca613b0b198cb866466651b26b045e2009864c5183c979a3b83f383/pytz-2026.3.post1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/10/bd/c038d7cc38edc1aa5bf91ab8068b63d4308c66c4c8bb3cbba7dfbc049f9c/pyparsing-3.3.2-py3-none-any.whl
@@ -622,6 +621,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/d9/33/1f075bf72b0b747cb3288d011319aaf64083cf2efef8354174e3ed4540e2/ipython_pygments_lexers-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/da/35/f2287558c17e29fafc8ef3daf819bb9834061cfa43bff8014f7df7f63bdc/anyio-4.14.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/83e112abc66cd466c6b83f99118035867cecd41802f8d044638aa78a106e/locket-1.0.0-py2.py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/dd/9e/36d601551b6ee34e1579518218e1f660bd51792386abe9775d44d0f12aac/gwaslab-4.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/98/dc154a7f0bb25827d988dc31992917606d1ca9f5349077db045bb5cd9dbc/mkdocs_awesome_nav-3.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e1/5e/4b5aaaabddfacfe36ba7768817bd1f71a7a810a43705e531f3ae4c690767/emoji-2.15.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e1/a6/a556d87dc37e972cc615384df8376e94bc043fba2ef9fbbf68629a1c8d99/selectolax-0.4.11-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
@@ -8690,32 +8690,6 @@ packages:
   version: 0.22.1
   sha256: 860c7c78ddb1539b83d5476502ba14c8b4e8435810dc7a5b715196da3dfb86b6
   requires_python: '>=3.6'
-- pypi: https://files.pythonhosted.org/packages/0e/e7/3e8d34419d95566b958d22904a02f3717b6b56729e9a4f9c313b030f5a70/gwaslab-4.2.1-py3-none-any.whl
-  name: gwaslab
-  version: 4.2.1
-  sha256: 969578299dcecd655867bfefa628e4b03cfe148ad940d1c1630fef4c038ac3c1
-  requires_dist:
-  - pandas>=1.3,!=1.5,<=2.3.3
-  - numpy>=1.21.2,<2
-  - matplotlib>=3.8,<3.9
-  - matplotlib-venn
-  - seaborn>=0.12
-  - scipy>=1.12
-  - pysam==0.22.1
-  - adjusttext>=0.7.3,<=0.8
-  - scikit-allel>=1.3.5
-  - h5py>=3.10.0
-  - pyarrow
-  - polars>=1.27.0
-  - sumstats-liftover==1.1.0
-  - requests
-  - pyyaml
-  - bitarray
-  - platformdirs
-  - mkdocstrings-python>=1.0 ; extra == 'docs'
-  - pytest>=7 ; extra == 'dev'
-  - pytest-xdist>=3 ; extra == 'dev'
-  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/0f/50/de23fde84e45f5c4fda2488c759b69990fd4512387a8632860f3ac9cd225/numpy-1.26.4-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   name: numpy
   version: 1.26.4
@@ -10885,6 +10859,32 @@ packages:
   version: 1.0.0
   sha256: b6c819a722f7b6bd955b80781788e4a66a55628b858d347536b7e81325a3a5e3
   requires_python: '>=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*'
+- pypi: https://files.pythonhosted.org/packages/dd/9e/36d601551b6ee34e1579518218e1f660bd51792386abe9775d44d0f12aac/gwaslab-4.2.2-py3-none-any.whl
+  name: gwaslab
+  version: 4.2.2
+  sha256: 20ad317a55493f6d9491d43ab3218c198528a4ccef81a1ab2fcef45fd2ad418a
+  requires_dist:
+  - pandas>=1.3,!=1.5,<=2.3.3
+  - numpy>=1.21.2,<2
+  - matplotlib>=3.8,<3.9
+  - matplotlib-venn
+  - seaborn>=0.12
+  - scipy>=1.12
+  - pysam==0.22.1
+  - adjusttext>=0.7.3,<=0.8
+  - scikit-allel>=1.3.5
+  - h5py>=3.10.0
+  - pyarrow
+  - polars>=1.27.0
+  - sumstats-liftover==1.1.0
+  - requests
+  - pyyaml
+  - bitarray
+  - platformdirs
+  - mkdocstrings-python>=1.0 ; extra == 'docs'
+  - pytest>=7 ; extra == 'dev'
+  - pytest-xdist>=3 ; extra == 'dev'
+  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/de/98/dc154a7f0bb25827d988dc31992917606d1ca9f5349077db045bb5cd9dbc/mkdocs_awesome_nav-3.3.0-py3-none-any.whl
   name: mkdocs-awesome-nav
   version: 3.3.0
