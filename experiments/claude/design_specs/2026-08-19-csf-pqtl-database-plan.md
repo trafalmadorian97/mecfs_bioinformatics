@@ -1,7 +1,7 @@
 # CSF pQTL Database — Implementation Plan
 
 **Date:** 2026-08-19
-**Status:** Awaiting review, not yet implemented
+**Status:** Implemented 2026-08-19 (Steps 1–6 built & green; Step 7 full build is the production run the user launches). Validated end-to-end on real data (GCST90421540): index 1,025,155 rows, slim file 6.78 MB, N per-variant. See experiments/claude/csf_pqtl_database/end_to_end_validation.py.
 **Scope:** Build the per-aptamer summary-statistics database for Western et al. 2024 CSF
 proteogenomics, analogous to the existing UKB-PPP database under
 `mecfs_bio/build_system/task/ppp_database/`.
