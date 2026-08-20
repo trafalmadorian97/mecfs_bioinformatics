@@ -79,6 +79,13 @@
       "automerge": true
     },
     {
+      "description": "The Renovate Docker image ships several patch releases a day, one PR each. Only surface an update once the minor version moves (Renovate classes an update as patch only when major.minor are unchanged, so this leaves minor and major PRs intact).",
+      "matchPackageNames": ["ghcr.io/renovatebot/renovate"],
+      "matchUpdateTypes": ["patch"],
+      "enabled": false
+    },
+
+    {
       "description": "gwaslab pins adjusttext >=0.7.3,<=0.8, so adjusttext 1.x can never resolve and pixi lock fails. Lift this ceiling only once gwaslab relaxes its pin.",
       "matchPackageNames": ["adjusttext"],
       "allowedVersions": "<=0.8"
