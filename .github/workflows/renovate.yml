@@ -43,7 +43,7 @@ jobs:
         with:
           configurationFile: .github/renovate-global.js
           token: ${{ steps.app-token.outputs.token }}
-          renovate-version: 44.34.3
+          renovate-version: 44.35.4
         env:
           RENOVATE_DRY_RUN: ${{ inputs.dryRun && 'full' || '' }}
           # Fallback matters: on scheduled runs `inputs` is null, and LOG_LEVEL is read
