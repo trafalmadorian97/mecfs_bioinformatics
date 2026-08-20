@@ -54,14 +54,16 @@ and the 826 KB aptamer table. Re-run to pick up any upstream re-curation, then d
 the result against the committed manifest.
 """
 
-import csv
 import json
 import re
+import tempfile
 import urllib.request
 from collections.abc import Callable
 from pathlib import Path
 
 import pandas as pd
+
+from mecfs_bio.util.download.verify import verify_hash
 
 _DIR = Path(__file__).parent
 MANIFEST_PATH = _DIR / "csf_aptamer_manifest.csv"
@@ -83,6 +85,10 @@ _BOX_DOWNLOAD_URL = (
     "https://wustl.app.box.com/index.php?rm=box_download_shared_file"
     f"&shared_name={_BOX_SHARED_NAME}&file_id={_BOX_APTAMER_INFO_FILE_ID}"
 )
+# MD5 of aptamer_info.xlsx (826,640 bytes) as served by the endpoint above. Pinning it
+# turns a silent upstream swap into a loud failure: a changed table would otherwise be
+# accepted and could shift the manifest. Re-run to update the hash if Box re-deposits.
+_APTAMER_INFO_MD5 = "4913a42d671f3e35d4997eab9d3e670f"
 
 # aptamer_info.xlsx columns.
 _ANALYTES_COL = "Analytes"  # aptamer primary key, e.g. X13681.173
@@ -118,13 +124,21 @@ _TRAIT_OVERRIDES = {
     "Casein kinase II alpha-2: beta heterotetramer levels": "X5226.36",  # CSNK2A2|CSNK2B
 }
 
+# Output manifest columns.
+_ANALYTE_MANIFEST_COLUMN = "analyte"
+_SEQ_ID_MANIFEST_COLUMN = "seq_id"
+_UNIPROT_MANIFEST_COLUMN = "uniprot"
+_ENTREZ_SYMBOL_MANIFEST_COLUMN = "entrez_gene_symbol"
+_TARGET_FULL_NAME_MANIFEST_COLUMN = "target_full_name"
+_ACCESSION_MANIFEST_COLUMN = "accession"
+
 MANIFEST_COLUMNS = [
-    "analyte",
-    "seq_id",
-    "uniprot",
-    "entrez_gene_symbol",
-    "target_full_name",
-    "accession",
+    _ANALYTE_MANIFEST_COLUMN,
+    _SEQ_ID_MANIFEST_COLUMN,
+    _UNIPROT_MANIFEST_COLUMN,
+    _ENTREZ_SYMBOL_MANIFEST_COLUMN,
+    _TARGET_FULL_NAME_MANIFEST_COLUMN,
+    _ACCESSION_MANIFEST_COLUMN,
 ]
 
 
@@ -143,8 +157,9 @@ def fetch_studies() -> list[tuple[str, str]]:
 
 
 def download_aptamer_info(dest: Path) -> Path:
-    """Download aptamer_info.xlsx from the Box deposit."""
+    """Download aptamer_info.xlsx from the Box deposit and verify its MD5."""
     urllib.request.urlretrieve(_BOX_DOWNLOAD_URL, dest)
+    verify_hash(dest, _APTAMER_INFO_MD5)
     return dest
 
 
@@ -221,14 +236,20 @@ def build_manifest_rows(
         used[analyte] = accession
         rule_counts[rule] = rule_counts.get(rule, 0) + 1
         info = published.loc[analyte]
+        # 15 published aptamers have no EntrezGeneSymbol in the table; fall back to
+        # their UniProt id (all 15 have one) so the symbol -- which feeds the slim
+        # file's asset_id and project -- stays meaningful and non-empty.
+        symbol = info[_ENTREZ_SYMBOL_COL]
+        if pd.isna(symbol):
+            symbol = info[_UNIPROT_COL]
         rows.append(
             {
-                "analyte": analyte,
-                "seq_id": info[_SEQID_COL],
-                "uniprot": info[_UNIPROT_COL],
-                "entrez_gene_symbol": info[_ENTREZ_SYMBOL_COL],
-                "target_full_name": info[_TARGET_FULL_NAME_COL],
-                "accession": accession,
+                _ANALYTE_MANIFEST_COLUMN: analyte,
+                _SEQ_ID_MANIFEST_COLUMN: info[_SEQID_COL],
+                _UNIPROT_MANIFEST_COLUMN: info[_UNIPROT_COL],
+                _ENTREZ_SYMBOL_MANIFEST_COLUMN: symbol,
+                _TARGET_FULL_NAME_MANIFEST_COLUMN: info[_TARGET_FULL_NAME_COL],
+                _ACCESSION_MANIFEST_COLUMN: accession,
             }
         )
 
@@ -245,16 +266,18 @@ def build_manifest_rows(
 
 
 def write_manifest(rows: list[dict], manifest_path: Path) -> None:
-    rows_sorted = sorted(rows, key=lambda row: row["analyte"])
-    with manifest_path.open("w", newline="") as handle:
-        writer = csv.DictWriter(handle, fieldnames=MANIFEST_COLUMNS)
-        writer.writeheader()
-        writer.writerows(rows_sorted)
+    rows_sorted = sorted(rows, key=lambda row: row[_ANALYTE_MANIFEST_COLUMN])
+    frame = pd.DataFrame.from_records(rows_sorted, columns=MANIFEST_COLUMNS)
+    # Every cell must be populated -- in particular the UniProt fallback in
+    # build_manifest_rows must have filled every missing gene symbol, so no NaN
+    # reaches the CSV to be serialized as a literal "nan" or an empty asset_id.
+    nan_cells = frame.isna().sum()
+    assert not frame.isna().to_numpy().any(), f"manifest has NaN cells:\n{nan_cells}"
+    frame.to_csv(manifest_path, index=False)
     print(f"wrote {len(rows_sorted)} rows to {manifest_path}")
 
 
 def main() -> None:
-    aptamer_info_path = _DIR / "aptamer_info.xlsx"
     print("fetching study list from GWAS Catalog ...")
     studies = fetch_studies()
     assert len(studies) == EXPECTED_STUDY_COUNT, (
@@ -262,9 +285,13 @@ def main() -> None:
     )
     print(f"got {len(studies)} studies")
     print("downloading aptamer_info.xlsx from Box ...")
-    download_aptamer_info(aptamer_info_path)
-    published = published_aptamers(aptamer_info_path)
-    rows = build_manifest_rows(studies, published)
+    # The xlsx is a transient input, not a committed asset: download it to a temp dir
+    # so a re-run leaves no untracked binary in the tracked source tree. Only the CSV
+    # manifest is durable.
+    with tempfile.TemporaryDirectory() as tmp:
+        aptamer_info_path = download_aptamer_info(Path(tmp) / "aptamer_info.xlsx")
+        published = published_aptamers(aptamer_info_path)
+        rows = build_manifest_rows(studies, published)
     write_manifest(rows, MANIFEST_PATH)
 
 
