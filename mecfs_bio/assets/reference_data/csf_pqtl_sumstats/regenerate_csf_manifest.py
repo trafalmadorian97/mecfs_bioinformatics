@@ -164,11 +164,12 @@ def build_resolver(
     """Return a resolver mapping a trait to (analyte, rule), closed over the
     published aptamers. The second element names the rule that matched, for reporting.
 
-    Four rules, tried in order:
+    Four rules. Rule 4 (the hardcoded override) is a short-circuit checked FIRST; the
+    other three are then tried in order 1 -> 2 -> 3:
       1. an explicit "(analyte X####.##)" in the trait (the Catalog's own tiebreak);
       2. an exact "<target name> levels" match to a uniquely-named aptamer;
       3. the same, case-insensitively;
-      4. a hardcoded override for three Casein kinase II traits.
+      4. a hardcoded override for three Casein kinase II traits (see _TRAIT_OVERRIDES).
     """
     exact: dict[str, list[str]] = {}
     lower: dict[str, list[str]] = {}
