@@ -289,10 +289,10 @@ class BuildSlimCsfAptamerParquetTask(GeneratingTask):
         # sumstats), so trait/project come from the aptamer's gene, not a dep.
         meta = GWASSummaryDataFileMeta(
             id=AssetId(asset_id),
-            trait="csf_pqtl",
+            trait="western_csf_pqtl",
             project=aptamer.entrez_gene_symbol,
             sub_dir="aligned",
-            project_path=PurePath(f"{index_name}_index/{asset_id}.parquet.zstd"),
+            project_path=PurePath(f"{index_name}_index/{asset_id}.parquet"),
             read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             extension=".parquet",
         )
