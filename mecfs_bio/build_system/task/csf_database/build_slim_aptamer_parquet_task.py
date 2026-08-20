@@ -254,15 +254,18 @@ class BuildSlimCsfAptamerParquetTask(GeneratingTask):
         return [self.index_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
+        # Keep the column projection on the narwhals frame (pushes into scan_parquet),
+        # then collect().to_polars() to guarantee a polars frame regardless of the
+        # backend a future DataProcessingPipe might introduce (to_native would not).
         index_df = (
             scan_dataframe_asset(
                 fetch(self.index_task.asset_id),
                 meta=self.index_meta,
                 parquet_backend="polars",
             )
-            .to_native()
             .select(_INDEX_ALIGN_COLUMNS)
             .collect()
+            .to_polars()
         )
         download_dir = scratch_dir / "download"
         download_dir.mkdir(parents=True, exist_ok=True)

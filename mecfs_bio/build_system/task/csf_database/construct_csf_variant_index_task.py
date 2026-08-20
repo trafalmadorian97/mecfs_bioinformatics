@@ -25,7 +25,7 @@ the membership task, not stored here.
 
 from pathlib import Path, PurePath
 
-import polars as pl
+import narwhals as nw
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -45,7 +45,9 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     is_palindromic_expr,
 )
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
+from mecfs_bio.build_system.task.ppp_database.allele_key import (
+    unordered_allele_key_narwhals,
+)
 from mecfs_bio.build_system.task.ppp_database.byte_stream_split_parquet import (
     write_byte_stream_split_parquet,
 )
@@ -115,6 +117,15 @@ class ConstructCsfVariantIndexTask(GeneratingTask):
         return [self.template_aptamer_task, self.membership_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
+        # The template and membership reads, the allele key, and the join all stay on
+        # the backend-agnostic narwhals frame, so the whole thing is one lazy pipeline
+        # that materializes exactly once -- at the join, which must hold both sides in
+        # memory anyway -- via collect().to_polars(). That final hop guarantees a polars
+        # frame regardless of the backend a future DataProcessingPipe might introduce;
+        # to_native would hand back whatever that backend is, which need not be polars.
+        # Only the palindrome flag runs after the hop, in polars, because narwhals has
+        # no str.reverse for the complement.
+
         # --- Template aptamer: hg38 coordinates, alleles, in-sample EAF. ---
         template_asset = fetch(self.template_aptamer_task.asset_id)
         template = (
@@ -123,18 +134,17 @@ class ConstructCsfVariantIndexTask(GeneratingTask):
                 meta=self.template_aptamer_meta,
                 parquet_backend="polars",
             )
-            .to_native()
             .select(
-                pl.col(GWAS_SSF_CHROM_COL).cast(pl.Int32).alias(GWASLAB_CHROM_COL),
-                pl.col(GWAS_SSF_POS_COL).cast(pl.Int32).alias(GWASLAB_POS_COL),
-                pl.col(GWAS_SSF_EFFECT_ALLELE_COL).alias(GWASLAB_EFFECT_ALLELE_COL),
-                pl.col(GWAS_SSF_OTHER_ALLELE_COL).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
-                pl.col(GWAS_SSF_EFFECT_ALLELE_FREQ_COL)
-                .cast(pl.Float32)
+                nw.col(GWAS_SSF_CHROM_COL).cast(nw.Int32).alias(GWASLAB_CHROM_COL),
+                nw.col(GWAS_SSF_POS_COL).cast(nw.Int32).alias(GWASLAB_POS_COL),
+                nw.col(GWAS_SSF_EFFECT_ALLELE_COL).alias(GWASLAB_EFFECT_ALLELE_COL),
+                nw.col(GWAS_SSF_OTHER_ALLELE_COL).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
+                nw.col(GWAS_SSF_EFFECT_ALLELE_FREQ_COL)
+                .cast(nw.Float32)
                 .alias(GWASLAB_EFFECT_ALLELE_FREQ_COL),
             )
             .with_columns(
-                unordered_allele_key(
+                unordered_allele_key_narwhals(
                     GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
                 ).alias(CSF_INDEX_ALLELE_KEY_COL)
             )
@@ -151,12 +161,11 @@ class ConstructCsfVariantIndexTask(GeneratingTask):
                 meta=self.membership_meta,
                 parquet_backend="polars",
             )
-            .to_native()
             .select(
-                pl.col(GWASLAB_CHROM_COL).cast(pl.Int32),
-                pl.col(GWASLAB_POS_COL).cast(pl.Int32),
-                pl.col(GWASLAB_RSID_COL),
-                unordered_allele_key(
+                nw.col(GWASLAB_CHROM_COL).cast(nw.Int32),
+                nw.col(GWASLAB_POS_COL).cast(nw.Int32),
+                nw.col(GWASLAB_RSID_COL),
+                unordered_allele_key_narwhals(
                     GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
                 ).alias(CSF_INDEX_ALLELE_KEY_COL),
             )
@@ -171,6 +180,8 @@ class ConstructCsfVariantIndexTask(GeneratingTask):
                 on=[GWASLAB_CHROM_COL, GWASLAB_POS_COL, CSF_INDEX_ALLELE_KEY_COL],
                 how="inner",
             )
+            .collect()
+            .to_polars()
             .with_columns(
                 is_palindromic_expr(
                     GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
@@ -189,7 +200,6 @@ class ConstructCsfVariantIndexTask(GeneratingTask):
                 ]
             )
             .select(INDEX_COLUMNS)
-            .collect()
         )
 
         out_path = scratch_dir / "csf_variant_index.parquet"
