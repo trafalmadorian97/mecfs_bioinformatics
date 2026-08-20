@@ -2,28 +2,55 @@
 Regenerate the Western et al. 2024 CSF pQTL summary-statistics manifest.
 
 The manifest is a static list mapping every published CSF aptamer to the GWAS
-Catalog study accession whose GWAS-SSF file holds its summary statistics. It is the
-CSF analogue of regenerate_ppp_manifest.py.
+Catalog study whose GWAS-SSF file holds its summary statistics. It is the CSF
+analogue of regenerate_ppp_manifest.py.
+
+Glossary (the terms this script maps between):
+
+  aptamer      One SomaScan affinity reagent: a modified-DNA binder that measures one
+               protein target. One row of the aptamer table. 7,584 exist; 7,008 are
+               published (the rest have a non-null "Step Removed").
+  analyte      An aptamer's stable identifier string, e.g. "X13681.173" (the
+               "Analytes" column). The aptamer primary key -- gene symbol is not
+               unique across aptamers.
+  seq_id       The same aptamer identifier in dash form, e.g. "13681-173" (the
+               "SeqId" column).
+  target name  The human-readable protein name an aptamer targets, e.g.
+               "Beta-crystallin B2" (the "TargetFullName" column). NOT unique:
+               several aptamers can share one target name.
+  aptamer      aptamer_info.xlsx, the SomaScan 7k table with one row per aptamer.
+    table      From the paper's Box deposit.
+  study        One GWAS Catalog deposit: the genome-wide association results for a
+               single aptamer measured in CSF. There are 7,008, one per published
+               aptamer.
+  accession    A study's stable GWAS Catalog identifier, e.g. "GCST90421540".
+  trait        The human-readable label the GWAS Catalog gives a study, e.g.
+               "Beta-crystallin B2 levels". Unique per study; the Catalog
+               disambiguates aptamers that share a target name by appending
+               "(analyte X####.##)".
+
+The script maps each study (identified by its accession) to the aptamer it measured
+(identified by its analyte), using the trait as the only key the two sources share.
 
 Two upstream sources are combined:
 
   1. The GWAS Catalog REST API, listing the 7,008 studies of PMID 39528825, each
-     with an accession and a human-readable trait string.
-  2. aptamer_info.xlsx (from the paper's Box deposit), the SomaScan 7k analyte
-     table: 7,584 rows, of which the 576 with a non-null "Step Removed" are the
-     unpublished aptamers, leaving exactly 7,008.
+     with its accession and trait.
+  2. The aptamer table (aptamer_info.xlsx), which supplies each aptamer's analyte,
+     seq_id, target name and publication status: 7,584 rows, of which the 576 with
+     a non-null "Step Removed" are the unpublished aptamers, leaving exactly 7,008.
 
-The trait string is the only link between the two. The Catalog assigns each study a
-UNIQUE trait, having itself disambiguated shared target names by appending
-"(analyte X####.##)". A four-rule resolver recovers a complete accession -> analyte
-bijection; the resolver asserts the bijection, so a future upstream re-curation that
-breaks the mapping fails loudly here rather than silently at build time.
+The trait is the only link between the two. The Catalog assigns each study a UNIQUE
+trait, having itself disambiguated shared target names as noted above. A four-rule
+resolver recovers a complete accession -> analyte bijection; the resolver asserts the
+bijection, so a future upstream re-curation that breaks the mapping fails loudly here
+rather than silently at build time.
 
 Run via:
   pixi r python mecfs_bio/assets/reference_data/csf_pqtl_sumstats/regenerate_csf_manifest.py
 
 Downloads no summary statistics; it fetches only study metadata (a few MB of JSON)
-and the 826 KB analyte table. Re-run to pick up any upstream re-curation, then diff
+and the 826 KB aptamer table. Re-run to pick up any upstream re-curation, then diff
 the result against the committed manifest.
 """
 
@@ -31,6 +58,7 @@ import csv
 import json
 import re
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
 
 import pandas as pd
@@ -67,12 +95,27 @@ _STEP_REMOVED_COL = "Step Removed"  # non-null => aptamer not published
 # Rule 1: the Catalog disambiguates shared target names by appending this to the trait.
 _ANALYTE_IN_TRAIT_PATTERN = re.compile(r"\(analyte (X[\d.]+)\)")
 
-# Rule 4: three Casein kinase II traits the first three rules cannot resolve (the
-# trait names do not match any TargetFullName + " levels"). Mapping verified by hand.
+# Rule 4: three Casein kinase II traits the first three rules cannot resolve, because
+# the Catalog writes the two catalytic subunits as "alpha-1" / "alpha-2" while the
+# aptamer table writes them "alpha" / "alpha'" -- so the trait carries no
+# "(analyte ...)" tiebreak (rule 1 misses) and does not match any target name +
+# " levels" (rules 2-3 miss).
+#
+# The pairing is not a free choice: the subunit identity is fixed by UniProt --
+# alpha-1 = CSNK2A1 (P68400), alpha-2 = CSNK2A2 (P19784) -- which pins each trait to
+# exactly one aptamer (the alpha-2 monomer is the sole published CSNK2A2 monomer; the
+# two heterotetramers differ only in CSNK2A1 vs CSNK2A2). To re-verify a row, open its
+# study page and read the trait, then confirm the analyte's subunit in the aptamer
+# table against UniProt:
+#   https://www.ebi.ac.uk/gwas/studies/GCST90422297  "...subunit alpha-2 levels"
+#   https://www.ebi.ac.uk/gwas/studies/GCST90426283  "...alpha-1: beta heterotetramer levels"
+#   https://www.ebi.ac.uk/gwas/studies/GCST90426284  "...alpha-2: beta heterotetramer levels"
+#   https://www.uniprot.org/uniprotkb/P68400  CSNK2A1 (alpha-1)
+#   https://www.uniprot.org/uniprotkb/P19784  CSNK2A2 (alpha-2)
 _TRAIT_OVERRIDES = {
-    "Casein kinase II subunit alpha-2 levels": "X13681.173",
-    "Casein kinase II alpha-1: beta heterotetramer levels": "X5225.50",
-    "Casein kinase II alpha-2: beta heterotetramer levels": "X5226.36",
+    "Casein kinase II subunit alpha-2 levels": "X13681.173",  # CSNK2A2 monomer
+    "Casein kinase II alpha-1: beta heterotetramer levels": "X5225.50",  # CSNK2A1|CSNK2B
+    "Casein kinase II alpha-2: beta heterotetramer levels": "X5226.36",  # CSNK2A2|CSNK2B
 }
 
 MANIFEST_COLUMNS = [
@@ -115,12 +158,15 @@ def published_aptamers(aptamer_info_path: Path) -> pd.DataFrame:
     return published.set_index(_ANALYTES_COL, drop=False)
 
 
-def build_resolver(published: pd.DataFrame):
-    """Return a function trait -> analyte, closed over the published analyte table.
+def build_resolver(
+    published: pd.DataFrame,
+) -> Callable[[str], tuple[str, str]]:
+    """Return a resolver mapping a trait to (analyte, rule), closed over the
+    published aptamers. The second element names the rule that matched, for reporting.
 
     Four rules, tried in order:
       1. an explicit "(analyte X####.##)" in the trait (the Catalog's own tiebreak);
-      2. an exact "<TargetFullName> levels" match to a uniquely-named aptamer;
+      2. an exact "<target name> levels" match to a uniquely-named aptamer;
       3. the same, case-insensitively;
       4. a hardcoded override for three Casein kinase II traits.
     """
