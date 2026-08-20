@@ -62,14 +62,21 @@ class AriaDownloader(Downloader):
             return False
 
 
+_ARIA_MAX_CONNECTIONS = 16
+
+
 def aria_command(
     url: str, local_path: Path, connections: int, summary_interval: int
 ) -> list[str]:
     """Build the aria2c command line for downloading url to local_path.
 
     -s must match -x (and min-split-size be small enough) or aria2 caps the actual
-    connection count regardless of -x.
+    connection count regardless of -x. aria2 rejects --max-connection-per-server above
+    16, so connections is asserted in range rather than left to fail mid-download.
     """
+    assert 1 <= connections <= _ARIA_MAX_CONNECTIONS, (
+        f"aria2 allows 1..{_ARIA_MAX_CONNECTIONS} connections per server, got {connections}"
+    )
     return [
         "pixi",
         "r",

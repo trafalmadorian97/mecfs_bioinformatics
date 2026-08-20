@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import attrs
+import pytest
 
 from mecfs_bio.util.download.robust_download import (
     Downloader,
@@ -67,3 +68,15 @@ def test_aria_command_connections_set_both_x_and_s(tmp_path: Path):
     )
     assert cmd[cmd.index("-x") + 1] == "16"
     assert cmd[cmd.index("-s") + 1] == "16"
+
+
+def test_aria_command_rejects_too_many_connections(tmp_path: Path):
+    # aria2 caps connections per server at 16; a larger request must fail fast here
+    # rather than erroring mid-download.
+    with pytest.raises(AssertionError):
+        aria_command(
+            url="http://host/f",
+            local_path=tmp_path / "f",
+            connections=17,
+            summary_interval=10,
+        )

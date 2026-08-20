@@ -76,6 +76,12 @@ logger = structlog.get_logger()
 # lands in ~12 s. Measured end to end, that is the difference between a ~3-week and a
 # ~2-day full build (7,008 files, sequential). See experiments/claude/logs for the
 # benchmark.
+#
+# 16 is also aria2's hard maximum for --max-connection-per-server; a larger value makes
+# aria2 error out, not go faster. Throughput already plateaus at the link/server cap
+# (~12-19 MB/s) by ~8 connections, so 16 sits comfortably past the knee. Downloads are
+# sequential (one file at a time), so 16 connections to one server does not trip the
+# rate limiting that many simultaneous small requests would.
 _DOWNLOAD_CONNECTIONS = 16
 
 # Alignment output: beta, se, N, all float32. N is conceptually integer but stored as
