@@ -63,6 +63,7 @@ import urllib.request
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from typing import Literal
 from urllib.error import URLError
 
 import pandas as pd
@@ -70,9 +71,18 @@ import pandas as pd
 from mecfs_bio.build_system.task.csf_database.gwas_catalog_url import (
     gwas_catalog_bucket,
 )
-from mecfs_bio.constants.csf_database_constants import GcstAccession
+from mecfs_bio.constants.csf_database_constants import (
+    Analyte,
+    GcstAccession,
+    Trait,
+)
 from mecfs_bio.util.download.verify import verify_hash
 from mecfs_bio.util.retry.call_with_retries import call_with_retries
+
+# Which resolver rule matched a trait, reported for a per-rule breakdown at gen time.
+ResolveRule = Literal[
+    "override", "analyte_in_trait", "exact_name", "case_insensitive_name"
+]
 
 _DIR = Path(__file__).parent
 MANIFEST_PATH = _DIR / "csf_aptamer_manifest.csv"
@@ -127,10 +137,16 @@ _ANALYTE_IN_TRAIT_PATTERN = re.compile(r"\(analyte (X[\d.]+)\)")
 #   https://www.ebi.ac.uk/gwas/studies/GCST90426284  "...alpha-2: beta heterotetramer levels"
 #   https://www.uniprot.org/uniprotkb/P68400  CSNK2A1 (alpha-1)
 #   https://www.uniprot.org/uniprotkb/P19784  CSNK2A2 (alpha-2)
-_TRAIT_OVERRIDES = {
-    "Casein kinase II subunit alpha-2 levels": "X13681.173",  # CSNK2A2 monomer
-    "Casein kinase II alpha-1: beta heterotetramer levels": "X5225.50",  # CSNK2A1|CSNK2B
-    "Casein kinase II alpha-2: beta heterotetramer levels": "X5226.36",  # CSNK2A2|CSNK2B
+_TRAIT_OVERRIDES: dict[Trait, Analyte] = {
+    Trait("Casein kinase II subunit alpha-2 levels"): Analyte(
+        "X13681.173"
+    ),  # CSNK2A2 monomer
+    Trait("Casein kinase II alpha-1: beta heterotetramer levels"): Analyte(
+        "X5225.50"
+    ),  # CSNK2A1|CSNK2B
+    Trait("Casein kinase II alpha-2: beta heterotetramer levels"): Analyte(
+        "X5226.36"
+    ),  # CSNK2A2|CSNK2B
 }
 
 # GWAS Catalog publishes a per-study md5sum.txt next to the .tsv.gz, with one line
@@ -161,16 +177,17 @@ MANIFEST_COLUMNS = [
 ]
 
 
-def fetch_studies() -> list[tuple[str, str]]:
+def fetch_studies() -> list[tuple[GcstAccession, Trait]]:
     """Page the GWAS Catalog REST API, returning (accession, trait) for every study."""
-    studies: list[tuple[str, str]] = []
+    studies: list[tuple[GcstAccession, Trait]] = []
     url: str | None = _REST_SEARCH_URL
     while url is not None:
         with urllib.request.urlopen(url) as response:
             payload = json.load(response)
         for study in payload["_embedded"]["studies"]:
-            trait = study["diseaseTrait"]["trait"]
-            studies.append((study["accessionId"], trait))
+            accession = GcstAccession(study["accessionId"])
+            trait = Trait(study["diseaseTrait"]["trait"])
+            studies.append((accession, trait))
         url = payload["_links"].get("next", {}).get("href")
     return studies
 
@@ -187,14 +204,14 @@ def _read_md5sum_file(url: str) -> str:
         return response.read().decode()
 
 
-def _fetch_sumstats_md5(accession: str) -> str:
+def _fetch_sumstats_md5(accession: GcstAccession) -> str:
     """The published md5 of a study's {accession}.tsv.gz, read from its md5sum.txt.
 
     The FTP layout mirrors gwas_catalog_sumstats_url: the md5sum.txt sits beside the
     .tsv.gz in the study's bucket directory, with one "<md5> <filename>" line per file.
     The EBI FTP intermittently refuses connections under load, so the read is retried.
     """
-    bucket = gwas_catalog_bucket(GcstAccession(accession))
+    bucket = gwas_catalog_bucket(accession)
     url = f"{_FTP_ROOT}/{bucket}/{accession}/md5sum.txt"
     filename = f"{accession}.tsv.gz"
     text = call_with_retries(
@@ -207,7 +224,7 @@ def _fetch_sumstats_md5(accession: str) -> str:
     raise AssertionError(f"{filename} not listed in {url}")
 
 
-def fetch_sumstats_md5s(accessions: list[str]) -> dict[str, str]:
+def fetch_sumstats_md5s(accessions: list[GcstAccession]) -> dict[GcstAccession, str]:
     """Fetch the .tsv.gz md5 for every accession, in parallel over the tiny requests."""
     with ThreadPoolExecutor(max_workers=_MD5_FETCH_WORKERS) as pool:
         md5s = list(pool.map(_fetch_sumstats_md5, accessions))
@@ -226,7 +243,7 @@ def published_aptamers(aptamer_info_path: Path) -> pd.DataFrame:
 
 def build_resolver(
     published: pd.DataFrame,
-) -> Callable[[str], tuple[str, str]]:
+) -> Callable[[Trait], tuple[Analyte, ResolveRule]]:
     """Return a resolver mapping a trait to (analyte, rule), closed over the
     published aptamers. The second element names the rule that matched, for reporting.
 
@@ -237,21 +254,21 @@ def build_resolver(
       3. the same, case-insensitively;
       4. a hardcoded override for three Casein kinase II traits (see _TRAIT_OVERRIDES).
     """
-    exact: dict[str, list[str]] = {}
-    lower: dict[str, list[str]] = {}
+    exact: dict[str, list[Analyte]] = {}
+    lower: dict[str, list[Analyte]] = {}
     for analyte, target in zip(
         published[_ANALYTES_COL], published[_TARGET_FULL_NAME_COL]
     ):
         key = f"{target} levels"
-        exact.setdefault(key, []).append(analyte)
-        lower.setdefault(key.lower(), []).append(analyte)
+        exact.setdefault(key, []).append(Analyte(analyte))
+        lower.setdefault(key.lower(), []).append(Analyte(analyte))
 
-    def resolve(trait: str) -> tuple[str, str]:
+    def resolve(trait: Trait) -> tuple[Analyte, ResolveRule]:
         if trait in _TRAIT_OVERRIDES:
             return _TRAIT_OVERRIDES[trait], "override"
         match = _ANALYTE_IN_TRAIT_PATTERN.search(trait)
         if match is not None:
-            return match.group(1), "analyte_in_trait"
+            return Analyte(match.group(1)), "analyte_in_trait"
         if len(exact.get(trait, [])) == 1:
             return exact[trait][0], "exact_name"
         if len(lower.get(trait.lower(), [])) == 1:
@@ -262,18 +279,18 @@ def build_resolver(
 
 
 def build_manifest_rows(
-    studies: list[tuple[str, str]],
+    studies: list[tuple[GcstAccession, Trait]],
     published: pd.DataFrame,
-    md5_by_accession: dict[str, str],
+    md5_by_accession: dict[GcstAccession, str],
 ) -> list[dict]:
     """Resolve every study to an aptamer and assert a complete bijection."""
     resolve = build_resolver(published)
     published_analytes = set(published[_ANALYTES_COL])
 
     rows: list[dict] = []
-    rule_counts: dict[str, int] = {}
-    unresolved: list[tuple[str, str]] = []
-    used: dict[str, str] = {}  # analyte -> accession that claimed it
+    rule_counts: dict[ResolveRule, int] = {}
+    unresolved: list[tuple[GcstAccession, Trait]] = []
+    used: dict[Analyte, GcstAccession] = {}  # analyte -> accession that claimed it
     for accession, trait in studies:
         try:
             analyte, rule = resolve(trait)

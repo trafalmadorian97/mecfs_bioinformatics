@@ -26,3 +26,8 @@ SeqId = NewType("SeqId", str)
 
 # GWAS Catalog study accession, e.g. "GCST90421540".
 GcstAccession = NewType("GcstAccession", str)
+
+# GWAS Catalog trait label for a study, e.g. "Beta-crystallin B2 levels". Unique per
+# study; it is the only key the study metadata and the aptamer table share, so the
+# manifest resolver maps it to an Analyte (see regenerate_csf_manifest.py).
+Trait = NewType("Trait", str)
