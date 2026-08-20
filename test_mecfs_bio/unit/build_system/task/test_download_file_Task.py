@@ -20,7 +20,13 @@ from mecfs_bio.util.download.verify import calc_md5_checksum, head_file, verify_
 class FakeWFDownloader(WFDownloader):
     source_file: Path
 
-    def download(self, url: str, local_path: Path, md5_hash: str | None) -> None:
+    def download(
+        self,
+        url: str,
+        local_path: Path,
+        md5_hash: str | None,
+        request_connections: int | None = None,
+    ) -> None:
         shutil.copyfile(self.source_file, local_path)
         verify_hash(
             downloaded_file=local_path,

@@ -71,6 +71,13 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 logger = structlog.get_logger()
 
+# The GWAS Catalog FTP throttles per connection (~0.5 MB/s), so a single-connection
+# pull of one ~193 MB aptamer file takes ~5 min; with 16 connections the same file
+# lands in ~12 s. Measured end to end, that is the difference between a ~3-week and a
+# ~2-day full build (7,008 files, sequential). See experiments/claude/logs for the
+# benchmark.
+_DOWNLOAD_CONNECTIONS = 16
+
 # Alignment output: beta, se, N, all float32. N is conceptually integer but stored as
 # float so downstream numeric users need no conversion (mirrors PPP).
 _ALIGNED_COLUMNS = [GWASLAB_BETA_COL, GWASLAB_SE_COL, GWASLAB_SAMPLE_SIZE_COLUMN]
@@ -274,6 +281,7 @@ class BuildSlimCsfAptamerParquetTask(GeneratingTask):
             url=self.aptamer.sumstats_url,
             local_path=gz_path,
             md5_hash=self.md5_hash,
+            request_connections=_DOWNLOAD_CONNECTIONS,
         )
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet.zstd"
         write_slim_aptamer_parquet(read_aptamer_sumstats(gz_path), index_df, out_path)
