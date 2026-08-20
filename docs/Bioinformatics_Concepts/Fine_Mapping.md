@@ -92,6 +92,7 @@ todo
 
 ## Links
 
-- [Primer on Fine Mapping by Ran Cui](https://www.youtube.com/watch?v=pglYf7wocSI)
-
+- [Primer on Fine Mapping by Ran Cui at the broad institute](https://www.youtube.com/watch?v=pglYf7wocSI)
+- [Talk on Mathematical Background of Fine Mapping by Ran Cui at 
+International Statistical Genetics Workshop](https://www.youtube.com/watch?v=hfRaMvdUFPo)
 - [Talk on SUSIE Fine Mapping Method by Matthew Stephens](https://www.youtube.com/watch?v=QL3YawgTPhc)

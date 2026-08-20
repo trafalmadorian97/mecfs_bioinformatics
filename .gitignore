@@ -295,3 +295,8 @@ experiments/claude/pops_standalone/
 
 #  No parquet datafiles
 *.parquet
+
+
+# worktrees
+
+worktrees
