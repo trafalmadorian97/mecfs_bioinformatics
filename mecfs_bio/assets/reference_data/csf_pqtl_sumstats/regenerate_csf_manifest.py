@@ -49,21 +49,30 @@ rather than silently at build time.
 Run via:
   pixi r python mecfs_bio/assets/reference_data/csf_pqtl_sumstats/regenerate_csf_manifest.py
 
-Downloads no summary statistics; it fetches only study metadata (a few MB of JSON)
-and the 826 KB aptamer table. Re-run to pick up any upstream re-curation, then diff
-the result against the committed manifest.
+Downloads no summary statistics; it fetches only study metadata (a few MB of JSON),
+the 826 KB aptamer table, and each study's tiny md5sum.txt (7,008 small requests, run
+in parallel) to record the .tsv.gz md5 the build later verifies. Re-run to pick up any
+upstream re-curation, then diff the result against the committed manifest.
 """
 
+import functools
 import json
 import re
 import tempfile
 import urllib.request
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+from urllib.error import URLError
 
 import pandas as pd
 
+from mecfs_bio.build_system.task.csf_database.gwas_catalog_url import (
+    gwas_catalog_bucket,
+)
+from mecfs_bio.constants.csf_database_constants import GcstAccession
 from mecfs_bio.util.download.verify import verify_hash
+from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 _DIR = Path(__file__).parent
 MANIFEST_PATH = _DIR / "csf_aptamer_manifest.csv"
@@ -124,21 +133,31 @@ _TRAIT_OVERRIDES = {
     "Casein kinase II alpha-2: beta heterotetramer levels": "X5226.36",  # CSNK2A2|CSNK2B
 }
 
+# GWAS Catalog publishes a per-study md5sum.txt next to the .tsv.gz, with one line
+# "<md5> <filename>" per file. We pin the md5 of the exact .tsv.gz each aptamer task
+# downloads, so a corrupted or re-deposited file fails the build's download check.
+_FTP_ROOT = "https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics"
+# Bounded concurrency for the 7,008 tiny md5sum.txt fetches; polite to the EBI FTP,
+# which refuses connections under a heavier burst.
+_MD5_FETCH_WORKERS = 8
+
 # Output manifest columns.
-_ANALYTE_MANIFEST_COLUMN = "analyte"
-_SEQ_ID_MANIFEST_COLUMN = "seq_id"
-_UNIPROT_MANIFEST_COLUMN = "uniprot"
-_ENTREZ_SYMBOL_MANIFEST_COLUMN = "entrez_gene_symbol"
-_TARGET_FULL_NAME_MANIFEST_COLUMN = "target_full_name"
-_ACCESSION_MANIFEST_COLUMN = "accession"
+ANALYTE_MANIFEST_COLUMN = "analyte"
+SEQ_ID_MANIFEST_COLUMN = "seq_id"
+UNIPROT_MANIFEST_COLUMN = "uniprot"
+ENTREZ_SYMBOL_MANIFEST_COLUMN = "entrez_gene_symbol"
+TARGET_FULL_NAME_MANIFEST_COLUMN = "target_full_name"
+ACCESSION_MANIFEST_COLUMN = "accession"
+MD5_MANIFEST_COLUMN = "md5"
 
 MANIFEST_COLUMNS = [
-    _ANALYTE_MANIFEST_COLUMN,
-    _SEQ_ID_MANIFEST_COLUMN,
-    _UNIPROT_MANIFEST_COLUMN,
-    _ENTREZ_SYMBOL_MANIFEST_COLUMN,
-    _TARGET_FULL_NAME_MANIFEST_COLUMN,
-    _ACCESSION_MANIFEST_COLUMN,
+    ANALYTE_MANIFEST_COLUMN,
+    SEQ_ID_MANIFEST_COLUMN,
+    UNIPROT_MANIFEST_COLUMN,
+    ENTREZ_SYMBOL_MANIFEST_COLUMN,
+    TARGET_FULL_NAME_MANIFEST_COLUMN,
+    ACCESSION_MANIFEST_COLUMN,
+    MD5_MANIFEST_COLUMN,
 ]
 
 
@@ -161,6 +180,38 @@ def download_aptamer_info(dest: Path) -> Path:
     urllib.request.urlretrieve(_BOX_DOWNLOAD_URL, dest)
     verify_hash(dest, _APTAMER_INFO_MD5)
     return dest
+
+
+def _read_md5sum_file(url: str) -> str:
+    with urllib.request.urlopen(url) as response:
+        return response.read().decode()
+
+
+def _fetch_sumstats_md5(accession: str) -> str:
+    """The published md5 of a study's {accession}.tsv.gz, read from its md5sum.txt.
+
+    The FTP layout mirrors gwas_catalog_sumstats_url: the md5sum.txt sits beside the
+    .tsv.gz in the study's bucket directory, with one "<md5> <filename>" line per file.
+    The EBI FTP intermittently refuses connections under load, so the read is retried.
+    """
+    bucket = gwas_catalog_bucket(GcstAccession(accession))
+    url = f"{_FTP_ROOT}/{bucket}/{accession}/md5sum.txt"
+    filename = f"{accession}.tsv.gz"
+    text = call_with_retries(
+        functools.partial(_read_md5sum_file, url), retry_on=(URLError,)
+    )
+    for line in text.splitlines():
+        parts = line.split()
+        if len(parts) == 2 and parts[1] == filename:
+            return parts[0]
+    raise AssertionError(f"{filename} not listed in {url}")
+
+
+def fetch_sumstats_md5s(accessions: list[str]) -> dict[str, str]:
+    """Fetch the .tsv.gz md5 for every accession, in parallel over the tiny requests."""
+    with ThreadPoolExecutor(max_workers=_MD5_FETCH_WORKERS) as pool:
+        md5s = list(pool.map(_fetch_sumstats_md5, accessions))
+    return dict(zip(accessions, md5s))
 
 
 def published_aptamers(aptamer_info_path: Path) -> pd.DataFrame:
@@ -211,7 +262,9 @@ def build_resolver(
 
 
 def build_manifest_rows(
-    studies: list[tuple[str, str]], published: pd.DataFrame
+    studies: list[tuple[str, str]],
+    published: pd.DataFrame,
+    md5_by_accession: dict[str, str],
 ) -> list[dict]:
     """Resolve every study to an aptamer and assert a complete bijection."""
     resolve = build_resolver(published)
@@ -244,12 +297,13 @@ def build_manifest_rows(
             symbol = info[_UNIPROT_COL]
         rows.append(
             {
-                _ANALYTE_MANIFEST_COLUMN: analyte,
-                _SEQ_ID_MANIFEST_COLUMN: info[_SEQID_COL],
-                _UNIPROT_MANIFEST_COLUMN: info[_UNIPROT_COL],
-                _ENTREZ_SYMBOL_MANIFEST_COLUMN: symbol,
-                _TARGET_FULL_NAME_MANIFEST_COLUMN: info[_TARGET_FULL_NAME_COL],
-                _ACCESSION_MANIFEST_COLUMN: accession,
+                ANALYTE_MANIFEST_COLUMN: analyte,
+                SEQ_ID_MANIFEST_COLUMN: info[_SEQID_COL],
+                UNIPROT_MANIFEST_COLUMN: info[_UNIPROT_COL],
+                ENTREZ_SYMBOL_MANIFEST_COLUMN: symbol,
+                TARGET_FULL_NAME_MANIFEST_COLUMN: info[_TARGET_FULL_NAME_COL],
+                ACCESSION_MANIFEST_COLUMN: accession,
+                MD5_MANIFEST_COLUMN: md5_by_accession[accession],
             }
         )
 
@@ -266,7 +320,7 @@ def build_manifest_rows(
 
 
 def write_manifest(rows: list[dict], manifest_path: Path) -> None:
-    rows_sorted = sorted(rows, key=lambda row: row[_ANALYTE_MANIFEST_COLUMN])
+    rows_sorted = sorted(rows, key=lambda row: row[ANALYTE_MANIFEST_COLUMN])
     frame = pd.DataFrame.from_records(rows_sorted, columns=MANIFEST_COLUMNS)
     # Every cell must be populated -- in particular the UniProt fallback in
     # build_manifest_rows must have filled every missing gene symbol, so no NaN
@@ -284,6 +338,8 @@ def main() -> None:
         f"expected {EXPECTED_STUDY_COUNT} studies, got {len(studies)}"
     )
     print(f"got {len(studies)} studies")
+    print("fetching per-study sumstats md5s from the GWAS Catalog FTP ...")
+    md5_by_accession = fetch_sumstats_md5s([accession for accession, _ in studies])
     print("downloading aptamer_info.xlsx from Box ...")
     # The xlsx is a transient input, not a committed asset: download it to a temp dir
     # so a re-run leaves no untracked binary in the tracked source tree. Only the CSV
@@ -291,7 +347,7 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         aptamer_info_path = download_aptamer_info(Path(tmp) / "aptamer_info.xlsx")
         published = published_aptamers(aptamer_info_path)
-        rows = build_manifest_rows(studies, published)
+        rows = build_manifest_rows(studies, published, md5_by_accession)
     write_manifest(rows, MANIFEST_PATH)
 
 

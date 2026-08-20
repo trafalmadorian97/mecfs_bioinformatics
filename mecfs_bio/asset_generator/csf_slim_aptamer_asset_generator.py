@@ -13,6 +13,13 @@ import polars as pl
 from attrs import frozen
 
 import mecfs_bio.assets.reference_data.csf_pqtl_sumstats as csf_assets
+from mecfs_bio.assets.reference_data.csf_pqtl_sumstats.regenerate_csf_manifest import (
+    ACCESSION_MANIFEST_COLUMN,
+    ANALYTE_MANIFEST_COLUMN,
+    ENTREZ_SYMBOL_MANIFEST_COLUMN,
+    MD5_MANIFEST_COLUMN,
+    SEQ_ID_MANIFEST_COLUMN,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
     BuildSlimCsfAptamerParquetTask,
@@ -27,19 +34,13 @@ from mecfs_bio.constants.csf_database_constants import (
 _CSF_SUMSTATS_DIR = Path(csf_assets.__file__).parent
 CSF_APTAMER_MANIFEST_PATH = _CSF_SUMSTATS_DIR / "csf_aptamer_manifest.csv"
 
-# Manifest columns (see regenerate_csf_manifest.py).
-_ANALYTE_COL = "analyte"
-_SEQ_ID_COL = "seq_id"
-_ENTREZ_SYMBOL_COL = "entrez_gene_symbol"
-_ACCESSION_COL = "accession"
-
 
 def _aptamer_file_from_row(row: dict) -> CsfAptamerFile:
     return CsfAptamerFile(
-        analyte=Analyte(row[_ANALYTE_COL]),
-        seq_id=SeqId(row[_SEQ_ID_COL]),
-        accession=GcstAccession(row[_ACCESSION_COL]),
-        entrez_gene_symbol=row[_ENTREZ_SYMBOL_COL],
+        analyte=Analyte(row[ANALYTE_MANIFEST_COLUMN]),
+        seq_id=SeqId(row[SEQ_ID_MANIFEST_COLUMN]),
+        accession=GcstAccession(row[ACCESSION_MANIFEST_COLUMN]),
+        entrez_gene_symbol=row[ENTREZ_SYMBOL_MANIFEST_COLUMN],
     )
 
 
@@ -78,10 +79,11 @@ def generate_csf_slim_aptamer_tasks(
             index_task=index_task,
             aptamer=_aptamer_file_from_row(row),
             asset_id=(
-                f"csf_slim_{index_name}_{row[_ENTREZ_SYMBOL_COL]}_"
-                f"{_asset_id_token(row[_SEQ_ID_COL])}"
+                f"csf_slim_{index_name}_{row[ENTREZ_SYMBOL_MANIFEST_COLUMN]}_"
+                f"{_asset_id_token(row[SEQ_ID_MANIFEST_COLUMN])}"
             ),
             index_name=index_name,
+            md5_hash=row[MD5_MANIFEST_COLUMN],
         )
         for row in manifest.iter_rows(named=True)
     )
