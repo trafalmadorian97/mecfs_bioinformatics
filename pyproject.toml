@@ -2,11 +2,18 @@
 name = "biostatistics"
 version = "0.1.0"
 readme = "README.md"
-requires-python = "==3.12"
+requires-python = "==3.13"
 
-## pyproject.toml
-#[tool.pixi.pypi-options.dependency-overrides]
-#numpy = ">=2.0.0"
+# gwaslab 4.2.2 caps numpy<2, matplotlib<3.9, and pins pysam==0.22.1.  Those exact
+# versions have no cp313 wheels on PyPI, so on Python 3.13 they would each build from
+# sdist (and pysam 0.22.1's sdist fails to build under Cython 3).  Override the caps to
+# versions that ship cp313 wheels.  Verified: gwaslab uses no numpy-2.0-removed symbols,
+# and its matplotlib get_cmap calls are guarded (the one unguarded path, viz_plot_arc, is
+# not exercised by this repo).
+[tool.pixi.pypi-options.dependency-overrides]
+numpy = ">=2.1"
+matplotlib = ">=3.9.2"
+pysam = ">=0.24,<0.25"
 
 [tool.pixi.workspace]
 channels = [

@@ -188,7 +188,11 @@ class SusieRFinemapTask(Task):
             ).to_pandas()
             zscores_r = ro.conversion.get_conversion().py2rpy(zscores_pandas)
             ld_matrix_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
-        _save_adjustment(adjustment=float(adjustment), scratch_dir=scratch_dir)
+        # estimate_s_rss returns a length-1 array; numpy 2 forbids float() on a
+        # non-0-d array, so extract the scalar with .item() first.
+        _save_adjustment(
+            adjustment=float(np.asarray(adjustment).item()), scratch_dir=scratch_dir
+        )
 
         logger.debug("Running SUSIE")
         susie_result = susie_package.susie_rss(
