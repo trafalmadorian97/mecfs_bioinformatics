@@ -79,7 +79,7 @@
       "automerge": true
     },
     {
-      "description": "The Renovate Docker image ships several patch releases a day, one PR each. Only surface an update once the minor version moves (Renovate classes an update as patch only when major.minor are unchanged, so this leaves minor and major PRs intact).",
+      "description": "The Renovate Docker image ships several patch/minor releases a day, one PR each. Only surface an update once the major version moves.",
       "matchPackageNames": ["ghcr.io/renovatebot/renovate"],
       "matchUpdateTypes": ["minor", "patch"],
       "enabled": false
