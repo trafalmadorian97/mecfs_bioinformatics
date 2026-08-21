@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import png
 import structlog
 from attrs import frozen
-from upsetplot import UpSet, from_contents
+from vendored.upsetplot import UpSet, from_contents
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
