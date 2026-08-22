@@ -48,7 +48,7 @@ Rscript -e "if (!require('remotes', quietly=TRUE)) install.packages('remotes', r
 packages = ["mecfs_bio", "vendored"]
 
 [tool.pixi.activation]
-env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1" }
+env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1", PYTHON_BASIC_REPL="1" }
 
 [tool.pixi.feature.analysis.dependencies]
 pysam = ">=0.24,<0.25" #pysam is used by gwaslab
