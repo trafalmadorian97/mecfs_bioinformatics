@@ -99,7 +99,7 @@ def read_ld_scores(ld_dir: Path, n_chrom: int) -> tuple[pl.DataFrame, float]:
 
 def build_context() -> dict:
     """The regression SNP set: CSF index rows that carry an LD score, strand-ambiguous
-    SNPs dropped (matching build_ppp_ldsc_context's drop_strand_ambiguous=True), genome
+    SNPs dropped (matching build_batched_ldsc_context's drop_strand_ambiguous=True), genome
     sorted for the block jackknife. Returns row positions into the slim files, ld and M."""
     index = pl.read_parquet(INDEX_PATH).with_row_index("__row__")
     index = index.filter(~pl.col(CSF_INDEX_IS_STRAND_AMBIGUOUS_COL))

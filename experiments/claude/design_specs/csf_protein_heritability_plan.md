@@ -18,11 +18,15 @@ path deferred).
 - **Shared row order confirmed by assertion** in `create()` (holds by construction from
   `BuildSlimCsfAptamerParquetTask`, which aligns every aptamer onto the one index).
 
-## Reused unchanged (no PPP edits)
+## Reused shared batched-LDSC machinery
 
-- `PppLdscContext` + `build_ppp_ldsc_context` — the CSF index already exposes
-  CHR/POS/rsID/`is_strand_ambiguous` (same column string), so the context builder works
-  as-is. Import and reuse; do not fork.
+Lifted out of `ppp_ldsc/` into `mecfs_bio/build_system/task/batched_ldsc/` (both databases
+now consume it):
+
+- `BatchedLdscContext` + `build_batched_ldsc_context` (was `PppLdscContext` /
+  `build_ppp_ldsc_context`) — the CSF index already exposes CHR/POS/rsID/`is_strand_ambiguous`
+  (same column string, now the neutral `BATCHED_LDSC_STRAND_AMBIGUOUS_COL`), so the context
+  builder works as-is. Import and reuse; do not fork.
 - `batched_h2` — takes a scalar N per aptamer; reuse directly (all-variants, no `exclude`).
 
 ## New code
@@ -60,7 +64,7 @@ path deferred).
   raises. (Mirrors PPP's `constant_sample_size` tests.)
 - Small Task-level smoke test with synthetic index + 2–3 tiny aligned aptamer parquets and
   a toy LD-score table, asserting one row per aptamer with the expected identity columns.
-- `batched_h2` / `build_ppp_ldsc_context` already validated — not re-tested.
+- `batched_h2` / `build_batched_ldsc_context` already validated — not re-tested.
 
 ## Out of scope (later)
 

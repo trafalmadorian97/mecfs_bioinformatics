@@ -7,7 +7,7 @@ window of the protein's gene, from Sun et al. 2023 ST3 hg38 gene coordinates) --
 config. Run the task twice to get both variant sets.
 
 All proteins share one variant-index row order, so the index<->LD-score alignment, LD scores, M and
-jackknife blocks are built once (PppLdscContext), the trait is aligned onto that set once
+jackknife blocks are built once (BatchedLdscContext), the trait is aligned onto that set once
 (align_trait_to_context) and its heritability estimated once (estimate_trait_context), and the
 per-protein work is a cheap batched weighted regression pair -- h2_protein and the trait-protein
 covariance (batched_rg). Following the GenomicSEM convention, the trait heritability is computed on
@@ -44,6 +44,11 @@ from mecfs_bio.build_system.task.base_task import (
     GeneratingTask,
     Task,
 )
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_context import (
+    BatchedLdscContext,
+    build_batched_ldsc_context,
+    build_cis_mask,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
@@ -59,11 +64,6 @@ from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_rg import (
     estimate_trait_context,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.gene_coords import read_gene_coords
-from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
-    PppLdscContext,
-    build_cis_mask,
-    build_ppp_ldsc_context,
-)
 from mecfs_bio.build_system.task.ppp_ldsc.trait_alignment import align_trait_to_context
 from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -210,7 +210,7 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         index_df = _read_index(self.index_task, fetch)
-        context = build_ppp_ldsc_context(
+        context = build_batched_ldsc_context(
             index_df,
             _read_table(self.ld_scores_task, fetch),
             drop_strand_ambiguous=self.config.drop_strand_ambiguous,
@@ -357,7 +357,7 @@ def _get_trait_columns(trait_lazy_df: narwhals.LazyFrame) -> list[str]:
 
 def _build_trait_context(
     trait_task: Task,
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     context_variants: pl.DataFrame,
     config: PppRgConfig,
     fetch: Fetch,
@@ -399,7 +399,7 @@ def _proteins_to_process(
 
 def _process_batch(
     batch: list[BuildSlimProteinParquetTask],
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     trait_ctx: TraitLdscContext,
     sample_sizes: dict[SynID, int],
     gene_coords: dict[Oid, GenomicInterval],
@@ -437,7 +437,7 @@ def _process_batch(
 
 
 def _read_protein_z(
-    protein_task: BuildSlimProteinParquetTask, context: PppLdscContext, fetch: Fetch
+    protein_task: BuildSlimProteinParquetTask, context: BatchedLdscContext, fetch: Fetch
 ) -> np.ndarray:
     """Signed protein z-score (BETA/SE, index-effect-allele oriented) at the context SNPs."""
     frame = (
@@ -458,7 +458,7 @@ def _read_protein_z(
 
 def _build_cis_exclude(
     oids: list[Oid],
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     gene_coords: dict[Oid, GenomicInterval],
     cis_window_bp: int,
 ) -> np.ndarray:

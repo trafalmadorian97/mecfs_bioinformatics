@@ -2,7 +2,7 @@
 Batched cross-trait LD-score-regression genetic correlation for the UKB-PPP database.
 
 One external trait is correlated against every protein. Because every protein's z-score is
-defined on the SAME shared SNP set (see ppp_ldsc_context), we process K proteins at once and
+defined on the SAME shared SNP set (see batched_ldsc_context), we process K proteins at once and
 run the three regressions each genetic correlation needs:
 
     rg = gcov(trait, protein) / sqrt(h2_trait * h2_protein)
@@ -36,7 +36,7 @@ import numpy as np
 from attrs import frozen
 from scipy.stats import norm
 
-from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import DEFAULT_N_BLOCKS
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_h2 import DEFAULT_N_BLOCKS
 from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import (
     block_bounds,
     estimate_cov,

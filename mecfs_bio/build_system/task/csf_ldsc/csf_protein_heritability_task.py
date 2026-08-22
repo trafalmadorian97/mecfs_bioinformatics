@@ -5,7 +5,7 @@ LD-score regression.
 This is the CSF analogue of PppProteinHeritabilityTask, deliberately reusing that
 pipeline's shared machinery: every aptamer's slim file stores beta/se/N in the SAME CSF
 variant-index row order, so the index<->LD-score alignment, LD scores, M and the
-jackknife blocks are built once (build_ppp_ldsc_context / PppLdscContext) and the
+jackknife blocks are built once (build_batched_ldsc_context / BatchedLdscContext) and the
 per-aptamer work is a cheap batched weighted regression (batched_h2).
 
 Two differences from the PPP task:
@@ -38,16 +38,16 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
-from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
-    BuildSlimCsfAptamerParquetTask,
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_context import (
+    BatchedLdscContext,
+    build_batched_ldsc_context,
 )
-from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import (
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_h2 import (
     DEFAULT_N_BLOCKS,
     batched_h2,
 )
-from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
-    PppLdscContext,
-    build_ppp_ldsc_context,
+from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
+    BuildSlimCsfAptamerParquetTask,
 )
 from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
@@ -202,7 +202,7 @@ def _build_context(
     ld_scores_task: Task,
     config: CsfHeritabilityConfig,
     fetch: Fetch,
-) -> PppLdscContext:
+) -> BatchedLdscContext:
     index_df = (
         scan_dataframe_asset(
             fetch(index_task.asset_id),
@@ -213,7 +213,7 @@ def _build_context(
         .collect()
         .to_polars()
     )
-    return build_ppp_ldsc_context(
+    return build_batched_ldsc_context(
         index_df,
         _read_table(ld_scores_task, fetch),
         drop_strand_ambiguous=config.drop_strand_ambiguous,
@@ -236,7 +236,7 @@ def _read_table(task: Task, fetch: Fetch) -> pl.DataFrame:
 
 def _process_batch(
     batch: list[BuildSlimCsfAptamerParquetTask],
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     config: CsfHeritabilityConfig,
     fetch: Fetch,
 ) -> list[dict]:
@@ -273,7 +273,7 @@ def _process_batch(
 
 def _read_aptamer_chi2(
     aptamer_task: BuildSlimCsfAptamerParquetTask,
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     fetch: Fetch,
 ) -> tuple[np.ndarray, float]:
     """Return the aptamer's chi^2 at the context SNPs, plus its median sample size N over
