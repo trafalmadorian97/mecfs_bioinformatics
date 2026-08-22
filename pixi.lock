@@ -535,7 +535,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/7c/28/693e1d9ebf72baa062ded80d837a035b86ce75eda5a269379e9e2b1008a8/responses-0.26.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7d/56/a99f0f159cce5b26d267317d436afee184f45fc7911938757d7cbbd2d10c/gdown-6.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/5f/7c22733da92b3a6cc4dddcaa8731089d213c2790bbc997e51c429a4e8f8b/dask-2026.7.1-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/7e/85/a5bfaebfd305ac18b57b0854d74e37e586809061a91fda62f0bd50c8518e/narwhals-2.24.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/7f/3e/5db95bcf282c52709639744ca2a8b149baccf648e39c8cc87553df9eae0c/urllib3-2.7.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/80/56/60547f7801b97c67e97491dc3d9ade9fbccbd0325058fd3dfcb2f5d98d90/cattrs-26.1.0-py3-none-any.whl
@@ -631,6 +630,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e7/23/ff077e61886ee020a17ce9c8b6fa11c601c8d8345b09ea24f605445df62a/opentelemetry_sdk-1.44.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e8/f7/47bddf95492f4d1370ed7164d2b16407805e8eeb38231361de65d387a562/matplotlib-venn-1.1.2.tar.gz
+      - pypi: https://files.pythonhosted.org/packages/eb/dc/55481808fd70ef1567cf13540ffd4702af3f74b112e35427564b03f79c2d/narwhals-2.25.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/eb/dc/ad025c1ee131eba60c69f4dd5779b18fcf1e6b21a343e2162a84d5d133c7/soupsieve-2.9.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ec/57/56b9bcc3c9c6a792fcbaf139543cee77261f3651ca9da0c93f5c1221264b/python_dateutil-2.9.0.post0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ee/7d/b0f3d082a0597916db7e7488ef8397a330fd0e3af1331dc651464e7bf99e/rpy2-3.6.7-py3-none-any.whl
@@ -9770,27 +9770,6 @@ packages:
   - pytest-xdist ; extra == 'test'
   - pre-commit ; extra == 'test'
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/7e/85/a5bfaebfd305ac18b57b0854d74e37e586809061a91fda62f0bd50c8518e/narwhals-2.24.0-py3-none-any.whl
-  name: narwhals
-  version: 2.24.0
-  sha256: 42fdedf44e5b2ca7505630d45b4ac3058f38d8485cba9fe1652ca23152df7489
-  requires_dist:
-  - cudf-cu12>=24.10.0 ; sys_platform == 'linux' and extra == 'cudf'
-  - dask[dataframe]>=2024.8 ; extra == 'dask'
-  - duckdb>=1.1 ; extra == 'duckdb'
-  - ibis-framework>=6.0.0 ; extra == 'ibis'
-  - packaging>=21.3 ; extra == 'ibis'
-  - pyarrow-hotfix>=0.7 ; extra == 'ibis'
-  - modin>=0.22.0 ; extra == 'modin'
-  - pandas>=1.3.4 ; extra == 'pandas'
-  - polars>=0.20.4 ; extra == 'polars'
-  - pyarrow>=13.0.0 ; extra == 'pyarrow'
-  - pyspark>=3.5.0 ; extra == 'pyspark'
-  - pyspark[connect]>=3.5.0 ; extra == 'pyspark-connect'
-  - narwhals[duckdb] ; extra == 'sql'
-  - sqlparse>=0.5.5 ; extra == 'sql'
-  - sqlframe>=3.22.0,!=3.39.3 ; extra == 'sqlframe'
-  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/7e/f5/f66802a942d491edb555dd61e3a9961140fd64c90bce1eafd741609d334d/httpcore-1.0.9-py3-none-any.whl
   name: httpcore
   version: 1.0.9
@@ -11037,6 +11016,27 @@ packages:
   - numpy
   - scipy
   - shapely ; extra == 'shapely'
+- pypi: https://files.pythonhosted.org/packages/eb/dc/55481808fd70ef1567cf13540ffd4702af3f74b112e35427564b03f79c2d/narwhals-2.25.0-py3-none-any.whl
+  name: narwhals
+  version: 2.25.0
+  sha256: 1f0f403e8c7e4463cde9bfe78b12fdd809e3ae3dda6d9b2f802934fb9c7a6a8f
+  requires_dist:
+  - cudf-cu12>=24.10.0 ; sys_platform == 'linux' and extra == 'cudf'
+  - dask[dataframe]>=2024.8 ; extra == 'dask'
+  - duckdb>=1.1 ; extra == 'duckdb'
+  - ibis-framework>=6.0.0 ; extra == 'ibis'
+  - packaging>=21.3 ; extra == 'ibis'
+  - pyarrow-hotfix>=0.7 ; extra == 'ibis'
+  - modin>=0.22.0 ; extra == 'modin'
+  - pandas>=1.3.4 ; extra == 'pandas'
+  - polars>=0.20.4 ; extra == 'polars'
+  - pyarrow>=13.0.0 ; extra == 'pyarrow'
+  - pyspark>=3.5.0 ; extra == 'pyspark'
+  - pyspark[connect]>=3.5.0 ; extra == 'pyspark-connect'
+  - narwhals[duckdb] ; extra == 'sql'
+  - sqlparse>=0.5.5 ; extra == 'sql'
+  - sqlframe>=3.22.0,!=3.39.3 ; extra == 'sqlframe'
+  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/eb/dc/ad025c1ee131eba60c69f4dd5779b18fcf1e6b21a343e2162a84d5d133c7/soupsieve-2.9.2-py3-none-any.whl
   name: soupsieve
   version: 2.9.2
