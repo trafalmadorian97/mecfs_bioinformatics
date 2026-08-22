@@ -3,10 +3,7 @@ Per-aptamer SNP heritability for the Western et al. 2024 CSF pQTL database via b
 LD-score regression.
 
 This is the CSF analogue of PppProteinHeritabilityTask, deliberately reusing that
-pipeline's shared machinery: every aptamer's slim file stores beta/se/N in the SAME CSF
-variant-index row order, so the index<->LD-score alignment, LD scores, M and the
-jackknife blocks are built once (build_batched_ldsc_context / BatchedLdscContext) and the
-per-aptamer work is a cheap batched weighted regression (batched_h2).
+pipeline's shared machinery.
 
 Two differences from the PPP task:
   - Only all-variants heritability is produced (no cis-excluded set), so there is one
@@ -107,8 +104,7 @@ def median_sample_size(n_at_context: np.ndarray, label: str) -> float:
     """The single N to use for an aptamer: the median of its per-variant N over the
     variants present at the context SNPs (absent variants are NaN and ignored). CSF N is
     effectively constant over the regression SNPs (see the n_spread probe), so the median
-    is a faithful scalar; unlike the PPP equality assert it tolerates the thin low-N tail.
-    label identifies the aptamer in the failure message."""
+    is a faithful scalar """
     finite = n_at_context[np.isfinite(n_at_context)]
     assert finite.size > 0, (
         f"aptamer {label} has {NO_PRESENT_VARIANTS_ERR} among its context SNPs; "
