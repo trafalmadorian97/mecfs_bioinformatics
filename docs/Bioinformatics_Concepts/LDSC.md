@@ -344,7 +344,7 @@ The issue of the implausibility of isotropic polygenicity is partially resolved 
 
 ## Population stratification and LDSC
 
-In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by population stratification.
+In addition to estimating heritability from GWAS summary statistics, LDSC can also detect confounding by [population stratification](../Bioinformatics_Concepts/Population_Stratification.md).
 
 
 ### Overview

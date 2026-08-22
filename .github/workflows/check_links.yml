@@ -28,7 +28,7 @@ jobs:
       - uses: prefix-dev/setup-pixi@v0.10.1
         name: Setup Pixi Environment
         with:
-          pixi-version: v0.76.2
+          pixi-version: v0.77.0
           cache: true
       - name: Download figures
         run: pixi r invoke pfig
@@ -38,7 +38,7 @@ jobs:
         # Fetch the streak state file written by the most recent prior run of
         # this workflow. If no prior artifact exists yet (e.g. the very first
         # run after this change) we silently proceed with an empty state.
-        uses: dawidd6/action-download-artifact@v23
+        uses: dawidd6/action-download-artifact@v24
         with:
           workflow: check_links.yml
           name: link-check-state

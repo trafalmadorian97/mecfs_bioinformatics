@@ -18,6 +18,7 @@ from scipy.stats import t
 from tqdm import tqdm
 
 FloatArray = npt.NDArray[np.float64]
+IntArray = npt.NDArray[np.intp]
 ArrayLike1D = npt.ArrayLike
 
 
@@ -423,7 +424,7 @@ def estimate_lcv_moments(
     )
 
 
-def leave_one_block_out_indices(n_snps: int, n_blocks: int) -> Iterable[FloatArray]:
+def leave_one_block_out_indices(n_snps: int, n_blocks: int) -> Iterable[IntArray]:
     """
     Yield index arrays corresponding to leave-one-block-out subsets.
 

@@ -42,7 +42,6 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
-    ADJUSTMENT_VALUE_FILENAME,
     CS_DATA_SUBDIR,
     PIP_COLUMN,
     PIP_FILENAME,
@@ -254,6 +253,11 @@ def test_fine_mapping(
 ):
     """
     Test that we can find the causal SNPs in a simple synthetic example
+
+
+    NOTE: A previous version of this test tested the adjustment factor.
+    However, because the test data used in this test involves a common factor shared across all SNPs,
+    SUSIE's method of adjustment factor calculation is somewhat unreliable.  So test of adjustment factor was dropped
     """
     gwas_data_task, ld_labels_task, ld_matrix_task, causal_variants = (
         susie_prerequisite_file_tasks
@@ -300,8 +304,6 @@ def test_fine_mapping(
     asset = store[susie_tsk.asset_id]
     assert isinstance(asset, DirectoryAsset)
     suise_out_path = asset.path
-    adjustment = pd.read_parquet(suise_out_path / ADJUSTMENT_VALUE_FILENAME)
-    assert float(adjustment.iloc[0].item()) <= 0.01
     pip = pd.read_parquet(suise_out_path / PIP_FILENAME)
     for cv in causal_variants:
         assert pip[PIP_COLUMN].iloc[cv] >= 0.95
