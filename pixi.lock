@@ -8551,7 +8551,7 @@ packages:
   timestamp: 1784296404889
 - pypi: ./
   name: biostatistics
-  requires_python: ==3.13
+  requires_python: ~=3.13
 - pypi: https://files.pythonhosted.org/packages/03/49/d10027df9fce941cb8184e78a02857af36360d33e1721df81c5ed2179a1a/async_lru-2.0.5-py3-none-any.whl
   name: async-lru
   version: 2.0.5
