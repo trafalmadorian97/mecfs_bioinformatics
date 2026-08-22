@@ -2174,6 +2174,7 @@ packages:
   - libstdcxx-devel_linux-64 16.1.0 h41cdd0d_103
   - sysroot_linux-64
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 85982254
@@ -2218,6 +2219,7 @@ packages:
   - libstdcxx >=16.1.0
   - sysroot_linux-64
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 21018980
@@ -2226,6 +2228,7 @@ packages:
   sha256: 4c789f6e6ae235538abc18b6739b494a82e494aef94ac7b9242de2e19ebe4cdf
   md5: 83dcd17d67a68a6875deff2bd4ac49be
   license: Apache-2.0
+  license_family: APACHE
   purls: []
   run_exports: {}
   size: 13564024
@@ -2327,6 +2330,7 @@ packages:
   - sysroot_linux-64
   - tzdata
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 16633430
@@ -2920,6 +2924,7 @@ packages:
   - libgcc-ng ==16.1.0=*_3
   - libgomp 16.1.0 he0feb66_3
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 1058775
@@ -2930,6 +2935,7 @@ packages:
   depends:
   - libgcc 16.1.0 ha9f2e26_3
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports:
     strong:
@@ -2944,6 +2950,7 @@ packages:
   constrains:
   - libgfortran-ng ==16.1.0=*_3
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 28260
@@ -2957,6 +2964,7 @@ packages:
   constrains:
   - libgfortran 16.1.0
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 2539158
@@ -3035,6 +3043,7 @@ packages:
   depends:
   - __glibc >=2.17,<3.0.a0
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports:
     strong:
@@ -3462,6 +3471,7 @@ packages:
   - libgcc >=16.1.0
   - libstdcxx >=16.1.0
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports:
     weak:
@@ -3508,6 +3518,7 @@ packages:
   constrains:
   - libstdcxx-ng ==16.1.0=*_3
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 6626421
@@ -3518,6 +3529,7 @@ packages:
   depends:
   - libstdcxx 16.1.0 h934c35e_3
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports:
     strong:
@@ -4065,6 +4077,7 @@ packages:
   constrains:
   - __glibc >=2.17
   license: BSD-3-Clause
+  license_family: BSD
   purls: []
   run_exports: {}
   size: 33304564
@@ -7254,6 +7267,7 @@ packages:
   depends:
   - __unix
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 3101258
@@ -7264,6 +7278,7 @@ packages:
   depends:
   - __unix
   license: GPL-3.0-only WITH GCC-exception-3.1
+  license_family: GPL
   purls: []
   run_exports: {}
   size: 23454577
