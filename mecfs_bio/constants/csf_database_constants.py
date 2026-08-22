@@ -24,6 +24,10 @@ Analyte = NewType("Analyte", str)
 # SomaScan sequence id, e.g. "13681-173" (the analyte with a different separator).
 SeqId = NewType("SeqId", str)
 
+# UniProt accession of the aptamer's protein target, e.g. "P07602". Unlike the gene
+# symbol it is a stable database key, so downstream tables identify the target by it.
+UniProtId = NewType("UniProtId", str)
+
 # GWAS Catalog study accession, e.g. "GCST90421540".
 GcstAccession = NewType("GcstAccession", str)
 

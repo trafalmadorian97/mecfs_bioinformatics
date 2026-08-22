@@ -49,6 +49,7 @@ from mecfs_bio.constants.csf_database_constants import (
     Analyte,
     GcstAccession,
     SeqId,
+    UniProtId,
 )
 from mecfs_bio.constants.gwas_ssf_constants import (
     GWAS_SSF_BETA_COL,
@@ -223,13 +224,15 @@ class CsfAptamerFile:
 
     analyte is the SomaScan analyte id (primary key, e.g. X13681.173); seq_id is the
     same aptamer in dash form (13681-173); accession is the GWAS Catalog study whose
-    GWAS-SSF file holds the sumstats. entrez_gene_symbol names the target for asset
-    layout, but does not identify the aptamer (it is not unique).
+    GWAS-SSF file holds the sumstats. uniprot is the stable database key for the protein
+    target; entrez_gene_symbol names the target for asset layout, but neither identifies
+    the aptamer (both can be shared across aptamers).
     """
 
     analyte: Analyte
     seq_id: SeqId
     accession: GcstAccession
+    uniprot: UniProtId
     entrez_gene_symbol: str
 
     @property

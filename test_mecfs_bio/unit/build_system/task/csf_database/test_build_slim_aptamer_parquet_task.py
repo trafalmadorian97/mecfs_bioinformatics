@@ -16,6 +16,7 @@ from mecfs_bio.constants.csf_database_constants import (
     Analyte,
     GcstAccession,
     SeqId,
+    UniProtId,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -39,6 +40,7 @@ def test_csf_aptamer_file_sumstats_url():
         analyte=Analyte("X13681.173"),
         seq_id=SeqId("13681-173"),
         accession=GcstAccession("GCST90421540"),
+        uniprot=UniProtId("P19784"),
         entrez_gene_symbol="CSNK2A2",
     )
     assert aptamer.sumstats_url.endswith(

@@ -19,6 +19,7 @@ from mecfs_bio.assets.reference_data.csf_pqtl_sumstats.regenerate_csf_manifest i
     ENTREZ_SYMBOL_MANIFEST_COLUMN,
     MD5_MANIFEST_COLUMN,
     SEQ_ID_MANIFEST_COLUMN,
+    UNIPROT_MANIFEST_COLUMN,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
@@ -29,6 +30,7 @@ from mecfs_bio.constants.csf_database_constants import (
     Analyte,
     GcstAccession,
     SeqId,
+    UniProtId,
 )
 
 _CSF_SUMSTATS_DIR = Path(csf_assets.__file__).parent
@@ -40,6 +42,7 @@ def _aptamer_file_from_row(row: dict) -> CsfAptamerFile:
         analyte=Analyte(row[ANALYTE_MANIFEST_COLUMN]),
         seq_id=SeqId(row[SEQ_ID_MANIFEST_COLUMN]),
         accession=GcstAccession(row[ACCESSION_MANIFEST_COLUMN]),
+        uniprot=UniProtId(row[UNIPROT_MANIFEST_COLUMN]),
         entrez_gene_symbol=row[ENTREZ_SYMBOL_MANIFEST_COLUMN],
     )
 
