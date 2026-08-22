@@ -21,6 +21,7 @@ from pathlib import Path, PurePath
 
 import numpy as np
 import polars as pl
+import scipy.stats
 import structlog
 from attrs import frozen
 
@@ -61,6 +62,7 @@ from mecfs_bio.constants.csf_ldsc_constants import (
     CSF_H2_MEAN_CHI2_COL,
     CSF_H2_N_BAR_COL,
     CSF_H2_N_SNPS_COL,
+    CSF_H2_P_COL,
     CSF_H2_UNIPROT_COL,
     CSF_H2_VARIANT_SET_COL,
     CSF_VARIANT_SET_ALL,
@@ -104,13 +106,20 @@ def median_sample_size(n_at_context: np.ndarray, label: str) -> float:
     """The single N to use for an aptamer: the median of its per-variant N over the
     variants present at the context SNPs (absent variants are NaN and ignored). CSF N is
     effectively constant over the regression SNPs (see the n_spread probe), so the median
-    is a faithful scalar """
+    is a faithful scalar"""
     finite = n_at_context[np.isfinite(n_at_context)]
     assert finite.size > 0, (
         f"aptamer {label} has {NO_PRESENT_VARIANTS_ERR} among its context SNPs; "
         "cannot recover a sample size"
     )
     return float(np.median(finite))
+
+
+def _h2_p_value(h2: float, h2_se: float) -> float:
+    """Two-sided Wald p-value for h2 != 0 from the jackknife SE, matching the shared
+    z = estimate / SE, p = 2 * norm.sf(|z|) convention (see ComputePFromBetaSEPipeIfNeeded)."""
+    z = h2 / h2_se
+    return float(2.0 * scipy.stats.norm.sf(abs(z)))
 
 
 @frozen
@@ -257,6 +266,7 @@ def _process_batch(
                 CSF_H2_VARIANT_SET_COL: CSF_VARIANT_SET_ALL,
                 CSF_H2_H2_COL: float(res.h2[j]),
                 CSF_H2_H2_SE_COL: float(res.h2_se[j]),
+                CSF_H2_P_COL: _h2_p_value(float(res.h2[j]), float(res.h2_se[j])),
                 CSF_H2_INTERCEPT_COL: float(res.intercept[j]),
                 CSF_H2_MEAN_CHI2_COL: float(res.mean_chi2[j]),
                 CSF_H2_LAMBDA_GC_COL: float(res.lambda_gc[j]),

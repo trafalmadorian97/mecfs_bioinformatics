@@ -38,6 +38,7 @@ from mecfs_bio.build_system.task.csf_ldsc.csf_protein_heritability_task import (
     NO_PRESENT_VARIANTS_ERR,
     CsfHeritabilityConfig,
     CsfProteinHeritabilityTask,
+    _h2_p_value,
     median_sample_size,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
@@ -55,6 +56,7 @@ from mecfs_bio.constants.csf_ldsc_constants import (
     CSF_H2_H2_COL,
     CSF_H2_N_BAR_COL,
     CSF_H2_N_SNPS_COL,
+    CSF_H2_P_COL,
     CSF_H2_UNIPROT_COL,
     CSF_H2_VARIANT_SET_COL,
     CSF_VARIANT_SET_ALL,
@@ -86,6 +88,12 @@ def test_median_sample_size_tolerates_low_n_tail():
 def test_median_sample_size_raises_when_all_absent():
     with pytest.raises(AssertionError, match=NO_PRESENT_VARIANTS_ERR):
         median_sample_size(np.array([np.nan, np.nan]), "APTAMER")
+
+
+def test_h2_p_value_two_sided_wald():
+    # z = 2 -> two-sided p = 2 * norm.sf(2) ~ 0.0455; h2 = 0 -> p = 1.
+    assert _h2_p_value(0.1, 0.05) == pytest.approx(0.04550026, rel=1e-6)
+    assert _h2_p_value(0.0, 0.05) == pytest.approx(1.0)
 
 
 # --------------------------------------------------------------------------------------
@@ -240,6 +248,12 @@ def test_task_produces_one_row_per_aptamer(tmp_path: Path):
     assert table[CSF_H2_H2_COL].null_count() == 0
     # Every SNP survives the (no-op) filters here, so all are used in the regression.
     assert table[CSF_H2_N_SNPS_COL].to_list() == [_N_SNPS, _N_SNPS]
+    # p column present and a valid probability for every aptamer.
+    p = table[CSF_H2_P_COL]
+    assert p.null_count() == 0
+    p_values = p.to_numpy()
+    assert np.all(p_values >= 0.0)
+    assert np.all(p_values <= 1.0)
 
 
 def test_create_rejects_aptamer_aligned_to_other_index(tmp_path: Path):
