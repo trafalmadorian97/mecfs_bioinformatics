@@ -2,41 +2,41 @@
 
 ## Causal privilege
 
-Suppose  we run an epidemiological study to understanding the effect of variable $A$ on variable $B$.  We detect an association between $A$ and $B$. Generally speaking, there are three possibilities.
+Suppose  we run an epidemiological study to understanding the effect of variable A on variable B.  We detect an association between A and B. Generally speaking, there are three possibilities.
 
 
-- **Forward causality**: $A$ causes $B$.
+- **Forward causality**: A causes B.
 
 
 ``` mermaid
 graph LR
-A($$A$$) --> B($$B$$);
+A(A) --> B(B);
 ```
 
 
-- **Reverse causality**: $B$ causes $A$.
+- **Reverse causality**: B causes A.
 
 
 ``` mermaid
 graph LR
-B($$B$$) --> A($$A$$);
+B(B) --> A(A);
 ```
 
 
-- **Confounding**: $A$ and $B$ are both caused by a third factor C.
+- **Confounding**: A and B are both caused by a third factor C.
 
 
 ``` mermaid
 graph LR
-C($$C$$) --> A($$A$$);
-C --> B($$B$$);
+C(C) --> A(A);
+C --> B(B);
 ```
 
 
 Determining what part of the association to attribute to each of these possibilities is a challenge that frustrates much traditional epidemiological research[@hernan2010causal].
 
 
-A key advantage of genetic epidemiology is that it is causally privileged.  Let $A$ be a person's genotype and $B$ be a phenotype of interest observed after birth.  In general:
+A key advantage of genetic epidemiology is that it is causally privileged.  Let A be a person's genotype and B be a phenotype of interest observed after birth.  In general:
 
 - A person's genotype is fixed at birth, so reverse causality can be ruled out.
 - Most kinds of environmental effects do not affect a person's genotype, so environmental confounding can be ruled out.
@@ -52,25 +52,25 @@ This causal privilege is a significant advantage, but it does not mean that gene
 
 ### Genetic population stratification
 
-Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating within a subpopulation has historically been more common than mating across subpopulations.  Normally, linkage disequilibrium in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  Genetic population stratification changes this.  For example SNP $P$ on chromosome 1 and SNP $Q$ on chromosome 2 may both be more common in a subpopulation than in the general population due to historical non-random mating.  Thus having $P$ increases your odds of being a member of the subpopulation, which increases your odds of having $Q$. $P$ and $Q$ are therefore correlated, despite being on different chromosomes. The concept is illustrated in the causal diagram below.
+Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating within a subpopulation has historically been more common than mating across subpopulations.  Normally, linkage disequilibrium in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  Genetic population stratification changes this.  For example SNP P on chromosome 1 and SNP Q on chromosome 2 may both be more common in a subpopulation than in the general population due to historical non-random mating.  Thus having  P increases your odds of being a member of the subpopulation, which increases your odds of having Q. P and Q are therefore correlated, despite being on different chromosomes. The concept is illustrated in the causal diagram below.
 
 
 
 ``` mermaid
 graph LR
-C(Subpopulation) --> A($$P$$);
-C --> B($$Q$$);
+C(Subpopulation) --> A(SNP P);
+C --> B(SNP Q);
 ```
 
 
 
-Suppose now that $P$ has a true causal effect on the phenotype of interest but $Q$ does not.  The long-range correlation between $P$ and $Q$ will produce a GWAS association of $Q$ with the phenotype, creating the false impression of causal GWAS hit in the vicinity of $Q$.  See below.
+Suppose now that P has a true causal effect on the phenotype of interest but Q does not.  The long-range correlation between P and Q will produce a GWAS association of Q with the phenotype, creating the false impression of causal GWAS hit in the vicinity of Q.  See below.
 
 
 ``` mermaid
 graph LR
-C(Subpopulation) --> A($$P$$);
-C --> B($$Q$$);
+C(Subpopulation) --> A(SNP P);
+C --> B(SNP Q);
 A --> D(Phenotype)
 ```
 
