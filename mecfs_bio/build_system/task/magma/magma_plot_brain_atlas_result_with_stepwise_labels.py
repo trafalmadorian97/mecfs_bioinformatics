@@ -111,6 +111,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         )
         sns.move_legend(ax, "upper left", bbox_to_anchor=(1.0, 1), fontsize="small")
         leg1 = ax.get_legend()
+        assert leg1 is not None  # move_legend above guarantees a legend exists
         significance_line = ax.axhline(
             y=sig_level,
             color="black",
