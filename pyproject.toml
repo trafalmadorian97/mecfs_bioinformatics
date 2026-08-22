@@ -45,7 +45,7 @@ mkdir -p r-libs && \
 Rscript -e "if (!require('remotes', quietly=TRUE)) install.packages('remotes', repos='https://cloud.r-project.org'); if (!requireNamespace('LAVA', quietly=TRUE)) remotes::install_github('josefin-werme/LAVA')"
 """
 [tool.setuptools]
-packages = ["mecfs_bio", "vendored", "vendored.upsetplot"]
+packages = ["mecfs_bio", "vendored"]
 
 [tool.pixi.activation]
 env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1" }
