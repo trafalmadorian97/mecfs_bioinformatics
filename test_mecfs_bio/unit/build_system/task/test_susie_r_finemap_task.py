@@ -42,7 +42,6 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopyTask
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
-    ADJUSTMENT_VALUE_FILENAME,
     CS_DATA_SUBDIR,
     PIP_COLUMN,
     PIP_FILENAME,
