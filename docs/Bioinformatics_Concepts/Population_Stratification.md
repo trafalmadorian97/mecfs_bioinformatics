@@ -2,7 +2,7 @@
 
 ## Causal privilege
 
-Suppose  we run an epidemiological study to understanding the effect of variable A on variable B.  We detect an association between A and B. Generally speaking, there are three possibilities.
+Suppose  we run an epidemiological study to understanding the effect of variable A on variable B.  We detect an association between A and B. There are three main possibilities.
 
 
 - **Forward causality**: A causes B.
