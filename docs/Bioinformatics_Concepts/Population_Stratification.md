@@ -111,7 +111,7 @@ Note that even in the extreme case where the phenotype is entirely environmental
 We have established that although associations from genetic studies are causally privileged, they can still be confounded by population stratification.  So what can be done?  There are a variety of techniques to mitigate the effects of population stratification.
 
 
-### Principle component regression
+### Controlling for PCs
 
 todo
 
