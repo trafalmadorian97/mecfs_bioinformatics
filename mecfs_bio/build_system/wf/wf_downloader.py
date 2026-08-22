@@ -15,14 +15,32 @@ class WFDownloader(ABC):
     """Downloads the file at a URL to a local path, verifying its md5 hash."""
 
     @abstractmethod
-    def download(self, url: str, local_path: Path, md5_hash: str | None) -> None:
-        """Download the file at url into local_path and verify its md5 hash."""
+    def download(
+        self,
+        url: str,
+        local_path: Path,
+        md5_hash: str | None,
+        request_connections: int | None = None,
+    ) -> None:
+        """Download the file at url into local_path and verify its md5 hash.
+
+        request_connections is an advisory request for how many parallel connections
+        to open for this one file (see Downloader.download); a downloader that cannot
+        vary its connection count is free to ignore it.
+        """
 
 
 class SimpleWFDownloader(WFDownloader):
     """Downloads via py3_wget, then verifies the hash separately."""
 
-    def download(self, url: str, local_path: Path, md5_hash: str | None) -> None:
+    def download(
+        self,
+        url: str,
+        local_path: Path,
+        md5_hash: str | None,
+        request_connections: int | None = None,
+    ) -> None:
+        # py3_wget is single-stream, so request_connections is ignored here.
         # py3_wget attempts to read the whole file to check md5.  doesn't work for large files.  So implement my own check
         py3_wget.download_file(
             url=url,
@@ -37,9 +55,16 @@ class SimpleWFDownloader(WFDownloader):
 class RobustWFDownloader(WFDownloader):
     """Downloads via aria2 with retries, suitable for large files."""
 
-    def download(self, url: str, local_path: Path, md5_hash: str | None) -> None:
+    def download(
+        self,
+        url: str,
+        local_path: Path,
+        md5_hash: str | None,
+        request_connections: int | None = None,
+    ) -> None:
         robust_download_with_aria(
             md5sum=md5_hash,
             url=url,
             dest=local_path,
+            request_connections=request_connections,
         )

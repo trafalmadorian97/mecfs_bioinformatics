@@ -29,7 +29,7 @@ from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_rg import (
     batched_rg,
     estimate_trait_context,
 )
-from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import build_ppp_ldsc_context
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_context import build_batched_ldsc_context
 from mecfs_bio.build_system.task.ppp_ldsc.trait_alignment import align_trait_to_context
 from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import run_ldsc
 from mecfs_bio.constants.gwaslab_constants import (
@@ -121,7 +121,7 @@ def _run_ldsc_rg(tmp: Path, rsids: list[str], z_trait: np.ndarray, z_protein: np
 
 
 def _our_rg(index_df: pl.DataFrame, m_total: float, ld: np.ndarray, z_trait: np.ndarray, z_protein: np.ndarray) -> np.ndarray:
-    context = build_ppp_ldsc_context(
+    context = build_batched_ldsc_context(
         index_df,
         pl.DataFrame({"SNP": index_df[GWASLAB_RSID_COL], "L2": ld}),
         m_total,
