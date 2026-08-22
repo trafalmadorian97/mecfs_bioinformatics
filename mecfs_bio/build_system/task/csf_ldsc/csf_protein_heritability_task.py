@@ -45,6 +45,7 @@ from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_h2 import (
     batched_h2,
 )
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
+    WESTERN_CSF_TRAIT_NAME,
     BuildSlimCsfAptamerParquetTask,
 )
 from mecfs_bio.build_system.task.task_util import produces_dataframe
@@ -99,7 +100,7 @@ class CsfHeritabilityConfig:
     n_blocks: int = DEFAULT_N_BLOCKS
     # Aptamers processed together per batched regression. Peak memory ~ n_snps * batch *
     # a few float64 arrays.
-    batch_size: int = 50
+    batch_size: int = 100
 
 
 def median_sample_size(n_at_context: np.ndarray, label: str) -> float:
@@ -187,7 +188,7 @@ class CsfProteinHeritabilityTask(GeneratingTask):
             )
         meta = ResultTableMeta(
             id=asset_id,
-            trait="western_csf",
+            trait=WESTERN_CSF_TRAIT_NAME,
             project="csf_heritability",
             sub_dir=PurePath("analysis"),
             extension=".parquet",

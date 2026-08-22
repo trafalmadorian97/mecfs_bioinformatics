@@ -70,6 +70,9 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 
+WESTERN_CSF_TRAIT_NAME = "western_csf_pqtl"
+
+
 logger = structlog.get_logger()
 
 # The GWAS Catalog FTP throttles per connection (~0.5 MB/s), so a single-connection
@@ -306,7 +309,7 @@ class BuildSlimCsfAptamerParquetTask(GeneratingTask):
         # sumstats), so trait/project come from the aptamer's gene, not a dep.
         meta = GWASSummaryDataFileMeta(
             id=AssetId(asset_id),
-            trait="western_csf_pqtl",
+            trait=WESTERN_CSF_TRAIT_NAME,
             project=aptamer.entrez_gene_symbol,
             sub_dir="aligned",
             project_path=PurePath(f"{index_name}_index/{asset_id}.parquet"),
