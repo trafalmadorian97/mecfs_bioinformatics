@@ -156,7 +156,7 @@ class B,D,E normal;
 class C conditioned;
 ```
 
-By conditioning on the subpopulation, we break the non-causal association between the phenotype and the environment.
+By conditioning on the subpopulation, we break the non-causal association between the phenotype and the SNP.
 
 
 
