@@ -12,12 +12,14 @@ def normalize_filename(filename: str) -> str:
 
 PlotlyWriteMode = Literal["cdn"]
 
+MatplotLibFormat = Literal["png", "pdf", "svg"]
 
 def write_plots_to_dir(
     path: Path,
     plots: Mapping[str, Union[Figure, matplotlib.figure.Figure]],
     plotly_js_mode: bool | PlotlyWriteMode = "cdn",
     plotly_mathjax_mode: bool | PlotlyWriteMode = False,
+    matplotlib_format: MatplotLibFormat = "png",
 ):
     path.mkdir(exist_ok=True, parents=True)
     for name, plot in plots.items():
@@ -29,8 +31,13 @@ def write_plots_to_dir(
                 include_mathjax=plotly_mathjax_mode,
             )
             print(f"wrote to {target}")
-        elif isinstance(plot, matplotlib.figure.Figure):
+        elif isinstance(plot, matplotlib.figure.Figure) and matplotlib_format == "png":
             target = str(path / normalize_filename(name)) + ".png"
+            plot.savefig(target)
+            print(f"wrote to {target}")
+
+        elif isinstance(plot, matplotlib.figure.Figure) and matplotlib_format == "svg":
+            target = str(path / normalize_filename(name)) + ".svg"
             plot.savefig(target)
             print(f"wrote to {target}")
         else:

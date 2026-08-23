@@ -96,6 +96,9 @@ class HBAMagmaTasks:
     magma_independent_cluster_plot: (
         MAGMAPlotBrainAtlasResultWithStepwiseLabels | None
     ) = None
+    magma_independent_cluster_plot_svg: (
+            MAGMAPlotBrainAtlasResultWithStepwiseLabels | None
+    ) = None
     independent_clusters_markdown_task: ConvertDataFrameToMarkdownTask | None = None
     magma_independent_clusters_csv: JoinDataFramesTask | None = None
 
@@ -104,6 +107,12 @@ class HBAMagmaTasks:
         self,
     ) -> MAGMAPlotBrainAtlasResultWithStepwiseLabels:
         return unwrap(self.magma_independent_cluster_plot)
+
+    @property
+    def magma_independent_cluster_plot_svg_unwrap(
+            self,
+    ) -> MAGMAPlotBrainAtlasResultWithStepwiseLabels:
+        return unwrap(self.magma_independent_cluster_plot_svg)
 
     @property
     def independent_clusters_markdown_task_unwrap(
@@ -115,6 +124,8 @@ class HBAMagmaTasks:
         result: list = [self.extracted_plot_task]
         if self.magma_independent_cluster_plot is not None:
             result += [self.magma_independent_cluster_plot]
+        if self.magma_independent_cluster_plot_svg is not None:
+            result += [self.magma_independent_cluster_plot_svg]
         if self.independent_clusters_markdown_task is not None:
             result += [self.independent_clusters_markdown_task]
         return result
@@ -262,11 +273,22 @@ def generate_human_brain_atlas_magma_tasks(
                 plot_options=hba_indep_plot_options,
             )
         )
+
+        magma_independent_cluster_plot_svg = (
+            MAGMAPlotBrainAtlasResultWithStepwiseLabels.create(
+                result_table_task=multiple_testing_task,
+                asset_id=base_name + "_hba_magma_independent_cluster_plot_svg",
+                stepwise_cluster_list_task=magma_hba_forward_select,
+                plot_options=hba_indep_plot_options,
+                plot_format="svg"
+            )
+        )
     else:
         magma_hba_filtered_spec_matrix = None
         magma_hba_conditional_analysis = None
         magma_hba_forward_select = None
         magma_independent_cluster_plot = None
+        magma_independent_cluster_plot_svg = None
         independent_clusters_markdown = None
         magma_independent_clusters_labeled_labeled = None
 
@@ -286,4 +308,5 @@ def generate_human_brain_atlas_magma_tasks(
         independent_clusters_markdown_task=independent_clusters_markdown,
         magma_independent_clusters_csv=magma_independent_clusters_labeled_labeled,
         extracted_plot_task=extracted_plot_task,
+        magma_independent_cluster_plot_svg=magma_independent_cluster_plot_svg,
     )
