@@ -1,11 +1,6 @@
 """
 The shared CSF pQTL variant index in HapMap3 mode.
 
-Templated off one aptamer's variants intersected with the HapMap3 membership list;
-its row order is the alignment slot for every per-aptamer slim file. The HapMap3
-membership list is reused unchanged from the PPP database (it is a normalized
-gwaslab snplist, independent of which proteomics dataset consumes it), so no CSF
-copy is built.
 """
 
 from mecfs_bio.assets.gwas.csf_pqtl.raw.csf_template_aptamer import (

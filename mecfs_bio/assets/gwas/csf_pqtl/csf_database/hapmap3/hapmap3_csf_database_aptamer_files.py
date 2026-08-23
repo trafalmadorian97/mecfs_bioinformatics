@@ -1,7 +1,6 @@
 """
-Slim per-aptamer beta/se/N files over the HapMap3 CSF pQTL database (Western et al.
-2024): one aligned parquet for each of the 7,008 aptamers, in the shared HapMap3
-variant index's row order.
+Note: Slim per-aptamer summary statistic files for the Western et al. CSF proteomics GWAS database.
+Includes only hapmap3 SNPs.
 """
 
 from mecfs_bio.asset_generator.csf_slim_aptamer_asset_generator import (

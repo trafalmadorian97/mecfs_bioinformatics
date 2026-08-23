@@ -1,10 +1,6 @@
 """
-Per-aptamer LDSC heritability over the HapMap3 Western et al. 2024 CSF pQTL database:
-all-variants SNP heritability for every aptamer.
+LDSC heritability for each aptamer in the Western et al. 2024 CSF proteomics database.
 
-Reuses the European HapMap3 LD-score reference (the same one the UKB-PPP heritability
-uses), whose LD structure matches the European-ancestry CSF cohort. Sample size is the
-median per-variant N per aptamer (see CsfProteinHeritabilityTask).
 """
 
 from mecfs_bio.assets.gwas.csf_pqtl.csf_database.hapmap3.hapmap3_csf_database_aptamer_files import (
