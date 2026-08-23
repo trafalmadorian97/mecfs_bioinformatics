@@ -11,6 +11,10 @@ Suppose that we run an epidemiological study with the aim of understanding the e
 ``` mermaid
 graph LR
 A(A) --> B(B);
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class A,B normal;
 ```
 
 
@@ -20,6 +24,10 @@ A(A) --> B(B);
 ``` mermaid
 graph LR
 B(B) --> A(A);
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class A,B normal;
 ```
 
 
@@ -30,6 +38,10 @@ B(B) --> A(A);
 graph LR
 C(C) --> A(A);
 C --> B(B);
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class A,B,C normal;
 ```
 
 
@@ -60,6 +72,11 @@ Genetic population stratification occurs when the population under study contain
 graph LR
 C(Subpopulation) --> A(SNP P);
 C --> B(SNP Q);
+
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class A,B,C normal;
 ```
 
 
@@ -72,6 +89,11 @@ graph LR
 C(Subpopulation) --> A(SNP P);
 C --> B(SNP Q);
 A --> D(Phenotype)
+
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class A,B,C,D normal;
 ```
 
 The non-causal association is induced by the backdoor path:
@@ -94,11 +116,16 @@ graph LR
 C(Subpopulation) --> D(Environment);
 C --> E(SNP)
 D --> B(Phenotype)
+
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class B,C,D,E normal;
 ```
 
 In the scenario illustrated by the diagram, an association will be induced between the SNP and the phenotype due to the non-causal pathway:
 
-- $\text{SNP}\gets\text{Subpopulation}\to \text{Environment} \to \text{Phenotype}$
+ $\text{SNP}\gets\text{Subpopulation}\to \text{Environment} \to \text{Phenotype}$
 
 Note that even in the extreme case where the phenotype is entirely environmental and does not depend on genetics at all, a combination of genetic and environmental population stratification can induce widespread genotype-phenotype associations.
 
