@@ -140,8 +140,30 @@ We have established that although associations from genetic studies are causally
 
 ### Controlling for PCs
 
-The classical causal inference strategy to remove confounding is to adjust for the confounder.
+The classical causal inference strategy to remove confounding is to adjust for the confounder, which in our case is subpopulation membership.  This strategy is illustrated in the causal diagram below, where (as is traditional in the causal inference literature) we draw a box around conditioned variables.
 
+
+``` mermaid
+graph LR
+C(Subpopulation) --> D(Environment);
+C --> E(SNP)
+D --> B(Phenotype)
+
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class B,D,E normal;
+class C conditioned;
+```
+
+By conditioning on the subpopulation, we break the non-causal association between the phenotype and the environment.
+
+
+
+Unfortunately, human population structure is sufficiently that it is difficult to see how we could ever gather information to fully condition on all possible subpopulation memberships.  Thus, we must use some kind of proxy.  Population genetics research indicates a person's membership in human subpopulations can be well-approximated by the allocation of their genotype to genetic principal components[@price2006principal]. Thus, a strategy to approximately adjust for confounding due to population stratification is as follows
+
+
+- Let  $X\in\mathbb{R}^{N\times M}$ denote the genotype matrix.
 
 ### REGENIE 
 
