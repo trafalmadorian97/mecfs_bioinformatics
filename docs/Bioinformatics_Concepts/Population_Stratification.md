@@ -2,10 +2,10 @@
 
 ## Causal privilege
 
-Suppose that we run an epidemiological study with the aim of understanding the effect of variable A on variable B.  We detect a statistical association between A and B. Generally speaking, there are three possible contributors to this association.
+Suppose we run an epidemiological study to understand the effect of variable A on variable B.  We detect an association between A and B. There are three main possibilities.
 
 
-- **Forward causality**: A causes B.
+- **Causality**: A causes B.
 
 
 ``` mermaid
@@ -45,16 +45,16 @@ class A,B,C normal;
 ```
 
 
-Determining what part of the association to attribute to each of these possibilities is a challenge that frustrates much of traditional epidemiological research[@hernan2010causal].
+Determining what part of the association to attribute to each of these possibilities is a challenge that frustrates much traditional epidemiological research[@hernan2010causal].
 
 
-A key advantage of genetic studies over traditional epidemiological research is that genetics is causally privileged.  To be more precise, suppose that A is a person's genotype and B is a phenotype of interest observed after birth.  In general:
+A key advantage of genetic epidemiology is that it is causally privileged.  Let A be a person's genotype and B be a phenotype of interest observed after birth.  In general:
 
 - A person's genotype is fixed at birth, so reverse causality can be ruled out.
 - Most kinds of environmental effects do not affect a person's genotype, so environmental confounding can be ruled out.
 
 
-Thus a genetic association is much more likely to reflect a forward causal effect than a general epidemiological association.
+Thus a genotype-phenotype association is much more likely to reflect a causal effect than a general epidemiological association.
 
 This causal privilege is a significant advantage, but it does not mean that genetic studies are free of causal inference considerations.  One such consideration is population stratification[@dattani2022clarifying].
 
@@ -64,7 +64,7 @@ This causal privilege is a significant advantage, but it does not mean that gene
 
 ### Genetic population stratification
 
-Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating with a subpopulation has historically been much more common than mating across subpopulations.  Genetic population stratification can create very-long range correlations between genetic variants.  Normally, linkage disequilibrium in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  However, genetic population stratification changes this.  For example SNP P on chromosome 1 and SNP Q on chromosome 2  may both be more common in a subpopulation than in the general population due to historical non-random mating.  Thus having SNP P makes you more likely to be member of the subpopulation, which increases your odds of having SNP Q. Thus SNP P and SNP Q are correlated, despite being on different chromosomes. The concept is illustrated by the causal diagram below.
+Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating within a subpopulation has historically been more common than mating across subpopulations.  Normally, linkage disequilibrium in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  Genetic population stratification changes this.  For example SNP P on chromosome 1 and SNP Q on chromosome 2 may both be more common in a subpopulation than in the general population due to historical non-random mating.  Thus having  P increases your odds of being a member of the subpopulation, which increases your odds of having Q. P and Q are therefore correlated, despite being on different chromosomes. The concept is illustrated in the causal diagram below.
 
 
 
@@ -81,7 +81,7 @@ class A,B,C normal;
 
 
 
-Suppose now that SNP P has a true causal effect on the phenotype of interest but SNP Q does not.  The long-range correlation between P and Q will produce a GWAS association of Q with the phenotype, creating the false impression of causal GWAS hit in the vicinity of Q.  This is illustrated below.
+Suppose now that P has a true causal effect on the phenotype of interest but Q does not.  The long-range correlation between P and Q will produce a GWAS association of Q with the phenotype, creating the false impression of causal GWAS hit in the vicinity of Q.  See below.
 
 
 ``` mermaid
@@ -99,7 +99,7 @@ class A,B,C,D normal;
 The non-causal association is induced by the backdoor path:
 
 $$
-Q \gets \text{Subpopulation} \to P \to \text{Phenotype}
+Q \gets \text{Subpopulation} \to P \to \text{Phenotype}.
 $$
 
 
@@ -108,7 +108,7 @@ $$
 It is common for different subpopulations to be exposed to different environments.  These different environments  may differentially affect the phenotype of interest.  This phenomena is called environmental population stratification.  On its own, environmental population stratification does not confound GWAS results.  
 
 
-However, if both genetic and environmental population stratification are present,  environmental stratification can combine with genetic stratification to induce non-causal GWAS associations.  Having both genetic and environmental stratification is a common scenario: genetically distinct people can inhabit distinct environments. A possible instance of this kind of confounding is illustrated below
+However, if both genetic and environmental population stratification are present,  environmental stratification can combine with genetic stratification to induce non-causal GWAS associations.  Having both genetic and environmental stratification is common: genetically distinct people often inhabit distinct environments. A possible instance of this kind of confounding is illustrated below
 
 
 ``` mermaid
@@ -123,11 +123,14 @@ classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
 class B,C,D,E normal;
 ```
 
-In the scenario illustrated by the diagram, an association will be induced between the SNP and the phenotype due to the non-causal pathway:
+In the scenario illustrated by the diagram, a non-causal association will be induced between the SNP and the phenotype due to the backdoor path: 
 
- $\text{SNP}\gets\text{Subpopulation}\to \text{Environment} \to \text{Phenotype}$
 
-Note that even in the extreme case where the phenotype is entirely environmental and does not depend on genetics at all, a combination of genetic and environmental population stratification can induce widespread genotype-phenotype associations.
+$$
+\text{SNP}\gets\text{Subpopulation}\to \text{Environment} \to \text{Phenotype}.
+$$
+
+Note that even in the extreme case where the phenotype is entirely environmental and does not depend on genetics at all, a combination of genetic and environmental population stratification can induce widespread genotype-phenotype association.
 
 
 ## Adjusting for stratification
@@ -135,9 +138,9 @@ Note that even in the extreme case where the phenotype is entirely environmental
 We have established that although associations from genetic studies are causally privileged, they can still be confounded by population stratification.  So what can be done?  There are a variety of techniques to mitigate the effects of population stratification.
 
 
-### Principle component regression
+### Controlling for PCs
 
-todo
+The classical causal inference strategy to remove confounding is to adjust for the confounder.
 
 
 ### REGENIE 
