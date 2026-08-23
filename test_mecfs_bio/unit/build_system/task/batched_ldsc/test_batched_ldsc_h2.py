@@ -8,7 +8,7 @@ few zero-weighted SNPs). This mirrors experiments/claude/ppp_ldsc/batched_vs_exa
 
 import numpy as np
 
-from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import (
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_h2 import (
     batched_h2,
     exact_h2_single,
 )

@@ -1,15 +1,15 @@
 import numpy as np
 import polars as pl
 
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_context import (
+    build_batched_ldsc_context,
+    build_cis_mask,
+)
 from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
     LD_SCORE_CHROM_COL,
     LD_SCORE_LD_SCORE_COL,
     LD_SCORE_M_5_50_COL,
     LD_SCORE_RSID_COL,
-)
-from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
-    build_cis_mask,
-    build_ppp_ldsc_context,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
@@ -49,7 +49,7 @@ def _ld() -> pl.DataFrame:
 
 
 def test_context_sorts_filters_and_maps_row_positions():
-    ctx = build_ppp_ldsc_context(
+    ctx = build_batched_ldsc_context(
         _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
     # rs_ambig (strand-ambiguous) and rs_mhc (MHC) dropped -> rs1, rs3, rs2 remain,
@@ -66,14 +66,14 @@ def test_context_sorts_filters_and_maps_row_positions():
 
 
 def test_context_can_keep_strand_ambiguous_and_mhc():
-    ctx = build_ppp_ldsc_context(
+    ctx = build_batched_ldsc_context(
         _index(), _ld(), drop_strand_ambiguous=False, exclude_mhc=False
     )
     assert ctx.n_snps == 5  # nothing dropped (rs4 still absent from the index)
 
 
 def test_build_cis_mask():
-    ctx = build_ppp_ldsc_context(
+    ctx = build_batched_ldsc_context(
         _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
     # Gene on chr1 at [150, 160]; window 60 -> cis covers [90, 220]: rs1(100), rs3(200).

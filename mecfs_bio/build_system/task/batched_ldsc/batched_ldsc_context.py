@@ -1,16 +1,15 @@
 """
-Shared, protein-invariant context for LDSC over the UKB-PPP database.
+Shared, assay-invariant context for batched LD-score regression over a pQTL database.
 
-Every per-protein slim file stores beta/se in the SAME variant-index row order, so the
-alignment of index variants to LD scores, the regression LD scores (ld), the total
-reference-SNP count M, and the genome-sorted order used for contiguous jackknife blocks are
-all identical across proteins. We therefore build them ONCE and reuse them for every
-protein (and, later, for cross-trait rg and LCV).
+Every per-assay slim file (a UKB-PPP protein, a CSF aptamer, ...) stores beta/se in the
+SAME variant-index row order, so the alignment of index variants to LD scores, the
+regression LD scores (ld), the total reference-SNP count M, and the genome-sorted order
+used for contiguous jackknife blocks are all identical across assays. We therefore build
+them ONCE and reuse them for every assay (and, later, for cross-trait rg and LCV).
 
 The context also carries each retained variant's chromosome and hg38 position so a per-
-protein cis mask (variants within +/- a window of the protein's gene) can be computed, and
-its row position in the slim files so a protein's beta/se can be gathered by positional
-index.
+assay cis mask (variants within +/- a window of the target gene) can be computed, and its
+row position in the slim files so an assay's beta/se can be gathered by positional index.
 
 Built by intersecting the variant index (rsID) with the reference LD scores (SNP), then
 optionally dropping strand-ambiguous variants and the extended MHC region (on the index's
@@ -39,16 +38,18 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
 )
-from mecfs_bio.constants.ppp_database_constants import (
-    PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
-)
+
+# The strand-ambiguous flag every database's variant index publishes under this name (the
+# palindromic A/T or C/G marker). Defined here so this shared module does not depend on any
+# one database's constants; each database index conforms to it.
+BATCHED_LDSC_STRAND_AMBIGUOUS_COL = "is_strand_ambiguous"
 
 # The reference LD scores are hg19-coordinate; the index (and thus our exclusions) use hg38.
 _ROW_POS_COL = "__ctx_row__"
 
 
 @frozen
-class PppLdscContext:
+class BatchedLdscContext:
     """The shared regression SNP set, genome-sorted. All arrays are parallel (one entry per
     retained variant, in (chromosome, position) order).
 
@@ -86,13 +87,13 @@ class PppLdscContext:
         return int(self.row_pos.shape[0])
 
 
-def build_ppp_ldsc_context(
+def build_batched_ldsc_context(
     index_df: pl.DataFrame,
     ld_df: pl.DataFrame,
     *,
     drop_strand_ambiguous: bool = True,
     exclude_mhc: bool = True,
-) -> PppLdscContext:
+) -> BatchedLdscContext:
     """Intersect the variant index with the LD scores and assemble the shared context.
 
     index_df: the variant index, with columns CHR, POS (hg38), rsID, and
@@ -115,7 +116,7 @@ def build_ppp_ldsc_context(
         .sort([GWASLAB_CHROM_COL, GWASLAB_POS_COL])
     )
     if drop_strand_ambiguous:
-        joined = joined.filter(~pl.col(PPP_INDEX_IS_STRAND_AMBIGUOUS_COL))
+        joined = joined.filter(~pl.col(BATCHED_LDSC_STRAND_AMBIGUOUS_COL))
     if exclude_mhc:
         mhc = extended_mhc_interval("38")
         in_mhc = (
@@ -125,7 +126,7 @@ def build_ppp_ldsc_context(
         )
         joined = joined.filter(~in_mhc)
 
-    return PppLdscContext(
+    return BatchedLdscContext(
         row_pos=joined[_ROW_POS_COL].to_numpy().astype(np.int64),
         ld=joined[LD_SCORE_LD_SCORE_COL].to_numpy().astype(float),
         chrom=joined[GWASLAB_CHROM_COL].to_numpy().astype(np.int64),
@@ -135,7 +136,7 @@ def build_ppp_ldsc_context(
 
 
 def build_cis_mask(
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     gene_chrom: int,
     gene_start: int,
     gene_end: int,

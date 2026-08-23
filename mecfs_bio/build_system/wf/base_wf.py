@@ -25,9 +25,15 @@ class WF:
     synapse_downloader: SynapseDownloader
 
     def download_from_url(
-        self, url: str, local_path: Path, md5_hash: str | None
+        self,
+        url: str,
+        local_path: Path,
+        md5_hash: str | None,
+        request_connections: int | None = None,
     ) -> None:
-        self.downloader.download(url, local_path, md5_hash)
+        self.downloader.download(
+            url, local_path, md5_hash, request_connections=request_connections
+        )
 
     def download_from_synapse(
         self, synid: str, dest_dir: Path, expected_name: str

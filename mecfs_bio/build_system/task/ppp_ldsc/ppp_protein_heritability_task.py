@@ -4,7 +4,7 @@ Per-protein SNP heritability for the UKB-PPP database via batched LD-score regre
 For every protein this produces two heritabilities: one on all regression variants, and one
 excluding cis variants (within a window of the protein's gene, from Sun et al. 2023 ST3 hg38
 gene coordinates). All proteins share one variant-index row order, so the index<->LD-score
-alignment, LD scores, M and jackknife blocks are built once (PppLdscContext) and the per-
+alignment, LD scores, M and jackknife blocks are built once (BatchedLdscContext) and the per-
 protein work is a cheap batched weighted regression (batched_ldsc_h2).
 
 Output: a long table with two rows per protein (all_variants / cis_excluded), except proteins
@@ -34,23 +34,23 @@ from mecfs_bio.build_system.task.base_task import (
     GeneratingTask,
     Task,
 )
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_context import (
+    BatchedLdscContext,
+    build_batched_ldsc_context,
+    build_cis_mask,
+)
+from mecfs_bio.build_system.task.batched_ldsc.batched_ldsc_h2 import (
+    DEFAULT_N_BLOCKS,
+    BatchedH2Result,
+    batched_h2,
+)
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     BuildSlimProteinParquetTask,
 )
 from mecfs_bio.build_system.task.ppp_database.protein_sample_size_task import (
     PppProteinSampleSizeTask,
 )
-from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import (
-    DEFAULT_N_BLOCKS,
-    BatchedH2Result,
-    batched_h2,
-)
 from mecfs_bio.build_system.task.ppp_ldsc.gene_coords import read_gene_coords
-from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
-    PppLdscContext,
-    build_cis_mask,
-    build_ppp_ldsc_context,
-)
 from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -230,7 +230,7 @@ def _build_context(
     ld_scores_task: Task,
     config: PppHeritabilityConfig,
     fetch: Fetch,
-) -> PppLdscContext:
+) -> BatchedLdscContext:
     index_df = (
         scan_dataframe_asset(
             fetch(index_task.asset_id),
@@ -241,7 +241,7 @@ def _build_context(
         .select(_INDEX_CONTEXT_COLUMNS)
         .collect()
     )
-    return build_ppp_ldsc_context(
+    return build_batched_ldsc_context(
         index_df,
         _read_table(ld_scores_task, fetch),
         drop_strand_ambiguous=config.drop_strand_ambiguous,
@@ -284,7 +284,7 @@ def _read_table(task: Task, fetch: Fetch) -> pl.DataFrame:
 
 def _process_batch(
     batch: list[BuildSlimProteinParquetTask],
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     sample_sizes: dict[SynID, int] | None,
     gene_coords: dict[Oid, GenomicInterval],
     config: PppHeritabilityConfig,
@@ -342,7 +342,7 @@ def _process_batch(
 
 def _read_protein_chi2(
     protein_task: BuildSlimProteinParquetTask,
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     fetch: Fetch,
     *,
     read_sample_size: bool,
@@ -382,7 +382,7 @@ def _read_protein_chi2(
 
 def _build_cis_exclude(
     oids: list[Oid],
-    context: PppLdscContext,
+    context: BatchedLdscContext,
     gene_coords: dict[Oid, GenomicInterval],
     cis_window_bp: int,
 ) -> np.ndarray:

@@ -1,11 +1,12 @@
 """
-Batched univariate LD-score-regression heritability for the UKB-PPP database.
+Batched univariate LD-score-regression heritability for a shared-index pQTL database
+(UKB-PPP proteins, CSF aptamers, ...).
 
-Because every protein's chi-square is defined on the SAME shared SNP set (see
-ppp_ldsc_context), we process K proteins at once: stack chi-square into an (S, K) matrix
+Because every assay's chi-square is defined on the SAME shared SNP set (see
+batched_ldsc_context), we process K assays at once: stack chi-square into an (S, K) matrix
 and run the weighted LD-score regression plus block jackknife for all K in vectorized
-numpy. Per-protein exclusions (missing variants, the chi-square filter, and cis variants)
-are encoded as ZERO regression weights rather than by dropping rows, so all proteins keep
+numpy. Per-assay exclusions (missing variants, the chi-square filter, and cis variants)
+are encoded as ZERO regression weights rather than by dropping rows, so all assays keep
 the same row set and the same shared contiguous jackknife blocks.
 
 This is validated (experiments/claude/ppp_ldsc/batched_vs_exact_h2_probe.py) to agree with
