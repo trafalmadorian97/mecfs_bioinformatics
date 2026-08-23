@@ -97,7 +97,7 @@ class HBAMagmaTasks:
         MAGMAPlotBrainAtlasResultWithStepwiseLabels | None
     ) = None
     magma_independent_cluster_plot_svg: (
-            MAGMAPlotBrainAtlasResultWithStepwiseLabels | None
+        MAGMAPlotBrainAtlasResultWithStepwiseLabels | None
     ) = None
     independent_clusters_markdown_task: ConvertDataFrameToMarkdownTask | None = None
     magma_independent_clusters_csv: JoinDataFramesTask | None = None
@@ -110,7 +110,7 @@ class HBAMagmaTasks:
 
     @property
     def magma_independent_cluster_plot_svg_unwrap(
-            self,
+        self,
     ) -> MAGMAPlotBrainAtlasResultWithStepwiseLabels:
         return unwrap(self.magma_independent_cluster_plot_svg)
 
@@ -280,7 +280,7 @@ def generate_human_brain_atlas_magma_tasks(
                 asset_id=base_name + "_hba_magma_independent_cluster_plot_svg",
                 stepwise_cluster_list_task=magma_hba_forward_select,
                 plot_options=hba_indep_plot_options,
-                plot_format="svg"
+                plot_format="svg",
             )
         )
     else:

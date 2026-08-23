@@ -14,6 +14,7 @@ PlotlyWriteMode = Literal["cdn"]
 
 MatplotLibFormat = Literal["png", "pdf", "svg"]
 
+
 def write_plots_to_dir(
     path: Path,
     plots: Mapping[str, Union[Figure, matplotlib.figure.Figure]],

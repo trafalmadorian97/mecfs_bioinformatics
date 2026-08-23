@@ -24,7 +24,7 @@ from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import (
     get_condensed_hba_cluster_label,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.util.plotting.save_fig import write_plots_to_dir, MatplotLibFormat
+from mecfs_bio.util.plotting.save_fig import MatplotLibFormat, write_plots_to_dir
 
 
 @frozen
@@ -158,7 +158,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             )
 
         figs = {"hba_magma_fig": fig}
-        write_plots_to_dir(scratch_dir, figs,matplotlib_format=self.plot_format)
+        write_plots_to_dir(scratch_dir, figs, matplotlib_format=self.plot_format)
 
         return DirectoryAsset(scratch_dir)
 
@@ -169,7 +169,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         asset_id: str,
         stepwise_cluster_list_task: Task,
         plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
-            plot_format: MatplotLibFormat = "png"
+        plot_format: MatplotLibFormat = "png",
     ):
         source_meta = result_table_task.meta
         assert isinstance(source_meta, ResultTableMeta)
