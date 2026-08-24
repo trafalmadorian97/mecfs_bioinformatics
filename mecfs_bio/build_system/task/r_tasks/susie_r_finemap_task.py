@@ -225,7 +225,12 @@ class SusieRFinemapTask(Task):
             ).to_pandas()
             zscores_r = ro.conversion.get_conversion().py2rpy(zscores_pandas)
             ld_matrix_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
-            prior_r = ro.conversion.get_conversion().py2rpy(prior)
+            # Convert the prior via a pandas Series rather than the numpy array
+            # directly: numpy2ri maps a 1-D array to an R *array* carrying a dim
+            # attribute, which makes susie_rss fail with "non-conformable arrays"
+            # when it evaluates lbf + log(prior_weights). A Series yields a plain
+            # R numeric vector, matching how susieR builds prior_weights itself.
+            prior_r = ro.conversion.get_conversion().py2rpy(pd.Series(prior))
         # estimate_s_rss returns a length-1 array; numpy 2 forbids float() on a
         # non-0-d array, so extract the scalar with .item() first.
         _save_adjustment(
