@@ -125,10 +125,11 @@ def test_align():
     partial_ld = np.tril(ld_matrix)
     partial_ld[[0, 1, 2], [0, 1, 2]] = 0.5
 
-    rg, rr, rmat = align_data(
+    rg, rr, rmat, _ = align_data(
         gwas=gwas,
         ld_labels=reference,
         partial_ld_matrix_sparse=csr_matrix(partial_ld),
+        prior=None,
     )
     pl.testing.assert_frame_equal(
         rg,

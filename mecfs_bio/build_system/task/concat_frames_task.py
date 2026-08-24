@@ -14,7 +14,9 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
-from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import ReferenceFileMeta
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -99,8 +101,7 @@ class ConcatFramesTask(Task):
                 sub_dir=source_meta.sub_dir,
             )
         elif isinstance(source_meta, ReferenceFileMeta):
-
-            meta= ReferenceFileMeta(
+            meta = ReferenceFileMeta(
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 sub_folder=source_meta.sub_folder,
