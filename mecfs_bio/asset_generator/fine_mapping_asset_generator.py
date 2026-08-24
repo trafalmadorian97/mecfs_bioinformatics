@@ -15,6 +15,8 @@ from mecfs_bio.asset_generator.ukbb_broad_ld_matrix_generator import (
 from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import (
     MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
 )
+from mecfs_bio.assets.reference_data.polyfun.precomputed_prior.polyfun_precomputed_prior import \
+    COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS, create_prior_col_pipe, POLYFUN_PRIOR_COL
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
@@ -52,7 +54,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     PIP_COLUMN,
     BroadInstituteFormatLDMatrix,
-    SusieRFinemapTask,
+    SusieRFinemapTask, PriorInfo,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     HeatmapOptions,
@@ -114,6 +116,11 @@ class BroadFineMapTaskGroup:
             self.susie_2_credible_set_markdown_table,
         ]
 
+@frozen()
+class PriorSpec:
+    q_factor:int
+
+
 
 def generate_assets_broad_ukbb_fine_map(
     chrom: int,
@@ -124,6 +131,7 @@ def generate_assets_broad_ukbb_fine_map(
     sample_size_or_effect_sample_size: int,
     chrom_range: ChromRange | None = None,
     palindrome_strategy: PalindromeStrategy = "drop",
+        prior_spec: PriorSpec|None = None,
 ) -> BroadFineMapTaskGroup:
     """
     Asset generator for fine mapping using SUSIE.
@@ -203,12 +211,24 @@ def generate_assets_broad_ukbb_fine_map(
         ),
         chrom_range_filter=chrom_range,
     )
+
+    if prior_spec is not None:
+        prior_info=PriorInfo(
+            prior_task=COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
+            prior_pipe=create_prior_col_pipe(prior_spec.q_factor),
+            prior_col=POLYFUN_PRIOR_COL
+        )
+    else:
+        prior_info=None
+
     susie_finemap_task = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap",
         gwas_data_task=harmonized_sumstats_task,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
+        prior_info=prior_info
+
     )
     susie_stack_plot_task = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot",

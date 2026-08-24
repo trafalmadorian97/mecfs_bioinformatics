@@ -20,6 +20,7 @@ from rpy2.robjects.packages import (
 )
 from scipy.sparse import csr_matrix
 
+from mecfs_bio.asset_generator.fine_mapping_asset_generator import PriorSpec
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -32,6 +33,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.task.two_sample_mr_task import RPackageType
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -85,11 +87,29 @@ MU2_COLUMN_NAME = "mu2"
 CS_COLUMN = "cs"
 
 
+_PRIOR_COL = "prior_col"
+
+@frozen
+class PriorInfo:
+    prior_task: Task
+    prior_col: str
+    prior_chr_col:str="CHR"
+    prior_bp_cp:str="BP"
+    prior_a1_col:str="A1"
+    prior_a2_col:str="A2"
+    prior_pipe: DataProcessingPipe = IdentityPipe()
+
+
+
+
 @frozen
 class SusieRFinemapTask(Task):
     """
     This task uses susie_rss function from the R library susieR to fine map a GWAS at a locus.
     It requires an LD matrix from a closely matched reference panel
+
+    Assumes the gwas data has already been harmonized to have same orientation as the ld reference
+    Using HarmonizeGWASWithReferenceViaAlleles for example
     """
 
     meta: Meta
@@ -103,10 +123,15 @@ class SusieRFinemapTask(Task):
     max_credible_sets: int = 10
     log_lr_filtering_threshold: float = 2.0
     z_score_filtering_threshold: float = 2.0
+    prior_info: PriorInfo|None=None
+
 
     @property
     def deps(self) -> list["Task"]:
-        return [self.gwas_data_task, self.ld_labels_task, self.ld_matrix_source.task]
+        dep_results = [self.gwas_data_task, self.ld_labels_task, self.ld_matrix_source.task]
+        if self.prior_info is not None:
+            dep_results.append(self.prior_info.prior_task)
+        return dep_results
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         susie_package = importr("susieR")
@@ -135,14 +160,20 @@ class SusieRFinemapTask(Task):
         assert isinstance(ld_matrix_asset, FileAsset)
         partial_ld_matrix_sparse = _load_partial_ld_matrix(path=ld_matrix_asset.path)
 
-        gwas_table, ld_labels_table, ld_matrix = align_gwas_and_ld(
+        prior_table = load_prior(
+            self.prior_info,
+            fetch=fetch,
+        )
+        gwas_table, ld_labels_table, ld_matrix,prior = align_data(
             gwas=gwas_table,
             ld_labels=ld_labels_table,
             partial_ld_matrix_sparse=partial_ld_matrix_sparse,
+            prior=prior_table,
         )
         del partial_ld_matrix_sparse
-        gwas_table, ld_labels_table, ld_matrix = apply_subsample(
-            gwas_table, ld_labels_table, ld_matrix, subsample=self.subsample
+        del prior_table
+        gwas_table, ld_labels_table, ld_matrix, prior = apply_subsample(
+            gwas_table, ld_labels_table, ld_matrix, subsample=self.subsample, prior=prior
         )
         assert len(gwas_table) == len(ld_labels_table) == len(ld_matrix)
         logger.debug(f"Dimensions of LD matrix to use: {ld_matrix.shape}")
@@ -170,12 +201,13 @@ class SusieRFinemapTask(Task):
             scratch_dir=scratch_dir,
         )
 
-        gwas_table, ld_matrix = filter_variants_based_on_diagnostics(
+        gwas_table, ld_matrix,prior = filter_variants_based_on_diagnostics(
             gwas_table=gwas_table,
             ld_matrix=ld_matrix,
             diagnostic_table=diagnostic_table,
             log_lr_threshold=self.log_lr_filtering_threshold,
             z_score_threshold=self.z_score_filtering_threshold,
+            prior=prior
         )
 
         ld_matrix = (1 - adjustment) * ld_matrix + adjustment * np.eye(
@@ -188,6 +220,7 @@ class SusieRFinemapTask(Task):
             ).to_pandas()
             zscores_r = ro.conversion.get_conversion().py2rpy(zscores_pandas)
             ld_matrix_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
+            prior_r = ro.conversion.get_conversion().py2rpy(prior)
         # estimate_s_rss returns a length-1 array; numpy 2 forbids float() on a
         # non-0-d array, so extract the scalar with .item() first.
         _save_adjustment(
@@ -198,6 +231,7 @@ class SusieRFinemapTask(Task):
         susie_result = susie_package.susie_rss(
             zscores_r,
             ld_matrix_r,
+            prior_weights=prior_r,
             n=int(self.effective_sample_size),
             L=self.max_credible_sets,
         )
@@ -236,6 +270,7 @@ class SusieRFinemapTask(Task):
         max_credible_sets: int = 10,
         log_lr_filtering_threshold: float = 2.0,
         z_score_filtering_threshold: float = 2.0,
+            prior_info: PriorInfo|None = None,
     ):
         source_meta = gwas_data_task.meta
         meta: Meta
@@ -260,12 +295,13 @@ class SusieRFinemapTask(Task):
             subsample=subsample,
             log_lr_filtering_threshold=log_lr_filtering_threshold,
             z_score_filtering_threshold=z_score_filtering_threshold,
+            prior_info=prior_info,
         )
 
 
-def align_gwas_and_ld(
-    gwas: pl.DataFrame, ld_labels: pl.DataFrame, partial_ld_matrix_sparse: csr_matrix
-) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
+def align_data(
+    gwas: pl.DataFrame, ld_labels: pl.DataFrame, partial_ld_matrix_sparse: csr_matrix, prior: pl.DataFrame|None
+) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray, np.ndarray]:
     """
     Slice the reference LD matrix and the GWAS data so that they only include genetic variants in their intersection
     """
@@ -282,6 +318,21 @@ def align_gwas_and_ld(
         ],
         maintain_order="left",
     )
+    if prior is not None:
+        prior = prior.with_row_index(name="prior_index") if prior is not None else None
+        joined = joined.with_columns(unordered_allele_key(GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL).alias("allele_key")).join(prior.with_columns(
+            unordered_allele_key(GWASLAB_EFFECT_ALLELE_COL,
+                                 GWASLAB_NON_EFFECT_ALLELE_COL).alias("allele_key")
+        ),
+                             on=[GWASLAB_CHROM_COL,
+                                 GWASLAB_POS_COL,
+                                 "allele_key"
+                                 ]
+                             )
+        prior_out = joined[_PRIOR_COL].to_numpy()
+    else:
+        prior_out = np.ones(len(joined))
+
     keep_ld_index = joined["ld_index"].to_numpy()
     partial_ld_matrix_sparse = partial_ld_matrix_sparse[keep_ld_index, :][
         :, keep_ld_index
@@ -297,7 +348,28 @@ def align_gwas_and_ld(
         gwas[joined["gwas_index"]].drop("gwas_index"),
         ld_labels,
         ld_matrix,
+        prior_out,
     )
+
+def load_prior(
+    prior_info: PriorInfo|None,
+        fetch: Fetch,
+    ) -> pl.DataFrame | None:
+    if prior_info is None:
+        return None
+    prior_table_asset = fetch(prior_info.prior_task.asset_id)
+    prior_table = prior_info.prior_pipe.process( scan_dataframe_asset(prior_table_asset,meta=prior_info.prior_task.meta,)).collect().to_polars().with_columns(
+        pl.col(prior_info.prior_a1_col).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
+        pl.col(prior_info.prior_a2_col).alias(GWASLAB_EFFECT_ALLELE_COL),
+        pl.col(prior_info.prior_chr_col).alias(GWASLAB_CHROM_COL),
+        pl.col(prior_info.prior_bp_cp).alias(GWASLAB_POS_COL),
+        pl.col(prior_info.p)
+    )
+    return prior_table.select(
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+    )
+
 
 
 def make_psd_corr(matrix: np.ndarray, tol: float = 1e-4) -> np.ndarray:
@@ -324,8 +396,9 @@ def apply_subsample(
     gwas_table: pl.DataFrame,
     ld_labels: pl.DataFrame,
     ld_matrix: np.ndarray,
+    prior: np.ndarray,
     subsample: int | None,
-) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
+) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray, np.ndarray]:
     """
     Subsample gwasdata
     """
@@ -336,6 +409,7 @@ def apply_subsample(
         gwas_table[::subsample],
         ld_labels[::subsample],
         ld_matrix[::subsample, ::subsample],
+        prior[::subsample],
     )
 
 
@@ -559,9 +633,10 @@ def filter_variants_based_on_diagnostics(
     gwas_table: pl.DataFrame,
     ld_matrix: np.ndarray,
     diagnostic_table: pl.DataFrame,
+    prior: np.ndarray,
     log_lr_threshold: float = 2.0,
     z_score_threshold: float = 2.0,
-) -> tuple[pl.DataFrame, np.ndarray]:
+) -> tuple[pl.DataFrame, np.ndarray,np.ndarray]:
     """
     Filter out variants that show evidence of inconsistency between the GWAS and LD matrix
 
@@ -602,5 +677,9 @@ def filter_variants_based_on_diagnostics(
     gwas_table_filtered = gwas_table[keep_indices]
 
     ld_matrix_filtered = ld_matrix[keep_indices][:, keep_indices]
+    prior_filtered = prior[keep_indices]
 
-    return gwas_table_filtered, ld_matrix_filtered
+    return gwas_table_filtered, ld_matrix_filtered, prior_filtered
+
+
+

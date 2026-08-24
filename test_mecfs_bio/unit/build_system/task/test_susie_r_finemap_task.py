@@ -47,7 +47,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PIP_FILENAME,
     BroadInstituteFormatLDMatrix,
     SusieRFinemapTask,
-    align_gwas_and_ld,
+    align_data,
     extract_cs_data_tables,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
@@ -125,7 +125,7 @@ def test_align():
     partial_ld = np.tril(ld_matrix)
     partial_ld[[0, 1, 2], [0, 1, 2]] = 0.5
 
-    rg, rr, rmat = align_gwas_and_ld(
+    rg, rr, rmat = align_data(
         gwas=gwas,
         ld_labels=reference,
         partial_ld_matrix_sparse=csr_matrix(partial_ld),
