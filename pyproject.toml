@@ -54,7 +54,7 @@ env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1" }
 pysam = ">=0.24,<0.25" #pysam is used by gwaslab
 pixi-pycharm = ">=0.0.12,<0.0.13"
 pyarrow = ">=25,<26"
-rust = ">=1.97,<1.98"
+rust = ">=1.98,<1.99"
 duckdb = ">=1.4.1,<2"
 # Required by mkdocs-bibtex: its PandocRegistry shells out to pandoc via pypandoc.
 # Currently dormant (we use SimpleRegistry), but it activates as soon as `csl_file`
