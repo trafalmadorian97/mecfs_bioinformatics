@@ -16,7 +16,7 @@
     "custom.regex"
   ],
   "constraints": {
-    "pixi": "0.77.0"
+    "pixi": "0.77.1"
   },
   "customManagers": [
     {
@@ -94,6 +94,11 @@
       "description": "setuptools 82 removed pkg_resources, which zepid still imports at import time. See the comment above the setuptools pin in pyproject.toml. Lift this ceiling only once zepid no longer imports pkg_resources.",
       "matchPackageNames": ["setuptools"],
       "allowedVersions": "<82"
+    },
+    {
+      "description": "numpy 2.4 turns float() on a size-1 ndim>0 array into a hard TypeError, which crashes gwaslab 4.2.2's vendored LDSC rg estimator (RG.__init__ in extension/ldsc/ldsc_regressions.py). See the comment above the numpy override in pyproject.toml. Lift this ceiling only once gwaslab extracts the scalar with .item() upstream.",
+      "matchPackageNames": ["numpy"],
+      "allowedVersions": "<2.4"
     },
 
     {

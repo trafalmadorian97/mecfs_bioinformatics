@@ -183,7 +183,7 @@ def weighted_least_squares(
     WX = X * w[:, None]
     lhs = X.T @ WX
     rhs = X.T @ (w * y)
-    return np.linalg.solve(lhs, rhs)
+    return np.asarray(np.linalg.solve(lhs, rhs), dtype=np.float64)
 
 
 def default_ld_weights(ld_scores: ArrayLike1D) -> FloatArray:
