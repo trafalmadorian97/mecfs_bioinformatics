@@ -1,17 +1,21 @@
 """
 Unit tests for `GeneticCorrelationByCTLDSCTask` and its helpers.
 
-These tests focus on the pure / lightweight components of
-`mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task`
-that we can exercise without running LDSC end-to-end (which would require
-a 22-chromosome LD-score reference and genome-wide HapMap3 coverage).
+Most tests here focus on the pure / lightweight components of
+`mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task`.
 
-For end-to-end coverage of `GeneticCorrelationByCTLDSCTask.execute`, see
-`test_mecfs_bio/system/test_genetic_corr_system.py`.
+`test_execute_runs_ldsc_and_returns_numeric_rg` additionally drives
+`GeneticCorrelationByCTLDSCTask.execute` all the way through gwaslab's vendored
+cross-trait LDSC code on tiny synthetic data, using a hand-built single-chromosome
+LD-score reference and a rigged positive-heritability fit. It is a fast guard for
+the gwaslab / numpy-version incompatibility that otherwise only the (weekly)
+`test_mecfs_bio/system/test_genetic_corr_system.py` would catch.
 
 Implemented by Claude
 """
 
+import gzip
+import math
 from pathlib import Path
 
 import gwaslab as gl
@@ -19,20 +23,24 @@ import pandas as pd
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
     GWASLabSumStatsMeta,
 )
+from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     FilterSettings,
+    GeneticCorrelationByCTLDSCTask,
     QuantPhenotype,
     SumstatsSource,
     filter_sumstats,
     get_compatible_snps_polars,
     load_and_preprocess_sumstats,
 )
+from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
 @frozen
@@ -82,6 +90,8 @@ def _make_sumstats(
     neas: list[str],
     study: str = "trait1",
     ses: list[float] | None = None,
+    betas: list[float] | None = None,
+    ns: list[int] | None = None,
 ) -> gl.Sumstats:
     n = len(rsids)
     df = pd.DataFrame(
@@ -91,10 +101,10 @@ def _make_sumstats(
             "POS": positions,
             "EA": eas,
             "NEA": neas,
-            "BETA": [0.01] * n,
+            "BETA": [0.01] * n if betas is None else betas,
             "SE": [0.05] * n if ses is None else ses,
             "P": [0.5] * n,
-            "N": [10000] * n,
+            "N": [10000] * n if ns is None else ns,
         }
     )
     return gl.Sumstats(
@@ -261,3 +271,116 @@ def test_load_and_preprocess_sumstats_drops_degenerate_z(tmp_path: Path):
     )
 
     assert set(out_sumstats.data["rsID"]) == {s.rsid for s in snps} - degenerate
+
+
+# --- End-to-end LDSC regression test -----------------------------------------
+#
+# This is the one test that drives GeneticCorrelationByCTLDSCTask.execute all the
+# way through gwaslab's vendored cross-trait LDSC code,
+#
+# reaching the right lines requires gwaslab to estimate a POSITIVE heritability for
+# both traits (otherwise it takes the _negative_hsq branch and never calls
+# float()). We arrange that by rigging Z^2 = 1 + (N * h2 / M) * L2 with h2 > 0,
+# so the LDSC regression of chi-square on LD score has a positive slope.
+
+_LDSC_N = 20_000
+_LDSC_M_5_50 = 1_000_000
+_LDSC_H2 = 0.4
+# Distinct LD score per SNP so the regression has spread.
+_LDSC_L2 = [40.0 + 12.0 * i for i in range(len(_HAPMAP3_SAMPLE))]
+
+
+def _rigged_betas(l2s: list[float]) -> list[float]:
+    # With SE == 1, BETA == Z, so BETA = sqrt(E[Z^2]) gives a clean positive-h2 fit.
+    return [math.sqrt(1.0 + (_LDSC_N * _LDSC_H2 / _LDSC_M_5_50) * l2) for l2 in l2s]
+
+
+def _ldsc_sumstats(snps: list[HapmapSNP], l2s: list[float], study: str) -> gl.Sumstats:
+    return _make_sumstats(
+        rsids=[s.rsid for s in snps],
+        chroms=[s.chrom for s in snps],
+        positions=[s.pos for s in snps],
+        eas=[s.a1 for s in snps],
+        neas=[s.a2 for s in snps],
+        study=study,
+        betas=_rigged_betas(l2s),
+        ses=[1.0] * len(snps),
+        ns=[_LDSC_N] * len(snps),
+    )
+
+
+def _write_ld_reference(
+    directory: Path, snps: list[HapmapSNP], l2s: list[float]
+) -> None:
+    """Write a synthetic single-chromosome LDSC reference (all SNPs are chr1).
+
+    The reference is padded with SNPs absent from the sumstats so that it differs
+    in length from them. gwaslab's smart_merge has a fast path (for identically
+    shaped/ordered frames) that calls the removed pandas API `df.drop('SNP', 1)`;
+    real references never trigger it because they dwarf the sumstats, so the
+    padding keeps this test on the same pd.merge path as production.
+    """
+    rows = [(s.chrom, s.rsid, s.pos, l2) for s, l2 in zip(snps, l2s)]
+    for i in range(5):
+        rows.append((1, f"rs_pad{i}", 900_000 + i, 55.0 + i))
+    with gzip.open(directory / "LDscore.1.l2.ldscore.gz", "wt") as f:
+        f.write("CHR\tSNP\tBP\tL2\n")
+        for chrom, snp, bp, l2 in rows:
+            f.write(f"{chrom}\t{snp}\t{bp}\t{l2}\n")
+    (directory / "LDscore.1.l2.M_5_50").write_text(f"{_LDSC_M_5_50}\n")
+    (directory / "LDscore.1.l2.M").write_text(f"{_LDSC_M_5_50}\n")
+
+
+def test_execute_runs_ldsc_and_returns_numeric_rg(tmp_path: Path):
+    snps = _hapmap3_snps(len(_HAPMAP3_SAMPLE))
+
+    ld_dir = tmp_path / "ld_ref"
+    ld_dir.mkdir()
+    _write_ld_reference(ld_dir, snps, _LDSC_L2)
+
+    # trait2 is stored in reversed SNP order so the two sumstats differ in SNP
+    # sequence at merge time; this, too, keeps gwaslab off the buggy smart_merge
+    # fast path (which fires only when the frames match exactly).
+    trait1 = _ldsc_sumstats(snps, _LDSC_L2, study="trait1")
+    trait2 = _ldsc_sumstats(snps[::-1], _LDSC_L2[::-1], study="trait2")
+
+    ids = {}
+    sources = []
+    for name, sumstats in (("trait1", trait1), ("trait2", trait2)):
+        pickle_path = tmp_path / f"{name}.pickle"
+        gl.dump_pickle(sumstats, path=str(pickle_path))
+        source_id = AssetId(f"{name}_sumstats")
+        ids[source_id] = FileAsset(pickle_path)
+        fake_task = FakeTask(
+            meta=GWASLabSumStatsMeta(id=source_id, trait=name, project="test")
+        )
+        sources.append(
+            SumstatsSource(task=fake_task, alias=name, sample_info=QuantPhenotype())
+        )
+
+    ld_ref_id = AssetId("ld_ref")
+    ld_ref_task = FakeTask(meta=SimpleDirectoryMeta(id=ld_ref_id))
+
+    task = GeneticCorrelationByCTLDSCTask.create(
+        asset_id="ct_ldsc_synthetic",
+        sources=sources,
+        ld_ref_task=ld_ref_task,
+        build="38",
+    )
+
+    def fetch(asset_id: AssetId) -> Asset:
+        if asset_id == ld_ref_id:
+            return DirectoryAsset(ld_dir)
+        return ids[asset_id]
+
+    scratch_dir = tmp_path / "scratch"
+    scratch_dir.mkdir()
+    result = task.execute(scratch_dir=scratch_dir, fetch=fetch, wf=make_wf())
+
+    assert isinstance(result, FileAsset)
+    df = pd.read_csv(result.path)
+    assert len(df) == 1
+    # A numeric (non-NA) rg proves gwaslab reached RG.__init__'s float() lines;
+    # under numpy >= 2.4 that raises and this value would be NA / the run crashes.
+    assert df["rg"].notna().all()
+    assert df["rg"].abs().iloc[0] <= 1.5
