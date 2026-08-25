@@ -300,3 +300,7 @@ experiments/claude/pops_standalone/
 # worktrees
 
 worktrees
+
+# No gzip files or tar files
+*.gz
+*.tar
