@@ -108,21 +108,40 @@ The weights asset is a small parquet table one row per annotation.
   187 annotation names are read from the parquet schema where needed
   (family-map test, ridge task). Note the ~19M x 191 parquet is a `path_remap`
   candidate.
+- `create()` DERIVES this meta from the tarball task's `ReferenceFileMeta`
+  (reuse group/sub_group/sub_folder; raise on unknown meta) — the
+  `CompressedCSVToParquetTask.create` pattern. Only id/extension/read_spec differ.
 
 ### C. Annotation -> family map (new curated asset)
 
 - `mecfs_bio/assets/reference_data/polyfun/annotations/annotation_families.py`.
-- A committed mapping (dict / frozen table) of all 187 annotation names -> one of
-  ~10 families: `coding`, `conserved`, `promoter_tss`, `enhancer_regulatory`,
-  `chromatin_accessibility`, `maf`, `ld_related`, `recombination_allele_age`,
-  `selection_diversity`, `other`.
-- Curated from annotation name patterns + Gazal 2018 / Weissbrod 2020
-  Supplementary Table 1 categories. MAF-split suffixes (`_lowfreq`/`_common`)
-  do not change the family; the base functional category does.
-- A `Literal` type alias `AnnotationFamily` for the family names.
-- **Test:** assert the map's keys == the 187 annotation names (from a small
-  committed name-list constant, itself checkable against the annotation parquet
-  schema), catching upstream annotation drift.
+- A rule-based classifier `family_for_annotation(name) -> AnnotationFamily`
+  assigning all 187 annotations to one of **11 published-grounded families**:
+  `non_synonymous`, `coding`, `conserved`, `promoter_or_enhancer`,
+  `histone_marks`, `repressed`, `open_chromatin`, `maf_bins`,
+  `ld_related_continuous`, `molecular_qtl`, `other`.
+- Taxonomy is grounded in the literature, not invented (checked: no paper ships
+  a reusable per-annotation family table, and the polyfun GitHub repo has no
+  grouping — only LDSC's per-annotation "category" sense):
+  - The 7 functional-group names (non_synonymous, coding, conserved,
+    promoter_or_enhancer, histone_marks, repressed, other) are the grouping the
+    polyfun authors themselves use in the sub-additive simulation of their
+    Supplementary Note (Weissbrod et al. 2020).
+  - maf_bins and ld_related_continuous are the MAF-bin and LD-related continuous
+    groups of Gazal et al. 2017 (the Continuous rows of Gazal 2018 Table S1).
+  - molecular_qtl are the MaxCPP molecular-QTL annotations of Hormozdiari 2018.
+  - open_chromatin (DHS_Trynka, DHS_peaks_Trynka, FetalDHS_Trynka, DGF_ENCODE) is
+    the ONE deliberate refinement of polyfun's scheme (which lumps these in
+    "others"), broken out for the explainability figure's accessibility panel;
+    TFBS/CTCF/Transcribed/Intron stay in `other`. Documented as a deviation.
+  - Per-annotation assignment follows annotation names + their source datasets
+    (Gazal 2018 Table S1). MAF-split (`_lowfreq`/`_common`) and `.flanking.500`
+    suffixes do not change the family.
+- A `Literal` type alias `AnnotationFamily` for the family names; module docstring
+  carries the four citations.
+- **Test:** keys == the 187 annotation names (committed name-list constant,
+  checkable against the parquet schema); every annotation resolves to a valid
+  family; open_chromatin membership == exactly the DHS/DGF accessibility set.
 
 ### D. `RidgeAnnotationWeightsTask` (new) + weights asset
 
@@ -157,11 +176,12 @@ The weights asset is a small parquet table one row per annotation.
      - `diagnostics.json`: `alpha, intercept, heldout_r2_per_chrom,
        mean_heldout_r2, n_variants`.
 - Output: `DirectoryAsset`, `ReferenceDataDirectoryMeta`
-  `group="polyfun", sub_group="annotations", sub_folder="weights",
-  id="baseline_lf_2.2_ukb_annotation_ridge_weights"`. (A directory, not a file,
+  `id="baseline_lf_2.2_ukb_annotation_ridge_weights"`. (A directory, not a file,
   because the task emits both the weights parquet and the diagnostics json.)
-  Filename constants for the two members are module-level so Spec 2 and tests
-  reference them, not string literals.
+  `create()` DERIVES group/sub_group/sub_folder from the annotation-parquet
+  dependency's `ReferenceFileMeta` (raise on unknown meta), same pattern as
+  Component B. Filename constants for the two members are module-level so Spec 2
+  and tests reference them, not string literals.
 - Weights-asset wiring instance lives in
   `mecfs_bio/assets/reference_data/polyfun/annotations/`.
 
