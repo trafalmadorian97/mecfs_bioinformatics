@@ -13,7 +13,6 @@ from pathlib import Path
 
 import narwhals
 import polars as pl
-import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -35,8 +34,6 @@ from mecfs_bio.build_system.task.dataframe_output import (
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.subproc.run_command import execute_command
-
-logger = structlog.get_logger()
 
 ANNOT_KEY_COLUMNS: list[str] = ["CHR", "BP", "SNP", "CM"]
 _SNP_COL = "SNP"

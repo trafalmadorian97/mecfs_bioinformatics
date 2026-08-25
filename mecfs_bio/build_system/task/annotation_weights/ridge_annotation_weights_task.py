@@ -12,9 +12,9 @@ global importance ranking), plus each annotation's family.
 import json
 from pathlib import Path
 
+import narwhals
 import numpy as np
 import polars as pl
-import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -34,10 +34,12 @@ from mecfs_bio.build_system.task.annotation_weights.build_baseline_lf_annotation
     ANNOT_KEY_COLUMNS,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+    write_df_according_to_format,
+)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.polyfun_annotation_families import family_for_annotation
-
-logger = structlog.get_logger()
 
 WEIGHTS_PARQUET_FILENAME = "weights.parquet"
 DIAGNOSTICS_JSON_FILENAME = "diagnostics.json"
@@ -98,10 +100,17 @@ class RidgeAnnotationWeightsTask(Task):
                 ANNOTATION_COL: annot_columns,
                 GAMMA_RAW_COL: gamma_raw,
                 GAMMA_STANDARDIZED_COL: gamma_std,
+                # Any parquet column not classifiable by family_for_annotation
+                # hard-fails here by design: this is the de-facto guard that the
+                # built parquet's columns match the known baseline-LF annotation set.
                 FAMILY_COL: [family_for_annotation(c) for c in annot_columns],
             }
         )
-        weights.write_parquet(scratch_dir / WEIGHTS_PARQUET_FILENAME)
+        write_df_according_to_format(
+            df=narwhals.from_native(weights).lazy(),
+            out_path=scratch_dir / WEIGHTS_PARQUET_FILENAME,
+            out_format=ParquetOutFormat(),
+        )
         diagnostics = {
             "alpha": alpha,
             "intercept": intercept,
