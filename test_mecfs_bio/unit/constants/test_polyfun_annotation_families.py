@@ -1,11 +1,11 @@
 from typing import get_args
 
-from mecfs_bio.assets.reference_data.polyfun.annotations.annotation_families import (
-    AnnotationFamily,
-    family_for_annotation,
-)
 from mecfs_bio.assets.reference_data.polyfun.annotations.baseline_lf_annotation_names import (
     BASELINE_LF_ANNOTATION_NAMES,
+)
+from mecfs_bio.constants.polyfun_annotation_families import (
+    AnnotationFamily,
+    family_for_annotation,
 )
 
 
@@ -58,7 +58,8 @@ def test_representative_family_assignments():
 
 def test_open_chromatin_membership_is_exactly_dhs_and_dgf():
     open_chrom = {
-        n for n in BASELINE_LF_ANNOTATION_NAMES
+        n
+        for n in BASELINE_LF_ANNOTATION_NAMES
         if family_for_annotation(n) == "open_chromatin"
     }
     # every open_chromatin member is a DHS/FetalDHS/DGF accessibility annotation

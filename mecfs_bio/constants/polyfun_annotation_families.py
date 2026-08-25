@@ -21,8 +21,14 @@ The family taxonomy is grounded in published sources, not invented:
 
 Per-annotation assignment is rule-based (keyword + a small override set) and
 follows the annotation names and their source datasets (Gazal et al. 2018
-Supplementary Table 1). The test in test_annotation_families.py asserts every one
-of the 187 annotations resolves to a valid family.
+Supplementary Table 1). The test in test_polyfun_annotation_families.py asserts
+every one of the 187 annotations resolves to a valid family.
+
+Lives under mecfs_bio.constants (rather than mecfs_bio.assets, alongside the
+187-name list in baseline_lf_annotation_names.py) because the ridge annotation
+weights Task in mecfs_bio.build_system needs to attach a family to each
+annotation, and the layered-architecture contract in .importlinter does not let
+build_system import assets.
 """
 
 from typing import Literal
