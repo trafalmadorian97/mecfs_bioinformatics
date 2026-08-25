@@ -123,7 +123,7 @@ class BroadFineMapTaskGroup:
 
 @frozen()
 class PriorSpec:
-    q_factor: int=100
+    q_factor: int = 100
 
 
 def generate_assets_broad_ukbb_fine_map(

@@ -1,5 +1,6 @@
 from mecfs_bio.asset_generator.fine_mapping_asset_generator import (
-    generate_assets_broad_ukbb_fine_map, PriorSpec,
+    PriorSpec,
+    generate_assets_broad_ukbb_fine_map,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
@@ -20,5 +21,5 @@ DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES_WITH_POLYFUN = generate_a
     ),  # 4/(1/cases + 1/controls)
     palindrome_strategy="keep",
     chrom_range=ChromRange(1, 173_500_000, 174_500_000),
-    prior_spec=PriorSpec(q_factor=100)
+    prior_spec=PriorSpec(q_factor=100),
 )
