@@ -123,7 +123,7 @@ class BroadFineMapTaskGroup:
 
 @frozen()
 class PriorSpec:
-    q_factor: int
+    q_factor: int=100
 
 
 def generate_assets_broad_ukbb_fine_map(
@@ -160,6 +160,8 @@ def generate_assets_broad_ukbb_fine_map(
         base_name = base_name + "_" + stem
     if palindrome_strategy != "drop":
         base_name = base_name + "_palindromes_" + palindrome_strategy
+    if prior_spec is not None:
+        base_name = base_name + "_precomputed_prior_" + str(prior_spec.q_factor)
 
     logger.debug(
         f"To finemap position {pos} on chromosome {chrom}, interval {interval} was selected."
@@ -254,6 +256,7 @@ def generate_assets_broad_ukbb_fine_map(
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
         z_score_filtering_threshold=1.0,
+        prior_info=prior_info,
     )
     strict_plot = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_strict",
@@ -278,6 +281,7 @@ def generate_assets_broad_ukbb_fine_map(
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
         max_credible_sets=1,
+        prior_info=prior_info,
     )
     susie_plot_1_credible_set = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_1_credible_set",
@@ -302,6 +306,7 @@ def generate_assets_broad_ukbb_fine_map(
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
         max_credible_sets=2,
+        prior_info=prior_info,
     )
     susie_plot_2_credible_set = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_2_credible_set",

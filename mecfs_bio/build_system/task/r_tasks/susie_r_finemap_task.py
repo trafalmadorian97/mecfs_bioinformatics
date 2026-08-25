@@ -393,8 +393,11 @@ def load_prior(
         )
     )
     return prior_table.select(
+        GWASLAB_CHROM_COL,
+        GWASLAB_POS_COL,
         GWASLAB_EFFECT_ALLELE_COL,
         GWASLAB_NON_EFFECT_ALLELE_COL,
+        _PRIOR_COL,
     )
 
 

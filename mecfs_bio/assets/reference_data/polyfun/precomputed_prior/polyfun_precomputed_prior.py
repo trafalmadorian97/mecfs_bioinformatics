@@ -2,6 +2,7 @@ import narwhals
 from wcmatch.pathlib import PurePath
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec, DataFrameParquetFormat
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -11,7 +12,7 @@ from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.expr_pipe import ExprPipe
 
-POLYFUN_H_WEIGHT_COL = "snvar_bin"
+POLYFUN_H_WEIGHT_COL = "snpvar_bin"
 POLYFUN_PRIOR_COL = "prior"
 
 
@@ -34,6 +35,8 @@ POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHT_CHR_1_7 = DownloadFileTask(
         sub_folder=PurePath("raw"),
         id=AssetId("polyfun_precomputed_heritability_weight_chr_1_7"),
         extension=".parquet",
+
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat())
     ),
     url="https://github.com/omerwe/polyfun/raw/refs/heads/master/snpvar_meta.chr1_7.parquet",
     md5_hash="2f6a1509843edb954c4e1a200983683c",
@@ -46,9 +49,11 @@ POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHT_CHR_8_22 = DownloadFileTask(
         sub_folder=PurePath("raw"),
         id=AssetId("polyfun_precomputed_heritability_weight_chr_8_22"),
         extension=".parquet",
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat())
     ),
     url="https://github.com/omerwe/polyfun/raw/refs/heads/master/snpvar_meta.chr8_22.parquet",
     md5_hash=None,
+
 )
 
 COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS = ConcatFramesTask.create(

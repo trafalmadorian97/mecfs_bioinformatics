@@ -3,6 +3,8 @@ Rough experimental scripts pertaining to analysis of ME/CFS data
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes_and_polyfun_precomputed_prior.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes_polyfun import \
+    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES_WITH_POLYFUN
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_initial_asset_generator import \
     CT_LDSC_INITIAL_ASSET_GENERATOR
 from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import CT_LDSC_INITIAL_PLOT
@@ -19,11 +21,12 @@ def run_initial_decode_me_analysis():
         #     DECODE_ME_GWAS_37_CHR6_26_215_000_FINEMAP.terminal_tasks(),
         (
             # [YU_DRG_SRC1_RDATA]
+            DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES_WITH_POLYFUN.terminal_tasks()+
             [
 
-                CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
+                # CT_LDSC_INITIAL_ASSET_GENERATOR.heritability_aggregation_task,
 
-                CT_LDSC_INITIAL_PLOT
+                # CT_LDSC_INITIAL_PLOT
                 # YU_DRG_FRAC_SPECIFICITY_MATRIX
                 # CT_LDSC_INITIAL_PLOT
                 # CT_LDSC_INITIAL
@@ -67,8 +70,8 @@ def run_initial_decode_me_analysis():
         # DECODE_ME_BASIC_CIS_PQTL_MR.terminal_tasks(),
         incremental_save=True,
         must_rebuild_transitive=[
-
-            CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task
+            DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES_WITH_POLYFUN.harmonized_sumstats_task
+            # CT_LDSC_INITIAL_ASSET_GENERATOR.aggregation_task
             # CT_LDSC_INITIAL_PLOT.genetic_corr_source.task
             # CT_LDSC_INITIAL,
             # CT_LDSC_INITIAL_PLOT
