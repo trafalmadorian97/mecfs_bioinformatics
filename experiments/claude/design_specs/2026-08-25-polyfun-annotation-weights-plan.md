@@ -475,18 +475,16 @@ git commit -m "feat: baseline-LF annotation names + family classifier"
 ```python
 import gzip
 import tarfile
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import polars as pl
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
-    DataFrameParquetFormat,
-    DataFrameReadSpec,
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
 )
-from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.annotation_weights.build_baseline_lf_annotation_parquet_task import (
     BuildBaselineLFAnnotationParquetTask,
 )
@@ -535,7 +533,13 @@ def test_builds_sorted_deduped_annotation_parquet(tmp_path: Path):
     scratch.mkdir()
 
     tarball_task = FakeTask(
-        SimpleFileMeta("annot_tarball", read_spec=None)
+        ReferenceFileMeta(
+            group="polyfun",
+            sub_group="annotations",
+            sub_folder=PurePath("raw"),
+            id=AssetId("annot_tarball"),
+            extension=".tar.gz",
+        )
     )
     task = BuildBaselineLFAnnotationParquetTask.create(
         asset_id="annot_parquet", tarball_task=tarball_task
@@ -728,7 +732,7 @@ git commit -m "feat: BuildBaselineLFAnnotationParquetTask"
 
 ```python
 import json
-from pathlib import Path
+from pathlib import Path, PurePath
 
 import numpy as np
 import polars as pl
@@ -740,6 +744,9 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
+)
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
 )
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
@@ -790,7 +797,14 @@ def test_recovers_known_linear_weights(tmp_path: Path):
     scratch.mkdir()
 
     annot_task = FakeTask(
-        SimpleFileMeta("annot", read_spec=DataFrameReadSpec(DataFrameParquetFormat()))
+        ReferenceFileMeta(
+            group="polyfun",
+            sub_group="annotations",
+            sub_folder=PurePath("raw"),
+            id=AssetId("annot"),
+            extension=".parquet",
+            read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+        )
     )
     meta_task = FakeTask(
         SimpleFileMeta("meta", read_spec=DataFrameReadSpec(DataFrameParquetFormat()))
