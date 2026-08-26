@@ -20,6 +20,12 @@ from mecfs_bio.assets.gwas.c_reactive_protein.said_et_al.analysis.said_crp_stand
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.kerrebeijin_ppp_rg import (
+    KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED,
+)
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.standard_analysis_kerrebijin_fibro import (
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.height.yengo_2022.analysis.yengo_standard_analysis import (
     YENGO_HEIGHT_STANDARD_ANALYSIS,
 )
@@ -414,6 +420,10 @@ ALL_FIGURE_TASKS: list[Task] = [
     PGC2022_SCH_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # asthma
     ASTHMA_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # Fibro
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
+    KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
