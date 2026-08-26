@@ -7,11 +7,18 @@ requires-python = "~=3.13"
 # gwaslab 4.2.2 caps numpy<2, matplotlib<3.9, and pins pysam==0.22.1.  Those exact
 # versions have no cp313 wheels on PyPI, so on Python 3.13 they would each build from
 # sdist (and pysam 0.22.1's sdist fails to build under Cython 3).  Override the caps to
-# versions that ship cp313 wheels.  Verified: gwaslab uses no numpy-2.0-removed symbols,
-# and its matplotlib get_cmap calls are guarded (the one unguarded path, viz_plot_arc, is
-# not exercised by this repo).
+# versions that ship cp313 wheels.  matplotlib: gwaslab's get_cmap calls are guarded (the
+# one unguarded path, viz_plot_arc, is not exercised by this repo).
+#
+# numpy is capped <2.4: gwaslab's vendored LDSC rg estimator calls float() on size-1
+# arrays of ndim>0 (extension/ldsc/ldsc_regressions.py, RG.__init__).  numpy 1.25
+# deprecated that conversion and 2.4.0 turned it into a hard TypeError, which crashes the
+# CT-LDSC genetic-correlation path (system_test_genetic_corr_by_ct_ldsc).  On 2.1-2.3 it
+# still works (only a DeprecationWarning; we don't run warnings-as-errors).  Lift this
+# ceiling once gwaslab extracts the scalar with .item() upstream.  The renovate.json
+# packageRule for numpy enforces the same cap.
 [tool.pixi.pypi-options.dependency-overrides]
-numpy = ">=2.1"
+numpy = ">=2.1,<2.4"
 matplotlib = ">=3.9.2"
 pysam = ">=0.24,<0.25"
 
@@ -54,7 +61,7 @@ env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1" }
 pysam = ">=0.24,<0.25" #pysam is used by gwaslab
 pixi-pycharm = ">=0.0.12,<0.0.13"
 pyarrow = ">=25,<26"
-rust = ">=1.97,<1.98"
+rust = ">=1.98,<1.99"
 duckdb = ">=1.4.1,<2"
 # Required by mkdocs-bibtex: its PandocRegistry shells out to pandoc via pypandoc.
 # Currently dormant (we use SimpleRegistry), but it activates as soon as `csl_file`
@@ -110,7 +117,7 @@ numpy = "*"
 osfclient = ">=0.0.5"
 pandas = ">=2.3.3"
 plotly = ">=6.5.2"
-polars = ">=1.43.0,<1.44.0"
+polars = ">=1.44.0,<1.45.0"
 py3-wget = ">=1.0.13"
 pytest = ">=8.4.2"
 requests = ">=2.32.5"
