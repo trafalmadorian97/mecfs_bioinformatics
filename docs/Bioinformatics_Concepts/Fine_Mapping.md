@@ -13,22 +13,6 @@ A primary purposes of a GWAS is identification of causal genetic variants.  Thes
 
 The naive approach is to label the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") as causal.  This approach omits a key consideration: linkage disequilibrium.
 
-## Linkage Disequilibrium
-_Linkage disequilibrium_ (LD) refers to statistical dependence between genetic variants. LD is central to statistical genomics.
-
-Some facts about LD:
-
-- LD decays as the distance between variants increases, because the odds of an intervening [recombination event](https://en.wikipedia.org/wiki/Genetic_recombination) correspondingly increase. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant.
-- Genetic variants that are relatively recent tend to have low frequency in the population, and thus low LD with all other variants, regardless of distance.
-
-
-As an illustrative example, here is a plot of the absolute value of the correlation between genetic variants in a region of chromosome 1.  This plot was generated from the [UK Biobank LD matrices stored on AWS OpenData](https://registry.opendata.aws/ukbb-ld/).  In the plot, the x and y axes correspond genomic position, while color indicates absolute correlation.
-
-
-![ld_example_plot](https://github.com/user-attachments/assets/a05681d5-91f3-4b89-8023-d3d50a22b8bd)
-
-Consistent with the facts above, we observe irregularly spaced LD blocks. 
-
 
 ## Effect of LD on Significance
 
