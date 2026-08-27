@@ -73,12 +73,12 @@ class _ChromStats:
     raw annotation scale). p = number of annotations.
     NOTE
     Compute
-    X \in \mathbb{R}^{n \times p}
+    X \\in \\mathbb{R}^{n \times p}
 
-    sx= \sum rows of annotation matrix X
-    sxx \sum x_i x_i^T
+    sx= \\sum rows of annotation matrix X
+    sxx \\sum x_i x_i^T
     sxy: X^T y
-    sy: \sum (y)\in\mathbb{R}
+    sy: \\sum (y)\\in\\mathbb{R}
     syy: ||y||^2
 
     """
@@ -100,6 +100,7 @@ class _StandardizedSystem:
     mean: np.ndarray  # (p,) per-annotation mean
     sd: np.ndarray  # (p,) per-annotation std (zeros replaced by 1)
     mean_y: float
+
 
 @frozen
 class RidgeAnnotationWeightsTask(Task):
@@ -234,8 +235,6 @@ def _combine(stats: list[_ChromStats]) -> _ChromStats:
     )
 
 
-
-
 def _standardized_system(stats: _ChromStats) -> _StandardizedSystem:
     """Build the centered+standardized ridge system from raw cross-products.
 
@@ -261,10 +260,10 @@ def _standardized_system(stats: _ChromStats) -> _StandardizedSystem:
     """
     n = stats.n
     mean = stats.sx / n
-    var = np.diag(stats.sxx) / n - mean**2 # Since var(z)= Ez^2 - (E(z))^2
+    var = np.diag(stats.sxx) / n - mean**2  # Since var(z)= Ez^2 - (E(z))^2
     sd = np.sqrt(np.maximum(var, 0.0))
-    sd[sd == 0] = 1.0 # p-length vector
-    centered_gram = stats.sxx - n * np.outer(mean, mean) # sum_i (x_i-mean)(x_i-mean)^T
+    sd[sd == 0] = 1.0  # p-length vector
+    centered_gram = stats.sxx - n * np.outer(mean, mean)  # sum_i (x_i-mean)(x_i-mean)^T
     g_std = centered_gram / np.outer(sd, sd)
     b_std = (stats.sxy - mean * stats.sy) / sd
     return _StandardizedSystem(
@@ -302,14 +301,62 @@ def _heldout_r2(
 
     Derivation:
 
+        Let the held-out chromosome have n SNPs. For SNP i, x_i is its raw
+        p-vector of annotations and y_i its snpvar_bin. The model was fit on
+        the training chromosomes, so it carries the train intercept
+        c = train_mean_y and the train standardizer (train_mean tm, train_sd
+        ts, both p-vectors). The held-out annotations are standardized with the
+        TRAIN moments, not their own:
 
+            z_i = (x_i - tm) / ts       (elementwise)
+            f_i = c + gamma_std . z_i
+
+        Sum of squared residuals is then a quadratic form in gamma_std:
+
+            SS_res = sum_i (y_i - f_i)^2
+                   = sum_i [ (y_i - c) - gamma_std . z_i ]^2
+                   = sum_i (y_i - c)^2                         (call it ss_res_y)
+                     - 2 gamma_std . [ sum_i z_i (y_i - c) ]   (call it z_r)
+                     + gamma_std^T [ sum_i z_i z_i^T ] gamma_std  (call it zz)
+
+        Each of the three pieces expands into the raw cross-product statistics
+        carried on held (n, sx, sxx, sxy, sy, syy), so no per-SNP array is ever
+        rebuilt.
+
+        ss_res_y (scalar):
+            sum_i (y_i - c)^2 = sum_i y_i^2 - 2 c sum_i y_i + n c^2
+                              = syy - 2 c sy + n c^2
+
+        z_r (p-vector), via component j with z_ij = (x_ij - tm_j) / ts_j:
+            sum_i z_ij (y_i - c)
+              = (1 / ts_j) sum_i (x_ij - tm_j)(y_i - c)
+              = (1 / ts_j) [ sxy_j - c sx_j - tm_j sy + n c tm_j ]
+            => z_r = (sxy - c sx - tm sy + n c tm) / ts
+
+        zz (pxp), via component (j, k):
+            sum_i z_ij z_ik
+              = (1 / (ts_j ts_k)) sum_i (x_ij - tm_j)(x_ik - tm_k)
+              = (1 / (ts_j ts_k)) [ sxx_jk - tm_j sx_k - tm_k sx_j
+                                    + n tm_j tm_k ]
+            => zz = (sxx - outer(tm, sx) - outer(sx, tm) + n outer(tm, tm))
+                    / outer(ts, ts)
+
+        so SS_res = ss_res_y - 2 gamma_std . z_r + gamma_std^T zz gamma_std.
+
+        The denominator uses the held-out chromosome's OWN mean ybar = sy / n
+        (the R^2 null model is "predict the held-out mean"), unlike SS_res,
+        which is taken about the train intercept c:
+
+            SS_tot = sum_i (y_i - ybar)^2 = syy - n ybar^2
+
+        and R^2 = 1 - SS_res / SS_tot.
     """
     n = held.n
     c = train_mean_y
     tm = train_mean
     ts = train_sd
     # SS over (y - c): sum (y - c)^2
-    ss_res_y = held.syy - 2.0 * c * held.sy + n * c * c # sum (y-c)^2
+    ss_res_y = held.syy - 2.0 * c * held.sy + n * c * c  # sum (y-c)^2
     # sum z_i (y_i - c)  and  sum z_i z_i^T  in terms of raw stats
     z_r = (held.sxy - c * held.sx - tm * held.sy + n * c * tm) / ts
     zz = (
