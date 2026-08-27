@@ -80,7 +80,7 @@ $$
 
 and similarly, $\mathbb{E}(Z\gamma)=0$.
 
-Define the following quantities related to Linkage Disequilibrium (LD):
+Define the following quantities related to [Linkage Disequilibrium](Linkage_Disequilibrium.md) (LD):
 
 - The LD between SNP $j$ and SNP $k$ is denoted by $r_{jk}:=\mathbb{E}(Y_{i,j}Y_{i,k})=\mathbb{E}(Z_{q,j}Z_{qk})$, (which does not depend on the individuals $i$ and $q$ by our assumption that the rows of $Y$ and $Z$ are iid).
 

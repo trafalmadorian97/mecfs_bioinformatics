@@ -3,12 +3,12 @@ _Linkage disequilibrium_ (LD) refers to statistical dependence between genetic v
 
 ## Measures
 
-- When we are interested in patterns of LD across an entire genomic region of length $n$, it is common to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
-- Note, however, that this matrix $R$ reflects only pairwise dependence, and so is not a complete characterization of LD.  In particular, there are many higher-order dependence structures consistent with any given $R$ matrix.
+- When we are interested in patterns of LD across a genomic region with $n$ variants, it is common to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
+- Note, however, that this matrix $R$ reflects only pairwise dependence, and so is not a complete characterization of LD.  In particular, there are many higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
 
-## Drivers of LD
+## Drivers
 
-There are two main physical processes that cause LD patterns: mutation and recombination.
+There are two main physical processes that drive LD: mutation and recombination.
 
 ### Mutation
 
@@ -24,13 +24,7 @@ Figure 7 from the Hapmap paper[@international2005haplotype] illustrates the conc
 ### Recombination
 
 
-Besides mutation, the other major driver of LD patterns in the Eukaryotic genome is recombination.
-
-
-Some facts about LD:
-
-- LD decays as the distance between variants increases, because the odds of an intervening [recombination event](https://en.wikipedia.org/wiki/Genetic_recombination) correspondingly increase. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant.
-- Genetic variants that are relatively recent tend to have low frequency in the population, and thus low LD with all other variants, regardless of distance.
+Besides mutation, the other major driver of LD patterns in the eukaryotic genome is recombination. In regions subject to recombination, LD decays as the distance between variants increases, because the odds of an intervening [recombination event](https://en.wikipedia.org/wiki/Genetic_recombination) correspondingly increase. However, due to the complex structure of eukaryotic DNA, the odds of recombination events are non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant. Instead, LD displays a block-like structure, with block boundaries determined by recombination hotspots.
 
 
 As an illustrative example, here is a plot of the absolute value of the correlation between genetic variants in a region of chromosome 1.  This plot was generated from the [UK Biobank LD matrices stored on AWS OpenData](https://registry.opendata.aws/ukbb-ld/).  In the plot, the x and y axes correspond genomic position, while color indicates absolute correlation.
@@ -38,10 +32,23 @@ As an illustrative example, here is a plot of the absolute value of the correlat
 
 ![ld_example_plot](https://github.com/user-attachments/assets/a05681d5-91f3-4b89-8023-d3d50a22b8bd)
 
-Consistent with the facts above, we observe irregularly spaced LD blocks. 
+Consistent with the above, we observe irregularly spaced LD blocks. 
 
 
 ## Genomic Distance
 
+It is frequently useful to measure distance along the genome not in terms of physical base pairs, but in terms of recombination frequency. For this purpose, the preferred unit is the [centimorgan](https://en.wikipedia.org/wiki/Centimorgan). Two genomic positions are one centimorgan apart if there is 1% chance of a recombination event between them per generation[^time_love].
+
+
 
 ## Genotyping
+
+The strong linkage disequilibrium between variants in close proximity means that it is possible to capture a large proportion of human genetic variation without sequencing all variants.  Instead, researchers can genotype a set of carefully chosen common variants.  Un-genotyped common variants can be imputed with high accuracy from genotyped common variants via LD.
+
+
+
+
+
+[^corr_example]: The following example is illustrative.  Consider 3 variants A, B and C. If all 3 variants are independent, the correlation matrix $R$ will equal the identity matrix.  If A and B are independent, but C is the [exclusive or](https://en.wikipedia.org/wiki/Exclusive_or) of A and B, their correlation matrix is also the identity matrix.
+
+[^time_love]: For a readable popular-science account of the early history of genetics, and the development of the centimorgan from the studies of fruit-fly mutants, see _Time, Love, and Memory_[@weiner2000time].

@@ -11,7 +11,7 @@ The plot below generated from the [DecodeME](../Data_Sources/DecodeME.md)[@genet
 
 A primary purposes of a GWAS is identification of causal genetic variants.  These causal variants can inform us about the biological processes underlying the phenotype we are studying.
 
-The naive approach is to label the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") as causal.  This approach omits a key consideration: linkage disequilibrium.
+The naive approach is to label the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") as causal.  This approach omits a key consideration: [linkage disequilibrium](Linkage_Disequilibrium.md).
 
 
 ## Effect of LD on Significance
