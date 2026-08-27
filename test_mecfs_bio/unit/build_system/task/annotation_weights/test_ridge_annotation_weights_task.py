@@ -66,7 +66,7 @@ def _make_inputs(tmp_path: Path) -> tuple[Path, Path, dict[str, float]]:
     annot_path = tmp_path / "annot.parquet"
     frame.drop("snpvar_bin").write_parquet(annot_path)
     meta_path = tmp_path / "meta.parquet"
-    frame.select("SNP", "snpvar_bin").write_parquet(meta_path)
+    frame.select("CHR", "BP", "SNP", "snpvar_bin").write_parquet(meta_path)
     return annot_path, meta_path, truth
 
 

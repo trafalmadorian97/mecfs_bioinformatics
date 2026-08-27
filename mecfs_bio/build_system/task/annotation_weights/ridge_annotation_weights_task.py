@@ -49,7 +49,15 @@ GAMMA_STANDARDIZED_COL = "gamma_standardized"
 FAMILY_COL = "family"
 SNPVAR_COL = "snpvar_bin"
 _CHR_COL = "CHR"
+_BP_COL = "BP"
 _SNP_COL = "SNP"
+# The annotation source carries no alleles, so the annotation<->snpvar join
+# cannot be allele-precise; joining on (CHR, BP, SNP) rather than SNP alone is
+# the most precise key available. Both are the same polyfun hg19 panel, so this
+# drops zero rows today (measured), but it drops a row instead of silently
+# pairing the wrong annotation should a future panel rev ever map an rsid to a
+# new position.
+_JOIN_KEYS = [_CHR_COL, _BP_COL, _SNP_COL]
 
 _DEFAULT_ALPHAS: tuple[float, ...] = (0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
 
@@ -84,7 +92,7 @@ class RidgeAnnotationWeightsTask(Task):
         meta_asset = fetch(self.snpvar_meta_task.asset_id)
         meta = (
             scan_dataframe_asset(meta_asset, self.snpvar_meta_task.meta)
-            .select(_SNP_COL, SNPVAR_COL)
+            .select(_CHR_COL, _BP_COL, _SNP_COL, SNPVAR_COL)
             .collect()
             .to_polars()
             .unique(subset=_SNP_COL)
@@ -173,7 +181,7 @@ def _accumulate_per_chromosome(
             pl.scan_parquet(annot_path)
             .filter(pl.col(_CHR_COL) == chrom)
             .collect()
-            .join(meta, on=_SNP_COL, how="inner")
+            .join(meta, on=_JOIN_KEYS, how="inner")
         )
         x = frame.select(annot_columns).to_numpy().astype(np.float64)
         y = frame.select(SNPVAR_COL).to_numpy().ravel().astype(np.float64)
