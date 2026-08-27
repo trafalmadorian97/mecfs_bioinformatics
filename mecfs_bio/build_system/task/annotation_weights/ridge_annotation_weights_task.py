@@ -7,6 +7,11 @@ the full design matrix is never held in memory; alpha is chosen by
 leave-one-chromosome-out. Outputs raw-scale coefficients gamma_raw (used by the
 explainability contrast) and standardized coefficients gamma_standardized (for
 global importance ranking), plus each annotation's family.
+
+
+NOTE: the annotations are standardized before fitting the ridge regression model.  The resulting annotation ridge regression
+coefficients are then un-standardized.  This approach was chosen so that the coefficients of all annotations are shrunk
+by the ridge penalty on the same standardized scale.
 """
 
 import json
@@ -65,7 +70,18 @@ _DEFAULT_ALPHAS: tuple[float, ...] = (0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
 @frozen
 class _ChromStats:
     """Cross-product sufficient statistics for one chromosome (standardized-free,
-    raw annotation scale). p = number of annotations."""
+    raw annotation scale). p = number of annotations.
+    NOTE
+    Compute
+    X \in \mathbb{R}^{n \times p}
+
+    sx= \sum rows of annotation matrix X
+    sxx \sum x_i x_i^T
+    sxy: X^T y
+    sy: \sum (y)\in\mathbb{R}
+    syy: ||y||^2
+
+    """
 
     n: int
     sx: np.ndarray  # (p,) sum of annotations
@@ -74,6 +90,16 @@ class _ChromStats:
     sy: float
     syy: float
 
+
+@frozen
+class _StandardizedSystem:
+    """The centered+standardized ridge system for a set of annotations."""
+
+    g_std: np.ndarray  # (p, p) standardized Gram
+    b_std: np.ndarray  # (p,) standardized cross-term
+    mean: np.ndarray  # (p,) per-annotation mean
+    sd: np.ndarray  # (p,) per-annotation std (zeros replaced by 1)
+    mean_y: float
 
 @frozen
 class RidgeAnnotationWeightsTask(Task):
@@ -208,25 +234,37 @@ def _combine(stats: list[_ChromStats]) -> _ChromStats:
     )
 
 
-@frozen
-class _StandardizedSystem:
-    """The centered+standardized ridge system for a set of annotations."""
-
-    g_std: np.ndarray  # (p, p) standardized Gram
-    b_std: np.ndarray  # (p,) standardized cross-term
-    mean: np.ndarray  # (p,) per-annotation mean
-    sd: np.ndarray  # (p,) per-annotation std (zeros replaced by 1)
-    mean_y: float
 
 
 def _standardized_system(stats: _ChromStats) -> _StandardizedSystem:
-    """Build the centered+standardized ridge system from raw cross-products."""
+    """Build the centered+standardized ridge system from raw cross-products.
+
+    NOTE:
+        to fit ridge regression we need
+        X^TX: Gram matrix
+            =sum x_i x_i^T where x_i is the ith row of x
+        X^ty:
+            = sum x_i^T y where x_i is the ith row of X
+
+
+    Goal of this function is to convert from ridge data for unstandardized
+     system to ridge data for standardized system
+
+     Derivation of Centered Gram matrix:
+
+     sum_i (x_i - mean)(x_i - mean)^T
+          = sum_i x_ix_i^T  - x_i mean^T - mean x_i^T + mean mean^T
+          =  (sum_i x_ix_i^T) - 2*n*mean mean^T + n * mean mean^T
+          = (sum_i x_ix_i^T) - n * mean mean^T
+
+
+    """
     n = stats.n
     mean = stats.sx / n
-    var = np.diag(stats.sxx) / n - mean**2
+    var = np.diag(stats.sxx) / n - mean**2 # Since var(z)= Ez^2 - (E(z))^2
     sd = np.sqrt(np.maximum(var, 0.0))
-    sd[sd == 0] = 1.0
-    centered_gram = stats.sxx - n * np.outer(mean, mean)
+    sd[sd == 0] = 1.0 # p-length vector
+    centered_gram = stats.sxx - n * np.outer(mean, mean) # sum_i (x_i-mean)(x_i-mean)^T
     g_std = centered_gram / np.outer(sd, sd)
     b_std = (stats.sxy - mean * stats.sy) / sd
     return _StandardizedSystem(
@@ -253,13 +291,25 @@ def _heldout_r2(
     Prediction for raw annotations x is pred = train_mean_y + gamma_std . z, where
     z = (x - train_mean) / train_sd. Everything is expanded from the held-out
     chromosome's raw cross-product sufficient statistics; no per-SNP data needed.
+
+
+    NOTE:
+        Definition of R^2
+        R^2 = 1- (sum of squared residuals)/(sum of squared total)
+        - sum of squared residuals = sum_i (y_i-f_i)^2
+        - sum of squared total = sum_i (y_i-mean(y))^2
+
+
+    Derivation:
+
+
     """
     n = held.n
     c = train_mean_y
     tm = train_mean
     ts = train_sd
     # SS over (y - c): sum (y - c)^2
-    ss_res_y = held.syy - 2.0 * c * held.sy + n * c * c
+    ss_res_y = held.syy - 2.0 * c * held.sy + n * c * c # sum (y-c)^2
     # sum z_i (y_i - c)  and  sum z_i z_i^T  in terms of raw stats
     z_r = (held.sxy - c * held.sx - tm * held.sy + n * c * tm) / ts
     zz = (
