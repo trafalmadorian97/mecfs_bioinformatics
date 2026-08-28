@@ -47,6 +47,20 @@ AnnotationFamily = Literal[
     "other",
 ]
 
+FAMILY_SHORT_LABELS: dict[AnnotationFamily, str] = {
+    "non_synonymous": "nonsyn",
+    "coding": "cod",
+    "conserved": "cons",
+    "promoter_or_enhancer": "prom_enh",
+    "histone_marks": "hist",
+    "repressed": "repr",
+    "open_chromatin": "openchr",
+    "maf_bins": "maf",
+    "ld_related_continuous": "ld",
+    "molecular_qtl": "qtl",
+    "other": "other",
+}
+
 # Explicit overrides, matched as substrings and checked BEFORE the keyword rules.
 # These are the continuous/special/molecular-QTL annotations whose family is not
 # implied by a plain functional keyword (or that must beat a later keyword).

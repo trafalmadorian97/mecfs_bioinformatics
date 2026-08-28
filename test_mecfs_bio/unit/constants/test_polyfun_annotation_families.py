@@ -4,6 +4,7 @@ from mecfs_bio.assets.reference_data.polyfun.annotations.baseline_lf_annotation_
     BASELINE_LF_ANNOTATION_NAMES,
 )
 from mecfs_bio.constants.polyfun_annotation_families import (
+    FAMILY_SHORT_LABELS,
     AnnotationFamily,
     family_for_annotation,
 )
@@ -54,6 +55,10 @@ def test_representative_family_assignments():
     }
     for name, family in cases.items():
         assert family_for_annotation(name) == family
+
+
+def test_short_labels_cover_every_family():
+    assert set(FAMILY_SHORT_LABELS) == set(get_args(AnnotationFamily))
 
 
 def test_open_chromatin_membership_is_exactly_dhs_and_dgf():
