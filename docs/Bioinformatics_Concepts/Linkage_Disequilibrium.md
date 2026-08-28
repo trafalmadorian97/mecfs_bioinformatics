@@ -1,5 +1,5 @@
 # Linkage Disequilibrium
-_Linkage disequilibrium_ (LD) refers to statistical dependence between genetic variants. LD is central to statistical genomics.
+_Linkage disequilibrium_ (LD) refers to statistical dependence between genetic variants. LD is central to statistical genomics[^handbook_note][^name_note].
 
 ## Measures
 
@@ -8,11 +8,11 @@ _Linkage disequilibrium_ (LD) refers to statistical dependence between genetic v
 
 ## Drivers
 
-There are two main physical processes that drive LD: mutation and recombination.
+There are two main processes that drive LD: mutation and recombination.
 
 ### Mutation
 
-For simplicity, first consider LD in the  absence of recombination, as in the case in mitochondrial DNA and certain regions of the Y chromosome.  In such recombination-free regions, the genomic distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutation patterns.  
+For simplicity, first consider LD in the  absence of recombination, as in the case in mitochondrial DNA and certain regions of the Y chromosome.  In such recombination-free regions, the genomic distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutations, and the fates of populations containing these mutations.  
 
 Figure 7 from the Hapmap paper[@international2005haplotype] illustrates the concept:
 
@@ -34,6 +34,10 @@ As an illustrative example, here is a plot of the absolute value of the correlat
 
 Consistent with the above, we observe irregularly spaced LD blocks. 
 
+### Other Factors
+
+Besides mutation and recombination, LD is affected broadly by historical patterns of migration, population isolation, and natural selection.
+
 
 ## Genomic Distance
 
@@ -43,11 +47,13 @@ It is frequently useful to measure distance along the genome not in terms of phy
 
 ## Genotyping
 
-The strong linkage disequilibrium between variants in close proximity means that it is possible to capture a large proportion of human genetic variation without sequencing all variants.  Instead, researchers can genotype a set of carefully chosen common variants.  Un-genotyped common variants can be imputed with high accuracy from genotyped common variants via LD.
+The strong linkage disequilibrium between variants in close proximity means that it is possible to capture a large proportion of common human genetic variation without sequencing all variants.  Instead, researchers can genotype a set of carefully chosen common variants called "tag variants".  Un-genotyped common variants can be imputed with high accuracy from their LD relationships with tag variants.
 
 
 
+[^handbook_note]: For an overview of linkage disequilibrium with reference to population genomic models like the famous [coalescent](https://en.wikipedia.org/wiki/Coalescent_theory) see chapter 2 of the Handbook of Statistical Genomics[@balding2019handbook].
 
+[^name_note]: As noted in chapter 2 of the Handbook of Statistical Genomics, the word "disequilibrium" in "linkage disequilibrium" is somewhat inaccurate, in the sense that statistical dependence between variants occurs in population-genetic equilibrium.
 
 [^corr_example]: The following example is illustrative.  Consider 3 variants A, B and C. If all 3 variants are independent, the correlation matrix $R$ will equal the identity matrix.  If A and B are independent, but C is the [exclusive or](https://en.wikipedia.org/wiki/Exclusive_or) of A and B, their correlation matrix is also the identity matrix.
 
