@@ -4,6 +4,7 @@ from pathlib import Path, PurePath
 import numpy as np
 import polars as pl
 import pytest
+from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -21,6 +22,7 @@ from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
     WEIGHTS_PARQUET_FILENAME,
 )
+from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     DISP_CS_PF,
@@ -36,12 +38,14 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     CS_COLUMN,
     FILTERED_GWAS_FILENAME,
+    FILTERED_LD_FILENAME,
     PIP_COLUMN,
     PIP_FILENAME,
     PRIOR_FILENAME,
     PRIOR_WEIGHT_COLUMN,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_BETA_COL, GWASLAB_SE_COL
 
 # Two real baseline-LF annotations from different families so family aggregation
 # is exercised: Coding_UCSC_common -> coding, GERP.NS -> conserved.
@@ -54,6 +58,10 @@ _DEFAULT_UNIFORM_PIP: tuple[float, ...] = (0.2, 0.2, 0.2, 0.2, 0.1, 0.1)
 # Polyfun-run PIP is concentrated on variant 0 (focal), for both tests.
 _POLYFUN_PIP: tuple[float, ...] = (0.8, 0.05, 0.05, 0.05, 0.03, 0.02)
 _PRIOR_WEIGHTS: tuple[float, ...] = (8.0, 1.0, 1.0, 1.0, 1.0, 1.0)
+# BETA/SE so the focal variant (row 0) is the Manhattan-panel lead; used by
+# the plot task (Task 3), harmless extra columns for the contrast task.
+_BETAS: tuple[float, ...] = (2.0, 0.1, 0.1, 0.1, 0.1, 0.1)
+_SES: tuple[float, ...] = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
 
 
 def _write_run_dir(
@@ -66,7 +74,13 @@ def _write_run_dir(
     directory.mkdir(parents=True, exist_ok=True)
     # pip.parquet: one PIP column, row order == variants
     pl.DataFrame({PIP_COLUMN: pip}).write_parquet(directory / PIP_FILENAME)
-    variants.write_parquet(directory / FILTERED_GWAS_FILENAME)
+    gwas = variants.with_columns(
+        pl.Series(name=GWASLAB_BETA_COL, values=_BETAS),
+        pl.Series(name=GWASLAB_SE_COL, values=_SES),
+    )
+    gwas.write_parquet(directory / FILTERED_GWAS_FILENAME)
+    # Identity LD matrix (only the plot task, Task 3, reads this).
+    np.save(directory / FILTERED_LD_FILENAME, np.eye(variants.height))
     if prior_weights is not None:
         variants.with_columns(
             pl.Series(name=PRIOR_WEIGHT_COLUMN, values=prior_weights)
@@ -150,16 +164,16 @@ def _make_contrast_fixture(
     return uni_dir, pf_dir, weights_dir, annot_path
 
 
-def _run_contrast_task(
-    tmp_path: Path,
+def _build_contrast_task_and_fetch_map(
     uni_dir: Path,
     pf_dir: Path,
     weights_dir: Path,
     annot_path: Path,
     n_important_families: int = 2,
-) -> DirectoryAsset:
-    """Build and execute a PolyfunExplainContrastTask over a fixture produced by
-    _make_contrast_fixture. Shared by every test in this module."""
+) -> tuple[PolyfunExplainContrastTask, dict[str, Asset]]:
+    """Build a PolyfunExplainContrastTask plus its {asset_id: Asset} fetch map
+    over a fixture produced by _make_contrast_fixture. Shared by every test in
+    this module and by build_synthetic_explain_inputs."""
     uni_task = FakeTask(ResultDirectoryMeta(id=AssetId("uni"), trait="t", project="p"))
     pf_task = FakeTask(ResultDirectoryMeta(id=AssetId("pf"), trait="t", project="p"))
     weights_task = FakeTask(
@@ -185,15 +199,32 @@ def _run_contrast_task(
         n_important_families=n_important_families,
     )
 
+    fetch_map: dict[str, Asset] = {
+        "uni": DirectoryAsset(uni_dir),
+        "pf": DirectoryAsset(pf_dir),
+        # Mirrors RidgeAnnotationWeightsTask.execute's real return type.
+        "weights": DirectoryAsset(weights_dir),
+        "annot": FileAsset(annot_path),
+    }
+    return task, fetch_map
+
+
+def _run_contrast_task(
+    tmp_path: Path,
+    uni_dir: Path,
+    pf_dir: Path,
+    weights_dir: Path,
+    annot_path: Path,
+    n_important_families: int = 2,
+) -> DirectoryAsset:
+    """Build and execute a PolyfunExplainContrastTask over a fixture produced by
+    _make_contrast_fixture. Shared by every test in this module."""
+    task, fetch_map = _build_contrast_task_and_fetch_map(
+        uni_dir, pf_dir, weights_dir, annot_path, n_important_families
+    )
+
     def fetch(asset_id: AssetId) -> Asset:
-        mapping = {
-            "uni": DirectoryAsset(uni_dir),
-            "pf": DirectoryAsset(pf_dir),
-            # Mirrors RidgeAnnotationWeightsTask.execute's real return type.
-            "weights": DirectoryAsset(weights_dir),
-            "annot": FileAsset(annot_path),
-        }
-        return mapping[str(asset_id)]
+        return fetch_map[str(asset_id)]
 
     scratch = tmp_path / "scratch"
     scratch.mkdir()
@@ -202,9 +233,53 @@ def _run_contrast_task(
     return result
 
 
-def test_contrast_closed_form(tmp_path: Path):
+@frozen
+class _ExplainInputs:
+    """Shared synthetic fixture for the polyfun-explain contrast and plot
+    tasks: the task objects (so a caller can wire them as deps into a
+    downstream task) plus a fetch map for the contrast task's own dep set and
+    the already-executed contrast task directory."""
+
+    uni_task: Task
+    pf_task: Task
+    weights_task: Task
+    annot_task: Task
+    contrast_task: Task
+    fetch_map: tuple  # tuple of (str asset_id, Asset)
+
+
+def build_synthetic_explain_inputs(tmp_path: Path) -> _ExplainInputs:
+    """Build the two-run, two-annotation synthetic locus fixture, run the
+    contrast task once over it, and return the tasks + fetch map + executed
+    contrast directory so Task 3's plot task can be wired against the exact
+    same data the contrast task's tables were computed from."""
     uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
-    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
+    contrast_task, fetch_map = _build_contrast_task_and_fetch_map(
+        uni_dir, pf_dir, weights_dir, annot_path
+    )
+
+    def fetch(asset_id: AssetId) -> Asset:
+        return fetch_map[str(asset_id)]
+
+    scratch = tmp_path / "contrast_scratch"
+    scratch.mkdir()
+    contrast_dir = contrast_task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
+    assert isinstance(contrast_dir, DirectoryAsset)
+
+    full_fetch_map = {**fetch_map, "contrast": contrast_dir}
+    return _ExplainInputs(
+        uni_task=contrast_task.susie_uniform_task,
+        pf_task=contrast_task.susie_polyfun_task,
+        weights_task=contrast_task.ridge_weights_task,
+        annot_task=contrast_task.annotation_parquet_task,
+        contrast_task=contrast_task,
+        fetch_map=tuple(full_fetch_map.items()),
+    )
+
+
+def test_contrast_closed_form(tmp_path: Path):
+    inputs = build_synthetic_explain_inputs(tmp_path)
+    result = dict(inputs.fetch_map)["contrast"]
 
     # Focal variant is the max-PIP-polyfun variant (POS 10).
     selection = json.loads((result.path / SELECTION_JSON_FILENAME).read_text())
