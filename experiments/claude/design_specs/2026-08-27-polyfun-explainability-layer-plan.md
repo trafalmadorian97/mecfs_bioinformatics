@@ -546,7 +546,30 @@ def test_contrast_closed_form(tmp_path: Path):
     focal_row = display.filter(pl.col("pos") == 10)
     assert focal_row[DISP_CS_PF][0] == 1
     assert focal_row[DISP_CS_U][0] == 1
+
+
+def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
+    # When the uniform run finds no signal (all PIPs 0), abar_c falls back to an
+    # unweighted mean, so contrasts are still well-defined (not NaN).
+    uni_dir, pf_dir, weights_path, annot_path = _make_contrast_fixture(
+        tmp_path, uniform_pip=(0.0, 0.0, 0.0, 0.0)
+    )
+    # ... build the task with the same fetch as above ...
+    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_path, annot_path)
+
+    per_family = pl.read_parquet(result.path / PER_FAMILY_CONTRAST_FILENAME)
+    assert per_family["family_contrast"].is_nan().sum() == 0
+    # abar_A now = mean(1,1,1,1)=1.0 (unweighted), so focal A contrast = 3*(1-1)=0.
+    focal_coding = per_family.filter(
+        (pl.col("POS") == 10) & (pl.col("family") == "coding")
+    )["family_contrast"][0]
+    assert abs(focal_coding - 0.0) < 1e-9
 ```
+
+Note: factor the fixture builder (`_make_contrast_fixture`, taking an optional
+`uniform_pip`) and a `_run_contrast_task` helper out of the first test so both
+tests share them; the uniform CS file must still list the variants (a CS with
+zero-PIP members is what a failed uniform run produces).
 
 - [ ] **Step 3: Run test to verify it fails**
 
@@ -680,8 +703,12 @@ class PolyfunExplainContrastTask(Task):
         )
 
         # abar_c: uniform PIP-weighted mean of each annotation over all uniform vars.
+        # If the uniform run found no signal (all PIPs ~0), fall back to an
+        # unweighted mean so every locus variant contributes equally.
         uni_annot = uni_variants.join(annot, on=_KEY, how="inner")
         w = uni_annot[PIP_COLUMN].to_numpy()
+        if w.sum() <= 0.0:
+            w = None
         abar = {
             c: float(np.average(uni_annot[c].to_numpy(), weights=w)) for c in annot_cols
         }
