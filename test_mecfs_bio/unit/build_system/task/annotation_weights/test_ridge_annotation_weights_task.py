@@ -29,44 +29,52 @@ from mecfs_bio.build_system.wf.base_wf import make_wf
 
 def _make_inputs(tmp_path: Path) -> tuple[Path, Path, dict[str, float]]:
     # Use real baseline-LF annotation names (rather than placeholders like
-    # "annotA") so family_for_annotation (Task 1) can resolve a family for each
-    # column instead of raising on an unrecognized name.
+    # "annotA") so family_for_annotation resolves a family for each column
+    # instead of raising on an unrecognized name. The annotation matrix and
+    # snpvar_meta both carry alleles (A1/A2); the join is allele-aware.
     rng = np.random.default_rng(0)
     n_per_chrom = 400
-    rows: list[dict] = []
     truth = {
         "Coding_UCSC_common": 2.0,
         "Promoter_UCSC_common": -1.0,
         "H3K27ac_Hnisz_common": 0.5,
     }
-    for chrom in (1, 2):
-        a = rng.normal(size=n_per_chrom)
-        b = rng.normal(size=n_per_chrom)
-        c = rng.normal(size=n_per_chrom)
+
+    def _row(chrom: int, bp: int, snp: str, a2: str) -> dict:
+        a, b, c = rng.normal(), rng.normal(), rng.normal()
         y = (
             3.0
             + truth["Coding_UCSC_common"] * a
             + truth["Promoter_UCSC_common"] * b
             + truth["H3K27ac_Hnisz_common"] * c
         )
+        return {
+            "CHR": chrom,
+            "BP": bp,
+            "SNP": snp,
+            "A1": "A",
+            "A2": a2,
+            "Coding_UCSC_common": a,
+            "Promoter_UCSC_common": b,
+            "H3K27ac_Hnisz_common": c,
+            "snpvar_bin": y,
+        }
+
+    rows: list[dict] = []
+    for chrom in (1, 2):
         for i in range(n_per_chrom):
-            rows.append(
-                {
-                    "CHR": chrom,
-                    "BP": i + 1,
-                    "SNP": f"rs{chrom}_{i}",
-                    "CM": 0.0,
-                    "Coding_UCSC_common": a[i],
-                    "Promoter_UCSC_common": b[i],
-                    "H3K27ac_Hnisz_common": c[i],
-                    "snpvar_bin": y[i],
-                }
-            )
+            rows.append(_row(chrom, i + 1, f"rs{chrom}_{i}", a2="G"))
+    # A multiallelic site: a SECOND allele at chr1 BP 1, sharing the rsID of the
+    # first (rs1_0) but with a distinct allele key (A/C vs A/G) and its own
+    # annotations + snpvar. The old SNP-keyed+deduped join would have collapsed
+    # this to one row; the allele-aware join keeps both, so n_variants == 801.
+    rows.append(_row(1, 1, "rs1_0", a2="C"))
+
     frame = pl.DataFrame(rows)
     annot_path = tmp_path / "annot.parquet"
     frame.drop("snpvar_bin").write_parquet(annot_path)
     meta_path = tmp_path / "meta.parquet"
-    frame.select("CHR", "BP", "SNP", "snpvar_bin").write_parquet(meta_path)
+    frame.select("CHR", "BP", "SNP", "A1", "A2", "snpvar_bin").write_parquet(meta_path)
     return annot_path, meta_path, truth
 
 
@@ -112,4 +120,5 @@ def test_recovers_known_linear_weights(tmp_path: Path):
 
     diagnostics = json.loads((result.path / DIAGNOSTICS_JSON_FILENAME).read_text())
     assert diagnostics["mean_heldout_r2"] > 0.999
-    assert diagnostics["n_variants"] == 800
+    # 800 biallelic + 1 second allele at the multiallelic site, all retained.
+    assert diagnostics["n_variants"] == 801
