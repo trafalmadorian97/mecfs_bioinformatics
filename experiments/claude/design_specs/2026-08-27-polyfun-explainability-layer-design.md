@@ -128,8 +128,11 @@ configs x 2 priors). Verified correct on a demonstrator locus before rollout.
      the polyfun run's prior.parquet. Align uniform vs polyfun by variant identity
      (CHR, POS, A1, A2). With the decision-9 guard the two memberships are
      identical; the join guards ordering.
-  2. Prior lift: pi_i = w_i / sum(w) over the polyfun run; m = number of variants
-     in the polyfun run; prior fold = m * pi_i; log fold = log(m * pi_i).
+  2. Prior lift: normalize the prior over the locus so it sums to 1 --
+     pi_i = w_i / sum_j w_j over the polyfun run's locus variants (so sum_i pi_i =
+     1); m = number of locus variants; prior fold = m * pi_i; log fold =
+     log(m * pi_i). The figure's prior-fold panel and the display table's lift
+     column both use this same m * pi_i.
   3. Load gamma_raw and family from the ridge weights asset. Load annotation values
      from the annotation parquet, predicate-pushdown-filtered to the locus BP
      window, joined to the run variants on (CHR, BP).
@@ -141,10 +144,40 @@ configs x 2 priors). Verified correct on a demonstrator locus before rollout.
   6. Focal variant = argmax PIP_polyfun. Top-x families (x default 3) = largest
      signed per-family contrast at the focal variant.
 - Outputs (DirectoryAsset): prior-lift table (parquet), per-annotation contrast
-  table (long parquet), per-family contrast table (parquet), a small display
-  summary (markdown) joining prior lift with the focal variant's top families, and
-  a machine-readable record of the focal variant + selected families (so the plot
-  task and tables agree on selection). Filename constants are module-level.
+  table (long parquet), per-family contrast table (parquet), the display table
+  (parquet, see below), and a machine-readable record of the focal variant +
+  selected families (so the plot task and tables agree on selection). Filename
+  constants are module-level.
+- Display table (parquet, docs-facing). This is the human-readable summary rendered
+  in the docs via the data_table macro in main.py (Tabulator, client-side), so it
+  is parquet, NOT markdown.
+  - Rows: all variants in the union of the two runs' 95% credible sets (the
+    attribution row set).
+  - Short, abbreviated column names so columns fit on screen in the docs. Columns,
+    in order (name -> meaning):
+    - chr    -> chromosome (Int32)
+    - pos    -> position (Int32)
+    - ea     -> effect allele
+    - nea    -> non-effect allele
+    - cs_pf  -> polyfun-run credible-set number containing the variant (null if in
+                none)
+    - cs_u   -> uniform-run credible-set number containing the variant (null if in
+                none)
+    - pip_pf -> PIP, polyfun run
+    - pip_u  -> PIP, uniform run
+    - lift   -> prior fold m * pi_i (same quantity as the figure's prior-fold panel)
+    - then x columns (x default 3), one per important family, each giving
+      sum_{c in family} gamma_raw_c * a_ic for that variant (the raw scaled family
+      value the family panels plot -- NOT the contrast). Named by a short family
+      abbreviation. The x families are the same ones selected from the focal
+      (max-PIP-polyfun) variant that drive the figure panels, so table and figure
+      agree.
+  - The credible-set number is the L-index (1-based) from that run's
+    combined_cs.parquet cs column; if a variant somehow falls in more than one, use
+    the lowest-numbered.
+  - Sorted: descending by pip_pf.
+  - chr and pos written as Int32 (the data_table macro requires Int32; Parquet
+    INT64 decodes to JS BigInt, which Tabulator cannot format).
 - Meta derived from the polyfun SUSIE run's ResultDirectoryMeta (reuse
   trait/project), raising on unknown meta.
 
@@ -226,8 +259,12 @@ configs x 2 priors). Verified correct on a demonstrator locus before rollout.
 - PolyfunExplainContrastTask: synthetic two-run fixtures (pip / filtered_gwas /
   combined_cs / prior parquet) + a synthetic ridge weights table + synthetic
   annotation parquet, with a known linear prior so abar_c and C_c(i) are checkable
-  in closed form; assert the focal variant and top-family selection. Task-level,
-  injected fetch.
+  in closed form; assert the focal variant and top-family selection. Also assert the
+  display table: rows = the union of the two credible sets, sorted descending by
+  pip_pf, abbreviated column names, cs_pf/cs_u carrying each run's credible-set
+  number (null when the variant is in the other run's CS but not this one's), the x
+  family columns named by (and matching) the selected families, and chr/pos dtype
+  Int32. Task-level, injected fetch.
 - PolyfunExplainPlotTask: smoke test that plot.png and plot.svg both land in the
   output directory given synthetic inputs; no pixel assertions.
 - Generators: construct the outer group and assert it wires 8 SUSIE runs and 4
