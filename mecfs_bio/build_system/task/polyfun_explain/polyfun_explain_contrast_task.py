@@ -30,6 +30,7 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
     WEIGHTS_PARQUET_FILENAME,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     CS_COLUMN,
@@ -71,6 +72,9 @@ FAMILY_CONTRAST_COL = "family_contrast"
 FAMILY_SCALED_COL = "family_scaled"  # sum_c gamma_raw_c * a_ic (NOT the contrast)
 CONTRAST_COL = "contrast"
 _ANNOT_BP_COL = "BP"
+_ANNOT_A1_COL = "A1"
+_ANNOT_A2_COL = "A2"
+_ALLELE_KEY_COL = "allele_key"
 
 _KEY = [
     GWASLAB_CHROM_COL,
@@ -78,10 +82,11 @@ _KEY = [
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
 ]
-# The annotation source carries no alleles (see _load_annotations), so it can
-# only be joined to a run's variants on (CHR, POS); the run side of the join
-# is what supplies EA/NEA to the result.
-_ANNOT_KEY = [GWASLAB_CHROM_COL, GWASLAB_POS_COL]
+# The annotation source carries alleles (A1/A2), so it is joined to a run's
+# variants allele-aware on (CHR, POS, unordered-allele-key): each allele of a
+# multiallelic site matches its own annotation row. The run side supplies EA/NEA
+# (and hence the allele key) to the result.
+_ANNOT_KEY = [GWASLAB_CHROM_COL, GWASLAB_POS_COL, _ALLELE_KEY_COL]
 
 
 @frozen
@@ -228,10 +233,15 @@ def _dir(fetch: Fetch, task: Task) -> Path:
 
 
 def _load_run_variants(run_dir: Path) -> pl.DataFrame:
-    """filtered_gwas keyed rows + the run's PIP, in the same order."""
+    """filtered_gwas keyed rows + the run's PIP, in the same order, with the
+    unordered allele key used to join the annotation matrix allele-aware."""
     gwas = pl.read_parquet(run_dir / FILTERED_GWAS_FILENAME).select(_KEY)
     pip = pl.read_parquet(run_dir / PIP_FILENAME).select(PIP_COLUMN)
-    return gwas.hstack(pip)
+    return gwas.hstack(pip).with_columns(
+        unordered_allele_key(
+            GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+        ).alias(_ALLELE_KEY_COL)
+    )
 
 
 def _load_cs_numbers(run_dir: Path) -> pl.DataFrame:
@@ -276,42 +286,45 @@ def _load_annotations(
             & (nw.col(_ANNOT_BP_COL) >= bp_min)
             & (nw.col(_ANNOT_BP_COL) <= bp_max)
         )
-        .select("CHR", _ANNOT_BP_COL, *annot_cols)
+        .select("CHR", _ANNOT_BP_COL, _ANNOT_A1_COL, _ANNOT_A2_COL, *annot_cols)
         .collect()
         .to_polars()
     )
-    # annotation has no alleles; broadcast to the run's alleles via the join key by
-    # renaming BP->POS and letting the (CHR,POS) match carry EA/NEA from the run.
-    result = frame.rename({_ANNOT_BP_COL: GWASLAB_POS_COL})
-    _assert_annotation_positions_unique(result, chrom, bp_min, bp_max)
+    # Rename BP->POS and derive the unordered allele key so each annotation row
+    # is matched to the run variant with the same alleles (regardless of which
+    # allele each side labels "effect"). A1/A2 are dropped once the key is built.
+    result = (
+        frame.rename({_ANNOT_BP_COL: GWASLAB_POS_COL})
+        .with_columns(
+            unordered_allele_key(_ANNOT_A1_COL, _ANNOT_A2_COL).alias(_ALLELE_KEY_COL)
+        )
+        .drop(_ANNOT_A1_COL, _ANNOT_A2_COL)
+    )
+    _assert_annotation_keys_unique(result, chrom, bp_min, bp_max)
     return result
 
 
-def _assert_annotation_positions_unique(
+def _assert_annotation_keys_unique(
     annot: pl.DataFrame, chrom: int, bp_min: int, bp_max: int
 ) -> None:
-    """Fail fast if the annotation source has more than one row at a shared
-    (CHR, POS) within this locus window.
+    """Fail fast if the annotation slice has more than one row per
+    (CHR, POS, allele-key) within this locus window.
 
-    The annotation parquet is deduped only on SNP/rsID (see
-    BuildBaselineLFAnnotationParquetTask), not on position, so a multi-allelic
-    site can legitimately carry two rows at the same (CHR, BP). Every downstream
-    join in this task keys the annotation frame on (CHR, POS) only, since
-    annotations carry no alleles; an undetected duplicate position would silently
-    cross-multiply a run's variant rows into doubled or misattributed contrast
-    and family_scaled values. Asserting here, on the annotation slice itself
-    rather than on a join result, localizes the cause immediately.
+    The annotation matrix is built unique on (CHR, BP, unordered-allele-key) (see
+    BuildBaselineLFAnnotationParquetTask), so this holds by construction; an
+    undetected duplicate would silently cross-multiply a run's variant rows into
+    doubled or misattributed contrast/family_scaled values. Asserting on the
+    annotation slice itself, rather than on a join result, localizes the cause.
     """
     n_rows = annot.height
     n_unique = annot.select(_ANNOT_KEY).n_unique()
     if n_unique != n_rows:
         raise ValueError(
-            f"Annotation source has {n_rows - n_unique} duplicate (CHR, POS) "
-            f"position(s) within locus chr{chrom}:{bp_min}-{bp_max} (likely "
-            "multi-allelic sites with distinct rsIDs that the SNP-only dedup in "
-            "BuildBaselineLFAnnotationParquetTask does not collapse). The "
-            "annotation join keys on (CHR, POS) only, so duplicate positions "
-            "would silently cross-multiply variant rows; refusing to proceed."
+            f"Annotation source has {n_rows - n_unique} duplicate "
+            f"(CHR, POS, allele-key) row(s) within locus "
+            f"chr{chrom}:{bp_min}-{bp_max}; the annotation join keys on that "
+            "tuple, so duplicates would silently cross-multiply variant rows; "
+            "refusing to proceed."
         )
 
 

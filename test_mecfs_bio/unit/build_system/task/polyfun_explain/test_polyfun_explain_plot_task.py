@@ -12,6 +12,11 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 )
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
+from mecfs_bio.build_system.task.genetic_map.parse_genetic_map_task import (
+    GMAP_CM_COL,
+    GMAP_POS_COL,
+    GMAP_RATE_COL,
+)
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task import (
     PLOT_PNG_FILENAME,
@@ -49,6 +54,24 @@ def test_plot_writes_png_and_svg(tmp_path: Path):
         SimpleFileMeta("genes", read_spec=DataFrameReadSpec(DataFrameParquetFormat()))
     )
 
+    # hg19 genetic map covering the locus (POS 10-60); the recomb track reads
+    # the rate column directly.
+    genetic_map = pl.DataFrame(
+        {
+            "CHR": [1, 1, 1],
+            GMAP_POS_COL: [10, 35, 60],
+            GMAP_RATE_COL: [0.5, 2.0, 1.0],
+            GMAP_CM_COL: [0.0, 0.5, 1.2],
+        }
+    )
+    gmap_path = tmp_path / "genetic_map.parquet"
+    genetic_map.write_parquet(gmap_path)
+    gmap_task = FakeTask(
+        SimpleFileMeta(
+            "genetic_map", read_spec=DataFrameReadSpec(DataFrameParquetFormat())
+        )
+    )
+
     plot_task = PolyfunExplainPlotTask.create(
         asset_id="plot",
         susie_uniform_task=inputs.uni_task,
@@ -57,6 +80,7 @@ def test_plot_writes_png_and_svg(tmp_path: Path):
         ridge_weights_task=inputs.weights_task,
         annotation_parquet_task=inputs.annot_task,
         gene_info_task=gene_task,
+        genetic_map_task=gmap_task,
         gene_info_pipe=IdentityPipe(),
         n_family_panels=2,
     )
@@ -64,6 +88,7 @@ def test_plot_writes_png_and_svg(tmp_path: Path):
     def fetch(asset_id: AssetId) -> Asset:
         mapping = dict(inputs.fetch_map)
         mapping["genes"] = FileAsset(gene_path)
+        mapping["genetic_map"] = FileAsset(gmap_path)
         return mapping[str(asset_id)]
 
     scratch = tmp_path / "plot_scratch"

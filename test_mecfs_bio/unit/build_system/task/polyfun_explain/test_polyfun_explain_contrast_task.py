@@ -75,8 +75,8 @@ def _write_run_dir(
     # pip.parquet: one PIP column, row order == variants
     pl.DataFrame({PIP_COLUMN: pip}).write_parquet(directory / PIP_FILENAME)
     gwas = variants.with_columns(
-        pl.Series(name=GWASLAB_BETA_COL, values=_BETAS),
-        pl.Series(name=GWASLAB_SE_COL, values=_SES),
+        pl.Series(name=GWASLAB_BETA_COL, values=_BETAS[: variants.height]),
+        pl.Series(name=GWASLAB_SE_COL, values=_SES[: variants.height]),
     )
     gwas.write_parquet(directory / FILTERED_GWAS_FILENAME)
     # Identity LD matrix (only the plot task, Task 3, reads this).
@@ -121,7 +121,8 @@ def _make_contrast_fixture(
             "NEA": ["C"] * _N_VARIANTS,
         }
     )
-    # Annotation values (by CHR/BP). BP == POS.
+    # Annotation values (by CHR/BP). BP == POS. Alleles (A1/A2) match the run
+    # variants' EA/NEA so the allele-aware join lines up.
     a = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # coding: focal only
     b = np.array([2.0, 1.0, 1.0, 1.0, 1.0, 1.0])  # conserved: focal higher
     annot = pl.DataFrame(
@@ -129,7 +130,8 @@ def _make_contrast_fixture(
             "CHR": [1] * _N_VARIANTS,
             "BP": [10, 20, 30, 40, 50, 60],
             "SNP": [f"rs{i}" for i in range(_N_VARIANTS)],
-            "CM": [0.0] * _N_VARIANTS,
+            "A1": ["A"] * _N_VARIANTS,
+            "A2": ["C"] * _N_VARIANTS,
             _ANNOT_A: a,
             _ANNOT_B: b,
         }
@@ -331,18 +333,79 @@ def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
     assert abs(focal_coding - 2.5) < 1e-9
 
 
-def test_contrast_raises_on_duplicate_annotation_position(tmp_path: Path):
-    # The annotation parquet is deduped only on SNP (rsID), so a multi-allelic
-    # site can carry two rows at the same (CHR, BP). Since the annotation join
-    # keys on (CHR, POS) only (annotations carry no alleles), an undetected
-    # duplicate position would silently cross-multiply variant rows into
-    # doubled/misattributed contrast values. The task must fail fast instead.
+def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path):
+    # The annotation matrix is built unique on (CHR, BP, unordered-allele-key).
+    # A duplicate at the same position AND same alleles would cross-multiply a
+    # run's variant rows into doubled/misattributed contrast values, so the task
+    # must fail fast. (A genuine multiallelic site has a distinct allele key and
+    # is fine - see test_contrast_resolves_co_located_variants_by_allele.)
     uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
     annot = pl.read_parquet(annot_path)
     dup_row = annot.filter(pl.col("BP") == 10).with_columns(
-        pl.lit("rs0_dup").alias("SNP")
+        pl.lit("rs0_dup").alias("SNP")  # same A1/A2 -> same allele key
     )
     pl.concat([annot, dup_row], how="vertical").write_parquet(annot_path)
 
     with pytest.raises(ValueError):
         _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
+
+
+def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
+    # Two variants at the same (CHR, POS) with different alleles must each pick
+    # up their OWN annotation row (allele-aware join), not cross-multiply or
+    # mispair. Focal is variant 0 (A/C, coding a=1); a second variant (A/G) at
+    # the same position carries a different coding value.
+    n = 2
+    variants = pl.DataFrame(
+        {
+            "CHR": [1, 1],
+            "POS": [10, 10],
+            "EA": ["A", "A"],
+            "NEA": ["C", "G"],
+        }
+    )
+    annot = pl.DataFrame(
+        {
+            "CHR": [1, 1],
+            "BP": [10, 10],
+            "SNP": ["rsAC", "rsAG"],
+            "A1": ["A", "A"],
+            "A2": ["C", "G"],
+            _ANNOT_A: [1.0, 4.0],  # coding: A/C -> 1, A/G -> 4
+            _ANNOT_B: [0.0, 0.0],
+        }
+    )
+    annot_path = tmp_path / "annot.parquet"
+    annot.write_parquet(annot_path)
+
+    weights = pl.DataFrame(
+        {
+            "annotation": [_ANNOT_A, _ANNOT_B],
+            "gamma_raw": [3.0, 0.5],
+            "gamma_standardized": [0.0, 0.0],
+            "family": ["coding", "conserved"],
+        }
+    )
+    weights_dir = tmp_path / "weights"
+    weights_dir.mkdir()
+    weights.write_parquet(weights_dir / WEIGHTS_PARQUET_FILENAME)
+
+    pip = np.array([0.6, 0.4])
+    uni_dir = tmp_path / "uniform"
+    pf_dir = tmp_path / "polyfun"
+    _write_run_dir(uni_dir, variants, pip, {"L1": [0, 1]}, prior_weights=None)
+    _write_run_dir(
+        pf_dir, variants, pip, {"L1": [0, 1]}, prior_weights=np.array([2.0, 1.0])
+    )
+
+    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
+
+    # family_scaled coding = gamma_raw_coding * a. A/C variant -> 3*1 = 3;
+    # A/G variant -> 3*4 = 12. Correct allele pairing gives distinct values.
+    per_family = pl.read_parquet(result.path / PER_FAMILY_CONTRAST_FILENAME)
+    ac = per_family.filter((pl.col("NEA") == "C") & (pl.col("family") == "coding"))
+    ag = per_family.filter((pl.col("NEA") == "G") & (pl.col("family") == "coding"))
+    # abar_coding (uniform PIP-weighted over both) = (0.6*1 + 0.4*4)/1.0 = 2.2
+    # contrast A/C = 3*(1-2.2) = -3.6 ; A/G = 3*(4-2.2) = 5.4
+    assert abs(ac["family_contrast"][0] - (-3.6)) < 1e-9
+    assert abs(ag["family_contrast"][0] - 5.4) < 1e-9

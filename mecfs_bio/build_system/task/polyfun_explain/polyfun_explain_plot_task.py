@@ -2,8 +2,8 @@
 
 Panels, top to bottom, sharing the genomic-position x-axis:
   1. Manhattan (-log10 p), points colored by LD r^2 with the min-p lead
-     variant, with local recombination rate (dCM/dBP from the annotation CM
-     column) on a secondary axis.
+     variant, with local recombination rate (cM/Mb from the hg19 genetic map)
+     on a secondary axis.
   2..(1+x). One panel per important family: sum_c gamma_raw_c * a_ic across
      the locus (raw scaled value; the contrast is the profile, not plotted
      here).
@@ -19,7 +19,7 @@ The important families and the focal variant come from the contrast task's
 selection.json, so the figure agrees with the contrast task's tables. The
 per-variant family-scaled tracks are recomputed here (rather than read back
 from the contrast task's output) directly from the ridge weights and the
-annotation parquet, using the same CHR/POS-keyed join and the same
+annotation parquet, using the same allele-aware join and the same
 _family_scaled helper the contrast task itself uses, so the values plotted
 match the contrast task's family_scaled table exactly.
 """
@@ -56,11 +56,16 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
     FAMILY_COL as WEIGHTS_FAMILY_COL,
 )
 from mecfs_bio.build_system.task.base_task import Task  # noqa: E402
+from mecfs_bio.build_system.task.genetic_map.parse_genetic_map_task import (  # noqa: E402
+    GMAP_POS_COL,
+    GMAP_RATE_COL,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import (  # noqa: E402
     DataProcessingPipe,
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe  # noqa: E402
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (  # noqa: E402
+    _ANNOT_KEY,
     FAMILY_COL,
     FAMILY_SCALED_COL,
     SELECTION_JSON_FILENAME,
@@ -91,14 +96,9 @@ from mecfs_bio.constants.gwaslab_constants import (  # noqa: E402
 
 PLOT_PNG_FILENAME = "explain_plot.png"
 PLOT_SVG_FILENAME = "explain_plot.svg"
-_ANNOT_BP_COL = "BP"
-# CHR/POS-only key for joining the annotation-carrying frame onto a run's
-# variants. Mirrors PolyfunExplainContrastTask's _ANNOT_KEY: _load_annotations
-# returns an allele-less frame (annotations carry no alleles), so any join
-# against it must key on (CHR, POS) only -- never on the 4-column
-# (CHR, POS, EA, NEA) key used for the SUSIE-run-to-run joins elsewhere in
-# this feature.
-_ANNOT_KEY = [GWASLAB_CHROM_COL, GWASLAB_POS_COL]
+# _ANNOT_KEY (imported from the contrast task) is the allele-aware join key
+# (CHR, POS, unordered-allele-key); _load_annotations and _load_run_variants both
+# attach that key, so the family-scaled values plotted here match the tables.
 
 
 @frozen
@@ -121,6 +121,7 @@ class PolyfunExplainPlotTask(Task):
     annotation_parquet_task: Task
     gene_info_task: Task
     ridge_weights_task: Task
+    genetic_map_task: Task
     gene_info_pipe: DataProcessingPipe = IdentityPipe()
     n_family_panels: int = 3
 
@@ -133,6 +134,7 @@ class PolyfunExplainPlotTask(Task):
             self.ridge_weights_task,
             self.annotation_parquet_task,
             self.gene_info_task,
+            self.genetic_map_task,
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -159,10 +161,9 @@ class PolyfunExplainPlotTask(Task):
         annot = _load_annotations(
             fetch, self.annotation_parquet_task, chrom, bp_min, bp_max, annot_cols
         )
-        # _load_annotations carries no alleles, so join on CHR/POS only (see
-        # _ANNOT_KEY docstring above) -- this mirrors the contrast task's own
-        # join exactly, so the family-scaled values plotted here match the
-        # contrast task's per_family_contrast/family_scaled tables.
+        # Allele-aware join on (CHR, POS, allele-key) -- mirrors the contrast
+        # task's own join exactly, so the family-scaled values plotted here match
+        # its per_family_contrast/family_scaled tables.
         pf_annot = pf_variants.join(annot, on=_ANNOT_KEY, how="inner")
         gamma = dict(zip(weights[ANNOTATION_COL], weights[GAMMA_RAW_COL]))
         family = dict(zip(weights[ANNOTATION_COL], weights[WEIGHTS_FAMILY_COL]))
@@ -189,7 +190,7 @@ class PolyfunExplainPlotTask(Task):
             scaled=scaled,
             genes=genes,
             fetch=fetch,
-            annotation_parquet_task=self.annotation_parquet_task,
+            genetic_map_task=self.genetic_map_task,
             chrom=chrom,
             bp_min=bp_min,
             bp_max=bp_max,
@@ -206,6 +207,7 @@ class PolyfunExplainPlotTask(Task):
         annotation_parquet_task: Task,
         gene_info_task: Task,
         ridge_weights_task: Task,
+        genetic_map_task: Task,
         gene_info_pipe: DataProcessingPipe = IdentityPipe(),
         n_family_panels: int = 3,
     ) -> "PolyfunExplainPlotTask":
@@ -226,6 +228,7 @@ class PolyfunExplainPlotTask(Task):
             annotation_parquet_task=annotation_parquet_task,
             gene_info_task=gene_info_task,
             ridge_weights_task=ridge_weights_task,
+            genetic_map_task=genetic_map_task,
             gene_info_pipe=gene_info_pipe,
             n_family_panels=n_family_panels,
         )
@@ -243,28 +246,28 @@ def _norm_sf(z: np.ndarray) -> np.ndarray:
     return norm.sf(z)
 
 
-def _load_cm(
+def _load_recomb(
     fetch: Fetch, task: Task, chrom: int, bp_min: int, bp_max: int
 ) -> pl.DataFrame:
+    """Locus-windowed recombination rate (cM/Mb) from the hg19 genetic map."""
     return (
         scan_dataframe_asset(fetch(task.asset_id), task.meta)
         .filter(
             (nw.col(GWASLAB_CHROM_COL) == chrom)
-            & (nw.col(_ANNOT_BP_COL) >= bp_min)
-            & (nw.col(_ANNOT_BP_COL) <= bp_max)
+            & (nw.col(GMAP_POS_COL) >= bp_min)
+            & (nw.col(GMAP_POS_COL) <= bp_max)
         )
-        .select(GWASLAB_CHROM_COL, _ANNOT_BP_COL, "CM")
+        .select(GWASLAB_CHROM_COL, GMAP_POS_COL, GMAP_RATE_COL)
         .collect()
         .to_polars()
-        .sort(_ANNOT_BP_COL)
+        .sort(GMAP_POS_COL)
     )
 
 
-def _plot_recomb(ax, cm: pl.DataFrame) -> None:
-    bp = cm[_ANNOT_BP_COL].to_numpy().astype(float)
-    cmv = cm["CM"].to_numpy().astype(float)
-    if len(bp) >= 2:
-        rate = np.gradient(cmv, bp) * 1e6  # cM/Mb
+def _plot_recomb(ax, recomb: pl.DataFrame) -> None:
+    bp = recomb[GMAP_POS_COL].to_numpy().astype(float)
+    rate = recomb[GMAP_RATE_COL].to_numpy().astype(float)
+    if len(bp) >= 1:
         ax.plot(bp, rate, color="tab:red", alpha=0.4, linewidth=1)
     ax.set_ylabel("cM/Mb", color="tab:red")
 
@@ -292,7 +295,7 @@ def _render(
     scaled: pl.DataFrame,
     genes: pl.DataFrame,
     fetch: Fetch,
-    annotation_parquet_task: Task,
+    genetic_map_task: Task,
     chrom: int,
     bp_min: int,
     bp_max: int,
@@ -313,9 +316,9 @@ def _render(
     ax0.set_ylabel("-log10 p")
     fig.colorbar(sc, ax=ax0, label="r2 w/ lead")
 
-    cm = _load_cm(fetch, annotation_parquet_task, chrom, bp_min, bp_max)
+    recomb = _load_recomb(fetch, genetic_map_task, chrom, bp_min, bp_max)
     ax0b = ax0.twinx()
-    _plot_recomb(ax0b, cm)
+    _plot_recomb(ax0b, recomb)
 
     # Family panels: sum_c gamma_raw_c * a_ic across the locus.
     for k, fam in enumerate(families):
