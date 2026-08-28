@@ -282,7 +282,37 @@ def _load_annotations(
     )
     # annotation has no alleles; broadcast to the run's alleles via the join key by
     # renaming BP->POS and letting the (CHR,POS) match carry EA/NEA from the run.
-    return frame.rename({_ANNOT_BP_COL: GWASLAB_POS_COL})
+    result = frame.rename({_ANNOT_BP_COL: GWASLAB_POS_COL})
+    _assert_annotation_positions_unique(result, chrom, bp_min, bp_max)
+    return result
+
+
+def _assert_annotation_positions_unique(
+    annot: pl.DataFrame, chrom: int, bp_min: int, bp_max: int
+) -> None:
+    """Fail fast if the annotation source has more than one row at a shared
+    (CHR, POS) within this locus window.
+
+    The annotation parquet is deduped only on SNP/rsID (see
+    BuildBaselineLFAnnotationParquetTask), not on position, so a multi-allelic
+    site can legitimately carry two rows at the same (CHR, BP). Every downstream
+    join in this task keys the annotation frame on (CHR, POS) only, since
+    annotations carry no alleles; an undetected duplicate position would silently
+    cross-multiply a run's variant rows into doubled or misattributed contrast
+    and family_scaled values. Asserting here, on the annotation slice itself
+    rather than on a join result, localizes the cause immediately.
+    """
+    n_rows = annot.height
+    n_unique = annot.select(_ANNOT_KEY).n_unique()
+    if n_unique != n_rows:
+        raise ValueError(
+            f"Annotation source has {n_rows - n_unique} duplicate (CHR, POS) "
+            f"position(s) within locus chr{chrom}:{bp_min}-{bp_max} (likely "
+            "multi-allelic sites with distinct rsIDs that the SNP-only dedup in "
+            "BuildBaselineLFAnnotationParquetTask does not collapse). The "
+            "annotation join keys on (CHR, POS) only, so duplicate positions "
+            "would silently cross-multiply variant rows; refusing to proceed."
+        )
 
 
 def _contrasts(

@@ -3,6 +3,7 @@ from pathlib import Path, PurePath
 
 import numpy as np
 import polars as pl
+import pytest
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -17,6 +18,9 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 )
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
+from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
+    WEIGHTS_PARQUET_FILENAME,
+)
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     DISP_CS_PF,
@@ -87,9 +91,12 @@ def _make_contrast_fixture(
 ) -> tuple[Path, Path, Path, Path]:
     """Build a two-run (uniform + polyfun), two-annotation locus fixture on disk.
 
-    Returns (uni_dir, pf_dir, weights_path, annot_path). Shared by every test in
+    Returns (uni_dir, pf_dir, weights_dir, annot_path). Shared by every test in
     this module (and available for other tests in this package to build on) so
-    the fixture shape stays in one place.
+    the fixture shape stays in one place. weights_dir mirrors the real shape
+    RidgeAnnotationWeightsTask.execute produces (a DirectoryAsset containing
+    weights.parquet), not a bare file, so the production DirectoryAsset branch
+    of _load_weights is what the tests actually exercise.
     """
     assert len(uniform_pip) == _N_VARIANTS
     variants = pl.DataFrame(
@@ -124,8 +131,9 @@ def _make_contrast_fixture(
             "family": ["coding", "conserved"],
         }
     )
-    weights_path = tmp_path / "weights.parquet"
-    weights.write_parquet(weights_path)
+    weights_dir = tmp_path / "weights"
+    weights_dir.mkdir()
+    weights.write_parquet(weights_dir / WEIGHTS_PARQUET_FILENAME)
 
     pip_u = np.array(uniform_pip)
     pip_pf = np.array(_POLYFUN_PIP)
@@ -139,14 +147,14 @@ def _make_contrast_fixture(
         {"L1": [0]},
         prior_weights=np.array(_PRIOR_WEIGHTS),
     )
-    return uni_dir, pf_dir, weights_path, annot_path
+    return uni_dir, pf_dir, weights_dir, annot_path
 
 
 def _run_contrast_task(
     tmp_path: Path,
     uni_dir: Path,
     pf_dir: Path,
-    weights_path: Path,
+    weights_dir: Path,
     annot_path: Path,
     n_important_families: int = 2,
 ) -> DirectoryAsset:
@@ -181,7 +189,8 @@ def _run_contrast_task(
         mapping = {
             "uni": DirectoryAsset(uni_dir),
             "pf": DirectoryAsset(pf_dir),
-            "weights": FileAsset(weights_path),
+            # Mirrors RidgeAnnotationWeightsTask.execute's real return type.
+            "weights": DirectoryAsset(weights_dir),
             "annot": FileAsset(annot_path),
         }
         return mapping[str(asset_id)]
@@ -194,8 +203,8 @@ def _run_contrast_task(
 
 
 def test_contrast_closed_form(tmp_path: Path):
-    uni_dir, pf_dir, weights_path, annot_path = _make_contrast_fixture(tmp_path)
-    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_path, annot_path)
+    uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
+    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
 
     # Focal variant is the max-PIP-polyfun variant (POS 10).
     selection = json.loads((result.path / SELECTION_JSON_FILENAME).read_text())
@@ -232,10 +241,10 @@ def test_contrast_closed_form(tmp_path: Path):
 def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
     # When the uniform run finds no signal (all PIPs 0), abar_c falls back to an
     # unweighted mean, so contrasts are still well-defined (not NaN).
-    uni_dir, pf_dir, weights_path, annot_path = _make_contrast_fixture(
+    uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(
         tmp_path, uniform_pip=(0.0,) * _N_VARIANTS
     )
-    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_path, annot_path)
+    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
 
     per_family = pl.read_parquet(result.path / PER_FAMILY_CONTRAST_FILENAME)
     assert per_family["family_contrast"].is_nan().sum() == 0
@@ -245,3 +254,20 @@ def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
         (pl.col("POS") == 10) & (pl.col("family") == "coding")
     )["family_contrast"][0]
     assert abs(focal_coding - 2.5) < 1e-9
+
+
+def test_contrast_raises_on_duplicate_annotation_position(tmp_path: Path):
+    # The annotation parquet is deduped only on SNP (rsID), so a multi-allelic
+    # site can carry two rows at the same (CHR, BP). Since the annotation join
+    # keys on (CHR, POS) only (annotations carry no alleles), an undetected
+    # duplicate position would silently cross-multiply variant rows into
+    # doubled/misattributed contrast values. The task must fail fast instead.
+    uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
+    annot = pl.read_parquet(annot_path)
+    dup_row = annot.filter(pl.col("BP") == 10).with_columns(
+        pl.lit("rs0_dup").alias("SNP")
+    )
+    pl.concat([annot, dup_row], how="vertical").write_parquet(annot_path)
+
+    with pytest.raises(ValueError):
+        _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
