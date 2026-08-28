@@ -75,6 +75,9 @@ COMBINED_CS_FILENAME = "combined_cs.parquet"
 FILTERED_GWAS_FILENAME = "filtered_gwas.parquet"
 FILTERED_LD_FILENAME = "filtered_ld.npy"
 
+PRIOR_FILENAME = "prior.parquet"
+PRIOR_WEIGHT_COLUMN = "prior_weight"
+
 NO_CS_FOUND_FILENAME = "no_credible_sets_foun.txt"
 
 CS_DATA_SUBDIR = "credible_set_data"
@@ -247,6 +250,7 @@ class SusieRFinemapTask(Task):
         )
         py_result = convert_r_named_list_to_python_dict(susie_result)
         _check_converged(py_result)
+        _save_prior(scratch_dir, gwas_table=gwas_table, prior=prior)
         write_result(
             scratch_dir,
             py_result=py_result,
@@ -332,19 +336,33 @@ def align_data(
         maintain_order="left",
     )
     if prior is not None:
-        prior = prior.with_row_index(name="prior_index") if prior is not None else None
         joined = joined.with_columns(
             unordered_allele_key(
                 GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
             ).alias("allele_key")
-        ).join(
+        )
+        n_before = len(joined)
+        joined = joined.join(
             prior.with_columns(
                 unordered_allele_key(
                     GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
                 ).alias("allele_key")
             ),
             on=[GWASLAB_CHROM_COL, GWASLAB_POS_COL, "allele_key"],
+            how="left",
         )
+        missing = joined.filter(pl.col(_PRIOR_COL).is_null())
+        if missing.height > 0:
+            examples = missing.select(
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ).head(5)
+            raise ValueError(
+                f"polyfun prior does not cover {missing.height} of {n_before} "
+                f"(gwas intersect ld) variants; first missing:\n{examples}"
+            )
         prior_out = joined[_PRIOR_COL].to_numpy()
     else:
         prior_out = np.ones(len(joined))
@@ -618,6 +636,19 @@ def _save_adjustment(adjustment: float, scratch_dir: Path):
         {"Adjustment": [float(adjustment)]},
     )
     adjustment_df.to_parquet(scratch_dir / ADJUSTMENT_VALUE_FILENAME)
+
+
+def _save_prior(scratch_dir: Path, gwas_table: pl.DataFrame, prior: np.ndarray) -> None:
+    """Write the per-variant prior actually passed to susie_rss, aligned to the
+    filtered gwas variants. For a uniform run the values are all ones."""
+    gwas_table.select(
+        GWASLAB_CHROM_COL,
+        GWASLAB_POS_COL,
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+    ).with_columns(pl.Series(name=PRIOR_WEIGHT_COLUMN, values=prior)).write_parquet(
+        scratch_dir / PRIOR_FILENAME
+    )
 
 
 def _load_partial_ld_matrix(path: Path) -> csr_matrix:
