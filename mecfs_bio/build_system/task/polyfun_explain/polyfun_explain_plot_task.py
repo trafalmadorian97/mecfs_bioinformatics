@@ -15,6 +15,13 @@ Panels, top to bottom, sharing the genomic-position x-axis:
 Writes both explain_plot.png and explain_plot.svg. Inspired by
 SusieStackPlotTask but independent of it.
 
+Figures are built through matplotlib's object-oriented API (a directly
+constructed Figure), not pyplot. That keeps rendering off any global backend
+state: the process-wide interactive backend is never selected or mutated, the
+output format is chosen per file extension by savefig (so the .svg is a true
+vector file and the .png raster), and no figure is registered in pyplot's
+global manager, so there is nothing to close to reclaim memory.
+
 The important families and the focal variant come from the contrast task's
 selection.json, so the figure agrees with the contrast task's tables. The
 per-variant family-scaled tracks are recomputed here (rather than read back
@@ -27,44 +34,40 @@ match the contrast task's family_scaled table exactly.
 import json
 from pathlib import Path, PurePath
 
-import matplotlib
+import narwhals as nw
+import numpy as np
+import polars as pl
+from attrs import frozen
+from matplotlib.figure import Figure
 
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import narwhals as nw  # noqa: E402
-import numpy as np  # noqa: E402
-import polars as pl  # noqa: E402
-from attrs import frozen  # noqa: E402
-from matplotlib import gridspec  # noqa: E402
-
-from mecfs_bio.build_system.asset.base_asset import Asset  # noqa: E402
-from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset  # noqa: E402
-from mecfs_bio.build_system.meta.asset_id import AssetId  # noqa: E402
-from mecfs_bio.build_system.meta.meta import Meta  # noqa: E402
-from mecfs_bio.build_system.meta.read_spec.read_dataframe import (  # noqa: E402
+from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.meta import Meta
+from mecfs_bio.build_system.meta.read_spec.read_dataframe import (
     scan_dataframe_asset,
 )
-from mecfs_bio.build_system.meta.result_directory_meta import (  # noqa: E402
+from mecfs_bio.build_system.meta.result_directory_meta import (
     ResultDirectoryMeta,
 )
-from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch  # noqa: E402
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (  # noqa: E402
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
+from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
     ANNOTATION_COL,
     GAMMA_RAW_COL,
 )
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (  # noqa: E402
+from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
     FAMILY_COL as WEIGHTS_FAMILY_COL,
 )
-from mecfs_bio.build_system.task.base_task import Task  # noqa: E402
-from mecfs_bio.build_system.task.genetic_map.parse_genetic_map_task import (  # noqa: E402
+from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.genetic_map.parse_genetic_map_task import (
     GMAP_POS_COL,
     GMAP_RATE_COL,
 )
-from mecfs_bio.build_system.task.pipes.data_processing_pipe import (  # noqa: E402
+from mecfs_bio.build_system.task.pipes.data_processing_pipe import (
     DataProcessingPipe,
 )
-from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe  # noqa: E402
-from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (  # noqa: E402
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     _ANNOT_KEY,
     FAMILY_COL,
     FAMILY_SCALED_COL,
@@ -74,20 +77,20 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
     _load_run_variants,
     _load_weights,
 )
-from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (  # noqa: E402
+from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     FILTERED_GWAS_FILENAME,
     FILTERED_LD_FILENAME,
     PIP_COLUMN,
     PRIOR_FILENAME,
     PRIOR_WEIGHT_COLUMN,
 )
-from mecfs_bio.build_system.task.susie_stacked_plot_task import (  # noqa: E402
+from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_END_COL,
     GENE_INFO_NAME_COL,
     GENE_INFO_START_COL,
 )
-from mecfs_bio.build_system.wf.base_wf import WF  # noqa: E402
-from mecfs_bio.constants.gwaslab_constants import (  # noqa: E402
+from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
     GWASLAB_POS_COL,
@@ -105,13 +108,6 @@ PLOT_SVG_FILENAME = "explain_plot.svg"
 class PolyfunExplainPlotTask(Task):
     """Render the 8-panel polyfun-vs-uniform explainability figure.
 
-    Depends directly on the two SUSIE run dirs, the contrast task (read only
-    for selection.json, so the plotted focal variant and important families
-    match the contrast task's tables), the ridge weights, the annotation
-    parquet, and a gene-info source. The per-variant family-scaled tracks are
-    recomputed from the ridge weights and annotation parquet rather than read
-    back from the contrast task, using the same helpers and join key the
-    contrast task uses, so the values agree.
     """
 
     meta: Meta
@@ -301,8 +297,8 @@ def _render(
     bp_max: int,
 ) -> None:
     n_panels = 1 + len(families) + 3 + 1  # manhattan + families + lift + 2 pip + genes
-    fig = plt.figure(figsize=(10, 2.0 * n_panels))
-    gs = gridspec.GridSpec(nrows=n_panels, ncols=1, hspace=0.4)
+    fig = Figure(figsize=(10, 2.0 * n_panels))
+    gs = fig.add_gridspec(nrows=n_panels, ncols=1, hspace=0.4)
     axes = [fig.add_subplot(gs[i, 0]) for i in range(n_panels)]
     x = pf_full[GWASLAB_POS_COL].to_numpy()
 
@@ -359,4 +355,3 @@ def _render(
 
     fig.savefig(scratch_dir / PLOT_PNG_FILENAME, dpi=150, bbox_inches="tight")
     fig.savefig(scratch_dir / PLOT_SVG_FILENAME, bbox_inches="tight")
-    plt.close(fig)
