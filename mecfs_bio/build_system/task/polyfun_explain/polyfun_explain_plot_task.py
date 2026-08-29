@@ -39,6 +39,7 @@ import numpy as np
 import polars as pl
 from attrs import frozen
 from matplotlib.figure import Figure
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -79,16 +80,20 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
     _load_weights,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
+    COMBINED_CS_FILENAME,
     FILTERED_GWAS_FILENAME,
     FILTERED_LD_FILENAME,
-    PIP_COLUMN,
     PRIOR_FILENAME,
     PRIOR_WEIGHT_COLUMN,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
+    GENE_INFO_CHROM_COL,
     GENE_INFO_END_COL,
     GENE_INFO_NAME_COL,
     GENE_INFO_START_COL,
+    GENE_INFO_STRAND_COL,
+    plot_gene_tracks,
+    plot_susie_track,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -107,9 +112,7 @@ PLOT_SVG_FILENAME = "explain_plot.svg"
 
 @frozen
 class PolyfunExplainPlotTask(Task):
-    """Render the 8-panel polyfun-vs-uniform explainability figure.
-
-    """
+    """Render the 8-panel polyfun-vs-uniform explainability figure."""
 
     meta: Meta
     susie_uniform_task: Task
@@ -143,6 +146,10 @@ class PolyfunExplainPlotTask(Task):
 
         pf_variants = _load_run_variants(pf_dir).sort(GWASLAB_POS_COL)
         uni_variants = _load_run_variants(uni_dir)
+        # Credible-set membership per run: the PIP panels plot only these variants,
+        # colored/legended by credible set (empty frame if the run found none).
+        uni_cs = pl.read_parquet(uni_dir / COMBINED_CS_FILENAME)
+        pf_cs = pl.read_parquet(pf_dir / COMBINED_CS_FILENAME)
         pf_full = pl.read_parquet(pf_dir / FILTERED_GWAS_FILENAME)
         ld = np.load(pf_dir / FILTERED_LD_FILENAME)
         prior_w = pl.read_parquet(pf_dir / PRIOR_FILENAME)[
@@ -180,6 +187,8 @@ class PolyfunExplainPlotTask(Task):
             scratch_dir=scratch_dir,
             pf_variants=pf_variants,
             uni_variants=uni_variants,
+            uni_cs=uni_cs,
+            pf_cs=pf_cs,
             pf_full=pf_full,
             ld=ld,
             prior_w=prior_w,
@@ -265,26 +274,18 @@ def _plot_recomb(ax, recomb: pl.DataFrame) -> None:
     bp = recomb[GMAP_POS_COL].to_numpy().astype(float)
     rate = recomb[GMAP_RATE_COL].to_numpy().astype(float)
     if len(bp) >= 1:
-        ax.plot(bp, rate, color="tab:red", alpha=0.4, linewidth=1)
+        (line,) = ax.plot(bp, rate, color="tab:red", alpha=0.4, linewidth=1)
+        line.set_rasterized(True)
     ax.set_ylabel("cM/Mb", color="tab:red")
-
-
-def _plot_genes(ax, genes: pl.DataFrame, bp_min: int, bp_max: int) -> None:
-    row = 0
-    for g in genes.iter_rows(named=True):
-        start = max(int(g[GENE_INFO_START_COL]), bp_min)
-        end = min(int(g[GENE_INFO_END_COL]), bp_max)
-        ax.plot([start, end], [row, row], linewidth=4)
-        ax.text((start + end) / 2, row + 0.1, g[GENE_INFO_NAME_COL], ha="center")
-        row += 1
-    ax.set_yticks([])
-    ax.set_ylabel("genes")
+    ax.tick_params(axis="y", labelcolor="tab:red")
 
 
 def _render(
     scratch_dir: Path,
     pf_variants: pl.DataFrame,
     uni_variants: pl.DataFrame,
+    uni_cs: pl.DataFrame,
+    pf_cs: pl.DataFrame,
     pf_full: pl.DataFrame,
     ld: np.ndarray,
     prior_w: np.ndarray,
@@ -297,10 +298,20 @@ def _render(
     bp_min: int,
     bp_max: int,
 ) -> None:
-    n_panels = 1 + len(families) + 3 + 1  # manhattan + families + lift + 2 pip + genes
-    fig = Figure(figsize=(10, 2.0 * n_panels))
-    gs = fig.add_gridspec(nrows=n_panels, ncols=1, hspace=0.4)
-    axes = [fig.add_subplot(gs[i, 0]) for i in range(n_panels)]
+    # manhattan + families + prior fold + 2 pip + genes, one panel each.
+    n_panels = 1 + len(families) + 3 + 1
+    fig = Figure(figsize=(12, 1.7 * n_panels))
+    # Left column holds the tracks; the narrow right column is reserved for
+    # legends/colorbars so nothing overlaps the data (mirrors SusieStackPlotTask).
+    gs = fig.add_gridspec(
+        nrows=n_panels,
+        ncols=2,
+        width_ratios=[1.0, 0.10],
+        hspace=0.12,
+        wspace=0.02,
+    )
+    ax0 = fig.add_subplot(gs[0, 0])
+    axes = [ax0] + [fig.add_subplot(gs[i, 0], sharex=ax0) for i in range(1, n_panels)]
     x = pf_full[GWASLAB_POS_COL].to_numpy()
 
     # Panel 1: Manhattan colored by LD with lead (min-p) variant + recomb rate.
@@ -308,10 +319,16 @@ def _render(
     neglogp = -np.log10(2.0 * _norm_sf(np.abs(z)))
     lead = int(np.argmax(np.abs(z)))
     r2 = ld[lead, :] ** 2
-    ax0 = axes[0]
-    sc = ax0.scatter(x, neglogp, c=r2, cmap="viridis", vmin=0, vmax=1, s=12)
+    sc = ax0.scatter(x, neglogp, c=r2, cmap="viridis", vmin=0, vmax=1, s=10)
+    sc.set_rasterized(True)
     ax0.set_ylabel("-log10 p")
-    fig.colorbar(sc, ax=ax0, label="r2 w/ lead")
+    # Colorbar sits at the RIGHT edge of the reserved right-column cell (a thin
+    # inset), leaving the cell's left half for the recomb axis's ticks/label so
+    # the two do not collide.
+    cbar_cell = fig.add_subplot(gs[0, 1])
+    cbar_cell.axis("off")
+    cax = inset_axes(cbar_cell, width="30%", height="100%", loc="center right")
+    fig.colorbar(sc, cax=cax, label="r$^2$ w/ lead")
 
     recomb = _load_recomb(fetch, genetic_map_task, chrom, bp_min, bp_max)
     ax0b = ax0.twinx()
@@ -321,38 +338,77 @@ def _render(
     for k, fam in enumerate(families):
         axk = axes[1 + k]
         fam_series = scaled.filter(pl.col(FAMILY_COL) == fam).sort(GWASLAB_POS_COL)
-        axk.plot(
+        (line,) = axk.plot(
             fam_series[GWASLAB_POS_COL].to_numpy(),
             fam_series[FAMILY_SCALED_COL].to_numpy(),
+            linewidth=0.8,
         )
-        axk.set_ylabel(fam)
+        line.set_rasterized(True)
+        axk.set_ylabel(fam, fontsize=8)
 
-    # Prior fold (log).
+    # Prior fold (log): the polyfun prior's multiplicative lift over uniform.
     lift = pf_variants.height * prior_w / prior_w.sum()
     ax_lift = axes[1 + len(families)]
-    ax_lift.scatter(pf_full[GWASLAB_POS_COL].to_numpy(), lift, s=12)
+    lift_sc = ax_lift.scatter(pf_full[GWASLAB_POS_COL].to_numpy(), lift, s=6)
+    lift_sc.set_rasterized(True)
     ax_lift.set_yscale("log")
     ax_lift.set_ylabel("prior fold")
 
-    # PIP uniform / polyfun.
-    ax_u = axes[2 + len(families)]
-    ax_u.scatter(
-        uni_variants[GWASLAB_POS_COL].to_numpy(),
-        uni_variants[PIP_COLUMN].to_numpy(),
-        s=12,
-    )
-    ax_u.set_ylabel("PIP uniform")
-    ax_pf = axes[3 + len(families)]
-    ax_pf.scatter(
-        pf_variants[GWASLAB_POS_COL].to_numpy(),
-        pf_variants[PIP_COLUMN].to_numpy(),
-        s=12,
-    )
-    ax_pf.set_ylabel("PIP polyfun")
+    # PIP uniform / polyfun as vertical stems restricted to credible-set variants,
+    # colored per credible set with a legend in the right column (reuses the
+    # stackplot's susie track). Empty frame -> no stems, no legend.
+    _plot_pip_panel(fig, gs, 2 + len(families), axes, uni_cs, "PIP uniform")
+    _plot_pip_panel(fig, gs, 3 + len(families), axes, pf_cs, "PIP polyfun")
 
-    # Genes.
-    _plot_genes(axes[-1], genes, bp_min, bp_max)
-    axes[-1].set_xlabel(f"chr{chrom} position (bp)")
+    # Genes: reuse the stackplot's lane-packed gene track. Filter to this
+    # chromosome first (the reference lists every chromosome; the helper windows
+    # only by position).
+    ax_gene = axes[-1]
+    genes_chrom = genes.filter(
+        pl.col(GENE_INFO_CHROM_COL).cast(pl.String) == str(chrom)
+    )
+    plot_gene_tracks(
+        ax=ax_gene,
+        gene_df=genes_chrom,
+        start_bp=bp_min,
+        end_bp=bp_max,
+        gene_start_col=GENE_INFO_START_COL,
+        gene_end_col=GENE_INFO_END_COL,
+        gene_name_col=GENE_INFO_NAME_COL,
+        gene_strand_col=GENE_INFO_STRAND_COL,
+    )
+    ax_gene.set_ylabel("genes")
+    ax_gene.set_xlabel(f"chr{chrom} position (bp)")
+
+    # Lock every panel to the locus window and tidy the shared x-axis: only the
+    # bottom (genes) panel keeps tick labels; drop top+right spines throughout.
+    # The gene panel additionally drops its left spine so it has no vertical
+    # frame lines at all (matching the stackplot).
+    ax0.set_xlim(bp_min, bp_max)
+    for ax in axes[:-1]:
+        ax.tick_params(axis="x", which="both", labelbottom=False, bottom=False)
+    for ax in axes:
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+    ax_gene.spines["left"].set_visible(False)
 
     fig.savefig(scratch_dir / PLOT_PNG_FILENAME, dpi=150, bbox_inches="tight")
     fig.savefig(scratch_dir / PLOT_SVG_FILENAME, bbox_inches="tight")
+
+
+def _plot_pip_panel(
+    fig: Figure,
+    gs,
+    row: int,
+    axes: list,
+    cs_df: pl.DataFrame,
+    label: str,
+) -> None:
+    """Draw one PIP panel: credible-set-colored stems on the left-column axis and
+    a per-credible-set legend in the reserved right-column cell."""
+    ax_pip = axes[row]
+    legend_ax = fig.add_subplot(gs[row, 1])
+    legend_ax.axis("off")
+    plot_susie_track(susie_cs_df=cs_df, ax_pip=ax_pip, pip_legend_ax=legend_ax)
+    ax_pip.set_ylim(bottom=0.0)
+    ax_pip.set_ylabel(label)
