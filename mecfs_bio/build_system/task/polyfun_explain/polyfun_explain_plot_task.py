@@ -71,6 +71,7 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
     _ANNOT_KEY,
     FAMILY_COL,
     FAMILY_SCALED_COL,
+    SELECTION_IMPORTANT_FAMILIES_KEY,
     SELECTION_JSON_FILENAME,
     _family_scaled,
     _load_annotations,
@@ -138,7 +139,7 @@ class PolyfunExplainPlotTask(Task):
         pf_dir = _dir(fetch, self.susie_polyfun_task)
         contrast_dir = _dir(fetch, self.contrast_task)
         selection = json.loads((contrast_dir / SELECTION_JSON_FILENAME).read_text())
-        families = selection["important_families"][: self.n_family_panels]
+        families = selection[SELECTION_IMPORTANT_FAMILIES_KEY][: self.n_family_panels]
 
         pf_variants = _load_run_variants(pf_dir).sort(GWASLAB_POS_COL)
         uni_variants = _load_run_variants(uni_dir)

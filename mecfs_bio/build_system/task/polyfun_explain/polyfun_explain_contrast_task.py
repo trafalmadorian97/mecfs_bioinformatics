@@ -57,6 +57,10 @@ PER_ANNOTATION_CONTRAST_FILENAME = "per_annotation_contrast.parquet"
 PER_FAMILY_CONTRAST_FILENAME = "per_family_contrast.parquet"
 PRIOR_LIFT_FILENAME = "prior_lift.parquet"
 SELECTION_JSON_FILENAME = "selection.json"
+# Keys inside selection.json. The plot task reads SELECTION_IMPORTANT_FAMILIES_KEY
+# back to decide which family panels to draw, so both sides share these constants.
+SELECTION_FOCAL_VARIANT_KEY = "focal_variant"
+SELECTION_IMPORTANT_FAMILIES_KEY = "important_families"
 
 DISP_CHR = "chr"
 DISP_POS = "pos"
@@ -183,13 +187,13 @@ class PolyfunExplainContrastTask(Task):
         (scratch_dir / SELECTION_JSON_FILENAME).write_text(
             json.dumps(
                 {
-                    "focal_variant": {
+                    SELECTION_FOCAL_VARIANT_KEY: {
                         "chr": int(focal_key[GWASLAB_CHROM_COL]),
                         "pos": int(focal_key[GWASLAB_POS_COL]),
                         "ea": focal_key[GWASLAB_EFFECT_ALLELE_COL],
                         "nea": focal_key[GWASLAB_NON_EFFECT_ALLELE_COL],
                     },
-                    "important_families": focal_families,
+                    SELECTION_IMPORTANT_FAMILIES_KEY: focal_families,
                 },
                 indent=2,
                 sort_keys=True,
