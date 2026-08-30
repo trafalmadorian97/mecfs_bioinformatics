@@ -6,7 +6,9 @@ Panels, top to bottom, sharing the genomic-position x-axis:
      on a secondary axis.
   2. PIP, uniform run (credible-set variants only).
   3. PIP, polyfun run (credible-set variants only). Shares its y-scale with the
-     uniform panel so the two are directly comparable.
+     uniform panel so the two are directly comparable, and carries a callout on
+     each credible set's prior-boosted variant naming its key annotation
+     families (from the contrast task's callouts.parquet).
   4. Genes.
 
 Writes both explain_plot.png and explain_plot.svg. Inspired by
@@ -19,10 +21,10 @@ output format is chosen per file extension by savefig (so the .svg is a true
 vector file and the .png raster), and no figure is registered in pyplot's
 global manager, so there is nothing to close to reclaim memory.
 
-The annotation_parquet_task, ridge_weights_task and contrast_task deps are
-retained for the forthcoming per-variant annotation label on the top
-polyfun-PIP variant; the family-panel and prior-fold tracks that previously
-consumed them have been dropped.
+The contrast_task supplies the per-credible-set callouts (callouts.parquet). The
+annotation_parquet_task and ridge_weights_task deps are retained (the contrast
+task consumes them upstream); the family-panel and prior-fold tracks that this
+plot previously drew from them have been dropped.
 """
 
 from pathlib import Path, PurePath
@@ -30,6 +32,7 @@ from pathlib import Path, PurePath
 import narwhals as nw
 import numpy as np
 import polars as pl
+import textalloc as ta
 from attrs import frozen
 from matplotlib.figure import Figure
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
@@ -55,6 +58,9 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import (
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
+    CALLOUT_LABEL_COL,
+    CALLOUT_PIP_PF_COL,
+    CALLOUTS_FILENAME,
     _load_run_variants,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
@@ -121,6 +127,8 @@ class PolyfunExplainPlotTask(Task):
         pf_cs = pl.read_parquet(pf_dir / COMBINED_CS_FILENAME)
         pf_full = pl.read_parquet(pf_dir / FILTERED_GWAS_FILENAME)
         ld = np.load(pf_dir / FILTERED_LD_FILENAME)
+        contrast_dir = _dir(fetch, self.contrast_task)
+        callouts = pl.read_parquet(contrast_dir / CALLOUTS_FILENAME)
 
         chrom = int(pf_variants[GWASLAB_CHROM_COL][0])
         bp_min = int(pf_variants[GWASLAB_POS_COL].to_numpy().min())
@@ -141,6 +149,7 @@ class PolyfunExplainPlotTask(Task):
             uni_cs=uni_cs,
             pf_cs=pf_cs,
             pf_full=pf_full,
+            callouts=callouts,
             ld=ld,
             genes=genes,
             fetch=fetch,
@@ -232,6 +241,7 @@ def _render(
     uni_cs: pl.DataFrame,
     pf_cs: pl.DataFrame,
     pf_full: pl.DataFrame,
+    callouts: pl.DataFrame,
     ld: np.ndarray,
     genes: pl.DataFrame,
     fetch: Fetch,
@@ -284,8 +294,12 @@ def _render(
     # Share one y-scale across both PIP panels so their stem heights are directly
     # comparable (PIP in [0, 1]; scale to the taller of the two, else full range).
     pip_top = _shared_pip_top(uni_cs, pf_cs)
-    axes[1].set_ylim(0.0, pip_top)
-    axes[2].set_ylim(0.0, pip_top)
+    # Reserve headroom above the stems for the callout labels; raise BOTH PIP
+    # panels equally so their data scale stays shared (directly comparable).
+    label_top = pip_top / 0.6
+    axes[1].set_ylim(0.0, label_top)
+    axes[2].set_ylim(0.0, label_top)
+    _place_callouts(axes[2], callouts)
 
     # Genes: reuse the stackplot's lane-packed gene track. Filter to this
     # chromosome first (the reference lists every chromosome; the helper windows
@@ -352,3 +366,29 @@ def _plot_pip_panel(
     legend_ax.axis("off")
     plot_susie_track(susie_cs_df=cs_df, ax_pip=ax_pip, pip_legend_ax=legend_ax)
     ax_pip.set_ylabel(label)
+
+
+def _place_callouts(ax_pf, callouts: pl.DataFrame) -> None:
+    """Annotate the polyfun PIP panel: one text label per callout row, anchored at
+    (POS, pip_pf), with textalloc arranging them to avoid mutual overlap and the
+    stems, joined to their anchors by thin leader lines. Empty frame -> no-op."""
+    if callouts.height == 0:
+        return
+    xs = callouts[GWASLAB_POS_COL].to_numpy().astype(float).tolist()
+    ys = callouts[CALLOUT_PIP_PF_COL].to_numpy().astype(float).tolist()
+    texts = callouts[CALLOUT_LABEL_COL].to_list()
+    # Seed so textalloc's candidate search is reproducible across builds (keeps
+    # the committed SVG stable); textalloc draws from numpy's global RNG.
+    np.random.seed(0)
+    ta.allocate(
+        ax_pf,
+        xs,
+        ys,
+        texts,
+        x_scatter=xs,
+        y_scatter=ys,
+        textsize=7,
+        linecolor="black",
+        linewidth=0.6,
+        avoid_label_lines_overlap=True,
+    )
