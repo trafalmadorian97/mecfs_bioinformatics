@@ -265,7 +265,7 @@ def _render(
     gs = fig.add_gridspec(
         nrows=n_panels,
         ncols=2,
-        width_ratios=[1.0, 0.10],
+        width_ratios=[1.0, 0.15],
         hspace=0.12,
         wspace=0.02,
     )
@@ -287,21 +287,23 @@ def _render(
     # rate.
     cbar_cell = fig.add_subplot(gs[0, 1])
     cbar_cell.axis("off")
-    cax = inset_axes(cbar_cell, width="30%", height="60%", loc="upper right")
+    cax = inset_axes(cbar_cell, width="22%", height="55%", loc="upper right")
     fig.colorbar(sc, cax=cax, label="r$^2$ w/ lead")
 
     recomb = _load_recomb(fetch, genetic_map_task, chrom, bp_min, bp_max)
     ax0b = ax0.twinx()
     _plot_recomb(ax0b, recomb)
+    # Recomb-rate key below the colorbar, anchored to the cell's right edge so its
+    # box stays clear of the cM/Mb axis ticks/label at the cell's left edge.
     cbar_cell.legend(
-        handles=[
-            Line2D([0], [0], color="tab:red", alpha=0.6, linewidth=1.2),
-        ],
+        handles=[Line2D([0], [0], color="tab:red", alpha=0.6, linewidth=1.2)],
         labels=["recomb rate"],
-        loc="lower center",
+        loc="lower right",
         frameon=False,
-        fontsize=8,
-        borderaxespad=0,
+        fontsize=7,
+        handlelength=1.0,
+        handletextpad=0.4,
+        borderaxespad=0.0,
     )
 
     # PIP uniform / polyfun as vertical stems restricted to credible-set variants,
@@ -314,10 +316,17 @@ def _render(
     pip_top = _shared_pip_top(uni_cs, pf_cs)
     # Reserve headroom above the stems for the callout labels; raise BOTH PIP
     # panels equally so their data scale stays shared (directly comparable).
-    label_top = pip_top / 0.6
+    label_top = pip_top / 0.55
     axes[1].set_ylim(0.0, label_top)
     axes[2].set_ylim(0.0, label_top)
-    _place_callouts(axes[2], callouts)
+    # Confine labels to the band ABOVE the tallest stem so they never overlap a
+    # stem; textalloc drops a leader line down from each label to its anchor.
+    _place_callouts(
+        axes[2],
+        callouts,
+        x_band=(float(bp_min), float(bp_max)),
+        y_band=(pip_top * 1.05, label_top),
+    )
 
     # Genes: reuse the stackplot's lane-packed gene track. Filter to this
     # chromosome first (the reference lists every chromosome; the helper windows
@@ -386,10 +395,16 @@ def _plot_pip_panel(
     ax_pip.set_ylabel(label)
 
 
-def _place_callouts(ax_pf, callouts: pl.DataFrame) -> None:
+def _place_callouts(
+    ax_pf,
+    callouts: pl.DataFrame,
+    x_band: tuple[float, float],
+    y_band: tuple[float, float],
+) -> None:
     """Annotate the polyfun PIP panel: one text label per callout row, anchored at
-    (POS, pip_pf), with textalloc arranging them to avoid mutual overlap and the
-    stems, joined to their anchors by thin leader lines. Empty frame -> no-op."""
+    (POS, pip_pf). textalloc arranges the labels within x_band/y_band (the band
+    above the stems) to avoid mutual overlap, joined to their anchors by thin
+    leader lines. Empty frame -> no-op."""
     if callouts.height == 0:
         return
     xs = callouts[GWASLAB_POS_COL].to_numpy().astype(float).tolist()
@@ -410,6 +425,9 @@ def _place_callouts(ax_pf, callouts: pl.DataFrame) -> None:
         linewidth=0.6,
         # Extra padding around each label box so the leader line stops short of
         # the text rather than touching its first character.
-        margin=0.03,
+        margin=0.02,
+        # Keep labels in the reserved band above the stems (never on a stem).
+        xlims=x_band,
+        ylims=y_band,
         avoid_label_lines_overlap=True,
     )
