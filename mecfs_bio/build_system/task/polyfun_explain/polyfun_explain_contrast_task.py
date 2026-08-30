@@ -9,6 +9,7 @@ variant, and writes the docs-facing display table plus detail tables.
 
 import json
 from pathlib import Path, PurePath
+from typing import cast
 
 import narwhals as nw
 import numpy as np
@@ -61,6 +62,28 @@ SELECTION_JSON_FILENAME = "selection.json"
 # back to decide which family panels to draw, so both sides share these constants.
 SELECTION_FOCAL_VARIANT_KEY = "focal_variant"
 SELECTION_IMPORTANT_FAMILIES_KEY = "important_families"
+
+CALLOUTS_FILENAME = "callouts.parquet"
+CALLOUT_CS_COL = "cs"
+CALLOUT_PIP_PF_COL = "pip_pf"
+CALLOUT_PIP_U_COL = "pip_u"
+CALLOUT_LABEL_COL = "label"
+# Fixed schema so an empty callout set still round-trips through parquet and the
+# plot task can read a well-typed (possibly zero-row) frame.
+_CALLOUT_SCHEMA: dict[str, pl.DataType] = {
+    GWASLAB_CHROM_COL: pl.Int64(),
+    GWASLAB_POS_COL: pl.Int64(),
+    GWASLAB_EFFECT_ALLELE_COL: pl.String(),
+    GWASLAB_NON_EFFECT_ALLELE_COL: pl.String(),
+    CALLOUT_CS_COL: pl.Int32(),
+    CALLOUT_PIP_PF_COL: pl.Float64(),
+    CALLOUT_PIP_U_COL: pl.Float64(),
+    CALLOUT_LABEL_COL: pl.String(),
+}
+# Selection thresholds (see design doc). Change-based only; no absolute PIP floor.
+_DOMINANCE_MARGIN = 0.05
+_PRIOR_EFFECT_MARGIN = 0.10
+_MAX_CALLOUT_FAMILIES = 3
 
 DISP_CHR = "chr"
 DISP_POS = "pos"
@@ -199,6 +222,16 @@ class PolyfunExplainContrastTask(Task):
                 sort_keys=True,
             )
         )
+
+        family_sd = _family_background_sd(uni_annot, annot_cols, gamma, family)
+        callouts = _build_callouts(
+            pf_variants=pf_variants,
+            uni_variants=uni_variants,
+            cs_pf=cs_pf,
+            per_family=per_family,
+            family_sd=family_sd,
+        )
+        callouts.write_parquet(scratch_dir / CALLOUTS_FILENAME)
         return DirectoryAsset(scratch_dir)
 
     @classmethod
@@ -388,6 +421,128 @@ def _select_families(
     return (
         focal.sort(FAMILY_CONTRAST_COL, descending=True).head(n)[FAMILY_COL].to_list()
     )
+
+
+def _format_callout_label(
+    focal_key: dict, families: list[tuple[AnnotationFamily, str]]
+) -> str:
+    """Render one callout string: pos:nea:ea, then the key families with their
+    strength markers. No families -> just the variant id (no parentheses)."""
+    head = (
+        f"{focal_key[GWASLAB_POS_COL]}:"
+        f"{focal_key[GWASLAB_NON_EFFECT_ALLELE_COL]}:"
+        f"{focal_key[GWASLAB_EFFECT_ALLELE_COL]}"
+    )
+    if not families:
+        return head
+    inner = ", ".join(
+        f"{FAMILY_SHORT_LABELS[fam]} {marker}" for fam, marker in families
+    )
+    return f"{head} ({inner})"
+
+
+def _callout_families(
+    per_family: pl.DataFrame,
+    focal_key: dict,
+    family_sd: dict[str, float],
+    max_families: int,
+) -> list[tuple[AnnotationFamily, str]]:
+    """The key families for one flagged variant: those whose per-family contrast
+    is positive (elevated at this variant) and exceeds one background SD, bucketed
+    1-2 SD -> '+', >2 SD -> '++'. Top max_families by z, z descending. Families
+    with a degenerate (<= 0) background SD are skipped."""
+    focal = per_family
+    for k, v in focal_key.items():
+        focal = focal.filter(pl.col(k) == v)
+    scored: list[tuple[float, AnnotationFamily, str]] = []
+    for row in focal.iter_rows(named=True):
+        fam = cast(AnnotationFamily, row[FAMILY_COL])
+        diff = row[FAMILY_CONTRAST_COL]
+        sd = family_sd.get(fam, 0.0)
+        if diff <= 0.0 or sd <= 0.0:
+            continue
+        z = diff / sd
+        if z <= 1.0:
+            continue
+        scored.append((z, fam, "++" if z > 2.0 else "+"))
+    scored.sort(key=lambda t: t[0], reverse=True)
+    return [(fam, marker) for _, fam, marker in scored[:max_families]]
+
+
+def _family_background_sd(
+    uni_annot: pl.DataFrame,
+    annot_cols: list[str],
+    gamma: dict[str, float],
+    family: dict[str, str],
+) -> dict[str, float]:
+    """Per family, the uniform-PIP-weighted standard deviation of family_scaled
+    over the uniform-run variants. Falls back to equal weights when the uniform
+    run carried no signal (total PIP <= 0), matching the abar fallback."""
+    fs = _family_scaled(uni_annot, annot_cols, gamma, family)
+    weight = uni_annot.select(*_KEY, pl.col(PIP_COLUMN).alias("w"))
+    if uni_annot[PIP_COLUMN].sum() <= 0.0:
+        weight = weight.with_columns(pl.lit(1.0).alias("w"))
+    stats = (
+        fs.join(weight, on=_KEY, how="inner")
+        .group_by(FAMILY_COL)
+        .agg(
+            (pl.col("w") * pl.col(FAMILY_SCALED_COL)).sum().alias("wx"),
+            (pl.col("w") * pl.col(FAMILY_SCALED_COL) ** 2).sum().alias("wx2"),
+            pl.col("w").sum().alias("wsum"),
+        )
+    )
+    out: dict[str, float] = {}
+    for row in stats.iter_rows(named=True):
+        wsum = row["wsum"]
+        if wsum <= 0.0:
+            continue
+        mean = row["wx"] / wsum
+        var = max(row["wx2"] / wsum - mean * mean, 0.0)
+        out[row[FAMILY_COL]] = float(np.sqrt(var))
+    return out
+
+
+def _build_callouts(
+    pf_variants: pl.DataFrame,
+    uni_variants: pl.DataFrame,
+    cs_pf: pl.DataFrame,
+    per_family: pl.DataFrame,
+    family_sd: dict[str, float],
+) -> pl.DataFrame:
+    """One callout row per polyfun credible set whose top-PIP variant clears both
+    gates: PIP >= _DOMINANCE_MARGIN above the next-highest PIP in the same CS, and
+    PIP >= _PRIOR_EFFECT_MARGIN above the same variant's uniform PIP (0 if absent
+    from the uniform run)."""
+    cs = cs_pf.join(pf_variants.select(*_KEY, PIP_COLUMN), on=_KEY, how="inner")
+    uni_pip = {
+        tuple(row[k] for k in _KEY): row[PIP_COLUMN]
+        for row in uni_variants.select(*_KEY, PIP_COLUMN).iter_rows(named=True)
+    }
+    rows: list[dict] = []
+    for (cs_number,), grp in cs.group_by("cs_number", maintain_order=True):
+        grp = grp.sort(PIP_COLUMN, descending=True)
+        top = grp.row(0, named=True)
+        top_pip = top[PIP_COLUMN]
+        next_pip = grp[PIP_COLUMN][1] if grp.height > 1 else 0.0
+        if top_pip - next_pip < _DOMINANCE_MARGIN:
+            continue
+        focal_key = {k: top[k] for k in _KEY}
+        u = uni_pip.get(tuple(top[k] for k in _KEY), 0.0)
+        if top_pip - u < _PRIOR_EFFECT_MARGIN:
+            continue
+        families = _callout_families(
+            per_family, focal_key, family_sd, _MAX_CALLOUT_FAMILIES
+        )
+        rows.append(
+            {
+                **{k: focal_key[k] for k in _KEY},
+                CALLOUT_CS_COL: int(cs_number),
+                CALLOUT_PIP_PF_COL: float(top_pip),
+                CALLOUT_PIP_U_COL: float(u),
+                CALLOUT_LABEL_COL: _format_callout_label(focal_key, families),
+            }
+        )
+    return pl.DataFrame(rows, schema=_CALLOUT_SCHEMA)
 
 
 def _display_table(
