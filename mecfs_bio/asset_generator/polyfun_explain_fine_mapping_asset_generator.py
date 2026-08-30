@@ -68,6 +68,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PriorInfo,
     SusieRFinemapTask,
 )
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -108,6 +109,7 @@ class SharedFineMapInputs:
     ld_matrix_task: Task
     gene_info_task: Task
     effective_sample_size: int
+    genome_build: GenomeBuild = "19"
     q_factor: int = 100
 
 
@@ -185,6 +187,7 @@ def generate_polyfun_explain_group(
         gene_info_task=shared.gene_info_task,
         ridge_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
         genetic_map_task=GENETIC_MAP_HG19,
+        genome_build=shared.genome_build,
         gene_info_pipe=IdentityPipe(),
     )
     return PolyfunExplainGroup(
@@ -213,6 +216,7 @@ def _build_shared_locus_inputs(
     q_factor: int,
     chrom_range: ChromRange | None,
     palindrome_strategy: PalindromeStrategy,
+    genome_build: GenomeBuild,
 ) -> SharedFineMapInputs:
     """Per-locus shared setup: LD interval lookup, LD-label renaming, and
     harmonization of the sumstats against the renamed labels. Mirrors the inline
@@ -288,6 +292,7 @@ def _build_shared_locus_inputs(
         ld_matrix_task=ld_matrix_task,
         gene_info_task=gene_info_task,
         effective_sample_size=sample_size,
+        genome_build=genome_build,
         q_factor=q_factor,
     )
 
@@ -318,5 +323,9 @@ def generate_assets_polyfun_explain_fine_map(
         q_factor=q_factor,
         chrom_range=chrom_range,
         palindrome_strategy=palindrome_strategy,
+        # Fixed to hg19: this generator runs on build-37 sumstats against the
+        # Broad build-37 LD panel, the hg19 genetic map, and the hg19 baseline-LF
+        # annotations. It drives the plot's x-axis coordinate-system label.
+        genome_build="19",
     )
     return PolyfunExplainOuterGroup(groups=build_explainability_groups(shared))

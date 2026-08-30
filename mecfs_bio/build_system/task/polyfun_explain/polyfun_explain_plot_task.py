@@ -35,6 +35,7 @@ import polars as pl
 import textalloc as ta
 from attrs import frozen
 from matplotlib.figure import Figure
+from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -79,6 +80,7 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     plot_susie_track,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -102,6 +104,7 @@ class PolyfunExplainPlotTask(Task):
     gene_info_task: Task
     ridge_weights_task: Task
     genetic_map_task: Task
+    genome_build: GenomeBuild = "19"
     gene_info_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
@@ -157,6 +160,7 @@ class PolyfunExplainPlotTask(Task):
             chrom=chrom,
             bp_min=bp_min,
             bp_max=bp_max,
+            genome_build=self.genome_build,
         )
         return DirectoryAsset(scratch_dir)
 
@@ -171,6 +175,7 @@ class PolyfunExplainPlotTask(Task):
         gene_info_task: Task,
         ridge_weights_task: Task,
         genetic_map_task: Task,
+        genome_build: GenomeBuild = "19",
         gene_info_pipe: DataProcessingPipe = IdentityPipe(),
     ) -> "PolyfunExplainPlotTask":
         source_meta = susie_polyfun_task.meta
@@ -191,6 +196,7 @@ class PolyfunExplainPlotTask(Task):
             gene_info_task=gene_info_task,
             ridge_weights_task=ridge_weights_task,
             genetic_map_task=genetic_map_task,
+            genome_build=genome_build,
             gene_info_pipe=gene_info_pipe,
         )
 
@@ -249,6 +255,7 @@ def _render(
     chrom: int,
     bp_min: int,
     bp_max: int,
+    genome_build: GenomeBuild,
 ) -> None:
     # manhattan + 2 pip + genes, one panel each.
     n_panels = 1 + 2 + 1
@@ -274,17 +281,28 @@ def _render(
     sc = ax0.scatter(x, neglogp, c=r2, cmap="viridis", vmin=0, vmax=1, s=10)
     sc.set_rasterized(True)
     ax0.set_ylabel("-log10 p")
-    # Colorbar sits at the RIGHT edge of the reserved right-column cell (a thin
-    # inset), leaving the cell's left half for the recomb axis's ticks/label so
-    # the two do not collide.
+    # Right-column cell for panel 1: a shortened colorbar in the upper portion
+    # (anchored right, clear of the recomb axis's ticks/label), and below it a
+    # small legend telling the reader the red twin-axis line is recombination
+    # rate.
     cbar_cell = fig.add_subplot(gs[0, 1])
     cbar_cell.axis("off")
-    cax = inset_axes(cbar_cell, width="30%", height="100%", loc="center right")
+    cax = inset_axes(cbar_cell, width="30%", height="60%", loc="upper right")
     fig.colorbar(sc, cax=cax, label="r$^2$ w/ lead")
 
     recomb = _load_recomb(fetch, genetic_map_task, chrom, bp_min, bp_max)
     ax0b = ax0.twinx()
     _plot_recomb(ax0b, recomb)
+    cbar_cell.legend(
+        handles=[
+            Line2D([0], [0], color="tab:red", alpha=0.6, linewidth=1.2),
+        ],
+        labels=["recomb rate"],
+        loc="lower center",
+        frameon=False,
+        fontsize=8,
+        borderaxespad=0,
+    )
 
     # PIP uniform / polyfun as vertical stems restricted to credible-set variants,
     # colored per credible set with a legend in the right column (reuses the
@@ -319,7 +337,7 @@ def _render(
         gene_strand_col=GENE_INFO_STRAND_COL,
     )
     ax_gene.set_ylabel("genes")
-    ax_gene.set_xlabel(f"chr{chrom} position (bp)")
+    ax_gene.set_xlabel(f"hg{genome_build} chr{chrom} position (bp)")
 
     # Lock every panel to the locus window and tidy the shared x-axis: only the
     # bottom (genes) panel keeps tick labels; drop top+right spines throughout.
@@ -390,5 +408,8 @@ def _place_callouts(ax_pf, callouts: pl.DataFrame) -> None:
         textsize=7,
         linecolor="black",
         linewidth=0.6,
+        # Extra padding around each label box so the leader line stops short of
+        # the text rather than touching its first character.
+        margin=0.03,
         avoid_label_lines_overlap=True,
     )

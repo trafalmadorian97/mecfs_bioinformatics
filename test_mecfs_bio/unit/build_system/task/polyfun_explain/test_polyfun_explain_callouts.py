@@ -65,6 +65,6 @@ def test_format_label_with_and_without_families():
     focal = _key(174128548)
     assert (
         _format_callout_label(focal, [("conserved", "++"), ("coding", "+")])
-        == "174128548:A:T (cons ++, cod +)"
+        == "174128548:A:T (conserved ++, coding +)"
     )
     assert _format_callout_label(focal, []) == "174128548:A:T"

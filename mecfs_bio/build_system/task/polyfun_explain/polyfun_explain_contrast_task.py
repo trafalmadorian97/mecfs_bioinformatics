@@ -435,9 +435,9 @@ def _format_callout_label(
     )
     if not families:
         return head
-    inner = ", ".join(
-        f"{FAMILY_SHORT_LABELS[fam]} {marker}" for fam, marker in families
-    )
+    # Full family names (underscores -> spaces) so the callout reads at a glance,
+    # e.g. "conserved ++, coding +" rather than the compact display-table forms.
+    inner = ", ".join(f"{fam.replace('_', ' ')} {marker}" for fam, marker in families)
     return f"{head} ({inner})"
 
 
