@@ -35,8 +35,6 @@ import polars as pl
 import textalloc as ta
 from attrs import frozen
 from matplotlib.figure import Figure
-from matplotlib.lines import Line2D
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -287,23 +285,33 @@ def _render(
     # rate.
     cbar_cell = fig.add_subplot(gs[0, 1])
     cbar_cell.axis("off")
-    cax = inset_axes(cbar_cell, width="22%", height="55%", loc="upper right")
+    # Colorbar and recomb key share one aligned column in the RIGHT half of the
+    # cell (the left half holds the cM/Mb twin-axis ticks and label): the colorbar
+    # bar occupies [cbar_x0, cbar_x0+cbar_w] and the recomb line segment sits
+    # directly beneath it over the same x-extent, so the two keys line up.
+    cbar_x0, cbar_w = 0.52, 0.20
+    cax = cbar_cell.inset_axes((cbar_x0, 0.42, cbar_w, 0.52))
     fig.colorbar(sc, cax=cax, label="r$^2$ w/ lead")
 
     recomb = _load_recomb(fetch, genetic_map_task, chrom, bp_min, bp_max)
     ax0b = ax0.twinx()
     _plot_recomb(ax0b, recomb)
-    # Recomb-rate key below the colorbar, anchored to the cell's right edge so its
-    # box stays clear of the cM/Mb axis ticks/label at the cell's left edge.
-    cbar_cell.legend(
-        handles=[Line2D([0], [0], color="tab:red", alpha=0.6, linewidth=1.2)],
-        labels=["recomb rate"],
-        loc="lower right",
-        frameon=False,
+    cbar_cell.plot(
+        [cbar_x0, cbar_x0 + cbar_w],
+        [0.24, 0.24],
+        transform=cbar_cell.transAxes,
+        color="tab:red",
+        alpha=0.6,
+        linewidth=1.2,
+    )
+    cbar_cell.text(
+        cbar_x0 + cbar_w / 2.0,
+        0.14,
+        "recomb rate",
+        transform=cbar_cell.transAxes,
+        ha="center",
+        va="top",
         fontsize=7,
-        handlelength=1.0,
-        handletextpad=0.4,
-        borderaxespad=0.0,
     )
 
     # PIP uniform / polyfun as vertical stems restricted to credible-set variants,
@@ -319,13 +327,14 @@ def _render(
     label_top = pip_top / 0.55
     axes[1].set_ylim(0.0, label_top)
     axes[2].set_ylim(0.0, label_top)
-    # Confine labels to the band ABOVE the tallest stem so they never overlap a
-    # stem; textalloc drops a leader line down from each label to its anchor.
+    # Place the callout labels in the headroom above the stems, angled off to the
+    # side so the leader line is clearly distinct from a vertical PIP stem.
     _place_callouts(
         axes[2],
         callouts,
-        x_band=(float(bp_min), float(bp_max)),
-        y_band=(pip_top * 1.05, label_top),
+        pf_cs,
+        xlims=(float(bp_min), float(bp_max)),
+        ylims=(0.0, label_top),
     )
 
     # Genes: reuse the stackplot's lane-packed gene track. Filter to this
@@ -398,18 +407,27 @@ def _plot_pip_panel(
 def _place_callouts(
     ax_pf,
     callouts: pl.DataFrame,
-    x_band: tuple[float, float],
-    y_band: tuple[float, float],
+    stem_df: pl.DataFrame,
+    xlims: tuple[float, float],
+    ylims: tuple[float, float],
 ) -> None:
     """Annotate the polyfun PIP panel: one text label per callout row, anchored at
-    (POS, pip_pf). textalloc arranges the labels within x_band/y_band (the band
-    above the stems) to avoid mutual overlap, joined to their anchors by thin
-    leader lines. Empty frame -> no-op."""
+    (POS, pip_pf). textalloc treats every PIP stem (0 -> pip) as an obstacle line
+    and places each label in the free space above them, angled north-east so the
+    leader line meets the box corner and reads distinctly from the vertical stems.
+    xlims/ylims are the panel's true axis limits (textalloc normalizes distances
+    against them). Empty frame -> no-op."""
     if callouts.height == 0:
         return
     xs = callouts[GWASLAB_POS_COL].to_numpy().astype(float).tolist()
     ys = callouts[CALLOUT_PIP_PF_COL].to_numpy().astype(float).tolist()
     texts = callouts[CALLOUT_LABEL_COL].to_list()
+    # Every stem (vertical line from 0 to its PIP) is an obstacle to route labels
+    # and leader lines around.
+    stem_x = stem_df[GWASLAB_POS_COL].to_numpy().astype(float)
+    stem_pip = stem_df[PIP_COLUMN].to_numpy().astype(float)
+    x_lines: list[np.ndarray | list[float]] = [[float(px), float(px)] for px in stem_x]
+    y_lines: list[np.ndarray | list[float]] = [[0.0, float(pp)] for pp in stem_pip]
     # Seed so textalloc's candidate search is reproducible across builds (keeps
     # the committed SVG stable); textalloc draws from numpy's global RNG.
     np.random.seed(0)
@@ -418,16 +436,17 @@ def _place_callouts(
         xs,
         ys,
         texts,
-        x_scatter=xs,
-        y_scatter=ys,
+        x_scatter=stem_x.tolist(),
+        y_scatter=stem_pip.tolist(),
+        x_lines=x_lines,
+        y_lines=y_lines,
         textsize=7,
         linecolor="black",
         linewidth=0.6,
-        # Extra padding around each label box so the leader line stops short of
-        # the text rather than touching its first character.
-        margin=0.02,
-        # Keep labels in the reserved band above the stems (never on a stem).
-        xlims=x_band,
-        ylims=y_band,
+        direction="northeast",
+        min_distance=0.03,
+        max_distance=0.5,
+        xlims=xlims,
+        ylims=ylims,
         avoid_label_lines_overlap=True,
     )
