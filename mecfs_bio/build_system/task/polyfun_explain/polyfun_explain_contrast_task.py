@@ -109,6 +109,18 @@ _KEY = [
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
 ]
+_CS_NUMBER_COL = "cs_number"
+# Canonical key dtypes. A SUSIE run that finds no credible sets writes an empty
+# combined_cs whose parquet columns default to Float64; without this the empty
+# frame's CHR (f64) would poison the union_keys concat and break the i64 join in
+# _contrasts. Casting every keyed frame to these types keeps all _KEY joins
+# consistent regardless of whether a run found a credible set.
+_KEY_SCHEMA: dict[str, pl.DataType] = {
+    GWASLAB_CHROM_COL: pl.Int64(),
+    GWASLAB_POS_COL: pl.Int64(),
+    GWASLAB_EFFECT_ALLELE_COL: pl.String(),
+    GWASLAB_NON_EFFECT_ALLELE_COL: pl.String(),
+}
 # The annotation source carries alleles (A1/A2), so it is joined to a run's
 # variants allele-aware on (CHR, POS, unordered-allele-key): each allele of a
 # multiallelic site matches its own annotation row. The run side supplies EA/NEA
@@ -272,7 +284,11 @@ def _dir(fetch: Fetch, task: Task) -> Path:
 def _load_run_variants(run_dir: Path) -> pl.DataFrame:
     """filtered_gwas keyed rows + the run's PIP, in the same order, with the
     unordered allele key used to join the annotation matrix allele-aware."""
-    gwas = pl.read_parquet(run_dir / FILTERED_GWAS_FILENAME).select(_KEY)
+    gwas = (
+        pl.read_parquet(run_dir / FILTERED_GWAS_FILENAME)
+        .select(_KEY)
+        .with_columns(pl.col(k).cast(dt) for k, dt in _KEY_SCHEMA.items())
+    )
     pip = pl.read_parquet(run_dir / PIP_FILENAME).select(PIP_COLUMN)
     return gwas.hstack(pip).with_columns(
         unordered_allele_key(
@@ -285,13 +301,14 @@ def _load_cs_numbers(run_dir: Path) -> pl.DataFrame:
     """One row per credible-set variant with its 1-based L-index (lowest if many)."""
     cs = pl.read_parquet(run_dir / COMBINED_CS_FILENAME)
     if cs.height == 0:
-        return pl.DataFrame(schema={**{k: cs.schema.get(k, pl.Int64) for k in _KEY}})
+        return pl.DataFrame(schema={**_KEY_SCHEMA, _CS_NUMBER_COL: pl.Int32()})
     return (
         cs.with_columns(
-            pl.col(CS_COLUMN).str.replace("L", "").cast(pl.Int32).alias("cs_number")
+            *(pl.col(k).cast(dt) for k, dt in _KEY_SCHEMA.items()),
+            pl.col(CS_COLUMN).str.replace("L", "").cast(pl.Int32).alias(_CS_NUMBER_COL),
         )
         .group_by(_KEY)
-        .agg(pl.col("cs_number").min())
+        .agg(pl.col(_CS_NUMBER_COL).min())
     )
 
 
@@ -519,7 +536,7 @@ def _build_callouts(
         for row in uni_variants.select(*_KEY, PIP_COLUMN).iter_rows(named=True)
     }
     rows: list[dict] = []
-    for (cs_number,), grp in cs.group_by("cs_number", maintain_order=True):
+    for (cs_number,), grp in cs.group_by(_CS_NUMBER_COL, maintain_order=True):
         grp = grp.sort(PIP_COLUMN, descending=True)
         top = grp.row(0, named=True)
         top_pip = top[PIP_COLUMN]
@@ -566,12 +583,12 @@ def _display_table(
             how="left",
         )
         .join(
-            cs_pf.select(*_KEY, pl.col("cs_number").alias(DISP_CS_PF)),
+            cs_pf.select(*_KEY, pl.col(_CS_NUMBER_COL).alias(DISP_CS_PF)),
             on=_KEY,
             how="left",
         )
         .join(
-            cs_u.select(*_KEY, pl.col("cs_number").alias(DISP_CS_U)),
+            cs_u.select(*_KEY, pl.col(_CS_NUMBER_COL).alias(DISP_CS_U)),
             on=_KEY,
             how="left",
         )
