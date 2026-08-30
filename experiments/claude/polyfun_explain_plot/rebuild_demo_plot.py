@@ -8,7 +8,14 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explai
     POLYFUN_EXPLAIN_CHR1_174,
 )
 
-plot = POLYFUN_EXPLAIN_CHR1_174.groups[0].plot  # l1
+group = POLYFUN_EXPLAIN_CHR1_174.groups[0]  # l1
+plot = group.plot
+contrast = group.contrast
 print("rebuilding target:", plot.asset_id)
-result = DEFAULT_RUNNER.run(targets=[plot], must_rebuild_transitive=[plot])
+# Force both the contrast task (which now writes callouts.parquet) and the plot:
+# code changes don't invalidate the trace, so the on-disk contrast asset would
+# otherwise be reused without the new output.
+result = DEFAULT_RUNNER.run(
+    targets=[plot], must_rebuild_transitive=[plot, contrast]
+)
 print("done:", result[plot.asset_id])
