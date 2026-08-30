@@ -227,10 +227,16 @@ Comparing this model to the direct PC control model of the previous section, the
 
 - In both cases, we us principal components to control for subpopulation membership.
 - In the direct PC-control model, we are limited in the number of principal components we can include.  Including too many may result in a model where the number fit parameters approaches or exceeds $N$, the number of study participants, resulting in non-uniqueness of the solution or poor conditioning.  In the LMM, because of the Bayesian prior on $\gamma$, we face no such restriction.
-- Because of the presence of $S$ in the definition of $R$, in the LMM more variable principal components can have a larger effect.  In contrast, in the direct PC-control model all components are treated equally.
+- Because of the presence of $S$ in the definition of $R$, in the LMM more variable principal components can have a larger effect on the phenotype.  In contrast, in the direct PC-control model all components are treated equally.
 
 
-While the formulation $(\ref{gamma_form})$ is useful for revealing the connection between LMM and direct PC control, it is not how LMM
+While the formulation $(\ref{gamma_form})$ is useful for revealing the connection between LMMs and direct PC control, it is not how LMMs are typically writen.  To convert $(\ref{gamma_form})$ to standard LMM form, pick $q=M$ and define $\alpha:= R \gamma$.  By the properties the multivariate normal distribution[^mvnormal_note], 
+
+$$
+\begin{align}
+\alpha \sim \mathcal{N}(0, \sigma^2_\gamma RR^T)
+\end{align}
+$$
 
 
 
@@ -249,6 +255,8 @@ todo
 
 
 [^backdoor_note]: See _Chapter 7: Confounding_ in Hernan and Robins[@hernan2010causal] for a discussion of backdoor paths.
+
+[^mvnormal_note]: See _Section 4.9: Multivariate normal distribution_ from Grimmet and Stirzaker[@grimmett2020probability].
 
 [//]: # (A key advantage of genetic studies over non-genetic epidemiological studies is that genetic studies are causally privileged.  Specifically, genetic studies benefit from the following advantages:)
 
