@@ -82,7 +82,6 @@ def test_plot_writes_png_and_svg(tmp_path: Path):
         gene_info_task=gene_task,
         genetic_map_task=gmap_task,
         gene_info_pipe=IdentityPipe(),
-        n_family_panels=2,
     )
 
     def fetch(asset_id: AssetId) -> Asset:

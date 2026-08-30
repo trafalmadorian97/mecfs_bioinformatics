@@ -1,0 +1,575 @@
+Is there a natural approach to get explainability from polyfun. i.e. suppose I run finemapping twice: once with purse SUSIE, and once with SUSIE-polyfun. Suppose the PIP is diffuse in pure SUSIE, but more concentrated in SUSIE-polyfun. Is there a natural way to see the most important annotations to which to attribute this change?
+
+Yes. There is a fairly natural explainability framework for this, although PolyFun does not provide it directly as a turnkey analysis.
+
+The key is to separate two questions:
+
+1. **How much did the PolyFun prior favor this SNP over its competitors?**
+2. **Which annotations caused PolyFun to give it that favorable prior?**
+
+Those can be analyzed separately.
+
+### 1. First quantify the “prior lift” from PolyFun
+
+Ordinary SuSiE uses uniform prior inclusion weights by default, whereas PolyFun supplies `SNPVAR`, proportional to its estimated per-SNP heritability, as the SuSiE `prior_weights`. ([Stephens Lab][1])
+
+For SNP (i), define
+
+[
+L_i = \log\frac{\pi_i^{PF}}{\pi_i^{uniform}}
+= \log(m\pi_i^{PF}),
+]
+
+where (m) is the number of variants in the locus.
+
+So:
+
+* (L_i=0): PolyFun did not favor the SNP relative to uniform.
+* (L_i=2): its prior probability was (e^2\approx7.4) times higher than uniform.
+* (L_i=-2): PolyFun penalized it about 7-fold.
+
+Even better, for two competing variants (i,j),
+
+[
+\Delta^{prior}_{ij}
+===================
+
+\log\frac{\pi_i^{PF}}{\pi_j^{PF}}.
+]
+
+That quantity has a particularly clean interpretation. In a single-effect Bayesian regression,
+
+[
+\text{posterior odds}_{ij}
+==========================
+
+\text{BF}*{ij}\times
+\text{prior odds}*{ij}.
+]
+
+SuSiE is a sum of such single-effect regressions, so although the multi-effect case is somewhat more complicated, this remains a good way to think about what PolyFun is doing. SuSiE explicitly treats `prior_weights` as the prior probability that each variable contains the effect. ([Stephens Lab][2])
+
+Thus I would start any explainability report with something like:
+
+| SNP | pure SuSiE PIP | PolyFun-SuSiE PIP | PolyFun prior | prior fold-vs-uniform |
+| --- | -------------: | ----------------: | ------------: | --------------------: |
+| A   |            .31 |               .78 |          .060 |                   12× |
+| B   |            .28 |               .09 |          .006 |                  1.2× |
+| C   |            .24 |               .05 |          .003 |                  0.6× |
+
+That immediately tells you whether the concentration is really being driven by functional information.
+
+---
+
+## 2. Attribute that prior lift to annotations
+
+Upstream, PolyFun begins from the S-LDSC model
+
+[
+\widehat h_i^2
+==============
+
+\sum_c \widehat{\tau}*c a*{ic},
+]
+
+where (a_{ic}) is annotation (c) for SNP (i) and (\widehat\tau_c) is the estimated annotation coefficient. PolyFun uses this genome-wide annotation model to rank variants by expected per-SNP heritability. ([PubMed Central (PMC)][3])
+
+This gives you a very natural first-order annotation attribution:
+
+[
+C_{ic}=\widehat{\tau}*c a*{ic}.
+]
+
+But I would **not** simply rank (C_{ic}), because the important question isn't “why does SNP (i) have a large prior?” It is:
+
+> Why does SNP (i) have a larger prior than the other statistically plausible SNPs in this locus?
+
+So I would use a **local annotation contrast**.
+
+Suppose (S) is the pure-SuSiE credible set. Define a weighted annotation average among the competitors,
+
+[
+\bar a_c
+========
+
+\frac{\sum_{j\in S,j\neq i}
+PIP^{SuSiE}*j a*{jc}}
+{\sum_{j\in S,j\neq i}PIP^{SuSiE}_j}.
+]
+
+Then define
+
+[
+\boxed{
+C_c(i)
+======
+
+\widehat{\tau}*c
+\left(a*{ic}-\bar a_c\right)
+}
+]
+
+This is an especially useful explainability quantity.
+
+It says:
+
+> Relative to the SNPs that the genetic evidence considered plausible, how much did annotation (c) make SNP (i) look more functionally important?
+
+For example:
+
+| Annotation         | SNP A | credible-set average | (\hat\tau_c) | local contribution |
+| ------------------ | ----: | -------------------: | -----------: | -----------------: |
+| Coding             |     1 |                 0.03 |      large + |                +++ |
+| Conserved          |  0.91 |                 0.32 |            + |                 ++ |
+| Enhancer           |     1 |                 0.62 |            + |                  + |
+| High-LD annotation |   0.1 |                  0.7 |            − |                  + |
+| MAF bin            |     … |                    … |            … |                 ~0 |
+
+This is much more informative than simply saying “SNP A is annotated as coding.”
+
+---
+
+## 3. There is an important wrinkle in PolyFun: the 20-bin step
+
+This is the part I would keep in mind if you want rigorous attribution.
+
+In the published PolyFun procedure, the annotation model does **not** directly determine the final prior weight. Instead:
+
+[
+\text{annotations}
+\rightarrow
+\sum_c\hat\tau_c a_{ic}
+\rightarrow
+\text{rank SNPs}
+\rightarrow
+\text{heritability bins}
+\rightarrow
+\text{re-estimated bin }h^2
+\rightarrow
+\text{SNPVAR}
+\rightarrow
+\text{SuSiE prior}.
+]
+
+Specifically, the original procedure partitions SNPs into 20 groups with similar annotation-predicted per-SNP heritabilities and then independently re-estimates heritability for those bins; the final prior is proportional to that re-estimated bin heritability. ([PubMed Central (PMC)][3])
+
+This is done deliberately to make PolyFun robust to misspecification of the annotation model.
+
+It means that
+
+[
+\hat\tau_c a_{ic}
+]
+
+is an **upstream explanation of why the SNP was ranked highly**, but is not literally an additive decomposition of its final `SNPVAR`.
+
+In fact, two SNPs in the same final PolyFun bin generally receive the same functional prior. That gives you a very useful diagnostic:
+
+> If two variants are in the same PolyFun bin, PolyFun is not directly using their annotation differences to distinguish between them.
+
+If their PIPs nevertheless change differently between SuSiE and PolyFun-SuSiE, that can arise indirectly because changing priors on other variants changes the multi-effect SuSiE fit.
+
+---
+
+# 4. For rigorous explainability, I would use annotation ablation
+
+This is probably the best answer if you want to publish an analysis saying:
+
+> “The PolyFun-induced concentration of the credible set was primarily attributable to annotations X, Y and Z.”
+
+Take annotation (c), remove its information, recompute PolyFun priors, and rerun exactly the same SuSiE model.
+
+For example, for a focal SNP:
+
+[
+I_c =
+PIP_i^{full}
+------------
+
+PIP_i^{-c}.
+]
+
+Or, if your phenomenon of interest is credible-set concentration, define a locus-level metric such as entropy:
+
+[
+H=-\sum_i PIP_i\log PIP_i
+]
+
+and compute
+
+[
+I_c =
+H^{-c}-H^{full}.
+]
+
+Positive (I_c) says annotation (c) helped PolyFun concentrate the posterior.
+
+Other good endpoints are:
+
+[
+I_c =
+|CS_{95%}^{-c}|-|CS_{95%}^{full}|
+]
+
+or
+
+[
+I_c =
+\max_i PIP_i^{full}-\max_i PIP_i^{-c}.
+]
+
+These answer slightly different questions.
+
+### Two kinds of ablation are possible
+
+**Fixed-model ablation** is the simpler one. Keep the fitted genome-wide (\hat\tau_c)'s but zero/remove annotation (c), recompute the SNP scores/bins/prior, and rerun SuSiE.
+
+This answers:
+
+> Given the PolyFun model that was learned, how much did this annotation contribute to this particular locus?
+
+That is probably the explanation you want.
+
+**Retrained ablation** reruns the genome-wide PolyFun/S-LDSC estimation with annotation (c) absent.
+
+That answers:
+
+> How much unique predictive information does this annotation contribute, allowing all the other annotations to compensate for its absence?
+
+The two can differ substantially.
+
+---
+
+# 5. I would ablate annotation groups rather than 187 individual annotations
+
+This is important because baseline-LF has many strongly related annotations: annotations and their windows, MAF categories, regulatory annotations, conserved regions, LD-related annotations, etc. The PolyFun paper's baseline-LF 2.2.UKB model contains 187 annotations. ([PubMed Central (PMC)][3])
+
+Consequently, saying
+
+> “H3K27ac contributed 37% and enhancer contributed 23%”
+
+would imply much more identifiability than the model really has.
+
+A better first analysis would group them into classes such as:
+
+* coding/protein-altering
+* promoter/TSS
+* enhancer/regulatory
+* chromatin marks/accessibility
+* conserved/constrained
+* MAF
+* LD-related
+* recombination/allele-age
+* background-selection/diversity
+* other sequence annotations
+
+and perform **leave-one-group-out PolyFun-SuSiE**.
+
+After finding that, say, “conservation” is important, you can drill down into its constituent annotations.
+
+---
+
+## 6. If you really want a single annotation-importance decomposition, Shapley values are natural
+
+For a locus-level function such as
+
+[
+f(A)=PIP_i
+]
+
+or
+
+[
+f(A)=-H(PIP),
+]
+
+where (A) is the set of annotation groups included, compute Shapley values
+
+[
+\phi_c
+======
+
+E_S\left[
+f(S\cup{c})-f(S)
+\right].
+]
+
+This handles the fact that annotations interact and are correlated much more gracefully than single leave-one-out analyses.
+
+I would do this over perhaps **8–15 annotation families**, not all 187 annotations. Exact Shapley values over 187 features would be both computationally absurd and scientifically hard to interpret; Monte Carlo Shapley over broad families would be quite feasible.
+
+---
+
+# 7. A particularly useful visualization
+
+For each locus where PolyFun dramatically improves fine-mapping, I would make a plot with:
+
+**Top panel:** pure SuSiE PIPs vs PolyFun-SuSiE PIPs.
+
+**Second panel:** PolyFun prior fold-enrichment
+
+[
+m\pi_i^{PF}.
+]
+
+**Third panel:** the major annotation-group contributions
+
+[
+\widehat\tau_c(a_{ic}-\bar a_c).
+]
+
+Then perhaps a small ablation table:
+
+| Removed group | target PIP | max PIP | 95% CS size |
+| ------------- | ---------: | ------: | ----------: |
+| none          |        .84 |     .84 |           3 |
+| coding        |        .82 |     .82 |           3 |
+| conservation  |        .51 |     .51 |          12 |
+| regulatory    |        .68 |     .68 |           7 |
+| LD/MAF        |        .79 |     .79 |           4 |
+
+That would give a remarkably intuitive explanation:
+
+> “SuSiE alone could not distinguish these 15 highly correlated variants. PolyFun assigned the lead variant an 11× larger prior than most competitors. Most of that prioritization arose because its conservation and regulatory annotations placed it in a high-heritable PolyFun stratum. Removing conservation reduced its PIP from 0.84 to 0.51.”
+
+That is substantially more informative than simply listing annotations attached to the high-PIP SNP.
+
+PolyFun itself provides `extract_annotations.py`, which extracts annotations carried by high-PIP SNPs, but this is essentially descriptive—it does not determine which annotations were responsible for the PIP increase. ([GitHub Wiki See][4])
+
+### What I would implement
+
+If I were adding an “explain PolyFun” function to a fine-mapping pipeline, I would use **three levels**:
+
+1. **Prior lift:** (\log(m\pi_i)), exactly quantifying how strongly PolyFun favored each SNP.
+2. **Local annotation contrast:** (\hat\tau_c(a_{ic}-\bar a_c)), giving a cheap, easily interpretable decomposition of why the annotation model favored it over its credible-set competitors.
+3. **Group ablation:** rerun PolyFun-SuSiE after removing the top annotation families, to verify that those annotations actually account for the PIP concentration.
+
+I think **#2 + #3 together** would make a quite defensible explainability method: #2 explains the mechanism, while #3 tests the counterfactual. It could probably be implemented fairly lightly on top of existing PolyFun outputs.
+
+[1]: https://stephenslab.github.io/susieR/reference/susie_ss.html?utm_source=chatgpt.com "SuSiE using Sufficient Statistics — susie_ss • susieR"
+[2]: https://stephenslab.github.io/susieR/reference/susie.html?utm_source=chatgpt.com "Sum of Single Effects (SuSiE) Regression — susie • susieR"
+[3]: https://pmc.ncbi.nlm.nih.gov/articles/7710571/?utm_source=chatgpt.com "Functionally-informed fine-mapping and polygenic localization of complex trait heritability - PMC"
+[4]: https://github-wiki-see.page/m/omerwe/polyfun/wiki/3.-Functionally-informed-fine-mapping-with-finemapper?utm_source=chatgpt.com "3. Functionally informed fine mapping with finemapper - omerwe/polyfun GitHub Wiki"
+
+Suppose I am using what the polyfun wiki calls “approach 1”, in which I use a prior precomputed by the polyfun authors from uk biobank traits. To make use of your second suggestion, I need \hat\tau_c uk biobank annotation coefficients to go with this precomputed prior. Do the polyfun authors publish these annotation coefficients anywhere?
+
+I checked this, and the answer is **not quite**: I do not find a release of the exact (\hat\tau_c) coefficients underlying the **Approach-1 precomputed prior**. There is, however, a closely related set of meta-analyzed annotation coefficients in the PolyFun paper's supplementary material.
+
+The distinction matters.
+
+The Approach-1 wiki says that the distributed prior consists of **meta-analyzed per-SNP heritabilities from 15 UK Biobank traits**. The repository ships these directly as `snpvar_meta.chr1_7.parquet` and `snpvar_meta.chr8_22.parquet`; `extract_snpvar.py` reads their `snpvar_bin` column and turns that directly into `SNPVAR`. There is no corresponding set of annotation coefficients shipped with those files. ([GitHub][1])
+
+By contrast, when you actually run PolyFun's L2 S-LDSC stage yourself, the code explicitly writes files containing
+
+[
+\widehat\tau_c
+]
+
+with columns `ANNOTATION` and `ANNOTATION_COEFFICIENT`. So the software clearly has such coefficients internally for a trait-specific run; they simply are not part of the Approach-1 distribution. ([GitHub][2])
+
+There is a potentially useful related resource: **Supplementary Table 3 of Weissbrod et al. 2020**. The paper states that it reports (\tau_c) estimates from a fixed-effects meta-analysis of **16 well-powered, genetically uncorrelated UK Biobank traits**, scaled to a common total heritability. These were used to define the functional architecture in their main simulations. ([PubMed Central (PMC)][3])
+
+But I would **not treat those Supplementary Table 3 coefficients as the coefficients that generated Approach 1**.
+
+The reason is more fundamental than the 16-versus-15-trait discrepancy. Approach 1 is based on the **final PolyFun per-SNP heritabilities**, after PolyFun's nonparametric procedure:
+
+[
+a_i
+\overset{\hat\tau}{\longrightarrow}
+\widehat h^2_{i,\mathrm{linear}}
+\longrightarrow
+\text{heritability bin}
+\longrightarrow
+\widehat h^2_{\mathrm{bin}}
+\longrightarrow
+\text{SNPVAR}_i.
+]
+
+PolyFun explicitly re-estimates the heritability of the bins after using the annotation coefficients to rank SNPs. ([PubMed Central (PMC)][3]) Thus the final prior distributed in Approach 1 is not generally expressible as
+
+[
+\mathrm{SNPVAR}*i=\sum_c \tau_c a*{ic}.
+]
+
+And then those final per-SNP quantities are meta-analyzed across traits. The repository even calls them “meta-analyzed per-SNP-h2 files.” ([GitHub][4])
+
+So there may literally be **no single vector of (\tau_c)'s whose linear combination reproduces the Approach-1 prior**.
+
+### What I would do instead
+
+For explaining an Approach-1 fine-mapping result, I think the cleanest solution is to build a **surrogate model for the published prior**.
+
+You have all the necessary public ingredients:
+
+[
+{a_{ic}}_{187\ \mathrm{annotations}}
+\quad\text{and}\quad
+\mathrm{SNPVAR}^{Approach1}_i
+]
+
+for millions of UKB variants. The baseline-LF 2.2.UKB annotation files themselves are publicly released. ([GitHub Wiki][5])
+
+Fit, genome-wide, something like
+
+[
+\log(\mathrm{SNPVAR}_i)
+=======================
+
+\alpha+\sum_c \gamma_c a_{ic}+\epsilon_i
+]
+
+with ridge regression. Then at your locus use
+
+[
+C_c(i,j)
+========
+
+\gamma_c(a_{ic}-a_{jc})
+]
+
+to explain why the Approach-1 prior favors SNP (i) over SNP (j).
+
+This has a nice property: the surrogate is trained to explain **the actual prior you used**, rather than an intermediate PolyFun model from a somewhat different collection of traits.
+
+I would probably go one step further and fit two surrogates:
+
+1. **Ridge linear model**, because it gives the simple additive annotation decomposition we discussed.
+2. **A nonlinear model** such as gradient-boosted trees, with grouped SHAP values, as a check on how much of the Approach-1 prior cannot be captured by the linear annotation score.
+
+If ridge achieves very high out-of-sample (R^2) for (\log(\mathrm{SNPVAR})), the (\gamma_c) decomposition becomes a very compelling approximation. If it does not, that itself tells you that the binning/meta-analysis step materially changed the relationship between annotations and the final prior.
+
+One other possibility is to use the **16-trait (\tau_c)'s in Supplementary Table 3** as a simpler “biological attribution score.” I think that is reasonable for exploratory visualization, but I would label it explicitly as attribution to a *related UKB meta-analyzed baseline-LF model*, not an exact decomposition of the Approach-1 prior.
+
+So, in short: **I don't think the exact Approach-1 (\tau_c)'s are published, and because of PolyFun's binning/re-estimation procedure, an exact single set may not exist.** But the public SNPVAR + 187 annotations make it quite feasible to reverse-engineer a very useful explanatory surrogate—arguably a better tool for your particular question.
+
+[1]: https://github.com/omerwe/polyfun/wiki/1.-Computing-prior-causal-probabilities-with-PolyFun "1. Computing prior causal probabilities with PolyFun · omerwe/polyfun Wiki · GitHub"
+[2]: https://github.com/omerwe/polyfun/blob/master/polyfun.py?utm_source=chatgpt.com "polyfun/polyfun.py at master · omerwe/polyfun · GitHub"
+[3]: https://pmc.ncbi.nlm.nih.gov/articles/7710571/?utm_source=chatgpt.com "Functionally-informed fine-mapping and polygenic localization of complex trait heritability - PMC"
+[4]: https://github.com/omerwe/polyfun/blob/master/extract_snpvar.py?utm_source=chatgpt.com "polyfun/extract_snpvar.py at master · omerwe/polyfun · GitHub"
+[5]: https://github-wiki-see.page/m/omerwe/polyfun/wiki/2.-Using-and-creating-functional-annotations?utm_source=chatgpt.com "2. Using and creating functional annotations - omerwe/polyfun GitHub Wiki"
+
+
+Why do you have log(SNPVAR) in your proposed ridge regression?  In the original S-LDSC paper, SNPVar is a linear function of annotations.
+
+
+You are right. For the purpose I proposed, **using (\log(\mathrm{SNPVAR})) was not the natural first choice**.
+
+In S-LDSC, the model is explicitly
+
+[
+\operatorname{Var}(\beta_i)
+===========================
+
+# \sigma_i^2
+
+\sum_c a_{ic}\tau_c,
+]
+
+so per-SNP heritability is linear in the annotations. ([Nature][1])
+
+Therefore, if the goal is to construct a surrogate set of coefficients that can be interpreted analogously to S-LDSC (\tau_c)'s, I would instead fit
+
+[
+\boxed{
+\mathrm{SNPVAR}^{A1}*i
+\approx
+\alpha+\sum_c \gamma_c a*{ic}
+}
+]
+
+with ridge regularization.
+
+Then the annotation-level explanation is directly additive:
+
+[
+\widehat{\mathrm{SNPVAR}}_i
+===========================
+
+\alpha+\sum_c \gamma_c a_{ic},
+]
+
+and for comparing two competing SNPs (i) and (j),
+
+[
+\widehat{\mathrm{SNPVAR}}_i-
+\widehat{\mathrm{SNPVAR}}_j
+===========================
+
+\sum_c
+\gamma_c(a_{ic}-a_{jc}).
+]
+
+That gives exactly the decomposition we want:
+
+[
+C_c(i,j)=\gamma_c(a_{ic}-a_{jc}).
+]
+
+### Why I initially suggested the log
+
+I was thinking of it as a **generic predictive surrogate** for a positive quantity that may span a substantial dynamic range. A log transform can sometimes make such a prediction problem easier and prevents a few high-SNPVAR variants from dominating squared-error loss.
+
+But that comes at a significant interpretability cost here. If
+
+[
+\log \mathrm{SNPVAR}_i
+======================
+
+\alpha+\sum_c\gamma_c a_{ic},
+]
+
+then
+
+[
+\mathrm{SNPVAR}_i
+=================
+
+e^\alpha\prod_c e^{\gamma_c a_{ic}},
+]
+
+so annotations combine **multiplicatively**, not additively. Your (\gamma_c)'s would then be contributions to *log prior*, rather than S-LDSC-like contributions to per-SNP heritability.
+
+That is a different model from PolyFun's underlying S-LDSC model.
+
+### There is still one wrinkle
+
+The Approach-1 `SNPVAR` values are not simply the original S-LDSC linear predictions. PolyFun uses the linear annotation model to rank SNPs, assigns SNPs to bins, and then estimates per-SNP heritability separately for those bins. The final fine-mapping prior is proportional to this bin-level estimate. ([PubMed Central (PMC)][2])
+
+Schematically,
+
+[
+a_i
+\rightarrow
+\sum_c\tau_c a_{ic}
+\rightarrow
+\text{rank/bin}
+\rightarrow
+\widehat{\sigma}_{b(i)}^2
+\rightarrow
+\mathrm{SNPVAR}_i.
+]
+
+So neither linear regression nor log-linear regression will exactly invert Approach 1.
+
+But **linear regression is much more conceptually appropriate** if our objective is to reconstruct something resembling the missing annotation coefficients.
+
+I would actually try three models and inspect them:
+
+1. **Linear ridge**
+   [
+   y_i=\mathrm{SNPVAR}_i
+   ]
+   This is the primary model and gives S-LDSC-like additive attribution.
+
+2. **Linear ridge predicting the rank or pre-bin ordering of SNPVAR.**
+   Since PolyFun's original annotation model is primarily used to *rank* SNPs before binning, this may recover the latent annotation score particularly well.
+
+3. **Log-SNPVAR ridge**, only as a predictive sensitivity analysis. If it predicts much better, that tells us something about the nonlinearity introduced by the binning/meta-analysis process, but I would not call its coefficients (\tau_c)-like.
+
+There is also a subtle issue with positivity: ordinary S-LDSC (\tau_c)'s themselves can be negative, and the raw linear prediction can in principle behave badly. PolyFun uses regularization specifically to ensure sensible positive per-SNP heritabilities before its binning step. ([PubMed Central (PMC)][2]) So I would **not impose nonnegative coefficients** on the ridge regression; negative annotation coefficients are perfectly legitimate conditional effects.
+
+So your correction changes my recommendation: **fit Approach-1 SNPVAR directly on the baseline-LF annotations, not log(SNPVAR), if the purpose is annotation attribution.** The resulting (\gamma_c)'s would not be the original UKB (\hat\tau_c)'s, but they would be a natural “effective (\tau)” decomposition of the published Approach-1 prior.
+
+[1]: https://www.nature.com/articles/s41467-019-11957-5?utm_source=chatgpt.com "Functional disease architectures reveal unique biological role of transposable elements | Nature Communications"
+[2]: https://pmc.ncbi.nlm.nih.gov/articles/7710571/?utm_source=chatgpt.com "Functionally-informed fine-mapping and polygenic localization of complex trait heritability - PMC"
+

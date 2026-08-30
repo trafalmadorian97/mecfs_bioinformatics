@@ -4,13 +4,10 @@ Panels, top to bottom, sharing the genomic-position x-axis:
   1. Manhattan (-log10 p), points colored by LD r^2 with the min-p lead
      variant, with local recombination rate (cM/Mb from the hg19 genetic map)
      on a secondary axis.
-  2..(1+x). One panel per important family: sum_c gamma_raw_c * a_ic across
-     the locus (raw scaled value; the contrast is the profile, not plotted
-     here).
-  (2+x). Prior fold m*pi_i (log scale).
-  (3+x). PIP, uniform run.
-  (4+x). PIP, polyfun run.
-  (5+x). Genes.
+  2. PIP, uniform run (credible-set variants only).
+  3. PIP, polyfun run (credible-set variants only). Shares its y-scale with the
+     uniform panel so the two are directly comparable.
+  4. Genes.
 
 Writes both explain_plot.png and explain_plot.svg. Inspired by
 SusieStackPlotTask but independent of it.
@@ -22,16 +19,12 @@ output format is chosen per file extension by savefig (so the .svg is a true
 vector file and the .png raster), and no figure is registered in pyplot's
 global manager, so there is nothing to close to reclaim memory.
 
-The important families and the focal variant come from the contrast task's
-selection.json, so the figure agrees with the contrast task's tables. The
-per-variant family-scaled tracks are recomputed here (rather than read back
-from the contrast task's output) directly from the ridge weights and the
-annotation parquet, using the same allele-aware join and the same
-_family_scaled helper the contrast task itself uses, so the values plotted
-match the contrast task's family_scaled table exactly.
+The annotation_parquet_task, ridge_weights_task and contrast_task deps are
+retained for the forthcoming per-variant annotation label on the top
+polyfun-PIP variant; the family-panel and prior-fold tracks that previously
+consumed them have been dropped.
 """
 
-import json
 from pathlib import Path, PurePath
 
 import narwhals as nw
@@ -52,13 +45,6 @@ from mecfs_bio.build_system.meta.result_directory_meta import (
     ResultDirectoryMeta,
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    ANNOTATION_COL,
-    GAMMA_RAW_COL,
-)
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    FAMILY_COL as WEIGHTS_FAMILY_COL,
-)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.genetic_map.parse_genetic_map_task import (
     GMAP_POS_COL,
@@ -69,22 +55,13 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import (
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
-    _ANNOT_KEY,
-    FAMILY_COL,
-    FAMILY_SCALED_COL,
-    SELECTION_IMPORTANT_FAMILIES_KEY,
-    SELECTION_JSON_FILENAME,
-    _family_scaled,
-    _load_annotations,
     _load_run_variants,
-    _load_weights,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     FILTERED_GWAS_FILENAME,
     FILTERED_LD_FILENAME,
-    PRIOR_FILENAME,
-    PRIOR_WEIGHT_COLUMN,
+    PIP_COLUMN,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_CHROM_COL,
@@ -105,14 +82,11 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 PLOT_PNG_FILENAME = "explain_plot.png"
 PLOT_SVG_FILENAME = "explain_plot.svg"
-# _ANNOT_KEY (imported from the contrast task) is the allele-aware join key
-# (CHR, POS, unordered-allele-key); _load_annotations and _load_run_variants both
-# attach that key, so the family-scaled values plotted here match the tables.
 
 
 @frozen
 class PolyfunExplainPlotTask(Task):
-    """Render the 8-panel polyfun-vs-uniform explainability figure."""
+    """Render the polyfun-vs-uniform explainability figure."""
 
     meta: Meta
     susie_uniform_task: Task
@@ -123,7 +97,6 @@ class PolyfunExplainPlotTask(Task):
     ridge_weights_task: Task
     genetic_map_task: Task
     gene_info_pipe: DataProcessingPipe = IdentityPipe()
-    n_family_panels: int = 3
 
     @property
     def deps(self) -> list["Task"]:
@@ -140,38 +113,18 @@ class PolyfunExplainPlotTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         uni_dir = _dir(fetch, self.susie_uniform_task)
         pf_dir = _dir(fetch, self.susie_polyfun_task)
-        contrast_dir = _dir(fetch, self.contrast_task)
-        selection = json.loads((contrast_dir / SELECTION_JSON_FILENAME).read_text())
-        families = selection[SELECTION_IMPORTANT_FAMILIES_KEY][: self.n_family_panels]
 
         pf_variants = _load_run_variants(pf_dir).sort(GWASLAB_POS_COL)
-        uni_variants = _load_run_variants(uni_dir)
         # Credible-set membership per run: the PIP panels plot only these variants,
         # colored/legended by credible set (empty frame if the run found none).
         uni_cs = pl.read_parquet(uni_dir / COMBINED_CS_FILENAME)
         pf_cs = pl.read_parquet(pf_dir / COMBINED_CS_FILENAME)
         pf_full = pl.read_parquet(pf_dir / FILTERED_GWAS_FILENAME)
         ld = np.load(pf_dir / FILTERED_LD_FILENAME)
-        prior_w = pl.read_parquet(pf_dir / PRIOR_FILENAME)[
-            PRIOR_WEIGHT_COLUMN
-        ].to_numpy()
 
         chrom = int(pf_variants[GWASLAB_CHROM_COL][0])
         bp_min = int(pf_variants[GWASLAB_POS_COL].to_numpy().min())
         bp_max = int(pf_variants[GWASLAB_POS_COL].to_numpy().max())
-
-        weights = _load_weights(fetch, self.ridge_weights_task)
-        annot_cols = weights[ANNOTATION_COL].to_list()
-        annot = _load_annotations(
-            fetch, self.annotation_parquet_task, chrom, bp_min, bp_max, annot_cols
-        )
-        # Allele-aware join on (CHR, POS, allele-key) -- mirrors the contrast
-        # task's own join exactly, so the family-scaled values plotted here match
-        # its per_family_contrast/family_scaled tables.
-        pf_annot = pf_variants.join(annot, on=_ANNOT_KEY, how="inner")
-        gamma = dict(zip(weights[ANNOTATION_COL], weights[GAMMA_RAW_COL]))
-        family = dict(zip(weights[ANNOTATION_COL], weights[WEIGHTS_FAMILY_COL]))
-        scaled = _family_scaled(pf_annot, annot_cols, gamma, family)
 
         genes = (
             self.gene_info_pipe.process(
@@ -185,15 +138,10 @@ class PolyfunExplainPlotTask(Task):
 
         _render(
             scratch_dir=scratch_dir,
-            pf_variants=pf_variants,
-            uni_variants=uni_variants,
             uni_cs=uni_cs,
             pf_cs=pf_cs,
             pf_full=pf_full,
             ld=ld,
-            prior_w=prior_w,
-            families=families,
-            scaled=scaled,
             genes=genes,
             fetch=fetch,
             genetic_map_task=self.genetic_map_task,
@@ -215,7 +163,6 @@ class PolyfunExplainPlotTask(Task):
         ridge_weights_task: Task,
         genetic_map_task: Task,
         gene_info_pipe: DataProcessingPipe = IdentityPipe(),
-        n_family_panels: int = 3,
     ) -> "PolyfunExplainPlotTask":
         source_meta = susie_polyfun_task.meta
         if not isinstance(source_meta, ResultDirectoryMeta):
@@ -236,7 +183,6 @@ class PolyfunExplainPlotTask(Task):
             ridge_weights_task=ridge_weights_task,
             genetic_map_task=genetic_map_task,
             gene_info_pipe=gene_info_pipe,
-            n_family_panels=n_family_panels,
         )
 
 
@@ -276,21 +222,17 @@ def _plot_recomb(ax, recomb: pl.DataFrame) -> None:
     if len(bp) >= 1:
         (line,) = ax.plot(bp, rate, color="tab:red", alpha=0.4, linewidth=1)
         line.set_rasterized(True)
-    ax.set_ylabel("cM/Mb", color="tab:red")
-    ax.tick_params(axis="y", labelcolor="tab:red")
+    # The recomb line is red, but its axis label/ticks stay black to match the
+    # other panels' axis labels (the color only carries meaning on the line).
+    ax.set_ylabel("cM/Mb")
 
 
 def _render(
     scratch_dir: Path,
-    pf_variants: pl.DataFrame,
-    uni_variants: pl.DataFrame,
     uni_cs: pl.DataFrame,
     pf_cs: pl.DataFrame,
     pf_full: pl.DataFrame,
     ld: np.ndarray,
-    prior_w: np.ndarray,
-    families: list[str],
-    scaled: pl.DataFrame,
     genes: pl.DataFrame,
     fetch: Fetch,
     genetic_map_task: Task,
@@ -298,8 +240,8 @@ def _render(
     bp_min: int,
     bp_max: int,
 ) -> None:
-    # manhattan + families + prior fold + 2 pip + genes, one panel each.
-    n_panels = 1 + len(families) + 3 + 1
+    # manhattan + 2 pip + genes, one panel each.
+    n_panels = 1 + 2 + 1
     fig = Figure(figsize=(12, 1.7 * n_panels))
     # Left column holds the tracks; the narrow right column is reserved for
     # legends/colorbars so nothing overlaps the data (mirrors SusieStackPlotTask).
@@ -334,31 +276,16 @@ def _render(
     ax0b = ax0.twinx()
     _plot_recomb(ax0b, recomb)
 
-    # Family panels: sum_c gamma_raw_c * a_ic across the locus.
-    for k, fam in enumerate(families):
-        axk = axes[1 + k]
-        fam_series = scaled.filter(pl.col(FAMILY_COL) == fam).sort(GWASLAB_POS_COL)
-        (line,) = axk.plot(
-            fam_series[GWASLAB_POS_COL].to_numpy(),
-            fam_series[FAMILY_SCALED_COL].to_numpy(),
-            linewidth=0.8,
-        )
-        line.set_rasterized(True)
-        axk.set_ylabel(fam, fontsize=8)
-
-    # Prior fold (log): the polyfun prior's multiplicative lift over uniform.
-    lift = pf_variants.height * prior_w / prior_w.sum()
-    ax_lift = axes[1 + len(families)]
-    lift_sc = ax_lift.scatter(pf_full[GWASLAB_POS_COL].to_numpy(), lift, s=6)
-    lift_sc.set_rasterized(True)
-    ax_lift.set_yscale("log")
-    ax_lift.set_ylabel("prior fold")
-
     # PIP uniform / polyfun as vertical stems restricted to credible-set variants,
     # colored per credible set with a legend in the right column (reuses the
     # stackplot's susie track). Empty frame -> no stems, no legend.
-    _plot_pip_panel(fig, gs, 2 + len(families), axes, uni_cs, "PIP uniform")
-    _plot_pip_panel(fig, gs, 3 + len(families), axes, pf_cs, "PIP polyfun")
+    _plot_pip_panel(fig, gs, 1, axes, uni_cs, "PIP (uniform)")
+    _plot_pip_panel(fig, gs, 2, axes, pf_cs, "PIP (polyfun)")
+    # Share one y-scale across both PIP panels so their stem heights are directly
+    # comparable (PIP in [0, 1]; scale to the taller of the two, else full range).
+    pip_top = _shared_pip_top(uni_cs, pf_cs)
+    axes[1].set_ylim(0.0, pip_top)
+    axes[2].set_ylim(0.0, pip_top)
 
     # Genes: reuse the stackplot's lane-packed gene track. Filter to this
     # chromosome first (the reference lists every chromosome; the helper windows
@@ -396,6 +323,20 @@ def _render(
     fig.savefig(scratch_dir / PLOT_SVG_FILENAME, bbox_inches="tight")
 
 
+def _shared_pip_top(uni_cs: pl.DataFrame, pf_cs: pl.DataFrame) -> float:
+    """Common y-axis top for both PIP panels: a little above the tallest stem
+    across the two runs, or the full [0, 1] range when neither has a credible
+    set."""
+    tops = [
+        float(df[PIP_COLUMN].to_numpy().max())
+        for df in (uni_cs, pf_cs)
+        if df.height > 0 and PIP_COLUMN in df.columns
+    ]
+    if not tops:
+        return 1.0
+    return min(1.0, max(tops) * 1.05)
+
+
 def _plot_pip_panel(
     fig: Figure,
     gs,
@@ -410,5 +351,4 @@ def _plot_pip_panel(
     legend_ax = fig.add_subplot(gs[row, 1])
     legend_ax.axis("off")
     plot_susie_track(susie_cs_df=cs_df, ax_pip=ax_pip, pip_legend_ax=legend_ax)
-    ax_pip.set_ylim(bottom=0.0)
     ax_pip.set_ylabel(label)
