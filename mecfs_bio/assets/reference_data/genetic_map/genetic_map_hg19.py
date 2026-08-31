@@ -24,7 +24,7 @@ GENETIC_MAP_HG19_RAW = DownloadFileTask(
         extension=".txt.gz",
     ),
     url="https://storage.googleapis.com/broad-alkesgroup-public/Eagle/downloads/tables/genetic_map_hg19_withX.txt.gz",
-    md5_hash=None,  # pin after the first real download
+    md5_hash="930ba8e1435d54f68fb7a723fd3f0fa4",
 )
 
 GENETIC_MAP_HG19 = ParseHg19GeneticMapTask.create(

@@ -54,7 +54,7 @@ POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHT_CHR_8_22 = DownloadFileTask(
         read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
     ),
     url="https://github.com/omerwe/polyfun/raw/refs/heads/master/snpvar_meta.chr8_22.parquet",
-    md5_hash=None,
+    md5_hash="970ab9c1d9f64559437cb95810282a4e",
 )
 
 COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS = ConcatFramesTask.create(
