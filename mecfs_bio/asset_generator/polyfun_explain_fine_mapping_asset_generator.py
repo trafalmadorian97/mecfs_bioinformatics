@@ -45,6 +45,9 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.copy_file_from_directory_task import (
+    CopyFileFromDirectoryTask,
+)
 from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
 )
@@ -71,6 +74,8 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
     PolyfunExplainContrastTask,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task import (
+    PLOT_PNG_FILENAME,
+    PLOT_SVG_FILENAME,
     PolyfunExplainPlotTask,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
@@ -142,6 +147,10 @@ class PolyfunExplainGroup:
     susie_polyfun: SusieRFinemapTask
     contrast: Task
     plot: Task
+    # The plot's png and svg copied out of its directory as standalone FileAssets,
+    # so docs can include either figure format on its own.
+    plot_png: Task
+    plot_svg: Task
 
 
 @frozen
@@ -157,7 +166,16 @@ class PolyfunExplainOuterGroup:
     def terminal_tasks(self) -> list[Task]:
         out: list[Task] = []
         for g in self.groups:
-            out += [g.susie_uniform, g.susie_polyfun, g.contrast, g.plot]
+            # The plot directory itself is not terminal: its png and svg are
+            # copied out as standalone FileAssets (each buildable in isolation),
+            # and the plot task is still built transitively as their dependency.
+            out += [
+                g.susie_uniform,
+                g.susie_polyfun,
+                g.contrast,
+                g.plot_png,
+                g.plot_svg,
+            ]
         out += [self.upset_all_polyfun, self.upset_cs50_polyfun]
         return out
 
@@ -212,11 +230,25 @@ def generate_polyfun_explain_group(
         genome_build=shared.genome_build,
         gene_info_pipe=IdentityPipe(),
     )
+    plot_png = CopyFileFromDirectoryTask.create_from_result_plot(
+        asset_id=f"{stem}_explain_plot_png",
+        source_directory_task=plot,
+        path_inside_directory=PurePath(PLOT_PNG_FILENAME),
+        extension=".png",
+    )
+    plot_svg = CopyFileFromDirectoryTask.create_from_result_plot(
+        asset_id=f"{stem}_explain_plot_svg",
+        source_directory_task=plot,
+        path_inside_directory=PurePath(PLOT_SVG_FILENAME),
+        extension=".svg",
+    )
     return PolyfunExplainGroup(
         susie_uniform=susie_uniform,
         susie_polyfun=susie_polyfun,
         contrast=contrast,
         plot=plot,
+        plot_png=plot_png,
+        plot_svg=plot_svg,
     )
 
 
