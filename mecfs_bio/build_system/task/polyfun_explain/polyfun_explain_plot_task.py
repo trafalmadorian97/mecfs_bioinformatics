@@ -88,6 +88,8 @@ from mecfs_bio.constants.gwaslab_constants import (
 
 PLOT_PNG_FILENAME = "explain_plot.png"
 PLOT_SVG_FILENAME = "explain_plot.svg"
+# PIP units of empty space kept above the tallest stem for the callout labels.
+_PIP_LABEL_HEADROOM = 0.4
 
 
 @frozen
@@ -322,11 +324,17 @@ def _render(
     # Share one y-scale across both PIP panels so their stem heights are directly
     # comparable (PIP in [0, 1]; scale to the taller of the two, else full range).
     pip_top = _shared_pip_top(uni_cs, pf_cs)
-    # Reserve headroom above the stems for the callout labels; raise BOTH PIP
-    # panels equally so their data scale stays shared (directly comparable).
-    label_top = pip_top / 0.55
+    # Reserve a fixed band above the tallest stem for the callout labels; raise
+    # BOTH PIP panels equally so their data scale stays shared (directly
+    # comparable). A fixed (not stem-proportional) headroom keeps the band just
+    # large enough for labels even when a stem already reaches PIP ~1.
+    label_top = pip_top + _PIP_LABEL_HEADROOM
     axes[1].set_ylim(0.0, label_top)
     axes[2].set_ylim(0.0, label_top)
+    # PIP is a probability, so never draw ticks/labels above 1.0 even though the
+    # panel extends higher to fit the callouts.
+    _cap_pip_ticks(axes[1])
+    _cap_pip_ticks(axes[2])
     # Place the callout labels in the headroom above the stems, angled off to the
     # side so the leader line is clearly distinct from a vertical PIP stem.
     _place_callouts(
@@ -385,6 +393,14 @@ def _shared_pip_top(uni_cs: pl.DataFrame, pf_cs: pl.DataFrame) -> float:
     if not tops:
         return 1.0
     return min(1.0, max(tops) * 1.05)
+
+
+def _cap_pip_ticks(ax) -> None:
+    """Keep the PIP axis's ticks/labels within [0, 1]: the panel extends above 1
+    to make room for callout labels, but PIP is a probability so a tick above 1
+    would misread. Drops any auto tick outside [0, 1] (a no-op for low-PIP panels
+    whose ticks already stay under 1)."""
+    ax.set_yticks([t for t in ax.get_yticks() if -1e-9 <= t <= 1.0 + 1e-9])
 
 
 def _plot_pip_panel(
