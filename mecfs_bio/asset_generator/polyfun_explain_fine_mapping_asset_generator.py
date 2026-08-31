@@ -13,6 +13,8 @@ helper so the existing, separately tested fine-mapping generator is left
 untouched.
 """
 
+from pathlib import PurePath
+
 import structlog
 from attrs import frozen
 
@@ -38,6 +40,10 @@ from mecfs_bio.assets.reference_data.polyfun.precomputed_prior.polyfun_precomput
     POLYFUN_PRIOR_COL,
     create_prior_col_pipe,
 )
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
@@ -53,8 +59,12 @@ from mecfs_bio.build_system.task.pipe_dataframe_task import (
     PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.concat_str_pipe import ConcatStrPipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.pipes.min_variants_for_cumulative_mass import (
+    MinVariantsForCumulativeMass,
+)
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
@@ -64,9 +74,16 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task impor
     PolyfunExplainPlotTask,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
+    COMBINED_CS_FILENAME,
+    CS_COLUMN,
+    PIP_COLUMN,
     BroadInstituteFormatLDMatrix,
     PriorInfo,
     SusieRFinemapTask,
+)
+from mecfs_bio.build_system.task.upset_plot_task import (
+    DirSetSource,
+    UpSetPlotTask,
 )
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
@@ -129,14 +146,19 @@ class PolyfunExplainGroup:
 
 @frozen
 class PolyfunExplainOuterGroup:
-    """All matched pairs (one per run config) for a single locus."""
+    """All matched pairs (one per run config) for a single locus, plus the two
+    UpSet plots comparing the polyfun runs' credible-set variants across the four
+    run configs."""
 
     groups: list[PolyfunExplainGroup]
+    upset_all_polyfun: Task
+    upset_cs50_polyfun: Task
 
     def terminal_tasks(self) -> list[Task]:
         out: list[Task] = []
         for g in self.groups:
             out += [g.susie_uniform, g.susie_polyfun, g.contrast, g.plot]
+        out += [self.upset_all_polyfun, self.upset_cs50_polyfun]
         return out
 
 
@@ -203,6 +225,82 @@ def build_explainability_groups(
 ) -> list[PolyfunExplainGroup]:
     """One matched pair (+ contrast + plot) per run config."""
     return [generate_polyfun_explain_group(shared, c) for c in configs]
+
+
+_UPSET_VARIANT_ID_COL = "__variant_id"
+_RUN_CONFIG_DISPLAY: dict[str, str] = {
+    "l1": "L=1",
+    "l2": "L=2",
+    "l10": "L=10",
+    "l10_strict": "L=10 strict",
+}
+
+
+def _polyfun_cs_variant_sources(
+    groups: list[PolyfunExplainGroup],
+    configs: tuple[RunConfig, ...],
+    row_selection_pipe: DataProcessingPipe | None,
+) -> list[DirSetSource]:
+    """One UpSet set per run config, reading that config's polyfun combined_cs and
+    exposing a per-variant id (chr__pos__ea__nea). row_selection_pipe, if given,
+    trims the credible-set rows before the id is built (e.g. to the 50% credible
+    set)."""
+    assert len(groups) == len(configs)
+    id_pipe = ConcatStrPipe(
+        target_cols=[
+            GWASLAB_CHROM_COL,
+            GWASLAB_POS_COL,
+            GWASLAB_EFFECT_ALLELE_COL,
+            GWASLAB_NON_EFFECT_ALLELE_COL,
+        ],
+        sep="__",
+        new_col_name=_UPSET_VARIANT_ID_COL,
+    )
+    pipe: DataProcessingPipe = (
+        id_pipe
+        if row_selection_pipe is None
+        else CompositePipe([row_selection_pipe, id_pipe])
+    )
+    return [
+        DirSetSource(
+            name=_RUN_CONFIG_DISPLAY[cfg.label],
+            task=g.susie_polyfun,
+            file_in_dir=PurePath(COMBINED_CS_FILENAME),
+            read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+            pipe=pipe,
+            col_name=_UPSET_VARIANT_ID_COL,
+        )
+        for cfg, g in zip(configs, groups)
+    ]
+
+
+def build_polyfun_upset_tasks(
+    base_name: str,
+    groups: list[PolyfunExplainGroup],
+    configs: tuple[RunConfig, ...] = RUN_CONFIGS,
+) -> tuple[Task, Task]:
+    """Two UpSet plots over the four polyfun runs' credible-set variants:
+
+    - all_cs: every variant in every credible set of each run.
+    - cs50: the per-credible-set 50% credible set (the minimal highest-PIP
+      variants whose cumulative PIP first reaches 0.5, unioned across sets),
+      which trims the long low-PIP tail.
+    """
+    upset_all = UpSetPlotTask.create(
+        asset_id=base_name + "_polyfun_upset_all_cs_variants",
+        set_sources=_polyfun_cs_variant_sources(groups, configs, None),
+    )
+    upset_cs50 = UpSetPlotTask.create(
+        asset_id=base_name + "_polyfun_upset_cs50_variants",
+        set_sources=_polyfun_cs_variant_sources(
+            groups,
+            configs,
+            MinVariantsForCumulativeMass(
+                group_col=CS_COLUMN, value_col=PIP_COLUMN, threshold=0.5
+            ),
+        ),
+    )
+    return upset_all, upset_cs50
 
 
 def _build_shared_locus_inputs(
@@ -328,4 +426,10 @@ def generate_assets_polyfun_explain_fine_map(
         # annotations. It drives the plot's x-axis coordinate-system label.
         genome_build="19",
     )
-    return PolyfunExplainOuterGroup(groups=build_explainability_groups(shared))
+    groups = build_explainability_groups(shared)
+    upset_all, upset_cs50 = build_polyfun_upset_tasks(shared.base_name, groups)
+    return PolyfunExplainOuterGroup(
+        groups=groups,
+        upset_all_polyfun=upset_all,
+        upset_cs50_polyfun=upset_cs50,
+    )
