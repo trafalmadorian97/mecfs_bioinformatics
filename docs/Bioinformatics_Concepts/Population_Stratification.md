@@ -277,7 +277,7 @@ class A,B,C,D normal;
 
 Here, P is the causal SNP, while G₋ₚ represents the genome excluding P.   As discussed above, if we use plain regression, population stratification will create false associations between SNPs are the rest of the genome and the phenotype due to confounding by subpopulation.
 
-The LMM approach, especially when $q$ is large, can be understood as controlling for the whole genome as a proxy for controlling for subpopulation.
+The LMM approach, especially when $q$ is large, can be understood as controlling for the whole genome as a proxy for controlling for subpopulation. 
 
 
 
