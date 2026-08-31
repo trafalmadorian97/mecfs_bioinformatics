@@ -14,4 +14,4 @@ The results follow:
 
 A liability scale heritability of 0.0814 is similar but not identical to the value reported in the original DecodeME preprint[@genetics2025initial].  This discrepancy may be explained by slight differences in the technique used to liftover from genome build 38 to 37.
 
-Reassuringly, the attenuation ratio is less than 1, indicating no evidence of confounding due to population stratification.
+The LDSC intercept is less than one. On the one hand, this is reassuring in the sense that it provides no evidence of confounding due to population stratification. On the other hand, an intercept less than 1 is a mild violation of assumptions underlying the LDSC model, and thus is a diagnostic flag that should be followed-up on.
