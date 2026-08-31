@@ -22,6 +22,7 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task impor
     PLOT_PNG_FILENAME,
     PLOT_SVG_FILENAME,
     PolyfunExplainPlotTask,
+    _wrap_callout_label,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_CHROM_COL,
@@ -34,6 +35,19 @@ from mecfs_bio.build_system.wf.base_wf import make_wf
 from test_mecfs_bio.unit.build_system.task.polyfun_explain.test_polyfun_explain_contrast_task import (
     build_synthetic_explain_inputs,
 )
+
+
+def test_wrap_callout_label_short_unchanged_long_wrapped():
+    short = "173855298:A:T (conserved ++, coding +)"
+    text, size = _wrap_callout_label(short)
+    assert text == short and size == 7.0
+
+    long = "47731228:A:C (coding ++, ld related continuous +, open chromatin +)"
+    text, size = _wrap_callout_label(long)
+    assert text == (
+        "47731228:A:C\ncoding ++\nld related continuous +\nopen chromatin +"
+    )
+    assert size < 7.0
 
 
 def test_plot_writes_png_and_svg(tmp_path: Path):

@@ -421,7 +421,12 @@ def _place_callouts(
         return
     xs = callouts[GWASLAB_POS_COL].to_numpy().astype(float).tolist()
     ys = callouts[CALLOUT_PIP_PF_COL].to_numpy().astype(float).tolist()
-    texts = callouts[CALLOUT_LABEL_COL].to_list()
+    # A long (many-family) callout is wrapped one family per line at a smaller
+    # font, keeping its box narrow so textalloc can seat it without crossing a
+    # neighbouring stem; short callouts render unchanged (font 7, single line).
+    wrapped = [_wrap_callout_label(t) for t in callouts[CALLOUT_LABEL_COL].to_list()]
+    texts = [text for text, _ in wrapped]
+    sizes = [size for _, size in wrapped]
     # Every stem (vertical line from 0 to its PIP) is an obstacle to route labels
     # and leader lines around.
     stem_x = stem_df[GWASLAB_POS_COL].to_numpy().astype(float)
@@ -440,7 +445,7 @@ def _place_callouts(
         y_scatter=stem_pip.tolist(),
         x_lines=x_lines,
         y_lines=y_lines,
-        textsize=7,
+        textsize=sizes,
         linecolor="black",
         linewidth=0.6,
         direction="northeast",
@@ -450,3 +455,18 @@ def _place_callouts(
         ylims=ylims,
         avoid_label_lines_overlap=True,
     )
+
+
+def _wrap_callout_label(label: str, max_chars: int = 45) -> tuple[str, float]:
+    """Lay out one callout label. A label longer than max_chars (a variant with
+    several or verbose annotation families) is wrapped to one family per line at a
+    smaller font, so its box is only as wide as the longest single family and can
+    be placed clear of neighbouring stems. Shorter labels are returned unchanged.
+
+    Parses the "pos:nea:ea (fam ++, fam +, ...)" form produced by the contrast
+    task; anything not matching that shape is returned as-is."""
+    if len(label) <= max_chars or " (" not in label or not label.endswith(")"):
+        return label, 7.0
+    head, inner = label.split(" (", 1)
+    families = inner[:-1].split(", ")
+    return "\n".join([head, *families]), 6.5
