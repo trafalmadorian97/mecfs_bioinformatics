@@ -48,10 +48,6 @@ from mecfs_bio.build_system.meta.result_directory_meta import (
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.genetic_map.parse_genetic_map_task import (
-    GMAP_POS_COL,
-    GMAP_RATE_COL,
-)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import (
     DataProcessingPipe,
 )
@@ -78,6 +74,10 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     plot_susie_track,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genetic_map_constants import (
+    GMAP_POS_COL,
+    GMAP_RATE_COL,
+)
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,

@@ -35,7 +35,7 @@ StreamOpener = Callable[[str], BinaryIO]
 
 
 def _default_stream_opener(url: str) -> BinaryIO:
-    return urllib.request.urlopen(url)  # noqa: S310 - trusted alkesgroup S3 URL
+    return urllib.request.urlopen(url)
 
 
 @frozen

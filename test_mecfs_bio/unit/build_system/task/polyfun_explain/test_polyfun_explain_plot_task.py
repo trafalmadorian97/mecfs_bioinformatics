@@ -12,11 +12,6 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 )
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.task.genetic_map.parse_genetic_map_task import (
-    GMAP_CM_COL,
-    GMAP_POS_COL,
-    GMAP_RATE_COL,
-)
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task import (
     PLOT_PNG_FILENAME,
@@ -32,6 +27,11 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_STRAND_COL,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.genetic_map_constants import (
+    GMAP_CM_COL,
+    GMAP_POS_COL,
+    GMAP_RATE_COL,
+)
 from test_mecfs_bio.unit.build_system.task.polyfun_explain.test_polyfun_explain_contrast_task import (
     build_synthetic_explain_inputs,
 )

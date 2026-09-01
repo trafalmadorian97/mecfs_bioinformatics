@@ -1,6 +1,7 @@
 from pathlib import Path, PurePath
 
 import polars as pl
+import pytest
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -11,6 +12,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta im
 )
 from mecfs_bio.build_system.task.annotation_weights.build_baseline_lf_annotation_parquet_task import (
     BuildBaselineLFAnnotationParquetTask,
+    _dedup_one_chromosome,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
@@ -94,3 +96,24 @@ def test_builds_sorted_allele_bearing_annotation_parquet(tmp_path: Path) -> None
         )
     )
     assert ak.select("CHR", "BP", "ak").n_unique() == df.height
+
+
+def test_dedup_rejects_same_key_with_conflicting_annotations(tmp_path: Path) -> None:
+    # Same (CHR, BP) and same unordered allele key {C,G}, but DIFFERENT annotations
+    # -> the dedup assumption is violated and must be rejected, not silently
+    # collapsed by keeping an arbitrary row.
+    member = tmp_path / "baselineLF2.2.UKB.1.annot.parquet"
+    pl.DataFrame(
+        {
+            "CHR": [1, 1],
+            "SNP": ["rsX", "rsX"],
+            "BP": [400, 400],
+            "A1": ["C", "G"],
+            "A2": ["G", "C"],
+            "annotA": [2.0, 9.0],
+            "annotB": [0.1, 0.1],
+        }
+    ).write_parquet(member)
+
+    with pytest.raises(AssertionError):
+        _dedup_one_chromosome(member)

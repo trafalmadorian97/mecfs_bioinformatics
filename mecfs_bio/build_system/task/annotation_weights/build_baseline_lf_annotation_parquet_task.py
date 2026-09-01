@@ -120,17 +120,31 @@ def _dedup_one_chromosome(member_path: Path) -> pl.DataFrame:
     unordered-allele ordering duplicates (identical annotations), returning an
     eager frame. Done per chromosome (bounded memory) since such duplicates share
     a (CHR, BP); genuine multiallelic sites have distinct allele keys and survive.
+
+    Collapsing on the position key alone relies on all rows sharing a
+    (CHR, BP, unordered-allele-key) carrying identical annotations. We enforce
+    that cheaply instead of assuming it: dedup on the key AND every annotation
+    column, so ordering duplicates that agree collapse, and any key that still
+    appears more than once must disagree on some annotation -- which we reject.
     """
     lazy = pl.scan_parquet(member_path)
     schema = lazy.collect_schema()
     annot_cols = [c for c in schema.names() if c not in ANNOT_KEY_COLUMNS]
-    return (
+    key_cols = [_CHR_COL, _BP_COL, _ALLELE_KEY_COL]
+    deduped = (
         lazy.with_columns([pl.col(c).cast(pl.Float32) for c in annot_cols])
         .with_columns(unordered_allele_key(_A1_COL, _A2_COL).alias(_ALLELE_KEY_COL))
-        .unique(subset=[_CHR_COL, _BP_COL, _ALLELE_KEY_COL], keep="first")
-        .drop(_ALLELE_KEY_COL)
+        .unique(subset=[*key_cols, *annot_cols], keep="first")
+        .collect()
+    )
+    conflicting_keys = deduped.height - deduped.n_unique(subset=key_cols)
+    assert conflicting_keys == 0, (
+        f"{member_path.name}: {conflicting_keys} (CHR, BP, unordered-allele-key) "
+        "group(s) carry differing annotations, violating the dedup assumption"
+    )
+    return (
+        deduped.drop(_ALLELE_KEY_COL)
         # unique() may reorder; restore per-chromosome BP order so the streamed
         # concatenation of chromosomes is globally (CHR, BP)-sorted.
         .sort(_BP_COL)
-        .collect()
     )
