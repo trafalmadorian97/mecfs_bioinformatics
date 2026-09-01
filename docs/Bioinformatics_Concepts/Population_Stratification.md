@@ -234,14 +234,54 @@ While the formulation $(\ref{gamma_form})$ is useful for revealing the connectio
 
 $$
 \begin{align}
-\alpha \sim \mathcal{N}(0, \sigma^2_\gamma RR^T)
+\alpha &\sim \mathcal{N}(0, \sigma^2_\gamma RR^T)\\
+&= \mathcal{N}(0, \sigma^2_\gamma U S^2 U^T )\\
+&= \mathcal{N}(0, \sigma^2_\gamma U SV^T V S U^T )\\\
+&=\mathcal{N}(0, \sigma^2_\gamma X X^T)\\\
 \end{align}
 $$
 
+Thus the restated LMM becomes:
+
+$$
+\begin{align}
+y &= \hat\beta_j x_j + \alpha + \epsilon\\
+\alpha &\sim \mathcal{N}(0,\sigma^2_\gamma K)\\
+\epsilon &\sim\mathcal{N}(0, \sigma^2_e I)
+\end{align}
+$$
+
+Where $K:=XX^T\in\mathbb{R}^{n\times n}$ is called the "genetic relatedness matrix" whose (i,j) entry is a measure of genetic similarity between study participants $i$ and $j$.  This is the standard form that is usually used in presentations of LMMs. 
 
 
-### Proximal Contamination
 
+### LMM Proximal Contamination
+
+While LMMs are effective at controlling for population stratification, if care is not taken they can unduly reduce GWAS statistical power.  This reduction in statistical power can occur for two separate reasons: proximal contamination and ascertainment bias.
+
+We will start by discussing proximal contamination. See the diagram below
+
+
+
+``` mermaid
+graph LR
+C(Subpopulation) --> A(SNP P);
+C --> B(G₋ₚ);
+A --> D(Phenotype)
+
+
+classDef normal fill:transparent,stroke:transparent;
+classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
+class A,B,C,D normal;
+```
+
+Here, P is the causal SNP, while G₋ₚ represents the genome excluding P.   As discussed above, if we use plain regression, population stratification will create false associations between SNPs are the rest of the genome and the phenotype due to confounding by subpopulation.
+
+The LMM approach, especially when $q$ is large, can be understood as controlling for the whole genome as a proxy for controlling for subpopulation. 
+
+
+
+### LMM Ascertainment Bias
 
 
 ### REGENIE 
