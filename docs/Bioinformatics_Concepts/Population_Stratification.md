@@ -294,7 +294,7 @@ class C,D normal;
 class A,B conditioned;
 ```
 
-Th
+
 
 ### LMM Ascertainment Bias
 
