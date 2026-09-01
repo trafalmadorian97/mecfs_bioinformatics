@@ -230,7 +230,7 @@ Comparing this model to the direct PC control model of the previous section, the
 - Because of the presence of $S$ in the definition of $R$, in the LMM more variable principal components can have a larger effect on the phenotype.  In contrast, in the direct PC-control model all components are treated equally.
 
 
-While the formulation $(\ref{gamma_form})$ is useful for revealing the connection between LMMs and direct PC control, it is not how LMMs are typically writen.  To convert $(\ref{gamma_form})$ to standard LMM form, pick $q=M$ and define $\alpha:= R \gamma$.  By the properties the multivariate normal distribution[^mvnormal_note], 
+While the formulation $(\ref{gamma_form})$ is useful for revealing the connection between LMMs and direct PC control, it is not how LMMs are typically written.  To convert $(\ref{gamma_form})$ to standard LMM form, pick $q=M$ and define $\alpha:= R \gamma$.  By the properties the multivariate normal distribution[^mvnormal_note], 
 
 $$
 \begin{align}
