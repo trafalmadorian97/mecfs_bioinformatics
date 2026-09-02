@@ -45,9 +45,12 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     CS_DATA_SUBDIR,
     PIP_COLUMN,
     PIP_FILENAME,
+    PRIOR_FILENAME,
+    PRIOR_WEIGHT_COLUMN,
     BroadInstituteFormatLDMatrix,
+    PriorInfo,
     SusieRFinemapTask,
-    align_gwas_and_ld,
+    align_data,
     extract_cs_data_tables,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
@@ -125,10 +128,11 @@ def test_align():
     partial_ld = np.tril(ld_matrix)
     partial_ld[[0, 1, 2], [0, 1, 2]] = 0.5
 
-    rg, rr, rmat = align_gwas_and_ld(
+    rg, rr, rmat, _ = align_data(
         gwas=gwas,
         ld_labels=reference,
         partial_ld_matrix_sparse=csr_matrix(partial_ld),
+        prior=None,
     )
     pl.testing.assert_frame_equal(
         rg,
@@ -309,6 +313,188 @@ def test_fine_mapping(
         assert pip[PIP_COLUMN].iloc[cv] >= 0.95
     cs_subdir_contents = list((suise_out_path / CS_DATA_SUBDIR).glob("*"))
     assert len(cs_subdir_contents) == len(causal_variants)  # 2 credible sets
+
+
+@pytest.fixture
+def dummy_prior_task(tmp_path: Path) -> Iterator[Task]:
+    """A prior table matching the synthetic GWAS variants (CHR 1, POS 0..99, alleles A/C)."""
+    m = 100
+    prior_data = pd.DataFrame(
+        {
+            "CHR": [1] * m,
+            "BP": list(range(m)),
+            "A1": "A",
+            "A2": "C",
+            "snpvar": np.linspace(1.0, 2.0, m),
+        }
+    )
+    prior_path = tmp_path / "prior_data"
+    prior_data.to_parquet(prior_path)
+    yield ExternalFileCopyTask(
+        SimpleFileMeta(
+            AssetId("prior_data"),
+            read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+        ),
+        external_path=prior_path,
+    )
+
+
+def test_fine_mapping_with_explicit_prior(
+    tmp_path: Path,
+    susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
+    dummy_prior_task: Task,
+):
+    """
+    Smoke test that the task runs end-to-end when an explicit prior is supplied.
+
+    Guards the prior_weights code path (load_prior, the prior join in align_data,
+    and the numpy->R prior conversion), which the default uniform-prior test does
+    not exercise.
+    """
+    gwas_data_task, ld_labels_task, ld_matrix_task, _causal_variants = (
+        susie_prerequisite_file_tasks
+    )
+    susie_tsk = SusieRFinemapTask(
+        meta=SimpleDirectoryMeta(AssetId("directory")),
+        gwas_data_task=gwas_data_task,
+        ld_labels_task=ld_labels_task,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=_susie_n,
+        max_credible_sets=10,
+        prior_info=PriorInfo(prior_task=dummy_prior_task, prior_col="snpvar"),
+    )
+    tasks = find_tasks([susie_tsk])
+    wf = make_wf()
+    info: VerifyingTraceInfo = VerifyingTraceInfo.empty()
+
+    asset_dir = tmp_path / "asset_dir"
+    asset_dir.mkdir(exist_ok=True, parents=True)
+    meta_to_path = SimpleMetaToPath(root=asset_dir)
+
+    rebuilder = VerifyingTraceRebuilder(SimpleHasher.md5_hasher())
+    store, info = topological(
+        rebuilder=rebuilder,
+        tasks=tasks,
+        targets=[susie_tsk.asset_id],
+        wf=wf,
+        info=info,
+        meta_to_path=meta_to_path,
+    )
+    asset = store[susie_tsk.asset_id]
+    assert isinstance(asset, DirectoryAsset)
+    pip = pd.read_parquet(asset.path / PIP_FILENAME)
+    # Every input variant should receive a PIP; a broken prior join would drop rows.
+    assert len(pip) == 100
+
+
+@pytest.fixture
+def dummy_prior_task_missing_one(tmp_path: Path) -> Iterator[Task]:
+    """Prior table covering only 99 of the 100 synthetic variants (POS 0 omitted)."""
+    m = 100
+    prior_data = pd.DataFrame(
+        {
+            "CHR": [1] * (m - 1),
+            "BP": list(range(1, m)),  # omits BP == 0
+            "A1": "A",
+            "A2": "C",
+            "snpvar": np.linspace(1.0, 2.0, m - 1),
+        }
+    )
+    prior_path = tmp_path / "prior_data_missing"
+    prior_data.to_parquet(prior_path)
+    yield ExternalFileCopyTask(
+        SimpleFileMeta(
+            AssetId("prior_data_missing"),
+            read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+        ),
+        external_path=prior_path,
+    )
+
+
+def _run_susie_task_to_store(tmp_path: Path, susie_tsk: SusieRFinemapTask):
+    tasks = find_tasks([susie_tsk])
+    wf = make_wf()
+    info = VerifyingTraceInfo.empty()
+    asset_dir = tmp_path / "asset_dir"
+    asset_dir.mkdir(exist_ok=True, parents=True)
+    meta_to_path = SimpleMetaToPath(root=asset_dir)
+    rebuilder = VerifyingTraceRebuilder(SimpleHasher.md5_hasher())
+    store, _ = topological(
+        rebuilder=rebuilder,
+        tasks=tasks,
+        targets=[susie_tsk.asset_id],
+        wf=wf,
+        info=info,
+        meta_to_path=meta_to_path,
+    )
+    return store
+
+
+def test_prior_coverage_guard_raises_on_gap(
+    tmp_path: Path,
+    susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
+    dummy_prior_task_missing_one: Task,
+):
+    gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
+    susie_tsk = SusieRFinemapTask(
+        meta=SimpleDirectoryMeta(AssetId("directory")),
+        gwas_data_task=gwas_data_task,
+        ld_labels_task=ld_labels_task,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=_susie_n,
+        max_credible_sets=10,
+        prior_info=PriorInfo(
+            prior_task=dummy_prior_task_missing_one, prior_col="snpvar"
+        ),
+    )
+    with pytest.raises(ValueError):
+        _run_susie_task_to_store(tmp_path, susie_tsk)
+
+
+def test_prior_parquet_written_for_polyfun_run(
+    tmp_path: Path,
+    susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
+    dummy_prior_task: Task,
+):
+    gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
+    susie_tsk = SusieRFinemapTask(
+        meta=SimpleDirectoryMeta(AssetId("directory")),
+        gwas_data_task=gwas_data_task,
+        ld_labels_task=ld_labels_task,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=_susie_n,
+        max_credible_sets=10,
+        prior_info=PriorInfo(prior_task=dummy_prior_task, prior_col="snpvar"),
+    )
+    store = _run_susie_task_to_store(tmp_path, susie_tsk)
+    asset = store[susie_tsk.asset_id]
+    assert isinstance(asset, DirectoryAsset)
+    prior = pl.read_parquet(asset.path / PRIOR_FILENAME)
+    assert prior.height == 100
+    assert set(["CHR", "POS", "EA", "NEA", PRIOR_WEIGHT_COLUMN]).issubset(prior.columns)
+    weights = prior[PRIOR_WEIGHT_COLUMN].to_numpy()
+    assert abs(weights.min() - 1.0) < 1e-6
+    assert abs(weights.max() - 2.0) < 1e-6
+
+
+def test_prior_parquet_is_constant_for_uniform_run(
+    tmp_path: Path,
+    susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
+):
+    gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
+    susie_tsk = SusieRFinemapTask(
+        meta=SimpleDirectoryMeta(AssetId("directory")),
+        gwas_data_task=gwas_data_task,
+        ld_labels_task=ld_labels_task,
+        ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
+        effective_sample_size=_susie_n,
+        max_credible_sets=10,
+    )
+    store = _run_susie_task_to_store(tmp_path, susie_tsk)
+    asset = store[susie_tsk.asset_id]
+    assert isinstance(asset, DirectoryAsset)
+    prior = pl.read_parquet(asset.path / PRIOR_FILENAME)
+    assert (prior[PRIOR_WEIGHT_COLUMN].to_numpy() == 1.0).all()
 
 
 def test_extract_cs_data_tables():

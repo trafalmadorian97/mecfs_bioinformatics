@@ -249,6 +249,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         read_spec = DataFrameReadSpec(DataFrameParquetFormat())
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
+            assert isinstance(source_meta.read_spec, DataFrameReadSpec)
             meta = FilteredGWASDataMeta(
                 id=AssetId(asset_id),
                 trait=source_meta.trait,
@@ -257,6 +258,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
                 read_spec=read_spec,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
+            assert isinstance(source_meta.read_spec, DataFrameReadSpec)
             meta = GWASSummaryDataFileMeta(
                 id=AssetId(asset_id),
                 trait=source_meta.trait,
@@ -265,6 +267,8 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
                 project_path=None,
                 read_spec=read_spec,
             )
+        else:
+            raise ValueError(f"Unsupported source meta type: {type(source_meta)}")
         return cls(
             meta=meta,
             gwas_data_task=gwas_data_task,

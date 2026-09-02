@@ -1,0 +1,1010 @@
+https://doi.org/10.1038/s41588-020-00735-5
+
+Supplementary information
+
+Functionally informed fine-mapping and
+polygenic localization of complex trait
+heritability
+In the format provided by the
+authors and unedited
+
+Supplementary Information for:
+Functionally-informed fine-mapping and
+polygenic localization of complex trait
+heritability
+Supplementary Table Captions
+Supplementary Table 1: Description of baseline-LF model annotations. For each annotation we report
+#SNPs (unless it is a continuous-valued annotation), #common SNPs, whether it is binary or continuousvalued, and a literature reference.
+Supplementary Table 2: Description of 10 3Mb loci used in simulations. We report the start and end
+position of each locus (using hg19 coordinates), as well as the number of SNPs in that locus.
+Supplementary Table 3: Functional enrichments used to generate simulated data. For each annotation,
+we report the coefficient 𝜏 used in the generative model, as computed via a meta-analysis across 16 real
+traits.
+Supplementary Table 4: Numerical results of fine-mapping simulations. Each row reports simulation
+results for a unique combination of a method, method settings, simulation settings and a PIP cutoff. The
+columns are (A) Method: Method name; (B) Functional: the type of functional data used (None: nonfunctionally informed analysis; PolyFun: PolyFun; default: default settings for CAVIARBF and fastPAINTOR;
+S-LDSC priors: priors from standard S-LDSC; S-LDSC+L2 priors: Priors from L2-regularized S-LDSC; cheat:
+fine-mapping with true prior causal probabilities; PolyFun (no L2): PolyFun that does not apply L2regularization); (C) PIP cutoff: The PIP cutoff evaluated; (D) N: simulated sample size; (E) h2: The SNPheritability causally explained by SNPs at the target locus; (F) c: number of simulated causal SNPs at the
+target locus; (G) functional architecture: the function that relates functional annotations to prior causal
+probabilities (additive, multiplicative, or sub-additive); (H) q: the ratio between the highest and lowest
+prior causal probability; (I) Max #causal SNPs: The maximum number of causal SNPs allowed (or the exact
+number for SuSiE and PolyFun + SuSiE); (J) Genome-wide h2: the SNP-heritability causally explained by all
+genome-wide SNPs; (K) Genome-wide sparsity: The proportion of genome-wide non-causal SNPs; (L) Max
+#annotations: The maximum number of annotations allowed (only relevant for fastPAINTOR); (M)
+variance estimator: determines whether the (method-specific) default estimator or the HESS-based
+estimator of causal effect size variance was used for fine-mapping; (N) FDR: false discovery rate under the
+evaluated PIP cutoff; (O) FDR (s.e.): the standard error of the FDR (evaluated via jackknife); (P) power:
+empirical power under the evaluated PIP cutoff; (Q) power (s.e.): the standard error of the power
+(evaluated via jackknife); (R) #experiments: The number of experiments performed for this combination
+of settings; (S) Avg. #fine-mapped SNPs: The average number of SNPs with PIP greater than the cutoff; (T)
+FDR threshold: the exact FDR threshold, given by one minus the average PIP among SNPs with PIP greater
+1
+
+than the cutoff; (U) Time (avg): The average time required to perform fine-mapping (minutes); (V) Time
+(s.d.): The standard deviation of time required to perform fine-mapping (minutes); (W) 95% CS size: The
+size of the union of all 95% credible sets, averaged across simulations (only relevant for FINEMAP and
+SuSiE-based methods); (X) %Causal SNPs in 95% CS: The proportion of causal SNPs found in the union of
+all 95% credible sets (averaged across simulations).
+Supplementary Table 5: Sensitivity of PolyFun method to perturbing steps 1-5. For each of step 1
+(estimating functional enrichments), step 2 (estimating per-SNP heritabilities on odd/even
+chromosomes), step 3 (estimating per-SNP heritabilities on odd/even chromosomes), step 4 (reestimating per-SNP heritabilities within each bin excluding the target chromosome) and step 5 (specifying
+prior causal probabilities in proportion of the re-estimated per-SNP heritabilities), we report the
+perturbation that we implemented; the impact on false positives (FDR), if statistically significant; and the
+impact on power, if statistically significant. *denotes significant change in results only in simulations with
+smaller sample size (N=10K).
+Supplementary Table 6: Numerical results of simulations that assess the impact of each of PolyFun steps
+(1)-(5) on fine-mapping performance. The table is similar to Supplementary Table 4 with several new
+columns: (1) Table: table alphabetic reference; (2) %shuffled annot. coeff.: the proportion of annotation
+coefficients whose estimated values were shuffled in step 1; (3) Odd/even split – whether PolyFun steps
+1 and 2 handled even and odd chromosomes separately; (4) #bins – the number of SNP bins into which
+PolyFun assigns SNPs with similar predicted per-SNP heritabilities in step 3; (5) Exclude target chrom.:
+whether the target chromosome was excluded from the re-estimation of per-SNP heritabilities in step 4;
+(6) %permuted priors – the proportion of SNPs in the target locus whose prior causal probability was
+randomly swapped with that of another SNP; (7) FDR diff (P) – the p-value of the difference in FDR
+compared to the corresponding non-perturbed experiment, computed via a Wald test using a jackknife
+over simulated datasets to estimate standard errors; (8) Power diff (P) - the p-value of the difference in
+power compared to the corresponding non-perturbed experiment, computed via a Wald test using a
+jackknife over simulated datasets to estimate standard errors.
+Supplementary Table 7: Numerical results of simulations of mismatch between the GWAS sample and
+the LD reference panel. The table is similar to Supplementary Table 4, with constant columns omitted
+(e.g. genome-wide h2, which is equal to the default simulation value); and several new columns: (1) Table:
+table alphabetic reference; (2) GWAS sample: The population from which GWAS individuals who are not
+in the LD reference panel were selected (for overlapping individuals, the relevant column is “LD sample”)
+(UK: unrelated British-ancestry UK Biobank individuals; EUR: unrelated non-British European-ancestry UK
+Biobank individuals; UK-REL: British-ancestry UK Biobank individuals without excluding pairs of related
+individuals; EUR-REL: Non-British European-ancestry UK Biobank individuals without excluding pairs of
+related individuals); (3) LD sample: The population from which the LD reference panel was sampled (UK:
+unrelated British-ancestry UK Biobank individuals; UK10K: The UK10K cohort); (4) N GWAS: The GWAS
+sample size; (5) N LD: The LD reference panel sample size (0 indicates that we used an LD matrix that is
+equal to the identity matrix); (6) N overlap: The number of individuals in the GWAS sample who are also
+included in the LD reference panel (noting that they can be from a different population from the
+population reported in the “GWAS sample” column); (7) Generative SNPs: the set of SNPs from which
+causal SNPs were selected; (8) SNPs considered: The set of SNPS included in fine-mapping.
+
+2
+
+Supplementary Table 8: Description of 49 UK Biobank traits analyzed. For each trait we report its group
+(used in Extended Data Figure 6); whether it is binary or continuous-valued; sample size analyzed by
+PolyFun (max N=337K unrelated British-ancestry samples) and PolyLoc (max N=122K non-overlapping
+samples); the number of cases in the PolyFun and PolyLoc sample sets (for binary traits); and the
+heritability causally explained by MAF>0.001 SNPs (using observed-scale heritability for binary traits), and
+its standard error, in the PolyFun dataset (max N=337K) and in the PolyLoc dataset (max N=122K).
+Supplementary Table 9: Comparison of PolyFun + SuSiE vs. SuSiE fine-mapping results for UK Biobank
+traits. We report the number of fine-mapped SNPs found by PolyFun + SuSiE and by SuSiE for various trait
+and PIP cutoffs. For every trait and one of three evaluated PIP cutoffs (0.05 0.5, 0.95) we report the
+number of SNPs with PIP greater than this cutoff identified by PolyFun + SuSiE, SuSiE, and by both (i.e.
+SNPs at the intersection of these two SNP sets).
+Supplementary Table 10: List of all fine-mapped SNPs for UK Biobank traits. We report the list of all SNPs
+with PIP>0.95 in either PolyFun + SuSiE or SuSiE. For every SNP we report its rsid, position (using hg19
+coordinates), major (A1) and minor (A2) alleles, PIP, posterior per-SNP h2 (i.e., the sum of the squared
+posterior mean and posterior variance of its causal effect size), the posterior mean and standard deviation
+(sd) of its cal effect size, the index of one of the 95% credible sets to which it belongs under each of the
+two methods, its MAF in the entire UK Biobank and in the N=337K dataset we analyzed, its distance to the
+nearest lead GWAS SNP, the center of the locus in which it was analyzed, its BOLT-LMM p-value, its BOLTLMM marginal effect size estimate (BETA), its prior causal probability, and whether it is coding and nonsynonymous.
+Supplementary Table 11: Genetic correlations between UK Biobank traits. We report a matrix of rg
+estimates, computed using N=337K UK Biobank individuals (see Methods).
+Supplementary Table 12: List of 16 genetically uncorrelated UK Biobank traits. We report the 16
+genetically uncorrelated traits selected for many of our primary analyses. All the traits have pairwise
+|rg|<0.2, ℎ𝑔2 >0.05 in the two different subsets of the UK Biobank, and an effective sample size >100K in
+the N=337K data set (see Methods).
+Supplementary Table 13: Distribution of PIP>0.95 SNPs across GWAS loci for UK Biobank traits. For each
+lead GWAS SNP, we report the number of PIP>0.95 SNPs within distance of at most 0.5Mb from the lead
+SNP.
+Supplementary Table 14: Numerical values of heritability tagged by PIP>0.95, heritability tagged by finemapped SNPs, and heritability causally explained by MAF>0.001 SNPs for UK Biobank traits. For each of
+the 16 genetically uncorrelated traits we report the heritability causally explained by MAF>0.001 SNPs (as
+estimated via S-LDSC), the heritability tagged by PIP>0.95 SNPs (estimated via the adjusted R2 of a
+multivariate linear regression) and the heritability tagged by lead GWAS SNPs (estimated via the adjusted
+R2 of a multivariate linear regression), using observed-scale heritability for binary traits. All analyses were
+performed using a set of (max N=122K) individuals not analyzed by PolyFun + SuSiE, to prevent winner’s
+curse. We also report the corresponding estimates obtained via a multivariate linear regression using a
+subset of N=45K unrelated individuals, which were nearly identical to the N=122K results.
+Supplementary Table 15: List of all pleiotropic fine-mapped SNPs (PIP>0.95) identified by PolyFun +
+SuSiE for UK Biobank traits. The table is analogous to Table 2 but includes results for all 223 PIP>0.95
+3
+
+pleiotropic SNPs. The nearest gene column was specified via (1) the GWAS catalog “mapped gene” entry
+if the SNP appeared in the GWAS catalog; (2) the dbSNP gene entry for the SNP, if such an entry exists; or
+(3) a manual inspection in the UCSC genome browser. The nearest gene column for intergenic SNPs
+sometimes includes two genes separated by a dash, representing the two closest flanking genes.
+Supplementary Table 16: Examples of the advantages of functionally-informed fine-mapping for UK
+Biobank traits. For all 121 loci where PolyFun + SuSiE identified a PIP>0.95 SNP and SuSiE did not identify
+a single PIP>0.5 SNP within 500kb of that SNP, we report the prior causal probability and annotations of
+the fine-mapped SNP and of the top SuSiE SNP in this locus.
+Supplementary Table 17: Numerical values of functional enrichment of SuSiE fine-mapped common
+SNPs for UK Biobank traits. For each main functional annotation (Methods), PIP range, and trait, we
+report enrichment, its standard error, and its p-value. We report meta-analysis results in separate rows
+with the trait name “Meta-analysis”.
+Supplementary Table 18: Summary of comparison between our results and those of Ulirsch et al. 2019
+Nat Genet. The table reports the number of SNPs fine-mapped (PIP>0.95) by Ulirsch et al. for 9 blood cell
+traits, the number of SNPs fine-mapped (PIP>0.95) by one of our evaluated methods/datasets (a different
+method/dataset in every row) and the size of the intersection of the two sets.
+Supplementary Table 19: Detailed comparison between our results and those of Ulirsch et al. 2019 Nat
+Genet. The table includes the identities and PIPs of each SNP having PIP>0.95 in at least one of the
+evaluated methods.
+Supplementary Table 20: Detailed comparison between our results and those of Ulirsch et al. 2019 Nat
+Genet for four SNPs that were functionally validated via luciferase reporter assays. The table includes a
+subset of Supplementary Table 19 for only the four SNPs of interest.
+Supplementary Table 21: Summary of comparison between our results and those of Farh et al. 2015
+Nature. The table is analogous to Supplementary Table 18 but compares our results to Farh et al. rather
+than Ulirsch et al.
+Supplementary Table 22: Detailed comparison between our results and those of Farh et al. 2015 Nature.
+The table is analogous to Supplementary Table 19 but compares our results to Farh et al. rather than
+Ulirsch et al.
+Supplementary Table 23: Comparison of PolyFun + SuSiE vs. SuSiE results for UK Biobank traits when
+down-sampling the data to N=107K individuals from the UK Biobank interim release. For each of five
+selected traits (Methods) and all combinations of pairs of analyses (SuSiE or PolyFun + SuSiE, using either
+N=337K or N=107K subsets of the UK Biobank), we report the number of PIP>0.95 SNPs identified by each
+method, and the number of PIP>0.95 SNPs identified by both methods.
+Supplementary Table 24: Comparison of PolyFun + SuSiE vs. SuSiE 95% credible set sizes across all locustrait pairs for UK Biobank traits. We report the sizes of 95% credible sets for SuSiE and PolyFun + SuSiE
+for each locus-trait pair analyzed.
+Supplementary Table 25: List of pairs of coding and non-coding fine-mapped SNPs within 1Mb of each
+other. We report all pairs of fine-mapped coding and non-coding SNPs within 1Mb of each other, which
+could aid in linking regulatory variants to genes.
+4
+
+Supplementary Table 26: Numerical values of functional enrichment of PolyFun + SuSiE fine-mapped
+common SNPs for UK Biobank traits. The table is analogous to Supplementary Table 17 but uses PolyFun
++ SuSiE instead of SuSiE to compute PIPs.
+Supplementary Table 27: Numerical values of functional enrichment of SuSiE fine-mapped MAF>0.001
+SNPs for UK Biobank traits. The table is analogous to Supplementary Table 17 but uses MAF>0.001 SNPs
+instead of only common (MAF>0.05) SNPs.
+Supplementary Table 28: Numerical values of functional enrichment of SuSiE fine-mapped lowfrequency and rare SNPs for UK Biobank traits. The table is analogous to Supplementary Table 17 but
+uses 0.05>MAF>0.001 SNPs instead of common (MAF>0.05) SNPs.
+Supplementary Table 29: Results of polygenic localization simulations. Each row contains results for a
+specific combination of settings: u – simulated power (u=1 means perfect power and u=0 means no power;
+see Supplementary Note); h2 – simulated SNP-heritability; p – simulated proportion of causal SNPs; n –
+simulated sample size for the PolyFun dataset; num_bins – the number of bins used in the simulation;
+logM*p_mean - the number of SNPs causally explaining proportion p of SNP-heritability under the optimal
+ranking, averaged across 10 simulations; logM*p_sd – the standard deviation of logM*p across 10
+simulations; logMp_mean – the average estimate of logMp across 10 simulations; logMp_sd – the
+standard deviation of estimates of logMp under 10 simulations; logMp_diff – the average difference
+between the estimates and true values of logMp under 10 simulations (positive values indicate
+conservative estimates); logMp_sd – the standard deviation of the difference between the estimates and
+true values of logMp across 10 simulations. All the logarithm in this table are log10 based. We note that
+logMp_diff is evaluated with respect to the true value of logMp rather than logM*p (see Methods and
+Supplementary Note).
+Supplementary Table 30: Results of polygenic localization simulations using ranking based on
+magnitude of summary statistics. The table is analogous to Supplementary Table 29 but uses a ranking
+of SNPs based solely on the magnitude of their summary statistics.
+Supplementary Table 31: Numerical polygenic localization results for 49 UK Biobank traits. For each trait
+we report 𝑀𝑝 estimates (and their standard errors) at multiple values of 𝑝.
+Supplementary Table 32: Comparison between polygenic localization and Me estimates for 14 UK
+Biobank traits. We report 𝑀𝑒 and 𝑀50% estimates for 13 genetically uncorrelated traits for which there
+exist published 𝑀𝑒 estimates (from O’Connor et al. 2019).
+Supplementary Table 33: Polygenic localization results for secondary analyses of UK Biobank traits. The
+table reports the results of all the secondary analyses described in the polygenic localization section of
+the paper. The analysis type is specified in the “Analysis” column.
+
+5
+
+Supplementary Note
+False discovery rate analysis
+Our simulation studies indicate that the PIPs reported by PolyFun + SuSiE and PolyFun + FINEMAP are anticonservative with respect to the expected FDR at PIP=0.95, defined as one minus the average PIP among
+PIP≥0.95 SNPs (lower dotted horizontal lines in Figures 1a-b). (For example, if all SNPs with PIP>0.95 have
+PIP=1.0 then the expected FDR is 0% rather than 5%, which would imply that none of the PIP>0.95 SNPs
+are false-positives.) To circumvent this problem, we propose a heuristic FDR estimator given by one minus
+the PIP threshold (upper dashed horizontal lines in Figures 1a-b). This definition can be derived by upper
+bounding all PIPs to the PIP threshold and then computing the expected FDR. For example, for a PIP
+threshold of 0.95, we propose to treat all SNPs with PIP≥0.95 as if they had PIP=0.95. Our simulation
+studies indicate that this heuristic definition of FDR typically yields conservative FDR estimates.
+We now explain the rationale behind our heuristic definition of FDR, assuming without loss of generality
+a PIP threshold of 0.95. We begin by writing down the definition of expected FDR under a Bayesian
+framework, given by E[𝑉|𝓓]/𝑅 , where 𝑉 is the number of non-causal PIP>0.95 SNPs, 𝑅 is the number of
+PIP>0.95 SNPs, and 𝓓 is the GWAS and LD data used for fine-mapping. Let us define 𝑉 = ∑𝑖 𝐼𝑖 , where 𝑖
+iterates over PIP>0.95 SNPs, and 𝐼𝑖 is an indicator that is equal to 0 if SNP 𝑖 is causal and to 1 otherwise.
+Then:
+E[𝑉|𝓓] = ∑ E[𝐼𝑖 |𝓓] = ∑ P[𝐼𝑖 = 1|𝓓] = ∑(1 − PIPi ) = 𝑅 − ∑ PIPi ,
+𝑖
+
+𝑖
+
+𝑖
+
+𝑖
+
+where PIPi is the PIP of SNP 𝑖. We conclude that E[𝑉|𝓓]/𝑅 is given by one minus the average PIP among
+PIP>0.95 SNPs.
+As mentioned above, estimates of expected FDR under this definition are anti-conservative. Although it is
+difficult to identify the reasons for this anti-conservativeness, possible reasons are (1) PolyFun + SuSiE and
+PolyFun + FINEAP compute approximate rather than exact PIPs; and (2) the prior causal probabilities we
+provided to these methods are imperfectly estimated due to having a finite sample size. To circumvent
+this problem we use the upper-bound P[𝐼𝑖 = 1|𝓓] = 0.05. This modification is equivalent to treating all
+PIPs above 0.95 as if they were equal to 0.95. This heuristic definition of FDR typically yields conservative
+FDR estimates.
+To gain a better understanding of these FDR estimates, we consider a hypothetical fine-mapping study
+with exactly 200 PIP≥0.95 SNPs, consisting of 40 PIP=0.96 SNPs, 40 PIP=0.97 SNPs, 40 PIP=0.98 SNPs, 40
+PIP=0.99 SNPs, and 40 PIP=1.0 SNPs. Let us assume that 5 out of the 200 PIP≥0.95 SNPs are non-causal.
+The average PIP among the PIP≥0.95 SNPs is 0.98, yielding an expected FDR of 2%, but the true FDR is
+2.5% (5/200 SNPs). Hence, the expected FDR is slightly anti-conservative (2.5% > 2%). To circumvent this
+problem, we transform the PIPs of all 200 PIP≥0.95 to 0.95. The average PIP among PIP≥0.95 SNPs is now
+0.95, yielding a heuristic FDR of 5%. The true FDR remains 2.5% as before (5/200 SNPs). Hence the heuristic
+FDR is conservative (2.5% < 5%).
+
+6
+
+Assessing the robustness of PolyFun to model misspecification
+To assess the robustness of PolyFun to model misspecification of functional architectures (i.e. generative
+models of causal effect sizes as a function of functional annotations), we simulated data using two
+functional architectures that are different from the additive functional architecture assumed by S-LDSC
+with the baseline-LF model1: (i) a multiplicative functional architecture in which per-SNP heritabilities are
+proportional to a product of terms for each annotation2,3, and (ii) a sub-additive functional architecture in
+which per-SNP heritabilities are proportional to a maximum of terms for each annotation (see full
+description of these architectures below). In both cases, PolyFun + SuSiE and PolyFun + FINEMAP
+remained well-calibrated and attained a >24% increase in power over the respective non-functionally
+informed methods (Supplementary Table 4). On the other hand, alternative functionally-informed
+extensions of SuSiE and FINEMAP that specify prior causal probabilities (Equation 1 in main text) in
+proportion to standard S-LDSC per-SNP heritability estimates or to L2-regularized S-LDSC per-SNP
+heritability estimates (the output of step 1 of PolyFun) suffered inflated false discovery rates or reduced
+power (Supplementary Table 4), demonstrating the importance of robustly specifying prior causal
+probabilities.
+We now provide a full description of the two alternative functional architectures we evaluated. The two
+architectures are: (1) a multiplicative functional architecture defined by var[𝛽𝑖 |𝒂𝑖 ] =
+exp(∑𝑐 𝛾 𝑐 𝑎𝑖𝑐 ) = ∏𝑐 exp(𝛾 𝑐 𝑎𝑖𝑐 ), where 𝛾 𝑐 is the coefficient of annotation 𝑐; and (2) a sub-additive
+functional architecture defined by var[𝛽𝑖 |𝒂𝑖 ] = max{𝑎𝑖𝑐 𝜔𝑐 }, where 𝜔𝑐 is the coefficient of annotation 𝑐.
+To obtain realistic functional architectures, we fitted the coefficients of these two models to obtain a
+distribution of var[𝛽𝑖 |𝒂𝑖 ] that is roughly similar to the distribution obtained under the standard S-LDSC
+with the baseline-LF model (with meta-analyzed linear annotation coefficients 𝜏 𝑐 ; see Methods). In the
+multiplicative functional architecture, we fitted 𝛾 𝑐 by approximately minimizing the mean squared
+distance between ∏𝑐 exp(𝛾 𝑐 𝑎𝑖𝑐 ) and ∑𝑐 𝜏 𝑐 𝑎𝑖𝑐 (via a linear regression with 𝑎𝑖𝑐 as explanatory variables and
+log ∑𝑐 𝜏 𝑐 𝑎𝑖𝑐 as the outcome, setting all estimates smaller than the median of the non-negative values of
+∑𝑐 𝜏 𝑐 𝑎𝑖𝑐 to the median to prevent the regression from being dominated by SNPs with low values of
+∑𝑐 𝜏 𝑐 𝑎𝑖𝑐 ). In the sub-additive functional architecture, we partitioned annotations into six groups (nonsynonymous, coding, conserved, promoter or enhancer, histone marks, repressed, others) and associated
+all annotations in each group with the same coefficient 𝜔𝑐 , such that the mean squared distance between
+max{𝑎𝑖𝑐 𝜔𝑐 } and ∑𝑐 𝜏 𝑐 𝑎𝑖𝑐 is minimized.
+
+Evaluating the individual impact of each of steps 1-5 of the PolyFun method on finemapping performance
+We performed 5 additional experiments to assess the individual impact of each of steps 1-5 of the PolyFun
+method on fine-mapping performance. The experiments are summarized in Supplementary Table 5,
+results are reported in Supplementary Table 6 and in Extended Data Figures 1-5, and details of the
+statistical tests performed are provided below. First, we perturbed step 1 (estimating functional
+enrichment) by randomly shuffling the values of either 25%, 50%, 75%, or 100% of the annotation
+coefficient estimates 𝜏̂ 𝑐 . We determined that this led to significantly increased FDR and significantly
+reduced power in all cases, although FDR and power were very similar regardless of the proportion of
+shuffled coefficients, perhaps because even a small proportion of shuffled coefficients leads to per-SNP
+heritability estimates that are close to random (Extended Data Figure 1, Supplementary Table 6a). Second,
+we perturbed step 2 (estimating per-SNP heritabilities on odd/even chromosomes) by first estimating
+annotation coefficients using both and even chromosomes in step 1, and then estimating per-SNP
+7
+
+heritabilities for each SNP using these annotation coefficients. We determined that this led to significantly
+increased FDR and significantly reduced power (Extended Data Figure 2, Supplementary Table 6b). Third,
+we perturbed step 3 (partitioning all SNPs into 20 bins of similar per-SNP heritability) by varying the
+number of bins to be either 5, 10, or 30. We determined that this led to no significant change in FDR and
+that using only 5 bins led to significantly decreased power but that using 10 or 30 bins led to no significant
+change in power (Extended Data Figure 3, Supplementary Table 6c). Fourth, we perturbed step 4 (reestimating per-SNP heritabilities within each bin excluding the target chromosome) by not excluding the
+target chromosome. We determined that this did not lead to statistically significant differences in the
+results under our default simulation settings. However, when repeating this experiment in simulations
+with smaller sample size (N=10K), this perturbation led to significantly increased FDR (Extended Data
+Figure 4, Supplementary Table 6d). Fifth, we perturbed step 5 (specifying prior causal probabilities in
+proportion of the re-estimated per-SNP heritabilities) by randomly permuting either 25%, 50%, 75% or
+100% of the re-estimated per-SNP heritabilities before computing prior causal probabilities. We
+determined that this led to significantly increased FDR and significantly reduced power. The results were
+consistent with FDR being a monotonically increasing function of the proportion of permuted SNPs, and
+consistent with power being a monotonically decreasing function of the proportion of permuted SNPs,
+although differences between the 25% and 50% permuted-SNP experiments (and between the 75% and
+100% permuted-SNP experiments) were small, owing to statistical noise (Extended Data Figure 5,
+Supplementary Table 6e). Overall, the statistically significant p-values of the difference in FDR of
+identifying PIP>0.95 SNPs using PolyFun + SuSiE ranged in magnitude from 5×10-5 to 7×10-3, and the
+statistically significant p-values of the difference in power of identifying PIP>0.95 SNPs using PolyFun +
+SuSiE ranged in magnitude from 2×10-15 to 2×10-3. We conclude that each of steps 1-5 of the PolyFun
+method is crucial for controlling FDR and maximizing power.
+We computed p-values of FDR differences and of power differences of analyses with perturbed PolyFun
+steps via a Wald test, using a jackknife over simulated datasets to estimate standard errors. Specifically,
+for every evaluated perturbation, the test statistic 𝑇FDR for the null hypothesis that the FDR is the same
+as in the non-perturbed analysis was computed via:
+𝑇FDR =
+
+𝑓0 − 𝑓
+,
+𝑠𝑓
+
+where 𝑓0 is the FDR obtained under the non-perturbed analysis (computed by aggregating the results
+across all 1000 simulated datasets), 𝑓 is the FDR obtained under the perturbed analysis (computed by
+aggregating the results across all 1000 simulated datasets), and 𝑠𝑓 is the standard error of 𝑓0 − 𝑓. The test
+statistic 𝑇FDR asymptotically follows a standard normal distribution under the null hypothesis.
+We estimated 𝑠𝑓 via a jackknife over simulated datasets. Specifically, for every simulated dataset 𝑖 we
+computed the held-out FDR difference 𝑓0𝑖 − 𝑓 𝑖 , where 𝑓0𝑖 is the FDR obtained under the non-perturbed
+analysis, computed by aggregating the results across all simulated datasets except for simulated dataset
+𝑖, and where 𝑓 𝑖 is the FDR obtained under the perturbed analysis, computed by aggregating the results
+across all simulated datasets except for simulated dataset 𝑖. We then computed 𝑠𝑓 via:
+𝑛−1
+2
+𝑠𝑓 = √
+∑(𝑓0𝑖 − 𝑓 𝑖 − 𝜇𝑓 ) ,
+𝑛
+𝑖
+
+8
+
+1
+
+where 𝜇𝑓 = 𝑛 ∑𝑖(𝑓0𝑖 − 𝑓 𝑖 ), and 𝑛 is the number of simulated datasets (𝑛=1000 by default).
+Similarly, the test statistic 𝑇power for the null hypothesis that the power is the same as in the nonperturbed analysis was computed via:
+𝑇power=
+
+𝑝0 − 𝑝
+,
+𝑠𝑝
+
+where 𝑝0 is the power obtained under the non-perturbed analysis (computed by aggregating the results
+across all 1000 simulated datasets), 𝑝 is the power obtained under the perturbed analysis (computed by
+aggregating the results across all 1000 simulated datasets), and 𝑠𝑝 is the standard error of 𝑝0 − 𝑝. The
+test statistic 𝑇power asymptotically follows a standard normal distribution under the null hypothesis.
+We estimated 𝑠𝑝 via a jackknife over simulated datasets. Specifically, for every simulated dataset 𝑖 we
+computed the held-out power difference 𝑝0𝑖 − 𝑝𝑖 , where 𝑝0𝑖 is the power obtained under the nonperturbed analysis, computed by aggregating the results across all simulated datasets except for
+simulated dataset 𝑖, and where 𝑝𝑖 is the power obtained under the perturbed analysis, computed by
+aggregating the results across all simulated datasets except for simulated dataset 𝑖. We then computed
+𝑠𝑝 via:
+𝑛−1
+2
+𝑠𝑝 = √
+∑(𝑝0𝑖 − 𝑝𝑖 − 𝜇𝑝 ) ,
+𝑛
+
+𝑖
+1
+𝑖
+where 𝜇𝑝 = 𝑛 ∑𝑖(𝑝0 − 𝑝𝑖 ), and 𝑛 is the number of simulated datasets (𝑛=1000 by default).
+
+Secondary analyses of PolyFun simulation studies
+We performed 9 secondary analyses of the simulation studies. First, we evaluated 95% credible sets,
+defined as sets with probability >0.95 of including ≥1 causal SNP(s)4 (this is different from an earlier
+definition of 95% credible set as the smallest set of SNPs accounting for 95% of the posterior probability5–
+7
+); we note that 95% credible sets generally contain many non-causal SNPs. The union of PolyFun + SuSiE
+credible sets included 25 SNPs on average (27% fewer than SuSiE) and spanned 22% of the true causal
+SNPs (1% more than SuSiE) (Supplementary Table 4). The union of PolyFun + FINEMAP 95% credible sets
+included 27 SNPs on average (27% fewer than FINEMAP) and spanned 27% of the true causal SNPs (5%
+more than FINEMAP) (Supplementary Table 4). Second, we evaluated the methods under different
+simulated sample sizes. The relative power advantage of PolyFun + SuSiE over SuSiE (resp. PolyFun +
+FINEMAP over FINEMAP) at a PIP>0.95 threshold was equal to 22% (resp. 14%) at N=1 million, vs. 25%
+(resp. 20%) at N=320K (corresponding to the typical number of phenotyped individuals in the full UK
+Biobank), with a roughly linear increase in absolute power (Supplementary Table 4). These results indicate
+that functionally informed fine-mapping remains valuable at substantially larger sample sizes. Third, we
+verified that the improvement of PolyFun remained qualitatively similar for different values of the number
+of causal SNPs per target locus (Supplementary Table 4) or the heritability causally explained by the target
+locus (Supplementary Table 4). Fourth, we verified that the improvement of PolyFun remained
+qualitatively similar for different values of genome-wide polygenicity (Supplementary Table 4) and
+genome-wide heritability (Supplementary Table 4). Fifth, we verified that the improvement of PolyFun
+remained qualitatively similar when changing the number of causal SNPs per locus assumed by PolyFun +
+SuSiE (or the maximum number of causal SNPs per locus assumed by PolyFun + FINEMAP) from 10 to 1-5,
+9
+
+while the absolute power of all the methods decreased (Supplementary Table 4). Sixth, for all methods
+not based on CAVIARBF, we compared the performance of our per-locus causal effect size variance
+estimator to the default estimators (CAVIARBF-based methods perform fine-mapping using several
+prespecified values and then average the results8). We determined that the false discovery rate of
+fastPAINTOR-, fastPAINTOR, SuSiE and PolyFun + SuSiE improved when using our estimator
+(Supplementary Table 4). On the other hand, for FINEMAP and PolyFun + FINEMAP, causal discovery rate
+and power remained similar when using our estimator, but the sizes of 95% credible set sizes increased
+substantially (Supplementary Table 4), and thus we used the default FINEMAP estimator in all primary
+analyses. Seventh, we verified that fastPAINTOR performance was approximately optimized when
+incorporating 10 functional annotations (selected to maximize power while maintaining correct
+calibration, see Methods) (Supplementary Table 4). Eighth, we determined that the false discovery rate
+of PolyFun increased when using unregularized S-LDSC in step 1 of PolyFun, demonstrating the importance
+of regularization for functionally-informed fine-mapping (Supplementary Table 4). Finally, we evaluated
+fine-mapping performance when specifying the true prior causal probabilities that we used to generate
+the data, a “cheating” method, and determined that this substantially reduced the false discovery rate
+and increased the power of PolyFun + SuSiE and PolyFun + FINEMAP (Supplementary Table 4), confirming
+that more accurate prior causal probabilities lead to more powerful fine-mapping.
+
+Fine-mapping simulations with mismatched reference LD
+PolyFun + SuSiE and other fine-mapping methods are unaffected by mismatched reference LD when
+assuming a single causal SNP per locus, because they do not make use of summary LD information in this
+setting (see derivation below), but assuming a single causal SNPs per locus can decrease power when
+there are multiple causal SNPs. More generally, increasing the assumed number of causal SNPs increases
+the power of PolyFun + SuSiE when there are multiple causal SNPs (Supplementary Table 4). However,
+increasing the assumed number of causal SNPs can increase the false discovery rate, exacerbating the
+effects of LD mismatch. Hence, we quantified how mismatched reference LD impacts fine-mapping
+performance via the maximum number of assumed causal SNPs per locus that maintains FDR<0.05 at a
+PIP=0.95 threshold.
+Our mismatched reference LD simulations differed from our main simulations in the following ways (see
+technical details below): we generated summary statistics using up to N=44K unrelated (or related)
+European-ancestry (British or non-British) UK Biobank target samples in most experiments, compared
+with N=320K in our main simulations, because the UK Biobank includes only 44K unrelated UK Biobank
+individuals of non-British European ancestry (we used N=293K unrelated British-ancestry UK Biobank
+target samples in a subset of experiments to more closely match our main simulations); we computed
+summary LD information using either N=400, N=4,000, or N=44K unrelated British-ancestry UK Biobank
+reference samples (either non-overlapping or overlapping with the target samples), or using N=3,567
+reference samples from the UK10K cohort9; we generated summary statistics using raw genotypes rather
+than summary LD information (as required when the target sample and the LD reference panel are not
+the same); we simulated 3 causal SNPs per locus that jointly explain 0.5% of trait variance, compared with
+10 causal SNPs that jointly explain 0.05% of trait variance in our main simulations, to obtain sufficient
+power despite having a smaller sample size; and in some experiments we used a subset of SNPs for
+generating causal SNPs or for fine-mapping analysis.
+10
+
+We now provide technical details of the differences between our simulations with mismatched reference
+LD and our main simulations:
+•
+
+•
+•
+•
+
+We simulated summary statistics using either 293,000 unrelated British-ancestry UK Biobank
+individuals, or 44,000 UK Biobank individuals of either British or non-British European ancestry,
+including related individuals in some experiments (using N=44,000 because this is the number of
+unrelated non-British European UK Biobank individuals). We determined ancestry based on selfreported ancestry, using UK Biobank data field 21000 (Ethnic background). We considered Irishancestry as a non-British European ancestry.
+We used LDStore10 v1.1 to compute summary LD information from UK10K sequencing data, and
+LDStore v2.0 to compute summary LD information from UK Biobank imputed genotypes.
+We generated summary statistics from imputed genotypes rather than summary LD information,
+using PLINK 2.011,12.
+We performed each experiment four times, each time applying PolyFun + SuSiE while assuming either
+1, 2, 3, or 10 causal SNPs per locus.
+
+We performed 19 experiments, averaging the results of each experiment across 1,000 simulations (Table
+3). For each experiment we report the maximal number of causal SNPs per locus assumed by PolyFun +
+SuSiE (denoted as L), that maintains FDR<0.05 at PIP=0.95. The target sample and the LD reference panel
+did not overlap unless stated otherwise. Our results are summarized in Table 3 and described in detail
+below.
+We performed 2 experiments to evaluate the impact of non-overlapping target and reference samples of
+the same ancestry and sample size. First, we performed simulations analogous to our main simulations
+(Figure 1) but at lower sample size: we used an LD reference panel of N=44K unrelated British-ancestry
+UK-Biobank individuals and a target sample of the same individuals, which maintained FDR<0.05 for L≤10
+(Supplementary Table 7a). Second, we used a target sample of N=44K unrelated British-ancestry UK
+Biobank individuals that did not overlap the LD reference panel, which maintained FDR<0.05 for L≤10 with
+comparable power (Supplementary Table 7b). We conclude that PolyFun + SuSiE is not impacted by nonoverlapping target and reference samples of the same ancestry and sample size.
+We performed 6 experiments to evaluate the impact of sample size differences between ancestrymatched target and reference samples. First, we decreased the LD reference panel size to N=4K, which
+maintained FDR<0.05 for L≤10 (Supplementary Table 7c). Second, we decreased the LD reference panel
+size to N=400, which maintained FDR<0.05 for L=1 only (Supplementary Table 7d). Third, we decreased
+the LD reference panel size to N=0 (using an LD matrix that is equal to the identity matrix), which
+maintained FDR<0.05 for L=1 only (Supplementary Table 7e). Fourth, we used a target sample of N=293K
+unrelated British-ancestry UK Biobank individuals, which maintained FDR<0.05 for L≤10 (Supplementary
+Table 7f). Fifth, we used the same N=293K target sample with a N=4K LD reference panel, which
+maintained FDR<0.05 for L≤2 only (Supplementary Table 7g). Sixth, we used the same N=293K target
+sample with a N=4K LD reference panel that overlapped the target sample, which maintained FDR<0.05
+for L≤2 only (Supplementary Table 7h). We conclude that PolyFun + SuSiE with L=10 is well-calibrated if
+the LD reference panel is ancestry-matched to the target sample and spans ≥10% of the target sample
+size.
+
+11
+
+We performed 4 experiments to evaluate the impact of ancestry differences between the target and
+reference samples. First, we used an LD reference panel of N=44K unrelated British-ancestry UK Biobank
+individuals and a target sample of N=44K unrelated Non-British European ancestry UK Biobank individuals,
+which maintained FDR<0.05 for L≤3 (Supplementary Table 7i). Second, we decreased the LD reference
+sample size to N=4K, which maintained FDR<0.05 for L≤2 (Supplementary Table 7j). Third, we decreased
+the LD reference panel size to N=400, which maintained FDR<0.05 for L=1 only (Supplementary Table 7k).
+Fourth, we used a target sample of N=44K unrelated European-ancestry UK Biobank individuals, 22K of
+which overlapped the LD reference panel and the other 22K were of non-British ancestry, which
+maintained FDR<0.05 for L≤3 (Supplementary Table 7l). We conclude that when the target and reference
+sample are of different ancestries, PolyFun + SuSiE may not be well-calibrated under L>1.
+We performed 2 experiments to evaluate the impact of the presence of related individuals in the target
+sample. First, we used a target sample of N=44K British-ancestry UK Biobank individuals without
+restricting to unrelated individuals, which maintained FDR<0.05 for L≤10 (Supplementary Table 7m).
+Second, we used a target sample of N=44K Non-British European-ancestry UK Biobank individuals without
+restricting to unrelated individuals, which maintained FDR<0.05 for L≤3 only (Supplementary Table 7n),
+comparable to the analogous experiment that restricted to unrelated individuals (Supplementary Table
+7i). We conclude that PolyFun is robust to the presence of related individuals in the target sample,
+attaining essentially the same results as in experiments without related individuals; we note that these
+results apply to the typical levels of relatedness observed in UK Biobank and may not be applicable to
+cohorts with high levels of relatedness.
+We performed 5 experiments to evaluate the impact of SNPs available for analysis in the target and
+reference samples. First, we used an LD reference panel of N=3,567 individuals from the UK10K cohort
+and restricted the set of SNPs considered in fine-mapping to the intersection of SNPs found in both
+UK10K and the UK Biobank, which yielded FDR>0.05 regardless of L because not all causal SNPs were
+considered in the fine-mapping analysis (Supplementary Table 7o). Second, we also restricted the set of
+SNPs of the generative model to the intersection of SNPs found in UK10K and the UK Biobank, which
+maintained FDR<0.05 for L≤2 only (Supplementary Table 7p). Third, we restricted the generative model
+and the fine-mapping analysis to use only SNPs found at the intersection the UK Biobank and UK10K and
+having INFO score>0.9, which maintained FDR<0.05 for L≤10 (Supplementary Table 7q). Fourth, we
+restricted the generative model and the fine-mapping analysis to use only SNPs found at the intersection
+the UK Biobank and UK10K and having MAF >1%, which maintained FDR<0.05 for L≤1 only
+(Supplementary Table 7r). Fifth, to verify that PolyFun + SuSiE could remain well-calibrated when
+restricting to UK10K SNPs, we used an LD reference panel of N=4K unrelated British-ancestry UK Biobank
+individuals while using only SNPs found in both UK10K and the UK Biobank for both the generative
+model and for fine-mapping analysis, which maintained FDR<0.05 for L≤10 (Supplementary Table 7s).
+We conclude that (i) fine-mapping analysis can yield false positive results if causal SNPs are not included
+in the LD reference panel; and (ii) there exist discrepancies in the LD patterns of INFO<0.9 SNPs between
+the UK10K cohort and British-ancestry individuals from the UK Biobank. These differences may stem
+either from subtle population differences between these two cohorts13 or from imputation errors
+(although a recent study of whole exome sequencing data from the UK Biobank indicates that the set of
+SNPs used in this manuscript, having INFO>0.6 and MAF>0.1%, is well imputed14).
+
+12
+
+PolyFun + SuSiE does not make use of summary LD information when restricting to a single causal SNP per
+locus
+We prove here that when applying PolyFun + SuSiE assuming that there are 𝐿 causal SNPs per locus, the
+model only requires inverting 𝐿 × 𝐿 LD matrices of subsets of 𝐿 SNPs. Consequently, the model does not
+require an LD matrix under 𝐿 = 1, because the LD of an SNP with itself is 1.0 by construction. Our
+derivation also supports the empirical result that PolyFun + SuSiE is relatively robust to LD misspecification
+under 𝐿 = 2, presumably because the inverse of a 2 × 2 misspecified LD matrices is robust to moderate
+LD misspecification.
+We first establish notations. Denote 𝒛 as a 𝑚 × 1 vector of z-scores of 𝑚 SNPs, 𝑹 as an 𝑚 × 𝑚 LD matrix,
+and 𝛽𝑖 as the causal effect of SNP 𝑖. Given a set of causal SNPs 𝑪, define P(𝑪) as the prior probability of
+the SNPs in set 𝑪 to be causal: P(𝑪) = ∏𝑖∈𝑪 P(𝛽𝑖 ≠ 0) ∏𝑖∉𝑪 P(𝛽𝑖 = 0). Finally, define BF(𝑪) as the Bayes
+factor of set 𝑪, defined as BF(𝑪) = P(𝒛 | 𝑪, 𝑹)/P(𝒛 | 𝑹; 𝟎), where P(𝑧 | 𝑹; 𝟎) is the density of 𝒛 assuming
+that there are no causal SNPs in the locus.
+When applying PolyFun + SuSiE assuming 𝐿 causal SNPs per locus, the PIP of SNP 𝑖 is given by:
+PIPi = P(𝛽𝑖 ≠ 0 | 𝒛, 𝑹; 𝐿)
+P(𝒛 | 𝛽𝑖 ≠ 0, 𝑹; 𝐿)
+= P(𝛽𝑖 ≠ 0 )
+P(𝒛 | 𝑹; 𝐿)
+∑𝐂,|𝑪|=𝐿,𝑖∈𝑪 P(𝑪)P(𝒛 | 𝑪, 𝑹)
+=
+∑𝐂′,|𝑪′|=𝐿 P(𝑪′)P(𝒛 | 𝑪′ , 𝑹)
+∑𝐂,|𝑪|=𝐿,𝑖∈𝑪 P(𝑪)BF(𝑪)P(𝑧 | 𝑹; 𝟎)
+=
+∑𝐂′,|𝑪′|=𝐿 P(𝑪′ )BF(𝑪′ )P(𝑧 | 𝑹; 𝟎)
+∑𝐂,|𝑪|=𝐿,𝑖∈𝑪 P(𝑪)BF(𝑪)
+=
+.
+∑𝐂′,|𝑪′|=𝐿 P(𝑪′ )BF(𝑪′ )
+We complete the proof by noting that BF(𝑪) depends only on the |𝑪| × |𝑪| submatrix of 𝑹 corresponding
+to SNPs in the set 𝑪, as shown in previous work15,16.
+We conclude that PIPi depends only on 𝐿 × 𝐿 submatrices of the matrix 𝑹.
+
+Comparing PolyFun + SuSiE fine-mapping results to previous fine-mapping studies
+We compared our fine-mapping results to two previous studies. First, we compared our results to ref. 17,
+which performed non-functionally informed fine-mapping (using a previous version of FINEMAP16) for the
+9 blood cell traits using a subset of approximately 115K of the individuals included in our analyses. PolyFun
++ SuSiE identified 1,268 PIP>0.95 SNP-trait pairs (4.4× more than ref. 17; 289 PIP>0.95 SNP-trait pairs), 146
+of which were shared (PIP>0.95) across the two studies, including all four SNPs that were functionally
+validated via luciferase reporter assays in ref. 17 (PIP>0.999 for all four SNPs; Methods, Supplementary
+Table 18-20). Sample size was the most important difference between the two studies, and incorporation
+of functional priors was also important, as we determined that (non-functionally informed) SuSiE
+identified only 984 PIP>0.95 SNP-trait pairs (3.4x more than ref. 17), 146 of which were shared
+(Supplementary Tables 18-19). Surprisingly, many differences remained even after we restricted SuSiE to
+the same subset of 115K individuals analyzed in ref. 17 (242 PIP>0.95 SNP-trait pairs, 130 of which were
+13
+
+shared; Supplementary Tables 18-19), possibly due to differences in the underlying methods, data
+preprocessing, or reference panel used to impute genotypes. Second, we compared our results to ref. 18,
+which performed non-functionally-informed fine-mapping for 7 of our traits (bone mineral density, fasting
+glucose, HDL cholesterol, LDL cholesterol, platelet count, red blood cell count, triglycerides), using a nonfunctionally informed method (PICS) and independent smaller data sets. PolyFun + SuSiE identified 727
+PIP>0.95 SNP-trait pairs (35x more than ref. 18; 21 PIP>0.95 SNP-trait pairs; Supplementary Tables 21-22).
+12 SNP-trait pairs had PIP>0.95 in both studies, implying a replication rate (in independent data) of 57%
+(12/21) in our study. We caution that the fine-mapping power of PolyFun + SuSiE is likely much lower than
+57% in practice, because the 21 SNPs fine-mapped in ref. 18 are likely to have larger effect sizes than most
+causal SNPs. We did not compare our results to refs. 19–21 because those studies analyzed disease traits,
+for which the number of cases in the UK Biobank is relatively low.
+
+Secondary analyses of fine-mapping results
+We performed 6 secondary analyses. First, we verified the robustness of our fine-mapping results by
+repeating the analysis using data from only the UK Biobank interim release (average N=107K) for the five
+traits with highest fine-mapping power (Methods). PolyFun + SuSiE identified >45% more PIP>0.95 SNPs
+vs. SuSiE overall, and >33% more PIP>0.95 SNPs vs. SuSiE among SNPs having PIP>0.95 in the full N=337K
+SuSiE results, with a similar rate of replication in the full N=337K SuSiE results (Supplementary Table 23).
+Second, in the N=337K analysis, we determined that the union of PolyFun + SuSiE 95% credible sets was
+23% smaller than the union of SuSiE 95% credible sets (median reduction) (Supplementary Table 24),
+consistent with simulations (Supplementary Table 4). Third, we searched for pairs of fine-mapped SNPs
+within 1Mb of each other where exactly one of the SNPs is coding, which can aid in linking regulatory
+variants to target genes22–24, and identified 490 such pairs (Supplementary Table 25). Fourth, we
+compared the magnitude of the posterior mean and posterior standard deviation of causal effect sizes,
+which can inform the applicability of fine-mapping results to polygenic risk scores. Posterior means were
+3.6x smaller than posterior standard deviations (median ratio) for PIP>0.05 SNPs but 6.9x larger for
+PIP>0.95 SNPs, for which causal effect sizes are estimated with high accuracy (Supplementary Table 10).
+Fifth, we determined that PolyFun + SuSiE identified more PIP>0.95 SNP-trait pairs that are not genomewide significant (P>5×10-8) than SuSiE (110 of 514 (21.4%) SNP-trait pairs with PolyFun + SuSiE PIP>0.95,
+vs 15 of 127 (11.8%) SNP-trait pairs with SuSiE PIP>0.95, after excluding 1,112 SNP-trait pairs with PIP>0.95
+for both SuSiE and PolyFun + SuSiE (Supplementary Table 10); P=0.02 for the difference, Fisher’s exact
+test). These results suggest that functionally-informed fine-mapping is more likely to identify PIP>0.95
+SNPs that are not genome-wide significant, if their prior causal probabilities are substantially larger than
+those of their neighbors. Sixth, we verified that the functional enrichments of fine-mapped SNPs remained
+qualitatively similar when using PolyFun + SuSiE instead of SuSiE (Extended Data Figure 7, Supplementary
+Table 26) and when defined using all MAF≥0.001 SNPs (Extended Data Figure 8, Supplementary Table 27)
+or only low-frequency and rare SNPs (0.05>MAF≥0.001) (Extended Data Figure 9, Supplementary Table
+28).
+
+Secondary analyses of polygenic localization
+We performed 7 secondary analyses of polygenic localization. First, we verified that 𝑀50% estimates were
+strongly correlated with estimates of the effective number of independently associated SNPs (Me; ref. 25),
+with log-scale r=0.92 (P=3.1×10-6) across 14 genetically uncorrelated traits with published Me estimates
+14
+
+(Supplementary Table 32) (as noted in the main text, PolyLoc provides the SNP sets underlying its
+estimates, unlike ref. 25). Second, we used posterior per-SNP heritability estimates from SuSiE (instead of
+PolyFun + SuSiE) to partition SNPs into heritability bins, obtaining 𝑀50% estimates that were 1.4x larger
+(median ratio; Supplementary Table 33). This result is consistent with our results showing that PolyFun +
+SuSiE identifies more PIP>0.95, PIP>0.5 and PIP>0.05 SNPs than SuSiE (Supplementary Table 9), and
+further illustrates the improved fine-mapping resolution of PolyFun + SuSiE vs. SuSiE. Third, we applied
+PolyLoc to prior estimates of per-SNP heritability computed by S-LDSC based only on functional
+annotations (including MAF bins) and obtained 𝑀50% estimates that were overwhelmingly larger,
+emphasizing the value of posterior estimates (Supplementary Table 33). Fourth, we modified PolyLoc by
+applying step (3) of PolyLoc to the same N=337K samples analyzed by PolyFun + SuSiE. We obtained
+𝑀50% estimates that were drastically different, a consequence of winner’s curse (Supplementary Table
+33). Fifth, we verified that PolyLoc results were not sensitive to the number of heritability bins
+(Supplementary Table 33). Sixth, we determined that polygenic localization estimates were slightly larger
+when not stratifying the lowest-heritability bin into 10 MAF bins (Supplementary Table 33). Seventh, We
+determined that 𝑀50% estimates using all MAF≥0.001 SNPs were 1.4x larger (vs. 2.8x larger SNP set)
+compared to analyses of common SNPs, confirming that rare and low-frequency SNPs are depleted for
+high-heritability SNPs1,26,27 (Supplementary Table 33).
+
+Possible reasons for identifying SNPs having PIP>0.95 but P>5×10-8 in the UK Biobank
+In this work we applied PolyFun genome-wide to maximize the number of PIP>0.95 SNPs identified.
+However, we envision that the PolyFun software will primarily be used to fine-map genome-wide
+significant loci. This is because only 9.9% of PIP>0.95 SNP-trait pairs had P>5×10-8, and because genomewide fine-mapping is computationally and technically challenging. As such, we designed the PolyFun
+software to particularly facilitate fine-mapping of specific pre-specified loci, though it can also be used for
+genome-wide fine-mapping. We emphasize that even when fine-mapping only genome-wide significant
+loci, PolyFun + SuSiE’s use of genome-wide functional data is an important advantage.
+Possible reasons for identifying PIP>0.95 SNPs with P>5×10-8 in genome-wide fine-mapping are (i) the
+widely used P<5×10-8 threshold is extremely stringent, as compared to FDR28; (ii) modeling of multiple
+causal SNPs per locus can potentially identify SNPs with large causal effects but P>5×10-8 due to linkage
+masking29 (i.e. LD with a causal SNPs with opposite effect, masking the causal effects); and (iii)
+functionally-informed fine-mapping is more likely to identify PIP>0.95 SNPs with P>5×10-8 than nonfunctionally-informed fine-mapping, because it can successfully fine-map SNPs with relatively weak effect
+sizes if their prior causal probability is substantially larger than the prior causal probabilities of their
+neighboring SNPs.
+
+Fine-mapping simulations procedure
+To facilitate the fine-mapping simulations we generated summary statistics directly, without first
+generating phenotypic values. This is mathematically equivalent to direct simulations but is substantially
+faster and allows modifying the residual variance for any desired sample size 𝑛. Specifically, we sampled
+a vector of marginal effect sizes 𝜶 in each locus from 𝒩(𝑹𝜷, 𝑹 ⋅ 𝜎𝑒2 /𝑛) where 𝑹 is a matrix of summary
+LD information (computed via LDstore10), 𝜷 are effect sizes sampled iid from 𝒩(0, 𝜎𝑐2 ) for causal SNPs
+(and set to 0 for non-causal SNPs), and 𝜎𝑒2 = 1 − 𝜷𝑇 𝑹𝜷 is the phenotypic variance not causally explained
+by SNPs in the locus16,30 (see below). The causal variance 𝜎𝑐2 was set to ℎ𝑔2 /𝑚𝑐 where ℎ𝑔2 is the desired
+15
+
+SNP heritability and 𝑚𝑐 is the expected number of causal SNPs. We note that modifying 𝑛 implies that 𝑹
+represents summary LD information from the population rather than from the sample.
+We used the above procedure in two ways. First, we generated 100 sets of summary statistics in each of
+10 3Mb loci in chromosome 1 for the fine-mapping experiments (selected by sorting all loci according to
+number of SNPs and selecting a uniformly-spaced set of loci spanning the two loci with the smallest and
+largest number of SNPs; Supplementary Table 2). We set ℎ𝑔2 to the desired locus heritability and 𝑚𝑐 to the
+desired number of causal SNPs in the locus, for a total of 1000 simulations (for simulations based on SuSiE
+and FINEMAP with default parameters) or 100 simulations (for all other simulations, due to computational
+cost) per unique combination of settings. Second, we generated 5 sets of genome-wide summary statistics
+for functional enrichment estimation, setting ℎ𝑔2 to the desired genome-wide SNP-heritability and 𝑚𝑐 to
+the expected genome-wide number of causal SNPs. In the genome-wide simulations we generated a
+summary statistic 𝛼𝑖 for each SNP based on the locus whose center was closest to the SNP among 2,763
+overlapping 3Mb loci spanning all autosomal chromosomes (with a 1Mb spacing between the start points
+of consecutive loci and excluding three long-range LD regions: chr6 25.5M-33.5M, chr8 8M-12M, chr11
+46M-57M; see Methods). In each experiment we randomly selected one of the 5 genome-wide sets of
+summary statistics and used it to estimate functional enrichment.
+The most challenging aspect of the simulations is sampling vectors from 𝒩(𝑹𝜷, 𝑹 ⋅ 𝜎𝑒2 /𝑛), as it is both
+computationally intensive and technically complex due to singularity of 𝑹. To circumvent these challenges
+we sampled 100 𝜶𝑒 vector from 𝑁(𝟎, 𝑹) for each locus and stored them for future use. Afterwards, we
+generated summary statistics in each simulation via 𝜶 = 𝑹𝜷 + 𝜶𝑒 ⋅ 𝜎𝑒2 /𝑛, randomly choosing one of the
+100 𝜶𝑒 vectors. Because 𝑹 was typically singular, we sampled 𝜶𝑒 approximately by (1) taking a random
+maximal subset of SNPs such that no pair of SNPs has |𝑟|>0.99, using the maximal_independent_set
+procedure in the NetworkX package31, and constructing the corresponding submatrix 𝑹s ; (2) Finding the
+minimum value of 𝛾 such that (1 − 𝛾)𝑹𝑠 + 𝛾𝑰 has a minimal eigenvalue >0.0001; (3) sampling 𝜶𝑒,𝑠 from
+𝑁(𝟎, (1 − 𝛾)𝑹𝑠 + 𝛾𝑰 ); (4) sampling a value 𝛼𝑒𝑖 for each SNP 𝑖 that was omitted in step 1 from a normal
+𝑗
+
+distribution conditional on 𝛼𝑒,𝑠 of the non-omitted SNP 𝑗 having the strongest LD with SNP 𝑖; and (5)
+constructing 𝜶𝑒 by combining 𝜶𝑒,𝑠 and all values of 𝛼𝑒𝑖 .
+The default parameters for the locus-specific simulations were 𝑚𝑐 =10 and ℎ𝑔2 =0.0005 (broadly consistent
+with empirical data; average ℎ𝑔2 of a 3Mb locus across 16 genetically uncorrelated traits=0.0003). The
+default parameters for the genome-wide simulations were 𝑚𝑐 =91,700 (implying a proportion 0.5% of
+causal SNPs) and ℎ𝑔2 =0.25 (consistent with real data results; Supplementary Table 14).
+After generating summary statistics, we first estimated prior causal probabilities for all SNPs as described
+in the PolyFun fine-mapping method subsection in the Methods. We ran S-LDSC using LD scores computed
+from the summary LD information used to generate summary statistics (based on imputed SNP dosages
+rather than sequenced genotypes as in previous publications that used S-LDSC1,32,33, assigning to each SNP
+the LD score computed in the locus in which it was most central) to obtain sufficient coverage of lowfrequency SNPs, which are underrepresented in small external reference panels.
+
+Estimating the causal effect size variance using HESS
+HESS34 estimates regional SNP-heritability via 𝜶𝑹−1 𝜶 − 𝑚/𝑛, where 𝜶 is a vector of marginal effect size
+estimates for 𝑚 standardized SNPs, 𝑹 is a matrix of summary LD information, and 𝑛 is the sample size.
+We regularized this estimator (using in-sample LD) by (1) excluding SNPs having 𝛼𝑖2 <0.00005 (i.e., having
+16
+
+a negligible contribution to the estimator); and (2) selecting a random maximal subset of the remaining
+SNPs such that no pair of SNPs has |𝑟|>0.99. We averaged this estimate across 100 different estimates per
+locus, each time selecting a different random subset via the maximal_independent_set procedure in the
+NetworkX package31. We then estimated the causal effect size variance as the HESS estimator divided by
+the assumed number of causal SNPs (using a value of 10 by default in this work). The division assumes
+that the correlation between causal SNPs is zero in expectation.
+
+Defining polygenic localization
+To formally define polygenic localization, we first define expected common SNP heritability under a fixed
+effects model with no autocorrelation. We assume the linear model 𝑦 = ∑𝑚
+𝑖=1 𝑥𝑖 𝛽𝑖 + 𝜖, where 𝑦 is a
+phenotype, 𝑥𝑖 is a standardized common SNP with effect 𝛽𝑖 , 𝑚 is the number of common SNPs, and 𝜖 is a
+residual term. We define the expected common SNP heritability Eℎ2 as follows:
+Eℎ2 = ∑
+
+𝑚
+
+𝛽𝑖2 .
+
+𝑖=1
+
+This definition stems from the fixed effects SNP-heritability var[∑𝑖 𝑥𝑖 𝛽𝑖 | 𝜷] = ∑𝑖 𝛽𝑖2 + 2 ∑i,j 𝑟𝑖𝑗 𝛽𝑖 𝛽𝑗 ,
+where we assumed standardized genotypes, 𝑟𝑖𝑗 is the LD between SNPs 𝑖, 𝑗, and the second term on the
+right hand size is zero in expectation, assuming no autocorrelation. We next define the expected common
+SNP heritability of a subset 𝑺 of SNPs by:
+Eℎ𝑺2 = ∑ 𝛽𝑖2 .
+𝑖∈𝑺
+
+We define 𝑀𝑝∗ , the smallest set of common SNPs causally explaining proportion 𝑝 of expected common
+SNP heritability, as the cardinality of the smallest set 𝑺 such that Eℎ𝑺2 /Eℎ2 ≥ 𝑝. An equivalent definition
+is the smallest integer 𝑘 such that
+∑𝑖∈{𝑠1 ,…,𝑠𝑘 } 𝛽𝑖2
+≥ 𝑝,
+2
+∑𝑚
+𝑖=1 𝛽𝑖
+where 𝑠𝑗 denotes a ranking of 𝛽𝑖2 such that 𝛽𝑠21 ≥ 𝛽𝑠22 ≥ ⋯ ≥ 𝛽𝑠2𝑚 . We analogously define 𝑀𝑝 with respect
+to a given (possibly non-optimal) ranking of SNPs 𝑠′ as the smallest integer 𝑘′ such that
+2
+2
+∑𝑖∈{𝑠′1 ,…,𝑠′𝑘′ } 𝛽𝑖2 / ∑𝑚
+𝑖=1 𝛽𝑖 ≥ 𝑝. Unfortunately, 𝛽𝑖 is unknown in practice. 𝑀𝑝 thus serves as an estimable
+upper bound of 𝑀𝑝∗ . We note that 𝑀𝑝 ≥ 𝑀𝑝∗ by construction.
+
+Polygenic localization procedure
+We now describe PolyLoc in detail. We used two sets of BOLT-LMM summary statistics based on different
+datasets: N=337,491 unrelated British-ancestry UK Biobank individuals, and N=121,768 Europeanancestry UK Biobank individuals not included in the first set. PolyLoc proceeds as follows:
+1. Apply median-based clustering of posterior mean estimates of 𝛽𝑖2 (i.e., the sum of the squared
+posterior mean and of the posterior variance of 𝛽𝑖 reported by PolyFun + SuSiE, based on the PolyFun
+N=337K dataset) into 50 bins using the Ckmedian.1d.dp method35. Afterwards, include all SNPs
+excluded from fine-mapping (e.g. SNPs in the MHC region) in the last bin, and sub-partition the last
+bin into 10 equally-sized MAF bins to account for MAF-based genetic architecture1, yielding 59 bins
+17
+
+(or 20 bins when also including non-common SNPs, yielding 69 bins). We used a larger number of bins
+than that used in step 3 of PolyFun because posterior mean estimates of 𝛽𝑖2 follow a heavy-tailed
+distribution, requiring many bins to avoid placing two SNPs having effect sizes of a different order of
+magnitude in the same bin.
+2. Jointly estimate var[𝛽𝑖 ] of SNPs in each bin (defined as the SNP-heritability causally explained by the
+bin divided by the bin size) by creating an annotation for each bin and running a modified version of
+S-LDSC using the summary statistics from the PolyLoc N=122K dataset, with the following
+modifications: (a) use in-sample summary LD information (based on SNP dosages from imputed
+genotypes) to compute LD scores as in the PolyFun analyses; (b) apply non-negativity constraints to
+prevent negative var[𝛽𝑖 ] estimates; and (c) retain SNPs with 𝜒 2 > 80 in the analysis. Step (c)
+facilitates handling of bins that predominantly consist of very large effect SNPs.
+3. Rank common SNPs according to their 𝛽𝑖2 posterior mean estimates from PolyFun + SuSiE (if they do
+not reside in MAF bins) or according to a ranking of MAF bins (otherwise). To rank MAF bins, we
+applied standard S-LDSC to the PolyFun dataset (N=337K in our setting) with the same bin partitioning
+and ranked MAF bins according to their enrichment estimates (this is needed because 𝛽𝑖2 is not
+necessarily strongly correlated with MAF). Afterwards, compute 𝑀𝑝 as the smallest number of topranked common SNPs, such that the sum of their var[𝛽𝑖 ] estimates from step 2 is equal to proportion
+𝑝 of the sum of all var[𝛽𝑖 ] estimates. Finally, compute standard errors of 𝑀𝑝 via a 200-blockjackknife36, recomputing 𝑀𝑝 separately using the estimates of each jackknife block.
+Step 2 of PolyLoc requires a set of samples (N=122K in our analyses) different than that used in PolyFun +
+SuSiE (N=337K in our analyses) rather than a partitioning of chromosomes to avoid winner’s curse.
+Otherwise, PolyLoc would use the same summary statistics for both bin-partitioning and for estimating
+per-bin heritability (noting that this difficulty does not exist in PolyFun because PolyFun performs binpartitioning using only functional annotations, without requiring summary statistics from the target
+chromosome).
+When computing standard errors of 𝑀𝑝 , we excluded jackknife blocks that yielded extremely noisy
+estimates (yielding an 𝑀𝑝 estimate whose distance to the median of the estimates was >25x the
+interquartile range of all jackknife-block estimates; typically <2 blocks per trait). Such blocks likely result
+from the inclusion of very large-effect SNPs in step 2 of PolyLoc.
+We included all MAF>0.001 SNPs in the set of S-LDSC regression SNPs (defined in refs. 1,32,37) regardless of
+whether we were interested in polygenic localization of common SNP-heritability or of MAF>0.001 SNP
+heritability, but did not include them in the set of S-LDSC heritability SNPs (defined in refs. 1,32,37) except
+in analyses of MAF>0.001 SNP heritability.
+
+Polygenic localization simulations
+PolyLoc will yield robust estimates of 𝑀𝑝 if S-LDSC yields robust estimates of the SNP-heritability causally
+explained by each bin. Although S-LDSC has previously been shown to produce robust estimates1,32,33,37,
+we performed extensive simulations to confirm that PolyLoc produces robust estimates of 𝑀𝑝 . An exact
+simulation scheme would require first ranking all SNPs according to their PolyFun + SuSiE posterior perSNP heritabilities, which is computationally prohibitive. To circumvent this computational challenge, we
+demonstrate that PolyLoc produces robust estimates of 𝑀𝑝 with respect to several different SNP rankings.
+18
+
+Specifically, we (1) generated causal effects for all SNPs on chromosome 1; (2) generated two independent
+corresponding sets of summary statistics for all SNPs on chromosome 1: A PolyFun dataset (with sampling
+noise based on N=320K individuals) and a PolyLoc dataset (with sampling noise based on N=122K
+individuals); (3) generated several different rankings of SNPs on chromosome 1 corresponding to different
+levels of statistical power (see below), using the PolyFun summary statistics (N=320K) from step 2; and (4)
+applied PolyLoc using the rankings from step 3, using the PolyLoc summary statistics from step 2 (N=122K).
+We generated causal effects and summary statistics in steps 1-2 as in the fine-mapping simulations (except
+for the restriction to chromosome 1), using LD matrices based on genotypes of 337K UK biobank
+individuals, such that 0.5% of the SNPs are causal and the SNPs jointly explain ℎ𝑔2 =25%. We ranked SNPs
+in step 3 according to approximate posterior per-SNP heritabilities given by 𝑟𝑖 = 𝑢𝛽𝑖2 + (1 − 𝑢)𝛾𝑖2 , where
+𝛽𝑖 is the simulated causal effect of SNP 𝑖, [𝛾1 , … , 𝛾𝑚 ] is a random permutation of [𝛽1 , … , 𝛽𝑚 ], and 𝑢 ∈
+{0,0.25,0.5,0.75,1} represent power levels, such that 𝑢 = 1 indicates maximal power and 𝑢 = 0 indicates
+zero power. We partitioned SNPs into 10 bins in step 4 of each simulation (rather than 50 as in the real
+data analyses) because we only used chromosome 1 SNPs. (We verified that the results are relatively
+insensitive to the number of bins in secondary analyses). We generated 10 simulations for each evaluated
+value of 𝑢, and compared the estimated and true values of 𝑀𝑝 in each simulation (using log scale because
+𝑀𝑝 spans different orders of magnitude for different levels of 𝑝).
+PolyLoc yielded slightly conservative estimates of log10 𝑀𝑝 for 𝑢>0 and slightly anti-conservative
+estimates for 𝑢=0 (Supplementary Table 29). For 𝑢=0.75, representing a well-powered (but not perfectlypowered) study, the average bias of log10 𝑀50% was 0.007. We emphasize that we compare estimates of
+log10 𝑀𝑝 to their true values with respect to a given ranking (determined in step 3 of the simulation
+procedure) rather than the optimal ranking. We also compared log10 𝑀𝑝 estimates to log10 𝑀𝑝∗ (reflecting
+the optimal ranking). As expected, the magnitude of the difference increased as 𝑢 decreased. For example,
+∗
+the difference between the estimates value of log10 𝑀50% and log10 𝑀50%
+was 0.02 for 𝑢=1, 0.02 for
+𝑢=0.75, 0.04 for 𝑢=0.5, 0.11 for 𝑢=0.25, and 2.9 for 𝑢=0 (Supplementary Table 29).
+We performed 6 secondary analyses. First, we repeated the analysis using a version of S-LDSC that does
+not constrain per-SNP heritabilities to be non-negative. The results were similar (Supplementary Table
+29), but interpretation was more challenging because some per-SNP heritability estimates became
+negative. Second, we varied the PolyFun sample size in the range 107K-1 million and obtained qualitatively
+similar results (Supplementary Table 29). Third, we varied the SNP heritability in the range 12.5%-50% and
+obtained qualitatively similar results (Supplementary Table 29). Fourth, we varied the genome-wide
+proportion of causal SNPs in the range 0.1%-1% and obtained qualitatively similar results (Supplementary
+Table 29). Fifth, we varied the number of bins used for partitioning SNPs in the range 5-20 and obtained
+qualitatively similar results (Supplementary Table 29). Finally, we evaluated the results with respect to a
+ranking of SNPs based only on the magnitude of their summary statistics. We obtained highly conservative
+results with respect to both the true value of 𝑀𝑝 and to 𝑀𝑝∗ in all cases (Supplementary Table 30),
+demonstrating that accurate polygenic localization estimates require performing genome-wide finemapping rather than simply ranking SNPs based on their summary statistics.
+
+References
+1. Gazal, S. et al. Functional architecture of low-frequency variants highlights strength of negative
+selection across coding and non-coding annotations. Nat. Genet. 50, 1600–1607 (2018).
+19
+
+2. Pickrell, J. K. Joint Analysis of Functional Genomic Data and Genome-wide Association Studies of 18
+Human Traits. Am. J. Hum. Genet. 94, 559–573 (2014).
+3. Li, Y. I. et al. RNA splicing is a primary link between genetic variation and disease. Science 352, 600–
+604 (2016).
+4. Wang, G., Sarkar, A., Carbonetto, P. & Stephens, M. A simple new approach to variable selection in
+regression, with application to genetic fine mapping. J. R. Stat. Soc. Ser. B Stat. Methodol. n/a, (2020).
+5. The Wellcome Trust Case Control Consortium et al. Bayesian refinement of association signals for 14
+loci in 3 common diseases. Nat. Genet. 44, 1294–1301 (2012).
+6. Hormozdiari, F., Kostem, E., Kang, E. Y., Pasaniuc, B. & Eskin, E. Identifying causal variants at loci with
+multiple signals of association. Genetics 198, 497–508 (2014).
+7. Kichaev, G. et al. Integrating Functional Data to Prioritize Causal Variants in Statistical Fine-Mapping
+Studies. PLoS Genet. 10, e1004722 (2014).
+8. Chen, W., McDonnell, S. K., Thibodeau, S. N., Tillmans, L. S. & Schaid, D. J. Incorporating functional
+annotations for fine-mapping causal variants in a Bayesian framework using summary statistics.
+Genetics 204, 933–958 (2016).
+9. The UK10K Consortium et al. The UK10K project identifies rare variants in health and disease. Nature
+526, 82 (2015).
+10.
+
+Benner, C. et al. Prospects of Fine-Mapping Trait-Associated Genomic Regions by Using
+
+Summary Statistics from Genome-wide Association Studies. Am. J. Hum. Genet. 101, 539–551 (2017).
+11.
+
+Chang, C. C. et al. Second-generation PLINK: rising to the challenge of larger and richer datasets.
+
+GigaScience 4, 7 (2015).
+12.
+
+Purcell, S & Chang, C. PLINK v2.00a3LM.
+
+13.
+
+Bhatia, G. et al. Subtle stratification confounds estimates of heritability from rare variants.
+
+bioRxiv 048181 (2016).
+
+20
+
+14.
+
+Van Hout, C. V. et al. Whole exome sequencing and characterization of coding variation in
+
+49,960 individuals in the UK Biobank. BioRxiv 572347 (2019).
+15.
+
+Chen, W. et al. Fine mapping causal variants with an approximate Bayesian method using
+
+marginal test statistics. Genetics 200, 719–736 (2015).
+16.
+
+Benner, C. et al. FINEMAP: efficient variable selection using summary data from genome-wide
+
+association studies. Bioinformatics 32, 1493–1501 (2016).
+17.
+
+Ulirsch, J. C. et al. Interrogation of human hematopoiesis at single-cell and single-variant
+
+resolution. Nat. Genet. (2019) doi:10.1038/s41588-019-0362-6.
+18.
+
+Farh, K. K.-H. et al. Genetic and epigenetic fine mapping of causal autoimmune disease variants.
+
+Nature 518, 337 (2015).
+19.
+
+Huang, H. et al. Fine-mapping inflammatory bowel disease loci to single-variant resolution.
+
+Nature 547, 173–178 (2017).
+20.
+
+Mahajan, A. et al. Fine-mapping type 2 diabetes loci to single-variant resolution using high-
+
+density imputation and islet-specific epigenome maps. Nat. Genet. 50, 1505 (2018).
+21.
+
+Westra, H.-J. et al. Fine-mapping and functional studies highlight potential causal variants for
+
+rheumatoid arthritis and type 1 diabetes. Nat. Genet. 50, 1366–1374 (2018).
+22.
+
+Claussnitzer, M. et al. FTO obesity variant circuitry and adipocyte browning in humans. N. Engl.
+
+J. Med. 373, 895–907 (2015).
+23.
+
+Jung, I. et al. A compendium of promoter-centered long-range chromatin interactions in the
+
+human genome. Nat. Genet. 1–8 (2019).
+24.
+
+Zeggini, E., Gloyn, A. L., Barton, A. C. & Wain, L. V. Translational genomics and precision
+
+medicine: Moving from the lab to the clinic. Science 365, 1409–1413 (2019).
+25.
+
+O’Connor, L. J. et al. Extreme Polygenicity of Complex Traits Is Explained by Negative Selection.
+
+Am. J. Hum. Genet. 105, 456–476 (2019).
+
+21
+
+26.
+
+Zeng, J. et al. Signatures of negative selection in the genetic architecture of human complex
+
+traits. Nat. Genet. 50, 746 (2018).
+27.
+
+Schoech, A. P. et al. Quantification of frequency-dependent genetic architectures in 25 UK
+
+Biobank traits reveals action of negative selection. Nat. Commun. 10, 790 (2019).
+28.
+
+Nelson, C. P. et al. Association analyses based on false discovery rate implicate new loci for
+
+coronary artery disease. Nat. Genet. 49, 1385 (2017).
+29.
+
+Brown, B. C., Price, A. L., Patsopoulos, N. A. & Zaitlen, N. Local joint testing improves power and
+
+identifies hidden heritability in association studies. Genetics 203, 1105–1116 (2016).
+30.
+
+Reshef, Y. A. et al. Detecting genome-wide directional effects of transcription factor binding on
+
+polygenic disease risk. Nat. Genet. 50, 1483 (2018).
+31.
+
+Hagberg, A., Swart, P. & S Chult, D. Exploring network structure, dynamics, and function using
+
+NetworkX. in Proceedings of the 7th Python in Science Conference (SciPy2008) (Los Alamos National
+Lab.(LANL), Los Alamos, NM (United States), 2008).
+32.
+
+Gazal, S. et al. Linkage disequilibrium–dependent architecture of human complex traits shows
+
+action of negative selection. Nat. Genet. 49, 1421–1427 (2017).
+33.
+
+Gazal, S., Marquez-Luna, C., Finucane, H. K. & Price, A. L. Reconciling S-LDSC and LDAK functional
+
+enrichment estimates. Nat. Genet. 51, 1202–1204 (2019).
+34.
+
+Shi, H., Kichaev, G. & Pasaniuc, B. Contrasting the Genetic Architecture of 30 Complex Traits
+
+from Summary Association Data. Am. J. Hum. Genet. 99, 139–53 (2016).
+35.
+
+Wang, H. & Song, M. Ckmeans.1d.dp: Optimal k-means Clustering in One Dimension by Dynamic
+
+Programming. R J. 3, 29–33 (2011).
+36.
+
+Bulik-Sullivan, B. K. et al. LD Score regression distinguishes confounding from polygenicity in
+
+genome-wide association studies. Nat. Genet. 47, 291–295 (2015).
+
+22
+
+37.
+
+Finucane, H. K. et al. Partitioning heritability by functional annotation using genome-wide
+
+association summary statistics. Nat. Genet. 47, 1228–1235 (2015).
+
+23
+
+
