@@ -4,3 +4,4 @@
 - `tasks.py` stores repo-level commands for running tasks, typechecking, generating documentation, etc.
 - After making any significant change, always run `pixi r invoke green` to lint, format, and test.  Note that `pytest-testmon` will skip tests unaffected by the latest changes.
 - In module/class/function doc strings, do not use backticks to enclose inline code.  Do not use RST.
+- Coding preferences, style guidelines, architecture rules, and environment gotchas for this repo live under `skills/`.  Start at `skills/index.md`, which routes to the relevant page (Python style, testing, build system & Tasks, workflow, documentation site, environment gotchas).  Consult the page relevant to what you are about to do.
