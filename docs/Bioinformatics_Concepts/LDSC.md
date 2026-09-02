@@ -664,6 +664,7 @@ How is LDSC used to detect stratification in practice? One approach would be to 
 
 
 It is more useful to consider the fraction of a typical $\chi^2$ statistic that is explained by the intercept, rather the LD term in $(\ref{stratified_eq})$.  For this purpose, a quantity called the attenuation ratio is computed:
+assert isinstance(source_meta.read_spec, DataFrameReadSpec)
 
 $$
 \begin{align}
