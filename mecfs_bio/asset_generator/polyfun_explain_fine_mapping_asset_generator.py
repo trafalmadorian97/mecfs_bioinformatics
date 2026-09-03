@@ -69,9 +69,10 @@ from mecfs_bio.build_system.task.pipes.min_variants_for_cumulative_mass import (
     MinVariantsForCumulativeMass,
 )
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
+from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
-    PolyfunExplainContrastTask,
+    PolyfunExplainContrastTask, DISPLAY_TABLE_FILENAME,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task import (
     PLOT_PNG_FILENAME,
@@ -147,10 +148,11 @@ class PolyfunExplainGroup:
     susie_polyfun: SusieRFinemapTask
     contrast: Task
     plot: Task
-    # The plot's png and svg copied out of its directory as standalone FileAssets,
-    # so docs can include either figure format on its own.
     plot_png: Task
     plot_svg: Task
+    display_table: Task
+    display_table_no_annotations: Task
+
 
 
 @frozen
@@ -170,11 +172,12 @@ class PolyfunExplainOuterGroup:
             # copied out as standalone FileAssets (each buildable in isolation),
             # and the plot task is still built transitively as their dependency.
             out += [
-                g.susie_uniform,
-                g.susie_polyfun,
-                g.contrast,
+                # g.susie_uniform,
+                # g.susie_polyfun,
+                # g.contrast,
                 g.plot_png,
                 g.plot_svg,
+                g.display_table
             ]
         out += [self.upset_all_polyfun, self.upset_cs50_polyfun]
         return out
@@ -242,6 +245,23 @@ def generate_polyfun_explain_group(
         path_inside_directory=PurePath(PLOT_SVG_FILENAME),
         extension=".svg",
     )
+    display_table = CopyFileFromDirectoryTask.create_result_table(
+        asset_id=f"{stem}_explain_display_table",
+        source_directory_task=contrast,
+        path_inside_directory=PurePath(DISPLAY_TABLE_FILENAME),
+        extension=".parquet",
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat())
+    )
+    display_table_no_annotations = PipeDataFrameTask.create(
+        asset_id=f"{stem}_explain_display_table_no_annotations",
+        source_task=display_table,
+        out_format=ParquetOutFormat(),
+        pipes=[
+            SelectColPipe([
+
+            ])
+        ]
+    )
     return PolyfunExplainGroup(
         susie_uniform=susie_uniform,
         susie_polyfun=susie_polyfun,
@@ -249,6 +269,7 @@ def generate_polyfun_explain_group(
         plot=plot,
         plot_png=plot_png,
         plot_svg=plot_svg,
+        display_table=display_table,
     )
 
 

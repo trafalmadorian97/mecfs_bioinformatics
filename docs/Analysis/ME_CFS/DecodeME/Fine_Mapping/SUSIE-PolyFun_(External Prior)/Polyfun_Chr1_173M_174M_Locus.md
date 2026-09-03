@@ -25,7 +25,9 @@ As before, in my SUSIE runs, I retained palindromic SNPs whose strand orientatio
 
 ### Prior
 
-For this analysis, I used the precomputed prior provided by the authors of PolyFun[@weissbrod2020functionally][^prior_note]. The PoltFun authors created this prior by running 
+For this analysis, I used the precomputed prior provided by the authors of PolyFun[@weissbrod2020functionally][^prior_note]. The PoltFun authors created this prior by running a modified version of [stratified linkage disequilibrium score regression](../../../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) on 15 different UK biobank traits, combining the resulting heritability weights. The result is a prior that upweights genetic variants if they are associated with functional annotations with high heritability weights across a range of traits. The logic is that these genetic variants associated with broadly important annotations are more likely to be causal.
+
+
 
 
 [//]: # (To narrow the [DecodeME]&#40;../../../../../Data_Sources/DecodeME.md&#41;[@genetics2025initial] GWAS-1 signal, I [fine-mapped]&#40;../../../../../Bioinformatics_Concepts/Fine_Mapping.md&#41; the hit on chromosome 1 using [SUSIE]&#40;https://stephenslab.github.io/susieR/&#41;[@wang2020simple].)
