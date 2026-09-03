@@ -25,13 +25,15 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
+    DETAILED_DISPLAY_TABLE_FILENAME,
+    DISP_ANNOT_PREFIX,
     DISP_CS_PF,
     DISP_CS_U,
     DISP_LIFT,
     DISP_PIP_PF,
-    DISPLAY_TABLE_FILENAME,
     PER_FAMILY_CONTRAST_FILENAME,
     SELECTION_JSON_FILENAME,
+    TOP_LINE_DISPLAY_TABLE_FILENAME,
     PolyfunExplainContrastTask,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
@@ -46,6 +48,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_BETA_COL, GWASLAB_SE_COL
+from mecfs_bio.constants.polyfun_annotation_families import FAMILY_SHORT_LABELS
 
 # Two real baseline-LF annotations from different families so family aggregation
 # is exercised: Coding_UCSC_common -> coding, GERP.NS -> conserved.
@@ -298,21 +301,39 @@ def test_contrast_closed_form(tmp_path: Path):
     )["family_contrast"][0]
     assert abs(focal_coding - 2.4) < 1e-9
 
-    # Display table: union of both CS (rows 0,1,2,3), sorted desc by pip_pf.
-    display = pl.read_parquet(result.path / DISPLAY_TABLE_FILENAME)
-    assert display.height == 4
-    assert display[DISP_PIP_PF].to_list() == sorted(
-        display[DISP_PIP_PF].to_list(), reverse=True
+    # Top-line table: union of both CS (rows 0,1,2,3), sorted desc by pip_pf, and
+    # carries no annotation-family columns.
+    top_line = pl.read_parquet(result.path / TOP_LINE_DISPLAY_TABLE_FILENAME)
+    assert top_line.height == 4
+    assert top_line[DISP_PIP_PF].to_list() == sorted(
+        top_line[DISP_PIP_PF].to_list(), reverse=True
     )
-    assert display.schema["chr"] == pl.Int32
-    assert display.schema["pos"] == pl.Int32
+    assert top_line.schema["chr"] == pl.Int32
+    assert top_line.schema["pos"] == pl.Int32
+    assert not any(c.startswith(DISP_ANNOT_PREFIX) for c in top_line.columns)
     # Focal lift = m * pi = 6 * (8/13) ~= 3.692
-    focal_lift = display.filter(pl.col("pos") == 10)[DISP_LIFT][0]
+    focal_lift = top_line.filter(pl.col("pos") == 10)[DISP_LIFT][0]
     assert abs(focal_lift - 6.0 * (8.0 / 13.0)) < 1e-6
     # cs columns present, focal in both runs' CS
-    focal_row = display.filter(pl.col("pos") == 10)
+    focal_row = top_line.filter(pl.col("pos") == 10)
     assert focal_row[DISP_CS_PF][0] == 1
     assert focal_row[DISP_CS_U][0] == 1
+
+    # Detailed table: same rows, plus a prefixed contrast column per family. The
+    # family columns carry the local contrast gamma_raw_c*(a_ic-abar_c), NOT the
+    # raw scaled value, so the focal coding column equals the closed-form 2.4.
+    detailed = pl.read_parquet(result.path / DETAILED_DISPLAY_TABLE_FILENAME)
+    assert detailed.height == 4
+    # All eleven families are emitted regardless of what this locus carries.
+    annot_cols = [c for c in detailed.columns if c.startswith(DISP_ANNOT_PREFIX)]
+    assert len(annot_cols) == len(FAMILY_SHORT_LABELS)
+    coding_col = f"{DISP_ANNOT_PREFIX}coding"
+    focal_detail = detailed.filter(pl.col("pos") == 10)
+    assert abs(focal_detail[coding_col][0] - 2.4) < 1e-9
+    # A family with no annotations at this locus is an all-null column.
+    assert (
+        detailed[f"{DISP_ANNOT_PREFIX}non_synonymous"].null_count() == detailed.height
+    )
 
 
 def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):

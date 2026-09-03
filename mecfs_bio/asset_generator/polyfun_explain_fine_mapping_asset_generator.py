@@ -71,6 +71,8 @@ from mecfs_bio.build_system.task.pipes.min_variants_for_cumulative_mass import (
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
+    DETAILED_DISPLAY_TABLE_FILENAME,
+    TOP_LINE_DISPLAY_TABLE_FILENAME,
     PolyfunExplainContrastTask,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task import (
@@ -151,6 +153,11 @@ class PolyfunExplainGroup:
     # so docs can include either figure format on its own.
     plot_png: Task
     plot_svg: Task
+    # The two display tables copied out of the contrast directory as standalone
+    # FileAssets, so docs can include either table without pulling in the
+    # contrast task's other (detail) outputs.
+    top_line_table: Task
+    detailed_table: Task
 
 
 @frozen
@@ -175,6 +182,8 @@ class PolyfunExplainOuterGroup:
                 g.contrast,
                 g.plot_png,
                 g.plot_svg,
+                g.top_line_table,
+                g.detailed_table,
             ]
         out += [self.upset_all_polyfun, self.upset_cs50_polyfun]
         return out
@@ -242,6 +251,20 @@ def generate_polyfun_explain_group(
         path_inside_directory=PurePath(PLOT_SVG_FILENAME),
         extension=".svg",
     )
+    top_line_table = CopyFileFromDirectoryTask.create_result_table(
+        asset_id=f"{stem}_explain_top_line_table",
+        source_directory_task=contrast,
+        path_inside_directory=PurePath(TOP_LINE_DISPLAY_TABLE_FILENAME),
+        extension=".parquet",
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+    )
+    detailed_table = CopyFileFromDirectoryTask.create_result_table(
+        asset_id=f"{stem}_explain_detailed_table",
+        source_directory_task=contrast,
+        path_inside_directory=PurePath(DETAILED_DISPLAY_TABLE_FILENAME),
+        extension=".parquet",
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+    )
     return PolyfunExplainGroup(
         susie_uniform=susie_uniform,
         susie_polyfun=susie_polyfun,
@@ -249,6 +272,8 @@ def generate_polyfun_explain_group(
         plot=plot,
         plot_png=plot_png,
         plot_svg=plot_svg,
+        top_line_table=top_line_table,
+        detailed_table=detailed_table,
     )
 
 
