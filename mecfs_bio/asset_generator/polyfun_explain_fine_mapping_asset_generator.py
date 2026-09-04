@@ -173,13 +173,10 @@ class PolyfunExplainOuterGroup:
     def terminal_tasks(self) -> list[Task]:
         out: list[Task] = []
         for g in self.groups:
-            # The plot directory itself is not terminal: its png and svg are
-            # copied out as standalone FileAssets (each buildable in isolation),
-            # and the plot task is still built transitively as their dependency.
             out += [
-                g.susie_uniform,
-                g.susie_polyfun,
-                g.contrast,
+                # g.susie_uniform,
+                # g.susie_polyfun,
+                # g.contrast,
                 g.plot_png,
                 g.plot_svg,
                 g.top_line_table,
