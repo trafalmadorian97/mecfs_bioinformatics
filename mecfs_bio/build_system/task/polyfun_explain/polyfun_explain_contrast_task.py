@@ -4,7 +4,9 @@ Computes the prior lift m*pi_i and the local annotation contrast
 C_c(i) = gamma_raw_c * (a_ic - abar_c), where abar_c is the uniform-run
 PIP-weighted mean of annotation c over all locus variants. Aggregates the
 contrast to families, selects the top families at the focal (max-PIP-polyfun)
-variant, and writes the docs-facing display table plus detail tables.
+variant, and writes two docs-facing display tables (a top-line table with no
+annotation columns and a wide detailed table carrying a per-family contrast
+column) plus detail tables.
 """
 
 import json
@@ -53,7 +55,13 @@ from mecfs_bio.constants.polyfun_annotation_families import (
     AnnotationFamily,
 )
 
-DISPLAY_TABLE_FILENAME = "display_table.parquet"
+# Two docs-facing display tables. The top-line table is the headline result
+# (identifier + per-run credible set / PIP / prior lift, no annotation columns);
+# the detailed table adds one column per annotation family carrying the local
+# contrast gamma_raw_c * (a_ic - abar_c) so a reader can see which families drove
+# each PIP change. The detailed table is wide and is meant to be scrolled.
+TOP_LINE_DISPLAY_TABLE_FILENAME = "top_line_display_table.parquet"
+DETAILED_DISPLAY_TABLE_FILENAME = "detailed_display_table.parquet"
 PER_ANNOTATION_CONTRAST_FILENAME = "per_annotation_contrast.parquet"
 PER_FAMILY_CONTRAST_FILENAME = "per_family_contrast.parquet"
 PRIOR_LIFT_FILENAME = "prior_lift.parquet"
@@ -94,6 +102,8 @@ DISP_CS_U = "cs_u"
 DISP_PIP_PF = "pip_pf"
 DISP_PIP_U = "pip_u"
 DISP_LIFT = "lift"
+# Prefix on the detailed table's per-family contrast columns, e.g. annot_coding.
+DISP_ANNOT_PREFIX = "annot_"
 
 FAMILY_CONTRAST_COL = "family_contrast"
 FAMILY_SCALED_COL = "family_scaled"  # sum_c gamma_raw_c * a_ic (NOT the contrast)
@@ -195,7 +205,6 @@ class PolyfunExplainContrastTask(Task):
         per_annot, per_family = _contrasts(
             pf_annot, union_keys, annot_cols, gamma, family, abar
         )
-        family_scaled = _family_scaled(pf_annot, annot_cols, gamma, family)
 
         focal = pf_variants.sort(PIP_COLUMN, descending=True).head(1)
         focal_key = {k: focal[k][0] for k in _KEY}
@@ -203,14 +212,20 @@ class PolyfunExplainContrastTask(Task):
             per_family, focal_key, self.n_important_families
         )
 
-        display = _display_table(
+        top_line = _top_line_display_table(
             union_keys=union_keys,
             pf_variants=pf_variants,
             uni_variants=uni_variants,
             cs_pf=cs_pf,
             cs_u=cs_u,
-            family_scaled=family_scaled,
-            focal_families=focal_families,
+        )
+        detailed = _detailed_display_table(
+            union_keys=union_keys,
+            pf_variants=pf_variants,
+            uni_variants=uni_variants,
+            cs_pf=cs_pf,
+            cs_u=cs_u,
+            per_family=per_family,
         )
 
         per_annot.write_parquet(scratch_dir / PER_ANNOTATION_CONTRAST_FILENAME)
@@ -218,7 +233,8 @@ class PolyfunExplainContrastTask(Task):
         pf_variants.select(*_KEY, DISP_LIFT).write_parquet(
             scratch_dir / PRIOR_LIFT_FILENAME
         )
-        display.write_parquet(scratch_dir / DISPLAY_TABLE_FILENAME)
+        top_line.write_parquet(scratch_dir / TOP_LINE_DISPLAY_TABLE_FILENAME)
+        detailed.write_parquet(scratch_dir / DETAILED_DISPLAY_TABLE_FILENAME)
         (scratch_dir / SELECTION_JSON_FILENAME).write_text(
             json.dumps(
                 {
@@ -562,16 +578,31 @@ def _build_callouts(
     return pl.DataFrame(rows, schema=_CALLOUT_SCHEMA)
 
 
-def _display_table(
+_DISPLAY_BASE_COLS = [
+    DISP_CHR,
+    DISP_POS,
+    DISP_EA,
+    DISP_NEA,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_PIP_PF,
+    DISP_PIP_U,
+    DISP_LIFT,
+]
+
+
+def _display_base(
     union_keys: pl.DataFrame,
     pf_variants: pl.DataFrame,
     uni_variants: pl.DataFrame,
     cs_pf: pl.DataFrame,
     cs_u: pl.DataFrame,
-    family_scaled: pl.DataFrame,
-    focal_families: list[AnnotationFamily],
 ) -> pl.DataFrame:
-    out = (
+    """The identifier + per-run credible-set / PIP / prior-lift columns shared by
+    both display tables, keyed (still under _KEY names) on the union of the two
+    runs' credible-set variants so family columns can be joined on before the
+    final rename."""
+    return (
         union_keys.join(
             pf_variants.select(*_KEY, pl.col(PIP_COLUMN).alias(DISP_PIP_PF), DISP_LIFT),
             on=_KEY,
@@ -593,12 +624,11 @@ def _display_table(
             how="left",
         )
     )
-    for fam in focal_families:
-        col = FAMILY_SHORT_LABELS[fam]
-        fam_col = family_scaled.filter(pl.col(FAMILY_COL) == fam).select(
-            *_KEY, pl.col(FAMILY_SCALED_COL).alias(col)
-        )
-        out = out.join(fam_col, on=_KEY, how="left")
+
+
+def _finalize_display(out: pl.DataFrame, extra_cols: list[str]) -> pl.DataFrame:
+    """Rename the key columns to their display names, order base-then-extra, and
+    sort by descending polyfun PIP."""
     out = out.rename(
         {
             GWASLAB_CHROM_COL: DISP_CHR,
@@ -607,15 +637,50 @@ def _display_table(
             GWASLAB_NON_EFFECT_ALLELE_COL: DISP_NEA,
         }
     ).with_columns(pl.col(DISP_CHR).cast(pl.Int32), pl.col(DISP_POS).cast(pl.Int32))
-    ordered = [
-        DISP_CHR,
-        DISP_POS,
-        DISP_EA,
-        DISP_NEA,
-        DISP_CS_PF,
-        DISP_CS_U,
-        DISP_PIP_PF,
-        DISP_PIP_U,
-        DISP_LIFT,
-    ] + [FAMILY_SHORT_LABELS[f] for f in focal_families]
-    return out.select(ordered).sort(DISP_PIP_PF, descending=True, nulls_last=True)
+    return out.select(_DISPLAY_BASE_COLS + extra_cols).sort(
+        DISP_PIP_PF, descending=True, nulls_last=True
+    )
+
+
+def _top_line_display_table(
+    union_keys: pl.DataFrame,
+    pf_variants: pl.DataFrame,
+    uni_variants: pl.DataFrame,
+    cs_pf: pl.DataFrame,
+    cs_u: pl.DataFrame,
+) -> pl.DataFrame:
+    """The headline result table: identifiers, per-run credible-set numbers, both
+    PIPs, and the prior lift. No annotation-family columns."""
+    base = _display_base(union_keys, pf_variants, uni_variants, cs_pf, cs_u)
+    return _finalize_display(base, [])
+
+
+def _families_in_canonical_order() -> list[AnnotationFamily]:
+    """All eleven families in the fixed taxonomy order (the key order of
+    FAMILY_SHORT_LABELS), so the detailed table always has the same column set. A
+    family with no annotations at this locus is emitted as an all-null column."""
+    return list(FAMILY_SHORT_LABELS)
+
+
+def _detailed_display_table(
+    union_keys: pl.DataFrame,
+    pf_variants: pl.DataFrame,
+    uni_variants: pl.DataFrame,
+    cs_pf: pl.DataFrame,
+    cs_u: pl.DataFrame,
+    per_family: pl.DataFrame,
+) -> pl.DataFrame:
+    """The wide table: the top-line columns plus one column per annotation family
+    carrying that family's local contrast gamma_raw_c * (a_ic - abar_c) (summed
+    over the family's annotations), so a reader can see which families pushed each
+    variant's PIP up or down. Family columns use the full family name with an
+    annot_ prefix (e.g. annot_coding)."""
+    out = _display_base(union_keys, pf_variants, uni_variants, cs_pf, cs_u)
+    families = _families_in_canonical_order()
+    for fam in families:
+        col = f"{DISP_ANNOT_PREFIX}{fam}"
+        fam_col = per_family.filter(pl.col(FAMILY_COL) == fam).select(
+            *_KEY, pl.col(FAMILY_CONTRAST_COL).alias(col)
+        )
+        out = out.join(fam_col, on=_KEY, how="left")
+    return _finalize_display(out, [f"{DISP_ANNOT_PREFIX}{fam}" for fam in families])

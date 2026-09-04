@@ -44,7 +44,18 @@ def run_polyfun_explain_fine_mapping_decode_me_analysis():
             + POLYFUN_EXPLAIN_CHR20_47.terminal_tasks()
         ),
         incremental_save=True,
-        must_rebuild_transitive=[],
+        must_rebuild_transitive=[
+            group.contrast
+            for chrom in [
+                POLYFUN_EXPLAIN_CHR1_174,
+                POLYFUN_EXPLAIN_CHR6_26,
+                POLYFUN_EXPLAIN_CHR6_97,
+                POLYFUN_EXPLAIN_CHR15_54,
+                POLYFUN_EXPLAIN_CHR17_50,
+                POLYFUN_EXPLAIN_CHR20_47,
+            ]
+            for group in chrom.groups
+        ],
     )
 
 

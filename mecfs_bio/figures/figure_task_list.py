@@ -68,6 +68,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabga
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr1_174_128_548 import (
+    POLYFUN_EXPLAIN_CHR1_174,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import (
     DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES,
 )
@@ -243,6 +246,12 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_base_credible_set_markdown_table,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_strict_credible_set_markdown_table,
+    # Polyfun SUSIE results,
+    POLYFUN_EXPLAIN_CHR1_174.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR1_174.upset_cs50_polyfun,
+    POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].plot_svg,
+    POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].detailed_table,
+    # H-magma
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "adult_brain"
     ].gene_manhattan_plot_task,

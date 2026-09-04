@@ -269,6 +269,23 @@ def define_env(env):
         )
 
     @env.macro
+    def susie_polyfun_explain_plot(
+        src,
+        alt="",
+    ):
+        return png_embed(src=src, alt=alt, caption=SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION)
+
+    @env.macro
+    def susie_polyfun_data_table(src, id, height="775px", precision=4):
+        return data_table(
+            src=src,
+            id=id,
+            height=height,
+            precision=precision,
+            caption=SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION,
+        )
+
+    @env.macro
     def data_table(src, id, height="600px", precision=4, caption=""):
         """Embed a large tabular asset as a sortable, filterable, virtualised table.
 
@@ -435,3 +452,7 @@ _DATA_TABLE_SCRIPT = """<script type="module">
 
 
 PPP_RG_DATA_TABLE_CAPTION = "Columns: oid: Olink assay ID; gene: name of gene/protein under study; rg: CT-LDSC genetic correlation estimate; rg_se: jackknife standard error of CT-LDSC genetic correlation estimate; rg_p: p value of test that rg is not zero; gcov: estimated genetic covariance; inter: intercept term in CT-LDSC regression; h2_trait: trait heritability estimate; h2_prot: protein heritability estimate; n_snps: number of hapmap3 variants included; spr: for cases in which multiple rows corresponding to distinct Olink assays of the same protein have been merged into a single row, this gives the maximum spread between the rg values of the merged rows; s_bh: True if the null hypothesis is rejected under the Benjamini-Hochberg procedure at an FDR of 0.05; s_bon: True if the null hypothesis is rejected under the Bonferroni correction at a significance level of 0.05."
+
+SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION = "Plot illustrating results of applying SUSIE with a polyfun prior to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs from SUSIE run with uniform prior.  Third panel: PIPs from SUSIE run with PolyFun prior. For each credible set, if the use of the PolyFun prior produced a significant increase in the PIP of the lead variant, and if that increase can be attributed to specific annotation families, those key annotation families will be listed in a callout.  Fourth Panel: genes at locus."
+
+SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = "Columns: chr: chromosome; pos: hg19 genomic position; ea: effect allele; nea: non-effect allele; cs_pf: credible set number in PolyFun-prior run; cs_u: credible set number in uniform-prior run; pip_pf: PIP (Posterior Inclusion Probability) in PolyFun-prior SUSIE run; pip_u: PIP in uniform-prior SUSIE run; lift: proportional increase in prior weight when switching from uniform prior to PolyFun prior; annot_X: Approximate contribution of annotation family X to PolyFun prior minus averaged contribution of annotation family X over all variants selected by uniform-prior SUSIE run."
