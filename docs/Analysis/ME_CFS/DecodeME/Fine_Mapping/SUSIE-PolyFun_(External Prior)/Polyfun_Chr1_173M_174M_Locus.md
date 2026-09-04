@@ -9,12 +9,12 @@ hide:
 
 ## Methodology
 
-The extend the results from my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] fine-mapping of the DecodeME GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a prior derived from functional genomic anotations, instead of a uniform prior.
+To extend the results from my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] fine-mapping of the DecodeME GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a Bayesian prior derived from functional genomic annotations, instead of a uniform prior.
 
 
 As a linkage disequilibrium reference, I used a [UK Biobank LD matrix hosted on AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used GWASLab to liftover the DecodeME GWAS-1 summary statistics to GRCh37.
 
-As before, I ran SUSIE four times
+As before, to assess robustness and sensitivity to configuration, I ran SUSIE four times
 
 - Once with $L=10$,
 - Once with $L=2$,
@@ -23,81 +23,58 @@ As before, I ran SUSIE four times
 
 As before, in my SUSIE runs, I retained palindromic SNPs whose strand orientation GWASLAB was able to determine from allele frequencies in the Thousand Genomes Project, and discarded other palindromic SNPs.
 
-### Prior
+### Prior Construction
 
-For this analysis, I used the precomputed prior provided by the authors of PolyFun[@weissbrod2020functionally][^prior_note]. The PoltFun authors created this prior by running a modified version of [stratified linkage disequilibrium score regression](../../../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) on 15 different UK biobank traits, combining the resulting heritability weights. The result is a prior that upweights genetic variants if they are associated with functional annotations with high heritability weights across a range of traits. The logic is that these genetic variants associated with broadly important annotations are more likely to be causal.
+For this analysis, I used the precomputed prior provided by the authors of PolyFun[@weissbrod2020functionally][^prior_note]. The PolyFun authors created this prior as follows:
+
+1.  Select 15 [UK biobank](../../../../../Data_Sources/UKBB.md) traits with mutual [genetic correlations](../../../../../Bioinformatics_Concepts/Genetic_Correlation.md) less than 0.2.
+2.  Run l2-penalized [stratified linkage disequilibrium score regression](../../../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) on these traits to estimate allocation of [heritability](../../../../../Bioinformatics_Concepts/Heritability.md) enrichment of functional annotations[^annotation_note] for each trait.
+3.  Average these heritability enrichments across the 15 traits to produce cross-trait heritability enrichment for each functional annotation.
+4.  Use these heritability enrichments to define a Bayesian prior: the prior probability that a variant is causal is proportional to the cross-trait heritability enrichment implied by its functional annotations.
+5. For robustness, modify the prior by limiting its dynamic range and binning the prior probabilities.
+
+The resulting prior upweights genetic variants with functional annotations that are associated with high heritability across a range of diverse traits in the UK Biobank
+
+## Results
+
+### Comparison across runs
+
+I begin by comparing the credible set variants across the $L=1$, $L=2$, $L=10$, and strict $L=10$ runs. The results are plotted in the UpsetPlot below:
+
+{{
+png_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
+alt="upset plot for chrom 1")
+}}
+
+Restricting to the minimal set of variants constituting a total PIP exceeding 50% produces the UpsetPlot:
+
+{{png_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_cs50_variants.png",
+alt="cs50 upset plot for chrom 1")
+}}
+
+These results show that at the chromosome 1 locus, SUSIE is insensitive to configuration: we get the same variant set regardless.
 
 
+### Detailed Fine mapping results
 
 
-[//]: # (To narrow the [DecodeME]&#40;../../../../../Data_Sources/DecodeME.md&#41;[@genetics2025initial] GWAS-1 signal, I [fine-mapped]&#40;../../../../../Bioinformatics_Concepts/Fine_Mapping.md&#41; the hit on chromosome 1 using [SUSIE]&#40;https://stephenslab.github.io/susieR/&#41;[@wang2020simple].)
+The plot below illustrates the results of SUSIE fine mapping with and without the PolyFun  prior
 
-[//]: # ()
 
-[//]: # ()
-[//]: # ()
-[//]: # (I ran SUSIE 4 times:)
+{{
+susie_polyfun_explain_plot("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_l10_explain_plot_svg.svg")
+}}
 
-[//]: # ()
-[//]: # (- Once with $L=10$,)
+The table below provides detailed information on SUSIE credible-set variants with and without the polyfun prior.
 
-[//]: # (- Once with $L=2$,)
+{{
+susie_polyfun_data_table(src="docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_l10_explain_detailed_table.parquet",
+id="chr1_polyfun_susie_table")
+}}
 
-[//]: # (- Once with $L=1$,)
 
-[//]: # (- Once with $L=10$ and strict variant filtering.)
-
-[//]: # ()
-[//]: # ($L$ refers to the maximum number of credible sets that can found by SUSIE.  A lower $L$ corresponds to increased regularization, since it decreases the ability of SUSIE to use extra credible sets to fit noise.  Weissbrod et al.[@weissbrod2020functionally] observe that setting $L$ to 1 protects against mismatch between the LD reference population and the GWAS population, because when $L=1$, SUSIE no longer depends on the LD matrix.   They also observe that when $L=2$, even though SUSIE still depends on the LD matrix, empirically it tends to be robust to moderate levels of population mismatch. I thus used the $L=1$ and $L=2$ runs to evaluate whether population mismatch could be influencing SUSIE's results.)
-
-[//]: # ()
-[//]: # ()
-[//]: # ("Variant filtering" refers to removal of outlier variants according to a [Kriging]&#40;https://en.wikipedia.org/wiki/Kriging&#41;-based likelihood ratio test.  Zou et al.[@zou2022fine] propose this filtering strategy to mitigate instability in SUSIE due to mismatch between the LD and GWAS populations.  In the first three runs above, I filter variants with a likelihood ratio &#40;$\mathrm{LR}$&#41; and absolute $z$ score greater than 2, [consistent with the SUSIE documentation]&#40;https://stephenslab.github.io/susieR/reference/kriging_rss.html&#41;.  In the final run I instead filter variants with $\mathrm{LR}\ge 2$ and $|z|\ge 1$, to evaluate the sensitivity of the results to the filtering threshold.)
-
-[//]: # ()
-[//]: # (In my SUSIE runs, I retained palindromic SNPs whose strand orientation GWASLAB was able to determine from allele frequencies in the Thousand Genomes Project, and discarded other palindromic SNPs.)
-
-[//]: # ()
-[//]: # ()
-[//]: # (## Results)
-
-[//]: # ()
-[//]: # (In all 4 runs, SUSIE found a single diffuse credible set.  Moreover, this credible set contained the same 86 variants in all four runs, as illustrated in the UpSet plot below:)
-
-[//]: # ()
-[//]: # ()
-[//]: # ({{ png_embed&#40;"docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_upset_plot.png", alt="upset_chrom_1"&#41; }})
-
-[//]: # ()
-[//]: # ()
-[//]: # (The next figure illustrates the SUSIE results for $L=10$. It is representative.)
-
-[//]: # ()
-[//]: # ({{ png_embed&#40;"docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_susie_stackplot.png", alt="chr1_stackplot"&#41; }})
-
-[//]: # ()
-[//]: # (- The top panel is a heatmap in which pixel $&#40;i,j&#41;$ is colored according to the squared correlation between variants $i$ and $j$.  The heatmap reveals the local linkage disequilibrium &#40;LD&#41; structure in the vicinity of the GWAS hit, which is a determinant of SUSIE's results when $L>1$.)
-
-[//]: # ()
-[//]: # (- The second panel shows a local Manhattan plot.)
-
-[//]: # ()
-[//]: # (- The third panel shows the SUSIE posterior inclusion probability &#40;PIP&#41;.)
-
-[//]: # ()
-[//]: # (- The bottom panel shows genes in the region of the GWAS hit. )
-
-[//]: # ()
-[//]: # (Overall, SUSIE has returned a diffuse signal in a region with a number of plausible genes.  This makes it unclear which genes deserve follow-up investigation.)
-
-[//]: # ()
-[//]: # ()
-[//]: # (The expandable table below lists the full SUSIE results for the $L=10$ case.)
-
-[//]: # ()
-[//]: # ({{ markdown_table&#40;"docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_susie_base_convert_cs_to_markdown.mdx", title="Variant List"&#41; }})
-
-[//]: # ()
 
 
 [^prior_note]: That is, I used the first approach [listed on the PolyFun wiki](https://github.com/omerwe/polyfun/wiki/1.-Computing-prior-causal-probabilities-with-PolyFun).
+
+[^annotation_note]: The functional annotations used here come from the baseline model first described in Finucane et al. 2015[@finucane2015partitioning] and which have been extended by the Broad institute since then.  The version of the baseline model used by Polyfun author included 187 functional annotations[@weissbrod2020functionally], which cover domains as diverse as evolutionarily conserved regions, qtls, [epigenetic marks](../../../../../Bioinformatics_Concepts/Epigenetics.md), non-synomous regions, promoters and enhancers, and more.

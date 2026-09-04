@@ -14,6 +14,7 @@ untouched.
 """
 
 from pathlib import PurePath
+from typing import Mapping
 
 import structlog
 from attrs import frozen
@@ -158,6 +159,7 @@ class PolyfunExplainGroup:
     # contrast task's other (detail) outputs.
     top_line_table: Task
     detailed_table: Task
+    label: str
 
 
 @frozen
@@ -184,6 +186,10 @@ class PolyfunExplainOuterGroup:
             ]
         out += [self.upset_all_polyfun, self.upset_cs50_polyfun]
         return out
+
+    @property
+    def groups_by_label(self) -> Mapping[str, PolyfunExplainGroup]:
+        return {group.label: group for group in self.groups}
 
 
 def generate_polyfun_explain_group(
@@ -271,6 +277,7 @@ def generate_polyfun_explain_group(
         plot_svg=plot_svg,
         top_line_table=top_line_table,
         detailed_table=detailed_table,
+        label=config.label,
     )
 
 

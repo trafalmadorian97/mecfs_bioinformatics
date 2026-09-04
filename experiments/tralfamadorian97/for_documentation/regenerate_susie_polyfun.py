@@ -1,0 +1,19 @@
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr1_174_128_548 import \
+    POLYFUN_EXPLAIN_CHR1_174
+from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
+
+
+def go():
+    regenerate_figures(
+        [
+
+            # POLYFUN_EXPLAIN_CHR1_174.upset_all_polyfun,
+            # POLYFUN_EXPLAIN_CHR1_174.upset_cs50_polyfun,
+            # POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].plot_svg,
+            POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].detailed_table
+
+        ]
+    )
+
+if __name__ == '__main__':
+    go()
