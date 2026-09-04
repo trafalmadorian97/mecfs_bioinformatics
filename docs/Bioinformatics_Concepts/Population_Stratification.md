@@ -255,48 +255,40 @@ Where $K:=XX^T\in\mathbb{R}^{n\times n}$ is called the "genetic relatedness matr
 
 
 
-### LOCO LMM
+### LOCO 
 
 While LMMs are effective at controlling for population stratification, if care is not taken they can unduly reduce GWAS statistical power.  This reduction in statistical power can occur for two separate reasons: proximal contamination and ascertainment bias.
 
-We begin with proximal contamination. See below:
+We begin with proximal contamination. Consider again the equation $(\ref{gamma_form})$. Note that for large values of $q$, we can easily have
 
 
+$$
+\begin{align}
+\mathrm{span}(x_j) \approx \mathrm{Range}(R)
+\end{align}
+$$
 
-``` mermaid
-graph LR
-C(Subpopulation) --> A(SNP P);
-C --> B(G₋ₚ);
-A --> D(Phenotype)
-
-
-classDef normal fill:transparent,stroke:transparent;
-classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
-class A,B,C,D normal;
-```
-
-Here, P is the causal SNP, while G₋ₚ represents the genome excluding P.   As discussed above, in plain regression population stratification will create false associations between SNPs in the rest of the genome and the phenotype.
-
-The LMM approach, especially when $q$ is large, can be understood as controlling for the whole genome as a proxy for controlling for subpopulation. We have:
+where $\mathrm{Range}(R)$ denotes the subspace spanned by the columns of $R$.  This causes a statistical problem resembling multicolinearity: the part of the phenotype vector $y$ that lies in $\mathrm{span}(x_j)$ can be predicted either using $\hat\beta_j$ or $\gamma$.  Simulations[@yang2014advantages] show that this ambiguity can significant reduce statistical power.
 
 
-
-``` mermaid
-graph LR
-C(Subpopulation) --> A(SNP P);
-C --> B(G₋ₚ);
-A --> D(Phenotype)
+The above-described problem is called "proximal contamination" because it results from the inclusion of variant $j$ and nearby variants in close LD with it in the matrix $X$ from which $R$ is constructed.
 
 
-classDef normal fill:transparent,stroke:transparent;
-classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
-class C,D normal;
-class A,B conditioned;
-```
+The standard solution to proximal contamination is the exclusion of these problematic proximal variants when $R$ is constructed.  One approach is called LOCO (leave one chromosome out) LMM. In this approach is $R$ is replaced by $R_{-\mathrm{chr}(j)}$, in which we construct $R$ without the chromosome including variant $j$.  Thus $(\ref{gamma_form})$ is replaced by
 
 
+$$
+\begin{align}
+y&= \hat\beta_j x_j R_{-\mathrm{chr}(j)}\gamma + \epsilon\\
+\epsilon  &\sim \mathcal{N}(0, \sigma^2_e I)\\
+\gamma & \sim \mathcal{N}(0, \sigma^2_\gamma I ),
+\end{align}
+$$
 
-### LMM Ascertainment Bias
+Thus the LMM term $R_{-\mathrm{chr}(j)}\gamma $ is different for variants on different chromosomes.  Simulations and theoretical analysis[@yang2014advantages] suggest that this approach recovers the power lost by the standard LMM method.  Moreover, since population stratification produced multi-chromosme effects, the exclusion of one chromosome does not affect the ability of the LMM to control for population stratification
+
+
+### Ascertainment Bias
 
 
 ### REGENIE 
