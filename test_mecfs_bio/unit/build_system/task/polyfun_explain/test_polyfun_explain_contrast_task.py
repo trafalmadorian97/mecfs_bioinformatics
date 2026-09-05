@@ -544,18 +544,25 @@ def test_per_variant_annotation_table(tmp_path: Path):
     result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
     table = pl.read_parquet(result.path / PER_VARIANT_ANNOTATION_TABLE_FILENAME)
 
-    # First two columns are the family and annotation labels; the variant columns
-    # follow in (credible set, descending PIP) order. Gap-/floor-excluded variants
-    # (POS 30, 40, 60) are absent.
-    assert table.columns[:2] == [FAMILY_COL, ANNOTATION_COL]
-    assert table.columns[2:] == ["1:10:C:A", "1:20:C:A", "1:50:C:A"]
+    # Leading columns are the family/annotation labels plus the per-annotation
+    # gamma and alpha_bar context; the variant columns follow in (credible set,
+    # descending PIP) order. Gap-/floor-excluded variants (POS 30, 40, 60) absent.
+    assert table.columns[:4] == [FAMILY_COL, ANNOTATION_COL, "gamma", "alpha_bar"]
+    assert table.columns[4:] == ["1:10:C:A", "1:20:C:A", "1:50:C:A"]
     # One row per detailed annotation.
     assert table.height == len(weights)
-    # Raw annotation values (no gamma), per selected variant.
+    # Raw annotation values (no gamma) per selected variant, plus gamma (the ridge
+    # coefficient) and alpha_bar (uniform PIP-weighted mean over the locus). With
+    # uniform PIP summing to 1: alpha_bar_A = 0.2*1 = 0.2; alpha_bar_B = 0.2*2 +
+    # (0.2+0.2+0.2+0.1+0.1)*1 = 1.2.
     coding = table.filter(pl.col(ANNOTATION_COL) == _ANNOT_A)
     assert coding[FAMILY_COL][0] == "coding"
+    assert coding["gamma"][0] == 3.0
+    assert abs(coding["alpha_bar"][0] - 0.2) < 1e-9
     assert coding.select("1:10:C:A", "1:20:C:A", "1:50:C:A").row(0) == (1.0, 0.0, 0.0)
     conserved = table.filter(pl.col(ANNOTATION_COL) == _ANNOT_B)
+    assert conserved["gamma"][0] == 0.5
+    assert abs(conserved["alpha_bar"][0] - 1.2) < 1e-9
     assert conserved.select("1:10:C:A", "1:20:C:A", "1:50:C:A").row(0) == (
         2.0,
         1.0,

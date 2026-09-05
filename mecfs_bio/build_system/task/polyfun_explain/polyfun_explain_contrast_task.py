@@ -106,6 +106,11 @@ _TOP_VARIANT_PIP_GAP = 0.20
 # Internal columns used while building the per-variant annotation table.
 _VARIANT_LABEL_COL = "variant"
 _ANNOT_VALUE_COL = "value"
+# Per-annotation context columns on the per-variant table: the ridge regression
+# coefficient gamma_raw_c, and abar_c (the uniform-run PIP-weighted mean of the
+# annotation over the locus variants).
+DISP_GAMMA = "gamma"
+DISP_ALPHA_BAR = "alpha_bar"
 
 DISP_CHR = "chr"
 DISP_POS = "pos"
@@ -261,7 +266,7 @@ class PolyfunExplainContrastTask(Task):
 
         top_variants = _select_top_variants(cs_pf, pf_variants)
         per_variant_annot = _per_variant_annotation_table(
-            pf_annot, top_variants, annot_cols, family
+            pf_annot, top_variants, annot_cols, family, gamma, abar
         )
 
         focal = pf_variants.sort(PIP_COLUMN, descending=True).head(1)
@@ -730,9 +735,13 @@ def _per_variant_annotation_table(
     top_variants: pl.DataFrame,
     annot_cols: list[str],
     family: dict[str, str],
+    gamma: dict[str, float],
+    abar: dict[str, float],
 ) -> pl.DataFrame:
     """Characterization table: one row per detailed annotation (a family and an
-    annotation column), one column per selected top variant (labelled
+    annotation column), then two per-annotation context columns -- the ridge
+    coefficient gamma_raw_c and abar_c (the uniform-run PIP-weighted mean of the
+    annotation) -- then one column per selected top variant (labelled
     chr:pos:nea:ea in hg19), holding the raw annotation value a_ic (no gamma).
     Rows are ordered by family in the canonical taxonomy order, then annotation;
     variant columns follow top_variants' order. Fails fast if a selected top
@@ -740,7 +749,9 @@ def _per_variant_annotation_table(
     silently and understate the variant's profile."""
     fam_order = {fam: i for i, fam in enumerate(_families_in_canonical_order())}
     skeleton = pl.DataFrame({ANNOTATION_COL: annot_cols}).with_columns(
-        pl.col(ANNOTATION_COL).replace_strict(family).alias(FAMILY_COL)
+        pl.col(ANNOTATION_COL).replace_strict(family).alias(FAMILY_COL),
+        pl.col(ANNOTATION_COL).replace_strict(gamma).alias(DISP_GAMMA),
+        pl.col(ANNOTATION_COL).replace_strict(abar).alias(DISP_ALPHA_BAR),
     )
 
     sel = pf_annot.join(top_variants.select(*_KEY), on=_KEY, how="inner")
@@ -775,7 +786,7 @@ def _per_variant_annotation_table(
         )
         .sort(["_fam_order", ANNOTATION_COL])
         .drop("_fam_order")
-        .select(FAMILY_COL, ANNOTATION_COL, *ordered_labels)
+        .select(FAMILY_COL, ANNOTATION_COL, DISP_GAMMA, DISP_ALPHA_BAR, *ordered_labels)
     )
 
 
