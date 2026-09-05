@@ -2,7 +2,7 @@
 
 ## Causal privilege
 
-Suppose we run an epidemiological study to understand the effect of variable A on variable B.  We detect an association between A and B. There are three main possibilities:
+Suppose we run an epidemiological study to understand the effect of variable A on variable B.  We find that A is associated with B. There are three main possibilities:
 
 
 - **Causality**: A causes B.
@@ -45,13 +45,13 @@ class A,B,C normal;
 ```
 
 
-Determining how much of the association to attribute to each of these possibilities is a challenge that frustrates much traditional epidemiological research[@hernan2010causal].
+Decomposing an association into causality, reverse causality, and confounding is a challenge that frustrates much traditional epidemiological research[@hernan2010causal].
 
 
-In contrast to traditional epidemiological research, genetic association studies are causally privileged.  Let A be a person's genotype and B be a phenotype of interest observed after birth.  In general:
+In contrast, genetic association studies are causally privileged.  Let A be genotype and B be a phenotype of interest observed after birth.  In general:
 
-- A person's genotype is fixed at conception, so reverse causality can be ruled out.
-- Most kinds of environmental effects do not affect a person's genotype, so environmental confounding can be ruled out.
+- Genotype is fixed at conception, so reverse causality can be ruled out.
+- Most kinds of environmental effects do not affect genotype, so environmental confounding can be ruled out.
 
 
 Thus a genotype-phenotype association is much more likely to be causal than a general epidemiological association.
@@ -64,7 +64,7 @@ This causal privilege is a significant advantage, but it does not mean that gene
 
 ### Genetic population stratification
 
-Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating within subpopulations has historically been more common than mating across subpopulations.  Normally, [linkage disequilibrium](Linkage_Disequilibrium.md) in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  Genetic population stratification changes this.  For example, SNP P on chromosome 1 and SNP Q on chromosome 2 may both be more common in a subpopulation than in the general population due to historical non-random mating.  Thus having  P increases your odds of being a member of the subpopulation, which increases your odds of having Q. P and Q are therefore correlated, despite being on different chromosomes. The is illustrated in the causal diagram below.
+Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating within subpopulations has been more common than mating across subpopulations.  Normally, [linkage disequilibrium](Linkage_Disequilibrium.md) in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  Genetic population stratification changes this.  For example, SNP P on chromosome 1 and SNP Q on chromosome 2 may both be more common in a subpopulation than in the general population due to historical non-random mating.  Thus having  P increases your odds of being a member of the subpopulation, which increases your odds of having Q. P and Q are therefore correlated, despite being on different chromosomes. The is illustrated in the causal diagram below.
 
 
 
@@ -81,7 +81,7 @@ class A,B,C normal;
 
 
 
-Suppose now that P has a true causal effect on the phenotype of interest but Q does not.  The long-range correlation between P and Q will produce a GWAS association of Q with the phenotype, creating the false impression of causal GWAS hit in the vicinity of Q.  See below.
+Suppose now that P has a true causal effect on the phenotype of interest but Q does not.  The long-range correlation between P and Q will induce an association of Q with the phenotype, creating the false impression of causal GWAS hit in the vicinity of Q.  See below.
 
 
 ``` mermaid
