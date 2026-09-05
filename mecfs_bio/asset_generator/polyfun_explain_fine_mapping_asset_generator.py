@@ -75,6 +75,7 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
     DETAILED_DISPLAY_TABLE_FILENAME,
     TOP_LINE_DISPLAY_TABLE_FILENAME,
     PolyfunExplainContrastTask,
+    SecondaryPositionFromSnpid,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task import (
     PLOT_PNG_FILENAME,
@@ -136,6 +137,7 @@ class SharedFineMapInputs:
     effective_sample_size: int
     genome_build: GenomeBuild = "19"
     q_factor: int = 100
+    secondary_position_from_snpid: SecondaryPositionFromSnpid | None = None
 
 
 @frozen
@@ -229,6 +231,7 @@ def generate_polyfun_explain_group(
         susie_polyfun_task=susie_polyfun,
         ridge_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
         annotation_parquet_task=BASELINE_LF_ANNOTATION_MATRIX,
+        secondary_position=shared.secondary_position_from_snpid,
     )
     plot = PolyfunExplainPlotTask.create(
         asset_id=f"{stem}_explain_plot",
@@ -376,6 +379,7 @@ def _build_shared_locus_inputs(
     chrom_range: ChromRange | None,
     palindrome_strategy: PalindromeStrategy,
     genome_build: GenomeBuild,
+    secondary_position_from_snpid: SecondaryPositionFromSnpid | None,
 ) -> SharedFineMapInputs:
     """Per-locus shared setup: LD interval lookup, LD-label renaming, and
     harmonization of the sumstats against the renamed labels. Mirrors the inline
@@ -453,6 +457,7 @@ def _build_shared_locus_inputs(
         effective_sample_size=sample_size,
         genome_build=genome_build,
         q_factor=q_factor,
+        secondary_position_from_snpid=secondary_position_from_snpid,
     )
 
 
@@ -467,10 +472,16 @@ def generate_assets_polyfun_explain_fine_map(
     q_factor: int = 100,
     chrom_range: ChromRange | None = None,
     palindrome_strategy: PalindromeStrategy = "drop",
+    secondary_position_from_snpid: SecondaryPositionFromSnpid | None = None,
 ) -> PolyfunExplainOuterGroup:
     """Build the full explainability asset set for one locus: the per-locus
     shared inputs, then a matched uniform/polyfun SUSIE pair (+ contrast + plot)
-    for each of the four run configs (8 SUSIE runs total)."""
+    for each of the four run configs (8 SUSIE runs total).
+
+    secondary_position_from_snpid, when given, adds a build-labelled secondary
+    position column (e.g. pos_hg38) to the display tables, parsed from the
+    variants' SNPID. Only correct when the SNPID position field is in the
+    asserted build (true for gwaslab sumstats lifted over from that build)."""
     shared = _build_shared_locus_inputs(
         chrom=chrom,
         pos=pos,
@@ -482,6 +493,7 @@ def generate_assets_polyfun_explain_fine_map(
         q_factor=q_factor,
         chrom_range=chrom_range,
         palindrome_strategy=palindrome_strategy,
+        secondary_position_from_snpid=secondary_position_from_snpid,
         # Fixed to hg19: this generator runs on build-37 sumstats against the
         # Broad build-37 LD panel, the hg19 genetic map, and the hg19 baseline-LF
         # annotations. It drives the plot's x-axis coordinate-system label.

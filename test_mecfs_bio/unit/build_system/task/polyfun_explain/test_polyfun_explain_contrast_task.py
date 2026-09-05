@@ -35,6 +35,7 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
     SELECTION_JSON_FILENAME,
     TOP_LINE_DISPLAY_TABLE_FILENAME,
     PolyfunExplainContrastTask,
+    SecondaryPositionFromSnpid,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
@@ -47,7 +48,11 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PRIOR_WEIGHT_COLUMN,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_BETA_COL, GWASLAB_SE_COL
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_BETA_COL,
+    GWASLAB_SE_COL,
+    GWASLAB_SNPID_COL,
+)
 from mecfs_bio.constants.polyfun_annotation_families import FAMILY_SHORT_LABELS
 
 # Two real baseline-LF annotations from different families so family aggregation
@@ -65,6 +70,9 @@ _PRIOR_WEIGHTS: tuple[float, ...] = (8.0, 1.0, 1.0, 1.0, 1.0, 1.0)
 # the plot task (Task 3), harmless extra columns for the contrast task.
 _BETAS: tuple[float, ...] = (2.0, 0.1, 0.1, 0.1, 0.1, 0.1)
 _SES: tuple[float, ...] = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+# The synthetic SNPID encodes a "secondary build" position offset from the hg19
+# POS, mimicking gwaslab's SNPID keeping the pre-liftover coordinate.
+_SECONDARY_POS_OFFSET = 1000
 
 
 def _write_run_dir(
@@ -80,6 +88,17 @@ def _write_run_dir(
     gwas = variants.with_columns(
         pl.Series(name=GWASLAB_BETA_COL, values=_BETAS[: variants.height]),
         pl.Series(name=GWASLAB_SE_COL, values=_SES[: variants.height]),
+        # SNPID as CHR:POS:NEA:EA with the position field offset from the hg19
+        # POS, so a parsed secondary position is distinguishable from POS.
+        (
+            pl.col("CHR").cast(pl.String)
+            + ":"
+            + (pl.col("POS") + _SECONDARY_POS_OFFSET).cast(pl.String)
+            + ":"
+            + pl.col("NEA")
+            + ":"
+            + pl.col("EA")
+        ).alias(GWASLAB_SNPID_COL),
     )
     gwas.write_parquet(directory / FILTERED_GWAS_FILENAME)
     # Identity LD matrix (only the plot task, Task 3, reads this).
@@ -175,6 +194,7 @@ def _build_contrast_task_and_fetch_map(
     weights_dir: Path,
     annot_path: Path,
     n_important_families: int = 2,
+    secondary_position: SecondaryPositionFromSnpid | None = None,
 ) -> tuple[PolyfunExplainContrastTask, dict[str, Asset]]:
     """Build a PolyfunExplainContrastTask plus its {asset_id: Asset} fetch map
     over a fixture produced by _make_contrast_fixture. Shared by every test in
@@ -202,6 +222,7 @@ def _build_contrast_task_and_fetch_map(
         ridge_weights_task=weights_task,
         annotation_parquet_task=annot_task,
         n_important_families=n_important_families,
+        secondary_position=secondary_position,
     )
 
     fetch_map: dict[str, Asset] = {
@@ -221,11 +242,17 @@ def _run_contrast_task(
     weights_dir: Path,
     annot_path: Path,
     n_important_families: int = 2,
+    secondary_position: SecondaryPositionFromSnpid | None = None,
 ) -> DirectoryAsset:
     """Build and execute a PolyfunExplainContrastTask over a fixture produced by
     _make_contrast_fixture. Shared by every test in this module."""
     task, fetch_map = _build_contrast_task_and_fetch_map(
-        uni_dir, pf_dir, weights_dir, annot_path, n_important_families
+        uni_dir,
+        pf_dir,
+        weights_dir,
+        annot_path,
+        n_important_families,
+        secondary_position=secondary_position,
     )
 
     def fetch(asset_id: AssetId) -> Asset:
@@ -430,3 +457,42 @@ def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
     # contrast A/C = 3*(1-2.2) = -3.6 ; A/G = 3*(4-2.2) = 5.4
     assert abs(ac["family_contrast"][0] - (-3.6)) < 1e-9
     assert abs(ag["family_contrast"][0] - 5.4) < 1e-9
+
+
+def test_secondary_position_from_snpid_adds_pos_column(tmp_path: Path):
+    # With a SecondaryPositionFromSnpid config, both display tables gain a
+    # build-labelled position column parsed from the SNPID's position field,
+    # placed immediately after pos, holding POS + the synthetic offset.
+    uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
+    result = _run_contrast_task(
+        tmp_path,
+        uni_dir,
+        pf_dir,
+        weights_dir,
+        annot_path,
+        secondary_position=SecondaryPositionFromSnpid(build_label="hg38"),
+    )
+    for filename in (TOP_LINE_DISPLAY_TABLE_FILENAME, DETAILED_DISPLAY_TABLE_FILENAME):
+        table = pl.read_parquet(result.path / filename)
+        assert table.columns.index("pos_hg38") == table.columns.index("pos") + 1
+        for row in table.iter_rows(named=True):
+            assert row["pos_hg38"] == row["pos"] + _SECONDARY_POS_OFFSET
+
+
+def test_secondary_position_malformed_snpid_raises(tmp_path: Path):
+    # A SNPID whose position field is not an integer must fail fast rather than
+    # silently produce a null (mislabelled) secondary position.
+    uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
+    corrupted = pl.read_parquet(pf_dir / FILTERED_GWAS_FILENAME).with_columns(
+        pl.lit("not_a_valid_snpid").alias(GWASLAB_SNPID_COL)
+    )
+    corrupted.write_parquet(pf_dir / FILTERED_GWAS_FILENAME)
+    with pytest.raises(ValueError):
+        _run_contrast_task(
+            tmp_path,
+            uni_dir,
+            pf_dir,
+            weights_dir,
+            annot_path,
+            secondary_position=SecondaryPositionFromSnpid(build_label="hg38"),
+        )
