@@ -49,6 +49,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
+    GWASLAB_SNPID_COL,
 )
 from mecfs_bio.constants.polyfun_annotation_families import (
     FAMILY_SHORT_LABELS,
@@ -137,6 +138,29 @@ _KEY_SCHEMA: dict[str, pl.DataType] = {
 # (and hence the allele key) to the result.
 _ANNOT_KEY = [GWASLAB_CHROM_COL, GWASLAB_POS_COL, _ALLELE_KEY_COL]
 
+# Internal name for the parsed secondary position before it is renamed to its
+# build-labelled display name (e.g. pos_hg38).
+_SECONDARY_POS_COL = "secondary_pos"
+
+
+@frozen
+class SecondaryPositionFromSnpid:
+    """Opt-in derivation of a secondary genomic position for the display tables.
+
+    The position is parsed out of the SNPID (CHR:POS:NEA:EA) position field. The
+    caller asserts which genome build that position is in via build_label, which
+    also names the display column: build_label "hg38" -> column pos_hg38.
+
+    This is only correct when the SNPID position field really is in the asserted
+    build. For gwaslab sumstats that were lifted over, SNPID keeps the
+    pre-liftover position while POS holds the lifted one, so the two differ and
+    SNPID supplies the original build's coordinate for free.
+    """
+
+    build_label: str
+    snpid_col: str = GWASLAB_SNPID_COL
+    position_field_index: int = 1
+
 
 @frozen
 class PolyfunExplainContrastTask(Task):
@@ -146,6 +170,7 @@ class PolyfunExplainContrastTask(Task):
     ridge_weights_task: Task
     annotation_parquet_task: Task
     n_important_families: int = 3
+    secondary_position: SecondaryPositionFromSnpid | None = None
 
     @property
     def deps(self) -> list["Task"]:
@@ -160,9 +185,24 @@ class PolyfunExplainContrastTask(Task):
         uni_dir = _dir(fetch, self.susie_uniform_task)
         pf_dir = _dir(fetch, self.susie_polyfun_task)
 
-        uni_variants = _load_run_variants(uni_dir)
-        pf_variants = _load_run_variants(pf_dir)
+        uni_variants = _load_run_variants(uni_dir, self.secondary_position)
+        pf_variants = _load_run_variants(pf_dir, self.secondary_position)
         pf_prior = pl.read_parquet(pf_dir / PRIOR_FILENAME)
+
+        # The secondary display position (e.g. pos_hg38) is 1:1 with the hg19
+        # _KEY, so either run supplies it; coalescing across both covers variants
+        # that are in only one run's credible sets.
+        secondary_pos_col: str | None = None
+        secondary_map: pl.DataFrame | None = None
+        if self.secondary_position is not None:
+            secondary_pos_col = f"pos_{self.secondary_position.build_label}"
+            secondary_map = pl.concat(
+                [
+                    pf_variants.select(*_KEY, _SECONDARY_POS_COL),
+                    uni_variants.select(*_KEY, _SECONDARY_POS_COL),
+                ],
+                how="vertical",
+            ).unique(subset=_KEY, keep="first")
 
         weights = _load_weights(fetch, self.ridge_weights_task)
         annot_cols = weights[ANNOTATION_COL].to_list()
@@ -218,6 +258,8 @@ class PolyfunExplainContrastTask(Task):
             uni_variants=uni_variants,
             cs_pf=cs_pf,
             cs_u=cs_u,
+            secondary_map=secondary_map,
+            secondary_pos_col=secondary_pos_col,
         )
         detailed = _detailed_display_table(
             union_keys=union_keys,
@@ -226,6 +268,8 @@ class PolyfunExplainContrastTask(Task):
             cs_pf=cs_pf,
             cs_u=cs_u,
             per_family=per_family,
+            secondary_map=secondary_map,
+            secondary_pos_col=secondary_pos_col,
         )
 
         per_annot.write_parquet(scratch_dir / PER_ANNOTATION_CONTRAST_FILENAME)
@@ -271,6 +315,7 @@ class PolyfunExplainContrastTask(Task):
         ridge_weights_task: Task,
         annotation_parquet_task: Task,
         n_important_families: int = 3,
+        secondary_position: SecondaryPositionFromSnpid | None = None,
     ) -> "PolyfunExplainContrastTask":
         source_meta = susie_polyfun_task.meta
         if not isinstance(source_meta, ResultDirectoryMeta):
@@ -288,6 +333,7 @@ class PolyfunExplainContrastTask(Task):
             ridge_weights_task=ridge_weights_task,
             annotation_parquet_task=annotation_parquet_task,
             n_important_families=n_important_families,
+            secondary_position=secondary_position,
         )
 
 
@@ -297,20 +343,54 @@ def _dir(fetch: Fetch, task: Task) -> Path:
     return asset.path
 
 
-def _load_run_variants(run_dir: Path) -> pl.DataFrame:
+def _load_run_variants(
+    run_dir: Path, secondary_position: SecondaryPositionFromSnpid | None = None
+) -> pl.DataFrame:
     """filtered_gwas keyed rows + the run's PIP, in the same order, with the
-    unordered allele key used to join the annotation matrix allele-aware."""
+    unordered allele key used to join the annotation matrix allele-aware. When a
+    secondary-position config is given, the SNPID column is also read and its
+    position field parsed into _SECONDARY_POS_COL."""
+    select_cols = list(_KEY)
+    if secondary_position is not None:
+        select_cols.append(secondary_position.snpid_col)
     gwas = (
         pl.read_parquet(run_dir / FILTERED_GWAS_FILENAME)
-        .select(_KEY)
+        .select(select_cols)
         .with_columns(pl.col(k).cast(dt) for k, dt in _KEY_SCHEMA.items())
     )
     pip = pl.read_parquet(run_dir / PIP_FILENAME).select(PIP_COLUMN)
-    return gwas.hstack(pip).with_columns(
+    variants = gwas.hstack(pip).with_columns(
         unordered_allele_key(
             GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
         ).alias(_ALLELE_KEY_COL)
     )
+    if secondary_position is not None:
+        variants = _add_secondary_position(variants, secondary_position)
+    return variants
+
+
+def _add_secondary_position(
+    variants: pl.DataFrame, cfg: SecondaryPositionFromSnpid
+) -> pl.DataFrame:
+    """Parse cfg's SNPID position field into an integer _SECONDARY_POS_COL and
+    drop the SNPID column. Fails fast if any SNPID does not yield an integer at
+    that field, since a silently null secondary position would mislabel the
+    display table."""
+    parsed = variants.with_columns(
+        pl.col(cfg.snpid_col)
+        .str.split(":")
+        .list.get(cfg.position_field_index, null_on_oob=True)
+        .cast(pl.Int64, strict=False)
+        .alias(_SECONDARY_POS_COL)
+    ).drop(cfg.snpid_col)
+    n_null = parsed[_SECONDARY_POS_COL].null_count()
+    if n_null:
+        raise ValueError(
+            f"{n_null} SNPID value(s) in column {cfg.snpid_col!r} did not yield an "
+            f"integer position at field index {cfg.position_field_index}; cannot "
+            f"derive the {cfg.build_label} position column."
+        )
+    return parsed
 
 
 def _load_cs_numbers(run_dir: Path) -> pl.DataFrame:
@@ -597,12 +677,14 @@ def _display_base(
     uni_variants: pl.DataFrame,
     cs_pf: pl.DataFrame,
     cs_u: pl.DataFrame,
+    secondary_map: pl.DataFrame | None = None,
 ) -> pl.DataFrame:
     """The identifier + per-run credible-set / PIP / prior-lift columns shared by
     both display tables, keyed (still under _KEY names) on the union of the two
     runs' credible-set variants so family columns can be joined on before the
-    final rename."""
-    return (
+    final rename. When secondary_map is given, its per-variant secondary position
+    is joined on as well."""
+    base = (
         union_keys.join(
             pf_variants.select(*_KEY, pl.col(PIP_COLUMN).alias(DISP_PIP_PF), DISP_LIFT),
             on=_KEY,
@@ -624,20 +706,34 @@ def _display_base(
             how="left",
         )
     )
+    if secondary_map is not None:
+        base = base.join(secondary_map, on=_KEY, how="left")
+    return base
 
 
-def _finalize_display(out: pl.DataFrame, extra_cols: list[str]) -> pl.DataFrame:
+def _finalize_display(
+    out: pl.DataFrame, extra_cols: list[str], secondary_pos_col: str | None = None
+) -> pl.DataFrame:
     """Rename the key columns to their display names, order base-then-extra, and
-    sort by descending polyfun PIP."""
-    out = out.rename(
-        {
-            GWASLAB_CHROM_COL: DISP_CHR,
-            GWASLAB_POS_COL: DISP_POS,
-            GWASLAB_EFFECT_ALLELE_COL: DISP_EA,
-            GWASLAB_NON_EFFECT_ALLELE_COL: DISP_NEA,
-        }
-    ).with_columns(pl.col(DISP_CHR).cast(pl.Int32), pl.col(DISP_POS).cast(pl.Int32))
-    return out.select(_DISPLAY_BASE_COLS + extra_cols).sort(
+    sort by descending polyfun PIP. When a secondary position column is present,
+    it is renamed to its build-labelled display name and placed right after
+    pos."""
+    rename_map = {
+        GWASLAB_CHROM_COL: DISP_CHR,
+        GWASLAB_POS_COL: DISP_POS,
+        GWASLAB_EFFECT_ALLELE_COL: DISP_EA,
+        GWASLAB_NON_EFFECT_ALLELE_COL: DISP_NEA,
+    }
+    if secondary_pos_col is not None:
+        rename_map[_SECONDARY_POS_COL] = secondary_pos_col
+    out = out.rename(rename_map).with_columns(
+        pl.col(DISP_CHR).cast(pl.Int32), pl.col(DISP_POS).cast(pl.Int32)
+    )
+    base_cols = list(_DISPLAY_BASE_COLS)
+    if secondary_pos_col is not None:
+        out = out.with_columns(pl.col(secondary_pos_col).cast(pl.Int32))
+        base_cols.insert(base_cols.index(DISP_POS) + 1, secondary_pos_col)
+    return out.select(base_cols + extra_cols).sort(
         DISP_PIP_PF, descending=True, nulls_last=True
     )
 
@@ -648,11 +744,15 @@ def _top_line_display_table(
     uni_variants: pl.DataFrame,
     cs_pf: pl.DataFrame,
     cs_u: pl.DataFrame,
+    secondary_map: pl.DataFrame | None = None,
+    secondary_pos_col: str | None = None,
 ) -> pl.DataFrame:
     """The headline result table: identifiers, per-run credible-set numbers, both
     PIPs, and the prior lift. No annotation-family columns."""
-    base = _display_base(union_keys, pf_variants, uni_variants, cs_pf, cs_u)
-    return _finalize_display(base, [])
+    base = _display_base(
+        union_keys, pf_variants, uni_variants, cs_pf, cs_u, secondary_map
+    )
+    return _finalize_display(base, [], secondary_pos_col)
 
 
 def _families_in_canonical_order() -> list[AnnotationFamily]:
@@ -669,13 +769,17 @@ def _detailed_display_table(
     cs_pf: pl.DataFrame,
     cs_u: pl.DataFrame,
     per_family: pl.DataFrame,
+    secondary_map: pl.DataFrame | None = None,
+    secondary_pos_col: str | None = None,
 ) -> pl.DataFrame:
     """The wide table: the top-line columns plus one column per annotation family
     carrying that family's local contrast gamma_raw_c * (a_ic - abar_c) (summed
     over the family's annotations), so a reader can see which families pushed each
     variant's PIP up or down. Family columns use the full family name with an
     annot_ prefix (e.g. annot_coding)."""
-    out = _display_base(union_keys, pf_variants, uni_variants, cs_pf, cs_u)
+    out = _display_base(
+        union_keys, pf_variants, uni_variants, cs_pf, cs_u, secondary_map
+    )
     families = _families_in_canonical_order()
     for fam in families:
         col = f"{DISP_ANNOT_PREFIX}{fam}"
@@ -683,4 +787,6 @@ def _detailed_display_table(
             *_KEY, pl.col(FAMILY_CONTRAST_COL).alias(col)
         )
         out = out.join(fam_col, on=_KEY, how="left")
-    return _finalize_display(out, [f"{DISP_ANNOT_PREFIX}{fam}" for fam in families])
+    return _finalize_display(
+        out, [f"{DISP_ANNOT_PREFIX}{fam}" for fam in families], secondary_pos_col
+    )
