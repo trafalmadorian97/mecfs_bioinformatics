@@ -10,6 +10,10 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.diagram_file_meta import (
+    DIAGRAM_EXTENSION,
+    DiagramFileMeta,
+)
 from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_manhattan_plot_meta import (
     GWASLabManhattanQQPlotMeta,
 )
@@ -36,6 +40,7 @@ ValidFigureMeta = (
     | MarkdownFileMeta
     | GWASLabManhattanQQPlotMeta
     | ResultTableMeta
+    | DiagramFileMeta
 )
 
 
@@ -105,6 +110,10 @@ def get_result_table_fig_file_path(meta: ResultTableMeta, fig_dir: Path) -> Path
     return fig_dir / (meta.asset_id + meta.extension)
 
 
+def get_diagram_fig_file_path(meta: DiagramFileMeta, fig_dir: Path) -> Path:
+    return fig_dir / (meta.asset_id + DIAGRAM_EXTENSION)
+
+
 def get_figure_destination(meta: ValidFigureMeta, fig_dir: Path) -> Path:
     """
     Single source of truth for "where in the figure directory does the figure
@@ -122,4 +131,6 @@ def get_figure_destination(meta: ValidFigureMeta, fig_dir: Path) -> Path:
         return get_md_fig_file_path(meta=meta, fig_dir=fig_dir)
     if isinstance(meta, ResultTableMeta):
         return get_result_table_fig_file_path(meta=meta, fig_dir=fig_dir)
+    if isinstance(meta, DiagramFileMeta):
+        return get_diagram_fig_file_path(meta=meta, fig_dir=fig_dir)
     raise ValueError(f"Unknown meta type {type(meta)}")
