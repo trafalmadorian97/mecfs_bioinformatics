@@ -9,10 +9,10 @@ hide:
 
 ## Methodology
 
-To extend the results from my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] fine-mapping of the DecodeME GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a Bayesian prior derived from functional genomic annotations, instead of a uniform prior.
+To extend my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] fine-mapping of the DecodeME GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a prior derived from functional genomic annotations, instead of a uniform prior.
 
 
-As a linkage disequilibrium reference, I used a [UK Biobank LD matrix hosted on AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used GWASLab to liftover the DecodeME GWAS-1 summary statistics to GRCh37.
+As a linkage disequilibrium reference, I used a [UK Biobank LD matrix hosted on AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used [GWASLab](https://github.com/Cloufield/gwaslab) to liftover the DecodeME GWAS-1 summary statistics to GRCh37.
 
 As before, to assess robustness and sensitivity to configuration, I ran SUSIE four times
 
@@ -21,14 +21,16 @@ As before, to assess robustness and sensitivity to configuration, I ran SUSIE fo
 - Once with $L=1$,
 - Once with $L=10$ and strict variant filtering.
 
+Where $L$ refers to the maximum number of credible sets discoverable by SUSIE.
+
 As before, in my SUSIE runs, I retained palindromic SNPs whose strand orientation GWASLAB was able to determine from allele frequencies in the Thousand Genomes Project, and discarded other palindromic SNPs.
 
 ### Prior Construction
 
-For this analysis, I used the precomputed prior provided by the authors of PolyFun[@weissbrod2020functionally][^prior_note]. The PolyFun authors created this prior as follows:
+For this analysis, I used the precomputed prior provided by the authors of PolyFun[^prior_note][@weissbrod2020functionally]. The PolyFun authors created this prior as follows:
 
 1.  Select 15 [UK biobank](../../../../../Data_Sources/UKBB.md) traits with mutual [genetic correlations](../../../../../Bioinformatics_Concepts/Genetic_Correlation.md) less than 0.2.
-2.  Run l2-penalized [stratified linkage disequilibrium score regression](../../../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) on these traits to estimate allocation of [heritability](../../../../../Bioinformatics_Concepts/Heritability.md) enrichment of functional annotations[^annotation_note] for each trait.
+2.  Run $l_2$-penalized [stratified linkage disequilibrium score regression](../../../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) on these traits to estimate allocation of [heritability](../../../../../Bioinformatics_Concepts/Heritability.md) enrichment to functional annotations[^annotation_note] for each trait.
 3.  Average these heritability enrichments across the 15 traits to produce cross-trait heritability enrichment for each functional annotation.
 4.  Use these heritability enrichments to define a Bayesian prior: the prior probability that a variant is causal is proportional to the cross-trait heritability enrichment implied by its functional annotations.
 5. For robustness, modify the prior by limiting its dynamic range and binning the prior probabilities.
@@ -73,14 +75,14 @@ id="chr1_polyfun_susie_table")
 }}
 
 
-These results show that while with a uniform prior SUSIE produces a rather diffuse credible set, with the PolyFun prior, the credible set is significantly more concentrated on a small number of variants.  The top PolyFun SUSIE variant is the SNP **chr1:173855298:A:T**.  PolyFun appears to have assigned a high prior weight to this variant due to annotation in the _coding_  and _conserved_ families.  The second PolyFun SUSIE variant is the insertion **chr1:173838788:T:TG**.  PolyFun appears to have assigned high prior weight to this variant due to annotations in the **coding** and **promoter_or_enhancer** families.
+These results show that while with a uniform prior SUSIE produces a rather diffuse credible set, with the PolyFun prior the credible set is significantly more concentrated on a small number of variants.  The top PolyFun SUSIE variant is the SNP **chr1:173855298:A:T**.  PolyFun appears to have assigned a high prior weight to this variant due to annotation in the _coding_  and _conserved_ families.  The second PolyFun SUSIE variant is the insertion **chr1:173838788:T:TG**.  PolyFun appears to have assigned high prior weight to this variant due to annotations in the **coding** and **promoter_or_enhancer** families.
 
 
 To investigate further, we can look in detail at the full set of annotations for the top variants.
 
 {{susie_polyfun_variant_detail_table(src="docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_l10_explain_per_variant_annotation_table.parquet" ,id="chr1_polyfun_susie_characterization")}}
 
-The above table reveals that:
+The above table reveals more about the top two variants selected by the PolyFun-SUSIE run:
 
 -  **chr1:173855298:A:T** is variant in the 3' untranslated region (_UTR_3_UCSC_common_) of the gene [ZBTB37](https://www.genecards.org/card/ZBTB37) that is strongly evolutionarily conserved in primates and mammals (_Conserved_Primate_phastCons46way_common, Conserved_Mammal_phastCons46way_common)_.
 - **chr1:173838788:T:TG** is a variant in an evolutionarily ancient promoter (_Ancient_Sequence_Age_Human_Promoter_common_) for the ZBTB37 gene.
