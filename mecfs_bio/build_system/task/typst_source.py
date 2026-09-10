@@ -22,13 +22,11 @@ class TypstSource:
     code: str | None = None
 
     def __attrs_post_init__(self):
-        assert (self.path is None) != (
-            self.code is None
-        ), "TypstSource requires exactly one of path or code"
+        assert (self.path is None) != (self.code is None), (
+            "TypstSource requires exactly one of path or code"
+        )
         if self.path is not None:
-            assert (
-                self.path.is_file()
-            ), f"Typst source file does not exist: {self.path}"
+            assert self.path.is_file(), f"Typst source file does not exist: {self.path}"
 
     def resolve_to_path(self, scratch_dir: Path) -> Path:
         """

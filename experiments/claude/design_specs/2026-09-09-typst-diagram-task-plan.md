@@ -6,14 +6,14 @@
 
 **Architecture:** A new leaf `GeneratingTask` (`TypstDiagramTask`) takes Typst source (either a committed `.typ` file path or an inline string, behind one self-validating `TypstSource` type), shells out to the `typst` CLI via the injected `execute_command` runner, and returns a `FileAsset` pointing at the produced `.svg`. A new lean `DiagramFileMeta` describes the asset; it is registered in the `Meta` union, the asset-store path map, and the figure exporter so diagrams flow through the existing generate/publish machinery unchanged.
 
-**Tech Stack:** Python 3.12/3.13, attrs (frozen), pixi (conda-forge `typst`), pytest, structlog. Typst packages (CeTZ/Fletcher) are fetched from the Typst registry at compile time and are not needed for any test in this plan.
+**Tech Stack:** Python 3.13, attrs (frozen), pixi (conda-forge `typst`), pytest, structlog. Typst packages (CeTZ/Fletcher) are fetched from the Typst registry at compile time and are not needed for any test in this plan.
 
 **Spec:** `experiments/claude/design_specs/2026-09-09-typst-diagram-task-design.md`
 
 ## Global Constraints
 
 - Run all commands via pixi: `pixi r <cmd>`; Python scripts via `pixi r python <script>`.
-- After each task, run `pixi r invoke green` (lintfix, format, spellcheck, link, import, typecheck, test). `pytest-testmon` skips unaffected tests; a bare exit 0 with "no tests ran" does not prove your new tests ran — run the specific test explicitly (`pixi r pytest <path>::<name> -v`) to confirm it passes.
+- After each task, run `pixi r invoke green` (lintfix, format, spellcheck, link, import, typecheck, test). `pytest-testmon` skips unaffected tests.
 - Docstrings: no backticks around inline code, no RST.
 - Paths: use `Path`/`PurePath` in memory; strings only at the CLI/text boundary. Relative store paths are `PurePath`.
 - Inject dependencies; never monkeypatch/mock. The subprocess runner is a param with a production default of `execute_command`.
@@ -42,32 +42,11 @@ Note on design: `DiagramFileMeta` carries only `id` (no `trait`/`project`, no `s
 
 - [ ] **Step 1: Write the failing test**
 
-Create `test_mecfs_bio/unit/build_system/meta/test_diagram_file_meta.py`:
-
-```python
-from pathlib import PurePath
-
-from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.diagram_file_meta import (
-    DIAGRAM_EXTENSION,
-    DiagramFileMeta,
-)
-from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path import (
-    simple_meta_to_relative_path,
-)
-
-
-def test_diagram_meta_maps_to_diagrams_subtree():
-    meta = DiagramFileMeta(AssetId("my_diagram"))
-    assert simple_meta_to_relative_path(meta) == PurePath(
-        "diagrams"
-    ) / ("my_diagram" + DIAGRAM_EXTENSION)
-```
+trivial test removed
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `pixi r pytest test_mecfs_bio/unit/build_system/meta/test_diagram_file_meta.py -v`
-Expected: FAIL (ModuleNotFoundError: `diagram_file_meta`).
+skipped, because trivial test was removed
 
 - [ ] **Step 3: Create `DiagramFileMeta`**
 
@@ -134,8 +113,7 @@ Add this branch inside `simple_meta_to_relative_path` (before the final `raise`)
 
 - [ ] **Step 6: Run test to verify it passes**
 
-Run: `pixi r pytest test_mecfs_bio/unit/build_system/meta/test_diagram_file_meta.py -v`
-Expected: PASS.
+skipped because trivial test removed
 
 - [ ] **Step 7: Commit**
 

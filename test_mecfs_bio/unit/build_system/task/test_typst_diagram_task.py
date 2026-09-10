@@ -11,8 +11,7 @@ from mecfs_bio.build_system.wf.base_wf import make_wf
 # A single-page Typst document with visible content, no @preview imports, so the
 # render is hermetic (no package-registry fetch) and fast.
 _SMOKE_TYPST = (
-    "#set page(width: auto, height: auto, margin: 4pt)\n"
-    "#circle(radius: 8pt)\n"
+    "#set page(width: auto, height: auto, margin: 4pt)\n#circle(radius: 8pt)\n"
 )
 
 
