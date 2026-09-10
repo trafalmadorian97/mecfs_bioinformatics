@@ -93,9 +93,11 @@ A frozen attrs GeneratingTask. Fields:
 - meta: DiagramFileMeta
 - source: TypstSource --- a small frozen wrapper holding exactly one of
   a .typ file path or a literal Typst string. Its __attrs_post_init__
-  asserts that exactly one is set (not both, not neither), so the
-  path-or-string choice lives behind one type with no representable
-  invalid state, rather than two loose Optional parameters. It exposes
+  asserts that exactly one is set (not both, not neither), and, when the
+  path variant is used, asserts the .typ file exists (fail-fast at
+  construction rather than at compile time). So the path-or-string
+  choice lives behind one type with no representable invalid state,
+  rather than two loose Optional parameters. It exposes
   a helper that yields a concrete .typ path when given a scratch
   directory (returning the existing path, or writing the string to a
   file under scratch).
@@ -196,6 +198,9 @@ lines.
 - Invalid source (both path and string set, or neither) fails at task
   construction via TypstSource.__attrs_post_init__ with a clear
   assertion message (shift-left / fail-fast).
+- A path variant pointing at a nonexistent .typ file also fails at
+  construction (TypstSource.__attrs_post_init__ asserts the file
+  exists), rather than surfacing later as a Typst compile error.
 - A Typst compile failure surfaces as the CalledProcessError raised by
   execute_command (non-zero return code), carrying the captured Typst
   output for diagnosis. No special handling is added; a broken diagram
