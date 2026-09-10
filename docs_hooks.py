@@ -10,12 +10,15 @@ tells the reader which trait and study the page is about. That reads well in the
 nav but poorly in search or a tag index, where many pages all show as "LDSC"
 with no way to tell them apart.
 
-To fix this without editing every page, on_page_markdown derives the trait and
-study from the file path and sets a verbose page title of the form
-"LDSC (DecodeME, ME/CFS)". The verbose title is what search, the browser tab,
-and the tag index read. It also stashes the original short title in the
-nav_title metadata key, which the overrides/partials/nav-item.html template
-override prefers when rendering the sidebar, so the nav stays short.
+To fix this without editing every page, on_page_markdown derives the enclosing
+folder chain from the file path and sets a verbose page title of the form
+"LDSC (DecodeME, ME/CFS)". Pages nested more deeply than Trait/Study list every
+intervening folder, deepest-first, ending with the trait, e.g.
+"H-MAGMA (DecodeME Minus Multsite Pain, GWAS By Subtracton, GenomicSEM,
+Multitrait)". The verbose title is what search, the browser tab, and the tag
+index read. It also stashes the original short title in the nav_title metadata
+key, which the overrides/partials/nav-item.html template override prefers when
+rendering the sidebar, so the nav stays short.
 """
 
 import re
@@ -49,8 +52,15 @@ def _trait_display(part: str) -> str:
     return TRAIT_DISPLAY.get(part, _humanize(part))
 
 
-def _trait_and_study(src_uri: str) -> tuple[str, str] | None:
-    """Return the humanized (study, trait) for an analysis page, or None.
+def _analysis_context(src_uri: str) -> str | None:
+    """Return the parenthetical context string for an analysis page, or None.
+
+    The context lists every folder between the Analysis root and the page file,
+    deepest-first, ending with the trait, so the most specific folder leads and
+    the broadest (the trait) closes, e.g. for
+    Analysis/Multitrait/GenomicSEM/GWAS_By_Subtracton/DecodeME_Minus.../6_H_MAGMA.md
+    it returns "DecodeME Minus..., GWAS By Subtracton, GenomicSEM, Multitrait".
+    A plain Trait/Study page collapses to "Study, Trait".
 
     Returns None when the page is not an Analysis/<Trait>/<Study>/... page, in
     which case its title should be left untouched.
@@ -58,9 +68,11 @@ def _trait_and_study(src_uri: str) -> tuple[str, str] | None:
     parts = PurePath(src_uri).parts
     if len(parts) < MIN_ANALYSIS_PARTS or parts[0] != ANALYSIS_ROOT:
         return None
+    # parts[1] is the trait folder; parts[2:-1] are the study / sub-section
+    # folders; the final part is the page file itself.
     trait = _trait_display(parts[1])
-    study = _humanize(parts[2])
-    return study, trait
+    studies = [_humanize(part) for part in parts[2:-1]]
+    return ", ".join([*reversed(studies), trait])
 
 
 def on_page_markdown(markdown: str, *, page, config, files) -> str:
@@ -69,14 +81,13 @@ def on_page_markdown(markdown: str, *, page, config, files) -> str:
     The short original title is preserved in page.meta under nav_title so the
     sidebar can stay concise; see the module docstring for the full rationale.
     """
-    study_trait = _trait_and_study(page.file.src_uri)
-    if study_trait is None:
+    context = _analysis_context(page.file.src_uri)
+    if context is None:
         return markdown
-    study, trait = study_trait
 
     match = H1_PATTERN.search(markdown)
     short = match.group(1) if match else str(page.title)
-    verbose = f"{short} ({study}, {trait})"
+    verbose = f"{short} ({context})"
 
     # Verbose title feeds the tag index, the browser tab, and the search
     # fallback; short title feeds the nav via the nav-item template override.
