@@ -1,6 +1,7 @@
 import gzip
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -19,10 +20,12 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
 from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
     SNPHeritabilityByLDSCTask,
 )
+from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic import bin_by_ld_score
 from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic_plot_task import (
     LdscDiagnosticPlotConfig,
     LdscDiagnosticPlotTask,
     LdscFit,
+    build_diagnostic_figure,
     compute_chi2,
     gwaslab_observed_fit,
     merge_chi2_with_ld_scores,
@@ -105,6 +108,23 @@ def test_gwaslab_observed_fit_requests_observed_scale():
     assert fake.estimate_call is not None
     assert fake.estimate_call["samp_prev"] is None
     assert fake.estimate_call["pop_prev"] is None
+
+
+def test_figure_anchors_a_trace_to_the_secondary_axis():
+    # A secondary y-axis only renders when a trace references it, so guard that one does -- without
+    # it the chi^2 * M / N axis silently disappears.
+    bins = bin_by_ld_score(
+        np.array([1.0, 2.0, 3.0, 4.0]), np.array([1.0, 2.0, 3.0, 4.0]), n_bins=2
+    )
+    fig = build_diagnostic_figure(
+        bins=bins,
+        fit=LdscFit(intercept=1.0, h2_obs=0.2),
+        n=1000.0,
+        m=500.0,
+        config=LdscDiagnosticPlotConfig(n_bins=2),
+    )
+    assert fig.layout.yaxis2.overlaying == "y"
+    assert any(trace.yaxis == "y2" for trace in fig.data)
 
 
 class _FakeSumstatsForExecute:

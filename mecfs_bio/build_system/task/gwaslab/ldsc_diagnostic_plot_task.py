@@ -312,6 +312,19 @@ def build_diagnostic_figure(
             hoverinfo="skip",
         )
     )
+    # Plotly only draws a secondary axis that a trace references; this invisible trace spans the
+    # right-axis range so the chi^2 * M / N axis renders without adding a visible mark.
+    fig.add_trace(
+        go.Scatter(
+            x=[x_min, x_max],
+            y=secondary_range,
+            yaxis="y2",
+            mode="markers",
+            marker=dict(opacity=0),
+            showlegend=False,
+            hoverinfo="skip",
+        )
+    )
     fig.update_layout(
         template="plotly_white",
         title=config.title,
