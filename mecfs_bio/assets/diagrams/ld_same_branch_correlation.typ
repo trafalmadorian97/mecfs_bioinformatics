@@ -46,19 +46,21 @@
   // Each bead is a variant at its genomic position; colour marks correlation
   // group. Same-colour beads sit at varying distances -- distance is irrelevant.
   let sy = 1.4
-  let (sx0, sx1) = (5.8, 10.7)
+  let (sx0, sx1) = (5.55, 10.85)
   line((sx0, sy), (sx1, sy), stroke: 1pt + muted)
   let bead(x, col, lbl) = {
     circle((x, sy), radius: 0.15, fill: col, stroke: 0.6pt + white)
     content((x, sy + 0.42), text(size: 9pt, fill: col, weight: "bold")[#lbl])
   }
-  bead(5.95, primary, "A")
-  bead(6.65, tertiary, "E")
-  bead(7.45, secondary, "C")
-  bead(8.2, tertiary, "F")
-  bead(9.0, primary, "B")
-  bead(9.7, secondary, "D")
-  bead(10.5, tertiary, "G")
+  // Irregularly spaced, like real variant positions -- but note that same-colour
+  // beads still sit at very different distances from one another.
+  bead(5.75, primary, "A")
+  bead(6.5, tertiary, "E")
+  bead(6.95, secondary, "C")
+  bead(8.1, tertiary, "F")
+  bead(8.6, primary, "B")
+  bead(9.85, secondary, "D")
+  bead(10.55, tertiary, "G")
 
   // Panel titles.
   content((2.0, 3.3), text(size: 9pt, style: "italic", fill: muted)[genealogy])
