@@ -32,7 +32,7 @@ not two independent measures.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable, Protocol
+from typing import Callable, Protocol, cast
 
 import numpy as np
 import pandas as pd
@@ -89,21 +89,18 @@ _GWASLAB_LDSC_INTERCEPT_COL = "Intercept"
 _GWASLAB_LDSC_H2_OBS_COL = "h2_obs"
 
 
-class SumstatsData(Protocol):
-    """The slice of a gwaslab Sumstats the task reads directly: its mutable variant table. Kept
-    narrow so the production reader can hand back a real gwaslab Sumstats while tests inject a
-    lightweight stand-in."""
+class LdscSumstats(Protocol):
+    """The slice of a gwaslab Sumstats the diagnostic uses: its mutable variant table (which the
+    task reads and rewrites through the preprocessing pipe) plus enough to run observed-scale
+    LD-score regression and read back its summary. gwaslab's Sumstats satisfies this; a test can
+    inject a stand-in. ldsc_h2 is declared read-only (a property) so gwaslab's plain DataFrame
+    attribute satisfies the pd.DataFrame | None slot covariantly."""
 
     data: pd.DataFrame
-
-
-class LdscEstimableSumstats(Protocol):
-    """The slice gwaslab_observed_fit drives: enough to run observed-scale LD-score regression and
-    read back its summary. gwaslab's Sumstats satisfies this at runtime; a test can supply a fake
-    that records the call and serves a canned summary."""
-
     meta: dict
-    ldsc_h2: pd.DataFrame | None
+
+    @property
+    def ldsc_h2(self) -> pd.DataFrame | None: ...
 
     def infer_build(self) -> None: ...
 
@@ -203,7 +200,7 @@ def merge_chi2_with_ld_scores(
 
 
 def gwaslab_observed_fit(
-    sumstats: LdscEstimableSumstats, ref_ld_chr: str, build: GenomeBuild
+    sumstats: LdscSumstats, ref_ld_chr: str, build: GenomeBuild
 ) -> LdscFit:
     """Run gwaslab's LD-score regression on the observed scale and return its intercept and
     heritability -- the same estimator the heritability task uses, so the drawn line matches what
@@ -403,8 +400,11 @@ def _ensure_sample_size_column(
         data[GWASLAB_SAMPLE_SIZE_COLUMN] = phenotype_info.total_sample_size
 
 
-def _read_sumstats(asset: Asset) -> SumstatsData:
-    return read_sumstats(asset)
+def _read_sumstats(asset: Asset) -> LdscSumstats:
+    # gwaslab annotates its estimate helper's return -- and hence Sumstats.ldsc_h2 -- as float,
+    # but at runtime ldsc_h2 is the DataFrame our protocol declares. Cast rather than widen the
+    # protocol to match a wrong upstream annotation.
+    return cast(LdscSumstats, read_sumstats(asset))
 
 
 @frozen
@@ -414,8 +414,10 @@ class LdscDiagnosticPlotTask(Task):
     meta: Meta
     ldsc_task: SNPHeritabilityByLDSCTask
     config: LdscDiagnosticPlotConfig
-    sumstats_reader: Callable[[Asset], SumstatsData] = field(default=_read_sumstats)
-    fit_estimator: Callable[..., LdscFit] = field(default=gwaslab_observed_fit)
+    sumstats_reader: Callable[[Asset], LdscSumstats] = field(default=_read_sumstats)
+    fit_estimator: Callable[[LdscSumstats, str, GenomeBuild], LdscFit] = field(
+        default=gwaslab_observed_fit
+    )
 
     @property
     def _source_sumstats_id(self) -> AssetId:
@@ -471,8 +473,10 @@ class LdscDiagnosticPlotTask(Task):
         asset_id: str,
         ldsc_task: SNPHeritabilityByLDSCTask,
         config: LdscDiagnosticPlotConfig = LdscDiagnosticPlotConfig(),
-        sumstats_reader: Callable[[Asset], SumstatsData] = _read_sumstats,
-        fit_estimator: Callable[..., LdscFit] = gwaslab_observed_fit,
+        sumstats_reader: Callable[[Asset], LdscSumstats] = _read_sumstats,
+        fit_estimator: Callable[
+            [LdscSumstats, str, GenomeBuild], LdscFit
+        ] = gwaslab_observed_fit,
     ) -> LdscDiagnosticPlotTask:
         source_meta = ldsc_task.meta
         assert isinstance(source_meta, ResultTableMeta)

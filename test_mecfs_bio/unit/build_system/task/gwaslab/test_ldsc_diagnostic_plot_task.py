@@ -65,13 +65,20 @@ def test_merge_matches_on_rsid_and_aligns_chi2_with_ld():
     assert merged.ld.tolist() == [10.0, 20.0]
 
 
-class _FakeGwaslabSumstats:
-    """Stand-in for a gwaslab Sumstats: records the estimate call and serves a canned result,
-    so the fit's column extraction can be tested without running LDSC or reading an LD reference."""
+class _FakeSumstats:
+    """One stand-in satisfying LdscSumstats: holds a variant table (for the binning path), records
+    the estimate call, and serves a canned ldsc_h2 summary -- so both the fit's column extraction
+    and the task's execute can be tested without running LDSC or reading an LD reference."""
 
-    def __init__(self, ldsc_h2: pd.DataFrame, build: str = "19"):
-        self._ldsc_h2 = ldsc_h2
+    def __init__(
+        self,
+        data: pd.DataFrame | None = None,
+        ldsc_h2_summary: pd.DataFrame | None = None,
+        build: str = "19",
+    ):
+        self.data = data if data is not None else pd.DataFrame()
         self.meta = {"gwaslab": {"genome_build": build}}
+        self._summary = ldsc_h2_summary
         self.ldsc_h2: pd.DataFrame | None = None
         self.estimate_call: dict | None = None
 
@@ -89,13 +96,14 @@ class _FakeGwaslabSumstats:
         self.estimate_call = dict(
             ref_ld_chr=ref_ld_chr, samp_prev=samp_prev, pop_prev=pop_prev
         )
-        self.ldsc_h2 = self._ldsc_h2
+        self.ldsc_h2 = self._summary
 
 
 def test_gwaslab_observed_fit_reads_intercept_and_observed_h2():
     # gwaslab's parse_ldsc_summary yields string-valued Intercept and h2_obs columns.
-    fake = _FakeGwaslabSumstats(
-        pd.DataFrame({"Intercept": ["0.93"], "h2_obs": ["0.2"]}), build="19"
+    fake = _FakeSumstats(
+        ldsc_h2_summary=pd.DataFrame({"Intercept": ["0.93"], "h2_obs": ["0.2"]}),
+        build="19",
     )
     fit = gwaslab_observed_fit(fake, ref_ld_chr="/ref/LDscore.@", build="19")
     assert fit.intercept == pytest.approx(0.93)
@@ -106,7 +114,9 @@ def test_gwaslab_observed_fit_requests_observed_scale():
     # Observed scale means None (not NaN) prevalences: gwaslab labels the result "Liability" and
     # renames the h2 column whenever both prevalences are not None, so None is what keeps the plain
     # h2_obs column -- the scale in which the fitted slope is reconstructable.
-    fake = _FakeGwaslabSumstats(pd.DataFrame({"Intercept": ["1.0"], "h2_obs": ["0.1"]}))
+    fake = _FakeSumstats(
+        ldsc_h2_summary=pd.DataFrame({"Intercept": ["1.0"], "h2_obs": ["0.1"]})
+    )
     gwaslab_observed_fit(fake, ref_ld_chr="ref", build="19")
     assert fake.estimate_call is not None
     assert fake.estimate_call["samp_prev"] is None
@@ -160,11 +170,6 @@ def test_figure_anchors_a_trace_to_the_secondary_axis():
     assert any(trace.yaxis == "y2" for trace in fig.data)
 
 
-class _FakeSumstatsForExecute:
-    def __init__(self, data: pd.DataFrame):
-        self.data = data
-
-
 def _write_ld_dir(ld_dir: Path, rsids: list[str], l2: list[float]) -> None:
     ld_dir.mkdir(parents=True, exist_ok=True)
     lines = ["CHR\tSNP\tBP\tL2\n"]
@@ -203,7 +208,7 @@ def test_task_execute_writes_a_plot(tmp_path: Path):
         asset_id="ldsc_diagnostic",
         ldsc_task=ldsc_task,
         config=LdscDiagnosticPlotConfig(n_bins=3),
-        sumstats_reader=lambda _asset: _FakeSumstatsForExecute(sumstats_df),
+        sumstats_reader=lambda _asset: _FakeSumstats(data=sumstats_df),
         fit_estimator=lambda _sumstats, _ref, _build: LdscFit(
             intercept=1.0, h2_obs=0.2
         ),
