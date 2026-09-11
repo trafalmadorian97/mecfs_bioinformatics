@@ -553,8 +553,9 @@ EXAMPLE_GENOTYPE_PHENOTYPE_DIAGRAM = TypstDiagramTask(
 Modify `mecfs_bio/figures/figure_task_list.py`:
 
 Add the import with the other imports at the top:
+
 ```python
-from mecfs_bio.diagrams.example_genotype_phenotype import (
+from mecfs_bio.assets.diagrams.example_genotype_phenotype import (
     EXAMPLE_GENOTYPE_PHENOTYPE_DIAGRAM,
 )
 ```
