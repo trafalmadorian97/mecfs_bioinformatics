@@ -193,6 +193,9 @@ from mecfs_bio.assets.reference_data.ukbb_ppp_sumstats.rabgap1l.analysis.ukbb_ra
     UKBBPPP_RABGAP1L_RABGAP1L_REGION_PLOT_37,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.diagrams.example_genotype_phenotype import (
+    EXAMPLE_GENOTYPE_PHENOTYPE_DIAGRAM,
+)
 
 MULTI_TISSUE_CHROMATIN_REF = "multi_tissue_chromatin"
 MULTI_TISSUE_GENE_EXPRESSION_REF = "multi_tissue_gene_expression"
@@ -461,6 +464,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # Diagrams
+    EXAMPLE_GENOTYPE_PHENOTYPE_DIAGRAM,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
