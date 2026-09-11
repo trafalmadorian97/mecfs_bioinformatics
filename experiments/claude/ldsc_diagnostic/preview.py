@@ -13,9 +13,8 @@ import numpy as np
 from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic import bin_by_ld_score
 from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic_plot_task import (
     LdscDiagnosticPlotConfig,
-    _chi2_regression_filter,
+    LdscFit,
     build_diagnostic_figure,
-    estimate_observed_fit,
 )
 
 OUT = Path(__file__).parent
@@ -32,11 +31,9 @@ ld = rng.gamma(shape=2.0, scale=40.0, size=n_snps)  # mean ~80, right-skewed lik
 expected = true_intercept + slope * ld
 chi2 = expected * rng.chisquare(df=1, size=n_snps)  # E[chi^2_1df] = 1
 
-chi2_f, ld_f = _chi2_regression_filter(chi2, ld, n)
-fit = estimate_observed_fit(chi2=chi2_f, ld=ld_f, n=n, m=m)
-bins = bin_by_ld_score(chi2_f, ld_f, n_bins=25)
-print(f"recovered intercept={fit.intercept:.4f} (true {true_intercept}), "
-      f"h2={fit.h2_obs:.4f} (true {true_h2})")
+# In production the fit comes from gwaslab; here we hand it the true values to eyeball the figure.
+fit = LdscFit(intercept=true_intercept, h2_obs=true_h2)
+bins = bin_by_ld_score(chi2, ld, n_bins=25)
 
 fig = build_diagnostic_figure(
     bins=bins,

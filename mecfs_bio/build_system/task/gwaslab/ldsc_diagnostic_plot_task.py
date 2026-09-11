@@ -10,10 +10,18 @@ chi-square against the fitted line, so model misfit (bins drifting off the line)
 
 It is a sibling of SNPHeritabilityByLDSCTask rather than a reader of its output: it takes that
 task purely to reach a single, consistent definition of the analysis (which summary statistics,
-which LD reference, the preprocessing pipe, the sample size), and re-runs the observed-scale
-LD-score regression on exactly the binned variants via the repo's pure-Python solver. Re-running
-on the observed scale sidesteps the liability-scale rescaling gwaslab applies to binary traits'
-reported heritability, which would otherwise make the fitted slope hard to reconstruct.
+which LD reference, the preprocessing pipe, the sample size), and re-runs LD-score regression on
+that definition to draw the fitted line.
+
+The fit is re-run with gwaslab -- the same estimator the heritability task uses -- so the line and
+the annotated intercept/heritability match what that task reports, rather than an independent
+solver that differs in its treatment of extreme chi-square (gwaslab keeps all variants and uses a
+two-step intercept estimator with a cutoff at chi-square 30; the repo's GenomicSEM port cuts
+variants above max(0.001*N, 80) and fits a single-step intercept). The re-run passes NaN
+prevalences so gwaslab reports observed-scale heritability, sidestepping the liability-scale
+rescaling it applies to binary traits, which would otherwise make the fitted slope hard to
+reconstruct. Consistently, the binned points keep every merged variant -- no high-chi-square cut --
+to match the variant set gwaslab's slope regression uses.
 
 The left y-axis is chi-square; the right y-axis is the same points rescaled to chi^2 * M / N, in
 which the fitted slope equals the observed-scale heritability and the axis is comparable across
@@ -24,7 +32,7 @@ not two independent measures.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Protocol
 
 import numpy as np
 import pandas as pd
@@ -61,8 +69,8 @@ from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic import (
     chi2_to_heritability_units,
     fit_line_chi2,
 )
-from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import exact_h2_single
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_RSID_COL,
@@ -71,6 +79,41 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 from mecfs_bio.constants.ldsc_constants import LDSC_Z_COL
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
+from mecfs_bio.util.type_related.unwrap import unwrap
+
+# Column names in gwaslab's parsed univariate LDSC summary (parse_ldsc_summary): the regression
+# intercept and the observed-scale heritability. Their values are strings.
+_GWASLAB_LDSC_INTERCEPT_COL = "Intercept"
+_GWASLAB_LDSC_H2_OBS_COL = "h2_obs"
+
+
+class SumstatsData(Protocol):
+    """The slice of a gwaslab Sumstats the task reads directly: its mutable variant table. Kept
+    narrow so the production reader can hand back a real gwaslab Sumstats while tests inject a
+    lightweight stand-in."""
+
+    data: pd.DataFrame
+
+
+class LdscEstimableSumstats(Protocol):
+    """The slice gwaslab_observed_fit drives: enough to run observed-scale LD-score regression and
+    read back its summary. gwaslab's Sumstats satisfies this at runtime; a test can supply a fake
+    that records the call and serves a canned summary."""
+
+    meta: dict
+    ldsc_h2: pd.DataFrame | None
+
+    def infer_build(self) -> None: ...
+
+    def estimate_h2_by_ldsc(
+        self,
+        *,
+        ref_ld_chr: str,
+        w_ld_chr: str,
+        samp_prev: float | None,
+        pop_prev: float | None,
+    ) -> None: ...
+
 
 # One data series (the binned points) plus two reference lines, so the three are separated by
 # mark type -- markers, a solid line, a dashed line -- as well as by these colorblind-safe hues.
@@ -157,13 +200,33 @@ def merge_chi2_with_ld_scores(
     )
 
 
-def estimate_observed_fit(
-    chi2: np.ndarray, ld: np.ndarray, n: float, m: float
+def gwaslab_observed_fit(
+    sumstats: LdscEstimableSumstats, ref_ld_chr: str, build: GenomeBuild
 ) -> LdscFit:
-    """Observed-scale LD-score-regression intercept and heritability via the repo's exact
-    single-trait solver, on exactly the variants being plotted."""
-    result = exact_h2_single(chi2=chi2, ld=ld, n=n, m=m)
-    return LdscFit(intercept=float(result.intercept), h2_obs=float(result.h2))
+    """Run gwaslab's LD-score regression on the observed scale and return its intercept and
+    heritability -- the same estimator the heritability task uses, so the drawn line matches what
+    that task reports. None (not NaN) prevalences keep gwaslab on the observed scale: its summary
+    labels the result 'Liability' whenever both prevalences are not None, which renames the h2
+    column, whereas None reports plain observed-scale h2 -- the scale in which the chi-square-units
+    slope is reconstructable.
+
+    sumstats is a gwaslab Sumstats already carrying the analysis's preprocessing and sample size."""
+    sumstats.infer_build()
+    assert sumstats.meta["gwaslab"]["genome_build"] == build, (
+        f"sumstats build {sumstats.meta['gwaslab']['genome_build']} does not match {build}"
+    )
+    sumstats.estimate_h2_by_ldsc(
+        ref_ld_chr=ref_ld_chr,
+        w_ld_chr=ref_ld_chr,
+        samp_prev=None,
+        pop_prev=None,
+    )
+    ldsc_h2 = unwrap(sumstats.ldsc_h2)
+    assert isinstance(ldsc_h2, pd.DataFrame)
+    return LdscFit(
+        intercept=float(ldsc_h2[_GWASLAB_LDSC_INTERCEPT_COL].iloc[0]),
+        h2_obs=float(ldsc_h2[_GWASLAB_LDSC_H2_OBS_COL].iloc[0]),
+    )
 
 
 def resolve_sample_size(
@@ -181,15 +244,6 @@ def resolve_sample_size(
         f"{GWASLAB_SAMPLE_SIZE_COLUMN} column, or a phenotype total_sample_size"
     )
     return float(phenotype_info.total_sample_size)
-
-
-def _chi2_regression_filter(
-    chi2: np.ndarray, ld: np.ndarray, n: float
-) -> tuple[np.ndarray, np.ndarray]:
-    """Drop the high-chi-square variants LD score regression excludes (chi^2 > max(0.001*N, 80)),
-    so the binned points and the fitted line describe the same variant set."""
-    keep = chi2 <= max(0.001 * n, 80.0)
-    return chi2[keep], ld[keep]
 
 
 def build_diagnostic_figure(
@@ -292,8 +346,24 @@ def build_diagnostic_figure(
     return fig
 
 
-def _read_sumstats_data(asset: Asset) -> pd.DataFrame:
-    return read_sumstats(asset).data
+def _ensure_sample_size_column(
+    data: pd.DataFrame, set_n: int | None, phenotype_info: PhenotypeInfo
+) -> None:
+    """Set the N column on the sumstats the way the heritability task does before its gwaslab run,
+    so gwaslab sees the same per-variant sample size: an explicit override wins, otherwise fall
+    back to the phenotype total only when no N column is present."""
+    if set_n is not None:
+        data[GWASLAB_SAMPLE_SIZE_COLUMN] = set_n
+    elif GWASLAB_SAMPLE_SIZE_COLUMN not in data.columns:
+        assert phenotype_info.total_sample_size is not None, (
+            "no sample size available: set a sample size on the heritability task, provide an "
+            f"{GWASLAB_SAMPLE_SIZE_COLUMN} column, or a phenotype total_sample_size"
+        )
+        data[GWASLAB_SAMPLE_SIZE_COLUMN] = phenotype_info.total_sample_size
+
+
+def _read_sumstats(asset: Asset) -> SumstatsData:
+    return read_sumstats(asset)
 
 
 @frozen
@@ -303,10 +373,8 @@ class LdscDiagnosticPlotTask(Task):
     meta: Meta
     ldsc_task: SNPHeritabilityByLDSCTask
     config: LdscDiagnosticPlotConfig
-    sumstats_reader: Callable[[Asset], pd.DataFrame] = field(
-        default=_read_sumstats_data
-    )
-    fit_estimator: Callable[..., LdscFit] = field(default=estimate_observed_fit)
+    sumstats_reader: Callable[[Asset], SumstatsData] = field(default=_read_sumstats)
+    fit_estimator: Callable[..., LdscFit] = field(default=gwaslab_observed_fit)
 
     @property
     def _source_sumstats_id(self) -> AssetId:
@@ -321,11 +389,14 @@ class LdscDiagnosticPlotTask(Task):
         return [self.ldsc_task.source_sumstats_task, self.ldsc_task.ld_ref_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        sumstats_df = self.sumstats_reader(fetch(self._source_sumstats_id))
-        sumstats_df = self.ldsc_task.pipe.process_pandas(sumstats_df)
-        sumstats_df = drop_variants_with_degenerate_z(sumstats_df)
+        sumstats = self.sumstats_reader(fetch(self._source_sumstats_id))
+        sumstats.data = self.ldsc_task.pipe.process_pandas(sumstats.data)
+        sumstats.data = drop_variants_with_degenerate_z(sumstats.data)
+        _ensure_sample_size_column(
+            sumstats.data, self.ldsc_task.set_N, self.ldsc_task.phenotype_info
+        )
         n = resolve_sample_size(
-            sumstats_df, self.ldsc_task.set_N, self.ldsc_task.phenotype_info
+            sumstats.data, self.ldsc_task.set_N, self.ldsc_task.phenotype_info
         )
 
         ld_asset = fetch(self._ld_ref_id)
@@ -333,10 +404,13 @@ class LdscDiagnosticPlotTask(Task):
         ld_frame = read_ld_scores(ld_asset.path).collect()
         total_m = total_m_5_50(ld_frame)
 
-        merged = merge_chi2_with_ld_scores(sumstats_df, ld_frame.to_pandas())
-        chi2, ld = _chi2_regression_filter(merged.chi2, merged.ld, n)
-        fit = self.fit_estimator(chi2=chi2, ld=ld, n=n, m=total_m)
-        bins = bin_by_ld_score(chi2, ld, self.config.n_bins)
+        # Bin from the processed sumstats before the fit: gwaslab's estimate mutates the Sumstats,
+        # and the bins must reflect the variants as they enter the regression.
+        merged = merge_chi2_with_ld_scores(sumstats.data, ld_frame.to_pandas())
+        bins = bin_by_ld_score(merged.chi2, merged.ld, self.config.n_bins)
+
+        ref_ld_chr = str(ld_asset.path) + self.ldsc_task.ld_file_filename_pattern
+        fit = self.fit_estimator(sumstats, ref_ld_chr, self.ldsc_task.build)
 
         fig = build_diagnostic_figure(
             bins=bins, fit=fit, n=n, m=total_m, config=self.config
@@ -351,8 +425,8 @@ class LdscDiagnosticPlotTask(Task):
         asset_id: str,
         ldsc_task: SNPHeritabilityByLDSCTask,
         config: LdscDiagnosticPlotConfig = LdscDiagnosticPlotConfig(),
-        sumstats_reader: Callable[[Asset], pd.DataFrame] = _read_sumstats_data,
-        fit_estimator: Callable[..., LdscFit] = estimate_observed_fit,
+        sumstats_reader: Callable[[Asset], SumstatsData] = _read_sumstats,
+        fit_estimator: Callable[..., LdscFit] = gwaslab_observed_fit,
     ) -> LdscDiagnosticPlotTask:
         source_meta = ldsc_task.meta
         assert isinstance(source_meta, ResultTableMeta)
