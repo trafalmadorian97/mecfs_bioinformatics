@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
+from gwaslab.extension.ldsc.ldsc_regressions import h2_obs_to_liab
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -15,6 +16,7 @@ from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
 from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    BinaryPhenotypeSampleInfo,
     QuantPhenotype,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
@@ -28,6 +30,7 @@ from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic_plot_task import (
     build_diagnostic_figure,
     compute_chi2,
     gwaslab_observed_fit,
+    liability_h2,
     merge_chi2_with_ld_scores,
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
@@ -108,6 +111,36 @@ def test_gwaslab_observed_fit_requests_observed_scale():
     assert fake.estimate_call is not None
     assert fake.estimate_call["samp_prev"] is None
     assert fake.estimate_call["pop_prev"] is None
+
+
+def test_liability_h2_is_none_for_a_quantitative_phenotype():
+    assert liability_h2(0.1, QuantPhenotype(total_sample_size=1000)) is None
+
+
+def test_liability_h2_applies_gwaslabs_conversion_with_sample_and_population_prevalence():
+    # P is the sample prevalence, K the population prevalence. Choosing P != K makes the
+    # conversion asymmetric, so a swapped-argument regression would not match.
+    pheno = BinaryPhenotypeSampleInfo(
+        sample_prevalence=0.3, estimated_population_prevalence=0.05
+    )
+    expected = h2_obs_to_liab(0.1, 0.3, 0.05)
+    assert liability_h2(0.1, pheno) == pytest.approx(expected)
+
+
+def test_figure_annotation_includes_liability_line_only_when_given():
+    bins = bin_by_ld_score(
+        np.array([1.0, 2.0, 3.0, 4.0]), np.array([1.0, 2.0, 3.0, 4.0]), n_bins=2
+    )
+    fit = LdscFit(intercept=1.0, h2_obs=0.2)
+    config = LdscDiagnosticPlotConfig(n_bins=2)
+    with_liab = build_diagnostic_figure(
+        bins=bins, fit=fit, n=1000.0, m=500.0, config=config, h2_liability=0.45
+    )
+    without_liab = build_diagnostic_figure(
+        bins=bins, fit=fit, n=1000.0, m=500.0, config=config, h2_liability=None
+    )
+    assert "liability" in with_liab.layout.annotations[0].text.lower()
+    assert "liability" not in without_liab.layout.annotations[0].text.lower()
 
 
 def test_figure_anchors_a_trace_to_the_secondary_axis():

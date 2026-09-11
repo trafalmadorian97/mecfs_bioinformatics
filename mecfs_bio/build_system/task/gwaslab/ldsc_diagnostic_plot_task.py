@@ -38,6 +38,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from attrs import field, frozen
+from gwaslab.extension.ldsc.ldsc_regressions import h2_obs_to_liab
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -55,6 +56,7 @@ from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
     total_m_5_50,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    BinaryPhenotypeSampleInfo,
     PhenotypeInfo,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
@@ -229,6 +231,22 @@ def gwaslab_observed_fit(
     )
 
 
+def liability_h2(h2_obs: float, phenotype_info: PhenotypeInfo) -> float | None:
+    """The liability-scale heritability for a binary phenotype, or None for a quantitative one
+    (which has no liability scale). Uses gwaslab's own observed-to-liability conversion so the value
+    matches the liability heritability the heritability task reports, with the sample prevalence as
+    P and the estimated population prevalence as K."""
+    if isinstance(phenotype_info, BinaryPhenotypeSampleInfo):
+        return float(
+            h2_obs_to_liab(
+                h2_obs,
+                phenotype_info.sample_prevalence,
+                phenotype_info.estimated_population_prevalence,
+            )
+        )
+    return None
+
+
 def resolve_sample_size(
     sumstats: pd.DataFrame, set_n: int | None, phenotype_info: PhenotypeInfo
 ) -> float:
@@ -252,9 +270,12 @@ def build_diagnostic_figure(
     n: float,
     m: float,
     config: LdscDiagnosticPlotConfig,
+    h2_liability: float | None = None,
 ) -> go.Figure:
     """Assemble the interactive figure: binned mean chi-square, the fitted line, a chi^2 = 1
-    reference, and a right-hand axis in chi^2 * M / N units whose slope reads as heritability."""
+    reference, and a right-hand axis in chi^2 * M / N units whose slope reads as heritability.
+
+    h2_liability, when given (a binary phenotype), is annotated as a second heritability line."""
     x_min = config.x_range[0] if config.x_range else float(bins.mean_ld.min())
     x_max = config.x_range[1] if config.x_range else float(bins.mean_ld.max())
     ld_line = np.array([x_min, x_max])
@@ -325,13 +346,18 @@ def build_diagnostic_figure(
             hoverinfo="skip",
         )
     )
+    annotation_lines = [f"h² (observed) = {fit.h2_obs:.4f}"]
+    if h2_liability is not None:
+        annotation_lines.append(f"h² (liability) = {h2_liability:.4f}")
+    annotation_lines.append(f"intercept = {fit.intercept:.4f}")
+
     fig.update_layout(
         template="plotly_white",
         title=config.title,
         xaxis=dict(title="LD score", range=[x_min, x_max]),
         yaxis=dict(title="mean χ²", range=primary_range),
         yaxis2=dict(
-            title="χ² · M / N  (slope = h²)",
+            title="χ² · M / N",
             overlaying="y",
             side="right",
             range=secondary_range,
@@ -349,10 +375,7 @@ def build_diagnostic_figure(
                 showarrow=False,
                 align="right",
                 bgcolor="rgba(255,255,255,0.8)",
-                text=(
-                    f"h² (observed) = {fit.h2_obs:.4f}<br>"
-                    f"intercept = {fit.intercept:.4f}"
-                ),
+                text="<br>".join(annotation_lines),
             )
         ],
     )
@@ -426,7 +449,12 @@ class LdscDiagnosticPlotTask(Task):
         fit = self.fit_estimator(sumstats, ref_ld_chr, self.ldsc_task.build)
 
         fig = build_diagnostic_figure(
-            bins=bins, fit=fit, n=n, m=total_m, config=self.config
+            bins=bins,
+            fit=fit,
+            n=n,
+            m=total_m,
+            config=self.config,
+            h2_liability=liability_h2(fit.h2_obs, self.ldsc_task.phenotype_info),
         )
         out_dir = scratch_dir / "ldsc_diagnostic_plot"
         write_plots_to_dir(out_dir, {"ldsc_diagnostic": fig})
