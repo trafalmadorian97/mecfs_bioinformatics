@@ -6,9 +6,9 @@ def go():
     DEFAULT_RUNNER.run(
         [
             LD_SAME_BRANCH_CORRELATION_DIAGRAM
-        ]
+        ],
+        must_rebuild_transitive=[LD_SAME_BRANCH_CORRELATION_DIAGRAM]
     )
 
 if __name__ == "__main__":
     go()
-    

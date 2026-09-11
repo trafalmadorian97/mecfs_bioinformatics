@@ -1,4 +1,4 @@
-#set page(width: auto, height: auto, margin: 6pt)
+#set page(width: auto, height: auto, margin: 6pt, fill: none)
 #set text(size: 12pt)
 
 // A minimal node: a rounded box around its label.

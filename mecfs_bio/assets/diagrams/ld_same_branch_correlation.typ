@@ -1,7 +1,12 @@
 #import "@preview/cetz:0.3.4"
-#import "palette.typ": ink, muted, primary, secondary, tertiary
+#import "palette.typ": ink, muted, categorical
 
-#set page(width: auto, height: auto, margin: 10pt)
+// Local names for the categorical series used in this diagram.
+#let (primary, secondary, tertiary, ..) = categorical
+
+// fill: none keeps the SVG background transparent so it composites over whatever
+// the page (or callout) background is, rather than baking in a white box.
+#set page(width: auto, height: auto, margin: 10pt, fill: none)
 #set text(size: 10pt)
 
 #cetz.canvas(length: 1cm, {
