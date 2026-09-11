@@ -365,16 +365,21 @@ def build_diagnostic_figure(
         ),
         legend=dict(yanchor="top", y=0.99, xanchor="left", x=0.01),
         annotations=[
+            # Nudged off the exact bottom-right corner and drawn as an opaque bordered box so it
+            # cannot run into the lowest right-axis (chi^2 * M / N) tick label when the plot is small.
             dict(
                 xref="paper",
                 yref="paper",
-                x=0.99,
-                y=0.02,
+                x=0.97,
+                y=0.05,
                 xanchor="right",
                 yanchor="bottom",
                 showarrow=False,
                 align="right",
-                bgcolor="rgba(255,255,255,0.8)",
+                bgcolor="white",
+                bordercolor=_REFERENCE_COLOR,
+                borderwidth=1,
+                borderpad=5,
                 text="<br>".join(annotation_lines),
             )
         ],
