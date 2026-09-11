@@ -328,7 +328,7 @@ def build_diagnostic_figure(
             x=[x_min, x_max],
             y=[1.0, 1.0],
             mode="lines",
-            name="χ² = 1 (no confounding)",
+            name="χ² = 1",
             line=dict(color=_REFERENCE_COLOR, width=2, dash="dash"),
             hoverinfo="skip",
         )
