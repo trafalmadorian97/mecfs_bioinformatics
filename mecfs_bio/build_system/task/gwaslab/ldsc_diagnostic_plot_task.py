@@ -370,8 +370,8 @@ def build_diagnostic_figure(
             dict(
                 xref="paper",
                 yref="paper",
-                x=0.97,
-                y=0.05,
+                x=0.99,
+                y=0.02,
                 xanchor="right",
                 yanchor="bottom",
                 showarrow=False,

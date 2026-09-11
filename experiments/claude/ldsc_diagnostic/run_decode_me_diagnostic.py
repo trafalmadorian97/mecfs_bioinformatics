@@ -11,7 +11,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc_diagn
 
 
 def go():
-    DEFAULT_RUNNER.run(targets=[DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT])
+    DEFAULT_RUNNER.run(targets=[DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT], must_rebuild_transitive=[DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT])
 
 
 if __name__ == "__main__":
