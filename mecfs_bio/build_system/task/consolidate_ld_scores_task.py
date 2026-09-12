@@ -75,6 +75,38 @@ def total_m_5_50(ld_scores: narwhals.DataFrame) -> float:
     return float(per_chromosome[LD_SCORE_M_5_50_COL].sum())
 
 
+def read_ld_scores(dir_path: Path) -> narwhals.LazyFrame:
+    """Read every chromosome's LD scores from a standard-format directory into one lazy frame,
+    sorted genome-wide, with each chromosome's common-variant count denormalized onto its rows
+    in the M_5_50 column. The genome-wide total is recovered with total_m_5_50.
+
+    This is the shared reader behind both ConsolidateLDScoresTask (which sinks it to parquet)
+    and the LD-score diagnostic plot (which bins variants by these scores)."""
+    frames = []
+    for ld_file in sorted(dir_path.glob(f"*{_LD_SCORE_SUFFIX}")):
+        # Deriving the M_5_50 path from the score file we are reading is what ties the two
+        # together: a chromosome can never contribute variants without its count, or vice versa.
+        m_path = ld_file.parent / (
+            ld_file.name[: -len(_LD_SCORE_SUFFIX)] + _M_5_50_SUFFIX
+        )
+        assert m_path.exists(), (
+            f"{ld_file} has no matching {m_path.name}; LD scores must come with the "
+            "common-variant count for the same chromosome"
+        )
+        frames.append(
+            scan_dataframe(
+                ld_file,
+                DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
+            ).with_columns(narwhals.lit(read_m_5_50(m_path)).alias(LD_SCORE_M_5_50_COL))
+        )
+    assert frames, (
+        f"no *{_LD_SCORE_SUFFIX} files under {dir_path}; nothing to consolidate"
+    )
+    return narwhals.concat(frames, how="vertical").sort(
+        by=[LD_SCORE_CHROM_COL, LD_SCORE_POS_COL]
+    )
+
+
 @frozen
 class ConsolidateLDScoresTask(Task):
     """
@@ -92,33 +124,8 @@ class ConsolidateLDScoresTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         asset = fetch(self.extracted_ld_scores_task.asset_id)
         assert isinstance(asset, DirectoryAsset)
-        frames = []
-        for ld_file in sorted(asset.path.glob(f"*{_LD_SCORE_SUFFIX}")):
-            # Deriving the M_5_50 path from the score file we are reading is what ties the two
-            # together: a chromosome can never contribute variants without its count, or vice versa.
-            m_path = ld_file.parent / (
-                ld_file.name[: -len(_LD_SCORE_SUFFIX)] + _M_5_50_SUFFIX
-            )
-            assert m_path.exists(), (
-                f"{ld_file} has no matching {m_path.name}; LD scores must come with the "
-                "common-variant count for the same chromosome"
-            )
-            frames.append(
-                scan_dataframe(
-                    ld_file,
-                    DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
-                ).with_columns(
-                    narwhals.lit(read_m_5_50(m_path)).alias(LD_SCORE_M_5_50_COL)
-                )
-            )
-        assert frames, (
-            f"no *{_LD_SCORE_SUFFIX} files under {asset.path}; nothing to consolidate"
-        )
-        result = narwhals.concat(frames, how="vertical").sort(
-            by=[LD_SCORE_CHROM_COL, LD_SCORE_POS_COL]
-        )
         out_path = scratch_dir / "out.parquet"
-        result.sink_parquet(out_path)
+        read_ld_scores(asset.path).sink_parquet(out_path)
         return FileAsset(out_path)
 
     @classmethod
