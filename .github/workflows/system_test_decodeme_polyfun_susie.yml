@@ -1,0 +1,18 @@
+name: system_test_polyfun_susie_decode_me
+on:
+  schedule:
+    - cron: "0 4 * * 5"   #Run Friday at 4 UTC
+  workflow_dispatch: {}
+
+jobs:
+  lead_variants:
+    timeout-minutes: 600
+    name: Run PolyFun-SUSIE
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v7
+      - name: Run PolyFun-SUSIE integration test
+        uses: ./.github/actions/run-system-test
+        with:
+          pytest-target: test_mecfs_bio/system/test_decode_me_polyfun_susie.py
