@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from pathlib import Path
 
 import polars as pl
@@ -5,11 +6,14 @@ import polars as pl
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr1_174_128_548 import (
     POLYFUN_EXPLAIN_CHR1_174,
 )
+from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
 from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
+from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     PIP_COLUMN,
@@ -72,7 +76,9 @@ def test_decode_me_polyfun_susie_lead_variant(tmp_path: Path):
         _assert_documented_lead_variant(store, group.susie_polyfun)
 
 
-def _assert_documented_lead_variant(store, polyfun_susie_task) -> None:
+def _assert_documented_lead_variant(
+    store: Mapping[AssetId, Asset], polyfun_susie_task: Task
+) -> None:
     """
     Check the highest-PIP variant of the L=10 PolyFun SUSIE run against the documented lead variant.
 
