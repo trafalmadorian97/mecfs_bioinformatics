@@ -4,12 +4,12 @@ tags:
 hide:
 - toc
 ---
-# Polyfun Chr1 173.5M-174.5M
+# Chr1 173.5M-174.5M
 
 
 ## Methodology
 
-To extend my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] fine-mapping of the DecodeME GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a prior derived from functional genomic annotations, instead of a uniform prior.
+To extend my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) of the [DecodeME](../../../../../Data_Sources/DecodeME.md) GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a prior derived from functional genomic annotations, instead of a uniform prior.
 
 
 As a linkage disequilibrium reference, I used a [UK Biobank LD matrix hosted on AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used [GWASLab](https://github.com/Cloufield/gwaslab) to liftover the DecodeME GWAS-1 summary statistics to GRCh37.
@@ -44,13 +44,13 @@ The resulting prior upweights genetic variants with functional annotations that 
 I begin by comparing the credible set variants across the $L=1$, $L=2$, $L=10$, and strict $L=10$ runs. The results are plotted in the UpsetPlot below:
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
 alt="upset plot for chrom 1")
 }}
 
 Restricting to the minimal set of variants constituting a total PIP exceeding 50% produces the UpsetPlot:
 
-{{png_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_cs50_variants.png",
+{{static_img_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_cs50_variants.png",
 alt="cs50 upset plot for chrom 1")
 }}
 

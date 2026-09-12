@@ -4,7 +4,7 @@ tags:
 ---
 # Polyfun Chr17 50M-51M
 
-I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] fine-mapping to the DecodeME[@genetics2025initial] GWAS-1 signal on Chromosome 17, using the same methodology I previously applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
+I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal on Chromosome 17, using the same methodology I previously applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
 
 
 ### Comparison of configurations
@@ -20,13 +20,13 @@ These plots show that in general, the variant sets selected by the four runs are
 
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr17_50000000_51000000_palindromes_keep_polyfun_upset_all_cs_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr17_50000000_51000000_palindromes_keep_polyfun_upset_all_cs_variants.png",
 alt="upset plot for chrom 17")
 }}
 
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr17_50000000_51000000_palindromes_keep_polyfun_upset_cs50_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr17_50000000_51000000_palindromes_keep_polyfun_upset_cs50_variants.png",
 alt="50 PIP upset plot for chrom 17")
 }}
 

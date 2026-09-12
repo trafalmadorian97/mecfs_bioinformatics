@@ -125,7 +125,7 @@ def define_env(env):
         return text
 
     @env.macro
-    def png_embed(src, alt="", caption=""):
+    def static_img_embed(src, alt="", caption="", width=""):
         """
         Embed a PNG (or other static image) using a path relative to the project
         root, mirroring :func:`plotly_embed` so that static and interactive
@@ -151,10 +151,18 @@ def define_env(env):
             the image's rendered width, so a long caption gets squished into a
             narrow central column. The full-width div matches how plotly_embed
             and data_table render their captions.
+        width : str
+            Optional CSS width for the image (e.g. "100%"). Left empty the image
+            renders at its natural size, capped at the page width. Set it to
+            force a rendered width -- pass "100%" to make a scalable figure (an
+            SVG with a viewBox) grow to fill the content column instead of
+            stopping at its small intrinsic pt size. Prefer this only for vector
+            images, since forcing a width larger than a raster PNG's pixel
+            dimensions upscales and blurs it.
         """
         if not Path(src).is_file():
             raise FileNotFoundError(
-                f"png_embed: '{src}' does not exist "
+                f"static_img_embed: '{src}' does not exist "
                 f"(referenced from page '{env.page.file.src_uri}')"
             )
 
@@ -162,10 +170,12 @@ def define_env(env):
             src, env.conf["docs_dir"], env.page.file.dest_uri
         )
 
-        # Use max-width (not width) so the image renders at its natural size and
-        # only shrinks when it would overflow the page — matching how a plain
-        # markdown ``![](...)`` image behaves under Material's default CSS.
-        img = f'<img src="{relative_url}" alt="{alt}" style="max-width:100%; height:auto;">'
+        # Default to max-width (not width) so the image renders at its natural
+        # size and only shrinks when it would overflow the page — matching how a
+        # plain markdown ``![](...)`` image behaves under Material's default CSS.
+        # An explicit width overrides this to force a rendered size.
+        sizing = f"width:{width};" if width else "max-width:100%;"
+        img = f'<img src="{relative_url}" alt="{alt}" style="{sizing} height:auto;">'
         if caption:
             return (
                 f'<div style="width:100%; margin:0; text-align:center;">\n'
@@ -246,7 +256,9 @@ def define_env(env):
         src,
         alt="",
     ):
-        return png_embed(src=src, alt=alt, caption=SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION)
+        return static_img_embed(
+            src=src, alt=alt, caption=SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION
+        )
 
     @env.macro
     def susie_polyfun_data_table(src, id, height="775px", precision=4):

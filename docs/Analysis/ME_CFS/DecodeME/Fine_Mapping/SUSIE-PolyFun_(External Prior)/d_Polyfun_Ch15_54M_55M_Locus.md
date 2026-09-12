@@ -4,7 +4,7 @@ tags:
 ---
 # Polyfun Chr15 54M-55M
 
-I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] fine-mapping to the DecodeME GWAS-1 signal[@genetics2025initial] on Chromosome 15, using the same methodology as I applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
+I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md) GWAS-1 signal[@genetics2025initial] on Chromosome 15, using the same methodology as I applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
 
 
 ## Results
@@ -14,14 +14,14 @@ I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] fine-mappin
 The first UpSetPlot below shows that all 4 SUSIE configurations found the same set of variants.
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
 alt="upset plot for chrom 15")
 }}
 
 The second UpSetPlot compares the minimal set of variants needed to achieve 50% PIP.  Again, this set of variants is identical across all 4 SUSIE configurations.
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_cs50_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_cs50_variants.png",
 alt="50 PIP upset plot for chrom 15")
 }}
 

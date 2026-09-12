@@ -2,6 +2,10 @@ from pathlib import Path, PurePath
 
 from attrs import frozen
 
+from mecfs_bio.build_system.meta.diagram_file_meta import (
+    DIAGRAM_EXTENSION,
+    DiagramFileMeta,
+)
 from mecfs_bio.build_system.meta.executable_meta import ExecutableMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
@@ -43,6 +47,7 @@ _GWAS = PurePath("gwas")
 _REFERENCE_DATA = PurePath("reference_data")
 _OTHER_FILES = PurePath("other_files")
 _EXECUTABLE = PurePath("executable")
+_DIAGRAMS = PurePath("diagrams")
 
 
 def simple_meta_to_relative_path(m: Meta) -> PurePath:
@@ -130,6 +135,8 @@ def simple_meta_to_relative_path(m: Meta) -> PurePath:
     if isinstance(m, ResultArchiveMeta):
         pth = _GWAS / m.trait / m.project / m.sub_dir / (m.id + m.extension)
         return pth
+    if isinstance(m, DiagramFileMeta):
+        return _DIAGRAMS / (m.asset_id + DIAGRAM_EXTENSION)
     raise ValueError(f"Unknown meta {m} of type {type(m)}.")
 
 
