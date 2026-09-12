@@ -4,12 +4,12 @@ tags:
 hide:
 - toc
 ---
-# Polyfun Chr1 173.5M-174.5M
+# Chr1 173.5M-174.5M
 
 
 ## Methodology
 
-To extend my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] fine-mapping of the DecodeME GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a prior derived from functional genomic annotations, instead of a uniform prior.
+To extend my [earlier](../SUSIE/a_Chr1_173M_174M_Locus.md) SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) of the [DecodeME](../../../../../Data_Sources/DecodeME.md) GWAS-1 signal[@genetics2025initial], I applied SUSIE again, but this time used a prior derived from functional genomic annotations, instead of a uniform prior.
 
 
 As a linkage disequilibrium reference, I used a [UK Biobank LD matrix hosted on AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used [GWASLab](https://github.com/Cloufield/gwaslab) to liftover the DecodeME GWAS-1 summary statistics to GRCh37.
