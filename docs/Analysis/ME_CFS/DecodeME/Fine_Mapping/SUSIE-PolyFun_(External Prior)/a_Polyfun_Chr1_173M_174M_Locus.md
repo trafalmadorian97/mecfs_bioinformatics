@@ -44,13 +44,13 @@ The resulting prior upweights genetic variants with functional annotations that 
 I begin by comparing the credible set variants across the $L=1$, $L=2$, $L=10$, and strict $L=10$ runs. The results are plotted in the UpsetPlot below:
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
 alt="upset plot for chrom 1")
 }}
 
 Restricting to the minimal set of variants constituting a total PIP exceeding 50% produces the UpsetPlot:
 
-{{png_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_cs50_variants.png",
+{{static_img_embed("docs/_figs/decode_me_polyfun_explainchr1_173500000_174500000_palindromes_keep_polyfun_upset_cs50_variants.png",
 alt="cs50 upset plot for chrom 1")
 }}
 

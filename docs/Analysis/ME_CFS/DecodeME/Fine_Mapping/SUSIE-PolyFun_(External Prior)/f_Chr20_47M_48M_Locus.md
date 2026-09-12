@@ -18,13 +18,13 @@ The UpSetPlots below illustrate respectively
 
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr20_47000000_48200000_palindromes_keep_polyfun_upset_all_cs_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr20_47000000_48200000_palindromes_keep_polyfun_upset_all_cs_variants.png",
 alt="upset plot for chrom 20")
 }}
 
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr20_47000000_48200000_palindromes_keep_polyfun_upset_cs50_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr20_47000000_48200000_palindromes_keep_polyfun_upset_cs50_variants.png",
 alt="50 PIP upset plot for chrom 17")
 }}
 
