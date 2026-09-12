@@ -2,9 +2,6 @@
 This file contains a list of figures to be exported for use in documentation
 """
 
-from mecfs_bio.assets.diagrams.example_genotype_phenotype import (
-    EXAMPLE_GENOTYPE_PHENOTYPE_DIAGRAM,
-)
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
 )
@@ -464,8 +461,6 @@ ALL_FIGURE_TASKS: list[Task] = [
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
-    # Diagrams
-    EXAMPLE_GENOTYPE_PHENOTYPE_DIAGRAM,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
