@@ -34,12 +34,12 @@ In my SUSIE runs, I retained palindromic SNPs whose strand orientation GWASLAB w
 In all 4 runs, SUSIE found a single diffuse credible set.  Moreover, this credible set contained the same 86 variants in all four runs, as illustrated in the UpSet plot below:
 
 
-{{ png_embed("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_upset_plot.png", alt="upset_chrom_1") }}
+{{ static_img_embed("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_upset_plot.png", alt="upset_chrom_1") }}
 
 
 The next figure illustrates the SUSIE results for $L=10$. It is representative.
 
-{{ png_embed("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_susie_stackplot.png", alt="chr1_stackplot") }}
+{{ static_img_embed("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_susie_stackplot.png", alt="chr1_stackplot") }}
 
 - The top panel is a heatmap in which pixel $(i,j)$ is colored according to the squared correlation between variants $i$ and $j$.  The heatmap reveals the local linkage disequilibrium (LD) structure in the vicinity of the GWAS hit, which is a determinant of SUSIE's results when $L>1$.
 

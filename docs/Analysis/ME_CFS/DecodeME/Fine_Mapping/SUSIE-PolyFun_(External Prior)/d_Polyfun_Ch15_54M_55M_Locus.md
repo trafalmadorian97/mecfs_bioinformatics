@@ -14,14 +14,14 @@ I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] fine-mappin
 The first UpSetPlot below shows that all 4 SUSIE configurations found the same set of variants.
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_all_cs_variants.png",
 alt="upset plot for chrom 15")
 }}
 
 The second UpSetPlot compares the minimal set of variants needed to achieve 50% PIP.  Again, this set of variants is identical across all 4 SUSIE configurations.
 
 {{
-png_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_cs50_variants.png",
+static_img_embed("docs/_figs/decode_me_polyfun_explainchr15_54500000_55500000_palindromes_keep_polyfun_upset_cs50_variants.png",
 alt="50 PIP upset plot for chrom 15")
 }}
 

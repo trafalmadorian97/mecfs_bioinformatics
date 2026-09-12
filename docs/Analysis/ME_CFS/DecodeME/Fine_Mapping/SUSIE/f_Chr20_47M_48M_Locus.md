@@ -22,7 +22,7 @@ As expected, the UpSet plot for this locus reveals that the variants found by th
 
 
 
-{{ png_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_upset_plot.png", alt="chr20_upset_plot") }}
+{{ static_img_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_upset_plot.png", alt="chr20_upset_plot") }}
 
 
 
@@ -31,7 +31,7 @@ As expected, the UpSet plot for this locus reveals that the variants found by th
 The Stackplot and variant list for the base $L=10$ run shows the highly concentrated nature of one of the credible sets.
 
 
-{{ png_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_susie_stackplot.png", alt="chr20_l10") }}
+{{ static_img_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_susie_stackplot.png", alt="chr20_l10") }}
 
 
 
@@ -40,7 +40,7 @@ The Stackplot and variant list for the base $L=10$ run shows the highly concentr
 In contrast, the stackplot for the strict $L=10$ run reveals a single credible set
 
 
-{{ png_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_susie_stackplot_strict.png", alt="chr20_strict") }}
+{{ static_img_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_susie_stackplot_strict.png", alt="chr20_strict") }}
 
 
 
