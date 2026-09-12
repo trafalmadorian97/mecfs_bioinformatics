@@ -69,11 +69,12 @@
 
   // Panel titles.
   content((2.0, 3.3), text(size: 9pt, style: "italic", fill: muted)[genealogy])
-  content((8.25, 3.3), text(size: 9pt, style: "italic", fill: muted)[sequence])
+  content((8.25, 3.3), text(size: 9pt, style: "italic", fill: muted)[genomic sequence])
 })
 
 #v(6pt)
 #align(center, {
   set text(size: 9pt, fill: ink)
-  [Dots indicate variants. Dots with the same colour are perfectly correlated ($r^2 = 1$).]
+  [Dots indicate variants. Variants colored the same are perfectly correlated ($r^2 = 1$). \
+  H1-H5 indicate haplotypes.]
 })
