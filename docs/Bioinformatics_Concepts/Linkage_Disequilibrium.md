@@ -12,12 +12,12 @@ There are two main drivers of LD: mutation and recombination.
 
 ### Mutation
 
-For simplicity, first consider LD in the absence of recombination, as occurs in mitochondrial DNA, certain regions of the Y chromosome, and a few other genomic regions.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutations, and the fates of populations containing these mutations.  
+For simplicity, first consider LD in the absence of recombination, as occurs in mitochondrial DNA, certain regions of the Y chromosome, and a few other genomic regions.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutations.
 
-The diagram below illustrates this concept: variants are correlated if the mutations that produced them occurred on the same branch of the geneological tree.
+The diagram below illustrates this concept: variants are correlated if the mutations that produced them occurred on the same branch of the genealogical tree. Genomic position is irrelevant.
 
 {{
-png_embed(src="docs/_figs/ld_same_branch_correlation.svg")
+static_img_embed(src="docs/_figs/ld_same_branch_correlation.svg", width="100%")
 }}
 
 

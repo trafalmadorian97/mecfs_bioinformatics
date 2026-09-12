@@ -10,7 +10,7 @@ I applied MAGMA to the Kerrebijin et al.'s GWAS of Fibromyalgia[@kerrebijn2026ge
 ## Results
 The results are plotted below, first as a static image, then as an interactive plot:
 
-{{ png_embed("docs/_figs/kerrebijin_fibro_hba_magma_independent_cluster_plot_svg/hba_magma_fig.svg", alt="hba-magma-plot-for-fibromyalgia") }}
+{{ static_img_embed("docs/_figs/kerrebijin_fibro_hba_magma_independent_cluster_plot_svg/hba_magma_fig.svg", alt="hba-magma-plot-for-fibromyalgia") }}
 
 
 {{ plotly_embed("docs/_figs/kerrebijin_fibro_hba_magma_plot_extracted.html", id="decode-me-hba-magma") }}
