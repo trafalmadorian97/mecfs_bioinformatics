@@ -28,12 +28,12 @@ static_img_embed("docs/_figs/decode_me_polyfun_explainchr20_47000000_48200000_pa
 alt="50 PIP upset plot for chrom 17")
 }}
 
-Unlike the previous loci, but consistent with my [uniform-prior runs at the chromosome 20 locus](../SUSIE/f_Chr20_47M_48M_Locus.md), here the results produced by SUSIE depend on the chosen configuration: The $L=10$ and $L=2$ runs are similar, and both produce two credible sets, while the $L=1$ and strict $L=10$ runs are also similar, and produce a single credible set.
+Unlike the previous loci, but consistent with my [uniform-prior runs at the chromosome 20 locus](../SUSIE/f_Chr20_47M_48M_Locus.md), here the results produced by SUSIE depend on the chosen configuration: The $L=10$ and $L=2$ runs  both produce two credible sets, while the $L=1$ and strict $L=10$ runs produce a single credible set.
 
 
 ### Results ($L=10$)
 
-The plot and table below show the results for the $L=10$ run, which is similar to the $L=2 run$
+The plot and table below show the results for the $L=10$ run, which is similar to the $L=2$ run
 
 
 
@@ -77,7 +77,7 @@ susie_polyfun_variant_detail_table(src="docs/_figs/decode_me_polyfun_explainchr2
 
 ### Analysis
 
-Given the significance differences between the $L=10$/$L=2$ SUSIE results on the one hand, and the $L=1$ and strict $L=10$ SUSIE results on the other, it is difficult to know which to credit. As was the case in the uniform-prior SUSIE runs, the $L=10$ and $L=2$ PolyFun-prior runs assigns very high confidence to **20:47743125:C:A**  being a causal SNP, while the $L=1$ and strict $L=10$ run does not weight it at all.
+Given the significance differences between the $L=10$ and $L=2$ SUSIE results on the one hand, and the $L=1$ and strict $L=10$ SUSIE results on the other, it is difficult to know which to credit. As was the case in the uniform-prior SUSIE runs, the $L=10$ and $L=2$ PolyFun-prior runs assigns very high confidence to **20:47743125:C:A**  being a causal SNP, while the $L=1$ and strict $L=10$ run does not weight it at all.
 
-However, all the PolyFun SUSIE runs at this locus do assign significant PIP to the variant **20:47663382:A:G**, which has high-weight promoter functional annotations.  This consensus across runs may increase our confidence in this variant.
+However, all the PolyFun SUSIE runs at this locus do assign significant PIP to the variant **20:47663382:A:G**, which has high-weight promoter functional annotations.  This consensus across configurations may increase our confidence in this variant.
 
