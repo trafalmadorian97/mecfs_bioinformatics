@@ -2,9 +2,9 @@
 tags:
   - SuSiE
 ---
-# Polyfun Chr15 54M-55M
+# Chr15 54M-55M
 
-I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md) GWAS-1 signal[@genetics2025initial] on Chromosome 15, using the same methodology as I applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
+I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal on Chromosome 15, using the same methodology as I applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
 
 
 ## Results
@@ -28,7 +28,7 @@ alt="50 PIP upset plot for chrom 15")
 
 ### Detailed Fine mapping results
 
-In contrast to the [earlier chromosome 1 run](a_Polyfun_Chr1_173M_174M_Locus.md) at the chromosome 15 locus, the uniform-prior and PolyFun-prior runs produce very similar results. The plot below provides an overview of the results
+In contrast to the [earlier chromosome 1 run](a_Polyfun_Chr1_173M_174M_Locus.md), the uniform-prior and PolyFun-prior runs produce very similar results at the chromosome 15 locus. The plot below provides an overview of the results
 
 
 {{

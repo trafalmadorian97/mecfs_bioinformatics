@@ -4,7 +4,7 @@ tags:
 hide:
 - toc
 ---
-# MAGMA HBA Analysis
+# MAGMA HBA
 I applied MAGMA to the Diastolic Blood Pressure GWAS of Keaton et al.[@keaton2024genome]  using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] as a reference.
 
 ## Results
