@@ -40,10 +40,10 @@ Consider the C/G variant in the table above.  At position 90002963, the referenc
 - ALLELE 0 is the reference allele, while ALLELE 1 is the alternate allele, and the alleles refer to the reverse strand.
 
 
-It is impossible to distinguish these cases using only CHROM/GENPOS/ALLELE0/ALLELE1.
+It is impossible to distinguish these cases using only CHROM/GENPOS/ALLELE0/ALLELE1. This is an example what is called a _palindromic variant_.
 
 
-If one has access to a reference database of standardized genetic variants with allele frequencies, one can sometime disambiguate using these frequencies. Suppose as above that we have a palindromic variant and ALLELE 1 matches the reference allele in the database. The procedure is:
+If one has access to a reference database of standardized forward-strand genetic variants with allele frequencies, one can sometime disambiguate palindromic variants using these frequencies. Suppose as above that we have a palindromic variant and ALLELE1 matches the reference allele in the database. The procedure is:
 
 
 - If the allele frequency of ALLELE1 is close to 0.5, we can't disambiguate. Otherwise:
@@ -65,7 +65,7 @@ Consider the following summary statistics row
 
 Suppose that due to incomplete documentation (which is not uncommon for summary statistics), we do not know whether ALLELE0 is the reference allele (so that the variant is a deletion), or whether ALLELE1 is the reference allele (so that the variant is an insertion).
 
-Unfortunately, just comparing against a fasta file containing the hg19 reference sequence cannot resolve this.  To see why, note that at hg19 genomic position 54698192 on chromosome 15, the reference sequence has the value TGGGGGG. Thus both T and TG match the reference sequence at genetic position 15:54698192. As above, we can only confidently resolve this by using allele frequency information from a population database for a matched population.
+Unfortunately, just comparing against a FASTA file containing the hg19 reference sequence cannot resolve this.  To see why, note that at hg19 genomic position 54698192 on chromosome 15, the reference sequence has the value TGGGGGG. Thus both T and TG match the reference sequence at genetic position 15:54698192. As in the case of palindromic variants, we can only confidently resolve ambiguous indels using allele frequency information from a population database for a matched population.
 
 
 
