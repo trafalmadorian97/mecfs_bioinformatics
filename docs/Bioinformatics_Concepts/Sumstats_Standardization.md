@@ -2,9 +2,9 @@
 
 It is often useful to convert GWAS summary statistics to a standard form before analyzing them. The use of a standard form facilitates comparisons between GWAS, and is expected by certain post-GWAS analysis tools.  Summary-statistics standardization a complex, multi-step process.
 
-## Step 1: Strand Standardization
+## Strand Standardization
 
-In the DNA double helix, the two strands are complementary: adenine (A) always pairs with thymine (T), and cytosine (C) always pairs with guanine (G)\footnote{For a discussion of the structure of DNA, see Chapter 4 of _Molecular Biology of the Cell_[@alberts2022molecular].  For a historical account of the discovery of this structure, see Judson's book[@judson1996eighth]}.  This means that the same variant can be represented equivalently by describing its base sequence on either strand.
+In the DNA double helix, the two strands are complementary: adenine (A) always pairs with thymine (T), and cytosine (C) always pairs with guanine (G)[^judson_note].  This means that the same variant can be represented equivalently by describing its base sequence on either strand.
 
 For instance, suppose that a GWAS summary statistics file contains the following data: 
 
@@ -51,11 +51,28 @@ If one has access to a reference database of standardized genetic variants with 
 - Compare the allele frequency of ALLELE1 to one minus the frequency of the reference allele in the database.  If there is a close match, we can assume the allele pair in the summary statistics is on the reverse strand.
 
 
+## Ambiguous Indels
 
 
-## Step 2: Left Normalization
+Consider the following summary statistics row
 
-Even if we restrict ourselves to the forward strand, the same genetic variant can still be represented in multiple ways.
+
+
+| CHROM |          GENPOS | ALLELE0 | ALLELE1 |        A1FREQ | 
+|------:|----------------:|:--------|:--------|--------------:|
+|    15 |        54698192 | TG      | T       |         0.845 |
+
+
+Suppose that due to incomplete documentation (which is not uncommon for summary statistics), we do not know whether ALLELE0 is the reference allele (so that the variant is a deletion), or whether ALLELE1 is the reference allele (so that the variant is an insertion).
+
+Unfortunately, just comparing against a fasta file containing the hg19 reference sequence cannot resolve this.  To see why, note that at hg19 genomic position 54698192 on chromosome 15, the reference sequence has the value TGGGGGG. Thus both T and TG match the reference sequence at genetic position 15:54698192. As above, we can only confidently resolve this by using allele frequency information from a population database for a matched population.
+
+
+
+
+## Left Normalization
+
+Even if we restrict ourselves to the forward strand, and even if we fix which allele is the reference allele, the same genetic variant can still be represented in multiple ways.
 
 This principle is demonstrated by the following examples from the [Center for Statistical Genetics at the University of Michigan:](https://genome.sph.umich.edu/w/index.php?title=Variant_Normalization)
 
@@ -77,3 +94,4 @@ todo
 
 todo
 
+[^judson_note]:For a discussion of the structure of DNA, see Chapter 4 of _Molecular Biology of the Cell_[@alberts2022molecular].  For a historical account of the discovery of this structure, see Judson's book[@judson1996eighth].
