@@ -49,12 +49,9 @@ def _write_members(directory: Path) -> None:
     ).write_parquet(directory / "baselineLF2.2.UKB.2.annot.parquet")
 
 
-def test_builds_sorted_allele_bearing_annotation_parquet(tmp_path: Path) -> None:
-    members = tmp_path / "members"
-    _write_members(members)
+def _run_task(tmp_path: Path, members: Path) -> pl.DataFrame:
     scratch = tmp_path / "scratch"
     scratch.mkdir()
-
     members_task = FakeTask(
         ReferenceDataDirectoryMeta(
             group="polyfun",
@@ -74,7 +71,13 @@ def test_builds_sorted_allele_bearing_annotation_parquet(tmp_path: Path) -> None
 
     result = task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
     assert isinstance(result, FileAsset)
-    df = pl.read_parquet(result.path)
+    return pl.read_parquet(result.path)
+
+
+def test_builds_sorted_allele_bearing_annotation_parquet(tmp_path: Path) -> None:
+    members = tmp_path / "members"
+    _write_members(members)
+    df = _run_task(tmp_path, members)
 
     # rs4 ordering-duplicate collapses (5 rows -> 4 on chr1) + 1 on chr2 = 5.
     assert df.height == 5
@@ -98,22 +101,25 @@ def test_builds_sorted_allele_bearing_annotation_parquet(tmp_path: Path) -> None
     assert ak.select("CHR", "BP", "ak").n_unique() == df.height
 
 
-def test_dedup_rejects_same_key_with_conflicting_annotations(tmp_path: Path) -> None:
-    # Same (CHR, BP) and same unordered allele key {C,G}, but DIFFERENT annotations
-    # -> the dedup assumption is violated and must be rejected, not silently
-    # collapsed by keeping an arbitrary row.
-    member = tmp_path / "baselineLF2.2.UKB.1.annot.parquet"
+def test_drops_ambiguous_keys_with_conflicting_annotations(tmp_path: Path) -> None:
+    # The baseline-LF source carries indel pairs such as T/TCA and TCA/T at one
+    # position: two distinct variants (e.g. a common deletion and a low-frequency
+    # insertion) with different annotations that share an unordered allele key.
+    # Downstream joins cannot tell them apart, so neither row may survive.
+    members = tmp_path / "members"
+    members.mkdir()
     pl.DataFrame(
         {
-            "CHR": [1, 1],
-            "SNP": ["rsX", "rsX"],
-            "BP": [400, 400],
-            "A1": ["C", "G"],
-            "A2": ["G", "C"],
-            "annotA": [2.0, 9.0],
-            "annotB": [0.1, 0.1],
+            "CHR": [1, 1, 1],
+            "SNP": ["rs1", "rsX", "rsX"],
+            "BP": [100, 400, 400],
+            "A1": ["A", "T", "TCA"],
+            "A2": ["C", "TCA", "T"],
+            "annotA": [1.0, 2.0, 0.0],
+            "annotB": [0.5, 0.0, 2.0],
         }
-    ).write_parquet(member)
+    ).write_parquet(members / "baselineLF2.2.UKB.1.annot.parquet")
 
-    with pytest.raises(AssertionError):
-        _dedup_one_chromosome(member)
+    df = _run_task(tmp_path, members)
+
+    assert df["SNP"].to_list() == ["rs1"]
