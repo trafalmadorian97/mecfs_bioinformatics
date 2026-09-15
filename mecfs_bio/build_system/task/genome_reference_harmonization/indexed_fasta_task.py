@@ -50,7 +50,10 @@ class IndexedFastaTask(Task):
         out_dir = scratch_dir / "indexed_fasta"
         out_dir.mkdir()
         fasta_path = out_dir / FASTA_FILENAME
-        with gzip.open(source.path, "rb") as compressed, open(fasta_path, "wb") as plain:
+        with (
+            gzip.open(source.path, "rb") as compressed,
+            open(fasta_path, "wb") as plain,
+        ):
             shutil.copyfileobj(compressed, plain, length=_COPY_CHUNK_BYTES)
         pysam.faidx(str(fasta_path))
         return DirectoryAsset(out_dir)

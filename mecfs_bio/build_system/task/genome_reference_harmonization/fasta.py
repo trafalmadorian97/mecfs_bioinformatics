@@ -30,10 +30,10 @@ _MAIN_CONTIG = re.compile(r"^(?:chr)?([0-9]+|X|Y|M|MT)$")
 
 @frozen
 class FaiEntry:
-    length: int # Number of actual nucleotide bases
-    offset: int # Location in fasta file where first base starts
-    line_bases: int # Each normal line contains this many bases
-    line_bytes: int # Each normal line contains this many bytes
+    length: int  # Number of actual nucleotide bases
+    offset: int  # Location in fasta file where first base starts
+    line_bases: int  # Each normal line contains this many bases
+    line_bytes: int  # Each normal line contains this many bytes
 
 
 def contig_to_gwaslab_code(name: str) -> int | None:
@@ -133,9 +133,9 @@ def _match_equal_length(
     )
     reference = genome[file_offsets] & _ASCII_UPPERCASE_MASK
     observed = (
-        np.frombuffer("".join(alleles.to_list()).encode("ascii"), dtype=np.uint8).reshape(
-            len(positions), length
-        )
+        np.frombuffer(
+            "".join(alleles.to_list()).encode("ascii"), dtype=np.uint8
+        ).reshape(len(positions), length)
         & _ASCII_UPPERCASE_MASK
     )
     return in_bounds & (reference == observed).all(axis=1)

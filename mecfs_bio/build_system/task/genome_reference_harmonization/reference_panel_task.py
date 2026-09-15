@@ -96,7 +96,9 @@ def _scan_sites(tsv_path: Path) -> pl.LazyFrame:
 
 
 def _contigs_by_code(sites: pl.LazyFrame) -> dict[int, list[str]]:
-    names = sites.select(pl.col(_CONTIG_COL).unique()).collect(engine="streaming")[_CONTIG_COL]
+    names = sites.select(pl.col(_CONTIG_COL).unique()).collect(engine="streaming")[
+        _CONTIG_COL
+    ]
     by_code: dict[int, list[str]] = {}
     skipped: list[str] = []
     for name in names.to_list():
@@ -165,7 +167,9 @@ class ReferencePanelAlleleFrequencyTask(Task):
         return FileAsset(out_path)
 
     @classmethod
-    def create(cls, vcf_task: Task, asset_id: str) -> "ReferencePanelAlleleFrequencyTask":
+    def create(
+        cls, vcf_task: Task, asset_id: str
+    ) -> "ReferencePanelAlleleFrequencyTask":
         source_meta = vcf_task.meta
         assert isinstance(source_meta, ReferenceFileMeta), (
             f"expected a ReferenceFileMeta source for {asset_id}, got {type(source_meta).__name__}"

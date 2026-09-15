@@ -54,7 +54,9 @@ def _run(tmp_path: Path) -> pl.DataFrame:
             id=AssetId(_VCF_ID),
         )
     )
-    task = ReferencePanelAlleleFrequencyTask.create(vcf_task=source, asset_id="panel_af")
+    task = ReferencePanelAlleleFrequencyTask.create(
+        vcf_task=source, asset_id="panel_af"
+    )
 
     def fetch(asset_id: AssetId) -> Asset:
         assert asset_id == _VCF_ID
@@ -67,7 +69,9 @@ def _run(tmp_path: Path) -> pl.DataFrame:
     return pl.read_parquet(result.path)
 
 
-def test_panel_keeps_main_contig_sites_with_unambiguous_frequencies(tmp_path: Path) -> None:
+def test_panel_keeps_main_contig_sites_with_unambiguous_frequencies(
+    tmp_path: Path,
+) -> None:
     panel = _run(tmp_path)
     assert panel.columns == PANEL_COLUMNS
     assert panel.rows() == [

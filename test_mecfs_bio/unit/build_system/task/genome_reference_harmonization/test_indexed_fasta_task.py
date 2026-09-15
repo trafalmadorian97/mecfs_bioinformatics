@@ -33,7 +33,11 @@ _GZ_ID = "fasta_gz"
 
 def _write_gzipped_fasta(path: Path) -> None:
     lines: list[str] = []
-    for name, sequence in {"chr1": _CHR1, "chrX": _CHRX, "chrUn_gl000220": "ACGT"}.items():
+    for name, sequence in {
+        "chr1": _CHR1,
+        "chrX": _CHRX,
+        "chrUn_gl000220": "ACGT",
+    }.items():
         lines.append(f">{name}")
         lines.extend(
             sequence[start : start + _LINE_WIDTH]
@@ -74,7 +78,9 @@ def test_indexed_fasta_maps_main_contigs_to_gwaslab_codes(tmp_path: Path) -> Non
 
 
 @pytest.mark.parametrize("max_gather_bytes", [1, 1_000_000])
-def test_reference_matches_across_line_wraps(tmp_path: Path, max_gather_bytes: int) -> None:
+def test_reference_matches_across_line_wraps(
+    tmp_path: Path, max_gather_bytes: int
+) -> None:
     fasta = _build_indexed_fasta(tmp_path)
     positions = np.array([1, 5, 5, 31, 31, 58, 60], dtype=np.int64)
     alleles = pl.Series(["A", "TG", "TC", "T" * 10, "T" * 11, "AGT", "TA"])
