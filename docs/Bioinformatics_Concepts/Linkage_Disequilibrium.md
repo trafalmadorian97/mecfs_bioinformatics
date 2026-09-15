@@ -3,8 +3,8 @@ Statistical dependence between genetic variants is called linkage disequilibrium
 
 ## The LD Matrix
 
-- When we are interested in patterns of LD across a genomic region with $n$ variants, it is common to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
-- Note, however, that this matrix $R$ reflects only pairwise dependence, and so is not a complete characterization of LD.  In particular, there are many possible higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
+- When we are interested in patterns of LD across a genomic region with $n$ variants, it is convenient to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
+- Note, however, that while the $R$ provides a useful description of the LD structure of a region, it reflects only pairwise dependence, and so is not a complete characterization of LD.  There are many possible higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
 
 ## Drivers
 
@@ -12,9 +12,9 @@ There are two main drivers of LD: mutation and recombination.
 
 ### Mutation
 
-For simplicity, first consider LD in the absence of recombination, as occurs in mitochondrial DNA, certain regions of the Y chromosome, and a few other genomic regions.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutations.
+For simplicity, first consider LD in the absence of recombination, as occurs in mitochondrial DNA, certain regions of the Y chromosome, and a some other genomic regions.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutations.
 
-The diagram below illustrates this concept: variants are correlated if the mutations that produced them occurred on the same branch of the genealogical tree. Genomic position is irrelevant.
+The diagram below illustrates this concept: variants are correlated if the mutations that produced them occurred on the same branch of the haplotype genealogical tree. Genomic position is irrelevant.
 
 {{
 static_img_embed(src="docs/_figs/ld_same_branch_correlation.svg", width="100%")
@@ -24,7 +24,6 @@ static_img_embed(src="docs/_figs/ld_same_branch_correlation.svg", width="100%")
 For further discussion of the LD in the absence of recombination, see Figure 7 from the HapMap paper[@international2005haplotype].
 
 
-[//]: # (![hapmap-mutation-fig]&#40;https://github.com/user-attachments/assets/d56eb383-5edf-4601-b4c5-a991acd25931&#41;)
 
 
 

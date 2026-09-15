@@ -68,7 +68,7 @@
   bead(10.55, tertiary, "G")
 
   // Panel titles.
-  content((2.0, 3.3), text(size: 9pt, style: "italic", fill: muted)[genealogy])
+  content((2.0, 3.3), text(size: 9pt, style: "italic", fill: muted)[haplotype genealogy])
   content((8.25, 3.3), text(size: 9pt, style: "italic", fill: muted)[genomic sequence])
 })
 
