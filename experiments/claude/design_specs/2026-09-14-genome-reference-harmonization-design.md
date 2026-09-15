@@ -421,10 +421,9 @@ The registry covers two sets of columns:
 Not registered (decided in plan review, 2026-09-15):
 - **DIRECTION.** Only metal, mrmega and the auto formats map to it. This repo uses none of them, so an input carrying it fails the unregistered-column assertion.
 - **NEAF and BETA_95L/BETA_95U.** Neither is a gwaslab standard column, and neither is used here.
+- **REF and ALT.** After harmonization NEA and EA carry the reference orientation, which a source REF/ALT pair could contradict, so an input carrying them fails the unregistered-column assertion.
 
-- STATUS, REF and ALT are dropped from the output.
-  - gwaslab regenerates STATUS when a later task builds a Sumstats object from the table.
-  - After harmonization, NEA and EA carry the reference orientation, which a source REF/ALT pair would only duplicate or contradict.
+- STATUS is dropped from the output; gwaslab regenerates it when a later task builds a Sumstats object from the table.
 - SNPID is left as-is, matching gwaslab.
 - Task option extra_column_rules accepts additional name -> FlipRule entries,
   so a dataset-specific column can be declared without editing the module.

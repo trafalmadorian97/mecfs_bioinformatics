@@ -1630,8 +1630,6 @@ GWASLAB_I2_COL = "I2"
 GWASLAB_SNPR2_COL = "SNPR2"
 GWASLAB_DOF_COL = "DOF"
 GWASLAB_MAF_COL = "MAF"
-GWASLAB_REF_COL = "REF"
-GWASLAB_ALT_COL = "ALT"
 ```
 
 Append to mecfs_bio/constants/regenie_constants.py:
@@ -1653,7 +1651,7 @@ Registry scope:
 - **Included:** gwaslab's standard column names (the formatbook "gwaslab" entry) plus the columns this repo's datasets actually carry: the regenie binary-trait columns, and N_EFF from GWASLAB_EFFECTIVE_SAMPLE_SIZE.
 - **Not registered:** DIRECTION (a meta-analysis direction string). Only formats this repo never uses map to it (metal, mrmega, the auto formats), so it fails loudly if it ever appears.
 - **BETA_95L/BETA_95U** are not gwaslab standard columns and are not used here.
-- **REF and ALT** are standard, but after harmonization NEA and EA carry the reference orientation. A source REF/ALT pair could disagree with it, so they are dropped from the output rather than kept.
+- **REF and ALT** are standard, but not registered (decided in plan review, 2026-09-15). After harmonization NEA and EA carry the reference orientation, and a source REF/ALT pair could contradict it, so an input carrying them fails loudly.
 
 ```python
 """
@@ -1673,7 +1671,6 @@ import polars as pl
 from attrs import frozen
 
 from mecfs_bio.constants.gwaslab_constants import (
-    GWASLAB_ALT_COL,
     GWASLAB_BETA_COL,
     GWASLAB_CHISQ_COL,
     GWASLAB_CHROM_COL,
@@ -1698,7 +1695,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_P_COL,
     GWASLAB_P_HET_COL,
     GWASLAB_POS_COL,
-    GWASLAB_REF_COL,
     GWASLAB_RSID_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
@@ -1778,10 +1774,8 @@ BOUND_PAIRS: tuple[InvertedBoundPair, ...] = (
     InvertedBoundPair(lower=GWASLAB_HAZARD_RATIO_95L_COL, upper=GWASLAB_HAZARD_RATIO_95U_COL),
 )
 
-# Dropped from the output.
-# STATUS describes gwaslab's processing, not this Task's. REF and ALT would duplicate,
-# and could contradict, the orientation that NEA and EA carry after harmonization.
-DROPPED_COLUMNS: frozenset[str] = frozenset({GWASLAB_STATUS_COL, GWASLAB_REF_COL, GWASLAB_ALT_COL})
+# Dropped from the output: STATUS describes gwaslab's processing, not this Task's.
+DROPPED_COLUMNS: frozenset[str] = frozenset({GWASLAB_STATUS_COL})
 _ALLELE_COLUMNS = frozenset({GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL})
 
 
