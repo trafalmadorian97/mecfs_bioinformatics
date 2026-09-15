@@ -1,12 +1,16 @@
 """
-The 1000 Genomes phase 3 EUR reference VCF (hg19), as distributed by gwaslab.
+The 1000 Genomes phase 3 EUR reference VCF (hg19), self-hosted and pinned by checksum.
 
-Multi-allelic variants are decomposed, variants are normalized, and INFO/AF carries
-the EUR allele frequency. Records are indexed for chromosomes 1-22 and X only.
+This is gwaslab's 1kg_eur_hg19 panel: multi-allelic variants are decomposed, variants
+are normalized, and INFO/AF carries the EUR allele frequency. Records are indexed for
+chromosomes 1-22 and X only.
 
-gwaslab republishes its panels in place (its hg38 panel silently gained chrX), so the
-checksum is what pins the content. If the URL stops serving this checksum, rehost the
-file as was done for eur_hg38_30x_vcf.py.
+It is rehosted rather than fetched from gwaslab's own URL, for the same reasons as
+eur_hg38_30x_vcf.py: gwaslab republishes its panels in place, and by September 2026
+the gwaslab link for this file served a "File Deleted" page. The copy hosted here was
+taken from a local gwaslab download whose md5 matched gwaslab's catalogue entry.
+
+The checksum below is what pins the content.
 """
 
 from pathlib import PurePath
@@ -25,9 +29,9 @@ THOUSAND_GENOMES_EUR_HG19_VCF = DownloadFileTask(
         extension=".vcf.gz",
     ),
     url=(
-        "https://www.dropbox.com/scl/fi/sxnjd37t7e677wlluzeit/"
+        "https://www.dropbox.com/scl/fi/q3wndz2wockuqto5pq0cc/"
         "EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz"
-        "?rlkey=9om2qu3tfjnq8nxj0tgwp8bd0&dl=1"
+        "?rlkey=zq8fzrjtbbl20r1wr74p4tqa1&dl=1"
     ),
     md5_hash="2c78cb84cb1f90b576510decc45e5b9b",
 )
