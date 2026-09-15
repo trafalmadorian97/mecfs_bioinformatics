@@ -279,8 +279,13 @@ def define_env(env):
             precision=precision,
             caption=SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION,
         )
+
     @env.macro
-    def ldsc_diagnostic_plot(src, id, height="775px",):
+    def ldsc_diagnostic_plot(
+        src,
+        id,
+        height="775px",
+    ):
         return plotly_embed(
             src=src,
             id=id,

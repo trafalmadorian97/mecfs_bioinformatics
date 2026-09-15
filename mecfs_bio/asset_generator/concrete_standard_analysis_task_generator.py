@@ -171,8 +171,6 @@ class StandardAnalysisTaskGroup:
         return result
 
 
-
-
 def concrete_standard_analysis_generator_assume_already_has_rsid(
     base_name: str,
     raw_gwas_data_task: Task,

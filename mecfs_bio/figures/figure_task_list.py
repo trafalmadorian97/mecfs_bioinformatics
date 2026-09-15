@@ -53,8 +53,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_g
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import (
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc_diagnostic_plot import \
-    DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc_diagnostic_plot import (
+    DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_variants_markdown import (
     DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
 )
@@ -346,7 +347,6 @@ ALL_FIGURE_TASKS: list[Task] = [
     EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_CHROMATIN_REF
     ].plot_task_unwrap,
-
     # Johnston multsite pain
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.power_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.qq_plot_task,
