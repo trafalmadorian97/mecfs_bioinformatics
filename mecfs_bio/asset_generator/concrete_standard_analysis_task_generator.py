@@ -34,6 +34,7 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.sample_size_spec import (
     SampleSizeSpec,
     ScalarSampleSize,
@@ -57,6 +58,10 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_manhattan_and_qq_plot_task impo
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
     SNPHeritabilityByLDSCTask,
+)
+from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic_plot_task import (
+    LdscDiagnosticPlotConfig,
+    LdscDiagnosticPlotTask,
 )
 from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import (
     HBAIndepPlotOptions,
@@ -113,6 +118,11 @@ class StandardAnalysisTaskGroup:
     heritability_task: Task | None = None
     gene_set_analysis_tasks: CuratedGeneSetAnalysisTasks | None = None
     h_magma_tasks: HMagmaTasks | None = None
+    ldsc_diagnostic_plot_task: Task | None = None
+
+    @property
+    def ldsc_diagnostic_plot_task_unwrap(self) -> Task:
+        return unwrap(self.ldsc_diagnostic_plot_task)
 
     @property
     def h_magma_tasks_unwrap(self) -> HMagmaTasks:
@@ -156,7 +166,15 @@ class StandardAnalysisTaskGroup:
             result.extend(self.gene_set_analysis_tasks.terminal_tasks())
         if self.h_magma_tasks is not None:
             result.extend(self.h_magma_tasks.terminal_tasks())
+        if self.ldsc_diagnostic_plot_task is not None:
+            result.append(self.ldsc_diagnostic_plot_task)
         return result
+
+
+def _humanize_meta_label(value: str) -> str:
+    """Turn a lowercase snake_case meta field (a trait or project) into a title-cased label for a
+    plot title, e.g. 'educational_attainment' -> 'Educational Attainment'."""
+    return value.replace("_", " ").title()
 
 
 def concrete_standard_analysis_generator_assume_already_has_rsid(
@@ -286,8 +304,28 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
                 ),
             )
         )
+        # The diagnostic re-runs the same LD-score regression as ldsc_task purely to draw its
+        # fitted line, so it takes that task rather than reading its markdown output. Title from
+        # ldsc_task's ResultTableMeta (trait/project) -- which .create already requires -- rather
+        # than the bare-Task raw_gwas_data_task, whose meta type is not statically known here.
+        assert isinstance(ldsc_task.meta, ResultTableMeta)
+        ldsc_diagnostic_plot_task: Task | None = LdscDiagnosticPlotTask.create(
+            asset_id=base_name + "_ldsc_diagnostic_plot",
+            ldsc_task=ldsc_task,
+            config=LdscDiagnosticPlotConfig(
+                n_bins=25,
+                show_error_bars=True,
+                title=None,
+                # title=(
+                #     f"{_humanize_meta_label(ldsc_task.meta.trait)} "
+                #     f"({_humanize_meta_label(ldsc_task.meta.project)}) "
+                #     "— LDSC diagnostic"
+                # ),
+            ),
+        )
     else:
         heritability_md_task = None
+        ldsc_diagnostic_plot_task = None
     if include_hba_magma_tasks:
         hba_magma = generate_human_brain_atlas_magma_tasks(
             base_name=base_name,
@@ -329,6 +367,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         heritability_task=heritability_md_task,
         gene_set_analysis_tasks=gene_set_analysis,
         h_magma_tasks=h_magma_tasks,
+        ldsc_diagnostic_plot_task=ldsc_diagnostic_plot_task,
     )
 
 
