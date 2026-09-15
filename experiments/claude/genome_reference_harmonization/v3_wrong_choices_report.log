@@ -1,24 +1,24 @@
-2026-09-15 17:08:54 [debug    ] Loading default runner config from default_runner_config.yaml
-2026-09-15 17:08:54 [debug    ] config: 
+2026-09-15 17:13:43 [debug    ] Loading default runner config from default_runner_config.yaml
+2026-09-15 17:13:43 [debug    ] config: 
  {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
-2026-09-15 17:09:06 [debug    ] incremental save is enabled
-2026-09-15 17:09:06 [debug    ] Looking for invalid dependencies
-2026-09-15 17:09:06 [debug    ] Done search for invalid dependencies
-2026-09-15 17:09:06 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
-2026-09-15 17:09:06 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
-2026-09-15 17:09:06 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
-2026-09-15 17:09:06 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
-2026-09-15 17:09:06 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps...
-2026-09-15 17:09:06 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps.
-2026-09-15 17:09:06 [debug    ] Attempting to verify the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps...
-2026-09-15 17:09:06 [debug    ] Successfully verified the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps.
-2026-09-15 17:09:06 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
-2026-09-15 17:09:06 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
-2026-09-15 17:09:06 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_minimal_processing...
-2026-09-15 17:09:06 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_minimal_processing.
-2026-09-15 17:09:06 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_build_38_table...
-2026-09-15 17:09:06 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_build_38_table.
-2026-09-15 17:09:06 [info     ] 
+2026-09-15 17:13:54 [debug    ] incremental save is enabled
+2026-09-15 17:13:54 [debug    ] Looking for invalid dependencies
+2026-09-15 17:13:54 [debug    ] Done search for invalid dependencies
+2026-09-15 17:13:54 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+2026-09-15 17:13:54 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+2026-09-15 17:13:54 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+2026-09-15 17:13:54 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+2026-09-15 17:13:54 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps...
+2026-09-15 17:13:54 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps.
+2026-09-15 17:13:54 [debug    ] Attempting to verify the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps...
+2026-09-15 17:13:54 [debug    ] Successfully verified the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps.
+2026-09-15 17:13:54 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+2026-09-15 17:13:54 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+2026-09-15 17:13:54 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_minimal_processing...
+2026-09-15 17:13:54 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_minimal_processing.
+2026-09-15 17:13:54 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_build_38_table...
+2026-09-15 17:13:54 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_build_38_table.
+2026-09-15 17:13:54 [info     ] 
 Work Progress:
 ✅ decode_me_gwas_1_raw
 ✅ decode_me_snps_passing_quality_control
@@ -28,7 +28,7 @@ Work Progress:
 ✅ decode_me_gwas_1_sumstats_minimal_processing
 ✅ experiment_decode_me_gwas_1_build_38_table
 
-2026-09-15 17:09:07 [info     ] Locations of materialized targets:
+2026-09-15 17:13:55 [info     ] Locations of materialized targets:
 
 {
 │   'decode_me_gwas_1_filtered_for_quality_control': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/decode_me_gwas_1_filtered_for_quality_control.parquet',

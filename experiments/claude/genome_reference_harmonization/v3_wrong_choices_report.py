@@ -2,7 +2,7 @@
 Write a markdown report of the 11 ambiguous indels that V3 resolves to "swap" on build-38
 DecodeME at distance 0.02 and margin 0.3 (listed in inspect_v3_wrong_choices.log).
 
-For each variant the report gives, as CHROM/POS/REF/ALT/ALT frequency:
+For each variant the report gives, as CHROM/POS/REF/ALT/ALT frequency/1 - ALT frequency:
 - the raw regenie record (ALLELE0 as REF, ALLELE1 as ALT, A1FREQ);
 - the build-38 gwaslab table (NEA as REF, EA as ALT, EAF);
 - the 1000 Genomes EUR hg38 panel record for the source reading (REF = NEA, ALT = EA);
@@ -101,16 +101,22 @@ def _at(frame: pl.LazyFrame, chrom_col: str, pos_col: str, site: Site) -> pl.Dat
     ).collect()
 
 
-def _row(label: str, chrom: int, pos: int, ref: str, alt: str, freq: str) -> str:
-    return f"| {label} | {chrom} | {pos} | {ref} | {alt} | {freq} |"
+def _row(
+    label: str, chrom: int, pos: int, ref: str, alt: str, freq: float | None
+) -> str:
+    if freq is None:
+        return f"| {label} | {chrom} | {pos} | {ref} | {alt} | {ABSENT} | {ABSENT} |"
+    return (
+        f"| {label} | {chrom} | {pos} | {ref} | {alt} | {freq:.4f} | {1 - freq:.4f} |"
+    )
 
 
-def _panel_af(panel: pl.DataFrame, ref: str, alt: str) -> str:
+def _panel_af(panel: pl.DataFrame, ref: str, alt: str) -> float | None:
     match = panel.filter(
         (pl.col(PANEL_REF_COL) == ref) & (pl.col(PANEL_ALT_COL) == alt)
     )
     assert match.height <= 1
-    return ABSENT if match.height == 0 else f"{match[PANEL_AF_COL][0]:.4f}"
+    return None if match.height == 0 else float(match[PANEL_AF_COL][0])
 
 
 def _section(
@@ -132,8 +138,8 @@ def _section(
         f"hg38 sequence (position {site.pos} is the first base after the bar): "
         f"{before}|{after}",
         "",
-        "| Source | CHROM | POS | REF | ALT | ALT frequency |",
-        "|---|---|---|---|---|---|",
+        "| Source | CHROM | POS | REF | ALT | ALT frequency | 1 - ALT frequency |",
+        "|---|---|---|---|---|---|---|",
     ]
     for record in raw.iter_rows(named=True):
         lines.append(
@@ -143,7 +149,7 @@ def _section(
                 site.pos,
                 record[REGENIE_ALLELE0_COL],
                 record[REGENIE_ALLELE1_COL],
-                f"{record[REGENIE_A1FREQ_COL]:.4f}",
+                record[REGENIE_A1FREQ_COL],
             )
         )
     lines.append(
@@ -153,7 +159,7 @@ def _section(
             site.pos,
             nea,
             ea,
-            f"{table[GWASLAB_EFFECT_ALLELE_FREQ_COL][0]:.4f}",
+            float(table[GWASLAB_EFFECT_ALLELE_FREQ_COL][0]),
         )
     )
     lines.append(
@@ -190,7 +196,7 @@ def _section(
                 site.pos,
                 record[PANEL_REF_COL],
                 record[PANEL_ALT_COL],
-                f"{record[PANEL_AF_COL]:.4f}",
+                record[PANEL_AF_COL],
             )
         )
     lines.append("")
