@@ -315,11 +315,12 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             config=LdscDiagnosticPlotConfig(
                 n_bins=25,
                 show_error_bars=True,
-                title=(
-                    f"{_humanize_meta_label(ldsc_task.meta.trait)} "
-                    f"({_humanize_meta_label(ldsc_task.meta.project)}) "
-                    "— LDSC diagnostic"
-                ),
+                title=None,
+                # title=(
+                #     f"{_humanize_meta_label(ldsc_task.meta.trait)} "
+                #     f"({_humanize_meta_label(ldsc_task.meta.project)}) "
+                #     "— LDSC diagnostic"
+                # ),
             ),
         )
     else:
