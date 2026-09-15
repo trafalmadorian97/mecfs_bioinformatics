@@ -12,6 +12,9 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.flip import (
     FLIP_NEGATE,
     ExtraColumnRule,
 )
+from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
+    GenomeReferenceHarmonizationOptions,
+)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -31,8 +34,8 @@ from test_mecfs_bio.unit.build_system.task.genome_reference_harmonization.genome
     CONSISTENT_INDEL,
     CONSISTENT_SNV,
     INCONSISTENT_SNV,
-    PanelRecord,
     TEST_OPTIONS,
+    PanelRecord,
     Variant,
     positions,
     row_at,
@@ -255,9 +258,15 @@ _PALINDROME_PANEL = [
     PanelRecord(pos=27, ref="T", alt="A", af=0.45),
 ]
 _PALINDROMES = [
-    Variant(pos=13, ea="A", nea="T", eaf=0.1, beta=0.3),  # same side of 0.5 as the panel -> kept
-    Variant(pos=14, ea="G", nea="C", eaf=0.8, beta=0.3),  # EA is ref: swapped, then strand-flipped
-    Variant(pos=18, ea="A", nea="T", eaf=0.9, beta=0.3),  # opposite side of 0.5 -> strand-flipped
+    Variant(
+        pos=13, ea="A", nea="T", eaf=0.1, beta=0.3
+    ),  # same side of 0.5 as the panel -> kept
+    Variant(
+        pos=14, ea="G", nea="C", eaf=0.8, beta=0.3
+    ),  # EA is ref: swapped, then strand-flipped
+    Variant(
+        pos=18, ea="A", nea="T", eaf=0.9, beta=0.3
+    ),  # opposite side of 0.5 -> strand-flipped
     Variant(pos=19, ea="A", nea="T", eaf=0.5),  # sumstats MAF above 0.4 -> unresolved
     Variant(pos=24, ea="G", nea="C", eaf=0.1),  # no panel record -> unresolved
     Variant(pos=27, ea="A", nea="T", eaf=0.1),  # panel MAF above 0.4 -> unresolved
@@ -268,7 +277,9 @@ _UNRESOLVED_PALINDROME_POSITIONS = [19, 24, 27, 30]
 
 def test_untrusted_palindromes_are_resolved_by_panel_frequency(tmp_path: Path) -> None:
     variants = [CONSISTENT_SNV, INCONSISTENT_SNV, *_PALINDROMES]
-    result = run_harmonization(tmp_path / "run", sumstats_frame(variants), panel=_PALINDROME_PANEL)
+    result = run_harmonization(
+        tmp_path / "run", sumstats_frame(variants), panel=_PALINDROME_PANEL
+    )
     assert positions(result) == [1, 2, 13, 14, 18]
     kept = row_at(result, 13)
     assert (kept[EA], kept[NEA], kept[BETA]) == ("A", "T", pytest.approx(0.3))
@@ -285,7 +296,10 @@ def test_unresolved_palindromes_can_be_kept(tmp_path: Path) -> None:
     variants = [CONSISTENT_SNV, INCONSISTENT_SNV, *_PALINDROMES]
     options = attrs.evolve(TEST_OPTIONS, keep_unresolved_palindromes=True)
     result = run_harmonization(
-        tmp_path / "run", sumstats_frame(variants), panel=_PALINDROME_PANEL, options=options
+        tmp_path / "run",
+        sumstats_frame(variants),
+        panel=_PALINDROME_PANEL,
+        options=options,
     )
     assert set(_UNRESOLVED_PALINDROME_POSITIONS) <= set(positions(result))
 
@@ -298,3 +312,102 @@ def test_trusted_palindromes_keep_source_strand(tmp_path: Path) -> None:
         panel=_PALINDROME_PANEL,
     )
     assert row_at(result, 18)[BETA] == pytest.approx(0.3)
+
+
+_AMBIGUOUS_DISTANCE = 0.1
+_AMBIGUOUS_MARGIN = 0.2
+_STRINGENT_OPTIONS = attrs.evolve(
+    TEST_OPTIONS,
+    indel_max_af_distance=_AMBIGUOUS_DISTANCE,
+    indel_min_af_margin=_AMBIGUOUS_MARGIN,
+)
+# Every variant below is T/TT inside the chr1 T homopolymer at 31-40, so both alleles
+# match the genome. "keep" reads the row as REF=TT, ALT=T; "flip" as REF=T, ALT=TT.
+_AMBIGUOUS_INDELS = [
+    Variant(pos=31, ea="T", nea="TT", eaf=None),  # no EAF -> dropped
+    Variant(pos=32, ea="T", nea="TT", eaf=0.3),  # no panel record -> dropped
+    Variant(pos=33, ea="T", nea="TT", eaf=0.3),  # keep record fits -> kept
+    Variant(pos=34, ea="T", nea="TT", eaf=0.3, beta=0.2),  # flip record fits -> swapped
+    Variant(pos=35, ea="T", nea="TT", eaf=0.3),  # only record misfits -> dropped
+    Variant(pos=36, ea="T", nea="TT", eaf=0.3),  # both records, keep decisive -> kept
+    Variant(
+        pos=37, ea="T", nea="TT", eaf=0.5
+    ),  # both records, margin too small -> dropped
+]
+_AMBIGUOUS_PANEL = [
+    PanelRecord(pos=33, ref="TT", alt="T", af=0.32),
+    PanelRecord(pos=34, ref="T", alt="TT", af=0.68),
+    PanelRecord(pos=35, ref="TT", alt="T", af=0.8),
+    PanelRecord(pos=36, ref="TT", alt="T", af=0.31),
+    PanelRecord(pos=36, ref="T", alt="TT", af=0.0),
+    PanelRecord(pos=37, ref="TT", alt="T", af=0.5),
+    PanelRecord(pos=37, ref="T", alt="TT", af=0.45),
+]
+
+
+def test_untrusted_ambiguous_indels_follow_the_stringent_rules(tmp_path: Path) -> None:
+    variants = [CONSISTENT_SNV, INCONSISTENT_SNV, *_AMBIGUOUS_INDELS]
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame(variants),
+        panel=_AMBIGUOUS_PANEL,
+        options=_STRINGENT_OPTIONS,
+    )
+    assert positions(result) == [1, 2, 33, 34, 36]
+    swapped = row_at(result, 34)
+    assert (swapped[EA], swapped[NEA]) == ("TT", "T")
+    assert (swapped[EAF], swapped[BETA]) == (pytest.approx(0.7), pytest.approx(-0.2))
+
+
+def test_ambiguous_indel_resolution_is_symmetric_in_orientation(tmp_path: Path) -> None:
+    as_deletion_label = Variant(pos=36, ea="T", nea="TT", eaf=0.3, beta=0.2)
+    as_insertion_label = Variant(pos=36, ea="TT", nea="T", eaf=0.7, beta=-0.2)
+    results = [
+        row_at(
+            run_harmonization(
+                tmp_path / name,
+                sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, variant]),
+                panel=_AMBIGUOUS_PANEL,
+                options=_STRINGENT_OPTIONS,
+            ),
+            36,
+        )
+        for name, variant in [
+            ("deletion", as_deletion_label),
+            ("insertion", as_insertion_label),
+        ]
+    ]
+    for row in results:
+        assert (row[EA], row[NEA]) == ("T", "TT")
+        assert (row[EAF], row[BETA]) == (pytest.approx(0.3), pytest.approx(0.2))
+
+
+_AMBIGUOUS_WITHOUT_PANEL = Variant(pos=5, ea="T", nea="TG")
+
+
+@pytest.mark.parametrize(
+    ("extra_variants", "options", "expect_trusted"),
+    [
+        ([], TEST_OPTIONS, True),
+        ([INCONSISTENT_SNV], TEST_OPTIONS, False),
+        ([], attrs.evolve(TEST_OPTIONS, min_checkable_snvs=2), False),
+        ([], attrs.evolve(TEST_OPTIONS, min_checkable_indels=2), False),
+    ],
+)
+def test_trust_decision_controls_ambiguous_indels(
+    tmp_path: Path,
+    extra_variants: list[Variant],
+    options: GenomeReferenceHarmonizationOptions,
+    expect_trusted: bool,
+) -> None:
+    variants = [
+        CONSISTENT_SNV,
+        CONSISTENT_INDEL,
+        _AMBIGUOUS_WITHOUT_PANEL,
+        *extra_variants,
+    ]
+    result = run_harmonization(
+        tmp_path / "run", sumstats_frame(variants), options=options
+    )
+    # Trusted tables keep the ambiguous indel; untrusted ones drop it (no panel record).
+    assert (5 in positions(result)) == expect_trusted

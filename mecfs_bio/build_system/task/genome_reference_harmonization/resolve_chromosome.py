@@ -28,6 +28,11 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes i
     reverse_complement_expr,
     valid_alleles_expr,
 )
+from mecfs_bio.build_system.task.genome_reference_harmonization.ambiguous_indels import (
+    INDEL_ACTION_COL,
+    INDEL_DROP_REASON_COL,
+    decide_ambiguous_indels,
+)
 from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     IndexedFasta,
 )
@@ -97,6 +102,8 @@ def resolve_chromosome(
         max_gather_bytes=context.options.max_gather_bytes,
     ).with_columns(_base_action_expr(), _base_drop_reason_expr(trusted=context.trusted))
     panel = None if context.trusted else load_panel(_panel_positions(valid))
+    if panel is not None:
+        valid = _apply_ambiguous_indel_rules(valid, panel, context)
     valid = _apply_allele_actions(valid, context.rules)
     if panel is not None:
         valid = _apply_palindrome_strand_rules(valid, panel, context)
@@ -214,3 +221,31 @@ def _apply_palindrome_strand_rules(
             .alias(DROP_REASON_COL)
         )
     return decided.drop(PALINDROME_DECISION_COL)
+
+
+def _apply_ambiguous_indel_rules(
+    valid: pl.DataFrame, panel: pl.DataFrame, context: ChromosomeContext
+) -> pl.DataFrame:
+    ambiguous = valid.filter(
+        (pl.col(ALLELE_CLASS_COL) == CLASS_INDEL_BOTH)
+        & pl.col(DROP_REASON_COL).is_null()
+    )
+    decisions = ambiguous.select(ROW_INDEX_COL).hstack(
+        decide_ambiguous_indels(
+            ambiguous.select(
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+                _eaf_expr(ambiguous),
+            ),
+            panel,
+            context.options,
+        )
+    )
+    decided = valid.join(decisions, on=ROW_INDEX_COL, how="left", maintain_order="left")
+    return decided.with_columns(
+        pl.coalesce(pl.col(INDEL_ACTION_COL), pl.col(ACTION_COL)).alias(ACTION_COL),
+        pl.coalesce(pl.col(DROP_REASON_COL), pl.col(INDEL_DROP_REASON_COL)).alias(
+            DROP_REASON_COL
+        ),
+    ).drop(INDEL_ACTION_COL, INDEL_DROP_REASON_COL)
