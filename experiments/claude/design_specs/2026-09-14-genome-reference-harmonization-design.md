@@ -404,20 +404,27 @@ whichever orientation arrives.
 
 ### Flip registry (flip.py)
 
-A module-level mapping from column name to a FlipRule Literal:
+A module-level mapping from column name to a FlipRule. Every column name is a constant from gwaslab_constants.py or regenie_constants.py.
+
+The registry covers two sets of columns:
+- gwaslab's standard column names (the "gwaslab" entry of formatbook.json);
+- the non-standard columns this repo's datasets carry: regenie binary-trait columns and N_EFF.
 
 | Rule | Columns |
 |---|---|
 | negate | BETA, Z, T |
-| complement (1 - x) | EAF, NEAF, A1FREQ_CASES, A1FREQ_CONTROLS |
+| complement (1 - x) | EAF, A1FREQ_CASES, A1FREQ_CONTROLS |
 | invert (1 / x) | OR, HR |
-| swap_bounds_negate | (BETA_95L, BETA_95U) |
-| swap_bounds_invert | (OR_95L, OR_95U), (HR_95L, HR_95U) |
-| direction | DIRECTION: each "+" <-> "-", "?" and "0" unchanged |
-| invariant | SNPID, rsID, CHR, POS, SE, P, MLOG10P, CHISQ, N, N_CASES, N_CONTROLS, NEFF, INFO, MAF, TEST, EXTRA |
+| inverted bound pair | (OR_95L, OR_95U), (HR_95L, HR_95U): each bound becomes 1 / the other |
+| invariant | SNPID, rsID, CHR, POS, SE, P, MLOG10P, CHISQ, F, P_HET, I2, SNPR2, DOF, N, N_CASE, N_CONTROL, N_CASES, N_CONTROLS, N_EFF, INFO, MAF, TEST, EXTRA |
 
-- STATUS is dropped from the output. gwaslab regenerates it when a later task
-  builds a Sumstats object from the table.
+Not registered (decided in plan review, 2026-09-15):
+- **DIRECTION.** Only metal, mrmega and the auto formats map to it. This repo uses none of them, so an input carrying it fails the unregistered-column assertion.
+- **NEAF and BETA_95L/BETA_95U.** Neither is a gwaslab standard column, and neither is used here.
+
+- STATUS, REF and ALT are dropped from the output.
+  - gwaslab regenerates STATUS when a later task builds a Sumstats object from the table.
+  - After harmonization, NEA and EA carry the reference orientation, which a source REF/ALT pair would only duplicate or contradict.
 - SNPID is left as-is, matching gwaslab.
 - Task option extra_column_rules accepts additional name -> FlipRule entries,
   so a dataset-specific column can be declared without editing the module.

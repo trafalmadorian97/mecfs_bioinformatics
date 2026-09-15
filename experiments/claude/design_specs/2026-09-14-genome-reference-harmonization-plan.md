@@ -51,7 +51,8 @@ Read it before starting; this plan argues from it.
 - **Docstrings:** no backticks around inline code, no RST.
 - **Types:**
   - use Path objects, not strings, except at subprocess and JSON boundaries;
-  - Literal aliases for enumerable string values;
+  - Literal aliases for enumerable string values, each value also exposed as a Final constant typed with its alias. Code uses the constants, never the raw strings, and an import-time assertion checks alias and constants agree. A StrEnum is not used, because polars turns Python Enum members into its own Enum dtype inside expressions.
+  - column names are constants too, including test-only and experiment labels;
   - no Any, no Callable[...]; use Protocols;
   - return frozen attrs objects, never bare tuples.
 - **Structure:**
@@ -134,7 +135,8 @@ Read it before starting; this plan argues from it.
 | trust.py | TrustCounts, count_trust_evidence, decide_trust |
 | ambiguous_indels.py | decide_ambiguous_indels (stringent rules) |
 | palindromes.py | decide_palindrome_strands |
-| resolve_chromosome.py | DropReason, PanelLoader, ChromosomeContext, resolve_chromosome |
+| outcomes.py | AlleleAction, PalindromeDecision, DropReason Literal aliases and their ACTION_*, PALINDROME_*, DROP_* constants |
+| resolve_chromosome.py | PanelLoader, ChromosomeContext, resolve_chromosome |
 | genome_reference_harmonization_task.py | GenomeReferenceHarmonizationTask, scan_sumstats_as_polars, chromosomes_to_harmonize, count_trust_evidence_genome_wide, ParquetPanelLoader |
 
 **Create: pipe, assets, experiments**
@@ -1123,6 +1125,9 @@ Nothing wires the Task into an analysis until Task 11, so this is safe.
 
 **Files:**
 - Create: mecfs_bio/build_system/task/genome_reference_harmonization/options.py
+- Create: mecfs_bio/build_system/task/genome_reference_harmonization/outcomes.py
+- Modify: mecfs_bio/constants/gwaslab_constants.py (standard column-name constants)
+- Modify: mecfs_bio/constants/regenie_constants.py (binary-trait column-name constants)
 - Create: mecfs_bio/build_system/task/genome_reference_harmonization/flip.py
 - Create: mecfs_bio/build_system/task/genome_reference_harmonization/allele_classes.py
 - Create: mecfs_bio/build_system/task/genome_reference_harmonization/trust.py
@@ -1135,10 +1140,12 @@ Nothing wires the Task into an analysis until Task 11, so this is safe.
 - Consumes: IndexedFasta, reference_matches, FASTA_FILENAME, DEFAULT_MAX_GATHER_BYTES (Task 1); PANEL_* constants (Task 2).
 - Produces:
   - GenomeReferenceHarmonizationOptions (all fields listed in options.py below)
-  - FlipRule, ExtraColumnRule(column: str, rule: FlipRule), resolve_column_rules(columns, extra) -> Mapping[str, FlipRule], flip_statistics(frame, mask: pl.Expr, rules) -> pl.DataFrame, DROPPED_COLUMNS
+  - FlipRule, InvertedBoundPair, ExtraColumnRule(column: str, rule: FlipRule), resolve_column_rules(columns, extra) -> Mapping[str, FlipRule], flip_statistics(frame, mask: pl.Expr, rules) -> pl.DataFrame, DROPPED_COLUMNS
   - ALLELE_CLASS_COL, IS_PALINDROMIC_SNV_COL, IS_PALINDROMIC_MNP_COL, AlleleClass, reverse_complement_expr(column), prepare_alleles(frame), valid_alleles_expr(), classify_alleles(frame, fasta, chrom, max_gather_bytes)
   - TrustCounts(consistent_snvs, inconsistent_snvs, consistent_indels, inconsistent_indels), count_trust_evidence(classified) -> TrustCounts, decide_trust(counts, options) -> bool
-  - DROP_REASON_COL, ROW_INDEX_COL, DropReason, PanelLoader, ChromosomeContext, resolve_chromosome(rows, context, load_panel) -> pl.DataFrame
+  - outcomes.py: AlleleAction, PalindromeDecision, DropReason and constants ACTION_KEEP, ACTION_SWAP, ACTION_COMPLEMENT, ACTION_COMPLEMENT_SWAP, PALINDROME_KEEP, PALINDROME_STRAND_FLIP, PALINDROME_UNRESOLVED, DROP_* (one per DropReason)
+  - allele_classes.py constants CLASS_* (one per AlleleClass); flip.py constants FLIP_NEGATE, FLIP_COMPLEMENT, FLIP_INVERT, FLIP_INVARIANT
+  - DROP_REASON_COL, ROW_INDEX_COL, PanelLoader, ChromosomeContext, resolve_chromosome(rows, context, load_panel) -> pl.DataFrame
   - GenomeReferenceHarmonizationTask.create(asset_id, sumstats_task, fasta_task, panel_task, options=..., pipe=...); scan_sumstats_as_polars, chromosomes_to_harmonize, count_trust_evidence_genome_wide, ParquetPanelLoader, resolve_chromosome_rows
 
 - [ ] **Step 1: Write the test fixtures module**
@@ -1389,6 +1396,7 @@ import pytest
 from attrs import frozen
 
 from mecfs_bio.build_system.task.genome_reference_harmonization.flip import (
+    FLIP_NEGATE,
     ExtraColumnRule,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
@@ -1397,10 +1405,15 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_EFFECT_ALLELE_FREQ_COL,
+    GWASLAB_HAZARD_RATIO_95L_COL,
+    GWASLAB_HAZARD_RATIO_95U_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_ODDS_RATIO_95L_COL,
+    GWASLAB_ODDS_RATIO_95U_COL,
     GWASLAB_ODDS_RATIO_COL,
     GWASLAB_POS_COL,
 )
+from mecfs_bio.constants.regenie_constants import REGENIE_A1FREQ_CASES_COL
 from test_mecfs_bio.unit.build_system.task.genome_reference_harmonization.genome_reference_fixtures import (
     CONSISTENT_INDEL,
     CONSISTENT_SNV,
@@ -1417,6 +1430,12 @@ EA = GWASLAB_EFFECT_ALLELE_COL
 NEA = GWASLAB_NON_EFFECT_ALLELE_COL
 EAF = GWASLAB_EFFECT_ALLELE_FREQ_COL
 BETA = GWASLAB_BETA_COL
+OR_95L = GWASLAB_ODDS_RATIO_95L_COL
+OR_95U = GWASLAB_ODDS_RATIO_95U_COL
+HR_95L = GWASLAB_HAZARD_RATIO_95L_COL
+HR_95U = GWASLAB_HAZARD_RATIO_95U_COL
+_UNREGISTERED_COLUMN = "MYSTERY_STATISTIC"
+_EXTRA_COLUMN = "BETA_ALTERNATIVE_MODEL"
 
 
 def test_snvs_are_oriented_against_the_reference(tmp_path: Path) -> None:
@@ -1483,40 +1502,40 @@ def test_invalid_alleles_are_dropped_and_lowercase_is_accepted(tmp_path: Path) -
 
 def test_flip_covers_allele_frequency_columns_and_confidence_bounds(tmp_path: Path) -> None:
     frame = sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV]).with_columns(
-        pl.Series("A1FREQ_CASES", [0.3, 0.25]),
+        pl.Series(REGENIE_A1FREQ_CASES_COL, [0.3, 0.25]),
         pl.Series(GWASLAB_ODDS_RATIO_COL, [2.0, 4.0]),
-        pl.Series("OR_95L", [1.5, 2.0]),
-        pl.Series("OR_95U", [2.5, 8.0]),
-        pl.Series("BETA_95L", [-0.1, 0.1]),
-        pl.Series("BETA_95U", [0.3, 0.3]),
+        pl.Series(OR_95L, [1.5, 2.0]),
+        pl.Series(OR_95U, [2.5, 8.0]),
+        pl.Series(HR_95L, [1.2, 1.25]),
+        pl.Series(HR_95U, [1.8, 5.0]),
     )
     result = run_harmonization(tmp_path / "run", frame)
     unchanged = row_at(result, 1)
-    assert (unchanged["OR_95L"], unchanged["OR_95U"]) == (pytest.approx(1.5), pytest.approx(2.5))
+    assert (unchanged[OR_95L], unchanged[OR_95U]) == (pytest.approx(1.5), pytest.approx(2.5))
     swapped = row_at(result, 2)
-    assert swapped["A1FREQ_CASES"] == pytest.approx(0.75)
+    assert swapped[REGENIE_A1FREQ_CASES_COL] == pytest.approx(0.75)
     assert swapped[GWASLAB_ODDS_RATIO_COL] == pytest.approx(0.25)
-    assert (swapped["OR_95L"], swapped["OR_95U"]) == (pytest.approx(0.125), pytest.approx(0.5))
-    assert (swapped["BETA_95L"], swapped["BETA_95U"]) == (pytest.approx(-0.3), pytest.approx(-0.1))
+    assert (swapped[OR_95L], swapped[OR_95U]) == (pytest.approx(0.125), pytest.approx(0.5))
+    assert (swapped[HR_95L], swapped[HR_95U]) == (pytest.approx(0.2), pytest.approx(0.8))
 
 
 def test_unregistered_column_fails(tmp_path: Path) -> None:
-    frame = sumstats_frame([CONSISTENT_SNV]).with_columns(pl.lit(1.0).alias("MYSTERY"))
+    frame = sumstats_frame([CONSISTENT_SNV]).with_columns(pl.lit(1.0).alias(_UNREGISTERED_COLUMN))
     with pytest.raises(AssertionError):
         run_harmonization(tmp_path / "run", frame)
 
 
 def test_extra_column_rule_is_applied(tmp_path: Path) -> None:
     frame = sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV]).with_columns(
-        pl.Series("BETA_ALT", [0.5, 0.5])
+        pl.Series(_EXTRA_COLUMN, [0.5, 0.5])
     )
     options = attrs.evolve(
         TEST_OPTIONS,
-        extra_column_rules=(ExtraColumnRule(column="BETA_ALT", rule="negate"),),
+        extra_column_rules=(ExtraColumnRule(column=_EXTRA_COLUMN, rule=FLIP_NEGATE),),
     )
     result = run_harmonization(tmp_path / "run", frame, options=options)
-    assert row_at(result, 1)["BETA_ALT"] == pytest.approx(0.5)
-    assert row_at(result, 2)["BETA_ALT"] == pytest.approx(-0.5)
+    assert row_at(result, 1)[_EXTRA_COLUMN] == pytest.approx(0.5)
+    assert row_at(result, 2)[_EXTRA_COLUMN] == pytest.approx(-0.5)
 
 
 def test_output_does_not_depend_on_input_row_order(tmp_path: Path) -> None:
@@ -1591,57 +1610,127 @@ def test_pipe_that_changes_backend_fails(tmp_path: Path) -> None:
 Run: `pixi r python -m pytest test_mecfs_bio/unit/build_system/task/genome_reference_harmonization/test_genome_reference_harmonization_task.py -q`
 Expected: collection error, ModuleNotFoundError for flip or genome_reference_harmonization_task.
 
-- [ ] **Step 4: Implement flip.py**
+- [ ] **Step 4: Add column-name constants**
+
+Append to mecfs_bio/constants/gwaslab_constants.py, below GWASLAB_SNPID_COL:
+
+```python
+# Further gwaslab standard column names, from the "gwaslab" entry of
+# https://github.com/Cloufield/formatbook/blob/main/formatbook.json
+GWASLAB_Z_COL = "Z"
+GWASLAB_T_STATISTIC_COL = "T"
+GWASLAB_F_STATISTIC_COL = "F"
+GWASLAB_HAZARD_RATIO_COL = "HR"
+GWASLAB_ODDS_RATIO_95L_COL = "OR_95L"
+GWASLAB_ODDS_RATIO_95U_COL = "OR_95U"
+GWASLAB_HAZARD_RATIO_95L_COL = "HR_95L"
+GWASLAB_HAZARD_RATIO_95U_COL = "HR_95U"
+GWASLAB_P_HET_COL = "P_HET"
+GWASLAB_I2_COL = "I2"
+GWASLAB_SNPR2_COL = "SNPR2"
+GWASLAB_DOF_COL = "DOF"
+GWASLAB_MAF_COL = "MAF"
+GWASLAB_REF_COL = "REF"
+GWASLAB_ALT_COL = "ALT"
+```
+
+Append to mecfs_bio/constants/regenie_constants.py:
+
+```python
+# Binary-trait output columns. gwaslab passes them through without renaming, so they
+# survive into gwaslab-format tables (DecodeME carries all of them).
+REGENIE_A1FREQ_CASES_COL = "A1FREQ_CASES"  # frequency of ALLELE1 in cases
+REGENIE_A1FREQ_CONTROLS_COL = "A1FREQ_CONTROLS"  # frequency of ALLELE1 in controls
+REGENIE_N_CASES_COL = "N_CASES"
+REGENIE_N_CONTROLS_COL = "N_CONTROLS"
+REGENIE_TEST_COL = "TEST"
+REGENIE_EXTRA_COL = "EXTRA"
+```
+
+- [ ] **Step 5: Implement flip.py**
+
+Registry scope:
+- **Included:** gwaslab's standard column names (the formatbook "gwaslab" entry) plus the columns this repo's datasets actually carry: the regenie binary-trait columns, and N_EFF from GWASLAB_EFFECTIVE_SAMPLE_SIZE.
+- **Not registered:** DIRECTION (a meta-analysis direction string). Only formats this repo never uses map to it (metal, mrmega, the auto formats), so it fails loudly if it ever appears.
+- **BETA_95L/BETA_95U** are not gwaslab standard columns and are not used here.
+- **REF and ALT** are standard, but after harmonization NEA and EA carry the reference orientation. A source REF/ALT pair could disagree with it, so they are dropped from the output rather than kept.
 
 ```python
 """
 How each summary-statistic column changes when a variant's effect allele is swapped.
 
-Every non-allele column must be registered here, or declared through
-ExtraColumnRule, so that a new allele-dependent statistic can never be silently
-left unflipped. All flipped values are computed from the original frame in a single
-with_columns call, so a confidence bound is never read after being overwritten.
+Columns are expected to use gwaslab's standard names (the "gwaslab" entry of formatbook.json), plus the regenie binary-trait columns and effective sample size used by datasets in this repo. Every non-allele column must be registered here, or declared through ExtraColumnRule, so that a new allele-dependent statistic can never be silently left unflipped.
+
+All flipped values are computed from the original frame in a single with_columns call, so a confidence bound is never read after being overwritten.
+
+FlipRule is what the type checker sees and the FLIP_* constants are what code uses. An import-time assertion keeps the two in step. A StrEnum cannot replace them, because polars converts Python Enum members into its own Enum dtype.
 """
 
 from collections.abc import Mapping, Sequence
-from typing import Literal
+from typing import Final, Literal, get_args
 
 import polars as pl
 from attrs import frozen
 
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_ALT_COL,
     GWASLAB_BETA_COL,
     GWASLAB_CHISQ_COL,
     GWASLAB_CHROM_COL,
+    GWASLAB_DOF_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_EFFECT_ALLELE_FREQ_COL,
     GWASLAB_EFFECTIVE_SAMPLE_SIZE,
+    GWASLAB_F_STATISTIC_COL,
+    GWASLAB_HAZARD_RATIO_95L_COL,
+    GWASLAB_HAZARD_RATIO_95U_COL,
+    GWASLAB_HAZARD_RATIO_COL,
+    GWASLAB_I2_COL,
     GWASLAB_INFO_SCORE_COL,
+    GWASLAB_MAF_COL,
     GWASLAB_MLOG10P_COL,
     GWASLAB_N_CASE_COL,
     GWASLAB_N_CONTROL_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_ODDS_RATIO_95L_COL,
+    GWASLAB_ODDS_RATIO_95U_COL,
     GWASLAB_ODDS_RATIO_COL,
     GWASLAB_P_COL,
+    GWASLAB_P_HET_COL,
     GWASLAB_POS_COL,
+    GWASLAB_REF_COL,
     GWASLAB_RSID_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
     GWASLAB_SNPID_COL,
+    GWASLAB_SNPR2_COL,
     GWASLAB_STATUS_COL,
+    GWASLAB_T_STATISTIC_COL,
+    GWASLAB_Z_COL,
+)
+from mecfs_bio.constants.regenie_constants import (
+    REGENIE_A1FREQ_CASES_COL,
+    REGENIE_A1FREQ_CONTROLS_COL,
+    REGENIE_EXTRA_COL,
+    REGENIE_N_CASES_COL,
+    REGENIE_N_CONTROLS_COL,
+    REGENIE_TEST_COL,
 )
 
-FlipRule = Literal["negate", "complement", "invert", "direction", "invariant"]
-BoundRule = Literal["negate", "invert"]
+FlipRule = Literal["negate", "complement", "invert", "invariant"]
+FLIP_NEGATE: Final[FlipRule] = "negate"
+FLIP_COMPLEMENT: Final[FlipRule] = "complement"
+FLIP_INVERT: Final[FlipRule] = "invert"
+FLIP_INVARIANT: Final[FlipRule] = "invariant"
+assert set(get_args(FlipRule)) == {FLIP_NEGATE, FLIP_COMPLEMENT, FLIP_INVERT, FLIP_INVARIANT}
 
 
 @frozen
-class BoundPair:
-    """Confidence bounds that trade places, each transformed by rule, when a variant is flipped."""
+class InvertedBoundPair:
+    """Ratio confidence bounds: on a flip, lower becomes 1/upper and upper becomes 1/lower."""
 
     lower: str
     upper: str
-    rule: BoundRule
 
 
 @frozen
@@ -1651,44 +1740,48 @@ class ExtraColumnRule:
 
 
 COLUMN_FLIP_RULES: Mapping[str, FlipRule] = {
-    GWASLAB_BETA_COL: "negate",
-    "Z": "negate",
-    "T": "negate",
-    GWASLAB_EFFECT_ALLELE_FREQ_COL: "complement",
-    "NEAF": "complement",
-    "A1FREQ_CASES": "complement",
-    "A1FREQ_CONTROLS": "complement",
-    GWASLAB_ODDS_RATIO_COL: "invert",
-    "HR": "invert",
-    "DIRECTION": "direction",
-    GWASLAB_SNPID_COL: "invariant",
-    GWASLAB_RSID_COL: "invariant",
-    GWASLAB_CHROM_COL: "invariant",
-    GWASLAB_POS_COL: "invariant",
-    GWASLAB_SE_COL: "invariant",
-    GWASLAB_P_COL: "invariant",
-    GWASLAB_MLOG10P_COL: "invariant",
-    GWASLAB_CHISQ_COL: "invariant",
-    GWASLAB_SAMPLE_SIZE_COLUMN: "invariant",
-    GWASLAB_N_CASE_COL: "invariant",
-    GWASLAB_N_CONTROL_COL: "invariant",
-    "N_CASES": "invariant",
-    "N_CONTROLS": "invariant",
-    GWASLAB_EFFECTIVE_SAMPLE_SIZE: "invariant",
-    GWASLAB_INFO_SCORE_COL: "invariant",
-    "MAF": "invariant",
-    "TEST": "invariant",
-    "EXTRA": "invariant",
+    GWASLAB_BETA_COL: FLIP_NEGATE,
+    GWASLAB_Z_COL: FLIP_NEGATE,
+    GWASLAB_T_STATISTIC_COL: FLIP_NEGATE,
+    GWASLAB_EFFECT_ALLELE_FREQ_COL: FLIP_COMPLEMENT,
+    REGENIE_A1FREQ_CASES_COL: FLIP_COMPLEMENT,
+    REGENIE_A1FREQ_CONTROLS_COL: FLIP_COMPLEMENT,
+    GWASLAB_ODDS_RATIO_COL: FLIP_INVERT,
+    GWASLAB_HAZARD_RATIO_COL: FLIP_INVERT,
+    GWASLAB_SNPID_COL: FLIP_INVARIANT,
+    GWASLAB_RSID_COL: FLIP_INVARIANT,
+    GWASLAB_CHROM_COL: FLIP_INVARIANT,
+    GWASLAB_POS_COL: FLIP_INVARIANT,
+    GWASLAB_SE_COL: FLIP_INVARIANT,
+    GWASLAB_P_COL: FLIP_INVARIANT,
+    GWASLAB_MLOG10P_COL: FLIP_INVARIANT,
+    GWASLAB_CHISQ_COL: FLIP_INVARIANT,
+    GWASLAB_F_STATISTIC_COL: FLIP_INVARIANT,
+    GWASLAB_P_HET_COL: FLIP_INVARIANT,
+    GWASLAB_I2_COL: FLIP_INVARIANT,
+    GWASLAB_SNPR2_COL: FLIP_INVARIANT,
+    GWASLAB_DOF_COL: FLIP_INVARIANT,
+    GWASLAB_SAMPLE_SIZE_COLUMN: FLIP_INVARIANT,
+    GWASLAB_N_CASE_COL: FLIP_INVARIANT,
+    GWASLAB_N_CONTROL_COL: FLIP_INVARIANT,
+    REGENIE_N_CASES_COL: FLIP_INVARIANT,
+    REGENIE_N_CONTROLS_COL: FLIP_INVARIANT,
+    GWASLAB_EFFECTIVE_SAMPLE_SIZE: FLIP_INVARIANT,
+    GWASLAB_INFO_SCORE_COL: FLIP_INVARIANT,
+    GWASLAB_MAF_COL: FLIP_INVARIANT,
+    REGENIE_TEST_COL: FLIP_INVARIANT,
+    REGENIE_EXTRA_COL: FLIP_INVARIANT,
 }
 
-BOUND_PAIRS: tuple[BoundPair, ...] = (
-    BoundPair(lower="BETA_95L", upper="BETA_95U", rule="negate"),
-    BoundPair(lower="OR_95L", upper="OR_95U", rule="invert"),
-    BoundPair(lower="HR_95L", upper="HR_95U", rule="invert"),
+BOUND_PAIRS: tuple[InvertedBoundPair, ...] = (
+    InvertedBoundPair(lower=GWASLAB_ODDS_RATIO_95L_COL, upper=GWASLAB_ODDS_RATIO_95U_COL),
+    InvertedBoundPair(lower=GWASLAB_HAZARD_RATIO_95L_COL, upper=GWASLAB_HAZARD_RATIO_95U_COL),
 )
 
-# Present in gwaslab dumps but meaningless after genome-reference harmonization.
-DROPPED_COLUMNS: frozenset[str] = frozenset({GWASLAB_STATUS_COL})
+# Dropped from the output.
+# STATUS describes gwaslab's processing, not this Task's. REF and ALT would duplicate,
+# and could contradict, the orientation that NEA and EA carry after harmonization.
+DROPPED_COLUMNS: frozenset[str] = frozenset({GWASLAB_STATUS_COL, GWASLAB_REF_COL, GWASLAB_ALT_COL})
 _ALLELE_COLUMNS = frozenset({GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL})
 
 
@@ -1721,18 +1814,12 @@ def resolve_column_rules(
 
 def _flipped(column: str, rule: FlipRule) -> pl.Expr:
     value = pl.col(column)
-    if rule == "negate":
+    if rule == FLIP_NEGATE:
         return -value
-    if rule == "complement":
+    if rule == FLIP_COMPLEMENT:
         return 1 - value
-    if rule == "invert":
-        return 1 / value
-    assert rule == "direction", f"rule {rule} has no flipped expression"
-    return value.str.replace_many(["+", "-"], ["-", "+"])
-
-
-def _bound(column: str, rule: BoundRule) -> pl.Expr:
-    return -pl.col(column) if rule == "negate" else 1 / pl.col(column)
+    assert rule == FLIP_INVERT, f"rule {rule} has no flipped expression"
+    return 1 / value
 
 
 def flip_statistics(
@@ -1742,26 +1829,22 @@ def flip_statistics(
     updates = [
         pl.when(mask).then(_flipped(column, rule)).otherwise(pl.col(column)).alias(column)
         for column, rule in rules.items()
-        if rule != "invariant" and column in frame.columns
+        if rule != FLIP_INVARIANT and column in frame.columns
     ]
     for pair in BOUND_PAIRS:
         if pair.lower in frame.columns:
             updates.append(
-                pl.when(mask)
-                .then(_bound(pair.upper, pair.rule))
-                .otherwise(pl.col(pair.lower))
-                .alias(pair.lower)
+                pl.when(mask).then(1 / pl.col(pair.upper)).otherwise(pl.col(pair.lower)).alias(pair.lower)
             )
             updates.append(
-                pl.when(mask)
-                .then(_bound(pair.lower, pair.rule))
-                .otherwise(pl.col(pair.upper))
-                .alias(pair.upper)
+                pl.when(mask).then(1 / pl.col(pair.lower)).otherwise(pl.col(pair.upper)).alias(pair.upper)
             )
     return frame.with_columns(updates) if updates else frame
 ```
 
-- [ ] **Step 5: Implement options.py**
+- [ ] **Step 6: Implement options.py and outcomes.py**
+
+options.py:
 
 ```python
 """Options for genome-reference harmonization, validated at construction."""
@@ -1819,7 +1902,78 @@ class GenomeReferenceHarmonizationOptions:
         assert self.max_gather_bytes > 0
 ```
 
-- [ ] **Step 6: Implement allele_classes.py**
+outcomes.py:
+
+```python
+"""
+Named outcomes of genome-reference harmonization: allele actions, palindrome decisions
+and drop reasons.
+
+Each Literal alias is what the type checker sees; the constants are what code uses, so
+no outcome string is typed more than twice (once in the alias, once in its constant).
+An import-time assertion keeps each alias and its constants in step. A StrEnum cannot
+replace them, because polars converts Python Enum members into its own Enum dtype
+inside expressions.
+"""
+
+from typing import Final, Literal, get_args
+
+AlleleAction = Literal["keep", "swap", "complement", "complement_swap"]
+ACTION_KEEP: Final[AlleleAction] = "keep"
+ACTION_SWAP: Final[AlleleAction] = "swap"
+ACTION_COMPLEMENT: Final[AlleleAction] = "complement"
+ACTION_COMPLEMENT_SWAP: Final[AlleleAction] = "complement_swap"
+assert set(get_args(AlleleAction)) == {
+    ACTION_KEEP,
+    ACTION_SWAP,
+    ACTION_COMPLEMENT,
+    ACTION_COMPLEMENT_SWAP,
+}
+
+PalindromeDecision = Literal["keep", "strand_flip", "unresolved"]
+PALINDROME_KEEP: Final[PalindromeDecision] = "keep"
+PALINDROME_STRAND_FLIP: Final[PalindromeDecision] = "strand_flip"
+PALINDROME_UNRESOLVED: Final[PalindromeDecision] = "unresolved"
+assert set(get_args(PalindromeDecision)) == {
+    PALINDROME_KEEP,
+    PALINDROME_STRAND_FLIP,
+    PALINDROME_UNRESOLVED,
+}
+
+DropReason = Literal[
+    "invalid_allele",
+    "not_on_reference",
+    "indel_not_on_reference",
+    "palindromic_mnp_untrusted",
+    "palindrome_unresolved",
+    "ambiguous_indel_no_eaf",
+    "ambiguous_indel_not_in_panel",
+    "ambiguous_indel_af_mismatch",
+    "ambiguous_indel_af_indecisive",
+]
+DROP_INVALID_ALLELE: Final[DropReason] = "invalid_allele"
+DROP_NOT_ON_REFERENCE: Final[DropReason] = "not_on_reference"
+DROP_INDEL_NOT_ON_REFERENCE: Final[DropReason] = "indel_not_on_reference"
+DROP_PALINDROMIC_MNP_UNTRUSTED: Final[DropReason] = "palindromic_mnp_untrusted"
+DROP_PALINDROME_UNRESOLVED: Final[DropReason] = "palindrome_unresolved"
+DROP_AMBIGUOUS_INDEL_NO_EAF: Final[DropReason] = "ambiguous_indel_no_eaf"
+DROP_AMBIGUOUS_INDEL_NOT_IN_PANEL: Final[DropReason] = "ambiguous_indel_not_in_panel"
+DROP_AMBIGUOUS_INDEL_AF_MISMATCH: Final[DropReason] = "ambiguous_indel_af_mismatch"
+DROP_AMBIGUOUS_INDEL_AF_INDECISIVE: Final[DropReason] = "ambiguous_indel_af_indecisive"
+assert set(get_args(DropReason)) == {
+    DROP_INVALID_ALLELE,
+    DROP_NOT_ON_REFERENCE,
+    DROP_INDEL_NOT_ON_REFERENCE,
+    DROP_PALINDROMIC_MNP_UNTRUSTED,
+    DROP_PALINDROME_UNRESOLVED,
+    DROP_AMBIGUOUS_INDEL_NO_EAF,
+    DROP_AMBIGUOUS_INDEL_NOT_IN_PANEL,
+    DROP_AMBIGUOUS_INDEL_AF_MISMATCH,
+    DROP_AMBIGUOUS_INDEL_AF_INDECISIVE,
+}
+```
+
+- [ ] **Step 7: Implement allele_classes.py**
 
 ```python
 """
@@ -1830,9 +1984,13 @@ complement is consulted only when neither plus-strand allele matches, as gwaslab
 Different-length variants (indels) are compared on the plus strand only: a
 reverse-complemented left-anchored indel loses its anchor base, so a minus-strand match
 would be spurious.
+
+AlleleClass is what the type checker sees; the CLASS_* constants are what code uses. An
+import-time assertion keeps the two in step (see outcomes.py for why this is not a
+StrEnum).
 """
 
-from typing import Literal
+from typing import Final, Literal, get_args
 
 import numpy as np
 import polars as pl
@@ -1858,17 +2016,39 @@ AlleleClass = Literal[
     "indel_ea_only",
     "indel_not_on_reference",
 ]
+CLASS_NEA_REF: Final[AlleleClass] = "nea_ref"
+CLASS_EA_REF: Final[AlleleClass] = "ea_ref"
+CLASS_NEA_REF_RC: Final[AlleleClass] = "nea_ref_rc"
+CLASS_EA_REF_RC: Final[AlleleClass] = "ea_ref_rc"
+CLASS_NOT_ON_REFERENCE: Final[AlleleClass] = "not_on_reference"
+CLASS_INDEL_BOTH: Final[AlleleClass] = "indel_both"
+CLASS_INDEL_NEA_ONLY: Final[AlleleClass] = "indel_nea_only"
+CLASS_INDEL_EA_ONLY: Final[AlleleClass] = "indel_ea_only"
+CLASS_INDEL_NOT_ON_REFERENCE: Final[AlleleClass] = "indel_not_on_reference"
+assert set(get_args(AlleleClass)) == {
+    CLASS_NEA_REF,
+    CLASS_EA_REF,
+    CLASS_NEA_REF_RC,
+    CLASS_EA_REF_RC,
+    CLASS_NOT_ON_REFERENCE,
+    CLASS_INDEL_BOTH,
+    CLASS_INDEL_NEA_ONLY,
+    CLASS_INDEL_EA_ONLY,
+    CLASS_INDEL_NOT_ON_REFERENCE,
+}
 
 ALLELE_CLASS_COL = "_allele_class"
 IS_PALINDROMIC_SNV_COL = "_is_palindromic_snv"
 IS_PALINDROMIC_MNP_COL = "_is_palindromic_mnp"
 _VALID_ALLELE_PATTERN = "^[ACGT]+$"
-_NEA_RC = "_nea_rc"
-_EA_RC = "_ea_rc"
+_NEA_RC_COL = "_nea_rc"
+_EA_RC_COL = "_ea_rc"
+_BASES = ["A", "C", "G", "T"]
+_COMPLEMENTS = ["T", "G", "C", "A"]
 
 
 def reverse_complement_expr(column: str) -> pl.Expr:
-    return pl.col(column).str.reverse().str.replace_many(["A", "C", "G", "T"], ["T", "G", "C", "A"])
+    return pl.col(column).str.reverse().str.replace_many(_BASES, _COMPLEMENTS)
 
 
 def prepare_alleles(frame: pl.DataFrame) -> pl.DataFrame:
@@ -1896,11 +2076,17 @@ def classify_alleles(
     """Add ALLELE_CLASS_COL and the palindrome flags to rows with valid, uppercase alleles."""
     pos = frame[GWASLAB_POS_COL].to_numpy()
     nea_match = reference_matches(
-        fasta, chrom=chrom, positions=pos, alleles=frame[GWASLAB_NON_EFFECT_ALLELE_COL],
+        fasta,
+        chrom=chrom,
+        positions=pos,
+        alleles=frame[GWASLAB_NON_EFFECT_ALLELE_COL],
         max_gather_bytes=max_gather_bytes,
     )
     ea_match = reference_matches(
-        fasta, chrom=chrom, positions=pos, alleles=frame[GWASLAB_EFFECT_ALLELE_COL],
+        fasta,
+        chrom=chrom,
+        positions=pos,
+        alleles=frame[GWASLAB_EFFECT_ALLELE_COL],
         max_gather_bytes=max_gather_bytes,
     )
     equal_length = (
@@ -1913,15 +2099,21 @@ def classify_alleles(
     rc_rows = np.flatnonzero(needs_rc)
     if len(rc_rows):
         rc = frame.select(
-            reverse_complement_expr(GWASLAB_NON_EFFECT_ALLELE_COL).alias(_NEA_RC),
-            reverse_complement_expr(GWASLAB_EFFECT_ALLELE_COL).alias(_EA_RC),
+            reverse_complement_expr(GWASLAB_NON_EFFECT_ALLELE_COL).alias(_NEA_RC_COL),
+            reverse_complement_expr(GWASLAB_EFFECT_ALLELE_COL).alias(_EA_RC_COL),
         )
         rc_nea_match[rc_rows] = reference_matches(
-            fasta, chrom=chrom, positions=pos[rc_rows], alleles=rc[_NEA_RC].gather(rc_rows),
+            fasta,
+            chrom=chrom,
+            positions=pos[rc_rows],
+            alleles=rc[_NEA_RC_COL].gather(rc_rows),
             max_gather_bytes=max_gather_bytes,
         )
         rc_ea_match[rc_rows] = reference_matches(
-            fasta, chrom=chrom, positions=pos[rc_rows], alleles=rc[_EA_RC].gather(rc_rows),
+            fasta,
+            chrom=chrom,
+            positions=pos[rc_rows],
+            alleles=rc[_EA_RC_COL].gather(rc_rows),
             max_gather_bytes=max_gather_bytes,
         )
     classes = np.select(
@@ -1936,21 +2128,22 @@ def classify_alleles(
             ea_match,
         ],
         [
-            "nea_ref",
-            "ea_ref",
-            "nea_ref_rc",
-            "ea_ref_rc",
-            "not_on_reference",
-            "indel_both",
-            "indel_nea_only",
-            "indel_ea_only",
+            CLASS_NEA_REF,
+            CLASS_EA_REF,
+            CLASS_NEA_REF_RC,
+            CLASS_EA_REF_RC,
+            CLASS_NOT_ON_REFERENCE,
+            CLASS_INDEL_BOTH,
+            CLASS_INDEL_NEA_ONLY,
+            CLASS_INDEL_EA_ONLY,
         ],
-        default="indel_not_on_reference",
+        default=CLASS_INDEL_NOT_ON_REFERENCE,
     )
     ea_length = pl.col(GWASLAB_EFFECT_ALLELE_COL).str.len_bytes()
     same_length = ea_length == pl.col(GWASLAB_NON_EFFECT_ALLELE_COL).str.len_bytes()
     palindromic = same_length & (
-        reverse_complement_expr(GWASLAB_NON_EFFECT_ALLELE_COL) == pl.col(GWASLAB_EFFECT_ALLELE_COL)
+        reverse_complement_expr(GWASLAB_NON_EFFECT_ALLELE_COL)
+        == pl.col(GWASLAB_EFFECT_ALLELE_COL)
     )
     return frame.with_columns(
         pl.Series(ALLELE_CLASS_COL, classes, dtype=pl.String),
@@ -1959,7 +2152,7 @@ def classify_alleles(
     )
 ```
 
-- [ ] **Step 7: Implement trust.py**
+- [ ] **Step 8: Implement trust.py**
 
 ```python
 """
@@ -1976,6 +2169,10 @@ from attrs import frozen
 
 from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes import (
     ALLELE_CLASS_COL,
+    CLASS_INDEL_EA_ONLY,
+    CLASS_INDEL_NEA_ONLY,
+    CLASS_INDEL_NOT_ON_REFERENCE,
+    CLASS_NEA_REF,
     IS_PALINDROMIC_SNV_COL,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
@@ -1985,6 +2182,11 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
 )
+
+_CONSISTENT_SNVS = "consistent_snvs"
+_INCONSISTENT_SNVS = "inconsistent_snvs"
+_CONSISTENT_INDELS = "consistent_indels"
+_INCONSISTENT_INDELS = "inconsistent_indels"
 
 
 @frozen
@@ -2004,7 +2206,9 @@ class TrustCounts:
 
     @classmethod
     def zero(cls) -> "TrustCounts":
-        return cls(consistent_snvs=0, inconsistent_snvs=0, consistent_indels=0, inconsistent_indels=0)
+        return cls(
+            consistent_snvs=0, inconsistent_snvs=0, consistent_indels=0, inconsistent_indels=0
+        )
 
 
 def count_trust_evidence(classified: pl.DataFrame) -> TrustCounts:
@@ -2015,18 +2219,18 @@ def count_trust_evidence(classified: pl.DataFrame) -> TrustCounts:
     checkable_snv = (ea_length == 1) & (nea_length == 1) & ~pl.col(IS_PALINDROMIC_SNV_COL)
     indel = ea_length != nea_length
     counts = classified.select(
-        (checkable_snv & (allele_class == "nea_ref")).sum().alias("consistent_snvs"),
-        (checkable_snv & (allele_class != "nea_ref")).sum().alias("inconsistent_snvs"),
-        (indel & (allele_class == "indel_nea_only")).sum().alias("consistent_indels"),
-        (indel & allele_class.is_in(["indel_ea_only", "indel_not_on_reference"]))
+        (checkable_snv & (allele_class == CLASS_NEA_REF)).sum().alias(_CONSISTENT_SNVS),
+        (checkable_snv & (allele_class != CLASS_NEA_REF)).sum().alias(_INCONSISTENT_SNVS),
+        (indel & (allele_class == CLASS_INDEL_NEA_ONLY)).sum().alias(_CONSISTENT_INDELS),
+        (indel & allele_class.is_in([CLASS_INDEL_EA_ONLY, CLASS_INDEL_NOT_ON_REFERENCE]))
         .sum()
-        .alias("inconsistent_indels"),
+        .alias(_INCONSISTENT_INDELS),
     ).row(0, named=True)
     return TrustCounts(
-        consistent_snvs=int(counts["consistent_snvs"]),
-        inconsistent_snvs=int(counts["inconsistent_snvs"]),
-        consistent_indels=int(counts["consistent_indels"]),
-        inconsistent_indels=int(counts["inconsistent_indels"]),
+        consistent_snvs=int(counts[_CONSISTENT_SNVS]),
+        inconsistent_snvs=int(counts[_INCONSISTENT_SNVS]),
+        consistent_indels=int(counts[_CONSISTENT_INDELS]),
+        inconsistent_indels=int(counts[_INCONSISTENT_INDELS]),
     )
 
 
@@ -2039,7 +2243,7 @@ def decide_trust(counts: TrustCounts, options: GenomeReferenceHarmonizationOptio
     )
 ```
 
-- [ ] **Step 8: Implement resolve_chromosome.py**
+- [ ] **Step 9: Implement resolve_chromosome.py**
 
 ```python
 """
@@ -2051,13 +2255,19 @@ DROP_REASON_COL is null for rows to keep. The function holds one chromosome in m
 """
 
 from collections.abc import Mapping
-from typing import Literal, Protocol
+from typing import Protocol
 
 import polars as pl
 from attrs import frozen
 
 from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes import (
     ALLELE_CLASS_COL,
+    CLASS_EA_REF,
+    CLASS_EA_REF_RC,
+    CLASS_INDEL_EA_ONLY,
+    CLASS_INDEL_NOT_ON_REFERENCE,
+    CLASS_NEA_REF_RC,
+    CLASS_NOT_ON_REFERENCE,
     IS_PALINDROMIC_MNP_COL,
     classify_alleles,
     prepare_alleles,
@@ -2074,29 +2284,24 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.flip import (
 from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
     GenomeReferenceHarmonizationOptions,
 )
+from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import (
+    ACTION_COMPLEMENT,
+    ACTION_COMPLEMENT_SWAP,
+    ACTION_KEEP,
+    ACTION_SWAP,
+    DROP_INDEL_NOT_ON_REFERENCE,
+    DROP_INVALID_ALLELE,
+    DROP_NOT_ON_REFERENCE,
+    DROP_PALINDROMIC_MNP_UNTRUSTED,
+)
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
 )
 
-DropReason = Literal[
-    "invalid_allele",
-    "not_on_reference",
-    "indel_not_on_reference",
-    "palindromic_mnp_untrusted",
-    "palindrome_unresolved",
-    "ambiguous_indel_no_eaf",
-    "ambiguous_indel_not_in_panel",
-    "ambiguous_indel_af_mismatch",
-    "ambiguous_indel_af_indecisive",
-]
-AlleleAction = Literal["keep", "swap", "complement", "complement_swap"]
-
 DROP_REASON_COL = "_drop_reason"
 ROW_INDEX_COL = "_row_index"
 ACTION_COL = "_action"
-_COMPLEMENTING: list[AlleleAction] = ["complement", "complement_swap"]
-_SWAPPING: list[AlleleAction] = ["swap", "complement_swap"]
 
 
 class PanelLoader(Protocol):
@@ -2120,7 +2325,7 @@ def resolve_chromosome(
     output_columns = [*rows.columns, DROP_REASON_COL]
     frame = prepare_alleles(rows).with_row_index(ROW_INDEX_COL)
     invalid = frame.filter(~valid_alleles_expr()).with_columns(
-        pl.lit("invalid_allele", dtype=pl.String).alias(DROP_REASON_COL)
+        pl.lit(DROP_INVALID_ALLELE, dtype=pl.String).alias(DROP_REASON_COL)
     )
     valid = classify_alleles(
         frame.filter(valid_alleles_expr()),
@@ -2144,13 +2349,13 @@ def resolve_chromosome(
 def _base_action_expr() -> pl.Expr:
     allele_class = pl.col(ALLELE_CLASS_COL)
     return (
-        pl.when(allele_class.is_in(["ea_ref", "indel_ea_only"]))
-        .then(pl.lit("swap"))
-        .when(allele_class == "nea_ref_rc")
-        .then(pl.lit("complement"))
-        .when(allele_class == "ea_ref_rc")
-        .then(pl.lit("complement_swap"))
-        .otherwise(pl.lit("keep"))
+        pl.when(allele_class.is_in([CLASS_EA_REF, CLASS_INDEL_EA_ONLY]))
+        .then(pl.lit(ACTION_SWAP))
+        .when(allele_class == CLASS_NEA_REF_RC)
+        .then(pl.lit(ACTION_COMPLEMENT))
+        .when(allele_class == CLASS_EA_REF_RC)
+        .then(pl.lit(ACTION_COMPLEMENT_SWAP))
+        .otherwise(pl.lit(ACTION_KEEP))
         .alias(ACTION_COL)
     )
 
@@ -2159,12 +2364,12 @@ def _base_drop_reason_expr(trusted: bool) -> pl.Expr:
     allele_class = pl.col(ALLELE_CLASS_COL)
     untrusted_palindromic_mnp = pl.col(IS_PALINDROMIC_MNP_COL) & pl.lit(not trusted)
     return (
-        pl.when(allele_class == "not_on_reference")
-        .then(pl.lit("not_on_reference"))
-        .when(allele_class == "indel_not_on_reference")
-        .then(pl.lit("indel_not_on_reference"))
+        pl.when(allele_class == CLASS_NOT_ON_REFERENCE)
+        .then(pl.lit(DROP_NOT_ON_REFERENCE))
+        .when(allele_class == CLASS_INDEL_NOT_ON_REFERENCE)
+        .then(pl.lit(DROP_INDEL_NOT_ON_REFERENCE))
         .when(untrusted_palindromic_mnp)
-        .then(pl.lit("palindromic_mnp_untrusted"))
+        .then(pl.lit(DROP_PALINDROMIC_MNP_UNTRUSTED))
         .otherwise(pl.lit(None, dtype=pl.String))
         .alias(DROP_REASON_COL)
     )
@@ -2173,8 +2378,8 @@ def _base_drop_reason_expr(trusted: bool) -> pl.Expr:
 def _apply_allele_actions(frame: pl.DataFrame, rules: Mapping[str, FlipRule]) -> pl.DataFrame:
     ea = pl.col(GWASLAB_EFFECT_ALLELE_COL)
     nea = pl.col(GWASLAB_NON_EFFECT_ALLELE_COL)
-    complement = pl.col(ACTION_COL).is_in(_COMPLEMENTING)
-    swap = pl.col(ACTION_COL).is_in(_SWAPPING)
+    complement = pl.col(ACTION_COL).is_in([ACTION_COMPLEMENT, ACTION_COMPLEMENT_SWAP])
+    swap = pl.col(ACTION_COL).is_in([ACTION_SWAP, ACTION_COMPLEMENT_SWAP])
     complemented = frame.with_columns(
         pl.when(complement)
         .then(reverse_complement_expr(GWASLAB_EFFECT_ALLELE_COL))
@@ -2192,7 +2397,7 @@ def _apply_allele_actions(frame: pl.DataFrame, rules: Mapping[str, FlipRule]) ->
     return flip_statistics(swapped, mask=swap, rules=rules)
 ```
 
-- [ ] **Step 9: Implement genome_reference_harmonization_task.py**
+- [ ] **Step 10: Implement genome_reference_harmonization_task.py**
 
 ```python
 """
@@ -2281,6 +2486,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 HARMONIZED_FILENAME = "harmonized.parquet"
+_KEPT_LABEL = "kept"  # log label for rows without a drop reason
 _KEY_COLUMNS = [
     GWASLAB_CHROM_COL,
     GWASLAB_POS_COL,
@@ -2386,7 +2592,7 @@ def _write_chromosome_part(
 ) -> Path:
     resolved = resolve_chromosome_rows(sumstats, context, panel_path)
     rows_by_reason = {
-        ("kept" if reason is None else reason): count
+        (_KEPT_LABEL if reason is None else reason): count
         for reason, count in resolved.group_by(DROP_REASON_COL).len().rows()
     }
     logger.info(
@@ -2499,7 +2705,7 @@ class GenomeReferenceHarmonizationTask(Task):
         )
 ```
 
-- [ ] **Step 10: Run the tests to verify they pass**
+- [ ] **Step 11: Run the tests to verify they pass**
 
 Run: `pixi r python -m pytest test_mecfs_bio/unit/build_system/task/genome_reference_harmonization -q`
 
@@ -2508,7 +2714,7 @@ Expected: all pass (Task 1, 2 and 4 tests).
 If a test fails, fix the implementation, not the expectation. The fixture
 comments document why each expected value is right.
 
-- [ ] **Step 11: Run the full check**
+- [ ] **Step 12: Run the full check**
 
 Run:
 
@@ -2520,7 +2726,7 @@ grep -aE "passed|failed|error|All checks passed" /tmp/claude-green.log | tail
 Expected: EXIT=0 and a pytest summary with no failures. Fix lint, format,
 spellcheck (typos) and ty findings in the new files.
 
-- [ ] **Step 12: Commit**
+- [ ] **Step 13: Commit**
 
 ```bash
 git add mecfs_bio/build_system/task/genome_reference_harmonization test_mecfs_bio/unit/build_system/task/genome_reference_harmonization
@@ -2537,7 +2743,6 @@ git commit -m "Add streaming GenomeReferenceHarmonizationTask core"
 **Interfaces:**
 - Consumes: resolve_chromosome internals from Task 4 (ACTION_COL, DROP_REASON_COL, ROW_INDEX_COL, IS_PALINDROMIC_SNV_COL, flip_statistics); PanelLoader.
 - Produces:
-  - PalindromeDecision = Literal["keep", "strand_flip", "unresolved"]
   - decide_palindrome_strands(rows: pl.DataFrame, panel: pl.DataFrame, options) -> pl.Series, aligned with rows. rows holds POS, EA, NEA, EAF, oriented so that NEA is the reference base.
   - In resolve_chromosome.py: a panel is loaded once per untrusted chromosome, before allele actions, via _panel_positions(valid). Task 6 reuses it.
 
@@ -2625,12 +2830,15 @@ It is kept when EAF and panel AF lie on the same side of 0.5, and strand-flipped
 (statistics flipped, alleles unchanged) otherwise.
 """
 
-from typing import Literal
-
 import polars as pl
 
 from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
     GenomeReferenceHarmonizationOptions,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import (
+    PALINDROME_KEEP,
+    PALINDROME_STRAND_FLIP,
+    PALINDROME_UNRESOLVED,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
     PANEL_AF_COL,
@@ -2644,7 +2852,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
 )
 
-PalindromeDecision = Literal["keep", "strand_flip", "unresolved"]
 FREQUENCY_EPSILON = 1e-6
 _PANEL_AF = "_panel_af"
 _DECISION = "decision"
@@ -2676,10 +2883,10 @@ def decide_palindrome_strands(
     same_side = ((af < 0.5) & (eaf < 0.5)) | ((af > 0.5) & (eaf > 0.5))
     return joined.select(
         pl.when(~resolvable)
-        .then(pl.lit("unresolved"))
+        .then(pl.lit(PALINDROME_UNRESOLVED))
         .when(same_side)
-        .then(pl.lit("keep"))
-        .otherwise(pl.lit("strand_flip"))
+        .then(pl.lit(PALINDROME_KEEP))
+        .otherwise(pl.lit(PALINDROME_STRAND_FLIP))
         .alias(_DECISION)
     )[_DECISION]
 ```
@@ -2690,7 +2897,13 @@ Add imports:
 
 ```python
 from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes import (
+    CLASS_INDEL_BOTH,
     IS_PALINDROMIC_SNV_COL,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import (
+    DROP_PALINDROME_UNRESOLVED,
+    PALINDROME_STRAND_FLIP,
+    PALINDROME_UNRESOLVED,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.palindromes import (
     decide_palindrome_strands,
@@ -2727,7 +2940,7 @@ Add the helpers:
 ```python
 def _panel_positions(valid: pl.DataFrame) -> pl.Series:
     """Positions whose variants may need panel evidence: palindromic SNVs and ambiguous indels."""
-    needs_panel = pl.col(IS_PALINDROMIC_SNV_COL) | (pl.col(ALLELE_CLASS_COL) == "indel_both")
+    needs_panel = pl.col(IS_PALINDROMIC_SNV_COL) | (pl.col(ALLELE_CLASS_COL) == CLASS_INDEL_BOTH)
     return valid.filter(needs_panel)[GWASLAB_POS_COL]
 
 
@@ -2755,15 +2968,15 @@ def _apply_palindrome_strand_rules(
     )
     decided = valid.join(decisions, on=ROW_INDEX_COL, how="left", maintain_order="left")
     decided = flip_statistics(
-        decided, mask=pl.col(PALINDROME_DECISION_COL) == "strand_flip", rules=context.rules
+        decided, mask=pl.col(PALINDROME_DECISION_COL) == PALINDROME_STRAND_FLIP, rules=context.rules
     )
     if not context.options.keep_unresolved_palindromes:
-        unresolved = (pl.col(PALINDROME_DECISION_COL) == "unresolved") & pl.col(
+        unresolved = (pl.col(PALINDROME_DECISION_COL) == PALINDROME_UNRESOLVED) & pl.col(
             DROP_REASON_COL
         ).is_null()
         decided = decided.with_columns(
             pl.when(unresolved)
-            .then(pl.lit("palindrome_unresolved"))
+            .then(pl.lit(DROP_PALINDROME_UNRESOLVED))
             .otherwise(pl.col(DROP_REASON_COL))
             .alias(DROP_REASON_COL)
         )
@@ -2797,7 +3010,7 @@ git commit -m "Resolve untrusted palindromic SNV strands by panel frequency"
 - Produces:
   - INDEL_ACTION_COL = "_indel_action"
   - INDEL_DROP_REASON_COL = "_indel_drop_reason"
-  - decide_ambiguous_indels(rows: pl.DataFrame, panel: pl.DataFrame, options) -> pl.DataFrame. Output is aligned with rows (POS, EA, NEA, EAF) and has exactly those two columns: action "keep", "swap" or null, and the drop reason or null.
+  - decide_ambiguous_indels(rows: pl.DataFrame, panel: pl.DataFrame, options) -> pl.DataFrame. Output is aligned with rows (POS, EA, NEA, EAF) and has exactly those two columns: action ACTION_KEEP, ACTION_SWAP or null, and the drop reason or null.
 
 - [ ] **Step 1: Append the failing tests**
 
@@ -2920,12 +3133,18 @@ least indel_min_af_margin. Anything else is dropped: excluding correct variants 
 preferred to keeping one whose orientation is wrong.
 """
 
-from typing import Literal
-
 import polars as pl
 
 from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
     GenomeReferenceHarmonizationOptions,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import (
+    ACTION_KEEP,
+    ACTION_SWAP,
+    DROP_AMBIGUOUS_INDEL_AF_INDECISIVE,
+    DROP_AMBIGUOUS_INDEL_AF_MISMATCH,
+    DROP_AMBIGUOUS_INDEL_NO_EAF,
+    DROP_AMBIGUOUS_INDEL_NOT_IN_PANEL,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
     PANEL_AF_COL,
@@ -2939,7 +3158,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
 )
 
-IndelAction = Literal["keep", "swap"]
 INDEL_ACTION_COL = "_indel_action"
 INDEL_DROP_REASON_COL = "_indel_drop_reason"
 _AF_KEEP = "_af_keep"
@@ -2989,20 +3207,20 @@ def decide_ambiguous_indels(
     ).fill_null(False)
     return joined.select(
         pl.when(choose_keep)
-        .then(pl.lit("keep"))
+        .then(pl.lit(ACTION_KEEP))
         .when(choose_flip)
-        .then(pl.lit("swap"))
+        .then(pl.lit(ACTION_SWAP))
         .otherwise(pl.lit(None, dtype=pl.String))
         .alias(INDEL_ACTION_COL),
         pl.when(eaf.is_null())
-        .then(pl.lit("ambiguous_indel_no_eaf"))
+        .then(pl.lit(DROP_AMBIGUOUS_INDEL_NO_EAF))
         .when(~has_keep & ~has_flip)
-        .then(pl.lit("ambiguous_indel_not_in_panel"))
+        .then(pl.lit(DROP_AMBIGUOUS_INDEL_NOT_IN_PANEL))
         .when(choose_keep | choose_flip)
         .then(pl.lit(None, dtype=pl.String))
         .when(has_keep ^ has_flip)
-        .then(pl.lit("ambiguous_indel_af_mismatch"))
-        .otherwise(pl.lit("ambiguous_indel_af_indecisive"))
+        .then(pl.lit(DROP_AMBIGUOUS_INDEL_AF_MISMATCH))
+        .otherwise(pl.lit(DROP_AMBIGUOUS_INDEL_AF_INDECISIVE))
         .alias(INDEL_DROP_REASON_COL),
     )
 ```
@@ -3040,7 +3258,7 @@ def _apply_ambiguous_indel_rules(
     valid: pl.DataFrame, panel: pl.DataFrame, context: ChromosomeContext
 ) -> pl.DataFrame:
     ambiguous = valid.filter(
-        (pl.col(ALLELE_CLASS_COL) == "indel_both") & pl.col(DROP_REASON_COL).is_null()
+        (pl.col(ALLELE_CLASS_COL) == CLASS_INDEL_BOTH) & pl.col(DROP_REASON_COL).is_null()
     )
     decisions = pl.concat(
         [
@@ -3267,12 +3485,31 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SNPID_COL,
     GWASLAB_STATUS_COL,
 )
+from mecfs_bio.constants.regenie_constants import (
+    REGENIE_A1FREQ_CASES_COL,
+    REGENIE_A1FREQ_CONTROLS_COL,
+)
 
 EA = GWASLAB_EFFECT_ALLELE_COL
 NEA = GWASLAB_NON_EFFECT_ALLELE_COL
 BETA = GWASLAB_BETA_COL
 SUFFIX = "_gwaslab"
 STAT_TOLERANCE = 1e-6
+BUCKET_COL = "bucket"
+VARIANT_TYPE_COL = "variant_type"
+INDEL_INFERENCE_FLIP_COL = "gwaslab_indel_inference_flip"
+TYPE_INDEL = "indel"
+TYPE_PALINDROMIC_SNV = "palindromic_snv"
+TYPE_SNV = "snv"
+TYPE_MNP = "mnp"
+BUCKET_NEW_ONLY = "new_only"
+BUCKET_GWASLAB_ONLY = "gwaslab_only"
+BUCKET_IDENTICAL = "identical"
+BUCKET_SAME_ORIENTATION_BETA_DIFFERS = "same_orientation_beta_differs"
+BUCKET_OPPOSITE_ORIENTATION = "opposite_orientation"
+BUCKET_OTHER = "other"
+# gwaslab STATUS digit 7 value 4: stats flipped by indel inference (the bug signature)
+GWASLAB_STATUS_DIGIT7_INDEL_FLIPPED = "4"
 OPTIONS = GenomeReferenceHarmonizationOptions()
 
 
@@ -3322,12 +3559,12 @@ def _variant_type(ea: str, nea: str) -> pl.Expr:
     palindromic = (ea_length == 1) & (nea_length == 1) & (reverse_complement_expr(nea) == pl.col(ea))
     return (
         pl.when(ea_length != nea_length)
-        .then(pl.lit("indel"))
+        .then(pl.lit(TYPE_INDEL))
         .when(palindromic)
-        .then(pl.lit("palindromic_snv"))
+        .then(pl.lit(TYPE_PALINDROMIC_SNV))
         .when(ea_length == 1)
-        .then(pl.lit("snv"))
-        .otherwise(pl.lit("mnp"))
+        .then(pl.lit(TYPE_SNV))
+        .otherwise(pl.lit(TYPE_MNP))
     )
 
 
@@ -3364,47 +3601,47 @@ def compare(case: ComparisonCase, new: pl.DataFrame, old: pl.DataFrame, drops: D
     opposite_orientation = (pl.col(EA) == pl.col(NEA + SUFFIX)) & (pl.col(NEA) == pl.col(EA + SUFFIX))
     bucket = (
         pl.when(pl.col(EA + SUFFIX).is_null())
-        .then(pl.lit("new_only"))
+        .then(pl.lit(BUCKET_NEW_ONLY))
         .when(pl.col(EA).is_null())
-        .then(pl.lit("gwaslab_only"))
+        .then(pl.lit(BUCKET_GWASLAB_ONLY))
         .when(same_orientation & ((pl.col(BETA) - pl.col(BETA + SUFFIX)).abs() < STAT_TOLERANCE))
-        .then(pl.lit("identical"))
+        .then(pl.lit(BUCKET_IDENTICAL))
         .when(same_orientation)
-        .then(pl.lit("same_orientation_beta_differs"))
+        .then(pl.lit(BUCKET_SAME_ORIENTATION_BETA_DIFFERS))
         .when(opposite_orientation & ((pl.col(BETA) + pl.col(BETA + SUFFIX)).abs() < STAT_TOLERANCE))
-        .then(pl.lit("opposite_orientation"))
-        .otherwise(pl.lit("other"))
+        .then(pl.lit(BUCKET_OPPOSITE_ORIENTATION))
+        .otherwise(pl.lit(BUCKET_OTHER))
     )
     joined = joined.with_columns(
-        bucket.alias("bucket"),
-        pl.coalesce(_variant_type(EA, NEA), _variant_type(EA + SUFFIX, NEA + SUFFIX)).alias("variant_type"),
-        (pl.col(GWASLAB_STATUS_COL + SUFFIX).cast(pl.String).str.slice(6, 1) == "4").alias(
-            "gwaslab_indel_inference_flip"
+        bucket.alias(BUCKET_COL),
+        pl.coalesce(_variant_type(EA, NEA), _variant_type(EA + SUFFIX, NEA + SUFFIX)).alias(VARIANT_TYPE_COL),
+        (pl.col(GWASLAB_STATUS_COL + SUFFIX).cast(pl.String).str.slice(6, 1) == GWASLAB_STATUS_DIGIT7_INDEL_FLIPPED).alias(
+            INDEL_INFERENCE_FLIP_COL
         ),
     )
     with pl.Config(tbl_rows=60, tbl_cols=-1, tbl_width_chars=250):
         print(f"\n=== {case.label}: buckets by variant type ===")
-        print(joined.group_by("bucket", "variant_type").len().sort("bucket", "variant_type"))
+        print(joined.group_by(BUCKET_COL, VARIANT_TYPE_COL).len().sort(BUCKET_COL, VARIANT_TYPE_COL))
         print(f"\n=== {case.label}: opposite-orientation rows by gwaslab indel-inference flip ===")
         print(
-            joined.filter(pl.col("bucket") == "opposite_orientation")
-            .group_by("variant_type", "gwaslab_indel_inference_flip")
+            joined.filter(pl.col(BUCKET_COL) == BUCKET_OPPOSITE_ORIENTATION)
+            .group_by(VARIANT_TYPE_COL, INDEL_INFERENCE_FLIP_COL)
             .len()
         )
-        gwaslab_only = joined.filter(pl.col("bucket") == "gwaslab_only").join(
+        gwaslab_only = joined.filter(pl.col(BUCKET_COL) == BUCKET_GWASLAB_ONLY).join(
             drops.dropped.select(GWASLAB_SNPID_COL, DROP_REASON_COL), on=GWASLAB_SNPID_COL, how="left"
         )
         print(f"\n=== {case.label}: rows only gwaslab kept, by our drop reason ===")
-        print(gwaslab_only.group_by(DROP_REASON_COL, "variant_type").len().sort("len", descending=True))
+        print(gwaslab_only.group_by(DROP_REASON_COL, VARIANT_TYPE_COL).len().sort("len", descending=True))
         print(f"\n=== {case.label}: rows only we kept ===")
-        print(joined.filter(pl.col("bucket") == "new_only").group_by("variant_type").len())
-        for name in ["same_orientation_beta_differs", "other", "new_only", "gwaslab_only"]:
+        print(joined.filter(pl.col(BUCKET_COL) == BUCKET_NEW_ONLY).group_by(VARIANT_TYPE_COL).len())
+        for name in [BUCKET_SAME_ORIENTATION_BETA_DIFFERS, BUCKET_OTHER, BUCKET_NEW_ONLY, BUCKET_GWASLAB_ONLY]:
             print(f"\n--- {case.label}: examples of {name} ---")
-            print(joined.filter(pl.col("bucket") == name).head(8))
-        for column in ["A1FREQ_CASES", "A1FREQ_CONTROLS"]:
+            print(joined.filter(pl.col(BUCKET_COL) == name).head(8))
+        for column in [REGENIE_A1FREQ_CASES_COL, REGENIE_A1FREQ_CONTROLS_COL]:
             if column in new.columns:
                 differs = joined.filter(
-                    (pl.col("bucket") == "identical")
+                    (pl.col(BUCKET_COL) == BUCKET_IDENTICAL)
                     & ((pl.col(column) - pl.col(column + SUFFIX)).abs() > STAT_TOLERANCE)
                 )
                 print(f"\n{case.label}: identical rows whose {column} differs (gwaslab never flips it): {differs.height:,}")
@@ -3533,6 +3770,7 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes import (
     ALLELE_CLASS_COL,
+    CLASS_INDEL_BOTH,
     classify_alleles,
     prepare_alleles,
     valid_alleles_expr,
@@ -3551,6 +3789,10 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
     GenomeReferenceHarmonizationOptions,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import (
+    ACTION_KEEP,
+    ACTION_SWAP,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.trust import decide_trust
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
@@ -3602,7 +3844,7 @@ def _ambiguous_indels(
         chrom=chrom,
         max_gather_bytes=BASE_OPTIONS.max_gather_bytes,
     )
-    ambiguous = classified.filter(pl.col(ALLELE_CLASS_COL) == "indel_both").select(ROW_COLUMNS)
+    ambiguous = classified.filter(pl.col(ALLELE_CLASS_COL) == CLASS_INDEL_BOTH).select(ROW_COLUMNS)
     panel = ParquetPanelLoader(panel_path=panel_path, chrom=chrom)(ambiguous[GWASLAB_POS_COL])
     return ChromosomeAmbiguousIndels(rows=ambiguous, panel=panel)
 
@@ -3641,8 +3883,8 @@ def main() -> None:
                 {
                     "distance": distance,
                     "margin": margin,
-                    "kept": int((decisions[INDEL_ACTION_COL] == "keep").sum()),
-                    "wrong": int((decisions[INDEL_ACTION_COL] == "swap").sum()),
+                    "kept": int((decisions[INDEL_ACTION_COL] == ACTION_KEEP).sum()),
+                    "wrong": int((decisions[INDEL_ACTION_COL] == ACTION_SWAP).sum()),
                     **{f"drop_{reason}": count for reason, count in reasons.items() if reason is not None},
                 }
             )
