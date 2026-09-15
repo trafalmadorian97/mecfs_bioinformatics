@@ -1,0 +1,194 @@
+2026-09-15 16:57:17 [debug    ] Loading default runner config from default_runner_config.yaml
+2026-09-15 16:57:17 [debug    ] config: 
+ {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+2026-09-15 16:57:27 [debug    ] incremental save is enabled
+2026-09-15 16:57:28 [debug    ] Looking for invalid dependencies
+2026-09-15 16:57:28 [debug    ] Done search for invalid dependencies
+2026-09-15 16:57:28 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+2026-09-15 16:57:28 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+2026-09-15 16:57:28 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+2026-09-15 16:57:28 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+2026-09-15 16:57:28 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps...
+2026-09-15 16:57:28 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps.
+2026-09-15 16:57:28 [debug    ] Attempting to verify the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps...
+2026-09-15 16:57:28 [debug    ] Successfully verified the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps.
+2026-09-15 16:57:28 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+2026-09-15 16:57:28 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+2026-09-15 16:57:28 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_minimal_processing...
+2026-09-15 16:57:28 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_minimal_processing.
+2026-09-15 16:57:28 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_build_38_table...
+2026-09-15 16:57:28 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_build_38_table.
+2026-09-15 16:57:28 [info     ] 
+Work Progress:
+✅ decode_me_gwas_1_raw
+✅ decode_me_snps_passing_quality_control
+✅ ucsc_hg38_indexed_fasta_wrapped_remove_deps
+✅ thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps
+✅ decode_me_gwas_1_filtered_for_quality_control
+✅ decode_me_gwas_1_sumstats_minimal_processing
+✅ experiment_decode_me_gwas_1_build_38_table
+
+2026-09-15 16:57:29 [info     ] Locations of materialized targets:
+
+{
+│   'experiment_decode_me_gwas_1_build_38_table': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_build_38_table.parquet',
+│   'ucsc_hg38_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg38/processed/ucsc_hg38_indexed_fasta_wrapped_remove_deps',
+│   'thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg38_30x/processed/panel_allele_frequencies.parquet'
+}
+2026-09-15 16:57:29 [debug    ] Scanning parquet asset at assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_build_38_table.parquet with backend polars
+shape: (125, 5)
+┌─────────────────────────┬──────────┬────────┬────────┬───────┐
+│ variant                 ┆ distance ┆ margin ┆ kept   ┆ wrong │
+│ ---                     ┆ ---      ┆ ---    ┆ ---    ┆ ---   │
+│ str                     ┆ f64      ┆ f64    ┆ i64    ┆ i64   │
+╞═════════════════════════╪══════════╪════════╪════════╪═══════╡
+│ baseline                ┆ 0.02     ┆ 0.02   ┆ 596607 ┆ 19    │
+│ baseline                ┆ 0.02     ┆ 0.05   ┆ 595981 ┆ 11    │
+│ baseline                ┆ 0.02     ┆ 0.1    ┆ 594908 ┆ 11    │
+│ baseline                ┆ 0.02     ┆ 0.2    ┆ 592502 ┆ 11    │
+│ baseline                ┆ 0.02     ┆ 0.3    ┆ 589634 ┆ 11    │
+│ baseline                ┆ 0.05     ┆ 0.02   ┆ 722997 ┆ 32    │
+│ baseline                ┆ 0.05     ┆ 0.05   ┆ 722268 ┆ 22    │
+│ baseline                ┆ 0.05     ┆ 0.1    ┆ 720923 ┆ 22    │
+│ baseline                ┆ 0.05     ┆ 0.2    ┆ 717710 ┆ 22    │
+│ baseline                ┆ 0.05     ┆ 0.3    ┆ 713723 ┆ 22    │
+│ baseline                ┆ 0.1      ┆ 0.02   ┆ 730966 ┆ 57    │
+│ baseline                ┆ 0.1      ┆ 0.05   ┆ 730230 ┆ 47    │
+│ baseline                ┆ 0.1      ┆ 0.1    ┆ 728881 ┆ 47    │
+│ baseline                ┆ 0.1      ┆ 0.2    ┆ 725627 ┆ 47    │
+│ baseline                ┆ 0.1      ┆ 0.3    ┆ 721560 ┆ 46    │
+│ baseline                ┆ 0.15     ┆ 0.02   ┆ 731534 ┆ 77    │
+│ baseline                ┆ 0.15     ┆ 0.05   ┆ 730798 ┆ 66    │
+│ baseline                ┆ 0.15     ┆ 0.1    ┆ 729449 ┆ 66    │
+│ baseline                ┆ 0.15     ┆ 0.2    ┆ 726195 ┆ 65    │
+│ baseline                ┆ 0.15     ┆ 0.3    ┆ 722127 ┆ 64    │
+│ baseline                ┆ 0.2      ┆ 0.02   ┆ 731876 ┆ 105   │
+│ baseline                ┆ 0.2      ┆ 0.05   ┆ 731140 ┆ 94    │
+│ baseline                ┆ 0.2      ┆ 0.1    ┆ 729790 ┆ 94    │
+│ baseline                ┆ 0.2      ┆ 0.2    ┆ 726533 ┆ 93    │
+│ baseline                ┆ 0.2      ┆ 0.3    ┆ 722460 ┆ 92    │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.02   ┆ 596763 ┆ 13    │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.05   ┆ 596602 ┆ 5     │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.1    ┆ 596259 ┆ 5     │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.2    ┆ 595194 ┆ 5     │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.3    ┆ 593752 ┆ 5     │
+│ drop_monomorphic        ┆ 0.05     ┆ 0.02   ┆ 723006 ┆ 21    │
+│ drop_monomorphic        ┆ 0.05     ┆ 0.05   ┆ 722798 ┆ 12    │
+│ drop_monomorphic        ┆ 0.05     ┆ 0.1    ┆ 722350 ┆ 12    │
+│ drop_monomorphic        ┆ 0.05     ┆ 0.2    ┆ 720981 ┆ 12    │
+│ drop_monomorphic        ┆ 0.05     ┆ 0.3    ┆ 719127 ┆ 12    │
+│ drop_monomorphic        ┆ 0.1      ┆ 0.02   ┆ 730837 ┆ 41    │
+│ drop_monomorphic        ┆ 0.1      ┆ 0.05   ┆ 730623 ┆ 32    │
+│ drop_monomorphic        ┆ 0.1      ┆ 0.1    ┆ 730172 ┆ 32    │
+│ drop_monomorphic        ┆ 0.1      ┆ 0.2    ┆ 728788 ┆ 32    │
+│ drop_monomorphic        ┆ 0.1      ┆ 0.3    ┆ 726909 ┆ 31    │
+│ drop_monomorphic        ┆ 0.15     ┆ 0.02   ┆ 731340 ┆ 54    │
+│ drop_monomorphic        ┆ 0.15     ┆ 0.05   ┆ 731126 ┆ 45    │
+│ drop_monomorphic        ┆ 0.15     ┆ 0.1    ┆ 730675 ┆ 45    │
+│ drop_monomorphic        ┆ 0.15     ┆ 0.2    ┆ 729291 ┆ 45    │
+│ drop_monomorphic        ┆ 0.15     ┆ 0.3    ┆ 727411 ┆ 44    │
+│ drop_monomorphic        ┆ 0.2      ┆ 0.02   ┆ 731645 ┆ 80    │
+│ drop_monomorphic        ┆ 0.2      ┆ 0.05   ┆ 731431 ┆ 71    │
+│ drop_monomorphic        ┆ 0.2      ┆ 0.1    ┆ 730980 ┆ 71    │
+│ drop_monomorphic        ┆ 0.2      ┆ 0.2    ┆ 729596 ┆ 71    │
+│ drop_monomorphic        ┆ 0.2      ┆ 0.3    ┆ 727713 ┆ 70    │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.02   ┆ 596679 ┆ 13    │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.05   ┆ 596552 ┆ 5     │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.1    ┆ 596321 ┆ 5     │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.2    ┆ 595559 ┆ 5     │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.3    ┆ 594483 ┆ 5     │
+│ drop_rare_records_0.001 ┆ 0.05     ┆ 0.02   ┆ 722848 ┆ 21    │
+│ drop_rare_records_0.001 ┆ 0.05     ┆ 0.05   ┆ 722686 ┆ 12    │
+│ drop_rare_records_0.001 ┆ 0.05     ┆ 0.1    ┆ 722385 ┆ 12    │
+│ drop_rare_records_0.001 ┆ 0.05     ┆ 0.2    ┆ 721434 ┆ 12    │
+│ drop_rare_records_0.001 ┆ 0.05     ┆ 0.3    ┆ 720116 ┆ 12    │
+│ drop_rare_records_0.001 ┆ 0.1      ┆ 0.02   ┆ 730627 ┆ 38    │
+│ drop_rare_records_0.001 ┆ 0.1      ┆ 0.05   ┆ 730461 ┆ 29    │
+│ drop_rare_records_0.001 ┆ 0.1      ┆ 0.1    ┆ 730157 ┆ 29    │
+│ drop_rare_records_0.001 ┆ 0.1      ┆ 0.2    ┆ 729198 ┆ 29    │
+│ drop_rare_records_0.001 ┆ 0.1      ┆ 0.3    ┆ 727867 ┆ 29    │
+│ drop_rare_records_0.001 ┆ 0.15     ┆ 0.02   ┆ 731104 ┆ 50    │
+│ drop_rare_records_0.001 ┆ 0.15     ┆ 0.05   ┆ 730938 ┆ 41    │
+│ drop_rare_records_0.001 ┆ 0.15     ┆ 0.1    ┆ 730634 ┆ 41    │
+│ drop_rare_records_0.001 ┆ 0.15     ┆ 0.2    ┆ 729675 ┆ 41    │
+│ drop_rare_records_0.001 ┆ 0.15     ┆ 0.3    ┆ 728344 ┆ 41    │
+│ drop_rare_records_0.001 ┆ 0.2      ┆ 0.02   ┆ 731400 ┆ 76    │
+│ drop_rare_records_0.001 ┆ 0.2      ┆ 0.05   ┆ 731234 ┆ 67    │
+│ drop_rare_records_0.001 ┆ 0.2      ┆ 0.1    ┆ 730930 ┆ 67    │
+│ drop_rare_records_0.001 ┆ 0.2      ┆ 0.2    ┆ 729971 ┆ 67    │
+│ drop_rare_records_0.001 ┆ 0.2      ┆ 0.3    ┆ 728637 ┆ 67    │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.02   ┆ 570852 ┆ 17    │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.05   ┆ 570748 ┆ 10    │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.1    ┆ 570552 ┆ 10    │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.2    ┆ 569919 ┆ 10    │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.3    ┆ 569014 ┆ 10    │
+│ drop_rare_records_0.01  ┆ 0.05     ┆ 0.02   ┆ 696856 ┆ 28    │
+│ drop_rare_records_0.01  ┆ 0.05     ┆ 0.05   ┆ 696721 ┆ 20    │
+│ drop_rare_records_0.01  ┆ 0.05     ┆ 0.1    ┆ 696465 ┆ 20    │
+│ drop_rare_records_0.01  ┆ 0.05     ┆ 0.2    ┆ 695686 ┆ 20    │
+│ drop_rare_records_0.01  ┆ 0.05     ┆ 0.3    ┆ 694612 ┆ 20    │
+│ drop_rare_records_0.01  ┆ 0.1      ┆ 0.02   ┆ 704535 ┆ 48    │
+│ drop_rare_records_0.01  ┆ 0.1      ┆ 0.05   ┆ 704397 ┆ 40    │
+│ drop_rare_records_0.01  ┆ 0.1      ┆ 0.1    ┆ 704140 ┆ 40    │
+│ drop_rare_records_0.01  ┆ 0.1      ┆ 0.2    ┆ 703353 ┆ 40    │
+│ drop_rare_records_0.01  ┆ 0.1      ┆ 0.3    ┆ 702274 ┆ 40    │
+│ drop_rare_records_0.01  ┆ 0.15     ┆ 0.02   ┆ 704954 ┆ 70    │
+│ drop_rare_records_0.01  ┆ 0.15     ┆ 0.05   ┆ 704816 ┆ 62    │
+│ drop_rare_records_0.01  ┆ 0.15     ┆ 0.1    ┆ 704559 ┆ 62    │
+│ drop_rare_records_0.01  ┆ 0.15     ┆ 0.2    ┆ 703772 ┆ 62    │
+│ drop_rare_records_0.01  ┆ 0.15     ┆ 0.3    ┆ 702693 ┆ 62    │
+│ drop_rare_records_0.01  ┆ 0.2      ┆ 0.02   ┆ 705214 ┆ 110   │
+│ drop_rare_records_0.01  ┆ 0.2      ┆ 0.05   ┆ 705076 ┆ 102   │
+│ drop_rare_records_0.01  ┆ 0.2      ┆ 0.1    ┆ 704819 ┆ 102   │
+│ drop_rare_records_0.01  ┆ 0.2      ┆ 0.2    ┆ 704032 ┆ 102   │
+│ drop_rare_records_0.01  ┆ 0.2      ┆ 0.3    ┆ 702951 ┆ 102   │
+│ require_both_records    ┆ 0.02     ┆ 0.02   ┆ 100384 ┆ 8     │
+│ require_both_records    ┆ 0.02     ┆ 0.05   ┆ 99758  ┆ 0     │
+│ require_both_records    ┆ 0.02     ┆ 0.1    ┆ 98685  ┆ 0     │
+│ require_both_records    ┆ 0.02     ┆ 0.2    ┆ 96279  ┆ 0     │
+│ require_both_records    ┆ 0.02     ┆ 0.3    ┆ 93411  ┆ 0     │
+│ require_both_records    ┆ 0.05     ┆ 0.02   ┆ 119687 ┆ 11    │
+│ require_both_records    ┆ 0.05     ┆ 0.05   ┆ 118958 ┆ 1     │
+│ require_both_records    ┆ 0.05     ┆ 0.1    ┆ 117613 ┆ 1     │
+│ require_both_records    ┆ 0.05     ┆ 0.2    ┆ 114400 ┆ 1     │
+│ require_both_records    ┆ 0.05     ┆ 0.3    ┆ 110413 ┆ 1     │
+│ require_both_records    ┆ 0.1      ┆ 0.02   ┆ 120731 ┆ 13    │
+│ require_both_records    ┆ 0.1      ┆ 0.05   ┆ 119995 ┆ 3     │
+│ require_both_records    ┆ 0.1      ┆ 0.1    ┆ 118646 ┆ 3     │
+│ require_both_records    ┆ 0.1      ┆ 0.2    ┆ 115392 ┆ 3     │
+│ require_both_records    ┆ 0.1      ┆ 0.3    ┆ 111325 ┆ 2     │
+│ require_both_records    ┆ 0.15     ┆ 0.02   ┆ 120792 ┆ 16    │
+│ require_both_records    ┆ 0.15     ┆ 0.05   ┆ 120056 ┆ 5     │
+│ require_both_records    ┆ 0.15     ┆ 0.1    ┆ 118707 ┆ 5     │
+│ require_both_records    ┆ 0.15     ┆ 0.2    ┆ 115453 ┆ 4     │
+│ require_both_records    ┆ 0.15     ┆ 0.3    ┆ 111385 ┆ 3     │
+│ require_both_records    ┆ 0.2      ┆ 0.02   ┆ 120842 ┆ 17    │
+│ require_both_records    ┆ 0.2      ┆ 0.05   ┆ 120106 ┆ 6     │
+│ require_both_records    ┆ 0.2      ┆ 0.1    ┆ 118756 ┆ 6     │
+│ require_both_records    ┆ 0.2      ┆ 0.2    ┆ 115499 ┆ 5     │
+│ require_both_records    ┆ 0.2      ┆ 0.3    ┆ 111426 ┆ 4     │
+└─────────────────────────┴──────────┴────────┴────────┴───────┘
+
+best kept per variant among cells with the fewest wrong choices:
+shape: (15, 5)
+┌─────────────────────────┬──────────┬────────┬────────┬───────┐
+│ variant                 ┆ distance ┆ margin ┆ kept   ┆ wrong │
+│ ---                     ┆ ---      ┆ ---    ┆ ---    ┆ ---   │
+│ str                     ┆ f64      ┆ f64    ┆ i64    ┆ i64   │
+╞═════════════════════════╪══════════╪════════╪════════╪═══════╡
+│ baseline                ┆ 0.02     ┆ 0.05   ┆ 595981 ┆ 11    │
+│ baseline                ┆ 0.02     ┆ 0.1    ┆ 594908 ┆ 11    │
+│ baseline                ┆ 0.02     ┆ 0.2    ┆ 592502 ┆ 11    │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.05   ┆ 596602 ┆ 5     │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.1    ┆ 596259 ┆ 5     │
+│ drop_monomorphic        ┆ 0.02     ┆ 0.2    ┆ 595194 ┆ 5     │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.05   ┆ 596552 ┆ 5     │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.1    ┆ 596321 ┆ 5     │
+│ drop_rare_records_0.001 ┆ 0.02     ┆ 0.2    ┆ 595559 ┆ 5     │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.05   ┆ 570748 ┆ 10    │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.1    ┆ 570552 ┆ 10    │
+│ drop_rare_records_0.01  ┆ 0.02     ┆ 0.2    ┆ 569919 ┆ 10    │
+│ require_both_records    ┆ 0.02     ┆ 0.05   ┆ 99758  ┆ 0     │
+│ require_both_records    ┆ 0.02     ┆ 0.1    ┆ 98685  ┆ 0     │
+│ require_both_records    ┆ 0.02     ┆ 0.2    ┆ 96279  ┆ 0     │
+└─────────────────────────┴──────────┴────────┴────────┴───────┘

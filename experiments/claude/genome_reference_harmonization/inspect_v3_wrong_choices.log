@@ -1,0 +1,57 @@
+2026-09-15 16:55:26 [debug    ] Loading default runner config from default_runner_config.yaml
+2026-09-15 16:55:26 [debug    ] config: 
+ {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+2026-09-15 16:55:44 [debug    ] incremental save is enabled
+2026-09-15 16:55:45 [debug    ] Looking for invalid dependencies
+2026-09-15 16:55:45 [debug    ] Done search for invalid dependencies
+2026-09-15 16:55:45 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+2026-09-15 16:55:45 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+2026-09-15 16:55:45 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+2026-09-15 16:55:45 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+2026-09-15 16:55:45 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps...
+2026-09-15 16:55:45 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps.
+2026-09-15 16:55:45 [debug    ] Attempting to verify the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps...
+2026-09-15 16:55:45 [debug    ] Successfully verified the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps.
+2026-09-15 16:55:45 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+2026-09-15 16:55:45 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+2026-09-15 16:55:45 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_minimal_processing...
+2026-09-15 16:55:45 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_minimal_processing.
+2026-09-15 16:55:45 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_build_38_table...
+2026-09-15 16:55:45 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_build_38_table.
+2026-09-15 16:55:45 [info     ] 
+Work Progress:
+✅ decode_me_gwas_1_raw
+✅ decode_me_snps_passing_quality_control
+✅ ucsc_hg38_indexed_fasta_wrapped_remove_deps
+✅ thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps
+✅ decode_me_gwas_1_filtered_for_quality_control
+✅ decode_me_gwas_1_sumstats_minimal_processing
+✅ experiment_decode_me_gwas_1_build_38_table
+
+2026-09-15 16:55:46 [info     ] Locations of materialized targets:
+
+{
+│   'experiment_decode_me_gwas_1_build_38_table': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_build_38_table.parquet',
+│   'ucsc_hg38_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg38/processed/ucsc_hg38_indexed_fasta_wrapped_remove_deps',
+│   'thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg38_30x/processed/panel_allele_frequencies.parquet'
+}
+2026-09-15 16:55:46 [debug    ] Scanning parquet asset at assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_build_38_table.parquet with backend polars
+wrong choices at distance 0.02, margin 0.3:
+shape: (11, 6)
+┌─────┬───────────┬─────┬─────┬──────────┬─────────────────────────────────────────────────────────────┐
+│ CHR ┆ POS       ┆ EA  ┆ NEA ┆ EAF      ┆ panel_records_at_position                                   │
+│ --- ┆ ---       ┆ --- ┆ --- ┆ ---      ┆ ---                                                         │
+│ i32 ┆ i64       ┆ str ┆ str ┆ f32      ┆ str                                                         │
+╞═════╪═══════════╪═════╪═════╪══════════╪═════════════════════════════════════════════════════════════╡
+│ 2   ┆ 126390673 ┆ C   ┆ CT  ┆ 0.266349 ┆ C>CT:0.716; C>CTT:0.003; CTTTTTTT>C:0.0                     │
+│ 2   ┆ 224984840 ┆ C   ┆ CT  ┆ 0.982139 ┆ C>CT:0.0; CTT>C:0.0                                         │
+│ 2   ┆ 228597662 ┆ C   ┆ CT  ┆ 0.987036 ┆ C>CT:0.0; CTTTT>C:0.262; CTTTTT>C:0.73; CTTTTTT>C:0.0       │
+│ 11  ┆ 947010    ┆ C   ┆ CT  ┆ 0.448248 ┆ C>CT:0.554; C>CTT:0.004                                     │
+│ 11  ┆ 19321212  ┆ C   ┆ CT  ┆ 0.311068 ┆ C>CT:0.679; C>CTT:0.003; C>T:0.0; CTT>C:0.001               │
+│ 11  ┆ 47561137  ┆ C   ┆ CA  ┆ 0.142224 ┆ C>CA:0.846; C>CAA:0.007; CAA>C:0.0                          │
+│ 12  ┆ 57595702  ┆ C   ┆ CA  ┆ 0.987595 ┆ C>CA:0.0; CAA>C:0.005; CAAAAA>C:0.0                         │
+│ 12  ┆ 64250003  ┆ C   ┆ CT  ┆ 0.980865 ┆ C>CT:0.0; C>CTT:0.001; CTT>C:0.004; CTTT>C:0.0; CTTTT>C:0.0 │
+│ 13  ┆ 32388121  ┆ C   ┆ CT  ┆ 0.214712 ┆ C>CT:0.789; C>CTT:0.001                                     │
+│ 15  ┆ 69557108  ┆ G   ┆ GA  ┆ 0.981551 ┆ G>GA:0.0; GAA>G:0.014; GAAA>G:0.0                           │
+│ 19  ┆ 43995406  ┆ C   ┆ CT  ┆ 0.980789 ┆ C>CT:0.0; CTT>C:0.014                                       │
+└─────┴───────────┴─────┴─────┴──────────┴─────────────────────────────────────────────────────────────┘

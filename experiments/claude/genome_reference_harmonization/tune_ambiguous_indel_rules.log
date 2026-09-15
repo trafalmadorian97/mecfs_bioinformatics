@@ -1,0 +1,89 @@
+2026-09-15 16:53:40 [debug    ] Loading default runner config from default_runner_config.yaml
+2026-09-15 16:53:40 [debug    ] config: 
+ {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+2026-09-15 16:53:52 [debug    ] incremental save is enabled
+2026-09-15 16:53:52 [debug    ] Looking for invalid dependencies
+2026-09-15 16:53:52 [debug    ] Done search for invalid dependencies
+2026-09-15 16:53:52 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+2026-09-15 16:53:52 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+2026-09-15 16:53:52 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+2026-09-15 16:53:52 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+2026-09-15 16:53:52 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps...
+2026-09-15 16:53:52 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps.
+2026-09-15 16:53:52 [debug    ] Attempting to verify the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps...
+2026-09-15 16:53:52 [debug    ] Successfully verified the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps.
+2026-09-15 16:53:52 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+2026-09-15 16:53:52 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+2026-09-15 16:53:52 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_minimal_processing...
+2026-09-15 16:53:52 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_minimal_processing.
+2026-09-15 16:53:52 [debug    ] Materializing asset experiment_decode_me_gwas_1_build_38_table....
+2026-09-15 16:53:52 [debug    ] reading sumstats from assets/base_asset_store/gwas/ME_CFS/DecodeME/gwaslab_sumstats/decode_me_gwas_1_sumstats_minimal_processing.pickle
+2026/09/15 16:53:55 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 16:53:55 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/ME_CFS/DecodeME/gwaslab_sumstats/decode_me_gwas_1_sumstats_minimal_processing.pickle
+2026-09-15 16:53:55 [debug    ] Post sumstats df has shape (8902782, 18)
+2026-09-15 16:54:01 [debug    ] Saved asset experiment_decode_me_gwas_1_build_38_table to assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_build_38_table.parquet.
+2026-09-15 16:54:01 [debug    ] post-task gc.collect for experiment_decode_me_gwas_1_build_38_table: unreachable_collected=1932 rss_before_kb=2617868 rss_after_kb=962176
+2026-09-15 16:54:01 [debug    ] Trace of asset experiment_decode_me_gwas_1_build_38_table is:
+ imo_xxh3_128:7c52cd5a55f8bbd388425f4a797c1337_sz:563349913
+2026-09-15 16:54:02 [info     ] 
+Work Progress:
+✅ decode_me_gwas_1_raw
+✅ decode_me_snps_passing_quality_control
+✅ ucsc_hg38_indexed_fasta_wrapped_remove_deps
+✅ thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps
+✅ decode_me_gwas_1_filtered_for_quality_control
+✅ decode_me_gwas_1_sumstats_minimal_processing
+✅ experiment_decode_me_gwas_1_build_38_table
+
+2026-09-15 16:54:03 [info     ] Locations of materialized targets:
+
+{
+│   'experiment_decode_me_gwas_1_build_38_table': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_build_38_table.parquet',
+│   'ucsc_hg38_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg38/processed/ucsc_hg38_indexed_fasta_wrapped_remove_deps',
+│   'thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg38_30x/processed/panel_allele_frequencies.parquet'
+}
+2026-09-15 16:54:03 [debug    ] Scanning parquet asset at assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_build_38_table.parquet with backend polars
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/paiforsyth/src/traf/biostatistics/experiments/claude/genome_reference_harmonization/tune_ambiguous_indel_rules.py", line 192, in <module>
+    main()
+    ~~~~^^
+  File "/home/paiforsyth/src/traf/biostatistics/experiments/claude/genome_reference_harmonization/tune_ambiguous_indel_rules.py", line 185, in main
+    assert candidates.height > 0, (
+           ^^^^^^^^^^^^^^^^^^^^^
+AssertionError: no grid cell has zero wrong choices; report to the user
+build-38 trust counts: TrustCounts(consistent_snvs=6793073, inconsistent_snvs=0, consistent_indels=88573, inconsistent_indels=0)
+ambiguous indels: 769,705
+shape: (25, 7)
+┌──────────┬────────┬────────┬───────┬─────────────────────────────────┬─────────────────────────────────┬─────────────────────────────────┐
+│ distance ┆ margin ┆ kept   ┆ wrong ┆ drop_ambiguous_indel_af_mismat… ┆ drop_ambiguous_indel_not_in_pa… ┆ drop_ambiguous_indel_af_indeci… │
+│ ---      ┆ ---    ┆ ---    ┆ ---   ┆ ---                             ┆ ---                             ┆ ---                             │
+│ f64      ┆ f64    ┆ i64    ┆ i64   ┆ i64                             ┆ i64                             ┆ i64                             │
+╞══════════╪════════╪════════╪═══════╪═════════════════════════════════╪═════════════════════════════════╪═════════════════════════════════╡
+│ 0.02     ┆ 0.02   ┆ 596607 ┆ 19    ┆ 118004                          ┆ 33914                           ┆ 21161                           │
+│ 0.02     ┆ 0.05   ┆ 595981 ┆ 11    ┆ 118004                          ┆ 33914                           ┆ 21795                           │
+│ 0.02     ┆ 0.1    ┆ 594908 ┆ 11    ┆ 118004                          ┆ 33914                           ┆ 22868                           │
+│ 0.02     ┆ 0.2    ┆ 592502 ┆ 11    ┆ 118004                          ┆ 33914                           ┆ 25274                           │
+│ 0.02     ┆ 0.3    ┆ 589634 ┆ 11    ┆ 118004                          ┆ 33914                           ┆ 28142                           │
+│ 0.05     ┆ 0.02   ┆ 722997 ┆ 32    ┆ 10907                           ┆ 33914                           ┆ 1855                            │
+│ 0.05     ┆ 0.05   ┆ 722268 ┆ 22    ┆ 10907                           ┆ 33914                           ┆ 2594                            │
+│ 0.05     ┆ 0.1    ┆ 720923 ┆ 22    ┆ 10907                           ┆ 33914                           ┆ 3939                            │
+│ 0.05     ┆ 0.2    ┆ 717710 ┆ 22    ┆ 10907                           ┆ 33914                           ┆ 7152                            │
+│ 0.05     ┆ 0.3    ┆ 713723 ┆ 22    ┆ 10907                           ┆ 33914                           ┆ 11139                           │
+│ 0.1      ┆ 0.02   ┆ 730966 ┆ 57    ┆ 3959                            ┆ 33914                           ┆ 809                             │
+│ 0.1      ┆ 0.05   ┆ 730230 ┆ 47    ┆ 3959                            ┆ 33914                           ┆ 1555                            │
+│ 0.1      ┆ 0.1    ┆ 728881 ┆ 47    ┆ 3959                            ┆ 33914                           ┆ 2904                            │
+│ 0.1      ┆ 0.2    ┆ 725627 ┆ 47    ┆ 3959                            ┆ 33914                           ┆ 6158                            │
+│ 0.1      ┆ 0.3    ┆ 721560 ┆ 46    ┆ 3959                            ┆ 33914                           ┆ 10226                           │
+│ 0.15     ┆ 0.02   ┆ 731534 ┆ 77    ┆ 3435                            ┆ 33914                           ┆ 745                             │
+│ 0.15     ┆ 0.05   ┆ 730798 ┆ 66    ┆ 3435                            ┆ 33914                           ┆ 1492                            │
+│ 0.15     ┆ 0.1    ┆ 729449 ┆ 66    ┆ 3435                            ┆ 33914                           ┆ 2841                            │
+│ 0.15     ┆ 0.2    ┆ 726195 ┆ 65    ┆ 3435                            ┆ 33914                           ┆ 6096                            │
+│ 0.15     ┆ 0.3    ┆ 722127 ┆ 64    ┆ 3435                            ┆ 33914                           ┆ 10165                           │
+│ 0.2      ┆ 0.02   ┆ 731876 ┆ 105   ┆ 3116                            ┆ 33914                           ┆ 694                             │
+│ 0.2      ┆ 0.05   ┆ 731140 ┆ 94    ┆ 3116                            ┆ 33914                           ┆ 1441                            │
+│ 0.2      ┆ 0.1    ┆ 729790 ┆ 94    ┆ 3116                            ┆ 33914                           ┆ 2791                            │
+│ 0.2      ┆ 0.2    ┆ 726533 ┆ 93    ┆ 3116                            ┆ 33914                           ┆ 6049                            │
+│ 0.2      ┆ 0.3    ┆ 722460 ┆ 92    ┆ 3116                            ┆ 33914                           ┆ 10123                           │
+└──────────┴────────┴────────┴───────┴─────────────────────────────────┴─────────────────────────────────┴─────────────────────────────────┘
