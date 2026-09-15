@@ -1,0 +1,406 @@
+2026-09-15 16:35:03 [debug    ] Loading default runner config from default_runner_config.yaml
+2026-09-15 16:35:03 [debug    ] config: 
+ {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+2026-09-15 16:35:12 [debug    ] incremental save is enabled
+2026-09-15 16:35:12 [debug    ] Looking for invalid dependencies
+2026-09-15 16:35:12 [debug    ] Done search for invalid dependencies
+2026-09-15 16:35:12 [debug    ] Materializing asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps....
+2026-09-15 16:35:12 [debug    ] incremental save is enabled
+2026-09-15 16:35:12 [debug    ] Looking for invalid dependencies
+2026-09-15 16:35:12 [debug    ] Done search for invalid dependencies
+2026-09-15 16:35:12 [debug    ] Materializing asset thousand_genomes_eur_hg19_vcf....
+2026-09-15 16:35:12 [debug    ] Downloading from https://www.dropbox.com/scl/fi/q3wndz2wockuqto5pq0cc/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=zq8fzrjtbbl20r1wr74p4tqa1&dl=1 to /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+2026-09-15 16:35:12 [debug    ] Running pixi r --environment download-env aria2c --summary-interval=10 -x 1 --continue=true --allow-overwrite=true --user-agent=Wget/1.21.4 --auto-file-renaming=false --max-tries=8 --retry-wait=5 --timeout=30 --connect-timeout=30 --file-allocation=none --dir /tmp/tmpynscuury --out thousand_genomes_eur_hg19_vcf https://www.dropbox.com/scl/fi/q3wndz2wockuqto5pq0cc/EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz?rlkey=zq8fzrjtbbl20r1wr74p4tqa1&dl=1
+2026-09-15 16:35:12 [debug    ] 
+
+2026-09-15 16:35:12 [debug    ] 09/15 16:35:12 [[1;32mNOTICE[0m] Downloading 1 item(s)
+
+2026-09-15 16:35:12 [debug    ] 
+
+2026-09-15 16:35:12 [debug    ] 09/15 16:35:12 [[1;32mNOTICE[0m] CUID#7 - Redirecting to https://uc437915d72cf57c3983c86e0692.dl.dropboxusercontent.com/cd/0/inline/DIOoSNnQL1Mypq0dRLA6k_iDNVUcEMe9cAckJ3UsUiaSkN7Q5QHChreGsZoqHl3L6y_AmGY2tg_oM5t-zt0s0TjNrY5cnFZLqal1-Fzjx6BLsDopH3zJohDlJ0H69uJFDtA/file
+
+2026-09-15 16:35:13 [debug    ] [#529374 0B/0B CN:1 DL:0B]
+
+2026-09-15 16:35:13 [debug    ] 
+
+2026-09-15 16:35:13 [debug    ] 09/15 16:35:13 [[1;32mNOTICE[0m] CUID#7 - Redirecting to https://uc437915d72cf57c3983c86e0692.dl.dropboxusercontent.com/cd/0/inline2/DIO3jZE1xrIKr4UnndhpBtdwm-VkKJvizERSEFkKpqY2bP-vpgyl29DUY7NCBr6eRy77lKbze0nZX5TWLem1IAWYyb-clL6EzsjRbseJLvuzPOe0iifzjreaTg-ewcz3sbpkaHyh9pEYE-wwElimQoTKqz2n4djBnsQAtqAtUjhADV_Ga0qza8GqPrvl6aBBfedfNpdTaYUdiClLeWeyDxm5oCvMAR1ynwQWcV33fiTzbihmwZ6KgYLSWaiaF4mZp4jTkqK-h8yhTyGD4uxQVfQFNj1W5vOpC6Aead7yoCJuFPs3zeYT4nF68NWLRXTRlitUVPBXaBbYYcDTrdmuS2nyg-dZyLRUekFefYuxzIeMFg/file
+
+2026-09-15 16:35:22 [debug    ] [#529374 4.0MiB/3.2GiB(0%) CN:1 DL:11MiB ETA:4m36s]
+
+2026-09-15 16:35:22 [debug    ] [#529374 35MiB/3.2GiB(1%) CN:1 DL:26MiB ETA:2m4s]
+
+2026-09-15 16:35:22 [debug    ] [#529374 69MiB/3.2GiB(2%) CN:1 DL:30MiB ETA:1m47s]
+
+2026-09-15 16:35:22 [debug    ] [#529374 110MiB/3.2GiB(3%) CN:1 DL:33MiB ETA:1m36s]
+
+2026-09-15 16:35:22 [debug    ] [#529374 144MiB/3.2GiB(4%) CN:1 DL:33MiB ETA:1m34s]
+
+2026-09-15 16:35:22 [debug    ] [#529374 189MiB/3.2GiB(5%) CN:1 DL:35MiB ETA:1m27s]
+
+2026-09-15 16:35:22 [debug    ] [#529374 233MiB/3.2GiB(7%) CN:1 DL:37MiB ETA:1m22s]
+
+2026-09-15 16:35:22 [debug    ] [#529374 274MiB/3.2GiB(8%) CN:1 DL:37MiB ETA:1m20s]
+
+2026-09-15 16:35:22 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:35:22 2026 *** 
+
+2026-09-15 16:35:22 [debug    ] ===============================================================================
+
+2026-09-15 16:35:22 [debug    ] [#529374 310MiB/3.2GiB(9%) CN:1 DL:37MiB ETA:1m19s]
+
+2026-09-15 16:35:22 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:35:22 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:35:22 [debug    ] 
+
+2026-09-15 16:35:33 [debug    ] [#529374 310MiB/3.2GiB(9%) CN:1 DL:37MiB ETA:1m19s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 349MiB/3.2GiB(10%) CN:1 DL:37MiB ETA:1m18s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 381MiB/3.2GiB(11%) CN:1 DL:38MiB ETA:1m15s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 424MiB/3.2GiB(12%) CN:1 DL:39MiB ETA:1m12s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 468MiB/3.2GiB(14%) CN:1 DL:40MiB ETA:1m10s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 498MiB/3.2GiB(15%) CN:1 DL:40MiB ETA:1m10s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 539MiB/3.2GiB(16%) CN:1 DL:39MiB ETA:1m10s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 583MiB/3.2GiB(17%) CN:1 DL:39MiB ETA:1m9s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 629MiB/3.2GiB(19%) CN:1 DL:39MiB ETA:1m7s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 663MiB/3.2GiB(20%) CN:1 DL:39MiB ETA:1m7s]
+
+2026-09-15 16:35:33 [debug    ] [#529374 707MiB/3.2GiB(21%) CN:1 DL:39MiB ETA:1m5s]
+
+2026-09-15 16:35:33 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:35:33 2026 *** 
+
+2026-09-15 16:35:33 [debug    ] ===============================================================================
+
+2026-09-15 16:35:33 [debug    ] [#529374 752MiB/3.2GiB(22%) CN:1 DL:40MiB ETA:1m2s]
+
+2026-09-15 16:35:33 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:35:33 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:35:33 [debug    ] 
+
+2026-09-15 16:35:43 [debug    ] [#529374 752MiB/3.2GiB(22%) CN:1 DL:40MiB ETA:1m2s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 784MiB/3.2GiB(23%) CN:1 DL:39MiB ETA:1m3s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 815MiB/3.2GiB(24%) CN:1 DL:38MiB ETA:1m4s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 853MiB/3.2GiB(25%) CN:1 DL:38MiB ETA:1m3s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 886MiB/3.2GiB(26%) CN:1 DL:38MiB ETA:1m2s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 0.9GiB/3.2GiB(27%) CN:1 DL:37MiB ETA:1m2s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 0.9GiB/3.2GiB(28%) CN:1 DL:36MiB ETA:1m5s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 0.9GiB/3.2GiB(29%) CN:1 DL:35MiB ETA:1m4s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 1.0GiB/3.2GiB(31%) CN:1 DL:36MiB ETA:1m2s]
+
+2026-09-15 16:35:43 [debug    ] [#529374 1.0GiB/3.2GiB(32%) CN:1 DL:35MiB ETA:1m2s]
+
+2026-09-15 16:35:43 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:35:43 2026 *** 
+
+2026-09-15 16:35:43 [debug    ] ===============================================================================
+
+2026-09-15 16:35:43 [debug    ] [#529374 1.0GiB/3.2GiB(33%) CN:1 DL:36MiB ETA:59s]
+
+2026-09-15 16:35:43 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:35:43 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:35:43 [debug    ] 
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.0GiB/3.2GiB(33%) CN:1 DL:36MiB ETA:59s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.1GiB/3.2GiB(35%) CN:1 DL:37MiB ETA:57s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.1GiB/3.2GiB(35%) CN:1 DL:34MiB ETA:1m1s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.1GiB/3.2GiB(35%) CN:1 DL:32MiB ETA:1m5s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.1GiB/3.2GiB(36%) CN:1 DL:32MiB ETA:1m5s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.2GiB/3.2GiB(38%) CN:1 DL:33MiB ETA:1m]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.2GiB/3.2GiB(39%) CN:1 DL:35MiB ETA:57s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.3GiB/3.2GiB(40%) CN:1 DL:34MiB ETA:57s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.3GiB/3.2GiB(41%) CN:1 DL:34MiB ETA:55s]
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.3GiB/3.2GiB(43%) CN:1 DL:33MiB ETA:55s]
+
+2026-09-15 16:35:53 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:35:53 2026 *** 
+
+2026-09-15 16:35:53 [debug    ] ===============================================================================
+
+2026-09-15 16:35:53 [debug    ] [#529374 1.4GiB/3.2GiB(44%) CN:1 DL:33MiB ETA:54s]
+
+2026-09-15 16:35:53 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:35:53 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:35:53 [debug    ] 
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.4GiB/3.2GiB(44%) CN:1 DL:33MiB ETA:54s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.4GiB/3.2GiB(45%) CN:1 DL:36MiB ETA:49s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.5GiB/3.2GiB(46%) CN:1 DL:38MiB ETA:45s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.5GiB/3.2GiB(47%) CN:1 DL:38MiB ETA:45s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.5GiB/3.2GiB(48%) CN:1 DL:37MiB ETA:45s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.6GiB/3.2GiB(49%) CN:1 DL:36MiB ETA:46s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.6GiB/3.2GiB(50%) CN:1 DL:36MiB ETA:44s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.6GiB/3.2GiB(52%) CN:1 DL:36MiB ETA:43s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.7GiB/3.2GiB(53%) CN:1 DL:37MiB ETA:41s]
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.7GiB/3.2GiB(54%) CN:1 DL:36MiB ETA:40s]
+
+2026-09-15 16:36:04 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:36:03 2026 *** 
+
+2026-09-15 16:36:04 [debug    ] ===============================================================================
+
+2026-09-15 16:36:04 [debug    ] [#529374 1.7GiB/3.2GiB(55%) CN:1 DL:36MiB ETA:40s]
+
+2026-09-15 16:36:04 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:36:04 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:36:04 [debug    ] 
+
+2026-09-15 16:36:14 [debug    ] [#529374 1.7GiB/3.2GiB(55%) CN:1 DL:36MiB ETA:40s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 1.8GiB/3.2GiB(56%) CN:1 DL:37MiB ETA:38s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 1.8GiB/3.2GiB(57%) CN:1 DL:38MiB ETA:36s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 1.9GiB/3.2GiB(59%) CN:1 DL:40MiB ETA:33s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 1.9GiB/3.2GiB(60%) CN:1 DL:41MiB ETA:31s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 1.9GiB/3.2GiB(61%) CN:1 DL:40MiB ETA:31s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 2.0GiB/3.2GiB(62%) CN:1 DL:40MiB ETA:30s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 2.0GiB/3.2GiB(64%) CN:1 DL:39MiB ETA:29s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 2.1GiB/3.2GiB(65%) CN:1 DL:39MiB ETA:29s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 2.1GiB/3.2GiB(66%) CN:1 DL:38MiB ETA:29s]
+
+2026-09-15 16:36:14 [debug    ] [#529374 2.1GiB/3.2GiB(67%) CN:1 DL:39MiB ETA:27s]
+
+2026-09-15 16:36:14 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:36:14 2026 *** 
+
+2026-09-15 16:36:14 [debug    ] ===============================================================================
+
+2026-09-15 16:36:14 [debug    ] [#529374 2.2GiB/3.2GiB(68%) CN:1 DL:40MiB ETA:25s]
+
+2026-09-15 16:36:14 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:36:14 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:36:14 [debug    ] 
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.2GiB/3.2GiB(68%) CN:1 DL:40MiB ETA:25s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.2GiB/3.2GiB(69%) CN:1 DL:38MiB ETA:25s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.2GiB/3.2GiB(70%) CN:1 DL:37MiB ETA:25s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.3GiB/3.2GiB(71%) CN:1 DL:36MiB ETA:25s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.3GiB/3.2GiB(73%) CN:1 DL:37MiB ETA:23s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.4GiB/3.2GiB(74%) CN:1 DL:37MiB ETA:22s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.4GiB/3.2GiB(75%) CN:1 DL:38MiB ETA:21s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.4GiB/3.2GiB(76%) CN:1 DL:37MiB ETA:20s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.5GiB/3.2GiB(78%) CN:1 DL:39MiB ETA:18s]
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.5GiB/3.2GiB(79%) CN:1 DL:39MiB ETA:17s]
+
+2026-09-15 16:36:25 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:36:25 2026 *** 
+
+2026-09-15 16:36:25 [debug    ] ===============================================================================
+
+2026-09-15 16:36:25 [debug    ] [#529374 2.6GiB/3.2GiB(80%) CN:1 DL:39MiB ETA:16s]
+
+2026-09-15 16:36:25 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:36:25 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:36:25 [debug    ] 
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.6GiB/3.2GiB(80%) CN:1 DL:39MiB ETA:16s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.6GiB/3.2GiB(81%) CN:1 DL:39MiB ETA:15s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.6GiB/3.2GiB(82%) CN:1 DL:40MiB ETA:14s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.6GiB/3.2GiB(83%) CN:1 DL:38MiB ETA:13s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.7GiB/3.2GiB(84%) CN:1 DL:38MiB ETA:13s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.7GiB/3.2GiB(86%) CN:1 DL:39MiB ETA:11s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.8GiB/3.2GiB(87%) CN:1 DL:38MiB ETA:10s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.8GiB/3.2GiB(88%) CN:1 DL:38MiB ETA:9s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.9GiB/3.2GiB(89%) CN:1 DL:38MiB ETA:8s]
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.9GiB/3.2GiB(91%) CN:1 DL:38MiB ETA:7s]
+
+2026-09-15 16:36:35 [debug    ]  *** Download Progress Summary as of Tue Sep 15 16:36:35 2026 *** 
+
+2026-09-15 16:36:35 [debug    ] ===============================================================================
+
+2026-09-15 16:36:35 [debug    ] [#529374 2.9GiB/3.2GiB(92%) CN:1 DL:37MiB ETA:6s]
+
+2026-09-15 16:36:35 [debug    ] FILE: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:36:35 [debug    ] -------------------------------------------------------------------------------
+
+2026-09-15 16:36:35 [debug    ] 
+
+2026-09-15 16:36:43 [debug    ] [#529374 2.9GiB/3.2GiB(92%) CN:1 DL:37MiB ETA:6s]
+
+2026-09-15 16:36:43 [debug    ] [#529374 3.0GiB/3.2GiB(93%) CN:1 DL:38MiB ETA:5s]
+
+2026-09-15 16:36:43 [debug    ] [#529374 3.0GiB/3.2GiB(94%) CN:1 DL:37MiB ETA:5s]
+
+2026-09-15 16:36:43 [debug    ] [#529374 3.0GiB/3.2GiB(95%) CN:1 DL:38MiB ETA:3s]
+
+2026-09-15 16:36:43 [debug    ] [#529374 3.1GiB/3.2GiB(96%) CN:1 DL:37MiB ETA:3s]
+
+2026-09-15 16:36:43 [debug    ] [#529374 3.1GiB/3.2GiB(97%) CN:1 DL:36MiB ETA:2s]
+
+2026-09-15 16:36:43 [debug    ] [#529374 3.1GiB/3.2GiB(98%) CN:1 DL:35MiB ETA:1s]
+
+2026-09-15 16:36:43 [debug    ] [#529374 3.2GiB/3.2GiB(99%) CN:1 DL:36MiB]
+
+2026-09-15 16:36:43 [debug    ] 
+
+2026-09-15 16:36:43 [debug    ] 09/15 16:36:43 [[1;32mNOTICE[0m] Download complete: /tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:36:43 [debug    ] 
+
+2026-09-15 16:36:43 [debug    ] Download Results:
+
+2026-09-15 16:36:43 [debug    ] gid   |stat|avg speed  |path/URI
+
+2026-09-15 16:36:43 [debug    ] ======+====+===========+=======================================================
+
+2026-09-15 16:36:43 [debug    ] 529374|OK  |    37MiB/s|/tmp/tmpynscuury/thousand_genomes_eur_hg19_vcf
+
+2026-09-15 16:36:43 [debug    ] 
+
+2026-09-15 16:36:43 [debug    ] Status Legend:
+
+2026-09-15 16:36:43 [debug    ] (OK):download completed.
+
+2026-09-15 16:36:43 [debug    ] Verifying MD5 hash of downloaded file...
+2026-09-15 16:36:50 [debug    ] Hash verified.
+2026-09-15 16:36:50 [debug    ] Saved asset thousand_genomes_eur_hg19_vcf to /tmp/tmpc5tcij2x/asset_store/reference_data/thousand_genomes/eur_hg19/raw/thousand_genomes_eur_hg19_vcf.vcf.gz.
+2026-09-15 16:36:50 [debug    ] post-task gc.collect for thousand_genomes_eur_hg19_vcf: unreachable_collected=47 rss_before_kb=266824 rss_after_kb=266824
+2026-09-15 16:36:50 [debug    ] Trace of asset thousand_genomes_eur_hg19_vcf is:
+ imo_xxh3_128:18fbbd2fca679bffb1693836421c6d82_sz:3469239002
+2026-09-15 16:36:50 [debug    ] Materializing asset thousand_genomes_eur_hg19_panel_allele_frequencies....
+2026-09-15 16:36:50 [debug    ] Running bcftools view -G -Ou /tmp/tmpc5tcij2x/asset_store/reference_data/thousand_genomes/eur_hg19/raw/thousand_genomes_eur_hg19_vcf.vcf.gz | bcftools query -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/AF\n' -o /tmp/tmphnbsez4p/temp/panel_sites.tsv
+2026-09-15 16:53:05 [debug    ] Saved asset thousand_genomes_eur_hg19_panel_allele_frequencies to /tmp/tmpc5tcij2x/asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet.
+2026-09-15 16:53:05 [debug    ] post-task gc.collect for thousand_genomes_eur_hg19_panel_allele_frequencies: unreachable_collected=34 rss_before_kb=588692 rss_after_kb=557676
+2026-09-15 16:53:05 [debug    ] Trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies is:
+ imo_xxh3_128:b044c85c875af308dbbda90a897632d6_sz:398073147
+2026-09-15 16:53:05 [info     ] 
+Work Progress:
+✅ thousand_genomes_eur_hg19_vcf
+✅ thousand_genomes_eur_hg19_panel_allele_frequencies
+
+2026-09-15 16:53:05 [info     ] Locations of materialized targets:
+
+{
+│   'thousand_genomes_eur_hg19_panel_allele_frequencies': '/tmp/tmpc5tcij2x/asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet'
+}
+2026-09-15 16:53:06 [debug    ] Saved asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps to assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet.
+2026-09-15 16:53:06 [debug    ] post-task gc.collect for thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps: unreachable_collected=68 rss_before_kb=507716 rss_after_kb=476164
+2026-09-15 16:53:06 [debug    ] Trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps is:
+ imo_xxh3_128:b044c85c875af308dbbda90a897632d6_sz:398073147
+2026-09-15 16:53:07 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps...
+2026-09-15 16:53:07 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps.
+2026-09-15 16:53:07 [debug    ] Attempting to verify the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps...
+2026-09-15 16:53:07 [debug    ] Successfully verified the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps.
+2026-09-15 16:53:07 [debug    ] Attempting to verify the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps...
+2026-09-15 16:53:07 [debug    ] Successfully verified the trace of asset ucsc_hg38_indexed_fasta_wrapped_remove_deps.
+2026-09-15 16:53:07 [info     ] 
+Work Progress:
+✅ ucsc_hg19_indexed_fasta_wrapped_remove_deps
+✅ ucsc_hg38_indexed_fasta_wrapped_remove_deps
+✅ thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps
+✅ thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps
+
+2026-09-15 16:53:08 [info     ] Locations of materialized targets:
+
+{
+│   'ucsc_hg19_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg19/processed/ucsc_hg19_indexed_fasta_wrapped_remove_deps',
+│   'ucsc_hg38_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg38/processed/ucsc_hg38_indexed_fasta_wrapped_remove_deps',
+│   'thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet',
+│   'thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg38_30x/processed/panel_allele_frequencies.parquet'
+}
+ucsc_hg19_indexed_fasta_wrapped_remove_deps chromosomes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+ucsc_hg38_indexed_fasta_wrapped_remove_deps chromosomes: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25]
+thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps 0.40 GB
+shape: (23, 2)
+┌─────┬─────────┐
+│ CHR ┆ len     │
+│ --- ┆ ---     │
+│ i32 ┆ u32     │
+╞═════╪═════════╡
+│ 1   ┆ 6500533 │
+│ 2   ┆ 7117786 │
+│ 3   ┆ 5862763 │
+│ 4   ┆ 5763771 │
+│ 5   ┆ 5294064 │
+│ …   ┆ …       │
+│ 19  ┆ 1843284 │
+│ 20  ┆ 1822267 │
+│ 21  ┆ 1112228 │
+│ 22  ┆ 1110237 │
+│ 23  ┆ 3491307 │
+└─────┴─────────┘
+thousand_genomes_eur_hg38_panel_allele_frequencies_wrapped_remove_deps 0.36 GB
+shape: (23, 2)
+┌─────┬─────────┐
+│ CHR ┆ len     │
+│ --- ┆ ---     │
+│ i32 ┆ u32     │
+╞═════╪═════════╡
+│ 1   ┆ 5759051 │
+│ 2   ┆ 6088588 │
+│ 3   ┆ 4983177 │
+│ 4   ┆ 4875458 │
+│ 5   ┆ 4536814 │
+│ …   ┆ …       │
+│ 19  ┆ 1670687 │
+│ 20  ┆ 1644382 │
+│ 21  ┆ 1002752 │
+│ 22  ┆ 1066555 │
+│ 23  ┆ 2862780 │
+└─────┴─────────┘
