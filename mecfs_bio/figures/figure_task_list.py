@@ -53,6 +53,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_g
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import (
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc_diagnostic_plot import \
+    DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_variants_markdown import (
     DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
 )
@@ -325,6 +327,11 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
+    DECODE_ME_CURATED_GENE_SET_ANALYSIS.bar_plot_task_full,
+    DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -339,10 +346,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_CHROMATIN_REF
     ].plot_task_unwrap,
-    DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
-    DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
-    DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
-    DECODE_ME_CURATED_GENE_SET_ANALYSIS.bar_plot_task_full,
+
+    # Johnston multsite pain
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.power_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.qq_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.result_markdown_table_task,

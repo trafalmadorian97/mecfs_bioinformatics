@@ -273,8 +273,9 @@ def build_diagnostic_figure(
     reference, and a right-hand axis in chi^2 * M / N units whose slope reads as heritability.
 
     h2_liability, when given (a binary phenotype), is annotated as a second heritability line."""
-    x_min = config.x_range[0] if config.x_range else float(bins.mean_ld.min())
-    x_max = config.x_range[1] if config.x_range else float(bins.mean_ld.max())
+    ld_range = bins.mean_ld.max()- bins.mean_ld.min()
+    x_min = config.x_range[0] if config.x_range else float(bins.mean_ld.min()-0.02*ld_range)
+    x_max = config.x_range[1] if config.x_range else float(bins.mean_ld.max()+0.02*ld_range)
     ld_line = np.array([x_min, x_max])
     y_fit = fit_line_chi2(fit.intercept, fit.h2_obs, n, m, ld_line)
 

@@ -279,6 +279,14 @@ def define_env(env):
             precision=precision,
             caption=SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION,
         )
+    @env.macro
+    def ldsc_diagnostic_plot(src, id, height="775px",):
+        return plotly_embed(
+            src=src,
+            id=id,
+            height=height,
+            caption=LDSC_DIAGNOSTIC_PLOT_CAPTION,
+        )
 
     @env.macro
     def data_table(src, id, height="600px", precision=4, caption=""):
@@ -453,3 +461,5 @@ SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = "Columns: chr: chromosome; pos: hg19 genom
 
 
 SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = "Columns: family: name of high-level annotation family; annotation: granular annotation name; gamma: regression coefficient of PolyFun prior weight on granular annotation, which indicates the extent to which the annotation can affect the prior. alpha_bar: PIP-weighted mean value of this annotation across all variants in uniform-prior SUSIE credible sets, which can be used as a baseline against which to compare the annotation values of key variants.  other columns: the values of all annotations for key variants under consideration."
+
+LDSC_DIAGNOSTIC_PLOT_CAPTION = "LDSC diagnostic plot.  Genetic variants are binned by LD Score.  For each bin, we plot the mean ld score of variants in the bin (x axis) against Wald chi squared statistic (y axis 1) and scaled Wald chi squared statistic (y axis 2). Each plotted bin includes error bars indicating the standard error of bin chi squared mean. We also plot the LDSC regression line (solid) and the line corresponding to chi squared =1 (dashed).  If the LDSC model fits the data perfectly, we should expect that the intercept of the regression line is at LDSC=1"

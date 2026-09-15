@@ -171,10 +171,6 @@ class StandardAnalysisTaskGroup:
         return result
 
 
-def _humanize_meta_label(value: str) -> str:
-    """Turn a lowercase snake_case meta field (a trait or project) into a title-cased label for a
-    plot title, e.g. 'educational_attainment' -> 'Educational Attainment'."""
-    return value.replace("_", " ").title()
 
 
 def concrete_standard_analysis_generator_assume_already_has_rsid(
@@ -304,10 +300,6 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
                 ),
             )
         )
-        # The diagnostic re-runs the same LD-score regression as ldsc_task purely to draw its
-        # fitted line, so it takes that task rather than reading its markdown output. Title from
-        # ldsc_task's ResultTableMeta (trait/project) -- which .create already requires -- rather
-        # than the bare-Task raw_gwas_data_task, whose meta type is not statically known here.
         assert isinstance(ldsc_task.meta, ResultTableMeta)
         ldsc_diagnostic_plot_task: Task | None = LdscDiagnosticPlotTask.create(
             asset_id=base_name + "_ldsc_diagnostic_plot",
@@ -316,11 +308,6 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
                 n_bins=25,
                 show_error_bars=True,
                 title=None,
-                # title=(
-                #     f"{_humanize_meta_label(ldsc_task.meta.trait)} "
-                #     f"({_humanize_meta_label(ldsc_task.meta.project)}) "
-                #     "— LDSC diagnostic"
-                # ),
             ),
         )
     else:
