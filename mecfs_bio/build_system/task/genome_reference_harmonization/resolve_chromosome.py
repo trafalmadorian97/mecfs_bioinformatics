@@ -16,11 +16,13 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes i
     ALLELE_CLASS_COL,
     CLASS_EA_REF,
     CLASS_EA_REF_RC,
+    CLASS_INDEL_BOTH,
     CLASS_INDEL_EA_ONLY,
     CLASS_INDEL_NOT_ON_REFERENCE,
     CLASS_NEA_REF_RC,
     CLASS_NOT_ON_REFERENCE,
     IS_PALINDROMIC_MNP_COL,
+    IS_PALINDROMIC_SNV_COL,
     classify_alleles,
     prepare_alleles,
     reverse_complement_expr,
@@ -44,16 +46,25 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import 
     DROP_INDEL_NOT_ON_REFERENCE,
     DROP_INVALID_ALLELE,
     DROP_NOT_ON_REFERENCE,
+    DROP_PALINDROME_UNRESOLVED,
     DROP_PALINDROMIC_MNP_UNTRUSTED,
+    PALINDROME_STRAND_FLIP,
+    PALINDROME_UNRESOLVED,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.palindromes import (
+    decide_palindrome_strands,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_EFFECT_ALLELE_FREQ_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
 )
 
 DROP_REASON_COL = "_drop_reason"
 ROW_INDEX_COL = "_row_index"
 ACTION_COL = "_action"
+PALINDROME_DECISION_COL = "_palindrome_decision"
 
 
 class PanelLoader(Protocol):
@@ -85,7 +96,10 @@ def resolve_chromosome(
         chrom=context.chrom,
         max_gather_bytes=context.options.max_gather_bytes,
     ).with_columns(_base_action_expr(), _base_drop_reason_expr(trusted=context.trusted))
+    panel = None if context.trusted else load_panel(_panel_positions(valid))
     valid = _apply_allele_actions(valid, context.rules)
+    if panel is not None:
+        valid = _apply_palindrome_strand_rules(valid, panel, context)
     return (
         pl.concat(
             [
@@ -149,3 +163,54 @@ def _apply_allele_actions(
         pl.when(swap).then(ea).otherwise(nea).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
     )
     return flip_statistics(swapped, mask=swap, rules=rules)
+
+
+def _panel_positions(valid: pl.DataFrame) -> pl.Series:
+    """Positions whose variants may need panel evidence: palindromic SNVs and ambiguous indels."""
+    needs_panel = pl.col(IS_PALINDROMIC_SNV_COL) | (
+        pl.col(ALLELE_CLASS_COL) == CLASS_INDEL_BOTH
+    )
+    return valid.filter(needs_panel)[GWASLAB_POS_COL]
+
+
+def _eaf_expr(frame: pl.DataFrame) -> pl.Expr:
+    if GWASLAB_EFFECT_ALLELE_FREQ_COL in frame.columns:
+        return pl.col(GWASLAB_EFFECT_ALLELE_FREQ_COL).cast(pl.Float64)
+    return pl.lit(None, dtype=pl.Float64).alias(GWASLAB_EFFECT_ALLELE_FREQ_COL)
+
+
+def _apply_palindrome_strand_rules(
+    valid: pl.DataFrame, panel: pl.DataFrame, context: ChromosomeContext
+) -> pl.DataFrame:
+    candidates = valid.filter(
+        pl.col(IS_PALINDROMIC_SNV_COL) & pl.col(DROP_REASON_COL).is_null()
+    )
+    decisions = candidates.select(ROW_INDEX_COL).with_columns(
+        decide_palindrome_strands(
+            candidates.select(
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+                _eaf_expr(candidates),
+            ),
+            panel,
+            context.options,
+        ).alias(PALINDROME_DECISION_COL)
+    )
+    decided = valid.join(decisions, on=ROW_INDEX_COL, how="left", maintain_order="left")
+    decided = flip_statistics(
+        decided,
+        mask=pl.col(PALINDROME_DECISION_COL) == PALINDROME_STRAND_FLIP,
+        rules=context.rules,
+    )
+    if not context.options.keep_unresolved_palindromes:
+        unresolved = (
+            pl.col(PALINDROME_DECISION_COL) == PALINDROME_UNRESOLVED
+        ) & pl.col(DROP_REASON_COL).is_null()
+        decided = decided.with_columns(
+            pl.when(unresolved)
+            .then(pl.lit(DROP_PALINDROME_UNRESOLVED))
+            .otherwise(pl.col(DROP_REASON_COL))
+            .alias(DROP_REASON_COL)
+        )
+    return decided.drop(PALINDROME_DECISION_COL)

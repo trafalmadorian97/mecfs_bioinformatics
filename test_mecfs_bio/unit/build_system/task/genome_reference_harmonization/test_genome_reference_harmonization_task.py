@@ -31,6 +31,7 @@ from test_mecfs_bio.unit.build_system.task.genome_reference_harmonization.genome
     CONSISTENT_INDEL,
     CONSISTENT_SNV,
     INCONSISTENT_SNV,
+    PanelRecord,
     TEST_OPTIONS,
     Variant,
     positions,
@@ -244,3 +245,56 @@ def test_pipe_that_changes_backend_fails(tmp_path: Path) -> None:
             sumstats_frame([CONSISTENT_SNV]),
             pipe=_SwitchToDuckDbPipe(),
         )
+
+
+_PALINDROME_PANEL = [
+    PanelRecord(pos=13, ref="T", alt="A", af=0.15),
+    PanelRecord(pos=14, ref="G", alt="C", af=0.85),
+    PanelRecord(pos=18, ref="T", alt="A", af=0.1),
+    PanelRecord(pos=19, ref="T", alt="A", af=0.5),
+    PanelRecord(pos=27, ref="T", alt="A", af=0.45),
+]
+_PALINDROMES = [
+    Variant(pos=13, ea="A", nea="T", eaf=0.1, beta=0.3),  # same side of 0.5 as the panel -> kept
+    Variant(pos=14, ea="G", nea="C", eaf=0.8, beta=0.3),  # EA is ref: swapped, then strand-flipped
+    Variant(pos=18, ea="A", nea="T", eaf=0.9, beta=0.3),  # opposite side of 0.5 -> strand-flipped
+    Variant(pos=19, ea="A", nea="T", eaf=0.5),  # sumstats MAF above 0.4 -> unresolved
+    Variant(pos=24, ea="G", nea="C", eaf=0.1),  # no panel record -> unresolved
+    Variant(pos=27, ea="A", nea="T", eaf=0.1),  # panel MAF above 0.4 -> unresolved
+    Variant(pos=30, ea="T", nea="A", eaf=None),  # no EAF -> unresolved
+]
+_UNRESOLVED_PALINDROME_POSITIONS = [19, 24, 27, 30]
+
+
+def test_untrusted_palindromes_are_resolved_by_panel_frequency(tmp_path: Path) -> None:
+    variants = [CONSISTENT_SNV, INCONSISTENT_SNV, *_PALINDROMES]
+    result = run_harmonization(tmp_path / "run", sumstats_frame(variants), panel=_PALINDROME_PANEL)
+    assert positions(result) == [1, 2, 13, 14, 18]
+    kept = row_at(result, 13)
+    assert (kept[EA], kept[NEA], kept[BETA]) == ("A", "T", pytest.approx(0.3))
+    swapped_then_flipped = row_at(result, 14)
+    assert (swapped_then_flipped[EA], swapped_then_flipped[NEA]) == ("C", "G")
+    assert swapped_then_flipped[BETA] == pytest.approx(0.3)
+    assert swapped_then_flipped[EAF] == pytest.approx(0.8)
+    flipped = row_at(result, 18)
+    assert (flipped[EA], flipped[NEA]) == ("A", "T")
+    assert (flipped[BETA], flipped[EAF]) == (pytest.approx(-0.3), pytest.approx(0.1))
+
+
+def test_unresolved_palindromes_can_be_kept(tmp_path: Path) -> None:
+    variants = [CONSISTENT_SNV, INCONSISTENT_SNV, *_PALINDROMES]
+    options = attrs.evolve(TEST_OPTIONS, keep_unresolved_palindromes=True)
+    result = run_harmonization(
+        tmp_path / "run", sumstats_frame(variants), panel=_PALINDROME_PANEL, options=options
+    )
+    assert set(_UNRESOLVED_PALINDROME_POSITIONS) <= set(positions(result))
+
+
+def test_trusted_palindromes_keep_source_strand(tmp_path: Path) -> None:
+    opposite_side = Variant(pos=18, ea="A", nea="T", eaf=0.9, beta=0.3)
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, CONSISTENT_INDEL, opposite_side]),
+        panel=_PALINDROME_PANEL,
+    )
+    assert row_at(result, 18)[BETA] == pytest.approx(0.3)
