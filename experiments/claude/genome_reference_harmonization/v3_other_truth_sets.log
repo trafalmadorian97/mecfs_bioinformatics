@@ -1,0 +1,186 @@
+
+######## kerrebijin_fibro_raw_sumstats_task_no_liftover.pickle
+rows: 11,155,266; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 24.35321% of 592,427; indel consistency 9.37656% of 133,791
+
+
+chr1 vs hg38: SNV consistency 100.00000% of 592,427; indel consistency 100.00000% of 15,453
+
+
+build hg38: TrustCounts(consistent_snvs=7863589, inconsistent_snvs=0, consistent_indels=198401, inconsistent_indels=0)
+SNV consistency 100.00000% of 7,863,589; indel consistency 100.00000% of 198,401 -> trusted=True
+EAF calibration (chr1 non-palindromic SNVs in panel): {'n': 575134, 'median_abs_eaf_minus_af': 0.008732219226658344, 'frac_within_0_05': 0.9804793317731172, 'frac_closer_to_1_minus_af': 0.011512099788918756}
+ambiguous indels: 1,592,151
+baseline               distance=0.02 margin=0.05: kept=917,530 wrong=137,598
+baseline               distance=0.02 margin=0.3: kept=901,399 wrong=131,558
+baseline               distance=0.1 margin=0.2: kept=1,172,910 wrong=162,796
+drop_monomorphic       distance=0.02 margin=0.05: kept=918,566 wrong=137,578
+drop_monomorphic       distance=0.02 margin=0.3: kept=909,743 wrong=131,943
+drop_monomorphic       distance=0.1 margin=0.2: kept=1,179,517 wrong=162,938
+require_both_records   distance=0.02 margin=0.05: kept=215,911 wrong=108,800
+require_both_records   distance=0.02 margin=0.3: kept=199,780 wrong=102,760
+require_both_records   distance=0.1 margin=0.2: kept=276,921 wrong=126,073
+wrong choices (baseline, distance 0.02, margin 0.3):
+shape: (30, 6)
+┌─────┬─────────┬──────────┬─────────┬──────────┬─────────────────────────────────────────────────────────────────────────────┐
+│ CHR ┆ POS     ┆ EA       ┆ NEA     ┆ EAF      ┆ panel_records_at_position                                                   │
+│ --- ┆ ---     ┆ ---      ┆ ---     ┆ ---      ┆ ---                                                                         │
+│ i32 ┆ i64     ┆ str      ┆ str     ┆ f32      ┆ str                                                                         │
+╞═════╪═════════╪══════════╪═════════╪══════════╪═════════════════════════════════════════════════════════════════════════════╡
+│ 1   ┆ 869598  ┆ T        ┆ TA      ┆ 0.921456 ┆ T>TA:0.078                                                                  │
+│ 1   ┆ 899024  ┆ C        ┆ CT      ┆ 0.761349 ┆ C>CT:0.223; C>CTT:0.0; C>T:0.018; CT>C:0.005; CTTTTT>C:0.0; CTTTTTTTT>C:0.0 │
+│ 1   ┆ 909861  ┆ GC       ┆ G       ┆ 0.980241 ┆ GC>G:0.01                                                                   │
+│ 1   ┆ 1002192 ┆ A        ┆ AT      ┆ 0.883824 ┆ A>AT:0.113; A>ATT:0.0; A>T:0.0                                              │
+│ 1   ┆ 1052514 ┆ C        ┆ CGT     ┆ 0.440251 ┆ C>CGT:0.576; C>CGTGT:0.001                                                  │
+│ 1   ┆ 1113195 ┆ C        ┆ CA      ┆ 0.982802 ┆ C>CA:0.022; CA>C:0.368                                                      │
+│ 1   ┆ 1126311 ┆ G        ┆ GT      ┆ 0.967301 ┆ G>A:0.002; G>GT:0.039; G>GTT:0.092; G>GTTT:0.001; GT>G:0.001                │
+│ 1   ┆ 1166529 ┆ A        ┆ ACACCCC ┆ 0.979358 ┆ A>ACACCCC:0.019                                                             │
+│ 1   ┆ 1186092 ┆ C        ┆ CT      ┆ 0.875058 ┆ C>CT:0.13; C>CTT:0.001; CT>C:0.001                                          │
+│ 1   ┆ 1186850 ┆ G        ┆ GT      ┆ 0.900265 ┆ G>GT:0.084; GT>G:0.118                                                      │
+│ 1   ┆ 1188405 ┆ A        ┆ ATT     ┆ 0.884854 ┆ A>AT:0.009; A>ATT:0.116; A>ATTT:0.002; AT>A:0.004                           │
+│ 1   ┆ 1190247 ┆ C        ┆ CT      ┆ 0.937442 ┆ C>CT:0.054; CT>C:0.001; CTT>C:0.001                                         │
+│ 1   ┆ 1190431 ┆ AT       ┆ A       ┆ 0.989927 ┆ A>AT:0.118; A>ATT:0.0; AT>A:0.012; ATT>A:0.001                              │
+│ 1   ┆ 1265564 ┆ CGTGTGT  ┆ C       ┆ 0.974183 ┆ CGTGTGT>C:0.023                                                             │
+│ 1   ┆ 1269460 ┆ A        ┆ AT      ┆ 0.985265 ┆ A>AT:0.011; A>ATT:0.0; AT>A:0.003                                           │
+│ 1   ┆ 1277830 ┆ C        ┆ CA      ┆ 0.954516 ┆ C>CA:0.044; C>CAA:0.0                                                       │
+│ 1   ┆ 1363081 ┆ C        ┆ CA      ┆ 0.988612 ┆ C>CA:0.006; C>CAA:0.0; C>CAAA:0.0; CA>C:0.045                               │
+│ 1   ┆ 1365036 ┆ T        ┆ TAA     ┆ 0.879646 ┆ T>TA:0.007; T>TAA:0.104; T>TAAA:0.0; TA>T:0.002; TAA>T:0.0                  │
+│ 1   ┆ 1369803 ┆ C        ┆ CT      ┆ 0.878561 ┆ C>CT:0.107; C>CTT:0.0; CT>C:0.0                                             │
+│ 1   ┆ 1377480 ┆ C        ┆ CA      ┆ 0.988032 ┆ C>CA:0.007; C>CAA:0.0; CA>C:0.002                                           │
+│ 1   ┆ 1384555 ┆ C        ┆ CT      ┆ 0.981505 ┆ C>CT:0.009; C>CTTT:0.003; CT>C:0.059                                        │
+│ 1   ┆ 1388583 ┆ CTA      ┆ C       ┆ 0.911884 ┆ C>A:0.065; CTA>C:0.088                                                      │
+│ 1   ┆ 1390113 ┆ C        ┆ CA      ┆ 0.979999 ┆ C>A:0.005; C>CA:0.033; C>CAA:0.0; CA>C:0.002; CAAAAAAA>C:0.0                │
+│ 1   ┆ 1411847 ┆ TCCAGGTC ┆ T       ┆ 0.970587 ┆ T>TCCAGGTC:0.003; TCCAGGTC>T:0.037                                          │
+│ 1   ┆ 1448775 ┆ G        ┆ GT      ┆ 0.988399 ┆ G>GT:0.022; G>GTT:0.0; GT>G:0.003; GTT>G:0.0; GTTT>G:0.001                  │
+│ 1   ┆ 1458448 ┆ C        ┆ CT      ┆ 0.975008 ┆ C>CT:0.025; C>CTT:0.001; C>CTTT:0.0                                         │
+│ 1   ┆ 1458730 ┆ G        ┆ GTT     ┆ 0.985613 ┆ G>GT:0.002; G>GTT:0.007; G>GTTT:0.0; GT>G:0.001                             │
+│ 1   ┆ 1460069 ┆ AT       ┆ A       ┆ 0.984414 ┆ AT>A:0.021; ATT>A:0.024                                                     │
+│ 1   ┆ 1460069 ┆ ATT      ┆ A       ┆ 0.972841 ┆ AT>A:0.021; ATT>A:0.024                                                     │
+│ 1   ┆ 1472097 ┆ C        ┆ CGGCGG  ┆ 0.970667 ┆ C>CGGCGG:0.045; C>CGGCGGGGCGG:0.0; CGGCGG>C:0.008; CGGCGGGGCGG>C:0.001      │
+└─────┴─────────┴──────────┴─────────┴──────────┴─────────────────────────────────────────────────────────────────────────────┘
+
+######## million_veterans_mi_raw_sumstats_task_no_liftover.pickle
+rows: 19,669,307; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 24.29207% of 1,251,573; indel consistency 8.24230% of 75,064
+
+
+chr1 vs hg38: SNV consistency 100.00000% of 1,251,573; indel consistency 100.00000% of 5,669
+
+
+build hg38: TrustCounts(consistent_snvs=15834672, inconsistent_snvs=0, consistent_indels=72614, inconsistent_indels=0)
+SNV consistency 100.00000% of 15,834,672; indel consistency 100.00000% of 72,614 -> trusted=True
+EAF calibration (chr1 non-palindromic SNVs in panel): {'n': 1179401, 'median_abs_eaf_minus_af': 0.0019821099704131484, 'frac_within_0_05': 0.99335255778145, 'frac_closer_to_1_minus_af': 0.005048325378730389}
+ambiguous indels: 944,565
+baseline               distance=0.02 margin=0.05: kept=674,389 wrong=319
+baseline               distance=0.02 margin=0.3: kept=670,774 wrong=249
+baseline               distance=0.1 margin=0.2: kept=828,406 wrong=641
+drop_monomorphic       distance=0.02 margin=0.05: kept=544,718 wrong=308
+drop_monomorphic       distance=0.02 margin=0.3: kept=542,867 wrong=242
+drop_monomorphic       distance=0.1 margin=0.2: kept=701,160 wrong=560
+require_both_records   distance=0.02 margin=0.05: kept=70,394 wrong=180
+require_both_records   distance=0.02 margin=0.3: kept=66,779 wrong=110
+require_both_records   distance=0.1 margin=0.2: kept=120,541 wrong=387
+wrong choices (baseline, distance 0.02, margin 0.3):
+shape: (30, 6)
+┌─────┬───────────┬────────────────┬───────┬─────────┬────────────────────────────────────────────────────────────────────────────────────────────┐
+│ CHR ┆ POS       ┆ EA             ┆ NEA   ┆ EAF     ┆ panel_records_at_position                                                                  │
+│ --- ┆ ---       ┆ ---            ┆ ---   ┆ ---     ┆ ---                                                                                        │
+│ i32 ┆ i64       ┆ str            ┆ str   ┆ f32     ┆ str                                                                                        │
+╞═════╪═══════════╪════════════════╪═══════╪═════════╪════════════════════════════════════════════════════════════════════════════════════════════╡
+│ 1   ┆ 833758    ┆ CAT            ┆ C     ┆ 0.8693  ┆ CAT>C:0.124                                                                                │
+│ 1   ┆ 8622779   ┆ AT             ┆ A     ┆ 0.2134  ┆ AT>A:0.791; ATT>A:0.002                                                                    │
+│ 1   ┆ 22778005  ┆ C              ┆ CGTTT ┆ 0.8678  ┆ C>CGTTT:0.14                                                                               │
+│ 1   ┆ 34911022  ┆ A              ┆ AC    ┆ 0.90796 ┆ A>AC:0.08; A>ACC:0.022; A>ACCC:0.102; A>ACCCC:0.015; AC>A:0.56; ACC>A:0.0                  │
+│ 1   ┆ 83438489  ┆ GA             ┆ G     ┆ 0.7751  ┆ GA>G:0.226                                                                                 │
+│ 1   ┆ 90293410  ┆ CT             ┆ C     ┆ 0.5367  ┆ CT>C:0.454                                                                                 │
+│ 1   ┆ 147132323 ┆ C              ┆ CT    ┆ 0.5742  ┆ C>CT:0.443; C>CTT:0.0                                                                      │
+│ 1   ┆ 147521381 ┆ CTT            ┆ C     ┆ 0.8202  ┆ CTT>C:0.18                                                                                 │
+│ 1   ┆ 150050916 ┆ T              ┆ TA    ┆ 0.1637  ┆ T>TA:0.826; T>TAA:0.002                                                                    │
+│ 1   ┆ 203102658 ┆ T              ┆ TAC   ┆ 0.8095  ┆ T>TAC:0.203; T>TACAC:0.025; TAC>T:0.304; TACAC>T:0.123; TACACAC>T:0.085; TACACACAC>T:0.244 │
+│ 1   ┆ 215685354 ┆ G              ┆ GT    ┆ 0.8396  ┆ G>GT:0.172; G>T:0.006; GT>G:0.369; GTT>G:0.001                                             │
+│ 2   ┆ 860283    ┆ G              ┆ GA    ┆ 0.5623  ┆ G>GA:0.431; GA>G:0.0                                                                       │
+│ 2   ┆ 13373523  ┆ CT             ┆ C     ┆ 0.8772  ┆ C>CT:0.0; CT>C:0.137; CTT>C:0.0                                                            │
+│ 2   ┆ 28460329  ┆ AT             ┆ A     ┆ 0.6841  ┆ AT>A:0.3                                                                                   │
+│ 2   ┆ 36265595  ┆ TC             ┆ T     ┆ 0.9978  ┆ TC>T:0.001                                                                                 │
+│ 2   ┆ 36275497  ┆ CT             ┆ C     ┆ 0.9993  ┆ CT>C:0.0                                                                                   │
+│ 2   ┆ 36320921  ┆ ATACAAATATATAT ┆ A     ┆ 0.8974  ┆ ATACAAATATATAT>A:0.093                                                                     │
+│ 2   ┆ 150554892 ┆ G              ┆ GTAGA ┆ 0.8987  ┆ G>GTAGA:0.119; G>GTAGATAGA:0.001; GTAGA>G:0.006; GTAGATAGA>G:0.002                         │
+│ 2   ┆ 212512324 ┆ GTA            ┆ G     ┆ 0.9951  ┆ G>GTA:0.012; G>GTATA:0.0; GTA>G:0.0                                                        │
+│ 3   ┆ 11827309  ┆ CT             ┆ C     ┆ 0.552   ┆ C>CT:0.0; CT>C:0.43                                                                        │
+│ 3   ┆ 11899670  ┆ GC             ┆ G     ┆ 0.4767  ┆ GC>G:0.518                                                                                 │
+│ 3   ┆ 11923255  ┆ CT             ┆ C     ┆ 0.9973  ┆ CT>C:0.004                                                                                 │
+│ 3   ┆ 11932654  ┆ TA             ┆ T     ┆ 0.9927  ┆ TA>T:0.0                                                                                   │
+│ 3   ┆ 11933015  ┆ TA             ┆ T     ┆ 0.7324  ┆ T>TA:0.011; TA>T:0.277                                                                     │
+│ 3   ┆ 11950347  ┆ TA             ┆ T     ┆ 0.9961  ┆ TA>T:0.008                                                                                 │
+│ 3   ┆ 60816695  ┆ CT             ┆ C     ┆ 0.0817  ┆ CT>C:0.915                                                                                 │
+│ 3   ┆ 73796470  ┆ TA             ┆ T     ┆ 0.7266  ┆ TA>T:0.276                                                                                 │
+│ 3   ┆ 120808742 ┆ AT             ┆ A     ┆ 0.6212  ┆ A>AT:0.0; AT>A:0.386                                                                       │
+│ 3   ┆ 145131433 ┆ ATTT           ┆ A     ┆ 0.92107 ┆ ATTT>A:0.062                                                                               │
+│ 3   ┆ 152049364 ┆ TTC            ┆ T     ┆ 0.7541  ┆ T>TTC:0.166; T>TTCTC:0.0; TTC>T:0.26; TTCTCTC>T:0.0                                        │
+└─────┴───────────┴────────────────┴───────┴─────────┴────────────────────────────────────────────────────────────────────────────────────────────┘
+
+######## bellenguez_et_al_alz_raw_sumstats_task_no_liftover.pickle
+rows: 20,968,546; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 24.33781% of 1,337,803; indel consistency 5.56348% of 101,645
+
+
+chr1 vs hg38: SNV consistency 100.00000% of 1,337,803; indel consistency 100.00000% of 3,699
+
+
+build hg38: TrustCounts(consistent_snvs=16697544, inconsistent_snvs=0, consistent_indels=41016, inconsistent_indels=0)
+SNV consistency 100.00000% of 16,697,544; indel consistency 100.00000% of 41,016 -> trusted=True
+EAF calibration (chr1 non-palindromic SNVs in panel): {'n': 1103965, 'median_abs_eaf_minus_af': 0.002117890166118741, 'frac_within_0_05': 0.9988387313003583, 'frac_closer_to_1_minus_af': 0.004074404532752397}
+ambiguous indels: 1,218,978
+baseline               distance=0.02 margin=0.05: kept=811,069 wrong=26,937
+baseline               distance=0.02 margin=0.3: kept=809,284 wrong=26,829
+baseline               distance=0.1 margin=0.2: kept=860,838 wrong=27,364
+drop_monomorphic       distance=0.02 margin=0.05: kept=690,224 wrong=20,245
+drop_monomorphic       distance=0.02 margin=0.3: kept=689,546 wrong=20,160
+drop_monomorphic       distance=0.1 margin=0.2: kept=740,711 wrong=20,675
+require_both_records   distance=0.02 margin=0.05: kept=63,087 wrong=19,856
+require_both_records   distance=0.02 margin=0.3: kept=61,302 wrong=19,748
+require_both_records   distance=0.1 margin=0.2: kept=68,546 wrong=20,115
+wrong choices (baseline, distance 0.02, margin 0.3):
+shape: (30, 6)
+┌─────┬─────────┬───────┬─────────┬────────┬─────────────────────────────────────────────────────────────┐
+│ CHR ┆ POS     ┆ EA    ┆ NEA     ┆ EAF    ┆ panel_records_at_position                                   │
+│ --- ┆ ---     ┆ ---   ┆ ---     ┆ ---    ┆ ---                                                         │
+│ i32 ┆ i64     ┆ str   ┆ str     ┆ f32    ┆ str                                                         │
+╞═════╪═════════╪═══════╪═════════╪════════╪═════════════════════════════════════════════════════════════╡
+│ 1   ┆ 869598  ┆ T     ┆ TA      ┆ 0.9223 ┆ T>TA:0.078                                                  │
+│ 1   ┆ 1121664 ┆ GC    ┆ G       ┆ 0.9994 ┆ G>GC:0.0; GC>G:0.0                                          │
+│ 1   ┆ 1230462 ┆ ATTT  ┆ A       ┆ 0.9992 ┆ A>AT:0.0; A>ATTT:0.081; A>ATTTT:0.008; AT>A:0.0; ATTT>A:0.0 │
+│ 1   ┆ 1277126 ┆ AT    ┆ A       ┆ 0.9989 ┆ A>AT:0.0; AT>A:0.0                                          │
+│ 1   ┆ 1403240 ┆ C     ┆ CCTTT   ┆ 0.998  ┆ C>CCTTT:0.003; CCTTT>C:0.084                                │
+│ 1   ┆ 1415621 ┆ CT    ┆ C       ┆ 0.9943 ┆ C>CT:0.0; CT>C:0.004                                        │
+│ 1   ┆ 1451044 ┆ AT    ┆ A       ┆ 0.9992 ┆ A>AT:0.007; AT>A:0.003                                      │
+│ 1   ┆ 1852686 ┆ GA    ┆ G       ┆ 0.9976 ┆ G>GA:0.0; G>GAAA:0.0; G>GAAAA:0.0; GA>G:0.003               │
+│ 1   ┆ 1884685 ┆ CT    ┆ C       ┆ 0.9991 ┆ C>CT:0.003; CT>C:0.0; CTTT>C:0.0                            │
+│ 1   ┆ 1930429 ┆ C     ┆ CG      ┆ 0.9994 ┆ C>CG:0.001                                                  │
+│ 1   ┆ 1952663 ┆ AT    ┆ A       ┆ 0.999  ┆ A>AT:0.005; A>ATT:0.0; AT>A:0.002                           │
+│ 1   ┆ 1969702 ┆ A     ┆ AC      ┆ 0.9987 ┆ A>AC:0.001; AC>A:0.001                                      │
+│ 1   ┆ 2047751 ┆ G     ┆ GC      ┆ 0.9993 ┆ G>GC:0.0                                                    │
+│ 1   ┆ 2318600 ┆ GT    ┆ G       ┆ 0.9992 ┆ G>GT:0.028; GT>G:0.002                                      │
+│ 1   ┆ 2322556 ┆ G     ┆ GA      ┆ 0.9995 ┆ G>GA:0.002; GA>G:0.06                                       │
+│ 1   ┆ 2556548 ┆ A     ┆ ATTCTCT ┆ 0.999  ┆ A>ATTCTCT:0.001; ATTCTCT>A:0.0                              │
+│ 1   ┆ 2623164 ┆ TA    ┆ T       ┆ 0.9962 ┆ T>TA:0.005; TA>T:0.008                                      │
+│ 1   ┆ 2781422 ┆ A     ┆ AT      ┆ 0.982  ┆ A>AT:0.02                                                   │
+│ 1   ┆ 2808716 ┆ G     ┆ GC      ┆ 0.9957 ┆ G>GC:0.003; GC>G:0.01                                       │
+│ 1   ┆ 2943575 ┆ A     ┆ AT      ┆ 0.9993 ┆ A>AT:0.0; A>T:0.0; AT>A:0.0                                 │
+│ 1   ┆ 3367274 ┆ CA    ┆ C       ┆ 0.9996 ┆ C>CA:0.001; CA>C:0.0                                        │
+│ 1   ┆ 3373331 ┆ CAGTG ┆ C       ┆ 0.9987 ┆ CAGTG>C:0.002                                               │
+│ 1   ┆ 3402559 ┆ T     ┆ TG      ┆ 0.9996 ┆ T>TG:0.001; TG>T:0.0                                        │
+│ 1   ┆ 3933655 ┆ GA    ┆ G       ┆ 0.9976 ┆ G>GA:0.0; GA>G:0.005                                        │
+│ 1   ┆ 4044547 ┆ T     ┆ TA      ┆ 0.8015 ┆ T>TA:0.206; T>TAA:0.0                                       │
+│ 1   ┆ 4157593 ┆ TA    ┆ T       ┆ 0.998  ┆ T>TA:0.0; TA>T:0.003                                        │
+│ 1   ┆ 4212408 ┆ CT    ┆ C       ┆ 0.9874 ┆ C>CT:0.013; CT>C:0.011                                      │
+│ 1   ┆ 4262497 ┆ A     ┆ AG      ┆ 0.9976 ┆ A>AG:0.004; A>G:0.0                                         │
+│ 1   ┆ 4334600 ┆ G     ┆ GC      ┆ 0.9992 ┆ G>GC:0.001; GC>G:0.0                                        │
+│ 1   ┆ 4414447 ┆ A     ┆ AT      ┆ 0.9981 ┆ A>AT:0.005; AT>A:0.0                                        │
+└─────┴─────────┴───────┴─────────┴────────┴─────────────────────────────────────────────────────────────┘

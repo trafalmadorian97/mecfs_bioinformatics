@@ -1,0 +1,156 @@
+
+######## yengo_et_al_height_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:27:08 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:27:08 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/height/yengo_et_al_2022/gwaslab_sumstats/yengo_et_al_height_raw_sumstats_task_no_liftover.pickle
+rows: 1,235,718; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 99.96727% of 94,715; indel consistency 0.00000% of 0
+
+
+chr1 vs hg38: SNV consistency 24.75954% of 94,715; indel consistency 0.00000% of 0
+
+
+build hg19: TrustCounts(consistent_snvs=1139841, inconsistent_snvs=231, consistent_indels=0, inconsistent_indels=0)
+SNV consistency 99.97974% of 1,140,072; indel consistency 0.00000% of 0 -> trusted=False
+
+######## pgc_2022_sch_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:27:46 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:27:46 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/schizophrenia/pgc_2022/gwaslab_sumstats/pgc_2022_sch_raw_sumstats_task_no_liftover.pickle
+rows: 7,659,767; rows with null keys dropped: 0
+no EAF column: cannot test the stringent rules
+
+######## johnston_et_al_pain_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:27:53 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:27:53 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/multisite_pain/johnston_et_al/gwaslab_sumstats/johnston_et_al_pain_raw_sumstats_task_no_liftover.pickle
+rows: 9,926,106; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 0.00000% of 575,189; indel consistency 0.00000% of 8,395
+
+
+chr1 vs hg38: SNV consistency 25.26874% of 575,189; indel consistency 12.84682% of 90,466
+
+
+build hg38: TrustCounts(consistent_snvs=1840065, inconsistent_snvs=5538386, consistent_indels=143898, inconsistent_indels=979511)
+SNV consistency 24.93836% of 7,378,451; indel consistency 12.80905% of 1,123,409 -> trusted=False
+
+######## han_asthma_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:28:48 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:28:48 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/asthma/han_et_al/gwaslab_sumstats/han_asthma_raw_sumstats_task_no_liftover.pickle
+rows: 9,572,556; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 0.00000% of 555,107; indel consistency 0.00000% of 7,526
+
+
+chr1 vs hg38: SNV consistency 25.35007% of 555,107; indel consistency 12.78686% of 80,614
+
+
+build hg38: TrustCounts(consistent_snvs=1793911, inconsistent_snvs=5392724, consistent_indels=129576, inconsistent_indels=883038)
+SNV consistency 24.96177% of 7,186,635; indel consistency 12.79619% of 1,012,614 -> trusted=False
+
+######## kerrebijin_fibro_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:29:37 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:29:37 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/fibromyalgia/kerrebijn_et_al/gwaslab_sumstats/kerrebijin_fibro_raw_sumstats_task_no_liftover.pickle
+rows: 11,155,266; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 24.35321% of 592,427; indel consistency 9.37656% of 133,791
+
+
+chr1 vs hg38: SNV consistency 100.00000% of 592,427; indel consistency 100.00000% of 15,453
+
+
+build hg38: TrustCounts(consistent_snvs=7863589, inconsistent_snvs=0, consistent_indels=198401, inconsistent_indels=0)
+SNV consistency 100.00000% of 7,863,589; indel consistency 100.00000% of 198,401 -> trusted=True
+ambiguous indels: 1,592,151
+baseline               distance=0.02 margin=0.05: kept=917,530 wrong=137,598
+baseline               distance=0.02 margin=0.3: kept=901,399 wrong=131,558
+baseline               distance=0.1 margin=0.2: kept=1,172,910 wrong=162,796
+drop_monomorphic       distance=0.02 margin=0.05: kept=918,566 wrong=137,578
+drop_monomorphic       distance=0.02 margin=0.3: kept=909,743 wrong=131,943
+drop_monomorphic       distance=0.1 margin=0.2: kept=1,179,517 wrong=162,938
+require_both_records   distance=0.02 margin=0.05: kept=215,911 wrong=108,800
+require_both_records   distance=0.02 margin=0.3: kept=199,780 wrong=102,760
+require_both_records   distance=0.1 margin=0.2: kept=276,921 wrong=126,073
+wrong choices (baseline, distance 0.02, margin 0.3):
+shape: (30, 6)
+┌─────┬─────────┬──────────┬─────────┬──────────┬─────────────────────────────────────────────────────────────────────────────┐
+╞═════╪═════════╪══════════╪═════════╪══════════╪═════════════════════════════════════════════════════════════════════════════╡
+└─────┴─────────┴──────────┴─────────┴──────────┴─────────────────────────────────────────────────────────────────────────────┘
+
+######## decode_ra_seropositive_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:30:56 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:30:56 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/rheumatoid_arthritis/decode_ra_seropositive/gwaslab_sumstats/decode_ra_seropositive_raw_sumstats_task_no_liftover.pickle
+rows: 6,527,996; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 100.00000% of 411,860; indel consistency 0.00000% of 0
+
+
+chr1 vs hg38: SNV consistency 24.58870% of 411,860; indel consistency 0.00000% of 0
+
+
+build hg19: TrustCounts(consistent_snvs=5493733, inconsistent_snvs=0, consistent_indels=0, inconsistent_indels=0)
+SNV consistency 100.00000% of 5,493,733; indel consistency 0.00000% of 0 -> trusted=False
+
+######## million_veterans_mi_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:31:43 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:31:43 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/myocardial_infaction/million_veterans/gwaslab_sumstats/million_veterans_mi_raw_sumstats_task_no_liftover.pickle
+rows: 19,669,307; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 24.29207% of 1,251,573; indel consistency 8.24230% of 75,064
+
+
+chr1 vs hg38: SNV consistency 100.00000% of 1,251,573; indel consistency 100.00000% of 5,669
+
+
+build hg38: TrustCounts(consistent_snvs=15834672, inconsistent_snvs=0, consistent_indels=72614, inconsistent_indels=0)
+SNV consistency 100.00000% of 15,834,672; indel consistency 100.00000% of 72,614 -> trusted=True
+ambiguous indels: 944,565
+baseline               distance=0.02 margin=0.05: kept=674,389 wrong=319
+baseline               distance=0.02 margin=0.3: kept=670,774 wrong=249
+baseline               distance=0.1 margin=0.2: kept=828,406 wrong=641
+drop_monomorphic       distance=0.02 margin=0.05: kept=544,718 wrong=308
+drop_monomorphic       distance=0.02 margin=0.3: kept=542,867 wrong=242
+drop_monomorphic       distance=0.1 margin=0.2: kept=701,160 wrong=560
+require_both_records   distance=0.02 margin=0.05: kept=70,394 wrong=180
+require_both_records   distance=0.02 margin=0.3: kept=66,779 wrong=110
+require_both_records   distance=0.1 margin=0.2: kept=120,541 wrong=387
+wrong choices (baseline, distance 0.02, margin 0.3):
+shape: (30, 6)
+┌─────┬───────────┬────────────────┬───────┬─────────┬────────────────────────────────────────────────────────────────────────────────────────────┐
+╞═════╪═══════════╪════════════════╪═══════╪═════════╪════════════════════════════════════════════════════════════════════════════════════════════╡
+└─────┴───────────┴────────────────┴───────┴─────────┴────────────────────────────────────────────────────────────────────────────────────────────┘
+
+######## bellenguez_et_al_alz_raw_sumstats_task_no_liftover.pickle
+2026/09/15 17:33:18 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+2026/09/15 17:33:18 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/alzheimers/bellenguez_et_al/gwaslab_sumstats/bellenguez_et_al_alz_raw_sumstats_task_no_liftover.pickle
+rows: 20,968,546; rows with null keys dropped: 0
+
+
+chr1 vs hg19: SNV consistency 24.33781% of 1,337,803; indel consistency 5.56348% of 101,645
+
+
+chr1 vs hg38: SNV consistency 100.00000% of 1,337,803; indel consistency 100.00000% of 3,699
+
+
+build hg38: TrustCounts(consistent_snvs=16697544, inconsistent_snvs=0, consistent_indels=41016, inconsistent_indels=0)
+SNV consistency 100.00000% of 16,697,544; indel consistency 100.00000% of 41,016 -> trusted=True
+ambiguous indels: 1,218,978
+baseline               distance=0.02 margin=0.05: kept=811,069 wrong=26,937
+baseline               distance=0.02 margin=0.3: kept=809,284 wrong=26,829
+baseline               distance=0.1 margin=0.2: kept=860,838 wrong=27,364
+drop_monomorphic       distance=0.02 margin=0.05: kept=690,224 wrong=20,245
+drop_monomorphic       distance=0.02 margin=0.3: kept=689,546 wrong=20,160
+drop_monomorphic       distance=0.1 margin=0.2: kept=740,711 wrong=20,675
+require_both_records   distance=0.02 margin=0.05: kept=63,087 wrong=19,856
+require_both_records   distance=0.02 margin=0.3: kept=61,302 wrong=19,748
+require_both_records   distance=0.1 margin=0.2: kept=68,546 wrong=20,115
+wrong choices (baseline, distance 0.02, margin 0.3):
+shape: (30, 6)
+┌─────┬─────────┬───────┬─────────┬────────┬─────────────────────────────────────────────────────────────┐
+╞═════╪═════════╪═══════╪═════════╪════════╪═════════════════════════════════════════════════════════════╡
+└─────┴─────────┴───────┴─────────┴────────┴─────────────────────────────────────────────────────────────┘
