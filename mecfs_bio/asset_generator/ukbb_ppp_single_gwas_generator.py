@@ -80,7 +80,6 @@ def ubbb_ppp_gwas_prep(
         genome_build="infer",
         liftover_to="19",
         fmt="regenie",
-        harmonize_options=None,
     )
     plot_task = GwasLabRegionPlotTargetLocusTask.create(
         asset_id=base_name + "_region_plot",

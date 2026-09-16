@@ -13,5 +13,4 @@ UKBBPPP_RABGAP1l_SUMSTATS_37 = GWASLabCreateSumstatsTask(
     genome_build="infer",
     liftover_to="19",
     fmt="regenie",
-    harmonize_options=None,
 )

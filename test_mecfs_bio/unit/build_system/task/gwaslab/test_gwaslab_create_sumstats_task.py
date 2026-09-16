@@ -62,7 +62,7 @@ def test_gwaslab_sumstats(
     assert loaded.data[GWASLAB_STATUS_COL].dtype == pd.Int64Dtype(), (
         f"Expected gwaslab STATUS column to be Int64, got {loaded.data[GWASLAB_STATUS_COL].dtype}. "
         "If gwaslab changed this dtype, update the STATUS column handling in "
-        "gwaslab_create_sumstats_task.py (_do_harmonization and _sumstats_raise_on_error)."
+        "gwaslab_create_sumstats_task.py (_sumstats_raise_on_error)."
     )
     scratch_loc_2 = tmp_path / "scratch_2"
     scratch_loc_2.mkdir(exist_ok=True, parents=True)
