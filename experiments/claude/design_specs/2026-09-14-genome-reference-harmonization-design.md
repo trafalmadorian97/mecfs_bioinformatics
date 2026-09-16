@@ -71,6 +71,20 @@ GRCh37 and GRCh38 references differ: 1.0% on chr22, 0.8% on chr19. So indels in
 those blocks may carry the wrong orientation, and nothing short of the rules
 below can safely identify them.
 
+### Ambiguous-indel orientation is not covered by 100% consistency
+
+The trust-signal check above is blind to ambiguous (BOTH) indels, whose alleles
+both match the FASTA. A cross-dataset investigation
+(experiments/claude/genome_reference_harmonization/v3_trust_investigation_summary.md,
+v3_other_truth_sets.py) measured the fraction of a table's BOTH indels whose
+panel frequency decisively contradicts the source orientation: ~1.4e-5 for
+DecodeME build 38 versus 2.6e-4 to 8.3e-2 for GWAS Catalog harmonised files, a
+~20x separation. DecodeME's build-38 alleles come from an IMPUTE5 GRCh38 UKB WGS
+imputation panel (the preprint's supplementary methods; liftover was applied to
+the array scaffold, not the released summary statistics), so its residual
+suspicious indels are UKB-WGS-vs-1000-Genomes representation differences in
+repeats, not misorientation. This motivates the suspicious-indel trust gate below.
+
 ### What gwaslab harmonization does for us today
 
 Two call sites use HarmonizationOptions:
@@ -294,18 +308,46 @@ Computed over the whole input before any row is resolved.
   - Consistent: NEA_ONLY.
   - Inconsistent: EA_ONLY or NONE.
   - BOTH is excluded from the count.
+- **Checkable ambiguous indels:** BOTH indels with EAF present and at least one
+  panel record (keep or flip). See the suspicious-indel gate below.
 - **trusted** is true iff all of the following hold:
   - checkable SNVs >= options.min_checkable_snvs (default 10,000), and all are
     consistent;
   - checkable indels >= options.min_checkable_indels (default 1,000), and all
-    are consistent.
+    are consistent;
+  - the EAF column is present (see the no-EAF rule below);
+  - the suspicious-indel gate below passes.
 
-The bar is exactly 100% (user decision, 2026-09-14). Keeping one wrong
-indel costs more than dropping many correct ones. A single stray mismatch
+The consistency bar is exactly 100% (user decision, 2026-09-14). Keeping one
+wrong indel costs more than dropping many correct ones. A single stray mismatch
 anywhere sends the table down the stringent path, which is the safe direction.
 
-The trust counts, the decision and the per-chromosome inconsistency rates are
-logged.
+**Suspicious ambiguous indel gate (added 2026-09-16).** Passing 100% SNV+indel
+consistency does not guarantee that a table's BOTH indels follow the reference
+convention: the NEA==REF test is blind to orientation for a variant whose alleles
+both match the FASTA. A BOTH indel is **suspicious** when its EAF matches the
+complement of the opposite orientation's panel AF decisively -- i.e. when
+decide_ambiguous_indels (the same rules, distances and margin used on the
+untrusted path) resolves it to ACTION_SWAP. Trust additionally requires
+
+  suspicious / checkable <= options.max_suspicious_indel_fraction,
+
+tested only when at least options.min_checkable_ambiguous_indels are checkable;
+below that the signal is too sparse to judge and does not affect trust. This is a
+positive misorientation detector: a too-sparse checkable set never fails trust.
+Measured suspicious fractions separate a raw imputed source from GWAS Catalog
+harmonised files by ~20x (DecodeME build 38 ~1.4e-5; MVP ~2.6e-4; Bellenguez
+~2.2e-2; Kerrebijn ~8.3e-2), which motivates the default 1e-4. Monomorphic panel
+records (AF 0 or 1) are treated as absent throughout (see the indel rules).
+
+**No-EAF tables (added 2026-09-16).** A table with no EAF column cannot assess
+ambiguous-indel orientation at all, so it is refused trust outright (user
+decision, 2026-09-16). It takes the untrusted path, where its ambiguous indels
+are dropped (ambiguous_indel_no_eaf). The suspicious-fraction count itself is
+zero for such a table; the refusal is driven by EAF absence, not by the count.
+
+The trust counts, the suspicious/checkable counts, the EAF-present flag, the
+decision and the per-chromosome inconsistency rates are logged.
 
 ### Row resolution (pass 2)
 
@@ -365,6 +407,12 @@ candidate readings:
 
 Rules, in order:
 
+0. Drop monomorphic panel records first (decision, 2026-09-16). Panel records
+   with AF 0 or 1 are filtered out before K and F are looked up, so a record that
+   predicts EAF 0 or 1 is treated as absent. Such a record describes a variant not
+   observed in EUR; a match to it is spurious, and its opposite orientation is the
+   source of the mislabelling this Task exists to avoid. This applies wherever
+   decide_ambiguous_indels runs, including the suspicious-indel trust gate.
 1. EAF missing: drop (ambiguous_indel_no_eaf).
 2. Neither record in the panel: drop (ambiguous_indel_not_in_panel).
 3. Exactly one record X:
@@ -375,6 +423,10 @@ Rules, in order:
      d_other - d_X >= options.indel_min_af_margin;
    - otherwise drop (ambiguous_indel_af_indecisive).
 5. Choosing F means swap and flip.
+
+Both orientations are deliberately not required: the require-both variant does
+not improve safety on mis-oriented tables (Kerrebijn stays ~100k wrong) and only
+lowers yield (decision, 2026-09-16).
 
 Defaults are set by V3 below; placeholders are 0.1 and 0.2. The rules drop in
 the safe direction for non-EUR sumstats, where panel frequencies fit worse.
@@ -447,12 +499,16 @@ The list of chromosomes comes from a streaming unique over CHR.
 
 **Pass 1 (trust).** For each chromosome:
 
-- collect only CHR, POS, EA, NEA for that chromosome;
+- collect CHR, POS, EA, NEA and, when present, EAF for that chromosome;
 - classify;
-- accumulate counts.
+- accumulate the trust counts;
+- when the table carries EAF, read that chromosome's panel rows at the BOTH-indel
+  positions and accumulate the suspicious/checkable counts for the gate above.
 
-Peak memory is 4 columns of the largest chromosome. The FASTA is memory-mapped;
-its pages are reclaimable page cache, not anonymous memory.
+Peak memory is a few columns of the largest chromosome plus its BOTH-indel panel
+rows. The FASTA is memory-mapped; its pages are reclaimable page cache, not
+anonymous memory. A no-EAF table skips the panel read (it is refused trust
+regardless), so pass 1 stays four columns wide there.
 
 **Pass 2 (resolve).** For each chromosome:
 
@@ -522,20 +578,28 @@ captured via tee.
 **V2: gwaslab parity, Liu et al. 2023 IBD.** Same as V1, and it exercises OR
 columns.
 
-**V3: tuning the stringent indel rules on a truth set.**
+**V3: tuning the stringent indel rules and the suspicious-indel gate (revised
+2026-09-16).**
 
 - Data: DecodeME build 38 against the hg38 FASTA and the pinned hg38 30x EUR
-  panel. Trust is 100% and the source orientation is ground truth.
-- Call indel_rules on every BOTH indel directly as if untrusted, over a grid of
-  (indel_max_af_distance, indel_min_af_margin).
-- Report per grid cell:
-  - wrong choices (chose F for a trusted row);
-  - drops by reason;
-  - kept.
-- Choose defaults with zero wrong choices that keep the most indels. Record the
-  grid table in the log.
-- The build-37 source cannot be used as truth: its reference-difference blocks
-  contaminate it.
+  panel. Trust is 100% and the source orientation is ground truth. The build-37
+  source cannot be used as truth: its reference-difference blocks contaminate it.
+- The original goal (a grid cell with zero wrong choices) is unreachable: no
+  (indel_max_af_distance, indel_min_af_margin) gives zero wrong on build-38
+  DecodeME, because a trusted table still carries ~11 (5 after the monomorphic
+  filter) BOTH indels that differ only in panel representation (UKB WGS vs 1000
+  Genomes) in repeats. That finding drove the suspicious-indel gate; record it and
+  the cross-dataset investigation (v3_trust_investigation_summary.md,
+  v3_other_truth_sets.py).
+- Set the untrusted-path resolution defaults (indel_max_af_distance,
+  indel_min_af_margin) to the most conservative sensible grid cell; recommend
+  0.02 and 0.3 (fewest wrong swaps). Untrusted tables are exactly those whose
+  orientation is unreliable, so aggressive dropping is appropriate.
+- Calibrate max_suspicious_indel_fraction so DecodeME build 38 is trusted and the
+  GWAS Catalog harmonised datasets (MVP, Bellenguez, Kerrebijn) are untrusted.
+  Record each dataset's suspicious fraction and confirm the 1e-4 default
+  (min_checkable_ambiguous_indels 100), computed against the monomorphic-filtered
+  panel.
 
 **V4: memory.**
 
@@ -571,11 +635,16 @@ Use a synthetic FASTA (a few contigs with engineered repeats, written with its
   match/mismatch, both records decisive/indecisive).
 - The mirrored-orientation symmetry: the same variant supplied in either
   orientation resolves identically.
+- A monomorphic (AF 0 or 1) panel record is treated as absent.
 
 **Trust decision:**
 
 - One inconsistent SNV flips the decision.
 - Below-minimum counts give untrusted.
+- A suspicious ambiguous indel (its EAF matches the complement of the opposite
+  orientation's panel AF) makes an otherwise-consistent table untrusted, and its
+  BOTH indel is then swapped rather than kept.
+- A table with no EAF column is untrusted, and its BOTH indel is dropped.
 
 **Flip registry:**
 
@@ -651,3 +720,21 @@ Use a synthetic FASTA (a few contigs with engineered repeats, written with its
 4. **Large downloads** (panel VCF, FASTA gz) are discarded via
    DiscardDepsWrapper; only derived assets are stored.
 5. **The pipe output** is asserted to be a polars LazyFrame after to_native().
+
+## Decisions from review (2026-09-16), folded from the suspicious-indel delta
+
+6. **Suspicious-indel trust gate.** 100% SNV+indel consistency is not enough;
+   trust also requires the suspicious fraction over checkable BOTH indels to be
+   <= max_suspicious_indel_fraction (default 1e-4), tested only above
+   min_checkable_ambiguous_indels checkable indels (default 100). It is a
+   positive detector: sparse checkable sets never fail trust. Motivated by the
+   ~20x DecodeME-vs-harmonised separation.
+7. **No-EAF tables are untrusted.** A table without an EAF column cannot assess
+   ambiguous-indel orientation, so it is refused trust; its BOTH indels are
+   dropped on the untrusted path.
+8. **Monomorphic panel records** (AF 0 or 1) are treated as absent in
+   decide_ambiguous_indels, on both the untrusted path and the suspicious-indel
+   gate. Both orientations are not required.
+9. **V3 revised.** No zero-wrong grid cell exists; V3 records that finding, sets
+   the untrusted-path defaults conservatively (0.02, 0.3), and calibrates
+   max_suspicious_indel_fraction across DecodeME and the harmonised datasets.

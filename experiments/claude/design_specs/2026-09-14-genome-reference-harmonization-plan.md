@@ -121,6 +121,18 @@ Read it before starting; this plan argues from it.
 
 ## File Structure
 
+> **Suspicious-indel trust delta folded in (2026-09-16).** The
+> 2026-09-16-suspicious-indel-trust-delta.md is now integrated into this plan:
+> options.py gains max_suspicious_indel_fraction and min_checkable_ambiguous_indels
+> (above); Task 6 gains a final step implementing the suspicious-indel trust gate
+> (SuspiciousIndelCounts, TrustEvidence, count_suspicious_indels, the rewritten
+> decide_trust, the monomorphic-panel filter in decide_ambiguous_indels, and two
+> new tests); and Task 9 (V3) is revised. As a result decide_trust takes a
+> TrustEvidence, and count_trust_evidence_genome_wide takes panel_path and returns
+> a TrustEvidence -- the plain-TrustCounts signatures shown in Tasks 4, 8, 9 and 12
+> are the pre-delta form; the Task 6 step and the experiment scripts use the final
+> signatures.
+
 **Create: library** (mecfs_bio/build_system/task/genome_reference_harmonization/)
 
 | File | Responsibility |
@@ -132,7 +144,7 @@ Read it before starting; this plan argues from it.
 | flip.py | FlipRule, BoundPair, ExtraColumnRule, COLUMN_FLIP_RULES, resolve_column_rules, flip_statistics |
 | options.py | GenomeReferenceHarmonizationOptions |
 | allele_classes.py | AlleleClass, reverse_complement_expr, prepare_alleles, valid_alleles_expr, classify_alleles |
-| trust.py | TrustCounts, count_trust_evidence, decide_trust |
+| trust.py | TrustCounts, count_trust_evidence, SuspiciousIndelCounts, TrustEvidence, count_suspicious_indels, decide_trust |
 | ambiguous_indels.py | decide_ambiguous_indels (stringent rules) |
 | palindromes.py | decide_palindrome_strands |
 | outcomes.py | AlleleAction, PalindromeDecision, DropReason Literal aliases and their ACTION_*, PALINDROME_*, DROP_* constants |
@@ -1866,6 +1878,14 @@ class GenomeReferenceHarmonizationOptions:
     indel_max_af_distance, indel_min_af_margin: stringent rules for untrusted ambiguous indels.
         A reading is chosen only if its predicted EAF is within the distance and beats the
         other reading by at least the margin.
+    max_suspicious_indel_fraction: a table is trusted only if at most this fraction of its
+        checkable ambiguous indels (both orientations on the FASTA, with EAF and a panel
+        record) are suspicious -- their EAF matches the complement of the opposite
+        orientation's panel frequency, evidence the source is not perfectly reference-aligned.
+        The suspicion test uses the same indel_max_af_distance and indel_min_af_margin.
+    min_checkable_ambiguous_indels: the suspicious-fraction test is applied only when at least
+        this many checkable ambiguous indels exist; below it the signal is too sparse to judge
+        and does not affect trust.
     keep_unresolved_palindromes: keep untrusted palindromic SNVs whose strand cannot be
         resolved, instead of dropping them. Never applies to indels.
     excluded_chromosomes: gwaslab chromosome codes whose rows are dropped (MT by default,
@@ -1880,6 +1900,8 @@ class GenomeReferenceHarmonizationOptions:
     panel_maf_threshold: float = 0.4
     indel_max_af_distance: float = 0.1
     indel_min_af_margin: float = 0.2
+    max_suspicious_indel_fraction: float = 1e-4
+    min_checkable_ambiguous_indels: int = 100
     keep_unresolved_palindromes: bool = False
     excluded_chromosomes: tuple[int, ...] = (GWASLAB_CHROM_CODE_FOR_NAME["MT"],)
     extra_column_rules: tuple[ExtraColumnRule, ...] = ()
@@ -1893,6 +1915,8 @@ class GenomeReferenceHarmonizationOptions:
         assert 0 < self.indel_min_af_margin < 1, (
             "a strictly positive margin keeps the keep and flip readings from both being chosen"
         )
+        assert 0 < self.max_suspicious_indel_fraction < 1
+        assert self.min_checkable_ambiguous_indels >= 1
         assert self.max_gather_bytes > 0
 ```
 
@@ -3277,6 +3301,48 @@ def _apply_ambiguous_indel_rules(
     ).drop(INDEL_ACTION_COL, INDEL_DROP_REASON_COL)
 ```
 
+- [ ] **Step 4b: Suspicious-indel trust gate (folded from the 2026-09-16 delta)**
+
+Now that decide_ambiguous_indels exists, extend the trust decision so 100% SNV+indel
+consistency is not sufficient. Full code and rationale are in
+2026-09-16-suspicious-indel-trust-delta.md; the concrete changes are:
+
+- **ambiguous_indels.py:** at the top of decide_ambiguous_indels, drop monomorphic
+  panel records so an AF-0 or AF-1 record is treated as absent:
+  `panel = panel.filter((pl.col(PANEL_AF_COL) > 0) & (pl.col(PANEL_AF_COL) < 1))`.
+- **trust.py:** add SuspiciousIndelCounts (suspicious, checkable, __add__, zero,
+  fraction), TrustEvidence(counts, suspicious, eaf_present), and
+  count_suspicious_indels(classified, panel, options) which reuses
+  decide_ambiguous_indels (ACTION_SWAP = suspicious; NO_EAF/NOT_IN_PANEL drops are
+  not checkable). Rewrite decide_trust to take a TrustEvidence:
+
+  ```python
+  def decide_trust(evidence: TrustEvidence, options) -> bool:
+      counts = evidence.counts
+      consistent = (
+          counts.inconsistent_snvs == 0 and counts.inconsistent_indels == 0
+          and counts.consistent_snvs >= options.min_checkable_snvs
+          and counts.consistent_indels >= options.min_checkable_indels
+      )
+      if not consistent:
+          return False
+      if not evidence.eaf_present:
+          return False  # no EAF: ambiguous-indel orientation cannot be assessed
+      if evidence.suspicious.checkable < options.min_checkable_ambiguous_indels:
+          return True
+      return evidence.suspicious.fraction <= options.max_suspicious_indel_fraction
+  ```
+
+- **genome_reference_harmonization_task.py:** count_trust_evidence_genome_wide gains
+  panel_path, reads EAF when present, loads the panel at BOTH-indel positions per
+  chromosome, and returns a TrustEvidence; execute() calls decide_trust(evidence, ...)
+  and logs eaf_present + suspicious counts.
+- **tests:** add test_suspicious_ambiguous_indels_make_a_table_untrusted and
+  test_table_without_eaf_is_untrusted; give the fixture TEST_OPTIONS
+  min_checkable_ambiguous_indels=1; revise the AF-0 ambiguous-indel fixtures so the
+  monomorphic filter does not silently change their intent (add a dedicated
+  monomorphic-is-absent test).
+
 - [ ] **Step 5: Run the module tests**
 
 Run: `pixi r python -m pytest test_mecfs_bio/unit/build_system/task/genome_reference_harmonization -q`
@@ -3713,7 +3779,24 @@ git add experiments/claude/genome_reference_harmonization
 git commit -m "Validate genome-reference harmonization against gwaslab (V1, V2)"
 ```
 
-### Task 9: Validation V3, tuning the stringent indel rules on a truth set
+### Task 9: Validation V3, tuning the stringent indel rules and the suspicious-indel gate
+
+> **Revised 2026-09-16 (delta).** The original goal below -- a grid cell with zero
+> wrong choices -- is unreachable: no (distance, margin) gives zero wrong on build-38
+> DecodeME, because a trusted table still carries ~11 (5 after the monomorphic filter)
+> BOTH indels that differ only in panel representation (UKB WGS vs 1000 Genomes) in
+> repeats. That finding drove the suspicious-indel gate. Revised V3:
+> 1. Record the finding and the cross-dataset investigation
+>    (v3_trust_investigation_summary.md, v3_other_truth_sets.py, tune_ambiguous_indel_rules.py,
+>    v3_rule_variants.py). These scripts already exist.
+> 2. Set the untrusted-path defaults (indel_max_af_distance, indel_min_af_margin) to the
+>    most conservative sensible cell; recommend 0.02 and 0.3 (fewest wrong swaps).
+> 3. Calibrate max_suspicious_indel_fraction so DecodeME build 38 is trusted and the GWAS
+>    Catalog harmonised datasets (MVP, Bellenguez, Kerrebijn) are untrusted, using the
+>    monomorphic-filtered panel; confirm the 1e-4 default. Use count_suspicious_indels /
+>    count_trust_evidence_genome_wide (new TrustEvidence signature) so the calibration runs
+>    the exact production code.
+> The embedded grid script below is the pre-delta form, kept for the grid-report mechanics.
 
 **Files:**
 - Create: experiments/claude/genome_reference_harmonization/tune_ambiguous_indel_rules.py

@@ -1,7 +1,10 @@
 # Delta: suspicious-indel trust check
 
-Amends 2026-09-14-genome-reference-harmonization-{design,plan}.md. Not yet folded
-in; review then inline. Motivation and evidence: v3_trust_investigation_summary.md.
+Amends 2026-09-14-genome-reference-harmonization-{design,plan}.md. Folded into
+both on 2026-09-16 (design: trust-decision gate, no-EAF rule, monomorphic-record
+rule, revised V3, decisions 6-9; plan: options fields, Task 6 step 4b, revised
+Task 9). This document is retained as the detailed rationale and full code.
+Motivation and evidence: v3_trust_investigation_summary.md.
 
 ## Why
 
