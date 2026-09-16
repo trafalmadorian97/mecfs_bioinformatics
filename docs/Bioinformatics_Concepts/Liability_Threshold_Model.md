@@ -5,13 +5,13 @@
 Modern statistical genetics treats the genetic contribution to common disease as quantitative and continuous. In contrast, many common disease phenotypes are binary: a person either has the disease or does not.  How can we bridge this gap? The liability threshold model is simple, elegant solution.
 
 
-Under the liability threshold model, the genetic contribution to disease $G$ combines additively with the environmental contribution $E$ to produce the latent disease liability $L$. When $L$ exceeds the threshold $T$, the patient expresses the disease phenotype $Y=1$.  Otherwise, the patient expresses the normal phenotype $Y=0$.  In equations, we have
+Under the liability threshold model, the genetic contribution to disease $G$ combines additively with the environmental contribution $E$ to produce the latent disease liability $L$. When $L$ exceeds the threshold $\tau$, the patient expresses the disease phenotype $Y=1$.  Otherwise, the patient expresses the normal phenotype $Y=0$.  In equations, we have
 
 
 $$
 \begin{align}
 L&=G+E\\
-Y&= 1_{L>T}.
+Y&= 1_{L>\tau}.
 \end{align}
 $$
 
