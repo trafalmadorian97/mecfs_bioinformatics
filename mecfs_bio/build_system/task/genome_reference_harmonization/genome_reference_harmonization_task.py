@@ -5,9 +5,9 @@ Orients every variant so that NEA is the plus-strand reference allele of a genom
 FASTA, flips allele-dependent statistics to match, and resolves the variants the genome
 alone cannot orient.
 
-- **Trust.** A table whose checkable SNVs and indels are 100% reference-consistent is
-  trusted: its palindromic variants and its indels with both alleles on the genome keep
-  their source orientation.
+- **Trust.** A table whose checkable SNVs and indels are 100% reference-consistent,
+  and with a low number of "suspicious indels" is trusted: its palindromic variants
+  and its indels with both alleles on the genome keep their source orientation.
 - **Untrusted tables.** Palindromic SNV strands and ambiguous indels are resolved against
   a reference panel's allele frequencies, and are dropped whenever the evidence is not
   decisive.
