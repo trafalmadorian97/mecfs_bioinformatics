@@ -83,6 +83,5 @@
 #v(6pt)
 #align(center, {
   set text(size: 9pt, fill: ink)
-  [Liability $L = G + E$ is normally distributed across the population. \
-  Individuals with $L > tau$ express the disease phenotype ($Y = 1$).]
+  [Individuals with $L > tau$ express the disease phenotype ($Y = 1$).]
 })

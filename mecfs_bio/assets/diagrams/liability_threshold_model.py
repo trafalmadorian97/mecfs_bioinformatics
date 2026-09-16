@@ -14,6 +14,6 @@ from mecfs_bio.build_system.task.typst_source import TypstSource
 _SOURCE_PATH = Path(__file__).parent / "liability_threshold_model.typ"
 
 LIABILITY_THRESHOLD_MODEL_DIAGRAM = TypstDiagramTask(
-    meta=DiagramFileMeta(AssetId("liability_threshold_model")),
+    meta=DiagramFileMeta(AssetId("liability_threshold_model_diagram")),
     source=TypstSource(path=_SOURCE_PATH),
 )
