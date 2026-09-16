@@ -41,10 +41,21 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_CHROM_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_EFFECT_ALLELE_FREQ_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
     GWASLAB_STATUS_COL,
     GwaslabKnownFormat,
 )
+
+_VARIANT_KEY_COLUMNS = [
+    GWASLAB_CHROM_COL,
+    GWASLAB_POS_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+]
 
 GenomeBuildMode = Literal["infer", "19", "38"]
 
@@ -379,6 +390,28 @@ def _prune_unused_allele_categories(sumstats: gl.Sumstats) -> None:
             sumstats.data[col] = sumstats.data[col].cat.remove_unused_categories()
 
 
+def _drop_duplicate_variant_keys(sumstats: gl.Sumstats) -> None:
+    """
+    Drop every row whose (CHR, POS, EA, NEA) key is shared with another row, in place.
+
+    Liftover can map two distinct source variants to the same target coordinate with the
+    same alleles but different statistics, leaving duplicate variant keys that are ambiguous
+    for any downstream allele-keyed join. Because we cannot tell which source variant is
+    correct at the collided coordinate, all colliding rows are dropped, not deduplicated to
+    one. Genome-reference harmonization asserts key uniqueness, so these must be removed here.
+    """
+    key = [col for col in _VARIANT_KEY_COLUMNS if col in sumstats.data.columns]
+    if len(key) < len(_VARIANT_KEY_COLUMNS):
+        return
+    duplicated = sumstats.data.duplicated(subset=key, keep=False)
+    count = int(duplicated.sum())
+    if count:
+        logger.warning(
+            "dropping rows with duplicate (CHR, POS, EA, NEA) keys", count=count
+        )
+        sumstats.data = sumstats.data[~duplicated].reset_index(drop=True)
+
+
 def transform_gwaslab_sumstats(
     sumstats: gl.Sumstats,
     spec: GwasLabTransformSpec,
@@ -419,6 +452,7 @@ def transform_gwaslab_sumstats(
             options=spec.harmonize_options,
         )
 
+    _drop_duplicate_variant_keys(sumstats)
     _sumstats_raise_on_error(sumstats)
     logger.debug(f"Finished gwaslab pipe.  Data has shape {sumstats.data.shape}")
     return sumstats

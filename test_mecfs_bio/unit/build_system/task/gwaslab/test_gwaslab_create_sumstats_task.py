@@ -18,6 +18,7 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
+    _drop_duplicate_variant_keys,
     _validate_eaf_in_range,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
@@ -127,3 +128,45 @@ def test_validate_eaf_in_range_no_eaf_column_is_noop():
     )
     sumstats = gl.Sumstats(df, fmt="regenie", verbose=False)
     _validate_eaf_in_range(sumstats)
+
+
+def _sumstats_with_variant_keys(
+    keys: list[tuple[int, int, str, str]],
+) -> gl.Sumstats:
+    df = pd.DataFrame(
+        {
+            "CHROM": [chrom for chrom, _, _, _ in keys],
+            "GENPOS": [pos for _, pos, _, _ in keys],
+            "ID": [f"rs{i}" for i in range(len(keys))],
+            "ALLELE0": [nea for _, _, _, nea in keys],  # regenie ALLELE0 -> NEA
+            "ALLELE1": [ea for _, _, ea, _ in keys],  # regenie ALLELE1 -> EA
+            "A1FREQ": [0.3] * len(keys),
+            "BETA": [0.1 * (i + 1) for i in range(len(keys))],
+            "SE": [0.01] * len(keys),
+            "LOG10P": [2.0] * len(keys),
+            "N": [1000] * len(keys),
+        }
+    )
+    return gl.Sumstats(df, fmt="regenie", verbose=False)
+
+
+def test_drop_duplicate_variant_keys_drops_every_colliding_row():
+    # Two rows share (CHR, POS, EA, NEA) with different stats (a liftover collision); both
+    # are dropped, not deduplicated to one, because neither can be trusted at that key.
+    sumstats = _sumstats_with_variant_keys(
+        [
+            (1, 100, "T", "A"),
+            (1, 100, "T", "A"),
+            (1, 200, "G", "C"),
+            (1, 300, "T", "A"),
+        ]
+    )
+    _drop_duplicate_variant_keys(sumstats)
+    assert sumstats.data["POS"].tolist() == [200, 300]
+
+
+def test_drop_duplicate_variant_keys_keeps_distinct_variants():
+    # Same position, different alleles is not a collision and is kept.
+    sumstats = _sumstats_with_variant_keys([(1, 100, "A", "C"), (1, 100, "A", "G")])
+    _drop_duplicate_variant_keys(sumstats)
+    assert sumstats.data["POS"].tolist() == [100, 100]
