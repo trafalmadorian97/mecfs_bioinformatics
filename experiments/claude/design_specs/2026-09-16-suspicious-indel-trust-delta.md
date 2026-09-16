@@ -365,6 +365,11 @@ still carries ~11 ambiguous indels that differ only in panel representation
    when the EAF column is absent, via evidence.eaf_present in decide_trust. Such a
    table takes the untrusted path, where its ambiguous indels are dropped (NO_EAF).
 2. Default max_suspicious_indel_fraction = 1e-4 and min_checkable_ambiguous_indels
-   = 100 are provisional; V3 confirms.
+   = 100: RESOLVED (2026-09-16) -- confirmed by V3 (v3_suspicious_calibration.py),
+   which ran the production count_trust_evidence_genome_wide (monomorphic filter,
+   checkable denominator) at the chosen 0.02/0.3 resolution. Suspicious fractions:
+   DecodeME 6.8e-6 (trusted), MVP 3.25e-4, Bellenguez 2.61e-2, Kerrebijn 9.53e-2
+   (all untrusted). 1e-4 sits ~48x above DecodeME and ~3.25x below the nearest
+   untrusted. The untrusted-path resolution defaults are set to 0.02/0.3.
 3. Ambiguous-indel rule: RESOLVED (2026-09-16) -- drop 0/1-AF panel records, and
    do not require both orientations. Folded in above (Ambiguous-indel rule change).

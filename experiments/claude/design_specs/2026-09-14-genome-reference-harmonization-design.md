@@ -428,8 +428,9 @@ Both orientations are deliberately not required: the require-both variant does
 not improve safety on mis-oriented tables (Kerrebijn stays ~100k wrong) and only
 lowers yield (decision, 2026-09-16).
 
-Defaults are set by V3 below; placeholders are 0.1 and 0.2. The rules drop in
-the safe direction for non-EUR sumstats, where panel frequencies fit worse.
+Defaults are indel_max_af_distance 0.02 and indel_min_af_margin 0.3, set by V3
+below. The rules drop in the safe direction for non-EUR sumstats, where panel
+frequencies fit worse.
 
 Worked example: the chr15:54698192 reproduction row in source orientation
 (EA = T, NEA = TG, EAF = 0.845; the true variant is the deletion TG -> T).

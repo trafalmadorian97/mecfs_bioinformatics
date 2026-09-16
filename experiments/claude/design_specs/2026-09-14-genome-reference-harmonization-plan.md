@@ -93,8 +93,9 @@ Read it before starting; this plan argues from it.
   min_checkable_indels (default 1,000) and zero inconsistent indels.
 - Palindrome thresholds: sumstats MAF 0.4 and panel MAF 0.4, epsilon 1e-6
   (gwaslab defaults).
-- Stringent indel options: indel_max_af_distance 0.1 and indel_min_af_margin
-  0.2 until Task 9 (experiment V3) sets final values.
+- Stringent indel options: indel_max_af_distance 0.02 and indel_min_af_margin
+  0.3, chosen by Task 9 (experiment V3) as the most conservative sensible grid
+  cell (fewest wrong swaps). The suspicious-indel trust gate reuses them.
 - excluded_chromosomes default: (25,) (MT).
 - Pinned md5s:
   - hg19.fa.gz 806c02398f5ac5da8ffd6da2d1d5d1a9 (UCSC md5sum.txt);
@@ -1898,8 +1899,8 @@ class GenomeReferenceHarmonizationOptions:
     min_checkable_indels: int = 1_000
     palindrome_maf_threshold: float = 0.4
     panel_maf_threshold: float = 0.4
-    indel_max_af_distance: float = 0.1
-    indel_min_af_margin: float = 0.2
+    indel_max_af_distance: float = 0.02
+    indel_min_af_margin: float = 0.3
     max_suspicious_indel_fraction: float = 1e-4
     min_checkable_ambiguous_indels: int = 100
     keep_unresolved_palindromes: bool = False
