@@ -1,8 +1,9 @@
 #import "@preview/cetz:0.3.4"
-#import "palette.typ": ink, muted, categorical
+#import "palette.typ": ink, muted, soft
 
-// Local names for the categorical series used in this diagram.
-#let (primary, secondary, ..) = categorical
+// Colour here only reinforces what the labels already say, so the diagram draws
+// from the low-contrast soft palette rather than the categorical one.
+#let (sand, taupe, ..) = soft
 
 // fill: none keeps the SVG background transparent so it composites over whatever
 // the page (or callout) background is, rather than baking in a white box.
@@ -46,7 +47,7 @@
     (sx(x-max), 0),
     (sx(threshold), 0),
     close: true,
-    fill: secondary.transparentize(55%),
+    fill: sand,
     stroke: none,
   )
 
@@ -59,19 +60,20 @@
   // ---- Threshold ----
   // Drawn past the mode so the line reads as a cut through the whole
   // population, not just through the tail.
-  line((sx(threshold), 0), (sx(threshold), sy(pdf(0)) + 0.3), stroke: (paint: primary, thickness: 1.2pt, dash: "dashed"))
-  content((sx(threshold), -0.32), text(size: 11pt, fill: primary)[$tau$])
+  line((sx(threshold), 0), (sx(threshold), sy(pdf(0)) + 0.3), stroke: (paint: taupe, thickness: 1.2pt, dash: "dashed"))
+  content((sx(threshold), -0.32), text(size: 11pt, fill: ink)[$tau$])
 
   // ---- Region labels ----
-  // "Unaffected" sits inside the bulk it describes; "Affected" cannot fit
-  // inside the thin tail, so it is set outside with a leader line.
-  content((sx(-0.55), sy(pdf(0)) * 0.42), text(size: 10pt, fill: ink)[Unaffected])
-  content((sx(2.75), sy(pdf(0)) * 0.55), text(size: 10pt, fill: secondary)[Affected])
+  // "Unaffected" sits centred under the mode of the bulk it describes;
+  // "Affected" cannot fit inside the thin tail, so it is set outside with a
+  // leader line. Labels stay in ink: the soft fills are too pale for text.
+  content((sx(0), sy(pdf(0)) * 0.42), text(size: 10pt, fill: ink)[Unaffected])
+  content((sx(2.75), sy(pdf(0)) * 0.55), text(size: 10pt, fill: ink)[Affected])
   line(
     (sx(2.75), sy(pdf(0)) * 0.55 - 0.22),
     (sx(1.65), sy(pdf(1.65)) + 0.12),
-    stroke: 0.7pt + secondary,
-    mark: (end: ">", scale: 0.5, fill: secondary),
+    stroke: 0.7pt + taupe,
+    mark: (end: ">", scale: 0.5, fill: taupe),
   )
 
   // ---- Axis label ----
