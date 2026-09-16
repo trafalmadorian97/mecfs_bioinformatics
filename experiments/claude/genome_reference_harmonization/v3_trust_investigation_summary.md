@@ -141,3 +141,46 @@ Bearing on the working assumption (DecodeME build 38 is reference-aligned):
   proportion.
 - As anticipated, neither document discusses how ambiguous-indel orientation was
   chosen for the released summary statistics.
+
+## DecodeME Supplementary Methods (now obtained)
+
+The user provided the supplement (decode_me_supplement.pdf; extract at
+decodeme_preprint/decode_me_supplement.txt). It contains the imputation detail
+the main text deferred, and it materially strengthens the working assumption.
+
+Pipeline (verbatim points):
+- "We imputed cases and controls together using the UKB-RAP imputation pipeline,
+  with a reference panel created from the whole genome sequences of more than
+  200,000 UKB samples and covering over 700 million variants."
+- "We lifted over the genotypes from genome assembly build 37 (GRCh37/hg19) to
+  build 38 (GRCh38/hg38) using the UCSC LiftOver tool, and then uploaded the
+  data onto the UKB-RAP." -- i.e. liftover was applied to the sparse ARRAY
+  genotypes (the imputation scaffold), before imputation.
+- "We ensured that the strand, alleles, position, and REF/ALT assignments
+  matched [the reference panel] ... removed DNA variants if they were ambiguous
+  (A/T or G/C, when MAF > 0.4), or had differing alleles, or were not in the
+  reference panel."
+- Phasing SHAPEIT5, imputation IMPUTE5 against the UKB WGS panel; after
+  imputation "discarded ... any variant that was monomorphic, multi-allelic, or
+  very rare ... or had low imputation quality (INFO < 0.4)".
+
+Why this supports "DecodeME build 38 is reference-aligned":
+- The released variant alleles are IMPUTE5 output keyed to the GRCh38 UKB WGS
+  panel. Imputed REF/ALT, positions and indel representation are the panel's, by
+  construction.
+- The liftover was on the array scaffold, not on the summary statistics. Our
+  earlier evidence that liftover corrupts the NEA->REF mapping applies to lifting
+  a finished sumstats table (our 38->37 liftover), not to this: a liftover error
+  in the scaffold degrades local imputation quality (caught by INFO filters), it
+  does not flip an imputed variant's REF/ALT, because those come from the panel.
+- Multi-allelic sites are discarded post-imputation, so the retained indels are
+  the panel's biallelic representations.
+
+Consequence for the 11 suspicious indels: confirmed as most likely representation
+differences between the UKB WGS panel (which DecodeME follows) and the 1000
+Genomes EUR panel (which we compare against) in repeats, not source misalignment.
+
+What is still not stated: there is no explicit sentence on how indels were
+left-aligned/normalized in the released file. But it is now implicit -- they
+follow the GRCh38 UKB WGS reference panel. No evidence against the assumption was
+found; the evidence is confirmatory.

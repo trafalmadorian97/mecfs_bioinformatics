@@ -8,6 +8,8 @@ Sources (medRxiv itself 403s to scripted clients; the Edinburgh mirror serves
 the PDFs):
 - Preprint: medRxiv 10.1101/2025.08.06.25333109v1
   https://institute-genetics-cancer.ed.ac.uk/sites/default/files/2026-05/2025-08-03%20DecodeME%20Preprint.pdf
+- Supplementary Methods: provided by the user (decode_me_supplement.pdf); the
+  medRxiv supplement for 10.1101/2025.08.06.25333109.
 - Data Analysis Plan (2024):
   https://institute-genetics-cancer.ed.ac.uk/sites/default/files/2025-06/DecodeME%20data%20analysis%20plan.pdf
 - Summary statistics (GWAS-1): OSF project rgqs3.
