@@ -9,6 +9,11 @@ the task. Scenarios:
 
 Run (normally via memory_benchmark.py):
   pixi r python -m experiments.claude.genome_reference_harmonization.measure_harmonization_memory genome_reference_all
+
+
+Historical record (V4): this ran against the pre-switch code, before Task 11 replaced
+the gwaslab harmonize_task it imports. It no longer imports; the committed
+memory_benchmark.log at that commit is the evidence.
 """
 
 import json

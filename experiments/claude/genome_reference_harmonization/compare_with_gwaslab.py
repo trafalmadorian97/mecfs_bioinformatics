@@ -13,6 +13,12 @@ cache does not key on code.
 Run:
   pixi r python -m experiments.claude.genome_reference_harmonization.compare_with_gwaslab \
     2>&1 | tee experiments/claude/genome_reference_harmonization/compare_with_gwaslab.log
+
+
+Historical record (V1, V2): this ran against the pre-switch code, before Task 11
+replaced the gwaslab-harmonization task objects it imports (the RSIDAssignmentTaskGroup
+dump_parquet_task and LIU_ET_AL_2023_IBD_EUR_HARMONIZE_PARQUET). It no longer imports;
+the committed compare_with_gwaslab.log at that commit is the evidence.
 """
 
 from pathlib import Path
