@@ -113,4 +113,23 @@ chromosome, not total rows: all-chromosomes peak <= 1.5x the chr1-and-2 peak.
 
 ## V5: trust decision across rsID-assignment chains
 
-Pending (survey_trust.py, Task 12).
+survey_trust.py imports the asset package, collects RSIDAssignmentTaskGroup
+instances, and reports the trust decision of each group's pre-harmonization table
+whose upstream gwaslab pickle is materialized. Only the DecodeME chains build
+their groups through annovar_37_basic_rsid_assignment (the Liu chain constructs
+its harmonize task directly, so it is not a group); two unrelated asset modules
+fail to import at construction time and are skipped
+(decode_me_filtered_gene_list_with_gene_metadata_drop_cols and
+partitioned_model_allele_freq -- pre-existing, not touched by this work).
+
+| chain | trusted | inconsistent SNVs | suspicious / checkable |
+|---|---|---|---|
+| decode_me_gwas_1_genome_reference_harmonized | no | 17,092 | 660 / 598,255 |
+| decode_me_gwas_1_keep_ambiguous_...          | no | 17,092 | 660 / 598,255 |
+
+Both DecodeME build-37 chains are untrusted, driven by the 17,092 inconsistent
+SNVs in the GRCh37-vs-GRCh38 reference-difference blocks (the suspicious gate is
+moot once consistency fails). So production rsID assignment runs on the stringent
+path, which is the safe direction for a lifted table. Note this is the build-37
+lifted DecodeME; the build-38 DecodeME used to calibrate the suspicious gate (V3)
+is trusted.
