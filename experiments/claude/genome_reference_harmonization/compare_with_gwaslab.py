@@ -159,7 +159,11 @@ def _variant_type(ea: str, nea: str) -> pl.Expr:
         & (reverse_complement_expr(nea) == pl.col(ea))
     )
     return (
-        pl.when(ea_length != nea_length)
+        # Null alleles (the row is absent on this side of the join) yield null, so a coalesce
+        # with the other side's alleles falls through instead of mislabelling the row mnp.
+        pl.when(pl.col(ea).is_null() | pl.col(nea).is_null())
+        .then(pl.lit(None, dtype=pl.String))
+        .when(ea_length != nea_length)
         .then(pl.lit(TYPE_INDEL))
         .when(palindromic)
         .then(pl.lit(TYPE_PALINDROMIC_SNV))
@@ -248,7 +252,9 @@ def compare(
             _variant_type(EA, NEA), _variant_type(EA + SUFFIX, NEA + SUFFIX)
         ).alias(VARIANT_TYPE_COL),
         (
-            pl.col(GWASLAB_STATUS_COL + SUFFIX).cast(pl.String).str.slice(6, 1)
+            # STATUS exists only on the gwaslab side (the new output drops it), so the join
+            # leaves it unsuffixed.
+            pl.col(GWASLAB_STATUS_COL).cast(pl.String).str.slice(6, 1)
             == GWASLAB_STATUS_DIGIT7_INDEL_FLIPPED
         ).alias(INDEL_INFERENCE_FLIP_COL),
     )

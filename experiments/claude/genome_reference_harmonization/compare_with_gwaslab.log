@@ -1,0 +1,419 @@
+2026-09-16 14:46:06 [debug    ] Loading default runner config from default_runner_config.yaml
+2026-09-16 14:46:06 [debug    ] config: 
+ {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+2026-09-16 14:46:21 [debug    ] incremental save is enabled
+2026-09-16 14:46:21 [debug    ] Looking for invalid dependencies
+2026-09-16 14:46:21 [debug    ] Done search for invalid dependencies
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_liftover_to_37...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_liftover_to_37.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_pre_harmonization_table...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_pre_harmonization_table.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1__harmonized...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset decode_me_gwas_1__harmonized.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_genome_reference_harmonized...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_genome_reference_harmonized.
+2026-09-16 14:46:21 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_harmonized_dump_to_parquet...
+2026-09-16 14:46:21 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_harmonized_dump_to_parquet.
+2026-09-16 14:46:21 [info     ] 
+Work Progress:
+✅ decode_me_gwas_1_raw
+✅ decode_me_snps_passing_quality_control
+✅ ucsc_hg19_indexed_fasta_wrapped_remove_deps
+✅ thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps
+✅ decode_me_gwas_1_filtered_for_quality_control
+✅ decode_me_gwas_1_sumstats_liftover_to_37
+✅ experiment_decode_me_gwas_1_pre_harmonization_table
+✅ decode_me_gwas_1__harmonized
+✅ experiment_decode_me_gwas_1_genome_reference_harmonized
+✅ decode_me_gwas_1_harmonized_dump_to_parquet
+
+2026-09-16 14:46:22 [info     ] Locations of materialized targets:
+
+{
+│   'experiment_decode_me_gwas_1_genome_reference_harmonized': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_genome_reference_harmonized.parquet',
+│   'experiment_decode_me_gwas_1_pre_harmonization_table': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_pre_harmonization_table.parquet',
+│   'decode_me_gwas_1_harmonized_dump_to_parquet': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/decode_me_gwas_1_harmonized_dump_to_parquet.parquet',
+│   'ucsc_hg19_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg19/processed/ucsc_hg19_indexed_fasta_wrapped_remove_deps',
+│   'thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet'
+}
+2026-09-16 14:46:23 [debug    ] Scanning parquet asset at assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_pre_harmonization_table.parquet with backend polars
+[decode_me_gwas_1] trust counts TrustCounts(consistent_snvs=6753340, inconsistent_snvs=17092, consistent_indels=88084, inconsistent_indels=847) -> trusted=False
+
+=== decode_me_gwas_1: buckets by variant type ===
+shape: (6, 3)
+┌──────────────────────┬─────────────────┬─────────┐
+│ bucket               ┆ variant_type    ┆ len     │
+│ ---                  ┆ ---             ┆ ---     │
+│ str                  ┆ str             ┆ u32     │
+╞══════════════════════╪═════════════════╪═════════╡
+│ gwaslab_only         ┆ indel           ┆ 109937  │
+│ identical            ┆ indel           ┆ 502156  │
+│ identical            ┆ palindromic_snv ┆ 1062923 │
+│ identical            ┆ snv             ┆ 6770430 │
+│ new_only             ┆ indel           ┆ 36020   │
+│ opposite_orientation ┆ indel           ┆ 128     │
+└──────────────────────┴─────────────────┴─────────┘
+
+=== decode_me_gwas_1: opposite-orientation rows by gwaslab indel-inference flip ===
+shape: (1, 3)
+┌──────────────┬──────────────────────────────┬─────┐
+│ variant_type ┆ gwaslab_indel_inference_flip ┆ len │
+│ ---          ┆ ---                          ┆ --- │
+│ str          ┆ bool                         ┆ u32 │
+╞══════════════╪══════════════════════════════╪═════╡
+│ indel        ┆ true                         ┆ 128 │
+└──────────────┴──────────────────────────────┴─────┘
+
+=== decode_me_gwas_1: rows only gwaslab kept, by our drop reason ===
+shape: (4, 3)
+┌───────────────────────────────┬──────────────┬────────┐
+│ _drop_reason                  ┆ variant_type ┆ len    │
+│ ---                           ┆ ---          ┆ ---    │
+│ str                           ┆ str          ┆ u32    │
+╞═══════════════════════════════╪══════════════╪════════╡
+│ ambiguous_indel_af_mismatch   ┆ indel        ┆ 108249 │
+│ ambiguous_indel_af_indecisive ┆ indel        ┆ 723    │
+│ indel_not_on_reference        ┆ indel        ┆ 498    │
+│ ambiguous_indel_not_in_panel  ┆ indel        ┆ 467    │
+└───────────────────────────────┴──────────────┴────────┘
+
+=== decode_me_gwas_1: rows only we kept ===
+shape: (1, 2)
+┌──────────────┬───────┐
+│ variant_type ┆ len   │
+│ ---          ┆ ---   │
+│ str          ┆ u32   │
+╞══════════════╪═══════╡
+│ indel        ┆ 36020 │
+└──────────────┴───────┘
+
+--- decode_me_gwas_1: examples of same_orientation_beta_differs ---
+shape: (0, 37)
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+│ SNP ┆ CHR ┆ POS ┆ EA  ┆ NEA ┆ EAF ┆ BET ┆ SE  ┆ CHI ┆ MLO ┆ N   ┆ TES ┆ A1F ┆ A1F ┆ N_C ┆ N_C ┆ EXT ┆ CHR ┆ POS ┆ EA_ ┆ NEA ┆ STA ┆ EAF ┆ BET ┆ SE_gwa ┆ CHISQ ┆ MLOG1 ┆ N_gwa ┆ TEST_ ┆ A1FRE ┆ A1FRE ┆ N_CAS ┆ N_CON ┆ EXTRA ┆ bucke ┆ varia ┆ gwasl │
+│ ID  ┆ --- ┆ --- ┆ --- ┆ --- ┆ --- ┆ A   ┆ --- ┆ SQ  ┆ G10 ┆ --- ┆ T   ┆ REQ ┆ REQ ┆ ASE ┆ ONT ┆ RA  ┆ _gw ┆ _gw ┆ gwa ┆ _gw ┆ TUS ┆ _gw ┆ A_g ┆ slab   ┆ _gwas ┆ 0P_gw ┆ slab  ┆ gwasl ┆ Q_CAS ┆ Q_CON ┆ ES_gw ┆ TROLS ┆ _gwas ┆ t     ┆ nt_ty ┆ ab_in │
+│ --- ┆ i64 ┆ i64 ┆ str ┆ str ┆ f32 ┆ --- ┆ f64 ┆ --- ┆ P   ┆ i64 ┆ --- ┆ _CA ┆ _CO ┆ S   ┆ ROL ┆ --- ┆ asl ┆ asl ┆ sla ┆ asl ┆ --- ┆ asl ┆ was ┆ ---    ┆ lab   ┆ aslab ┆ ---   ┆ ab    ┆ ES_gw ┆ TROLS ┆ aslab ┆ _gwas ┆ lab   ┆ ---   ┆ pe    ┆ del_i │
+│ str ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆ f64 ┆ --- ┆     ┆ str ┆ SES ┆ NTR ┆ --- ┆ S   ┆ str ┆ ab  ┆ ab  ┆ b   ┆ ab  ┆ i64 ┆ ab  ┆ lab ┆ f64    ┆ ---   ┆ ---   ┆ i64   ┆ ---   ┆ aslab ┆ _gwas ┆ ---   ┆ lab   ┆ ---   ┆ str   ┆ ---   ┆ nfere │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆ --- ┆ OLS ┆ i64 ┆ --- ┆     ┆ --- ┆ --- ┆ --- ┆ --- ┆     ┆ --- ┆ --- ┆        ┆ f64   ┆ f64   ┆       ┆ str   ┆ ---   ┆ lab   ┆ i64   ┆ ---   ┆ str   ┆       ┆ str   ┆ nce_f │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆ --- ┆     ┆ i64 ┆     ┆ i64 ┆ i64 ┆ str ┆ str ┆     ┆ f32 ┆ f64 ┆        ┆       ┆       ┆       ┆       ┆ f64   ┆ ---   ┆       ┆ i64   ┆       ┆       ┆       ┆ lip   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆ f64   ┆       ┆       ┆       ┆       ┆       ┆ ---   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ bool  │
+╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+
+--- decode_me_gwas_1: examples of other ---
+shape: (0, 37)
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+│ SNP ┆ CHR ┆ POS ┆ EA  ┆ NEA ┆ EAF ┆ BET ┆ SE  ┆ CHI ┆ MLO ┆ N   ┆ TES ┆ A1F ┆ A1F ┆ N_C ┆ N_C ┆ EXT ┆ CHR ┆ POS ┆ EA_ ┆ NEA ┆ STA ┆ EAF ┆ BET ┆ SE_gwa ┆ CHISQ ┆ MLOG1 ┆ N_gwa ┆ TEST_ ┆ A1FRE ┆ A1FRE ┆ N_CAS ┆ N_CON ┆ EXTRA ┆ bucke ┆ varia ┆ gwasl │
+│ ID  ┆ --- ┆ --- ┆ --- ┆ --- ┆ --- ┆ A   ┆ --- ┆ SQ  ┆ G10 ┆ --- ┆ T   ┆ REQ ┆ REQ ┆ ASE ┆ ONT ┆ RA  ┆ _gw ┆ _gw ┆ gwa ┆ _gw ┆ TUS ┆ _gw ┆ A_g ┆ slab   ┆ _gwas ┆ 0P_gw ┆ slab  ┆ gwasl ┆ Q_CAS ┆ Q_CON ┆ ES_gw ┆ TROLS ┆ _gwas ┆ t     ┆ nt_ty ┆ ab_in │
+│ --- ┆ i64 ┆ i64 ┆ str ┆ str ┆ f32 ┆ --- ┆ f64 ┆ --- ┆ P   ┆ i64 ┆ --- ┆ _CA ┆ _CO ┆ S   ┆ ROL ┆ --- ┆ asl ┆ asl ┆ sla ┆ asl ┆ --- ┆ asl ┆ was ┆ ---    ┆ lab   ┆ aslab ┆ ---   ┆ ab    ┆ ES_gw ┆ TROLS ┆ aslab ┆ _gwas ┆ lab   ┆ ---   ┆ pe    ┆ del_i │
+│ str ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆ f64 ┆ --- ┆     ┆ str ┆ SES ┆ NTR ┆ --- ┆ S   ┆ str ┆ ab  ┆ ab  ┆ b   ┆ ab  ┆ i64 ┆ ab  ┆ lab ┆ f64    ┆ ---   ┆ ---   ┆ i64   ┆ ---   ┆ aslab ┆ _gwas ┆ ---   ┆ lab   ┆ ---   ┆ str   ┆ ---   ┆ nfere │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆ --- ┆ OLS ┆ i64 ┆ --- ┆     ┆ --- ┆ --- ┆ --- ┆ --- ┆     ┆ --- ┆ --- ┆        ┆ f64   ┆ f64   ┆       ┆ str   ┆ ---   ┆ lab   ┆ i64   ┆ ---   ┆ str   ┆       ┆ str   ┆ nce_f │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆ --- ┆     ┆ i64 ┆     ┆ i64 ┆ i64 ┆ str ┆ str ┆     ┆ f32 ┆ f64 ┆        ┆       ┆       ┆       ┆       ┆ f64   ┆ ---   ┆       ┆ i64   ┆       ┆       ┆       ┆ lip   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆ f64   ┆       ┆       ┆       ┆       ┆       ┆ ---   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ bool  │
+╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+
+--- decode_me_gwas_1: examples of new_only ---
+shape: (8, 37)
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+│ SNP ┆ CHR ┆ POS ┆ EA  ┆ NEA ┆ EAF ┆ BET ┆ SE  ┆ CHI ┆ MLO ┆ N   ┆ TES ┆ A1F ┆ A1F ┆ N_C ┆ N_C ┆ EXT ┆ CHR ┆ POS ┆ EA_ ┆ NEA ┆ STA ┆ EAF ┆ BET ┆ SE_gwa ┆ CHISQ ┆ MLOG1 ┆ N_gwa ┆ TEST_ ┆ A1FRE ┆ A1FRE ┆ N_CAS ┆ N_CON ┆ EXTRA ┆ bucke ┆ varia ┆ gwasl │
+│ ID  ┆ --- ┆ --- ┆ --- ┆ --- ┆ --- ┆ A   ┆ --- ┆ SQ  ┆ G10 ┆ --- ┆ T   ┆ REQ ┆ REQ ┆ ASE ┆ ONT ┆ RA  ┆ _gw ┆ _gw ┆ gwa ┆ _gw ┆ TUS ┆ _gw ┆ A_g ┆ slab   ┆ _gwas ┆ 0P_gw ┆ slab  ┆ gwasl ┆ Q_CAS ┆ Q_CON ┆ ES_gw ┆ TROLS ┆ _gwas ┆ t     ┆ nt_ty ┆ ab_in │
+│ --- ┆ i64 ┆ i64 ┆ str ┆ str ┆ f32 ┆ --- ┆ f64 ┆ --- ┆ P   ┆ i64 ┆ --- ┆ _CA ┆ _CO ┆ S   ┆ ROL ┆ --- ┆ asl ┆ asl ┆ sla ┆ asl ┆ --- ┆ asl ┆ was ┆ ---    ┆ lab   ┆ aslab ┆ ---   ┆ ab    ┆ ES_gw ┆ TROLS ┆ aslab ┆ _gwas ┆ lab   ┆ ---   ┆ pe    ┆ del_i │
+│ str ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆ f64 ┆ --- ┆     ┆ str ┆ SES ┆ NTR ┆ --- ┆ S   ┆ str ┆ ab  ┆ ab  ┆ b   ┆ ab  ┆ i64 ┆ ab  ┆ lab ┆ f64    ┆ ---   ┆ ---   ┆ i64   ┆ ---   ┆ aslab ┆ _gwas ┆ ---   ┆ lab   ┆ ---   ┆ str   ┆ ---   ┆ nfere │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆ --- ┆ OLS ┆ i64 ┆ --- ┆     ┆ --- ┆ --- ┆ --- ┆ --- ┆     ┆ --- ┆ --- ┆        ┆ f64   ┆ f64   ┆       ┆ str   ┆ ---   ┆ lab   ┆ i64   ┆ ---   ┆ str   ┆       ┆ str   ┆ nce_f │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆ --- ┆     ┆ i64 ┆     ┆ i64 ┆ i64 ┆ str ┆ str ┆     ┆ f32 ┆ f64 ┆        ┆       ┆       ┆       ┆       ┆ f64   ┆ ---   ┆       ┆ i64   ┆       ┆       ┆       ┆ lip   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆ f64   ┆       ┆       ┆       ┆       ┆       ┆ ---   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ bool  │
+╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+│ 4:1 ┆ 4   ┆ 180 ┆ GA  ┆ G   ┆ 0.5 ┆ 0.0 ┆ 0.0 ┆ 1.3 ┆ 0.6 ┆ 275 ┆ ADD ┆ 0.5 ┆ 0.5 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 800 ┆     ┆ 961 ┆     ┆     ┆ 305 ┆ 149 ┆ 127 ┆ 656 ┆ 151 ┆ 488 ┆     ┆ 331 ┆ 623 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 406 ┆     ┆ 847 ┆     ┆     ┆ 13  ┆ 258 ┆ 724 ┆ 1   ┆ 69  ┆     ┆     ┆ 22  ┆ 11  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 94: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ G:G ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ A   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 2:2 ┆ 2   ┆ 220 ┆ A   ┆ AT  ┆ 0.5 ┆ -0. ┆ 0.0 ┆ 1.5 ┆ 0.6 ┆ 275 ┆ ADD ┆ 0.5 ┆ 0.5 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 197 ┆     ┆ 574 ┆     ┆     ┆ 263 ┆ 015 ┆ 127 ┆ 293 ┆ 651 ┆ 488 ┆     ┆ 256 ┆ 579 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 102 ┆     ┆ 968 ┆     ┆     ┆ 91  ┆ 752 ┆ 37  ┆ 8   ┆ 34  ┆     ┆     ┆ 76  ┆ 42  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 46: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ AT: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ A   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 3:1 ┆ 3   ┆ 151 ┆ AT  ┆ A   ┆ 0.4 ┆ 0.0 ┆ 0.0 ┆ 0.0 ┆ 0.0 ┆ 275 ┆ ADD ┆ 0.4 ┆ 0.4 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 514 ┆     ┆ 213 ┆     ┆     ┆ 360 ┆ 004 ┆ 128 ┆ 010 ┆ 111 ┆ 488 ┆     ┆ 356 ┆ 621 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 962 ┆     ┆ 992 ┆     ┆     ┆ 41  ┆ 07  ┆ 017 ┆ 11  ┆ 598 ┆     ┆     ┆ 18  ┆ 76  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 04: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ A:A ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ T   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 3:1 ┆ 3   ┆ 186 ┆ G   ┆ GCC ┆ 0.4 ┆ -0. ┆ 0.0 ┆ 1.0 ┆ 0.5 ┆ 275 ┆ ADD ┆ 0.4 ┆ 0.4 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 867 ┆     ┆ 476 ┆     ┆ AA  ┆ 636 ┆ 012 ┆ 127 ┆ 178 ┆ 044 ┆ 488 ┆     ┆ 604 ┆ 914 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 589 ┆     ┆ 780 ┆     ┆     ┆ 43  ┆ 886 ┆ 722 ┆ 9   ┆ 28  ┆     ┆     ┆ 27  ┆ 33  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 91: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ GCC ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ AA: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ G   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 9:3 ┆ 9   ┆ 300 ┆ TTG ┆ T   ┆ 0.4 ┆ -0. ┆ 0.0 ┆ 0.9 ┆ 0.4 ┆ 275 ┆ ADD ┆ 0.4 ┆ 0.5 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 000 ┆     ┆ 039 ┆     ┆     ┆ 939 ┆ 012 ┆ 127 ┆ 579 ┆ 845 ┆ 488 ┆     ┆ 915 ┆ 235 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 396 ┆     ┆ 66  ┆     ┆     ┆ 33  ┆ 513 ┆ 84  ┆ 89  ┆ 31  ┆     ┆     ┆ 91  ┆ 38  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 8:T ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ :TT ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ G   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 11: ┆ 11  ┆ 217 ┆ T   ┆ TC  ┆ 0.4 ┆ -0. ┆ 0.0 ┆ 0.0 ┆ 0.0 ┆ 275 ┆ ADD ┆ 0.4 ┆ 0.4 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 217 ┆     ┆ 473 ┆     ┆     ┆ 398 ┆ 002 ┆ 128 ┆ 282 ┆ 621 ┆ 488 ┆     ┆ 370 ┆ 662 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 257 ┆     ┆ 05  ┆     ┆     ┆ 45  ┆ 157 ┆ 435 ┆ 096 ┆ 728 ┆     ┆     ┆ 63  ┆ 08  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 59: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ TC: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ T   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 13: ┆ 13  ┆ 926 ┆ A   ┆ ACT ┆ 0.4 ┆ -0. ┆ 0.0 ┆ 0.1 ┆ 0.1 ┆ 275 ┆ ADD ┆ 0.4 ┆ 0.4 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 920 ┆     ┆ 543 ┆     ┆ GAC ┆ 419 ┆ 004 ┆ 128 ┆ 117 ┆ 318 ┆ 488 ┆     ┆ 417 ┆ 684 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 021 ┆     ┆ 85  ┆     ┆ AAA ┆ 97  ┆ 31  ┆ 909 ┆ 84  ┆ 72  ┆     ┆     ┆ 16  ┆ 9   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 32: ┆     ┆     ┆     ┆ AAT ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ ACT ┆     ┆     ┆     ┆ CTG ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ GAC ┆     ┆     ┆     ┆ ATT ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ AAA ┆     ┆     ┆     ┆ TGG ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ AAT ┆     ┆     ┆     ┆ TTG ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ CTG ┆     ┆     ┆     ┆ CT  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ ATT ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ …   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 14: ┆ 14  ┆ 754 ┆ T   ┆ TGA ┆ 0.5 ┆ 0.0 ┆ 0.0 ┆ 1.1 ┆ 0.5 ┆ 275 ┆ ADD ┆ 0.5 ┆ 0.5 ┆ 155 ┆ 259 ┆ NA  ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ null   ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ null  ┆ new_o ┆ indel ┆ null  │
+│ 750 ┆     ┆ 711 ┆     ┆ GAC ┆ 240 ┆ 139 ┆ 127 ┆ 972 ┆ 624 ┆ 488 ┆     ┆ 290 ┆ 554 ┆ 79  ┆ 909 ┆     ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ nly   ┆       ┆       │
+│ 044 ┆     ┆ 77  ┆     ┆ CAG ┆ 74  ┆ 992 ┆ 941 ┆ 6   ┆ 56  ┆     ┆     ┆ 13  ┆ 86  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 74: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ TGA ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ GAC ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ CAG ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ :T  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+
+--- decode_me_gwas_1: examples of gwaslab_only ---
+shape: (8, 37)
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬────────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+│ SNP ┆ CHR ┆ POS ┆ EA  ┆ NEA ┆ EAF ┆ BET ┆ SE  ┆ CHI ┆ MLO ┆ N   ┆ TES ┆ A1F ┆ A1F ┆ N_C ┆ N_C ┆ EXT ┆ CHR ┆ POS ┆ EA_ ┆ NEA ┆ STA ┆ EAF ┆ BET ┆ SE_gwa ┆ CHISQ ┆ MLOG1 ┆ N_gwa ┆ TEST_ ┆ A1FRE ┆ A1FRE ┆ N_CAS ┆ N_CON ┆ EXTRA ┆ bucke ┆ varia ┆ gwasl │
+│ ID  ┆ --- ┆ --- ┆ --- ┆ --- ┆ --- ┆ A   ┆ --- ┆ SQ  ┆ G10 ┆ --- ┆ T   ┆ REQ ┆ REQ ┆ ASE ┆ ONT ┆ RA  ┆ _gw ┆ _gw ┆ gwa ┆ _gw ┆ TUS ┆ _gw ┆ A_g ┆ slab   ┆ _gwas ┆ 0P_gw ┆ slab  ┆ gwasl ┆ Q_CAS ┆ Q_CON ┆ ES_gw ┆ TROLS ┆ _gwas ┆ t     ┆ nt_ty ┆ ab_in │
+│ --- ┆ i64 ┆ i64 ┆ str ┆ str ┆ f32 ┆ --- ┆ f64 ┆ --- ┆ P   ┆ i64 ┆ --- ┆ _CA ┆ _CO ┆ S   ┆ ROL ┆ --- ┆ asl ┆ asl ┆ sla ┆ asl ┆ --- ┆ asl ┆ was ┆ ---    ┆ lab   ┆ aslab ┆ ---   ┆ ab    ┆ ES_gw ┆ TROLS ┆ aslab ┆ _gwas ┆ lab   ┆ ---   ┆ pe    ┆ del_i │
+│ str ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆ f64 ┆ --- ┆     ┆ str ┆ SES ┆ NTR ┆ --- ┆ S   ┆ str ┆ ab  ┆ ab  ┆ b   ┆ ab  ┆ i64 ┆ ab  ┆ lab ┆ f64    ┆ ---   ┆ ---   ┆ i64   ┆ ---   ┆ aslab ┆ _gwas ┆ ---   ┆ lab   ┆ ---   ┆ str   ┆ ---   ┆ nfere │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆ --- ┆ OLS ┆ i64 ┆ --- ┆     ┆ --- ┆ --- ┆ --- ┆ --- ┆     ┆ --- ┆ --- ┆        ┆ f64   ┆ f64   ┆       ┆ str   ┆ ---   ┆ lab   ┆ i64   ┆ ---   ┆ str   ┆       ┆ str   ┆ nce_f │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆ --- ┆     ┆ i64 ┆     ┆ i64 ┆ i64 ┆ str ┆ str ┆     ┆ f32 ┆ f64 ┆        ┆       ┆       ┆       ┆       ┆ f64   ┆ ---   ┆       ┆ i64   ┆       ┆       ┆       ┆ lip   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ f64 ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆ f64   ┆       ┆       ┆       ┆       ┆       ┆ ---   │
+│     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ bool  │
+╞═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪═════╪════════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╪═══════╡
+│ 1:8 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 821 ┆ A   ┆ ACA ┆ 196 ┆ 0.1 ┆ -0. ┆ 0.0161 ┆ 0.331 ┆ 0.248 ┆ 27548 ┆ ADD   ┆ 0.192 ┆ 0.202 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 859 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 325 ┆     ┆ GT  ┆ 036 ┆ 912 ┆ 009 ┆ 13     ┆ 292   ┆ 029   ┆ 8     ┆       ┆ 278   ┆ 671   ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 45: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ 3   ┆ 1   ┆ 274 ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ ACA ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ GT: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ A   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 1:9 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 848 ┆ T   ┆ TG  ┆ 196 ┆ 0.2 ┆ -0. ┆ 0.0155 ┆ 2.522 ┆ 0.949 ┆ 27548 ┆ ADD   ┆ 0.210 ┆ 0.225 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 132 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 654 ┆     ┆     ┆ 036 ┆ 127 ┆ 024 ┆ 296    ┆ 81    ┆ 966   ┆ 8     ┆       ┆ 476   ┆ 482   ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 74: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ 3   ┆ 32  ┆ 666 ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ TG: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ T   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 1:9 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 904 ┆ ATG ┆ A   ┆ 196 ┆ 0.8 ┆ -0. ┆ 0.0164 ┆ 0.459 ┆ 0.303 ┆ 27548 ┆ ADD   ┆ 0.816 ┆ 0.864 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 693 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 757 ┆     ┆     ┆ 036 ┆ 160 ┆ 011 ┆ 696    ┆ 948   ┆ 077   ┆ 8     ┆       ┆ 163   ┆ 972   ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 77: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ 3   ┆ 59  ┆ 17  ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ A:A ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ TG  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 1:9 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 905 ┆ C   ┆ CAT ┆ 196 ┆ 0.2 ┆ -0. ┆ 0.0150 ┆ 1.119 ┆ 0.537 ┆ 27548 ┆ ADD   ┆ 0.230 ┆ 0.244 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 696 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 043 ┆     ┆     ┆ 036 ┆ 302 ┆ 015 ┆ 745    ┆ 4     ┆ 532   ┆ 8     ┆       ┆ 471   ┆ 035   ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 63: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ 3   ┆ 35  ┆ 949 ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ CAT ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ :C  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 1:9 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 929 ┆ CA  ┆ C   ┆ 196 ┆ 0.7 ┆ -0. ┆ 0.0144 ┆ 3.075 ┆ 1.099 ┆ 27548 ┆ ADD   ┆ 0.731 ┆ 0.779 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 943 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 701 ┆     ┆     ┆ 036 ┆ 357 ┆ 025 ┆ 055    ┆ 3     ┆ 69    ┆ 8     ┆       ┆ 08    ┆ 825   ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 21: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ 3   ┆ 27  ┆ 262 ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ C:C ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ A   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 1:9 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 931 ┆ AGG ┆ A   ┆ 196 ┆ 0.2 ┆ 0.0 ┆ 0.0150 ┆ 5.044 ┆ 1.607 ┆ 27548 ┆ ADD   ┆ 0.236 ┆ 0.245 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 962 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 634 ┆ GAG ┆     ┆ 036 ┆ 316 ┆ 337 ┆ 286    ┆ 75    ┆ 29    ┆ 8     ┆       ┆ 087   ┆ 58    ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 54: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ GGC ┆     ┆ 3   ┆ 92  ┆ 549 ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ A:A ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ AG  ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ GGG ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ AGG ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ GCA ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ G   ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 1:1 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 939 ┆ T   ┆ TG  ┆ 196 ┆ 0.2 ┆ 0.0 ┆ 0.0149 ┆ 2.161 ┆ 0.849 ┆ 27548 ┆ ADD   ┆ 0.240 ┆ 0.252 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 004 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 491 ┆     ┆     ┆ 036 ┆ 377 ┆ 220 ┆ 767    ┆ 88    ┆ 332   ┆ 8     ┆       ┆ 035   ┆ 024   ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 111 ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ 3   ┆ 73  ┆ 208 ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ :TG ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ :T  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ 1:1 ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ nul ┆ 1   ┆ 940 ┆ CA  ┆ C   ┆ 196 ┆ 0.3 ┆ 0.0 ┆ 0.0129 ┆ 0.057 ┆ 0.091 ┆ 27548 ┆ ADD   ┆ 0.398 ┆ 0.422 ┆ 15579 ┆ 25990 ┆ NA    ┆ gwasl ┆ indel ┆ false │
+│ 005 ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆ l   ┆     ┆ 809 ┆     ┆     ┆ 036 ┆ 989 ┆ 031 ┆ 865    ┆ 8225  ┆ 5304  ┆ 8     ┆       ┆ 646   ┆ 83    ┆       ┆ 9     ┆       ┆ ab_on ┆       ┆       │
+│ 429 ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆ 3   ┆ 19  ┆ 23  ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆ ly    ┆       ┆       │
+│ :C: ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+│ CA  ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆     ┆        ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       ┆       │
+└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴────────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
+
+decode_me_gwas_1: identical rows whose A1FREQ_CASES differs (gwaslab never flips it): 14,118
+
+decode_me_gwas_1: identical rows whose A1FREQ_CONTROLS differs (gwaslab never flips it): 14,119
+2026-09-16 14:47:12 [debug    ] incremental save is enabled
+2026-09-16 14:47:12 [debug    ] Looking for invalid dependencies
+2026-09-16 14:47:12 [debug    ] Done search for invalid dependencies
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset liu_et_all_2023_ibd_meta_raw...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset liu_et_all_2023_ibd_meta_raw.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset liu_et_al_2023_ibd_meta_eur_only...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset liu_et_al_2023_ibd_meta_eur_only.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset liu_et_al_2023_ibd_sumstats_liftover_to_37...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset liu_et_al_2023_ibd_sumstats_liftover_to_37.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset experiment_liu_et_al_2023_ibd_pre_harmonization_table...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset experiment_liu_et_al_2023_ibd_pre_harmonization_table.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset liu_et_al_2023_ibd_37_harmonized...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset liu_et_al_2023_ibd_37_harmonized.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset experiment_liu_et_al_2023_ibd_genome_reference_harmonized...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset experiment_liu_et_al_2023_ibd_genome_reference_harmonized.
+2026-09-16 14:47:12 [debug    ] Attempting to verify the trace of asset liu_et_al_2023_ibd_eur_harmonize_dump_to_parquet...
+2026-09-16 14:47:12 [debug    ] Successfully verified the trace of asset liu_et_al_2023_ibd_eur_harmonize_dump_to_parquet.
+2026-09-16 14:47:12 [info     ] 
+Work Progress:
+✅ liu_et_all_2023_ibd_meta_raw
+✅ ucsc_hg19_indexed_fasta_wrapped_remove_deps
+✅ thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps
+✅ liu_et_al_2023_ibd_meta_eur_only
+✅ liu_et_al_2023_ibd_sumstats_liftover_to_37
+✅ experiment_liu_et_al_2023_ibd_pre_harmonization_table
+✅ liu_et_al_2023_ibd_37_harmonized
+✅ experiment_liu_et_al_2023_ibd_genome_reference_harmonized
+✅ liu_et_al_2023_ibd_eur_harmonize_dump_to_parquet
+
+2026-09-16 14:47:14 [info     ] Locations of materialized targets:
+
+{
+│   'experiment_liu_et_al_2023_ibd_genome_reference_harmonized': 'assets/base_asset_store/gwas/inflammatory_bowl_disease/liu_et_al_2023_ibd_meta/processed/experiment_liu_et_al_2023_ibd_genome_reference_harmonized.parquet',
+│   'experiment_liu_et_al_2023_ibd_pre_harmonization_table': 'assets/base_asset_store/gwas/inflammatory_bowl_disease/liu_et_al_2023_ibd_meta/processed/experiment_liu_et_al_2023_ibd_pre_harmonization_table.parquet',
+│   'liu_et_al_2023_ibd_eur_harmonize_dump_to_parquet': 'assets/base_asset_store/gwas/inflammatory_bowl_disease/liu_et_al_2023_ibd_meta/processed/liu_et_al_2023_ibd_eur_harmonize_dump_to_parquet.parquet',
+│   'ucsc_hg19_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg19/processed/ucsc_hg19_indexed_fasta_wrapped_remove_deps',
+│   'thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet'
+}
+2026-09-16 14:47:14 [debug    ] Scanning parquet asset at assets/base_asset_store/gwas/inflammatory_bowl_disease/liu_et_al_2023_ibd_meta/processed/experiment_liu_et_al_2023_ibd_pre_harmonization_table.parquet with backend polars
+[liu_et_al_2023_ibd] trust counts TrustCounts(consistent_snvs=7826583, inconsistent_snvs=15339, consistent_indels=22396, inconsistent_indels=179) -> trusted=False
+
+=== liu_et_al_2023_ibd: buckets by variant type ===
+shape: (6, 3)
+┌──────────────────────┬─────────────────┬─────────┐
+│ bucket               ┆ variant_type    ┆ len     │
+│ ---                  ┆ ---             ┆ ---     │
+│ str                  ┆ str             ┆ u32     │
+╞══════════════════════╪═════════════════╪═════════╡
+│ gwaslab_only         ┆ indel           ┆ 2547    │
+│ identical            ┆ indel           ┆ 316386  │
+│ identical            ┆ palindromic_snv ┆ 1225928 │
+│ identical            ┆ snv             ┆ 7841922 │
+│ new_only             ┆ indel           ┆ 18016   │
+│ opposite_orientation ┆ indel           ┆ 8       │
+└──────────────────────┴─────────────────┴─────────┘
+
+=== liu_et_al_2023_ibd: opposite-orientation rows by gwaslab indel-inference flip ===
+shape: (1, 3)
+┌──────────────┬──────────────────────────────┬─────┐
+│ variant_type ┆ gwaslab_indel_inference_flip ┆ len │
+│ ---          ┆ ---                          ┆ --- │
+│ str          ┆ bool                         ┆ u32 │
+╞══════════════╪══════════════════════════════╪═════╡
+│ indel        ┆ true                         ┆ 8   │
+└──────────────┴──────────────────────────────┴─────┘
+
+=== liu_et_al_2023_ibd: rows only gwaslab kept, by our drop reason ===
+shape: (4, 3)
+┌───────────────────────────────┬──────────────┬──────┐
+│ _drop_reason                  ┆ variant_type ┆ len  │
+│ ---                           ┆ ---          ┆ ---  │
+│ str                           ┆ str          ┆ u32  │
+╞═══════════════════════════════╪══════════════╪══════╡
+│ ambiguous_indel_af_mismatch   ┆ indel        ┆ 1612 │
+│ ambiguous_indel_not_in_panel  ┆ indel        ┆ 751  │
+│ indel_not_on_reference        ┆ indel        ┆ 179  │
+│ ambiguous_indel_af_indecisive ┆ indel        ┆ 5    │
+└───────────────────────────────┴──────────────┴──────┘
+
+=== liu_et_al_2023_ibd: rows only we kept ===
+shape: (1, 2)
+┌──────────────┬───────┐
+│ variant_type ┆ len   │
+│ ---          ┆ ---   │
+│ str          ┆ u32   │
+╞══════════════╪═══════╡
+│ indel        ┆ 18016 │
+└──────────────┴───────┘
+
+--- liu_et_al_2023_ibd: examples of same_orientation_beta_differs ---
+shape: (0, 21)
+┌───────┬─────┬─────┬─────┬─────┬─────┬──────┬─────┬─────┬─────────────┬─────────────┬────────────┬─────────────┬────────┬─────────────┬──────────────┬────────────┬───────────┬────────┬──────────────┬──────────────────────────────┐
+│ SNPID ┆ CHR ┆ POS ┆ EA  ┆ NEA ┆ EAF ┆ BETA ┆ SE  ┆ P   ┆ CHR_gwaslab ┆ POS_gwaslab ┆ EA_gwaslab ┆ NEA_gwaslab ┆ STATUS ┆ EAF_gwaslab ┆ BETA_gwaslab ┆ SE_gwaslab ┆ P_gwaslab ┆ bucket ┆ variant_type ┆ gwaslab_indel_inference_flip │
+│ ---   ┆ --- ┆ --- ┆ --- ┆ --- ┆ --- ┆ ---  ┆ --- ┆ --- ┆ ---         ┆ ---         ┆ ---        ┆ ---         ┆ ---    ┆ ---         ┆ ---          ┆ ---        ┆ ---       ┆ ---    ┆ ---          ┆ ---                          │
+│ str   ┆ i64 ┆ i64 ┆ str ┆ str ┆ f32 ┆ f64  ┆ f64 ┆ f64 ┆ i64         ┆ i64         ┆ str        ┆ str         ┆ i64    ┆ f32         ┆ f64          ┆ f64        ┆ f64       ┆ str    ┆ str          ┆ bool                         │
+╞═══════╪═════╪═════╪═════╪═════╪═════╪══════╪═════╪═════╪═════════════╪═════════════╪════════════╪═════════════╪════════╪═════════════╪══════════════╪════════════╪═══════════╪════════╪══════════════╪══════════════════════════════╡
+└───────┴─────┴─────┴─────┴─────┴─────┴──────┴─────┴─────┴─────────────┴─────────────┴────────────┴─────────────┴────────┴─────────────┴──────────────┴────────────┴───────────┴────────┴──────────────┴──────────────────────────────┘
+
+--- liu_et_al_2023_ibd: examples of other ---
+shape: (0, 21)
+┌───────┬─────┬─────┬─────┬─────┬─────┬──────┬─────┬─────┬─────────────┬─────────────┬────────────┬─────────────┬────────┬─────────────┬──────────────┬────────────┬───────────┬────────┬──────────────┬──────────────────────────────┐
+│ SNPID ┆ CHR ┆ POS ┆ EA  ┆ NEA ┆ EAF ┆ BETA ┆ SE  ┆ P   ┆ CHR_gwaslab ┆ POS_gwaslab ┆ EA_gwaslab ┆ NEA_gwaslab ┆ STATUS ┆ EAF_gwaslab ┆ BETA_gwaslab ┆ SE_gwaslab ┆ P_gwaslab ┆ bucket ┆ variant_type ┆ gwaslab_indel_inference_flip │
+│ ---   ┆ --- ┆ --- ┆ --- ┆ --- ┆ --- ┆ ---  ┆ --- ┆ --- ┆ ---         ┆ ---         ┆ ---        ┆ ---         ┆ ---    ┆ ---         ┆ ---          ┆ ---        ┆ ---       ┆ ---    ┆ ---          ┆ ---                          │
+│ str   ┆ i64 ┆ i64 ┆ str ┆ str ┆ f32 ┆ f64  ┆ f64 ┆ f64 ┆ i64         ┆ i64         ┆ str        ┆ str         ┆ i64    ┆ f32         ┆ f64          ┆ f64        ┆ f64       ┆ str    ┆ str          ┆ bool                         │
+╞═══════╪═════╪═════╪═════╪═════╪═════╪══════╪═════╪═════╪═════════════╪═════════════╪════════════╪═════════════╪════════╪═════════════╪══════════════╪════════════╪═══════════╪════════╪══════════════╪══════════════════════════════╡
+└───────┴─────┴─────┴─────┴─────┴─────┴──────┴─────┴─────┴─────────────┴─────────────┴────────────┴─────────────┴────────┴─────────────┴──────────────┴────────────┴───────────┴────────┴──────────────┴──────────────────────────────┘
+
+--- liu_et_al_2023_ibd: examples of new_only ---
+shape: (8, 21)
+┌─────────────────┬─────┬──────────┬─────┬─────┬──────────┬─────────┬────────┬─────────┬─────────────┬─────────────┬────────────┬─────────────┬────────┬─────────────┬──────────────┬────────────┬───────────┬──────────┬──────────────┬─────────────────┐
+│ SNPID           ┆ CHR ┆ POS      ┆ EA  ┆ NEA ┆ EAF      ┆ BETA    ┆ SE     ┆ P       ┆ CHR_gwaslab ┆ POS_gwaslab ┆ EA_gwaslab ┆ NEA_gwaslab ┆ STATUS ┆ EAF_gwaslab ┆ BETA_gwaslab ┆ SE_gwaslab ┆ P_gwaslab ┆ bucket   ┆ variant_type ┆ gwaslab_indel_i │
+│ ---             ┆ --- ┆ ---      ┆ --- ┆ --- ┆ ---      ┆ ---     ┆ ---    ┆ ---     ┆ ---         ┆ ---         ┆ ---        ┆ ---         ┆ ---    ┆ ---         ┆ ---          ┆ ---        ┆ ---       ┆ ---      ┆ ---          ┆ nference_flip   │
+│ str             ┆ i64 ┆ i64      ┆ str ┆ str ┆ f32      ┆ f64     ┆ f64    ┆ f64     ┆ i64         ┆ i64         ┆ str        ┆ str         ┆ i64    ┆ f32         ┆ f64          ┆ f64        ┆ f64       ┆ str      ┆ str          ┆ ---             │
+│                 ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆ bool            │
+╞═════════════════╪═════╪══════════╪═════╪═════╪══════════╪═════════╪════════╪═════════╪═════════════╪═════════════╪════════════╪═════════════╪════════╪═════════════╪══════════════╪════════════╪═══════════╪══════════╪══════════════╪═════════════════╡
+│ chr1:5989568:TG ┆ 1   ┆ 6049628  ┆ T   ┆ TG  ┆ 0.454274 ┆ -0.0089 ┆ 0.0127 ┆ 0.4822  ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ :T              ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+│ chr1:6764011:TT ┆ 1   ┆ 6824071  ┆ T   ┆ TTC ┆ 0.423459 ┆ 0.0029  ┆ 0.0125 ┆ 0.8154  ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ C:T             ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+│ chr1:6767422:C: ┆ 1   ┆ 6827482  ┆ CT  ┆ C   ┆ 0.422465 ┆ 0.0056  ┆ 0.0124 ┆ 0.6492  ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ CT              ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+│ chr1:6956544:TA ┆ 1   ┆ 7016604  ┆ T   ┆ TAA ┆ 0.417495 ┆ 0.0221  ┆ 0.0126 ┆ 0.07902 ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ A:T             ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+│ chr1:8123799:TG ┆ 1   ┆ 8183859  ┆ T   ┆ TG  ┆ 0.529821 ┆ -0.0248 ┆ 0.0126 ┆ 0.04921 ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ :T              ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+│ chr1:8869429:C: ┆ 1   ┆ 8929488  ┆ CG  ┆ C   ┆ 0.56163  ┆ 0.027   ┆ 0.0125 ┆ 0.03051 ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ CG              ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+│ chr1:8937610:C: ┆ 1   ┆ 8997669  ┆ CA  ┆ C   ┆ 0.565606 ┆ 0.0098  ┆ 0.0127 ┆ 0.4423  ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ CA              ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+│ chr1:10440879:T ┆ 1   ┆ 10500936 ┆ TA  ┆ T   ┆ 0.411531 ┆ -0.0079 ┆ 0.0128 ┆ 0.536   ┆ null        ┆ null        ┆ null       ┆ null        ┆ null   ┆ null        ┆ null         ┆ null       ┆ null      ┆ new_only ┆ indel        ┆ null            │
+│ :TA             ┆     ┆          ┆     ┆     ┆          ┆         ┆        ┆         ┆             ┆             ┆            ┆             ┆        ┆             ┆              ┆            ┆           ┆          ┆              ┆                 │
+└─────────────────┴─────┴──────────┴─────┴─────┴──────────┴─────────┴────────┴─────────┴─────────────┴─────────────┴────────────┴─────────────┴────────┴─────────────┴──────────────┴────────────┴───────────┴──────────┴──────────────┴─────────────────┘
+
+--- liu_et_al_2023_ibd: examples of gwaslab_only ---
+shape: (8, 21)
+┌─────────────────────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬─────────────┬─────────────┬────────────┬──────────────┬─────────┬─────────────┬──────────────┬────────────┬───────────┬──────────────┬──────────────┬────────────────────┐
+│ SNPID               ┆ CHR  ┆ POS  ┆ EA   ┆ NEA  ┆ EAF  ┆ BETA ┆ SE   ┆ P    ┆ CHR_gwaslab ┆ POS_gwaslab ┆ EA_gwaslab ┆ NEA_gwaslab  ┆ STATUS  ┆ EAF_gwaslab ┆ BETA_gwaslab ┆ SE_gwaslab ┆ P_gwaslab ┆ bucket       ┆ variant_type ┆ gwaslab_indel_infe │
+│ ---                 ┆ ---  ┆ ---  ┆ ---  ┆ ---  ┆ ---  ┆ ---  ┆ ---  ┆ ---  ┆ ---         ┆ ---         ┆ ---        ┆ ---          ┆ ---     ┆ ---         ┆ ---          ┆ ---        ┆ ---       ┆ ---          ┆ ---          ┆ rence_flip         │
+│ str                 ┆ i64  ┆ i64  ┆ str  ┆ str  ┆ f32  ┆ f64  ┆ f64  ┆ f64  ┆ i64         ┆ i64         ┆ str        ┆ str          ┆ i64     ┆ f32         ┆ f64          ┆ f64        ┆ f64       ┆ str          ┆ str          ┆ ---                │
+│                     ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆ bool               │
+╞═════════════════════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╪══════╪═════════════╪═════════════╪════════════╪══════════════╪═════════╪═════════════╪══════════════╪════════════╪═══════════╪══════════════╪══════════════╪════════════════════╡
+│ chr8:93072178:TGTTC ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 8           ┆ 94084406    ┆ T          ┆ TGTTC        ┆ 1960363 ┆ 0.139165    ┆ -0.0458      ┆ 0.0207     ┆ 0.02723   ┆ gwaslab_only ┆ indel        ┆ false              │
+│ :T                  ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆                    │
+│ chr6:76826559:G:GTG ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 6           ┆ 77536276    ┆ GTGTGTGTA  ┆ G            ┆ 1960363 ┆ 0.170974    ┆ -0.0068      ┆ 0.0195     ┆ 0.7261    ┆ gwaslab_only ┆ indel        ┆ false              │
+│ TGTGTA              ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆                    │
+│ chr19:56005505:T:TA ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 19          ┆ 56516871    ┆ TAC        ┆ T            ┆ 1960363 ┆ 0.144135    ┆ 0.0386       ┆ 0.0219     ┆ 0.07748   ┆ gwaslab_only ┆ indel        ┆ false              │
+│ C                   ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆                    │
+│ chr10:104524886:GTG ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 10          ┆ 106284644   ┆ G          ┆ GTGT         ┆ 1960363 ┆ 0.002982    ┆ -0.0714      ┆ 0.1003     ┆ 0.4767    ┆ gwaslab_only ┆ indel        ┆ false              │
+│ T:G                 ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆                    │
+│ chr2:99703639:T:TTC ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 2           ┆ 100320101   ┆ TTC        ┆ T            ┆ 1960363 ┆ 0.034791    ┆ 0.0168       ┆ 0.0461     ┆ 0.7149    ┆ gwaslab_only ┆ indel        ┆ false              │
+│ chr3:129337295:A:AT ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 3           ┆ 129056138   ┆ ATTC       ┆ A            ┆ 1960363 ┆ 0.096422    ┆ -0.0012      ┆ 0.0291     ┆ 0.9671    ┆ gwaslab_only ┆ indel        ┆ false              │
+│ TC                  ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆                    │
+│ chr4:170390744:CCA: ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 4           ┆ 171311895   ┆ C          ┆ CCA          ┆ 1960363 ┆ 0.0         ┆ 0.2204       ┆ 0.178      ┆ 0.2156    ┆ gwaslab_only ┆ indel        ┆ false              │
+│ C                   ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆                    │
+│ chr3:65930748:CTAAC ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ null ┆ 3           ┆ 65916423    ┆ C          ┆ CTAACTGCTCAT ┆ 1960363 ┆ 0.000994    ┆ 0.0112       ┆ 0.203      ┆ 0.956     ┆ gwaslab_only ┆ indel        ┆ false              │
+│ TGCTCAT:C           ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆      ┆             ┆             ┆            ┆              ┆         ┆             ┆              ┆            ┆           ┆              ┆              ┆                    │
+└─────────────────────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴─────────────┴─────────────┴────────────┴──────────────┴─────────┴─────────────┴──────────────┴────────────┴───────────┴──────────────┴──────────────┴────────────────────┘

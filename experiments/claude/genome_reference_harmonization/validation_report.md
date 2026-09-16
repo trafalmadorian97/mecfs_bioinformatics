@@ -55,7 +55,42 @@ The monomorphic-panel filter lowered DecodeME's suspicious count from 11 to 5
 
 ## V1, V2: gwaslab parity (DecodeME build 37, Liu et al. 2023 IBD)
 
-Pending (compare_with_gwaslab.py).
+compare_with_gwaslab.py joins the new harmonized output with the cached
+gwaslab-harmonized table on SNPID and buckets every row. Both tables are
+untrusted (build-37 liftover leaves reference-difference blocks: DecodeME 17,092
+inconsistent SNVs, Liu 15,339), so both take the stringent path.
+
+| bucket | DecodeME build 37 | Liu 2023 IBD |
+|---|---|---|
+| identical -- SNV | 6,770,430 | 7,841,922 |
+| identical -- palindromic SNV | 1,062,923 | 1,225,928 |
+| identical -- indel | 502,156 | 316,386 |
+| opposite_orientation (indel) | 128 | 8 |
+| new_only (indel) | 36,020 | 18,016 |
+| gwaslab_only (indel) | 109,937 | 2,547 |
+| same_orientation_beta_differs | 0 | 0 |
+| other | 0 | 0 |
+
+Every difference is explained:
+
+- **opposite_orientation**: every one of these indels carries gwaslab STATUS digit
+  7 = 4, the indel-inference flip signature -- i.e. exactly the gwaslab bug this
+  Task replaces. We orient them by the FASTA; gwaslab flipped them to a
+  different variant at the repeat. This is the intended correction.
+- **gwaslab_only** (rows gwaslab kept, we dropped), by our drop reason:
+  DecodeME 108,249 ambiguous_indel_af_mismatch, 723 af_indecisive, 498
+  indel_not_on_reference, 467 not_in_panel; Liu 1,612 / 5 / 179 / 751. These are
+  the stringent ambiguous-indel rules dropping in the safe direction, plus
+  reverse-strand indels we do not try to rescue.
+- **new_only**: ambiguous indels we keep whose gwaslab STATUS put them in the
+  drop set.
+- **same_orientation_beta_differs = 0 and other = 0**: no unexplained orientation
+  or statistic differences. (A1FREQ_CASES/CONTROLS, which gwaslab does not flip
+  but we do, do not change orientation, so they stay in identical.)
+
+Conclusion: genome-reference harmonization reproduces gwaslab's orientation
+everywhere except the indel-inference bug, and its extra drops are the intended
+stringent ambiguous-indel handling.
 
 ## V4: peak memory
 
