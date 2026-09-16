@@ -94,7 +94,22 @@ stringent ambiguous-indel handling.
 
 ## V4: peak memory
 
-Pending (memory_benchmark.py / measure_harmonization_memory.py).
+memory_benchmark.py runs each scenario in its own process on DecodeME build 37
+and samples RssAnon (anonymous memory; the memory-mapped FASTA is file-backed and
+excluded). The acceptance criterion is that peak memory follows the largest
+chromosome, not total rows: all-chromosomes peak <= 1.5x the chr1-and-2 peak.
+
+| scenario | peak RssAnon (GiB) | wall time (s) |
+|---|---|---|
+| genome_reference chr1-2 | 1.56 | 6.1 |
+| genome_reference all | 1.58 | 36.2 |
+| gwaslab | 11.11 | 927.7 |
+
+- all / chr1-2 peak ratio = 1.01 (<= 1.5): peak memory is bounded by the largest
+  chromosome slice, independent of total rows. The OOM-safety goal is met.
+- genome-reference harmonization uses ~7x less peak memory than gwaslab
+  harmonization (1.58 vs 11.11 GiB) and runs ~25x faster (36 vs 928 s) on the
+  same input.
 
 ## V5: trust decision across rsID-assignment chains
 

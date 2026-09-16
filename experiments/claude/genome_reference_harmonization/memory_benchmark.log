@@ -1,0 +1,602 @@
+2026-09-16 14:49:08 [debug    ] Running python -m experiments.claude.genome_reference_harmonization.measure_harmonization_memory genome_reference_chr1_2
+2026-09-16 14:49:09 [debug    ] 2026-09-16 14:49:09 [debug    ] Loading default runner config from default_runner_config.yaml
+
+2026-09-16 14:49:09 [debug    ] 2026-09-16 14:49:09 [debug    ] config: 
+
+2026-09-16 14:49:09 [debug    ]  {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+
+2026-09-16 14:49:26 [debug    ] 2026-09-16 14:49:26 [debug    ] incremental save is enabled
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Looking for invalid dependencies
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Done search for invalid dependencies
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps...
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps.
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Attempting to verify the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps...
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Successfully verified the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps.
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_liftover_to_37...
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_liftover_to_37.
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_pre_harmonization_table...
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_pre_harmonization_table.
+
+2026-09-16 14:49:27 [debug    ] 2026-09-16 14:49:27 [info     ] 
+
+2026-09-16 14:49:27 [debug    ] Work Progress:
+
+2026-09-16 14:49:27 [debug    ] ✅ decode_me_gwas_1_raw
+
+2026-09-16 14:49:27 [debug    ] ✅ decode_me_snps_passing_quality_control
+
+2026-09-16 14:49:27 [debug    ] ✅ ucsc_hg19_indexed_fasta_wrapped_remove_deps
+
+2026-09-16 14:49:27 [debug    ] ✅ thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps
+
+2026-09-16 14:49:27 [debug    ] ✅ decode_me_gwas_1_filtered_for_quality_control
+
+2026-09-16 14:49:27 [debug    ] ✅ decode_me_gwas_1_sumstats_liftover_to_37
+
+2026-09-16 14:49:27 [debug    ] ✅ experiment_decode_me_gwas_1_pre_harmonization_table
+
+2026-09-16 14:49:27 [debug    ] 
+
+2026-09-16 14:49:28 [debug    ] 2026-09-16 14:49:28 [info     ] Locations of materialized targets:
+
+2026-09-16 14:49:28 [debug    ] 
+
+2026-09-16 14:49:28 [debug    ] {
+
+2026-09-16 14:49:28 [debug    ] │   'experiment_decode_me_gwas_1_pre_harmonization_table': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_pre_harmonization_table.parquet',
+
+2026-09-16 14:49:28 [debug    ] │   'ucsc_hg19_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg19/processed/ucsc_hg19_indexed_fasta_wrapped_remove_deps',
+
+2026-09-16 14:49:28 [debug    ] │   'thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet'
+
+2026-09-16 14:49:28 [debug    ] }
+
+2026-09-16 14:49:28 [debug    ] 2026-09-16 14:49:28 [debug    ] Scanning parquet asset at assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_pre_harmonization_table.parquet with backend polars
+
+2026-09-16 14:49:31 [debug    ] 2026-09-16 14:49:31 [info     ] genome-reference harmonization trust decision counts={'consistent_snvs': 1101560, 'inconsistent_snvs': 1969, 'consistent_indels': 14146, 'inconsistent_indels': 87} eaf_present=True suspicious={'suspicious': 107, 'checkable': 98803} trusted=False
+
+2026-09-16 14:49:32 [debug    ] 2026-09-16 14:49:32 [info     ] genome-reference harmonization chromosome summary chromosome=1 rows_by_drop_reason={'kept': 652759, 'ambiguous_indel_not_in_panel': 14029, 'ambiguous_indel_af_indecisive': 60, 'ambiguous_indel_af_mismatch': 11841, 'indel_not_on_reference': 15, 'palindrome_unresolved': 14092, 'not_on_reference': 1}
+
+2026-09-16 14:49:34 [debug    ] 2026-09-16 14:49:34 [info     ] genome-reference harmonization chromosome summary chromosome=2 rows_by_drop_reason={'kept': 711091, 'ambiguous_indel_af_mismatch': 12661, 'indel_not_on_reference': 13, 'ambiguous_indel_af_indecisive': 82, 'ambiguous_indel_not_in_panel': 13965, 'palindrome_unresolved': 14938, 'not_on_reference': 1}
+
+2026-09-16 14:49:35 [debug    ] {"scenario": "genome_reference_chr1_2", "baseline_rss_anon_gib": 0.3865509033203125, "peak_rss_anon_gib": 1.5591087341308594, "seconds": 6.107272085002478}
+
+{'scenario': 'genome_reference_chr1_2', 'baseline_rss_anon_gib': 0.3865509033203125, 'peak_rss_anon_gib': 1.5591087341308594, 'seconds': 6.107272085002478}
+2026-09-16 14:49:36 [debug    ] Running python -m experiments.claude.genome_reference_harmonization.measure_harmonization_memory genome_reference_all
+2026-09-16 14:49:37 [debug    ] 2026-09-16 14:49:37 [debug    ] Loading default runner config from default_runner_config.yaml
+
+2026-09-16 14:49:37 [debug    ] 2026-09-16 14:49:37 [debug    ] config: 
+
+2026-09-16 14:49:37 [debug    ]  {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] incremental save is enabled
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Looking for invalid dependencies
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Done search for invalid dependencies
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Attempting to verify the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps...
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Successfully verified the trace of asset thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps.
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Attempting to verify the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps...
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Successfully verified the trace of asset ucsc_hg19_indexed_fasta_wrapped_remove_deps.
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_liftover_to_37...
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_liftover_to_37.
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Attempting to verify the trace of asset experiment_decode_me_gwas_1_pre_harmonization_table...
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [debug    ] Successfully verified the trace of asset experiment_decode_me_gwas_1_pre_harmonization_table.
+
+2026-09-16 14:49:51 [debug    ] 2026-09-16 14:49:51 [info     ] 
+
+2026-09-16 14:49:51 [debug    ] Work Progress:
+
+2026-09-16 14:49:51 [debug    ] ✅ decode_me_gwas_1_raw
+
+2026-09-16 14:49:51 [debug    ] ✅ decode_me_snps_passing_quality_control
+
+2026-09-16 14:49:51 [debug    ] ✅ ucsc_hg19_indexed_fasta_wrapped_remove_deps
+
+2026-09-16 14:49:51 [debug    ] ✅ thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps
+
+2026-09-16 14:49:51 [debug    ] ✅ decode_me_gwas_1_filtered_for_quality_control
+
+2026-09-16 14:49:51 [debug    ] ✅ decode_me_gwas_1_sumstats_liftover_to_37
+
+2026-09-16 14:49:51 [debug    ] ✅ experiment_decode_me_gwas_1_pre_harmonization_table
+
+2026-09-16 14:49:51 [debug    ] 
+
+2026-09-16 14:49:53 [debug    ] 2026-09-16 14:49:53 [info     ] Locations of materialized targets:
+
+2026-09-16 14:49:53 [debug    ] 
+
+2026-09-16 14:49:53 [debug    ] {
+
+2026-09-16 14:49:53 [debug    ] │   'experiment_decode_me_gwas_1_pre_harmonization_table': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_pre_harmonization_table.parquet',
+
+2026-09-16 14:49:53 [debug    ] │   'ucsc_hg19_indexed_fasta_wrapped_remove_deps': 'assets/base_asset_store/reference_data/genome_sequence/ucsc_hg19/processed/ucsc_hg19_indexed_fasta_wrapped_remove_deps',
+
+2026-09-16 14:49:53 [debug    ] │   'thousand_genomes_eur_hg19_panel_allele_frequencies_wrapped_remove_deps': 'assets/base_asset_store/reference_data/reference_panel_allele_frequencies/eur_hg19/processed/panel_allele_frequencies.parquet'
+
+2026-09-16 14:49:53 [debug    ] }
+
+2026-09-16 14:49:53 [debug    ] 2026-09-16 14:49:53 [debug    ] Scanning parquet asset at assets/base_asset_store/gwas/ME_CFS/DecodeME/processed/experiment_decode_me_gwas_1_pre_harmonization_table.parquet with backend polars
+
+2026-09-16 14:50:06 [debug    ] 2026-09-16 14:50:06 [info     ] genome-reference harmonization trust decision counts={'consistent_snvs': 6753340, 'inconsistent_snvs': 17092, 'consistent_indels': 88084, 'inconsistent_indels': 847} eaf_present=True suspicious={'suspicious': 660, 'checkable': 598255} trusted=False
+
+2026-09-16 14:50:07 [debug    ] 2026-09-16 14:50:07 [info     ] genome-reference harmonization chromosome summary chromosome=1 rows_by_drop_reason={'kept': 652759, 'ambiguous_indel_af_indecisive': 60, 'not_on_reference': 1, 'ambiguous_indel_not_in_panel': 14029, 'palindrome_unresolved': 14092, 'indel_not_on_reference': 15, 'ambiguous_indel_af_mismatch': 11841}
+
+2026-09-16 14:50:09 [debug    ] 2026-09-16 14:50:09 [info     ] genome-reference harmonization chromosome summary chromosome=2 rows_by_drop_reason={'kept': 711091, 'ambiguous_indel_af_mismatch': 12661, 'palindrome_unresolved': 14938, 'ambiguous_indel_not_in_panel': 13965, 'ambiguous_indel_af_indecisive': 82, 'indel_not_on_reference': 13, 'not_on_reference': 1}
+
+2026-09-16 14:50:10 [debug    ] 2026-09-16 14:50:10 [info     ] genome-reference harmonization chromosome summary chromosome=3 rows_by_drop_reason={'kept': 519671, 'palindrome_unresolved': 11329, 'ambiguous_indel_af_mismatch': 9314, 'indel_not_on_reference': 1, 'ambiguous_indel_not_in_panel': 9513, 'ambiguous_indel_af_indecisive': 49}
+
+2026-09-16 14:50:11 [debug    ] 2026-09-16 14:50:11 [info     ] genome-reference harmonization chromosome summary chromosome=4 rows_by_drop_reason={'kept': 622291, 'ambiguous_indel_not_in_panel': 10933, 'palindrome_unresolved': 13248, 'ambiguous_indel_af_indecisive': 78, 'ambiguous_indel_af_mismatch': 10988}
+
+2026-09-16 14:50:12 [debug    ] 2026-09-16 14:50:12 [info     ] genome-reference harmonization chromosome summary chromosome=5 rows_by_drop_reason={'kept': 550364, 'ambiguous_indel_af_mismatch': 9563, 'ambiguous_indel_not_in_panel': 10153, 'palindrome_unresolved': 14180, 'ambiguous_indel_af_indecisive': 51}
+
+2026-09-16 14:50:13 [debug    ] 2026-09-16 14:50:13 [info     ] genome-reference harmonization chromosome summary chromosome=6 rows_by_drop_reason={'kept': 568281, 'ambiguous_indel_af_indecisive': 58, 'indel_not_on_reference': 94, 'ambiguous_indel_af_mismatch': 10417, 'ambiguous_indel_not_in_panel': 10896, 'palindrome_unresolved': 12440}
+
+2026-09-16 14:50:13 [debug    ] 2026-09-16 14:50:13 [warning  ] dropping variants whose oriented key collides after harmonization chromosome=6 count=2
+
+2026-09-16 14:50:15 [debug    ] 2026-09-16 14:50:15 [info     ] genome-reference harmonization chromosome summary chromosome=7 rows_by_drop_reason={'kept': 495487, 'ambiguous_indel_af_indecisive': 51, 'palindrome_unresolved': 11274, 'indel_not_on_reference': 51, 'ambiguous_indel_not_in_panel': 10860, 'ambiguous_indel_af_mismatch': 8411}
+
+2026-09-16 14:50:16 [debug    ] 2026-09-16 14:50:16 [info     ] genome-reference harmonization chromosome summary chromosome=8 rows_by_drop_reason={'kept': 462400, 'ambiguous_indel_af_mismatch': 6846, 'palindrome_unresolved': 10587, 'ambiguous_indel_af_indecisive': 38, 'ambiguous_indel_not_in_panel': 9065, 'indel_not_on_reference': 32}
+
+2026-09-16 14:50:17 [debug    ] 2026-09-16 14:50:17 [info     ] genome-reference harmonization chromosome summary chromosome=9 rows_by_drop_reason={'kept': 362760, 'ambiguous_indel_not_in_panel': 7056, 'ambiguous_indel_af_mismatch': 5831, 'ambiguous_indel_af_indecisive': 26, 'indel_not_on_reference': 28, 'palindrome_unresolved': 7992}
+
+2026-09-16 14:50:18 [debug    ] 2026-09-16 14:50:18 [info     ] genome-reference harmonization chromosome summary chromosome=10 rows_by_drop_reason={'kept': 429862, 'ambiguous_indel_not_in_panel': 8631, 'indel_not_on_reference': 135, 'palindrome_unresolved': 9264, 'ambiguous_indel_af_indecisive': 38, 'ambiguous_indel_af_mismatch': 7538}
+
+2026-09-16 14:50:19 [debug    ] 2026-09-16 14:50:19 [info     ] genome-reference harmonization chromosome summary chromosome=11 rows_by_drop_reason={'kept': 421732, 'palindrome_unresolved': 9231, 'indel_not_on_reference': 115, 'ambiguous_indel_af_indecisive': 44, 'ambiguous_indel_not_in_panel': 7700, 'ambiguous_indel_af_mismatch': 6947}
+
+2026-09-16 14:50:20 [debug    ] 2026-09-16 14:50:20 [info     ] genome-reference harmonization chromosome summary chromosome=12 rows_by_drop_reason={'kept': 410031, 'ambiguous_indel_not_in_panel': 8513, 'palindrome_unresolved': 8659, 'ambiguous_indel_af_mismatch': 7814, 'ambiguous_indel_af_indecisive': 59, 'indel_not_on_reference': 5}
+
+2026-09-16 14:50:21 [debug    ] 2026-09-16 14:50:21 [info     ] genome-reference harmonization chromosome summary chromosome=13 rows_by_drop_reason={'kept': 315012, 'ambiguous_indel_af_mismatch': 6448, 'palindrome_unresolved': 6786, 'ambiguous_indel_af_indecisive': 45, 'ambiguous_indel_not_in_panel': 5782}
+
+2026-09-16 14:50:21 [debug    ] 2026-09-16 14:50:21 [info     ] genome-reference harmonization chromosome summary chromosome=14 rows_by_drop_reason={'kept': 278830, 'palindrome_unresolved': 5635, 'ambiguous_indel_af_indecisive': 36, 'ambiguous_indel_not_in_panel': 5573, 'ambiguous_indel_af_mismatch': 5222}
+
+2026-09-16 14:50:22 [debug    ] 2026-09-16 14:50:22 [info     ] genome-reference harmonization chromosome summary chromosome=15 rows_by_drop_reason={'kept': 237312, 'indel_not_on_reference': 2, 'ambiguous_indel_not_in_panel': 4770, 'ambiguous_indel_af_indecisive': 28, 'palindrome_unresolved': 5472, 'ambiguous_indel_af_mismatch': 4238}
+
+2026-09-16 14:50:23 [debug    ] 2026-09-16 14:50:23 [info     ] genome-reference harmonization chromosome summary chromosome=16 rows_by_drop_reason={'kept': 252800, 'ambiguous_indel_not_in_panel': 5466, 'ambiguous_indel_af_mismatch': 4004, 'palindrome_unresolved': 5995, 'ambiguous_indel_af_indecisive': 27, 'indel_not_on_reference': 1}
+
+2026-09-16 14:50:23 [debug    ] 2026-09-16 14:50:23 [info     ] genome-reference harmonization chromosome summary chromosome=17 rows_by_drop_reason={'kept': 224557, 'ambiguous_indel_not_in_panel': 5765, 'indel_not_on_reference': 10, 'ambiguous_indel_af_indecisive': 27, 'ambiguous_indel_af_mismatch': 4461, 'palindrome_unresolved': 4899}
+
+2026-09-16 14:50:24 [debug    ] 2026-09-16 14:50:24 [info     ] genome-reference harmonization chromosome summary chromosome=18 rows_by_drop_reason={'kept': 244982, 'ambiguous_indel_not_in_panel': 5158, 'indel_not_on_reference': 1, 'palindrome_unresolved': 5056, 'ambiguous_indel_af_mismatch': 4037, 'ambiguous_indel_af_indecisive': 21}
+
+2026-09-16 14:50:25 [debug    ] 2026-09-16 14:50:25 [info     ] genome-reference harmonization chromosome summary chromosome=19 rows_by_drop_reason={'kept': 191464, 'ambiguous_indel_af_mismatch': 3816, 'palindrome_unresolved': 3844, 'ambiguous_indel_not_in_panel': 6102, 'ambiguous_indel_af_indecisive': 21}
+
+2026-09-16 14:50:25 [debug    ] 2026-09-16 14:50:25 [info     ] genome-reference harmonization chromosome summary chromosome=20 rows_by_drop_reason={'kept': 189571, 'ambiguous_indel_not_in_panel': 4268, 'ambiguous_indel_af_indecisive': 19, 'ambiguous_indel_af_mismatch': 2998, 'palindrome_unresolved': 3948}
+
+2026-09-16 14:50:26 [debug    ] 2026-09-16 14:50:26 [info     ] genome-reference harmonization chromosome summary chromosome=21 rows_by_drop_reason={'kept': 114643, 'ambiguous_indel_af_indecisive': 15, 'palindrome_unresolved': 2709, 'ambiguous_indel_not_in_panel': 2201, 'ambiguous_indel_af_mismatch': 1991}
+
+2026-09-16 14:50:26 [debug    ] 2026-09-16 14:50:26 [info     ] genome-reference harmonization chromosome summary chromosome=22 rows_by_drop_reason={'kept': 115759, 'ambiguous_indel_not_in_panel': 2641, 'palindrome_unresolved': 2433, 'ambiguous_indel_af_mismatch': 2107, 'ambiguous_indel_af_indecisive': 13}
+
+2026-09-16 14:50:29 [debug    ] {"scenario": "genome_reference_all", "baseline_rss_anon_gib": 0.3871269226074219, "peak_rss_anon_gib": 1.575439453125, "seconds": 36.22992305099979}
+
+{'scenario': 'genome_reference_all', 'baseline_rss_anon_gib': 0.3871269226074219, 'peak_rss_anon_gib': 1.575439453125, 'seconds': 36.22992305099979}
+2026-09-16 14:50:30 [debug    ] Running python -m experiments.claude.genome_reference_harmonization.measure_harmonization_memory gwaslab
+2026-09-16 14:50:31 [debug    ] 2026-09-16 14:50:31 [debug    ] Loading default runner config from default_runner_config.yaml
+
+2026-09-16 14:50:31 [debug    ] 2026-09-16 14:50:31 [debug    ] config: 
+
+2026-09-16 14:50:31 [debug    ]  {'asset_root': 'assets/base_asset_store', 'info_store': 'build_system/verifying_trace_imo_xxh_128_info.yaml', 'remote_scratch_s3': 's3://mecfs-bio-remote-exec-scratch/remote-exec-scratch', 'path_remap': [{'root': '/mnt/d/asset_store_remote', 'prefixes': ['reference_data/db_snp_reference_data', 'reference_data/genome_annotations', 'reference_data/mixer', 'gwas/ankylosing_spondylitis/uk_biobank', 'gwas/western_csf_pqtl']}]}
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] incremental save is enabled
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Looking for invalid dependencies
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Done search for invalid dependencies
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_raw...
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_raw.
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Attempting to verify the trace of asset decode_me_snps_passing_quality_control...
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Successfully verified the trace of asset decode_me_snps_passing_quality_control.
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_filtered_for_quality_control...
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_filtered_for_quality_control.
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Attempting to verify the trace of asset decode_me_gwas_1_sumstats_liftover_to_37...
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [debug    ] Successfully verified the trace of asset decode_me_gwas_1_sumstats_liftover_to_37.
+
+2026-09-16 14:50:43 [debug    ] 2026-09-16 14:50:43 [info     ] 
+
+2026-09-16 14:50:43 [debug    ] Work Progress:
+
+2026-09-16 14:50:43 [debug    ] ✅ decode_me_gwas_1_raw
+
+2026-09-16 14:50:43 [debug    ] ✅ decode_me_snps_passing_quality_control
+
+2026-09-16 14:50:43 [debug    ] ✅ decode_me_gwas_1_filtered_for_quality_control
+
+2026-09-16 14:50:43 [debug    ] ✅ decode_me_gwas_1_sumstats_liftover_to_37
+
+2026-09-16 14:50:43 [debug    ] 
+
+2026-09-16 14:50:44 [debug    ] 2026-09-16 14:50:44 [info     ] Locations of materialized targets:
+
+2026-09-16 14:50:44 [debug    ] 
+
+2026-09-16 14:50:44 [debug    ] {
+
+2026-09-16 14:50:44 [debug    ] │   'decode_me_gwas_1_sumstats_liftover_to_37': 'assets/base_asset_store/gwas/ME_CFS/DecodeME/gwaslab_sumstats/decode_me_gwas_1_sumstats_liftover_to_37.pickle'
+
+2026-09-16 14:50:44 [debug    ] }
+
+2026-09-16 14:50:44 [debug    ] 2026-09-16 14:50:44 [debug    ] reading sumstats from assets/base_asset_store/gwas/ME_CFS/DecodeME/gwaslab_sumstats/decode_me_gwas_1_sumstats_liftover_to_37.pickle
+
+2026-09-16 14:50:47 [debug    ] 2026/09/16 14:50:47 Loaded dumped Sumstats object created using gwaslab>=v3.4.32
+
+2026-09-16 14:50:47 [debug    ] 2026/09/16 14:50:47 Loaded dumped Sumstats object from : assets/base_asset_store/gwas/ME_CFS/DecodeME/gwaslab_sumstats/decode_me_gwas_1_sumstats_liftover_to_37.pickle
+
+2026-09-16 14:50:47 [debug    ] 2026-09-16 14:50:47 [debug    ] Running gwas summary statistics through gwaslab pipelines...
+
+2026-09-16 14:50:47 [debug    ] 2026-09-16 14:50:47 [debug    ] Initial sumstats has shape (8873594, 18)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:47 Start to check SNPID/rsID ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:47  -Current Dataframe shape : 8873594 x 18 ; Memory usage: 1151.99 MB
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:47  -Checking SNPID data type...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:47  -Checking if SNPID contains NA strings :na,NA,Na,Nan,NaN,<NA>,null,NULL,#N/A,#VALUE!,N/A,n/a,missing,...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:47  -Checking if SNPID is CHR:POS:NEA:EA...(separator: - ,: , _)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:52  -Time taken: 5.505s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:52 Finished checking SNPID/rsID.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:52 Start to fix chromosome notation (CHR) ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:52  -Checking CHR data type...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:54  -Variants with standardized chromosome notation: 8873594
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:54  -All CHR are already fixed...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:56  -Time taken: 3.748s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:56 Finished fixing chromosome notation (CHR).
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:56 Start to fix basepair positions (POS) ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:56  -Trying to convert datatype for POS: Int64 -> Int64...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:57  -Position bound:(0 , 250,000,000)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:57  -No outlier variants were removed.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:58  -Time taken: 1.900s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:58 Finished fixing basepair positions (POS).
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:58 Start to fix alleles (EA and NEA) ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:58  -Converted all bases to string datatype and UPPERCASE
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:50:59  -All variants have valid alleles (EA and NEA are A/C/T/G, not NA, and different).
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:04  -Time taken: 5.841s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:04 Finished fixing alleles (EA and NEA).
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:04 Start to perform sanity check for statistics ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:04  -Comparison tolerance for floats: 1e-07
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:04  -Checking if any columns are empty...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:06  -Checking if 0 <= N <= 2147483647 : removed 0 variants.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:07  -Checking if -1e-07 < EAF < 1.0000001 : removed 0 variants.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:08  -Checking if -1e-07 < CHISQ < inf : removed 0 variants.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:09  -Checking if -1e-07 < MLOG10P < 99999.0000001 : removed 0 variants.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:10  -Checking if -100.0000001 < BETA < 100.0000001 : removed 0 variants.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:11  -Checking if -1e-07 < SE < inf : removed 0 variants.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:11  -Checking STATUS and converting STATUS to Int64....
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:11  -No variants were removed with bad statistics in total.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:11  -Time taken: 7.540s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:11 Finished sanity check for statistics.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12 Start to check data consistency across columns ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12  -Tolerance: 0.001 (Relative) and 0.001 (Absolute)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12  -Checking if BETA/SE-derived-MLOG10P is consistent with MLOG10P...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12   -Variants with inconsistent values were not detected.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12   -Note: Minor differences are typically due to rounding.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12    -If the max difference is greater than expected, please check your original sumstats.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12  -Time taken: 0.607s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12 Finished checking data consistency across columns.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12 Start to normalize indels ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12  -Number of threads/cores to use: 1
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12  -No available variants to normalize..
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12  -Time taken: 0.105s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12 Finished normalizing indels.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:12 Start to sort the genome coordinates ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:17  -Time taken: 5.244s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:17 Finished sorting coordinates.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:18 Start to reorder the columns ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:18  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,CHISQ,MLOG10P,N,TEST,A1FREQ_CASES,A1FREQ_CONTROLS,N_CASES,N_CONTROLS,EXTRA
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:18  -Time taken: 0.546s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:18 Finished reordering the columns.
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:19 Start to fix chromosome notation (CHR) ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:19  -Checking CHR data type...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:21  -Variants with standardized chromosome notation: 8873594
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:21  -All CHR are already fixed...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:22  -Time taken: 3.524s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:22 Finished fixing chromosome notation (CHR).
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:22  -Genomic coordinates are based on GRCh37/hg19...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:22 Start to infer genome build version using hapmap3 SNPs ...(v4.2.2)
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:22  -Loading Hapmap3 variants data...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:26  -CHR and POS will be used for matching...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:26  -Matching variants for hg19: num_hg19 =  1152857
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:26  -Matching variants for hg38: num_hg38 =  15038
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:26  -Since num_hg19 >> num_hg38, set the genome build to hg19 for the STATUS code....
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:27  -Genomic coordinates are based on GRCh37/hg19...
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:27  -Time taken: 4.375s
+
+2026-09-16 14:51:41 [debug    ] 2026/09/16 14:51:27 Finished inferring genome build version using hapmap3 SNPs.
+
+2026-09-16 14:51:41 [debug    ] Build is 19
+
+2026-09-16 14:51:41 [debug    ] 2026-09-16 14:51:41 [debug    ] ref 1kg_eur_hg19 matches the expected checksum
+
+2026-09-16 14:51:41 [debug    ] 2026-09-16 14:51:41 [debug    ] ref ucsc_genome_hg19 has no expected checksum
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:41  -Compute: 16 logical cores, tier fast (detected), 2918 MHz
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:41  -Run plan (harmonize_reference):
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:41   1. check_ref (22 chroms, 8,873,594 variants to check) — est. 2m 53s–4m 1s
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:41   2. infer_strand (tabix) (887,359 variants, 4/4 workers) — est. 29m 21s–40m 51s
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:41  -Total estimated: ~32m 15s–44m 53s (heuristic; ETA refines during run)
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:41 Start to check if NEA is aligned with reference sequence ...(v4.2.2)
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:41  -Reference genome FASTA file: /home/paiforsyth/.gwaslab/hg19.fa
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:51:47    -Loading and building numpy fasta records:chr1  chr2  chr3  chr4  chr5  chr6  chr7  chr8  chr9  chr10  chr11  chr12  chr13  chr14  chr15  chr16  chr17  chr18  chr20  chr19  chr22  chr21  
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:17  -Checking records
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:19    -Checking records for ( len(NEA) <= 4 and len(EA) <= 4 )
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:33    -Checking records for ( len(NEA) > 4 or len(EA) > 4 )
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:33  -Finished checking records
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:38  -Variants allele on given reference sequence :  8085045
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:38  -Variants flipped :  14508
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:38   -Raw Matching rate :  91.28%
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:38  -Variants inferred reverse_complement :  6072
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:38  -Variants inferred reverse_complement_flipped :  667
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:38  -Both allele on genome + unable to distinguish :  767295
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:38  -Variants not on given reference sequence :  7
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:40  -Time taken: 59.213s
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:40 Finished checking if NEA is aligned with reference sequence.
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:40 Start to adjust statistics based on STATUS code ...(v4.2.2)
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:40 Start to convert alleles to reverse complement for SNPs with status xxxxx[45]x ...(v4.2.2)
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:40  -Flipping 6,739 variants...
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:40  -Converting to reverse complement: EA and NEA
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:41  -Changed the status for flipped variants : xxxxx4x -> xxxxx2x
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:41 Start to flip allele-specific stats for SNPs with status xxxxx[35]x: ALT->EA , REF->NEA ...v4.2.2
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:41  -Flipping 15,175 variants...
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:41  -Swapping column: NEA <=> EA...
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:41  -Flipping column: BETA = - BETA...
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:41  -Flipping column: EAF = 1 - EAF...
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:41  -Changed the status for flipped variants : xxxxx[35]x -> xxxxx[12]x
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:42  -Time taken: 2.147s
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:42 Finished adjusting statistics based on STATUS code.
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:42 Start to infer strand for palindromic SNPs/align indistinguishable indels ...(v4.2.2)
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:42  -Number of threads/cores to use: 4
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:43  -Field for alternative allele frequency in VCF INFO: AF
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:51  -Identified  1246936  palindromic SNPs...
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:52  -After filtering by MAF<= 0.4 , 1107790 palindromic SNPs with unknown strand will be inferred...
+
+2026-09-16 14:52:52 [debug    ] 2026/09/16 14:52:52  -Starting strand inference for palindromic SNPs...
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:25  -Finished strand inference.
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:25   -Non-palindromic :  6770432
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:26   -Palindromic SNPs on + strand:  1061477
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:26   -Palindromic SNPs on - strand and needed to be flipped: 1446
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:26   -Palindromic SNPs with MAF not available to infer :  139145
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:27   -Palindromic SNPs lacking reference matches, or with reference ALT unavailable or above MAF threshold for inference :  44867
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:27  -Identified  767295  indistinguishable Indels...
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:27  -Indistinguishable indels will be inferred from reference vcf REF and ALT...
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:27  -Difference in allele frequency (DAF) tolerance: 0.2
+
+2026-09-16 15:00:28 [debug    ] 2026/09/16 15:00:27  -Starting indistinguishable indel inference...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:42  -Finished indistinguishable indel inference.
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:42   -Indels ea/nea match reference :  521684
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:42   -Indels ea/nea need to be flipped :  1611
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:42   -Indels with no matches or no information :  244000
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:42  -Time taken: 779.853s
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:42 Finished inferring strand for palindromic SNPs/align indistinguishable indels.
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:42 Start to adjust statistics based on STATUS code ...(v4.2.2)
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43 Start to flip allele-specific stats for standardized indels with status xxxx[123][67][6]: ALT->EA , REF->NEA...v4.2.2
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Flipping 1,611 variants...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Swapping column: NEA <=> EA...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Flipping column: BETA = - BETA...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Flipping column: EAF = 1 - EAF...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Changed the status for flipped variants xxxx[123][67]6 -> xxxx[123][67]4
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43 Start to flip allele-specific stats for palindromic SNPs with status xxxxx[12]5: (-)strand <=> (+)strand...v4.2.2
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Flipping 1,446 variants...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Flipping column: BETA = - BETA...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Flipping column: EAF = 1 - EAF...
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:43  -Changed the status for flipped variants:  xxxxx[012]5: ->  xxxxx[012]2
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:44  -Time taken: 1.219s
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:44 Finished adjusting statistics based on STATUS code.
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:44 Start to sort the genome coordinates ...(v4.2.2)
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:49  -Time taken: 4.922s
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:49 Finished sorting coordinates.
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:49 Start to reorder the columns ...(v4.2.2)
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:49  -Reordering columns to    : SNPID,CHR,POS,EA,NEA,STATUS,EAF,BETA,SE,CHISQ,MLOG10P,N,TEST,A1FREQ_CASES,A1FREQ_CONTROLS,N_CASES,N_CONTROLS,EXTRA
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:50  -Time taken: 0.758s
+
+2026-09-16 15:05:54 [debug    ] 2026/09/16 15:05:50 Finished reordering the columns.
+
+2026-09-16 15:05:54 [debug    ] 2026-09-16 15:05:54 [debug    ] Dropping 7 variants that are missing from the sequence FASTA reference
+
+2026-09-16 15:05:59 [debug    ] 2026-09-16 15:05:59 [debug    ] Dropping 428012 variants that are missing from the VCF reference
+
+2026-09-16 15:06:03 [debug    ] 2026-09-16 15:06:03 [warning  ] dropping rows with duplicate (CHR, POS, EA, NEA) keys count=2
+
+2026-09-16 15:06:07 [debug    ] 2026-09-16 15:06:07 [debug    ] Finished gwaslab pipe.  Data has shape (8445574, 18)
+
+2026-09-16 15:06:12 [debug    ] 2026/09/16 15:06:08 Start to dump the Sumstats Object.
+
+2026-09-16 15:06:12 [debug    ] 2026/09/16 15:06:08  -Dump the Sumstats Object to :  /tmp/tmpv53ncu_k/pickled_sumstats.pickle
+
+2026-09-16 15:06:12 [debug    ] 2026/09/16 15:06:12 Finished dumping.
+
+2026-09-16 15:06:12 [debug    ] {"scenario": "gwaslab", "baseline_rss_anon_gib": 0.3897438049316406, "peak_rss_anon_gib": 11.113868713378906, "seconds": 927.7241797259994}
+
+{'scenario': 'gwaslab', 'baseline_rss_anon_gib': 0.3897438049316406, 'peak_rss_anon_gib': 11.113868713378906, 'seconds': 927.7241797259994}
+all / chr1-2 peak ratio: 1.01 (acceptable <= 1.5)
+gwaslab / genome-reference peak ratio: 7.05
