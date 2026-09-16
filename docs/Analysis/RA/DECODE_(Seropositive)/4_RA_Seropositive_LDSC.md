@@ -30,3 +30,12 @@ h^2_O&= h^2_L \frac{P(1-P)  }{ K^2 (1-K)^2   } \phi(\Phi^{-1}(1-K))^2\\
 $$
 
 As expected, this result approximates the observed-scale heritability from the DECODE paper (0.19).  The remaining discrepancy is likely due to differences in SNP filtering.
+
+To illustrate the fit of the LDSC model to the RA GWAS, I generated the LDSC diagnostic plot below
+
+
+{{
+ldsc_diagnostic_plot(src="docs/_figs/decode_ra_seropositive_ldsc_diagnostic_plot/ldsc_diagnostic.html", id="ra_seropositive_ldsc")
+}}
+
+Especially at lower LD scores, the LDSC model appears to fit well.

@@ -22,3 +22,15 @@ $$
 $$
 
 Here the attenuation ratio is 0.09943, which suggests an acceptably low level of stratification.
+
+
+To investigate the fit of the LDSC model, I also generated the LDSC diagnostic plot below
+
+
+{{
+ldsc_diagnostic_plot(src="docs/_figs/yengo_et_al_height_ldsc_diagnostic_plot/ldsc_diagnostic.html",
+id="yengo_ldsc_plot",)
+}}
+
+
+As would be expected of GWAS of a highly polygenic quantitative trait, the Yengo et al. GWAS appears to fit the LDSC model well: most of the binned $\chi^2$ values lie close to the regression line
