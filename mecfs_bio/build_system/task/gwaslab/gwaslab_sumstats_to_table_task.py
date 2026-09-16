@@ -62,6 +62,9 @@ class GwasLabSumstatsToTableTask(Task):
         sumstats = read_sumstats(asset)
         df: pd.DataFrame = sumstats.data
         logger.debug(f"Post sumstats df has shape {df.shape}")
+        # Drop the pandas index so it is not serialized as an __index_level_0__ column
+        # (the original writer passed index=False; the narwhals rewrite must keep that).
+        df = df.reset_index(drop=True)
         n_df = narwhals.from_native(df).lazy()
         df_nw = self.pipe.process(n_df)
         # logger.debug(f"Post pipe df has shape {df.shape}")

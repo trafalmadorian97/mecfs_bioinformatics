@@ -155,6 +155,18 @@ def test_flip_covers_allele_frequency_columns_and_confidence_bounds(
     )
 
 
+def test_pandas_index_column_is_dropped(tmp_path: Path) -> None:
+    # A leaked pandas index (__index_level_0__, as GwasLabSumstatsToTableTask parquet can
+    # carry) is a serialization artifact, not a statistic, so it is dropped rather than
+    # failing the unregistered-column check.
+    frame = sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV]).with_columns(
+        pl.arange(0, 2).alias("__index_level_0__")
+    )
+    result = run_harmonization(tmp_path / "run", frame)
+    assert "__index_level_0__" not in result.columns
+    assert positions(result) == [1, 2]
+
+
 def test_unregistered_column_fails(tmp_path: Path) -> None:
     frame = sumstats_frame([CONSISTENT_SNV]).with_columns(
         pl.lit(1.0).alias(_UNREGISTERED_COLUMN)

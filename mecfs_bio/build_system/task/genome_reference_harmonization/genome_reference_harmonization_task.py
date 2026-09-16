@@ -91,6 +91,9 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 HARMONIZED_FILENAME = "harmonized.parquet"
+# A pandas index serialized into a parquet by pyarrow; never a statistic, so dropped rather
+# than failing the unregistered-column check.
+_PANDAS_INDEX_COLUMN = "__index_level_0__"
 _KEPT_LABEL = "kept"  # log label for rows without a drop reason
 _KEY_COLUMNS = [
     GWASLAB_CHROM_COL,
@@ -109,6 +112,8 @@ def scan_sumstats_as_polars(
         "genome-reference harmonization streams polars LazyFrames, but the pipe produced "
         f"{type(native).__name__}"
     )
+    if _PANDAS_INDEX_COLUMN in native.collect_schema().names():
+        native = native.drop(_PANDAS_INDEX_COLUMN)
     return native
 
 
