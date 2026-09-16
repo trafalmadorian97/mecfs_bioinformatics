@@ -133,3 +133,67 @@ moot once consistency fails). So production rsID assignment runs on the stringen
 path, which is the safe direction for a lifted table. Note this is the build-37
 lifted DecodeME; the build-38 DecodeME used to calibrate the suspicious gate (V3)
 is trusted.
+
+## V6: downstream qualitative-impact check (DecodeME build 37)
+
+After switching the production rsID-assignment chains to genome-reference
+harmonization (Task 11), the main build-37 DecodeME downstream analyses were rerun and
+compared against a pre-switch snapshot. Driver: rerun_downstream.py; comparison:
+compare_downstream.py (both in this directory). The question was whether the change
+moved any qualitative result: number of significant tissues/cell types, the top-5
+lists, or the top fine-mapped variants at any locus.
+
+Summary: no qualitative change. The only movement is (a) sub-significant-figure jitter
+in MAGMA, and (b) one extra low-confidence, indel-driven SUSIE credible set at chr20.
+The dominant signal at every locus, and every significant-tissue conclusion, is
+unchanged.
+
+### LDSC and S-LDSC: bit-identical
+
+Univariate LDSC (h2_liab 0.0814, SE 0.0064, intercept 0.942) and all six S-LDSC panels
+are identical to the last digit before vs after. S-LDSC significant counts unchanged:
+gtex_brain 1, multi_tissue_chromatin 31, multi_tissue_gene_expression 22, and
+cahoy_cns / corces_atac / immgen 0; top-5 lists identical. This is expected: LDSC and
+S-LDSC munge to HapMap3 SNPs, and harmonization changed only indel handling (plus the
+128 indel-inference-bug flips from V1/V2), so the munged inputs are byte-identical.
+
+### MAGMA GTEx and HBA: unchanged counts and top-5
+
+- GTEx specific tissue: 13 Bonferroni-significant sets, identical top-5
+  (Frontal_Cortex_BA9, Anterior_cingulate, Cortex, Nucleus_accumbens, Caudate);
+  p-values identical.
+- HBA gene covar (11 sig) and HBA conditional (10 sig): same counts, same top-5
+  clusters (234, 419, 136, ...). P-values differ only in the 3rd-4th significant figure
+  (e.g. Cluster419 7.54e-6 -> 7.55e-6), because indels do map into MAGMA genes; the
+  effect is negligible.
+
+### SUSIE (non-PolyFun, with-palindromes loci): leads unchanged
+
+Top-PIP variant of every credible set is unchanged at all six loci:
+
+| locus | credible sets | lead variant(s) | note |
+|---|---|---|---|
+| chr1 174.1M | L1 | 1:173815290:C:T | PIP 0.0360 -> 0.0357 |
+| chr6 26.2M | none | -- | no credible set (before and after) |
+| chr6 97.5M | L1 | 6:98537993:A:G | PIP ~0.044 -> ~0.042 |
+| chr15 54.9M | L1 | 15:55158922:G:A | PIP delta ~6e-7 |
+| chr17 50.2M | L1 | 17:50260366:T:C | PIP ~0.056 -> ~0.060 |
+| chr20 47.7M | L1/L2/L3 | 20:47743125:A:C (PIP~1.0) | strong signal unchanged; see below |
+
+chr20 is the one locus with a structural change, in the susie_base configuration only:
+before it reported two credible sets (L2 the PIP~1.0 signal at 20:47743125:A:C, and L3 a
+diffuse set led by 20:47731228:C:A); after it reports three, gaining a new diffuse L1
+(119 variants, max PIP 0.067) led by an insertion 20:47530801:T:TTGC in an indel-rich
+stretch near 47.53M. The dominant L2 signal (PIP~1.0) is untouched and L3 keeps its
+lead. So the qualitative interpretation of the locus (one confident hit at 47.74M) does
+not change; the new set is low-confidence and is the expected consequence of the new
+indel orientation/retention in the keep-ambiguous chain.
+
+### Operational note: SUSIE stackplot OOM
+
+The full rerun_downstream.py run was OOM-killed (kernel, ~13.8 GiB anon RSS) while
+materializing the chr20 susie_stackplot asset -- a plotting step, not a correctness
+step, and a pre-existing memory characteristic unrelated to harmonization. S-LDSC,
+MAGMA, LDSC, and five of six SUSIE loci had already completed; the chr20 credible sets
+were then rebuilt directly (the four *_credible_set_markdown_table tasks, which pull the
+copy_cs_from_directory outputs without the stackplot) to complete this table.
