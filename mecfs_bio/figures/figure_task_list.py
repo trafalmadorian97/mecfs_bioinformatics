@@ -402,6 +402,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
     MI_LCV_TASK_GROUP.downstream_trait_tables["MI"],
     YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    YENGO_HEIGHT_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
