@@ -212,12 +212,27 @@ def count_trust_evidence_genome_wide(
     return TrustEvidence(counts=counts, suspicious=suspicious, eaf_present=eaf_present)
 
 
+def _variant_key_is_duplicated() -> pl.Expr:
+    """Whether each row shares its within-chromosome (POS, EA, NEA) key with another row."""
+    return pl.struct(
+        GWASLAB_POS_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+    ).is_duplicated()
+
+
 def resolve_chromosome_rows(
     sumstats: pl.LazyFrame, context: ChromosomeContext, panel_path: Path
 ) -> pl.DataFrame:
     """All rows of one chromosome, resolved, with DROP_REASON_COL (used by experiments too)."""
     rows = sumstats.filter(pl.col(GWASLAB_CHROM_COL) == context.chrom).collect(
         engine="streaming"
+    )
+    # Defensive: the input must already be unique per variant key. Mirrored pairs (distinct
+    # keys) are fine and preserved; genuine duplicate keys are a source-data error and are
+    # removed upstream (transform_gwaslab_sumstats), so reaching here means that failed.
+    input_duplicated = rows.select(_variant_key_is_duplicated().any()).item()
+    assert not input_duplicated, (
+        f"chromosome {context.chrom}: input summary statistics have duplicate "
+        "(CHR, POS, EA, NEA) keys; harmonization requires unique input variants"
     )
     return resolve_chromosome(
         rows,
@@ -250,16 +265,20 @@ def _write_chromosome_part(
         )
         .sort(GWASLAB_POS_COL)
     )
-    duplicated = kept.select(
-        pl.struct(
-            GWASLAB_POS_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+    # Orientation can map two distinct input variants onto the same (CHR, POS, EA, NEA) key
+    # (a liftover many-to-one collision, or a mirrored pair that resolves to one orientation).
+    # Such a key is ambiguous for any allele-keyed join, and we cannot tell which variant is
+    # correct, so every colliding row is dropped. Mirrored pairs that stay in distinct
+    # orientations keep distinct keys and are not affected.
+    collision = kept.select(_variant_key_is_duplicated()).to_series()
+    collision_count = int(collision.sum())
+    if collision_count:
+        logger.warning(
+            "dropping variants whose oriented key collides after harmonization",
+            chromosome=context.chrom,
+            count=collision_count,
         )
-        .is_duplicated()
-        .any()
-    ).item()
-    assert not duplicated, (
-        f"chromosome {context.chrom}: (CHR, POS, EA, NEA) is not unique after harmonization"
-    )
+        kept = kept.filter(~collision)
     part_path = parts_dir / f"chr{context.chrom}.parquet"
     kept.write_parquet(part_path)
     return part_path

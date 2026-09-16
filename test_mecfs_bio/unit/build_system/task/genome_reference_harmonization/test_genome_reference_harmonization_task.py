@@ -228,10 +228,38 @@ def test_null_position_fails(tmp_path: Path) -> None:
         run_harmonization(tmp_path / "run", frame)
 
 
-def test_duplicate_variant_after_orientation_fails(tmp_path: Path) -> None:
+def test_variants_colliding_after_orientation_are_dropped(tmp_path: Path) -> None:
+    # C/T and T/C at pos 2 are the same SNP recorded in both orientations (distinct input
+    # keys, so the input-uniqueness assertion passes); they orient onto one key, and both
+    # are dropped because neither can be trusted at the collided key.
     variants = [CONSISTENT_SNV, INCONSISTENT_SNV, Variant(pos=2, ea="T", nea="C")]
+    result = run_harmonization(tmp_path / "run", sumstats_frame(variants))
+    assert positions(result) == [1]
+
+
+def test_duplicate_input_key_fails(tmp_path: Path) -> None:
+    # Two rows with an identical (CHR, POS, EA, NEA) key are a source-data error; the Task
+    # asserts rather than silently proceeding (such rows are removed upstream).
+    variants = [CONSISTENT_SNV, CONSISTENT_INDEL, CONSISTENT_SNV]
     with pytest.raises(AssertionError):
         run_harmonization(tmp_path / "run", sumstats_frame(variants))
+
+
+def test_trusted_mirror_indels_keep_distinct_orientations(tmp_path: Path) -> None:
+    # A genuine mirrored indel pair has distinct input keys and, in a trusted table, keeps
+    # each row's source orientation, so both survive rather than being treated as a collision.
+    forward = Variant(pos=5, ea="T", nea="TG")
+    mirror = Variant(pos=5, ea="TG", nea="T")
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, CONSISTENT_INDEL, forward, mirror]),
+    )
+    at_five = result.filter(pl.col(GWASLAB_POS_COL) == 5)
+    assert at_five.height == 2
+    assert set(zip(at_five[EA].to_list(), at_five[NEA].to_list())) == {
+        ("T", "TG"),
+        ("TG", "T"),
+    }
 
 
 def test_long_alleles_are_classified_with_a_tiny_gather_budget(tmp_path: Path) -> None:

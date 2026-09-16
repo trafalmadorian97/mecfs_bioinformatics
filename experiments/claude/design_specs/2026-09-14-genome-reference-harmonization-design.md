@@ -482,10 +482,28 @@ Not registered (decided in plan review, 2026-09-15):
   so a dataset-specific column can be declared without editing the module.
 - The palindromic minus-strand flip applies every rule except allele swap.
 
-### Uniqueness
+### Uniqueness (revised 2026-09-16)
 
-After resolution, the Task asserts (CHR, POS, EA, NEA) is unique within each
-chromosome. A mis-resolved mirrored pair would violate it.
+The Task requires unique variant keys but treats input duplicates and
+orientation-induced collisions differently:
+
+- **Input assertion.** Before resolving a chromosome, the Task asserts its input
+  (CHR, POS, EA, NEA) is unique. A genuine duplicate key is a source-data error,
+  not something harmonization should paper over. Upstream, transform_gwaslab_sumstats
+  removes exact-duplicate keys (which liftover can create by mapping two source
+  variants to one coordinate with identical alleles), so the input reaching
+  harmonization is unique; the assertion is the tripwire if that ever fails.
+- **Post-orientation drop.** After resolution, two distinct input variants can be
+  oriented onto the same key -- a liftover many-to-one collision whose alleles
+  differ by strand (so it is invisible upstream), or a mirrored pair that resolves
+  to a single orientation. Because the key is then ambiguous and we cannot tell
+  which variant is correct, every colliding row is dropped and the count is logged.
+
+Genuine mirrored pairs (e.g. an insertion T/TG and a deletion TG/T at one site)
+have distinct input keys, so they pass the input assertion; in a trusted table
+they keep distinct source orientations and never collide, so they are preserved.
+An upstream strand/order-agnostic dedup would instead destroy them, which is why
+the collision handling lives after orientation.
 
 ### Streaming, per-chromosome execution
 
