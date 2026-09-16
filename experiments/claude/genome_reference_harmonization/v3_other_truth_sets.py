@@ -263,9 +263,14 @@ def main() -> None:
         sumstats = pl.scan_parquet(parquet_path)
         consistent_by_build: dict[str, int] = {}
         for candidate in BUILDS:
+            opened_candidate = _open(candidate)
             counts = count_trust_evidence_genome_wide(
-                sumstats, [BUILD_PROBE_CHROMOSOME], _open(candidate).fasta, BASE_OPTIONS
-            )
+                sumstats,
+                [BUILD_PROBE_CHROMOSOME],
+                opened_candidate.fasta,
+                opened_candidate.panel_path,
+                BASE_OPTIONS,
+            ).counts
             consistent_by_build[candidate.name] = counts.consistent_snvs
             print(
                 f"chr{BUILD_PROBE_CHROMOSOME} vs {candidate.name}: {_consistency(counts)}"
@@ -275,12 +280,14 @@ def main() -> None:
         fasta, panel_path = opened.fasta, opened.panel_path
         sumstats = sumstats.filter(pl.col(GWASLAB_CHROM_COL).is_in(list(fasta.entries)))
         chromosomes = chromosomes_to_harmonize(sumstats, fasta, BASE_OPTIONS)
-        counts = count_trust_evidence_genome_wide(
-            sumstats, chromosomes, fasta, BASE_OPTIONS
+        evidence = count_trust_evidence_genome_wide(
+            sumstats, chromosomes, fasta, panel_path, BASE_OPTIONS
         )
-        trusted = decide_trust(counts, BASE_OPTIONS)
+        counts = evidence.counts
+        trusted = decide_trust(evidence, BASE_OPTIONS)
         print(f"build {build.name}: {counts}")
         print(f"{_consistency(counts)} -> trusted={trusted}")
+        print(f"suspicious: {evidence.suspicious} -> {evidence.suspicious.fraction:.2e}")
         if not trusted:
             return
         _print_eaf_calibration(sumstats, fasta, panel_path)

@@ -23,6 +23,14 @@ class GenomeReferenceHarmonizationOptions:
     indel_max_af_distance, indel_min_af_margin: stringent rules for untrusted ambiguous indels.
         A reading is chosen only if its predicted EAF is within the distance and beats the
         other reading by at least the margin.
+    max_suspicious_indel_fraction: a table is trusted only if at most this fraction of its
+        checkable ambiguous indels (both orientations on the FASTA, with EAF and a panel
+        record) are suspicious -- their EAF matches the complement of the opposite
+        orientation's panel frequency, evidence the source is not perfectly reference-aligned.
+        The suspicion test uses the same indel_max_af_distance and indel_min_af_margin.
+    min_checkable_ambiguous_indels: the suspicious-fraction test is applied only when at least
+        this many checkable ambiguous indels exist; below it the signal is too sparse to judge
+        and does not affect trust.
     keep_unresolved_palindromes: keep untrusted palindromic SNVs whose strand cannot be
         resolved, instead of dropping them. Never applies to indels.
     excluded_chromosomes: gwaslab chromosome codes whose rows are dropped (MT by default,
@@ -37,6 +45,8 @@ class GenomeReferenceHarmonizationOptions:
     panel_maf_threshold: float = 0.4
     indel_max_af_distance: float = 0.1
     indel_min_af_margin: float = 0.2
+    max_suspicious_indel_fraction: float = 1e-4
+    min_checkable_ambiguous_indels: int = 100
     keep_unresolved_palindromes: bool = False
     excluded_chromosomes: tuple[int, ...] = (GWASLAB_CHROM_CODE_FOR_NAME["MT"],)
     extra_column_rules: tuple[ExtraColumnRule, ...] = ()
@@ -50,4 +60,6 @@ class GenomeReferenceHarmonizationOptions:
         assert 0 < self.indel_min_af_margin < 1, (
             "a strictly positive margin keeps the keep and flip readings from both being chosen"
         )
+        assert 0 < self.max_suspicious_indel_fraction < 1
+        assert self.min_checkable_ambiguous_indels >= 1
         assert self.max_gather_bytes > 0

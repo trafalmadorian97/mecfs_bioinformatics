@@ -62,8 +62,10 @@ CHR1_SEQUENCE = "ACGTTGGGGGCATGCAATTCGATCGATCGATTTTTTTTTTACACACACACGTCAGTCAGT"
 CHR2_SEQUENCE = "GGGGAAAACCCCTTTT"
 SE_VALUE = 0.01
 
+# min_checkable_ambiguous_indels=1 so a single suspicious ambiguous indel can drive the
+# suspicious-fraction trust gate in tests.
 TEST_OPTIONS = GenomeReferenceHarmonizationOptions(
-    min_checkable_snvs=1, min_checkable_indels=1
+    min_checkable_snvs=1, min_checkable_indels=1, min_checkable_ambiguous_indels=1
 )
 
 _SUMSTATS_ID = "sumstats"

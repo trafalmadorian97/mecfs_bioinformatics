@@ -15,9 +15,10 @@ alone cannot orient.
 This replaces gwaslab harmonization. See the design spec in
 experiments/claude/design_specs/2026-09-14-genome-reference-harmonization-design.md.
 
-Memory is bounded by one chromosome. Pass 1 reads four columns per chromosome to decide
-trust. Pass 2 resolves one chromosome at a time into parquet parts, which are then
-concatenated with a streaming sink.
+Memory is bounded by one chromosome. Pass 1 reads the key columns and, when present, EAF
+per chromosome to decide trust, consulting the panel at ambiguous-indel positions for the
+suspicious-indel gate. Pass 2 resolves one chromosome at a time into parquet parts, which
+are then concatenated with a streaming sink.
 """
 
 from collections.abc import Sequence
@@ -42,6 +43,8 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes import (
+    ALLELE_CLASS_COL,
+    CLASS_INDEL_BOTH,
     classify_alleles,
     prepare_alleles,
     valid_alleles_expr,
@@ -67,7 +70,10 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.resolve_chromoso
     resolve_chromosome,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.trust import (
+    SuspiciousIndelCounts,
     TrustCounts,
+    TrustEvidence,
+    count_suspicious_indels,
     count_trust_evidence,
     decide_trust,
 )
@@ -77,6 +83,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_EFFECT_ALLELE_FREQ_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
 )
@@ -133,27 +140,6 @@ def chromosomes_to_harmonize(
     return kept
 
 
-def count_trust_evidence_genome_wide(
-    sumstats: pl.LazyFrame,
-    chromosomes: Sequence[int],
-    fasta: IndexedFasta,
-    options: GenomeReferenceHarmonizationOptions,
-) -> TrustCounts:
-    total = TrustCounts.zero()
-    for chrom in chromosomes:
-        keys = (
-            sumstats.filter(pl.col(GWASLAB_CHROM_COL) == chrom)
-            .select(_KEY_COLUMNS)
-            .collect(engine="streaming")
-        )
-        valid = prepare_alleles(keys).filter(valid_alleles_expr())
-        classified = classify_alleles(
-            valid, fasta=fasta, chrom=chrom, max_gather_bytes=options.max_gather_bytes
-        )
-        total = total + count_trust_evidence(classified)
-    return total
-
-
 @frozen
 class ParquetPanelLoader:
     """Reads one chromosome's panel rows at requested positions from the panel parquet."""
@@ -175,6 +161,50 @@ class ParquetPanelLoader:
             )
             .collect()
         )
+
+
+def _ambiguous_positions(classified: pl.DataFrame) -> pl.Series:
+    """Positions of ambiguous (BOTH) indels, whose orientation the suspicion test checks."""
+    return classified.filter(pl.col(ALLELE_CLASS_COL) == CLASS_INDEL_BOTH)[
+        GWASLAB_POS_COL
+    ]
+
+
+def count_trust_evidence_genome_wide(
+    sumstats: pl.LazyFrame,
+    chromosomes: Sequence[int],
+    fasta: IndexedFasta,
+    panel_path: Path,
+    options: GenomeReferenceHarmonizationOptions,
+) -> TrustEvidence:
+    names = sumstats.collect_schema().names()
+    eaf_present = GWASLAB_EFFECT_ALLELE_FREQ_COL in names
+    columns = [
+        column
+        for column in [*_KEY_COLUMNS, GWASLAB_EFFECT_ALLELE_FREQ_COL]
+        if column in names
+    ]
+    counts = TrustCounts.zero()
+    suspicious = SuspiciousIndelCounts.zero()
+    for chrom in chromosomes:
+        frame = (
+            sumstats.filter(pl.col(GWASLAB_CHROM_COL) == chrom)
+            .select(columns)
+            .collect(engine="streaming")
+        )
+        valid = prepare_alleles(frame).filter(valid_alleles_expr())
+        classified = classify_alleles(
+            valid, fasta=fasta, chrom=chrom, max_gather_bytes=options.max_gather_bytes
+        )
+        counts = counts + count_trust_evidence(classified)
+        if eaf_present:
+            panel = ParquetPanelLoader(panel_path=panel_path, chrom=chrom)(
+                _ambiguous_positions(classified)
+            )
+            suspicious = suspicious + count_suspicious_indels(
+                classified, panel, options
+            )
+    return TrustEvidence(counts=counts, suspicious=suspicious, eaf_present=eaf_present)
 
 
 def resolve_chromosome_rows(
@@ -261,14 +291,16 @@ class GenomeReferenceHarmonizationTask(Task):
             extra=self.options.extra_column_rules,
         )
         chromosomes = chromosomes_to_harmonize(sumstats, fasta, self.options)
-        counts = count_trust_evidence_genome_wide(
-            sumstats, chromosomes, fasta, self.options
+        evidence = count_trust_evidence_genome_wide(
+            sumstats, chromosomes, fasta, panel_asset.path, self.options
         )
-        trusted = decide_trust(counts, self.options)
+        trusted = decide_trust(evidence, self.options)
         logger.info(
             "genome-reference harmonization trust decision",
             trusted=trusted,
-            counts=attrs.asdict(counts),
+            eaf_present=evidence.eaf_present,
+            counts=attrs.asdict(evidence.counts),
+            suspicious=attrs.asdict(evidence.suspicious),
         )
         parts_dir = scratch_dir / "parts"
         parts_dir.mkdir()

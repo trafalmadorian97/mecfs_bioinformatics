@@ -137,11 +137,11 @@ def main() -> None:
         assets[BUILD_38_TABLE.asset_id], BUILD_38_TABLE.meta, IdentityPipe()
     )
     chromosomes = chromosomes_to_harmonize(sumstats, fasta, BASE_OPTIONS)
-    counts = count_trust_evidence_genome_wide(
-        sumstats, chromosomes, fasta, BASE_OPTIONS
+    evidence = count_trust_evidence_genome_wide(
+        sumstats, chromosomes, fasta, panel_asset.path, BASE_OPTIONS
     )
-    print(f"build-38 trust counts: {counts}")
-    assert decide_trust(counts, BASE_OPTIONS), (
+    print(f"build-38 trust counts: {evidence.counts}")
+    assert decide_trust(evidence, BASE_OPTIONS), (
         "build 38 is not trusted, so it is not a truth set"
     )
     per_chromosome = [

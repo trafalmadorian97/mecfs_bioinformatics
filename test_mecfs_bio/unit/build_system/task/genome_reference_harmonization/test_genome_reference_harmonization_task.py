@@ -339,7 +339,10 @@ _AMBIGUOUS_PANEL = [
     PanelRecord(pos=34, ref="T", alt="TT", af=0.68),
     PanelRecord(pos=35, ref="TT", alt="T", af=0.8),
     PanelRecord(pos=36, ref="TT", alt="T", af=0.31),
-    PanelRecord(pos=36, ref="T", alt="TT", af=0.0),
+    # Polymorphic flip record (AF 0.4 -> predicted EAF 0.6): the keep reading still wins
+    # decisively. A monomorphic (AF 0) record here would be dropped by the AF filter, so a
+    # polymorphic misfit keeps the "both records, keep decisive" case genuine.
+    PanelRecord(pos=36, ref="T", alt="TT", af=0.4),
     PanelRecord(pos=37, ref="TT", alt="T", af=0.5),
     PanelRecord(pos=37, ref="T", alt="TT", af=0.45),
 ]
@@ -382,6 +385,20 @@ def test_ambiguous_indel_resolution_is_symmetric_in_orientation(tmp_path: Path) 
         assert (row[EAF], row[BETA]) == (pytest.approx(0.3), pytest.approx(0.2))
 
 
+def test_monomorphic_panel_records_are_ignored(tmp_path: Path) -> None:
+    # An AF-0 panel record describes a variant absent from EUR, so a match to it is spurious
+    # and it is treated as absent. Without that rule the keep reading (EAF 0.05 vs AF 0.0)
+    # fits within tolerance and the indel is kept; with it the indel is dropped (not in panel).
+    monomorphic = Variant(pos=38, ea="T", nea="TT", eaf=0.05)
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, monomorphic]),
+        panel=[PanelRecord(pos=38, ref="TT", alt="T", af=0.0)],
+        options=_STRINGENT_OPTIONS,
+    )
+    assert 38 not in positions(result)
+
+
 _AMBIGUOUS_WITHOUT_PANEL = Variant(pos=5, ea="T", nea="TG")
 
 
@@ -411,3 +428,31 @@ def test_trust_decision_controls_ambiguous_indels(
     )
     # Trusted tables keep the ambiguous indel; untrusted ones drop it (no panel record).
     assert (5 in positions(result)) == expect_trusted
+
+
+def test_suspicious_ambiguous_indels_make_a_table_untrusted(tmp_path: Path) -> None:
+    # pos 5 is T at the head of a G run, so T/TG is class BOTH. The panel has only the
+    # opposite reading (REF=T, ALT=TG) at AF 0.9, and EAF 0.1 = 1 - 0.9, so the row is
+    # suspicious. With min_checkable_ambiguous_indels=1 that makes the table untrusted,
+    # and the ambiguous indel is swapped rather than kept in source orientation.
+    ambiguous = Variant(pos=5, ea="T", nea="TG", eaf=0.1)
+    panel = [PanelRecord(pos=5, ref="T", alt="TG", af=0.9)]
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, CONSISTENT_INDEL, ambiguous]),
+        panel=panel,
+    )
+    swapped = row_at(result, 5)
+    assert (swapped[EA], swapped[NEA]) == ("TG", "T")
+
+
+def test_table_without_eaf_is_untrusted(tmp_path: Path) -> None:
+    # With no EAF column, ambiguous-indel orientation cannot be assessed, so the table is
+    # refused trust and its ambiguous indel is dropped (NO_EAF) rather than kept.
+    ambiguous = Variant(pos=5, ea="T", nea="TG")
+    frame = sumstats_frame([CONSISTENT_SNV, CONSISTENT_INDEL, ambiguous]).drop(
+        GWASLAB_EFFECT_ALLELE_FREQ_COL
+    )
+    result = run_harmonization(tmp_path / "run", frame)
+    assert 5 not in positions(result)
+    assert set(positions(result)) >= {1, 21}

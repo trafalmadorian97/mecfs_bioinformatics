@@ -182,9 +182,11 @@ def drop_report(case: ComparisonCase, assets: dict[str, Asset]) -> DropReport:
     fasta = IndexedFasta.open(fasta_asset.path)
     rules = resolve_column_rules(columns=sumstats.collect_schema().names(), extra=())
     chromosomes = chromosomes_to_harmonize(sumstats, fasta, OPTIONS)
-    counts = count_trust_evidence_genome_wide(sumstats, chromosomes, fasta, OPTIONS)
-    trusted = decide_trust(counts, OPTIONS)
-    print(f"[{case.label}] trust counts {counts} -> trusted={trusted}")
+    evidence = count_trust_evidence_genome_wide(
+        sumstats, chromosomes, fasta, panel_path, OPTIONS
+    )
+    trusted = decide_trust(evidence, OPTIONS)
+    print(f"[{case.label}] trust counts {evidence.counts} -> trusted={trusted}")
     parts = []
     for chrom in chromosomes:
         context = ChromosomeContext(

@@ -62,6 +62,10 @@ def decide_ambiguous_indels(
     options: GenomeReferenceHarmonizationOptions,
 ) -> pl.DataFrame:
     """INDEL_ACTION_COL and INDEL_DROP_REASON_COL for each row of rows (POS, EA, NEA, EAF), in order."""
+    # Monomorphic panel records (AF 0 or 1) describe a variant not seen in EUR; a match to
+    # one is spurious and its opposite orientation is the mislabelling this Task avoids. So
+    # treat them as absent, on both the untrusted path and the suspicious-indel trust gate.
+    panel = panel.filter((pl.col(PANEL_AF_COL) > 0) & (pl.col(PANEL_AF_COL) < 1))
     keep_records = _records(
         panel,
         ref_as=GWASLAB_NON_EFFECT_ALLELE_COL,
