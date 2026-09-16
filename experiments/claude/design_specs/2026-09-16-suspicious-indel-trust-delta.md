@@ -35,9 +35,11 @@ NO_EAF or NOT_IN_PANEL. suspicious is a subset of checkable.
 
 **suspicious fraction** = suspicious / checkable.
 
-The signal is a positive misorientation detector: it can only *fail* trust, never
-grant it. Absence of evidence (few checkable indels, or no EAF) does not fail
-trust.
+The suspicious-fraction test is a positive misorientation detector over tables
+that carry EAF: it can only fail trust, and a too-sparse checkable set does not
+fail it. Separately, a table with no EAF column cannot assess ambiguous-indel
+orientation at all, so it is refused trust outright (decision, 2026-09-16); its
+ambiguous indels are then dropped on the untrusted path (NO_EAF).
 
 ## Options (options.py)
 
@@ -125,6 +127,7 @@ class SuspiciousIndelCounts:
 class TrustEvidence:
     counts: TrustCounts
     suspicious: SuspiciousIndelCounts
+    eaf_present: bool
 
 
 def count_suspicious_indels(
@@ -157,25 +160,30 @@ def count_suspicious_indels(
 
 
 def decide_trust(
-    counts: TrustCounts,
-    suspicious: SuspiciousIndelCounts,
-    options: GenomeReferenceHarmonizationOptions,
+    evidence: TrustEvidence, options: GenomeReferenceHarmonizationOptions
 ) -> bool:
+    counts = evidence.counts
     consistent = (
         counts.inconsistent_snvs == 0
         and counts.inconsistent_indels == 0
         and counts.consistent_snvs >= options.min_checkable_snvs
         and counts.consistent_indels >= options.min_checkable_indels
     )
-    too_few_to_judge = suspicious.checkable < options.min_checkable_ambiguous_indels
-    low_suspicion = (
-        too_few_to_judge or suspicious.fraction <= options.max_suspicious_indel_fraction
-    )
-    return consistent and low_suspicion
+    if not consistent:
+        return False
+    if not evidence.eaf_present:
+        # No EAF column: ambiguous-indel orientation cannot be assessed, so refuse
+        # trust (decision, 2026-09-16). Untrusted resolution then drops them (NO_EAF).
+        return False
+    if evidence.suspicious.checkable < options.min_checkable_ambiguous_indels:
+        return True
+    return evidence.suspicious.fraction <= options.max_suspicious_indel_fraction
 ```
 
-decide_trust gains the `suspicious` parameter (breaking change to its two call
-sites: the task module and survey_trust.py).
+decide_trust now takes a TrustEvidence (breaking change to its two call sites:
+the task module and survey_trust.py). count_suspicious_indels is unchanged: when
+EAF is absent it returns zero(), and the EAF-absent refusal is driven by
+evidence.eaf_present, not by the counts.
 
 ## Task module (genome_reference_harmonization_task.py)
 
@@ -194,6 +202,7 @@ def count_trust_evidence_genome_wide(
     options: GenomeReferenceHarmonizationOptions,
 ) -> TrustEvidence:
     names = sumstats.collect_schema().names()
+    eaf_present = GWASLAB_EFFECT_ALLELE_FREQ_COL in names
     columns = [c for c in [*_KEY_COLUMNS, GWASLAB_EFFECT_ALLELE_FREQ_COL] if c in names]
     counts = TrustCounts.zero()
     suspicious = SuspiciousIndelCounts.zero()
@@ -210,12 +219,12 @@ def count_trust_evidence_genome_wide(
             max_gather_bytes=options.max_gather_bytes,
         )
         counts = counts + count_trust_evidence(classified)
-        if GWASLAB_EFFECT_ALLELE_FREQ_COL in columns:
+        if eaf_present:
             panel = ParquetPanelLoader(panel_path=panel_path, chrom=chrom)(
                 _ambiguous_positions(classified)
             )
             suspicious = suspicious + count_suspicious_indels(classified, panel, options)
-    return TrustEvidence(counts=counts, suspicious=suspicious)
+    return TrustEvidence(counts=counts, suspicious=suspicious, eaf_present=eaf_present)
 ```
 
 execute():
@@ -224,10 +233,11 @@ execute():
         evidence = count_trust_evidence_genome_wide(
             sumstats, chromosomes, panel_asset.path, self.options
         )
-        trusted = decide_trust(evidence.counts, evidence.suspicious, self.options)
+        trusted = decide_trust(evidence, self.options)
         logger.info(
             "genome-reference harmonization trust decision",
             trusted=trusted,
+            eaf_present=evidence.eaf_present,
             counts=attrs.asdict(evidence.counts),
             suspicious=attrs.asdict(evidence.suspicious),
         )
@@ -259,9 +269,50 @@ def test_suspicious_ambiguous_indels_make_a_table_untrusted(tmp_path: Path) -> N
     assert (swapped[EA], swapped[NEA]) == ("TG", "T")
 ```
 
+```python
+def test_table_without_eaf_is_untrusted(tmp_path: Path) -> None:
+    # With no EAF column, ambiguous-indel orientation cannot be assessed, so the table
+    # is refused trust and its ambiguous indel is dropped (NO_EAF) rather than kept.
+    ambiguous = Variant(pos=5, ea="T", nea="TG")
+    frame = sumstats_frame([CONSISTENT_SNV, CONSISTENT_INDEL, ambiguous]).drop(
+        GWASLAB_EFFECT_ALLELE_FREQ_COL
+    )
+    result = run_harmonization(tmp_path / "run", frame)
+    assert 5 not in positions(result)
+    assert set(positions(result)) >= {1, 21}
+```
+
 The existing test_trusted_table_keeps_ambiguous_indel_in_source_orientation stays
 green: with no panel the sole ambiguous indel is NOT_IN_PANEL, so checkable = 0,
 the sparse branch applies, and the table stays trusted and keeps (T, TG).
+
+## Ambiguous-indel rule change (Task 6, decision 2026-09-16)
+
+Two decisions on decide_ambiguous_indels, which both the untrusted resolution and
+the suspicion counter use:
+
+- **Drop monomorphic panel records.** Filter the panel to strictly polymorphic
+  records at the top of decide_ambiguous_indels, so a record that predicts EAF 0
+  or 1 is treated as absent:
+
+  ```python
+      panel = panel.filter((pl.col(PANEL_AF_COL) > 0) & (pl.col(PANEL_AF_COL) < 1))
+  ```
+
+  On build-38 DecodeME this drops the AF-0 group of contradicting swaps (11 -> 5).
+  It changes suspicious counts, so the max_suspicious_indel_fraction calibration
+  in V3 uses the filtered panel.
+
+- **Do not require both orientations.** Keep the current single-record logic: a
+  reading is chosen when one record fits (and, if both exist, beats the other by
+  the margin). The require-both variant was rejected because it does not improve
+  safety on mis-oriented tables (Kerrebijn still ~100k wrong) and only lowers
+  yield.
+
+Note: some existing Task-6 ambiguous-indel tests use AF-0 records to represent a
+misfitting record; with the filter those become absent (NOT_IN_PANEL) rather than
+misfit (AF_MISMATCH). Revisit those fixtures when folding this in. The palindrome
+rule is out of scope and keeps its current panel handling.
 
 ## Ordering in the plan
 
@@ -307,13 +358,10 @@ still carries ~11 ambiguous indels that differ only in panel representation
 
 ## Open decisions
 
-1. No-EAF tables (e.g. PGC schizophrenia): as drafted, no EAF means checkable = 0
-   and the suspicion test never fires, so such a table can still be trusted on
-   SNV/indel grounds and keeps its ambiguous indels in source orientation
-   unchecked. Recommended (a positive detector should not fail on missing data),
-   but it is a real gap; the alternative is to refuse trust when EAF is absent.
+1. No-EAF tables (e.g. PGC schizophrenia): RESOLVED (2026-09-16) -- refuse trust
+   when the EAF column is absent, via evidence.eaf_present in decide_trust. Such a
+   table takes the untrusted path, where its ambiguous indels are dropped (NO_EAF).
 2. Default max_suspicious_indel_fraction = 1e-4 and min_checkable_ambiguous_indels
    = 100 are provisional; V3 confirms.
-3. The separate ambiguous-indel-rule question (drop 0/1-AF panel records; require
-   both orientations) is unchanged by this delta and settled after it: lean drop
-   0/1-AF records, do not require both orientations.
+3. Ambiguous-indel rule: RESOLVED (2026-09-16) -- drop 0/1-AF panel records, and
+   do not require both orientations. Folded in above (Ambiguous-indel rule change).
