@@ -18,5 +18,13 @@ $$
 
 It is typical to model $G$ and $E$ as independent normal random variables.  This allows the liability threshold model to analyzed via the theory of the [truncated normal distribution](https://en.wikipedia.org/wiki/Truncated_normal_distribution).
 
+The diagram below illustrates a typical liability threshold model.
+
+
+{{
+static_img_embed("docs/_figs/liability_threshold_model_diagram.svg", width="100%")
+}}
+
+
 
 A key advantage of the liability threshold model is that it allows many statistical techniques originally developed for quantitative phenotypes to be applied to the binary phenotypes. One just applies such a technique to the underlying liability $L$ instead of the observed phenotype $Y$.
