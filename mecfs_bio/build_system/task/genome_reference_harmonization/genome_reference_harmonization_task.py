@@ -284,6 +284,24 @@ def _write_chromosome_part(
     return part_path
 
 
+def load_fasta(fetch: Fetch, fasta_task: Task) -> IndexedFasta:
+    """Fetch the FASTA directory asset and open it as an IndexedFasta."""
+    fasta_asset = fetch(fasta_task.asset_id)
+    assert isinstance(fasta_asset, DirectoryAsset), (
+        f"expected {fasta_task.asset_id} to be a DirectoryAsset"
+    )
+    return IndexedFasta.open(fasta_asset.path)
+
+
+def load_panel_path(fetch: Fetch, panel_task: Task) -> Path:
+    """Fetch the reference panel file asset and return its path."""
+    panel_asset = fetch(panel_task.asset_id)
+    assert isinstance(panel_asset, FileAsset), (
+        f"expected {panel_task.asset_id} to be a FileAsset"
+    )
+    return panel_asset.path
+
+
 @frozen
 class GenomeReferenceHarmonizationTask(Task):
     meta: FilteredGWASDataMeta
@@ -301,22 +319,15 @@ class GenomeReferenceHarmonizationTask(Task):
         sumstats = scan_sumstats_as_polars(
             fetch(self.sumstats_task.asset_id), self.sumstats_task.meta, self.pipe
         )
-        fasta_asset = fetch(self.fasta_task.asset_id)
-        assert isinstance(fasta_asset, DirectoryAsset), (
-            f"expected {self.fasta_task.asset_id} to be a DirectoryAsset"
-        )
-        panel_asset = fetch(self.panel_task.asset_id)
-        assert isinstance(panel_asset, FileAsset), (
-            f"expected {self.panel_task.asset_id} to be a FileAsset"
-        )
-        fasta = IndexedFasta.open(fasta_asset.path)
+        fasta = load_fasta(fetch, self.fasta_task)
+        panel_path = load_panel_path(fetch, self.panel_task)
         rules = resolve_column_rules(
             columns=sumstats.collect_schema().names(),
             extra=self.options.extra_column_rules,
         )
         chromosomes = chromosomes_to_harmonize(sumstats, fasta, self.options)
         evidence = count_trust_evidence_genome_wide(
-            sumstats, chromosomes, fasta, panel_asset.path, self.options
+            sumstats, chromosomes, fasta, panel_path, self.options
         )
         trusted = decide_trust(evidence, self.options)
         logger.info(
@@ -338,7 +349,7 @@ class GenomeReferenceHarmonizationTask(Task):
                     rules=rules,
                     options=self.options,
                 ),
-                panel_path=panel_asset.path,
+                panel_path=panel_path,
                 parts_dir=parts_dir,
             )
             for chrom in chromosomes
