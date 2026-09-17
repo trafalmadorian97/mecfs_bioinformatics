@@ -14,3 +14,11 @@ The results are in the table below:
 
 
 A heritability of 0.1683 is low-to-moderate, while a LDSC intercept 1.065 suggested a well-structured GWAS without obvious confounding or stratification. The high mean chi-squared (2.813) indicates a highly polygenic trait.
+
+To illustrate the fit of the LDSC model to the data, I also generated the LDSC diagnostic plot below.
+
+
+{{
+ldsc_diagnostic_plot(src="docs/_figs/said_et_al_2022_crp_eur_ldsc_diagnostic_plot/ldsc_diagnostic.html", id="said_ldsc")
+}}
+

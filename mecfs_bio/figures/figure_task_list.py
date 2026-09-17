@@ -5,9 +5,6 @@ This file contains a list of figures to be exported for use in documentation
 from mecfs_bio.assets.diagrams.ld_same_branch_correlation import (
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
 )
-from mecfs_bio.assets.diagrams.liability_threshold_model import (
-    LIABILITY_THRESHOLD_MODEL_DIAGRAM,
-)
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
 )
@@ -403,8 +400,10 @@ ALL_FIGURE_TASKS: list[Task] = [
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
     MI_LCV_TASK_GROUP.downstream_trait_tables["MI"],
     YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    YENGO_HEIGHT_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
@@ -453,6 +452,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap,
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.ldsc_diagnostic_plot_task_unwrap,
     SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED.display_frame_task,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_gene_manhattan_plot_unwrap,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
@@ -474,7 +474,6 @@ ALL_FIGURE_TASKS: list[Task] = [
     KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # schematic diagrams for docs
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
-    LIABILITY_THRESHOLD_MODEL_DIAGRAM,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"
