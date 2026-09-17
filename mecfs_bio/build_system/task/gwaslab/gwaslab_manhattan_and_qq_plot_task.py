@@ -83,6 +83,10 @@ class GWASLabManhattanAndQQPlotTask(Task):
         )
         figs[plot_name] = fig
         write_plots_to_dir(scratch_dir, figs)
+        # plt.subplots() registers the figure in pyplot's global manager; close it so
+        # memory does not accumulate across a run.
+        for written_fig in figs.values():
+            plt.close(written_fig)
         return FileAsset(scratch_dir / str(plot_name + ".png"))
 
     @classmethod

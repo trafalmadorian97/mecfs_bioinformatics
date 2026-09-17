@@ -188,7 +188,9 @@ class SusieStackPlotTask(Task):
         )
         out_path = scratch_dir
         write_plots_to_dir(out_path, {"plot": fig})
-        del fig
+        # plt.figure() registers the figure in pyplot's global manager, so `del fig`
+        # alone would not free it; close it explicitly to bound memory across a run.
+        plt.close(fig)
         del loaded
         del gene_info_df
         gc.collect()
