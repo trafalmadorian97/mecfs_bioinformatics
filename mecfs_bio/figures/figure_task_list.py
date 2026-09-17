@@ -5,6 +5,9 @@ This file contains a list of figures to be exported for use in documentation
 from mecfs_bio.assets.diagrams.ld_same_branch_correlation import (
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
 )
+from mecfs_bio.assets.diagrams.liability_threshold_model import (
+    LIABILITY_THRESHOLD_MODEL_DIAGRAM,
+)
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
 )
@@ -474,6 +477,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # schematic diagrams for docs
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
+    LIABILITY_THRESHOLD_MODEL_DIAGRAM,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"

@@ -1,10 +1,15 @@
 # Linkage Disequilibrium
-Statistical dependence between genetic variants is called linkage disequilibrium (LD). LD is central to statistical genomics[^handbook_note][^name_note].
+Statistical dependence between genetic variants is called _linkage disequilibrium_ (LD). LD is central to statistical genomics[^handbook_note][^name_note].
 
 ## The LD Matrix
 
 - When we are interested in patterns of LD across a genomic region with $n$ variants, it is convenient to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
 - Note, however, that while the $R$ provides a useful description of the LD structure of a region, it reflects only pairwise dependence, and so is not a complete characterization of LD.  There are many possible higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
+
+
+## Haplotypes
+
+The _haplotype_ is an important concept in the study of LD.  A haplotype is defined to be a group of genetic variants that are inherited together.
 
 ## Drivers
 
