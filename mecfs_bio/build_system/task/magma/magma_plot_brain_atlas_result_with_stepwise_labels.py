@@ -159,6 +159,10 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
 
         figs = {"hba_magma_fig": fig}
         write_plots_to_dir(scratch_dir, figs, matplotlib_format=self.plot_format)
+        # plt.subplots() registers the figure in pyplot's global manager; close it so
+        # memory does not accumulate across a run.
+        for written_fig in figs.values():
+            plt.close(written_fig)
 
         return DirectoryAsset(scratch_dir)
 

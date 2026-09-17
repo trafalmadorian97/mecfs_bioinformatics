@@ -10,9 +10,6 @@ from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
-from mecfs_bio.build_system.task.gwaslab.gwaslab_util import (
-    gwaslab_download_ref_if_missing,
-)
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
@@ -22,7 +19,6 @@ logger = structlog.get_logger()
 from pathlib import Path
 from typing import Literal, Sequence
 
-import gwaslab
 import gwaslab as gl
 import narwhals
 import pandas as pd
@@ -41,122 +37,23 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_CHROM_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_EFFECT_ALLELE_FREQ_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
     GWASLAB_STATUS_COL,
     GwaslabKnownFormat,
 )
 
+_VARIANT_KEY_COLUMNS = [
+    GWASLAB_CHROM_COL,
+    GWASLAB_POS_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+]
+
 GenomeBuildMode = Literal["infer", "19", "38"]
-
-
-@frozen
-class GWASLabVCFRef:
-    name: str
-    ref_alt_freq: str
-    extra_downloads: Sequence[str] = tuple()
-
-
-@frozen
-class HarmonizationOptions:
-    """
-    Options for the call to GWASLab's harmonize function.
-
-
-    gwaslab's harmonization function changes the status codes in the STATUS column.
-    These status codes are described here: https://cloufield.github.io/gwaslab/StatusCode/
-
-    Below I explain some points that were initially not clear to me from the gwaslab documentation.
-
-    Two reference files are used in harmonization:
-
-    - A VCF file (ref_infer).  This is basically a table of genetic variants.
-
-       In some cases, this table is in dbSNP VCF format.  In this case, each row describes a given genetic variant.
-       Sometimes this description includes allele frequency.
-
-       In other cases, (such as when using a thousand genomes reference data) this table is in genotype VCF format.
-       In this case, the rows of the VCF file correspond to variants, and the columns correspond to individuals (from the
-       thousand genomes project, for example).  For each individual and each variant, the table tells us whether that individual has that variant.
-       Variant frequency information can be calculated from this individual-level genome data.
-
-
-    - A FASTA file (ref_seq).  This is a consensus human genome sequence.  Here is an example of some rows from the hg19 FASTA file:
-
-        TAAGTTTTGTCTGGTAATAAAGGTATATTTTCAAAAGAGAGGTAAATAGA
-        TCCACATACTGTGGAGGGAATAAAATACTTTTTGAAAAACAAACAACAAG
-        TTGGATTTTTAGACACATAGAAATTGAATATGTACATTTATAAATATTTT
-        TGGATTGAACTATTTCAAAATTATACCATAAAATAACTTGTAAAAATGTA
-        GGCAAAATGTATATAATTATGGCATGAGGTATGCAACTTTAGGCAAGGAA
-        GCAAAAGCAGAAACCATGAAAAAAGTCTAAATTTTACCATATTGAATTTA
-        AATTTTCAAAAACAAAAATAAAGACAAAGTGGGAAAAATATGTATGCTTC
-        ATGTGTGACAAGCCACTGATACCTATTAAATATGAAGAATATTATAAATC
-        ATATCAATAACCACAACATTCAAGCTGTCAGTTTGAATAGACaatgtaaa
-        tgacaaaactacatactcaacaagataacagcaaaccagcttcgacagca
-        cgttaaaggggtcatacaacataatcgagtagaatttatctctgagatgc
-        aagaatggttcaaaatatggaaaccaataaatgtgatatgccacactaac
-        agaataaaaaataaaaatcatattatcatctcaatagatgcagaaaaagc
-        attaacaaaagtaaacattctttcataataagacatcagataaaacaaat
-        taggaatagaaggaatgtaccgcaacacaataaaggccatatataacaag
-        cccacagctaacatcataatagtaaaatcatcacactggtaaaaaaaatg
-
-
-
-
-
-    gwaslab uses these two reference files to harmonize summary statistics.
-    These two reference files each affect a different digit of the gwaslab STATUS code column.
-
-    - Digit 7 of the status code is determined by the ability of gwaslab to find the variant in the reference VCF (ref_infer) :
-      see here: https://github.com/Cloufield/gwaslab/blob/d639b67c5264b1ac7ec89e284e638f2c8454ac48/src/gwaslab/hm/hm_harmonize_sumstats.py#L1521-L1530
-      Values of 7 or 8 here mean that the variant is palindromic, and the database could not be used to disambiguate the strand of the variant, or the variant was not found in the database
-    - Digit 6 of the status code is instead determined by the ability of the gwaslab to find the variant in the reference genome build FASTA file (ref_seq)
-      see here: https://github.com/Cloufield/gwaslab/blob/d639b67c5264b1ac7ec89e284e638f2c8454ac48/src/gwaslab/hm/hm_harmonize_sumstats.py#L968-L975
-      a value of 8 means a failure to find the variant in the FASTA file.
-
-    Set drop_missing_from_ref_seq to drop based on digit 6.
-    Set drop_missing_from_ref_infer to drop based on digit 7.
-
-    """
-
-    ref_infer: GWASLabVCFRef
-    ref_seq: str
-    cores: int
-    check_ref_files: bool
-    drop_missing_from_ref_seq: bool
-    drop_missing_from_ref_infer_or_ambiguous: bool = True
-
-
-def _do_harmonization(
-    sumstats: gl.Sumstats, basic_check: bool, options: HarmonizationOptions
-):
-    if options.check_ref_files:
-        gwaslab_download_ref_if_missing(options.ref_infer.name)
-        gwaslab_download_ref_if_missing(options.ref_seq)
-        for extra in options.ref_infer.extra_downloads:
-            gwaslab.download_ref(name=extra, overwrite=False)
-
-    sumstats.harmonize(
-        basic_check=basic_check,
-        threads=options.cores,
-        ref_seq=gl.get_path(options.ref_seq),
-        ref_infer=gl.get_path(options.ref_infer.name),
-        ref_alt_freq=options.ref_infer.ref_alt_freq,
-    )
-    # gwaslab v4+ stores STATUS as Int64; cast to string for character-level access
-    status_str = sumstats.data[GWASLAB_STATUS_COL].astype(str)
-    if options.drop_missing_from_ref_seq:
-        # see meaning of status codes here: https://cloufield.github.io/gwaslab/StatusCode/
-        missing_from_ref_seq = status_str.str[5:6] == "8"
-        logger.debug(
-            f"Dropping {missing_from_ref_seq.sum()} variants that are missing from the sequence FASTA reference"
-        )
-        sumstats.data = sumstats.data.loc[~missing_from_ref_seq, :]
-    if options.drop_missing_from_ref_infer_or_ambiguous:
-        missing_from_ref_infer = (status_str.str[6] == "8") | (status_str.str[6] == "7")
-        logger.debug(
-            f"Dropping {missing_from_ref_infer.sum()} variants that are missing from the VCF reference"
-        )
-        sumstats.data = sumstats.data.loc[~missing_from_ref_infer, :]
 
 
 @frozen
@@ -271,7 +168,6 @@ class GWASLabCreateSumstatsTask(Task):
     filter_palindromic: bool = False
     exclude_hla: bool = False
     exclude_sexchr: bool = False
-    harmonize_options: HarmonizationOptions | None = None
     liftover_to: GenomeBuild | None = None
     fmt: GwaslabKnownFormat | GWASLabColumnSpecifiers = "regenie"
     drop_col_list: Sequence[str] = tuple()
@@ -328,7 +224,6 @@ class GWASLabCreateSumstatsTask(Task):
             filter_palindromic=self.filter_palindromic,
             exclude_hla=self.exclude_hla,
             exclude_sexchr=self.exclude_sexchr,
-            harmonize_options=self.harmonize_options,
             liftover_to=self.liftover_to,
         )
         sumstats = transform_gwaslab_sumstats(sumstats, spec=transform_spec)
@@ -354,29 +249,29 @@ class GwasLabTransformSpec:
     filter_palindromic: bool = False
     exclude_hla: bool = False
     exclude_sexchr: bool = False
-    harmonize_options: HarmonizationOptions | None = None
     liftover_to: GenomeBuild | None = None
 
 
-def _prune_unused_allele_categories(sumstats: gl.Sumstats) -> None:
+def _drop_duplicate_variant_keys(sumstats: gl.Sumstats) -> None:
     """
-    Drop unused categories from the EA and NEA columns in place.
+    Drop every row whose (CHR, POS, EA, NEA) key is shared with another row, in place.
 
-    gwaslab stores alleles as pandas category dtype.  Filtering out rows (e.g. indels)
-    removes the rows but leaves the now-unused categories in place, including any very
-    long indel or structural-variant alleles.  Harmonization later calls astype(str) on
-    these columns, which materializes a fixed-width numpy unicode array sized to the
-    longest category across every remaining row, blowing up memory even when no long
-    allele is actually present.  Pruning unused categories keeps that array narrow.
-
-    remove_unused_categories operates on the (small) category index and integer codes,
-    so it never materializes the large per-row string array that astype(str) would.
+    Liftover can map two distinct source variants to the same target coordinate with the
+    same alleles but different statistics, leaving duplicate variant keys that are ambiguous
+    for any downstream allele-keyed join. Because we cannot tell which source variant is
+    correct at the collided coordinate, all colliding rows are dropped, not deduplicated to
+    one. Genome-reference harmonization asserts key uniqueness, so these must be removed here.
     """
-    for col in ("EA", "NEA"):
-        if col in sumstats.data.columns and isinstance(
-            sumstats.data[col].dtype, pd.CategoricalDtype
-        ):
-            sumstats.data[col] = sumstats.data[col].cat.remove_unused_categories()
+    key = [col for col in _VARIANT_KEY_COLUMNS if col in sumstats.data.columns]
+    if len(key) < len(_VARIANT_KEY_COLUMNS):
+        return
+    duplicated = sumstats.data.duplicated(subset=key, keep=False)
+    count = int(duplicated.sum())
+    if count:
+        logger.warning(
+            "dropping rows with duplicate (CHR, POS, EA, NEA) keys", count=count
+        )
+        sumstats.data = sumstats.data[~duplicated].reset_index(drop=True)
 
 
 def transform_gwaslab_sumstats(
@@ -411,14 +306,7 @@ def transform_gwaslab_sumstats(
         sumstats.exclude_hla(inplace=True)
     if spec.exclude_sexchr:
         sumstats = _exclude_sexchr(sumstats)
-    if spec.harmonize_options is not None:
-        _prune_unused_allele_categories(sumstats)
-        _do_harmonization(
-            sumstats,
-            basic_check=(not spec.basic_check),
-            options=spec.harmonize_options,
-        )
-
+    _drop_duplicate_variant_keys(sumstats)
     _sumstats_raise_on_error(sumstats)
     logger.debug(f"Finished gwaslab pipe.  Data has shape {sumstats.data.shape}")
     return sumstats

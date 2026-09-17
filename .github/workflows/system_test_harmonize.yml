@@ -16,4 +16,4 @@ jobs:
         uses: ./.github/actions/run-system-test
         with:
           pytest-target: test_mecfs_bio/system/test_harmonize_drop_ambiguous.py
-          free-disk-space: "false"
+          free-disk-space: "true"
