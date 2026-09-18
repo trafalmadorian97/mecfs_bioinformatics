@@ -33,14 +33,17 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
 )
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     ChromRange,
-    HarmonizeGWASWithReferenceViaAlleles,
 )
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     PalindromeStrategy,
 )
+from mecfs_bio.build_system.task.pipes.chrom_range_filter_pipe import (
+    ChromRangeFilterPipe,
+)
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.concat_str_pipe import ConcatStrPipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.drop_palindromes_pipe import DropPalindromesPipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_min_in_col import (
     FilterRowsByMinInCol,
 )
@@ -76,7 +79,6 @@ class BroadFineMapTaskGroup:
     ld_labels_task: Task
     ld_matrix_task: Task
     renamed_ld_labels_task: Task
-    harmonized_sumstats_task: Task
     susie_finemap_task: Task
     susie_stackplot_task: Task
     susie_finemap_strict_task: Task
@@ -180,33 +182,46 @@ def generate_assets_broad_ukbb_fine_map(
         },
     )
 
-    harmonized_sumstats_task = HarmonizeGWASWithReferenceViaAlleles.create(
-        asset_id=base_name + "_gwas_harmonized_with_ref",
-        gwas_data_task=build_37_sumstats_task,
-        reference_task=ld_labels_task_renamed,
-        palindrome_strategy=palindrome_strategy,
-        gwas_pipe=CompositePipe(
-            [
-                sumstats_pipe,
-                UniquePipe(
-                    by=[
-                        GWASLAB_CHROM_COL,
-                        GWASLAB_POS_COL,
-                        GWASLAB_EFFECT_ALLELE_COL,
-                        GWASLAB_NON_EFFECT_ALLELE_COL,
-                    ],
-                    keep="none",
-                    order_by=[
-                        GWASLAB_CHROM_COL,
-                        GWASLAB_POS_COL,
-                        GWASLAB_EFFECT_ALLELE_COL,
-                        GWASLAB_NON_EFFECT_ALLELE_COL,
-                    ],
-                ),
-            ]
+    # The gwas is fed directly to SUSIE, which aligns it to the (reference-oriented)
+    # LD panel via an exact (CHR, POS, EA, NEA) join. What HarmonizeGWASWithReference
+    # ViaAlleles used to do inline -- dedup, palindrome drop, chrom-range filter --
+    # is reproduced here as a gwas pipe; its allele-flip was a no-op for the
+    # reference-oriented inputs. This is indel-safe (no unordered allele key).
+    gwas_pipe_steps: list[DataProcessingPipe] = [
+        sumstats_pipe,
+        UniquePipe(
+            by=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
+            keep="none",
+            order_by=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
         ),
-        chrom_range_filter=chrom_range,
-    )
+    ]
+    if palindrome_strategy == "drop":
+        gwas_pipe_steps.append(
+            DropPalindromesPipe(
+                ea_col=GWASLAB_EFFECT_ALLELE_COL, nea_col=GWASLAB_NON_EFFECT_ALLELE_COL
+            )
+        )
+    if chrom_range is not None:
+        gwas_pipe_steps.append(
+            ChromRangeFilterPipe(
+                chrom=chrom_range.chrom,
+                start=chrom_range.start,
+                end=chrom_range.end,
+                chrom_col=GWASLAB_CHROM_COL,
+                pos_col=GWASLAB_POS_COL,
+            )
+        )
+    finemap_gwas_pipe = CompositePipe(gwas_pipe_steps)
 
     if prior_spec is not None:
         prior_info = PriorInfo(
@@ -219,7 +234,8 @@ def generate_assets_broad_ukbb_fine_map(
 
     susie_finemap_task = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
@@ -241,7 +257,8 @@ def generate_assets_broad_ukbb_fine_map(
 
     susie_finemap_task_strict = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap_strict_threshold",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
@@ -266,7 +283,8 @@ def generate_assets_broad_ukbb_fine_map(
 
     susie_finemap_task_1_credible_set = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap_1_credible_set",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
@@ -291,7 +309,8 @@ def generate_assets_broad_ukbb_fine_map(
 
     susie_finemap_task_2_credible_set = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap_2_credible_set",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
@@ -417,7 +436,6 @@ def generate_assets_broad_ukbb_fine_map(
         ld_labels_task=ld_labels_task,
         ld_matrix_task=ld_matrix_task,
         renamed_ld_labels_task=ld_labels_task_renamed,
-        harmonized_sumstats_task=harmonized_sumstats_task,
         susie_finemap_task=susie_finemap_task,
         susie_stackplot_task=susie_stack_plot_task,
         susie_finemap_strict_task=susie_finemap_task_strict,
