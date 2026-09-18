@@ -5,6 +5,14 @@ variant matching (so a swapped effect/non-effect orientation still matches).
 The key is valid only for SNVs. Mirrored indels such as T/TCA and TCA/T are distinct
 variants, yet they sort to the same {A, B} key and would collide. Callers that key on it
 must guarantee SNV-only input; assert_all_snv is the guard for that.
+
+Remaining unordered_allele_key uses, all SNV-safe by assertion or by construction:
+  - construct_ppp_variant_index_task: SNV-asserted (the HapMap3 index is SNV-only).
+  - common_1kg_membership_task, build_slim_protein_parquet_task: the common-1kg PPP mode
+    contains indels and is NOT built today; add filter-then-assert before enabling it.
+HarmonizeGWASWithReferenceViaAlleles no longer uses this key but is likewise SNV-only and
+asserts it. The annotation path and the SUSIE prior/main joins now join on the exact
+(CHR, POS, EA, NEA) tuple instead of this key.
 """
 
 import polars as pl
