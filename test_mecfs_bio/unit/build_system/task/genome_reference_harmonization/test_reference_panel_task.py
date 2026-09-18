@@ -55,7 +55,7 @@ def _run(tmp_path: Path) -> pl.DataFrame:
         )
     )
     task = ReferencePanelAlleleFrequencyTask.create(
-        vcf_task=source, asset_id="panel_af"
+        vcf_task=source, asset_id="panel_af", build="19"
     )
 
     def fetch(asset_id: AssetId) -> Asset:

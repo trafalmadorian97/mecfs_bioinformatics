@@ -27,9 +27,13 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
+)
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
 )
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
@@ -40,6 +44,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     contig_to_gwaslab_code,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL, GWASLAB_POS_COL
 from mecfs_bio.util.subproc.run_command import execute_command
 
@@ -139,7 +144,7 @@ def _one_chromosome(sites: pl.LazyFrame, code: int, names: list[str]) -> pl.Data
 
 @frozen
 class ReferencePanelAlleleFrequencyTask(Task):
-    meta: ReferenceFileMeta
+    meta: HarmonizableReferenceTableMeta
     vcf_task: Task
 
     @property
@@ -168,14 +173,14 @@ class ReferencePanelAlleleFrequencyTask(Task):
 
     @classmethod
     def create(
-        cls, vcf_task: Task, asset_id: str
+        cls, vcf_task: Task, asset_id: str, build: GenomeBuild
     ) -> "ReferencePanelAlleleFrequencyTask":
         source_meta = vcf_task.meta
         assert isinstance(source_meta, ReferenceFileMeta), (
             f"expected a ReferenceFileMeta source for {asset_id}, got {type(source_meta).__name__}"
         )
         return cls(
-            meta=ReferenceFileMeta(
+            meta=HarmonizableReferenceTableMeta(
                 group="reference_panel_allele_frequencies",
                 sub_group=source_meta.sub_group,
                 sub_folder=PurePath("processed"),
@@ -183,6 +188,9 @@ class ReferencePanelAlleleFrequencyTask(Task):
                 filename="panel_allele_frequencies",
                 extension=".parquet",
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+                harmonization_info=HarmonizationInfo(
+                    build=build, ref_allele_col=PANEL_REF_COL, pos_col=GWASLAB_POS_COL
+                ),
             ),
             vcf_task=vcf_task,
         )
