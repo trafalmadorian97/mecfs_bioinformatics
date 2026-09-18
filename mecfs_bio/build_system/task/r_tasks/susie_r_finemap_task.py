@@ -32,7 +32,6 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.task.two_sample_mr_task import RPackageType
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -336,19 +335,18 @@ def align_data(
         maintain_order="left",
     )
     if prior is not None:
-        joined = joined.with_columns(
-            unordered_allele_key(
-                GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
-            ).alias("allele_key")
-        )
         n_before = len(joined)
+        # The prior is reference-oriented (its A1 == REF, renamed to NEA in
+        # load_prior) exactly like the gwas, so the join is exact on the 4-tuple;
+        # this is indel-safe, unlike the old unordered allele key.
         joined = joined.join(
-            prior.with_columns(
-                unordered_allele_key(
-                    GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
-                ).alias("allele_key")
-            ),
-            on=[GWASLAB_CHROM_COL, GWASLAB_POS_COL, "allele_key"],
+            prior,
+            on=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
             how="left",
         )
         missing = joined.filter(pl.col(_PRIOR_COL).is_null())
