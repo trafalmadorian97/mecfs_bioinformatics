@@ -90,7 +90,7 @@ Define the following quantities related to [Linkage Disequilibrium](Linkage_Dise
 
 ### Genetic Covariance
 
-First, let us compute the genetic covariances between the two phenotypes.  Let $X\in\mathbb{R}^M$ denote the genotype of an arbitrary individual.  By definition, genetic covariance is:
+First, let us compute the [genetic covariances](Genetic_Correlation.md#genetic-covariance) between the two phenotypes.  Let $X\in\mathbb{R}^M$ denote the genotype of an arbitrary individual.  By definition, genetic covariance is:
 
 $$
 \begin{align}
@@ -108,7 +108,7 @@ $$
 
 Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By the derivation of LDSC, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
 
-The genetic correlation of the two traits can be computed as their genetic covariance divided by the square root of the product of their [heritabilities](Heritability.md):
+Since we have assumed phenotypic variance is standardized to 1 (see $(\ref{e_Y})$, $(\ref{e_Z})$, and $(\ref{y_z_var})$), it follows that the genetic correlation of the two traits can be computed as their genetic covariance divided by the square root of the product of their [heritabilities](Heritability.md):
 
 $$
 \frac{\rho_g}{h_1h_2}.
@@ -173,7 +173,7 @@ Our goal is to derive an expression for the unconditional expectation of $z_{j,1
 $$
 \begin{align}
 &\mathbb{E}(Y_j^TYZ^TZ_j)\\
-&= Y_j^T \left( \sum_{k=1}^M Y_{i,k} Z_{q,k} \right)_{(i,q)}  Z_j \\
+&=\mathbb{E} Y_j^T \left( \sum_{k=1}^M Y_{i,k} Z_{q,k} \right)_{(i,q)}  Z_j \\
 &=\mathbb{E} \sum_{i=1}^{N_1}\sum_{q=1}^{N_2}\sum_{k=1}^M\left( Y_{i,j}Y_{i,k} Z_{q,j} Z_{q,k}  \right) & \text{ def of matrix product}
 \end{align}
 $$
