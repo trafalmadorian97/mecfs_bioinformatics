@@ -28,3 +28,17 @@ static_img_embed("docs/_figs/liability_threshold_model_diagram.svg", width="100%
 
 
 A key advantage of the liability threshold model is that it allows many statistical techniques originally developed for quantitative phenotypes to be applied to the binary phenotypes. One just applies such a technique to the underlying liability $L$ instead of the observed phenotype $Y$.
+
+
+## Liability-scale heritability
+
+Where we model a binary trait as being governed by the liability threshold model, it is frequently of interest to compute [heritability](Heritability.md) on the liability scale.  This is defined as:
+
+$$
+\begin{align}
+\h^2_L:=frac{\mathrm{Var}(G)}{\mathrm{Var}(L)}.
+\end{align}
+$$
+
+
+Thus, we simply apply the standard definition of heritability to the liability $L$ instead of the phenotype $Y$.
