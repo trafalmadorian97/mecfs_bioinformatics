@@ -50,18 +50,12 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
-from mecfs_bio.build_system.task.dataframe_output import (
-    ParquetOutFormat,
-)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     ChromRange,
     HarmonizeGWASWithReferenceViaAlleles,
 )
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     PalindromeStrategy,
-)
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    PipeDataFrameTask,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.concat_str_pipe import ConcatStrPipe
@@ -70,7 +64,6 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.min_variants_for_cumulative_mass import (
     MinVariantsForCumulativeMass,
 )
-from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     DETAILED_DISPLAY_TABLE_FILENAME,
@@ -92,6 +85,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PriorInfo,
     SusieRFinemapTask,
 )
+from mecfs_bio.build_system.task.rename_cols_task import RenameColsTask
 from mecfs_bio.build_system.task.upset_plot_task import (
     DirSetSource,
     UpSetPlotTask,
@@ -420,20 +414,18 @@ def _build_shared_locus_inputs(
     ld_labels_task, ld_matrix_task = (
         get_ld_labels_and_matrix_task_for_genomic_interval_build_37(interval=interval)
     )
-    ld_labels_task_renamed = PipeDataFrameTask.create(
+    ld_labels_task_renamed = RenameColsTask.create(
         source_task=ld_labels_task,
         asset_id=ld_labels_task.asset_id + "_renamed",
-        out_format=ParquetOutFormat(),
-        pipes=[
-            RenameColPipe(old_name="rsid", new_name=GWASLAB_RSID_COL),
-            RenameColPipe(old_name="chromosome", new_name=GWASLAB_CHROM_COL),
-            RenameColPipe(old_name="position", new_name=GWASLAB_POS_COL),
+        renames={
+            "rsid": GWASLAB_RSID_COL,
+            "chromosome": GWASLAB_CHROM_COL,
+            "position": GWASLAB_POS_COL,
             # allele1 is the non-effect allele in the Broad UKBB LD panel; see
             # https://github.com/omerwe/polyfun/issues/208#issuecomment-2563832487
-            RenameColPipe(old_name="allele1", new_name=GWASLAB_NON_EFFECT_ALLELE_COL),
-            RenameColPipe(old_name="allele2", new_name=GWASLAB_EFFECT_ALLELE_COL),
-        ],
-        backend="polars",
+            "allele1": GWASLAB_NON_EFFECT_ALLELE_COL,
+            "allele2": GWASLAB_EFFECT_ALLELE_COL,
+        },
     )
     harmonized_sumstats_task = HarmonizeGWASWithReferenceViaAlleles.create(
         asset_id=base_name + "_gwas_harmonized_with_ref",
