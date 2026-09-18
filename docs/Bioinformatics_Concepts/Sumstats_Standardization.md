@@ -90,8 +90,5 @@ What is needed is a unique canonical form to which all equivalent variants can b
 todo
 
 
-## Step 3: Harmonization between GWAS, or between a GWAS and an LD Matrix
-
-todo
 
 [^judson_note]:For a discussion of the structure of DNA, see Chapter 4 of _Molecular Biology of the Cell_[@alberts2022molecular].  For a historical account of the discovery of this structure, see Judson's book[@judson1996eighth].
