@@ -27,6 +27,9 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -100,6 +103,31 @@ class PriorInfo:
     prior_a1_col: str = "A1"
     prior_a2_col: str = "A2"
     prior_pipe: DataProcessingPipe = IdentityPipe()
+
+
+def assert_gwas_harmonized_to_ld(gwas_task: Task, ld_labels_task: Task) -> None:
+    """Fail fast at construction if the gwas and the LD panel are not both harmonized to
+    the same genome build. Both must carry harmonization_info (threaded through the metadata
+    by the harmonization-provenance layer); a build mismatch means SUSIE would be aligning
+    positions across genome builds."""
+    gwas_meta = gwas_task.meta
+    ld_meta = ld_labels_task.meta
+    assert (
+        isinstance(gwas_meta, FilteredGWASDataMeta)
+        and gwas_meta.harmonization_info is not None
+    ), (
+        "SUSIE gwas input must be a harmonized FilteredGWASDataMeta (run genome-reference harmonization)"
+    )
+    assert (
+        isinstance(ld_meta, HarmonizableReferenceTableMeta)
+        and ld_meta.harmonization_info is not None
+    ), (
+        "SUSIE ld_labels must be a HarmonizableReferenceTableMeta with harmonization_info"
+    )
+    assert gwas_meta.harmonization_info.build == ld_meta.harmonization_info.build, (
+        f"gwas harmonized to build {gwas_meta.harmonization_info.build} but LD panel is "
+        f"build {ld_meta.harmonization_info.build}"
+    )
 
 
 @frozen
@@ -285,6 +313,7 @@ class SusieRFinemapTask(Task):
         z_score_filtering_threshold: float = 2.0,
         prior_info: PriorInfo | None = None,
     ):
+        assert_gwas_harmonized_to_ld(gwas_data_task, ld_labels_task)
         source_meta = gwas_data_task.meta
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
