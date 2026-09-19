@@ -43,7 +43,6 @@ from mecfs_bio.build_system.task.dataframe_output import (
     ParquetOutFormat,
     write_df_according_to_format,
 )
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.polyfun_annotation_families import family_for_annotation
 
@@ -58,13 +57,11 @@ _CHR_COL = "CHR"
 _BP_COL = "BP"
 _A1_COL = "A1"
 _A2_COL = "A2"
-_ALLELE_KEY_COL = "allele_key"
 # Both the annotation matrix and snpvar_meta carry alleles (A1/A2), so the
-# annotation<->snpvar join is allele-precise: it matches on (CHR, BP,
-# unordered-allele-key). This pairs each allele of a multiallelic site with its
-# own snpvar_bin, rather than the old SNP-keyed join that (with a SNP dedup on
-# each side) arbitrarily dropped one allele.
-_JOIN_KEYS = [_CHR_COL, _BP_COL, _ALLELE_KEY_COL]
+# annotation<->snpvar join is exact on (CHR, BP, A1, A2), both sides
+# reference-oriented (A1 == REF). This pairs each allele of a multiallelic site --
+# and each orientation of a mirrored indel -- with its own snpvar_bin.
+_JOIN_KEYS = [_CHR_COL, _BP_COL, _A1_COL, _A2_COL]
 
 _DEFAULT_ALPHAS: tuple[float, ...] = (0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
 
@@ -124,9 +121,7 @@ class RidgeAnnotationWeightsTask(Task):
             .select(_CHR_COL, _BP_COL, _A1_COL, _A2_COL, SNPVAR_COL)
             .collect()
             .to_polars()
-            .with_columns(unordered_allele_key(_A1_COL, _A2_COL).alias(_ALLELE_KEY_COL))
-            .select(_CHR_COL, _BP_COL, _ALLELE_KEY_COL, SNPVAR_COL)
-            .unique(subset=[_CHR_COL, _BP_COL, _ALLELE_KEY_COL])
+            .unique(subset=_JOIN_KEYS)
         )
 
         annot_columns = _annotation_columns(annot_asset.path)
@@ -209,14 +204,11 @@ def _accumulate_per_chromosome(
     per_chrom: dict[int, _ChromStats] = {}
     for chrom in sorted(chroms):
         annot_chrom = (
-            pl.scan_parquet(annot_path)
-            .filter(pl.col(_CHR_COL) == chrom)
-            .collect()
-            .with_columns(unordered_allele_key(_A1_COL, _A2_COL).alias(_ALLELE_KEY_COL))
+            pl.scan_parquet(annot_path).filter(pl.col(_CHR_COL) == chrom).collect()
         )
         frame = annot_chrom.join(meta, on=_JOIN_KEYS, how="inner")
         # meta is unique on the join key and the annotation matrix is unique on
-        # (CHR, BP, allele_key), so the inner join must not multiply rows.
+        # (CHR, BP, A1, A2), so the inner join must not multiply rows.
         assert frame.height <= annot_chrom.height, (
             f"annotation<->snpvar join multiplied rows on chr{chrom}: "
             f"{annot_chrom.height} -> {frame.height}"

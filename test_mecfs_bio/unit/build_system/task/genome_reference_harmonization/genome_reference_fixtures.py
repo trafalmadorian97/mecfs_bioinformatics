@@ -12,15 +12,14 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
 )
-from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta import (
-    ReferenceDataDirectoryMeta,
-)
-from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
-    ReferenceFileMeta,
+from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
@@ -183,21 +182,25 @@ def run_harmonization(
             )
         ),
         fasta_task=FakeTask(
-            ReferenceDataDirectoryMeta(
+            FASTAMeta(
                 group="genome_sequence",
                 sub_group="synthetic",
                 sub_folder=PurePath("processed"),
                 id=AssetId(_FASTA_ID),
+                build="19",
             )
         ),
         panel_task=FakeTask(
-            ReferenceFileMeta(
+            HarmonizableReferenceTableMeta(
                 group="reference_panel_allele_frequencies",
                 sub_group="synthetic",
                 sub_folder=PurePath("processed"),
                 extension=".parquet",
                 id=AssetId(_PANEL_ID),
                 read_spec=parquet_spec,
+                harmonization_info=HarmonizationInfo(
+                    build="19", ref_allele_col=PANEL_REF_COL, pos_col=GWASLAB_POS_COL
+                ),
             )
         ),
         options=options,

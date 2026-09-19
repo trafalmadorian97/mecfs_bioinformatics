@@ -4,12 +4,13 @@ per-chromosome .annot.parquet members.
 Consumes the directory of baselineLF2.2.UKB.<chr>.annot.parquet members produced
 by StreamExtractAnnotationParquetsTask (each: CHR, SNP, BP, A1, A2, + 187
 annotation columns; no CM). Casts the annotation columns to float32, collapses
-the rare unordered-allele ordering duplicates (same position with A1/A2 swapped
-and identical annotations), and streams them, in (CHR, BP) order, into a single
-sorted parquet. The result is keyed allele-aware: it is unique on
-(CHR, BP, unordered-allele-key). Downstream tasks (ridge weights, explainability)
-join to gwas variants on (CHR, BP, unordered-allele-key), so each allele of a
-multiallelic site carries its own annotations.
+exact ordering duplicates (identical CHR, BP, A1, A2 and identical annotations),
+and streams them, in (CHR, BP) order, into a single sorted parquet. The result is
+unique on exact (CHR, BP, A1, A2). Mirrored indels (T/TCA vs TCA/T) are distinct
+rows -- each allele orientation is its own variant -- rather than colliding as they
+would on an unordered allele key. Downstream tasks (ridge weights, explainability)
+join to gwas variants on the exact (CHR, BP, A1, A2) tuple, both sides
+reference-oriented (A1 == REF).
 """
 
 import re
@@ -36,7 +37,6 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.wf.base_wf import WF
 
 # The annotation source now carries alleles, so the position key includes A1/A2.
@@ -45,7 +45,6 @@ _CHR_COL = "CHR"
 _BP_COL = "BP"
 _A1_COL = "A1"
 _A2_COL = "A2"
-_ALLELE_KEY_COL = "allele_key"
 _ANNOT_MEMBER_RE = re.compile(r"baselineLF2\.2\.UKB\.(\d+)\.annot\.parquet$")
 
 
@@ -117,34 +116,31 @@ def _list_annot_members(members_dir: Path) -> dict[int, Path]:
 
 def _dedup_one_chromosome(member_path: Path) -> pl.DataFrame:
     """Scan one chromosome's member, cast annotations to float32, and collapse its
-    unordered-allele ordering duplicates (identical annotations), returning an
-    eager frame. Done per chromosome (bounded memory) since such duplicates share
-    a (CHR, BP); genuine multiallelic sites have distinct allele keys and survive.
+    exact ordering duplicates (identical CHR, BP, A1, A2 and identical annotations),
+    returning an eager frame. Done per chromosome (bounded memory) since such
+    duplicates share a (CHR, BP); genuine multiallelic sites and mirrored indels
+    have distinct (CHR, BP, A1, A2) tuples and survive as their own rows.
 
-    Collapsing on the position key alone relies on all rows sharing a
-    (CHR, BP, unordered-allele-key) carrying identical annotations. We enforce
-    that cheaply instead of assuming it: dedup on the key AND every annotation
-    column, so ordering duplicates that agree collapse, and any key that still
-    appears more than once must disagree on some annotation -- which we reject.
+    Collapsing on the exact key relies on all rows sharing a (CHR, BP, A1, A2)
+    carrying identical annotations. We enforce that cheaply instead of assuming it:
+    dedup on the key AND every annotation column, so exact duplicates that agree
+    collapse, and any key that still appears more than once must disagree on some
+    annotation -- which we reject.
     """
     lazy = pl.scan_parquet(member_path)
     schema = lazy.collect_schema()
     annot_cols = [c for c in schema.names() if c not in ANNOT_KEY_COLUMNS]
-    key_cols = [_CHR_COL, _BP_COL, _ALLELE_KEY_COL]
+    key_cols = [_CHR_COL, _BP_COL, _A1_COL, _A2_COL]
     deduped = (
         lazy.with_columns([pl.col(c).cast(pl.Float32) for c in annot_cols])
-        .with_columns(unordered_allele_key(_A1_COL, _A2_COL).alias(_ALLELE_KEY_COL))
         .unique(subset=[*key_cols, *annot_cols], keep="first")
         .collect()
     )
     conflicting_keys = deduped.height - deduped.n_unique(subset=key_cols)
     assert conflicting_keys == 0, (
-        f"{member_path.name}: {conflicting_keys} (CHR, BP, unordered-allele-key) "
-        "group(s) carry differing annotations, violating the dedup assumption"
+        f"{member_path.name}: {conflicting_keys} (CHR, BP, A1, A2) group(s) carry "
+        "differing annotations, violating the dedup assumption"
     )
-    return (
-        deduped.drop(_ALLELE_KEY_COL)
-        # unique() may reorder; restore per-chromosome BP order so the streamed
-        # concatenation of chromosomes is globally (CHR, BP)-sorted.
-        .sort(_BP_COL)
-    )
+    # unique() may reorder; restore per-chromosome BP order so the streamed
+    # concatenation of chromosomes is globally (CHR, BP)-sorted.
+    return deduped.sort(_BP_COL)

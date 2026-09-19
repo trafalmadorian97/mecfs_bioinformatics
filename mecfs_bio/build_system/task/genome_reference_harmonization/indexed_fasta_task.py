@@ -17,9 +17,7 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
-from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta import (
-    ReferenceDataDirectoryMeta,
-)
+from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -29,13 +27,14 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     FASTA_FILENAME,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 _COPY_CHUNK_BYTES = 16 * 1024 * 1024
 
 
 @frozen
 class IndexedFastaTask(Task):
-    meta: ReferenceDataDirectoryMeta
+    meta: FASTAMeta
     fasta_gz_task: Task
 
     @property
@@ -59,17 +58,20 @@ class IndexedFastaTask(Task):
         return DirectoryAsset(out_dir)
 
     @classmethod
-    def create(cls, fasta_gz_task: Task, asset_id: str) -> "IndexedFastaTask":
+    def create(
+        cls, fasta_gz_task: Task, asset_id: str, build: GenomeBuild
+    ) -> "IndexedFastaTask":
         source_meta = fasta_gz_task.meta
         assert isinstance(source_meta, ReferenceFileMeta), (
             f"expected a ReferenceFileMeta source for {asset_id}, got {type(source_meta).__name__}"
         )
         return cls(
-            meta=ReferenceDataDirectoryMeta(
+            meta=FASTAMeta(
                 group=source_meta.group,
                 sub_group=source_meta.sub_group,
                 sub_folder=PurePath("processed"),
                 id=AssetId(asset_id),
+                build=build,
             ),
             fasta_gz_task=fasta_gz_task,
         )

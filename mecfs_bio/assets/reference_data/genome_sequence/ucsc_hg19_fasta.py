@@ -32,6 +32,6 @@ UCSC_HG19_FASTA_GZ = DownloadFileTask(
 
 UCSC_HG19_INDEXED_FASTA = DiscardDepsWrapper(
     IndexedFastaTask.create(
-        fasta_gz_task=UCSC_HG19_FASTA_GZ, asset_id="ucsc_hg19_indexed_fasta"
+        fasta_gz_task=UCSC_HG19_FASTA_GZ, asset_id="ucsc_hg19_indexed_fasta", build="19"
     )
 )

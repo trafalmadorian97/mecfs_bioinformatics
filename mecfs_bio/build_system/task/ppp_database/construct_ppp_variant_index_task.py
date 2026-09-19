@@ -48,7 +48,10 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     is_palindromic_expr,
 )
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
+from mecfs_bio.build_system.task.ppp_database.allele_key import (
+    assert_all_snv,
+    unordered_allele_key,
+)
 from mecfs_bio.build_system.task.ppp_database.byte_stream_split_parquet import (
     write_byte_stream_split_parquet,
 )
@@ -202,6 +205,10 @@ class ConstructPppVariantIndexTask(GeneratingTask):
             .select(INDEX_COLUMNS)
             .collect()
         )
+
+        # The whole PPP database keys on the unordered {EA, NEA} set, which is invalid for
+        # indels (mirrored T/TCA vs TCA/T collide), so the index must be SNV-only.
+        assert_all_snv(index, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL)
 
         out_path = scratch_dir / "ppp_variant_index.parquet"
         write_byte_stream_split_parquet(index, out_path, float_columns=_FLOAT_COLUMNS)

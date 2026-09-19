@@ -18,6 +18,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.ppp_database.allele_key import assert_all_snv
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
@@ -77,6 +78,9 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     - drop if we lack frequency information
     - Else, can try to use frequency info to resolve
 
+    This task is valid only for SNVs: its palindrome detection is SNV-only. Indel-containing
+    data must join on the exact (chrom, pos, ea, nea) tuple directly, as the fine-mapping path
+    now does. execute asserts SNV-only input on both the gwas and the reference.
     """
 
     meta: Meta
@@ -127,6 +131,16 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
             .to_polars()
         )
         reference = _convert_ea_nea_to_str(reference)
+
+        # This task's palindrome detection and allele matching are only valid for SNVs;
+        # indel-containing data must join on the exact (chrom, pos, ea, nea) tuple instead
+        # (as the fine-mapping path now does).
+        assert_all_snv(
+            gwas_data, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+        )
+        assert_all_snv(
+            reference, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+        )
 
         assert len(
             gwas_data.unique(

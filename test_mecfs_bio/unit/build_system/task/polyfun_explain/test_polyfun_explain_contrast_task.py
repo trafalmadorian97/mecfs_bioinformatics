@@ -146,8 +146,10 @@ def _make_contrast_fixture(
             "NEA": ["C"] * _N_VARIANTS,
         }
     )
-    # Annotation values (by CHR/BP). BP == POS. Alleles (A1/A2) match the run
-    # variants' EA/NEA so the allele-aware join lines up.
+    # Annotation values (by CHR/BP). BP == POS. Alleles are reference-oriented:
+    # annotation A1 == REF maps to the run's NEA, A2 maps to EA. The run variants
+    # are EA="A", NEA="C", so A1="C", A2="A" makes the exact (CHR,POS,EA,NEA) join
+    # line up.
     a = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # coding: focal only
     b = np.array([2.0, 1.0, 1.0, 1.0, 1.0, 1.0])  # conserved: focal higher
     annot = pl.DataFrame(
@@ -155,8 +157,8 @@ def _make_contrast_fixture(
             "CHR": [1] * _N_VARIANTS,
             "BP": [10, 20, 30, 40, 50, 60],
             "SNP": [f"rs{i}" for i in range(_N_VARIANTS)],
-            "A1": ["A"] * _N_VARIANTS,
-            "A2": ["C"] * _N_VARIANTS,
+            "A1": ["C"] * _N_VARIANTS,
+            "A2": ["A"] * _N_VARIANTS,
             _ANNOT_A: a,
             _ANNOT_B: b,
         }
@@ -385,15 +387,15 @@ def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
 
 
 def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path):
-    # The annotation matrix is built unique on (CHR, BP, unordered-allele-key).
+    # The annotation matrix is built unique on exact (CHR, BP, A1, A2).
     # A duplicate at the same position AND same alleles would cross-multiply a
     # run's variant rows into doubled/misattributed contrast values, so the task
-    # must fail fast. (A genuine multiallelic site has a distinct allele key and
+    # must fail fast. (A genuine multiallelic site has a distinct (A1, A2) and
     # is fine - see test_contrast_resolves_co_located_variants_by_allele.)
     uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
     annot = pl.read_parquet(annot_path)
     dup_row = annot.filter(pl.col("BP") == 10).with_columns(
-        pl.lit("rs0_dup").alias("SNP")  # same A1/A2 -> same allele key
+        pl.lit("rs0_dup").alias("SNP")  # same A1/A2 -> same exact key
     )
     pl.concat([annot, dup_row], how="vertical").write_parquet(annot_path)
 
@@ -415,13 +417,15 @@ def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
             "NEA": ["C", "G"],
         }
     )
+    # Reference-oriented alleles: annotation A1 == REF -> run NEA, A2 -> run EA.
+    # The run variants are (EA=A, NEA=C) and (EA=A, NEA=G), so A1=[C, G], A2=[A, A].
     annot = pl.DataFrame(
         {
             "CHR": [1, 1],
             "BP": [10, 10],
             "SNP": ["rsAC", "rsAG"],
-            "A1": ["A", "A"],
-            "A2": ["C", "G"],
+            "A1": ["C", "G"],
+            "A2": ["A", "A"],
             _ANNOT_A: [1.0, 4.0],  # coding: A/C -> 1, A/G -> 4
             _ANNOT_B: [0.0, 0.0],
         }
@@ -496,13 +500,14 @@ def test_per_variant_annotation_table(tmp_path: Path):
     )
     a = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # coding: variant 0 only
     b = np.array([2.0, 1.0, 1.0, 1.0, 1.0, 1.0])  # conserved
+    # Reference-oriented alleles: annotation A1 == REF -> run NEA="C", A2 -> EA="A".
     annot = pl.DataFrame(
         {
             "CHR": [1] * _N_VARIANTS,
             "BP": [10, 20, 30, 40, 50, 60],
             "SNP": [f"rs{i}" for i in range(_N_VARIANTS)],
-            "A1": ["A"] * _N_VARIANTS,
-            "A2": ["C"] * _N_VARIANTS,
+            "A1": ["C"] * _N_VARIANTS,
+            "A2": ["A"] * _N_VARIANTS,
             _ANNOT_A: a,
             _ANNOT_B: b,
         }

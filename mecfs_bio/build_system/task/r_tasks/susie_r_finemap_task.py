@@ -27,12 +27,14 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.task.two_sample_mr_task import RPackageType
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -101,6 +103,31 @@ class PriorInfo:
     prior_a1_col: str = "A1"
     prior_a2_col: str = "A2"
     prior_pipe: DataProcessingPipe = IdentityPipe()
+
+
+def assert_gwas_harmonized_to_ld(gwas_task: Task, ld_labels_task: Task) -> None:
+    """Fail fast at construction if the gwas and the LD panel are not both harmonized to
+    the same genome build. Both must carry harmonization_info (threaded through the metadata
+    by the harmonization-provenance layer); a build mismatch means SUSIE would be aligning
+    positions across genome builds."""
+    gwas_meta = gwas_task.meta
+    ld_meta = ld_labels_task.meta
+    assert (
+        isinstance(gwas_meta, FilteredGWASDataMeta)
+        and gwas_meta.harmonization_info is not None
+    ), (
+        "SUSIE gwas input must be a harmonized FilteredGWASDataMeta (run genome-reference harmonization)"
+    )
+    assert (
+        isinstance(ld_meta, HarmonizableReferenceTableMeta)
+        and ld_meta.harmonization_info is not None
+    ), (
+        "SUSIE ld_labels must be a HarmonizableReferenceTableMeta with harmonization_info"
+    )
+    assert gwas_meta.harmonization_info.build == ld_meta.harmonization_info.build, (
+        f"gwas harmonized to build {gwas_meta.harmonization_info.build} but LD panel is "
+        f"build {ld_meta.harmonization_info.build}"
+    )
 
 
 @frozen
@@ -286,6 +313,7 @@ class SusieRFinemapTask(Task):
         z_score_filtering_threshold: float = 2.0,
         prior_info: PriorInfo | None = None,
     ):
+        assert_gwas_harmonized_to_ld(gwas_data_task, ld_labels_task)
         source_meta = gwas_data_task.meta
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
@@ -336,19 +364,18 @@ def align_data(
         maintain_order="left",
     )
     if prior is not None:
-        joined = joined.with_columns(
-            unordered_allele_key(
-                GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
-            ).alias("allele_key")
-        )
         n_before = len(joined)
+        # The prior is reference-oriented (its A1 == REF, renamed to NEA in
+        # load_prior) exactly like the gwas, so the join is exact on the 4-tuple;
+        # this is indel-safe, unlike the old unordered allele key.
         joined = joined.join(
-            prior.with_columns(
-                unordered_allele_key(
-                    GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
-                ).alias("allele_key")
-            ),
-            on=[GWASLAB_CHROM_COL, GWASLAB_POS_COL, "allele_key"],
+            prior,
+            on=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
             how="left",
         )
         missing = joined.filter(pl.col(_PRIOR_COL).is_null())

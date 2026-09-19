@@ -34,12 +34,17 @@ from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
 )
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.genome_reference_harmonization.allele_classes import (
@@ -80,6 +85,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.trust import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -302,6 +308,25 @@ def load_panel_path(fetch: Fetch, panel_task: Task) -> Path:
     return panel_asset.path
 
 
+def resolve_harmonized_build(fasta_task: Task, panel_task: Task) -> GenomeBuild:
+    """Assert the FASTA and the allele-frequency panel are the same genome build and
+    return it. This is the construction-time guard that keeps a build-19 GWAS from being
+    oriented against a build-38 reference (or vice versa)."""
+    fasta_meta = fasta_task.meta
+    panel_meta = panel_task.meta
+    assert isinstance(fasta_meta, FASTAMeta), (
+        f"fasta_task must carry FASTAMeta, got {type(fasta_meta).__name__}"
+    )
+    assert (
+        isinstance(panel_meta, HarmonizableReferenceTableMeta)
+        and panel_meta.harmonization_info is not None
+    ), "panel_task must carry HarmonizableReferenceTableMeta with harmonization_info"
+    assert fasta_meta.build == panel_meta.harmonization_info.build, (
+        f"fasta build {fasta_meta.build} != panel build {panel_meta.harmonization_info.build}"
+    )
+    return fasta_meta.build
+
+
 @frozen
 class GenomeReferenceHarmonizationTask(Task):
     meta: FilteredGWASDataMeta
@@ -375,6 +400,7 @@ class GenomeReferenceHarmonizationTask(Task):
         assert isinstance(source_meta, FilteredGWASDataMeta), (
             f"expected a FilteredGWASDataMeta source for {asset_id}, got {type(source_meta).__name__}"
         )
+        build = resolve_harmonized_build(fasta_task, panel_task)
         return cls(
             meta=FilteredGWASDataMeta(
                 id=AssetId(asset_id),
@@ -382,6 +408,11 @@ class GenomeReferenceHarmonizationTask(Task):
                 project=source_meta.project,
                 sub_dir="processed",
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+                harmonization_info=HarmonizationInfo(
+                    build=build,
+                    ref_allele_col=GWASLAB_NON_EFFECT_ALLELE_COL,
+                    pos_col=GWASLAB_POS_COL,
+                ),
             ),
             sumstats_task=sumstats_task,
             fasta_task=fasta_task,

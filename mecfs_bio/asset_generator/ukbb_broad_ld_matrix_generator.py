@@ -7,9 +7,13 @@ from pathlib import Path, PurePath
 import pandas as pd
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameTextFormat,
+)
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
 )
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
@@ -17,6 +21,9 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
+
+_BROAD_LD_LABEL_ALLELE1_COL = "allele1"
+_BROAD_LD_LABEL_POSITION_COL = "position"
 
 BROAD_UKBB_FILE_LIST = Path("mecfs_bio/vend_files/broad_ukbb_ld_matrix_file_list.txt")
 
@@ -90,7 +97,7 @@ def get_genomic_interval_ld_labels_task(interval: GenomicInterval) -> Task:
     stem = get_genomic_interval_stem_name(interval)
     url = get_genomic_interval_ld_labels_url(interval)
     return DownloadFileTask(
-        meta=ReferenceFileMeta(
+        meta=HarmonizableReferenceTableMeta(
             group="ukbb_reference_ld",
             sub_group=stem,
             sub_folder=PurePath("raw"),
@@ -98,6 +105,11 @@ def get_genomic_interval_ld_labels_task(interval: GenomicInterval) -> Task:
             filename=stem,
             extension=".gz",
             read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
+            harmonization_info=HarmonizationInfo(
+                build="19",
+                ref_allele_col=_BROAD_LD_LABEL_ALLELE1_COL,
+                pos_col=_BROAD_LD_LABEL_POSITION_COL,
+            ),
         ),
         url=url,
         md5_hash=None,

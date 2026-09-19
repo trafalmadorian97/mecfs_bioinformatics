@@ -24,6 +24,10 @@ from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
+from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta import (
     ReferenceDataDirectoryMeta,
 )
@@ -45,8 +49,10 @@ Meta = (
     | GWASLabLeadVariantsMeta
     | GWASLabRegionPlotsMeta
     | ReferenceFileMeta
+    | HarmonizableReferenceTableMeta
     | GWASLabManhattanQQPlotMeta
     | ReferenceDataDirectoryMeta
+    | FASTAMeta
     | ExecutableMeta
     | ProcessedGwasDataDirectoryMeta
     | GWASPlotDirectoryMeta

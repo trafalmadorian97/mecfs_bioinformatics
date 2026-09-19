@@ -50,27 +50,23 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
-from mecfs_bio.build_system.task.dataframe_output import (
-    ParquetOutFormat,
-)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     ChromRange,
-    HarmonizeGWASWithReferenceViaAlleles,
 )
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     PalindromeStrategy,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    PipeDataFrameTask,
+from mecfs_bio.build_system.task.pipes.chrom_range_filter_pipe import (
+    ChromRangeFilterPipe,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.concat_str_pipe import ConcatStrPipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.drop_palindromes_pipe import DropPalindromesPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.min_variants_for_cumulative_mass import (
     MinVariantsForCumulativeMass,
 )
-from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     DETAILED_DISPLAY_TABLE_FILENAME,
@@ -92,6 +88,7 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PriorInfo,
     SusieRFinemapTask,
 )
+from mecfs_bio.build_system.task.rename_cols_task import RenameColsTask
 from mecfs_bio.build_system.task.upset_plot_task import (
     DirSetSource,
     UpSetPlotTask,
@@ -132,7 +129,8 @@ class SharedFineMapInputs:
     """Per-locus inputs shared by every run config's matched pair."""
 
     base_name: str
-    harmonized_sumstats_task: Task
+    gwas_data_task: Task
+    gwas_data_pipe: DataProcessingPipe
     ld_labels_task: Task
     ld_matrix_task: Task
     gene_info_task: Task
@@ -213,7 +211,8 @@ def generate_polyfun_explain_group(
     )
     susie_uniform = SusieRFinemapTask.create(
         asset_id=f"{stem}_susie_uniform",
-        gwas_data_task=shared.harmonized_sumstats_task,
+        gwas_data_task=shared.gwas_data_task,
+        gwas_data_pipe=shared.gwas_data_pipe,
         ld_labels_task=shared.ld_labels_task,
         ld_matrix_source=BroadInstituteFormatLDMatrix(shared.ld_matrix_task),
         effective_sample_size=shared.effective_sample_size,
@@ -223,7 +222,8 @@ def generate_polyfun_explain_group(
     )
     susie_polyfun = SusieRFinemapTask.create(
         asset_id=f"{stem}_susie_polyfun",
-        gwas_data_task=shared.harmonized_sumstats_task,
+        gwas_data_task=shared.gwas_data_task,
+        gwas_data_pipe=shared.gwas_data_pipe,
         ld_labels_task=shared.ld_labels_task,
         ld_matrix_source=BroadInstituteFormatLDMatrix(shared.ld_matrix_task),
         effective_sample_size=shared.effective_sample_size,
@@ -420,51 +420,62 @@ def _build_shared_locus_inputs(
     ld_labels_task, ld_matrix_task = (
         get_ld_labels_and_matrix_task_for_genomic_interval_build_37(interval=interval)
     )
-    ld_labels_task_renamed = PipeDataFrameTask.create(
+    ld_labels_task_renamed = RenameColsTask.create(
         source_task=ld_labels_task,
         asset_id=ld_labels_task.asset_id + "_renamed",
-        out_format=ParquetOutFormat(),
-        pipes=[
-            RenameColPipe(old_name="rsid", new_name=GWASLAB_RSID_COL),
-            RenameColPipe(old_name="chromosome", new_name=GWASLAB_CHROM_COL),
-            RenameColPipe(old_name="position", new_name=GWASLAB_POS_COL),
+        renames={
+            "rsid": GWASLAB_RSID_COL,
+            "chromosome": GWASLAB_CHROM_COL,
+            "position": GWASLAB_POS_COL,
             # allele1 is the non-effect allele in the Broad UKBB LD panel; see
             # https://github.com/omerwe/polyfun/issues/208#issuecomment-2563832487
-            RenameColPipe(old_name="allele1", new_name=GWASLAB_NON_EFFECT_ALLELE_COL),
-            RenameColPipe(old_name="allele2", new_name=GWASLAB_EFFECT_ALLELE_COL),
-        ],
-        backend="polars",
+            "allele1": GWASLAB_NON_EFFECT_ALLELE_COL,
+            "allele2": GWASLAB_EFFECT_ALLELE_COL,
+        },
     )
-    harmonized_sumstats_task = HarmonizeGWASWithReferenceViaAlleles.create(
-        asset_id=base_name + "_gwas_harmonized_with_ref",
-        gwas_data_task=build_37_sumstats_task,
-        reference_task=ld_labels_task_renamed,
-        palindrome_strategy=palindrome_strategy,
-        gwas_pipe=CompositePipe(
-            [
-                sumstats_pipe,
-                UniquePipe(
-                    by=[
-                        GWASLAB_CHROM_COL,
-                        GWASLAB_POS_COL,
-                        GWASLAB_EFFECT_ALLELE_COL,
-                        GWASLAB_NON_EFFECT_ALLELE_COL,
-                    ],
-                    keep="none",
-                    order_by=[
-                        GWASLAB_CHROM_COL,
-                        GWASLAB_POS_COL,
-                        GWASLAB_EFFECT_ALLELE_COL,
-                        GWASLAB_NON_EFFECT_ALLELE_COL,
-                    ],
-                ),
-            ]
+    # SUSIE aligns the gwas to the (reference-oriented) LD panel via an exact
+    # (CHR, POS, EA, NEA) join, so the sumstats go in directly. The dedup /
+    # palindrome-drop / chrom-range work HarmonizeGWASWithReferenceViaAlleles did
+    # inline is reproduced here as a gwas pipe; its allele-flip was a no-op for the
+    # reference-oriented inputs. Indel-safe (no unordered allele key).
+    gwas_pipe_steps: list[DataProcessingPipe] = [
+        sumstats_pipe,
+        UniquePipe(
+            by=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
+            keep="none",
+            order_by=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
         ),
-        chrom_range_filter=chrom_range,
-    )
+    ]
+    if palindrome_strategy == "drop":
+        gwas_pipe_steps.append(
+            DropPalindromesPipe(
+                ea_col=GWASLAB_EFFECT_ALLELE_COL, nea_col=GWASLAB_NON_EFFECT_ALLELE_COL
+            )
+        )
+    if chrom_range is not None:
+        gwas_pipe_steps.append(
+            ChromRangeFilterPipe(
+                chrom=chrom_range.chrom,
+                start=chrom_range.start,
+                end=chrom_range.end,
+                chrom_col=GWASLAB_CHROM_COL,
+                pos_col=GWASLAB_POS_COL,
+            )
+        )
     return SharedFineMapInputs(
         base_name=base_name,
-        harmonized_sumstats_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=CompositePipe(gwas_pipe_steps),
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_task=ld_matrix_task,
         gene_info_task=gene_info_task,
