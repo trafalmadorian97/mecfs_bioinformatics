@@ -433,11 +433,6 @@ def _build_shared_locus_inputs(
             "allele2": GWASLAB_EFFECT_ALLELE_COL,
         },
     )
-    # SUSIE aligns the gwas to the (reference-oriented) LD panel via an exact
-    # (CHR, POS, EA, NEA) join, so the sumstats go in directly. The dedup /
-    # palindrome-drop / chrom-range work HarmonizeGWASWithReferenceViaAlleles did
-    # inline is reproduced here as a gwas pipe; its allele-flip was a no-op for the
-    # reference-oriented inputs. Indel-safe (no unordered allele key).
     gwas_pipe_steps: list[DataProcessingPipe] = [
         sumstats_pipe,
         UniquePipe(

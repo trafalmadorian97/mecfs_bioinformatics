@@ -1,7 +1,4 @@
-"""File metadata for a tabular reference oriented to a genome build (LD panel labels, the
-1kg allele-frequency panel). A sibling of ReferenceFileMeta (not a subclass): generic
-transformer tasks that isinstance-check ReferenceFileMeta will not capture it, so piping one
-through a generic transformer fails closed. Use RenameColsTask for renames."""
+"""File metadata for a tabular reference harmonized to a genome build."""
 
 from pathlib import PurePath
 

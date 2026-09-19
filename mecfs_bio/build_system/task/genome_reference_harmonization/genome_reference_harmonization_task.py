@@ -310,8 +310,7 @@ def load_panel_path(fetch: Fetch, panel_task: Task) -> Path:
 
 def resolve_harmonized_build(fasta_task: Task, panel_task: Task) -> GenomeBuild:
     """Assert the FASTA and the allele-frequency panel are the same genome build and
-    return it. This is the construction-time guard that keeps a build-19 GWAS from being
-    oriented against a build-38 reference (or vice versa)."""
+    return it."""
     fasta_meta = fasta_task.meta
     panel_meta = panel_task.meta
     assert isinstance(fasta_meta, FASTAMeta), (

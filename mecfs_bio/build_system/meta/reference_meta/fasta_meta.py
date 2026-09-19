@@ -1,5 +1,4 @@
-"""Directory metadata for an indexed genome FASTA, tagged with its genome build. A sibling
-of ReferenceDataDirectoryMeta (not a subclass), so the concrete reference metas stay leaves."""
+"""Directory metadata for an indexed genome FASTA, tagged with its genome build."""
 
 from pathlib import PurePath
 

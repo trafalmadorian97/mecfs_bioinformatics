@@ -124,8 +124,7 @@ def _dedup_one_chromosome(member_path: Path) -> pl.DataFrame:
     Collapsing on the exact key relies on all rows sharing a (CHR, BP, A1, A2)
     carrying identical annotations. We enforce that cheaply instead of assuming it:
     dedup on the key AND every annotation column, so exact duplicates that agree
-    collapse, and any key that still appears more than once must disagree on some
-    annotation -- which we reject.
+    collapse.
     """
     lazy = pl.scan_parquet(member_path)
     schema = lazy.collect_schema()

@@ -1,5 +1,4 @@
-"""Keep only rows in a single closed genomic interval. Mirrors the chrom-range filter that
-HarmonizeGWASWithReferenceViaAlleles applied inline."""
+"""Keep only rows in a single closed genomic interval."""
 
 import narwhals
 from attrs import frozen
