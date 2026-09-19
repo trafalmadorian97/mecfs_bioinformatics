@@ -36,7 +36,7 @@ Where we model a binary trait as being governed by the liability threshold model
 
 $$
 \begin{align}
-\h^2_L:=frac{\mathrm{Var}(G)}{\mathrm{Var}(L)}.
+h^2_L:=\frac{\mathrm{Var}(G)}{\mathrm{Var}(L)}.
 \end{align}
 $$
 
