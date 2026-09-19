@@ -158,10 +158,8 @@ _KEY_SCHEMA: dict[str, pl.DataType] = {
     GWASLAB_NON_EFFECT_ALLELE_COL: pl.String(),
 }
 # The annotation source carries alleles (A1/A2), so it is joined to a run's
-# variants on the exact (CHR, POS, EA, NEA) tuple after mapping annotation
-# A1 -> NEA and A2 -> EA (both reference-oriented, A1 == REF). Each allele of a
-# multiallelic site -- and each orientation of a mirrored indel -- matches its own
-# annotation row. The join therefore uses _KEY directly.
+# variants on the exact (CHR, POS, EA, NEA) tuple after mapping annotation A1 -> NEA
+# and A2 -> EA (both reference-oriented, A1 == REF)
 
 # Internal name for the parsed secondary position before it is renamed to its
 # build-labelled display name (e.g. pos_hg38).

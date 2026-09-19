@@ -367,7 +367,6 @@ def align_data(
         n_before = len(joined)
         # The prior is reference-oriented (its A1 == REF, renamed to NEA in
         # load_prior) exactly like the gwas, so the join is exact on the 4-tuple;
-        # this is indel-safe, unlike the old unordered allele key.
         joined = joined.join(
             prior,
             on=[

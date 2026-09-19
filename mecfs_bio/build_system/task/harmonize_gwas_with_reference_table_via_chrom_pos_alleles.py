@@ -78,9 +78,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     - drop if we lack frequency information
     - Else, can try to use frequency info to resolve
 
-    This task is valid only for SNVs: its palindrome detection is SNV-only. Indel-containing
-    data must join on the exact (chrom, pos, ea, nea) tuple directly, as the fine-mapping path
-    now does. execute asserts SNV-only input on both the gwas and the reference.
+    This task is valid only for SNVs: its palindrome detection is SNV-only.
     """
 
     meta: Meta
@@ -133,8 +131,6 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         reference = _convert_ea_nea_to_str(reference)
 
         # This task's palindrome detection and allele matching are only valid for SNVs;
-        # indel-containing data must join on the exact (chrom, pos, ea, nea) tuple instead
-        # (as the fine-mapping path now does).
         assert_all_snv(
             gwas_data, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
         )

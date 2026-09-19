@@ -1,6 +1,4 @@
-"""Drop strand-ambiguous (palindromic) SNVs. Mirrors the palindrome handling that
-HarmonizeGWASWithReferenceViaAlleles did inline, extracted so fine-mapping can apply it as a
-gwas pipe once that task is no longer used. See is_palindromic_expr for the polars equivalent."""
+"""Drop strand-ambiguous (palindromic) SNVs."""
 
 import narwhals
 from attrs import frozen
