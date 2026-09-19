@@ -33,7 +33,6 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
     WEIGHTS_PARQUET_FILENAME,
 )
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     CS_COLUMN,
@@ -139,7 +138,6 @@ CONTRAST_COL = "contrast"
 _ANNOT_BP_COL = "BP"
 _ANNOT_A1_COL = "A1"
 _ANNOT_A2_COL = "A2"
-_ALLELE_KEY_COL = "allele_key"
 
 _KEY = [
     GWASLAB_CHROM_COL,
@@ -160,10 +158,8 @@ _KEY_SCHEMA: dict[str, pl.DataType] = {
     GWASLAB_NON_EFFECT_ALLELE_COL: pl.String(),
 }
 # The annotation source carries alleles (A1/A2), so it is joined to a run's
-# variants allele-aware on (CHR, POS, unordered-allele-key): each allele of a
-# multiallelic site matches its own annotation row. The run side supplies EA/NEA
-# (and hence the allele key) to the result.
-_ANNOT_KEY = [GWASLAB_CHROM_COL, GWASLAB_POS_COL, _ALLELE_KEY_COL]
+# variants on the exact (CHR, POS, EA, NEA) tuple after mapping annotation A1 -> NEA
+# and A2 -> EA (both reference-oriented, A1 == REF)
 
 # Internal name for the parsed secondary position before it is renamed to its
 # build-labelled display name (e.g. pos_hg38).
@@ -246,7 +242,7 @@ class PolyfunExplainContrastTask(Task):
         # abar_c: uniform PIP-weighted mean of each annotation over all uniform vars.
         # If the uniform run found no signal (all PIPs ~0), fall back to an
         # unweighted mean so every locus variant contributes equally.
-        uni_annot = uni_variants.join(annot, on=_ANNOT_KEY, how="inner")
+        uni_annot = uni_variants.join(annot, on=_KEY, how="inner")
         w = uni_annot[PIP_COLUMN].to_numpy()
         if w.sum() <= 0.0:
             w = None
@@ -267,7 +263,7 @@ class PolyfunExplainContrastTask(Task):
             [cs_pf.select(_KEY), cs_u.select(_KEY)], how="vertical"
         ).unique()
 
-        pf_annot = pf_variants.join(annot, on=_ANNOT_KEY, how="inner")
+        pf_annot = pf_variants.join(annot, on=_KEY, how="inner")
 
         per_annot, per_family = _contrasts(
             pf_annot, union_keys, annot_cols, gamma, family, abar
@@ -380,9 +376,9 @@ def _dir(fetch: Fetch, task: Task) -> Path:
 def _load_run_variants(
     run_dir: Path, secondary_position: SecondaryPositionFromSnpid | None = None
 ) -> pl.DataFrame:
-    """filtered_gwas keyed rows + the run's PIP, in the same order, with the
-    unordered allele key used to join the annotation matrix allele-aware. When a
-    secondary-position config is given, the SNPID column is also read and its
+    """filtered_gwas keyed rows + the run's PIP, in the same order. The rows carry
+    _KEY (CHR, POS, EA, NEA), which the annotation matrix is joined on directly.
+    When a secondary-position config is given, the SNPID column is also read and its
     position field parsed into _SECONDARY_POS_COL."""
     select_cols = list(_KEY)
     if secondary_position is not None:
@@ -393,11 +389,7 @@ def _load_run_variants(
         .with_columns(pl.col(k).cast(dt) for k, dt in _KEY_SCHEMA.items())
     )
     pip = pl.read_parquet(run_dir / PIP_FILENAME).select(PIP_COLUMN)
-    variants = gwas.hstack(pip).with_columns(
-        unordered_allele_key(
-            GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
-        ).alias(_ALLELE_KEY_COL)
-    )
+    variants = gwas.hstack(pip)
     if secondary_position is not None:
         variants = _add_secondary_position(variants, secondary_position)
     return variants
@@ -474,15 +466,15 @@ def _load_annotations(
         .collect()
         .to_polars()
     )
-    # Rename BP->POS and derive the unordered allele key so each annotation row
-    # is matched to the run variant with the same alleles (regardless of which
-    # allele each side labels "effect"). A1/A2 are dropped once the key is built.
-    result = (
-        frame.rename({_ANNOT_BP_COL: GWASLAB_POS_COL})
-        .with_columns(
-            unordered_allele_key(_ANNOT_A1_COL, _ANNOT_A2_COL).alias(_ALLELE_KEY_COL)
-        )
-        .drop(_ANNOT_A1_COL, _ANNOT_A2_COL)
+    # Map the annotation's (BP, A1, A2) onto the run's key (POS, NEA, EA): the
+    # annotation A1 is the reference allele (A1 == REF == gwas NEA), so A1 -> NEA
+    # and A2 -> EA. The result then joins to a run's variants on the exact _KEY.
+    result = frame.rename(
+        {
+            _ANNOT_BP_COL: GWASLAB_POS_COL,
+            _ANNOT_A1_COL: GWASLAB_NON_EFFECT_ALLELE_COL,
+            _ANNOT_A2_COL: GWASLAB_EFFECT_ALLELE_COL,
+        }
     )
     _assert_annotation_keys_unique(result, chrom, bp_min, bp_max)
     return result
@@ -492,20 +484,20 @@ def _assert_annotation_keys_unique(
     annot: pl.DataFrame, chrom: int, bp_min: int, bp_max: int
 ) -> None:
     """Fail fast if the annotation slice has more than one row per
-    (CHR, POS, allele-key) within this locus window.
+    (CHR, POS, EA, NEA) within this locus window.
 
-    The annotation matrix is built unique on (CHR, BP, unordered-allele-key) (see
+    The annotation matrix is built unique on exact (CHR, BP, A1, A2) (see
     BuildBaselineLFAnnotationParquetTask), so this holds by construction; an
     undetected duplicate would silently cross-multiply a run's variant rows into
     doubled or misattributed contrast/family_scaled values. Asserting on the
     annotation slice itself, rather than on a join result, localizes the cause.
     """
     n_rows = annot.height
-    n_unique = annot.select(_ANNOT_KEY).n_unique()
+    n_unique = annot.select(_KEY).n_unique()
     if n_unique != n_rows:
         raise ValueError(
             f"Annotation source has {n_rows - n_unique} duplicate "
-            f"(CHR, POS, allele-key) row(s) within locus "
+            f"(CHR, POS, EA, NEA) row(s) within locus "
             f"chr{chrom}:{bp_min}-{bp_max}; the annotation join keys on that "
             "tuple, so duplicates would silently cross-multiply variant rows; "
             "refusing to proceed."

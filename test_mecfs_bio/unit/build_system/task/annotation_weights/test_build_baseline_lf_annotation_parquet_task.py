@@ -22,15 +22,17 @@ def _write_members(directory: Path) -> None:
     directory.mkdir(parents=True, exist_ok=True)
     # chr1: a plain variant; a genuinely multiallelic site (rs2 at BP200 with two
     # DIFFERENT allele pairs and different annotations -> both must survive); and
-    # an ordering-duplicate at BP300 (same unordered {C,G}, identical annotations
-    # -> must collapse to one).
+    # an exact-duplicate at BP300 (same (A1, A2) = (C, G), identical annotations
+    # -> must collapse to one). Note that under exact-key dedup a MIRRORED pair
+    # (C, G) vs (G, C) would be two distinct variants and both survive; only an
+    # exact (CHR, BP, A1, A2) duplicate collapses.
     pl.DataFrame(
         {
             "CHR": [1, 1, 1, 1, 1],
             "SNP": ["rs1", "rs2", "rs2b", "rs4", "rs4"],
             "BP": [100, 200, 200, 300, 300],
-            "A1": ["A", "G", "G", "C", "G"],
-            "A2": ["C", "T", "A", "G", "C"],
+            "A1": ["A", "G", "G", "C", "C"],
+            "A2": ["C", "T", "A", "G", "G"],
             "annotA": [1.0, 0.0, 5.0, 2.0, 2.0],
             "annotB": [0.5, 0.25, 0.9, 0.1, 0.1],
         }
@@ -76,7 +78,7 @@ def test_builds_sorted_allele_bearing_annotation_parquet(tmp_path: Path) -> None
     assert isinstance(result, FileAsset)
     df = pl.read_parquet(result.path)
 
-    # rs4 ordering-duplicate collapses (5 rows -> 4 on chr1) + 1 on chr2 = 5.
+    # rs4 exact-duplicate collapses (5 rows -> 4 on chr1) + 1 on chr2 = 5.
     assert df.height == 5
     # A1/A2 retained; no CM; annotations float32.
     assert set(df.columns) == {"CHR", "BP", "SNP", "A1", "A2", "annotA", "annotB"}
@@ -89,17 +91,12 @@ def test_builds_sorted_allele_bearing_annotation_parquet(tmp_path: Path) -> None
     bp200 = df.filter((pl.col("CHR") == 1) & (pl.col("BP") == 200)).sort("annotA")
     assert bp200.height == 2
     assert bp200["annotA"].to_list() == [0.0, 5.0]
-    # Unique on (CHR, BP, unordered allele key).
-    ak = df.with_columns(
-        (pl.min_horizontal("A1", "A2") + "_" + pl.max_horizontal("A1", "A2")).alias(
-            "ak"
-        )
-    )
-    assert ak.select("CHR", "BP", "ak").n_unique() == df.height
+    # Unique on exact (CHR, BP, A1, A2).
+    assert df.select("CHR", "BP", "A1", "A2").n_unique() == df.height
 
 
 def test_dedup_rejects_same_key_with_conflicting_annotations(tmp_path: Path) -> None:
-    # Same (CHR, BP) and same unordered allele key {C,G}, but DIFFERENT annotations
+    # Same exact key (CHR, BP, A1, A2) = (1, 400, C, G), but DIFFERENT annotations
     # -> the dedup assumption is violated and must be rejected, not silently
     # collapsed by keeping an arbitrary row.
     member = tmp_path / "baselineLF2.2.UKB.1.annot.parquet"
@@ -108,8 +105,8 @@ def test_dedup_rejects_same_key_with_conflicting_annotations(tmp_path: Path) -> 
             "CHR": [1, 1],
             "SNP": ["rsX", "rsX"],
             "BP": [400, 400],
-            "A1": ["C", "G"],
-            "A2": ["G", "C"],
+            "A1": ["C", "C"],
+            "A2": ["G", "G"],
             "annotA": [2.0, 9.0],
             "annotB": [0.1, 0.1],
         }

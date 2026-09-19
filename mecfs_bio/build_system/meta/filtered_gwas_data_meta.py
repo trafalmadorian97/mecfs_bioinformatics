@@ -8,6 +8,7 @@ from attrs import frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
+from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 
@@ -23,3 +24,4 @@ class FilteredGWASDataMeta(FileMeta):
     sub_dir: str | PurePath
     read_spec: ReadSpec | None = None
     extension: str = ".parquet"
+    harmonization_info: HarmonizationInfo | None = None

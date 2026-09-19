@@ -317,14 +317,18 @@ def test_fine_mapping(
 
 @pytest.fixture
 def dummy_prior_task(tmp_path: Path) -> Iterator[Task]:
-    """A prior table matching the synthetic GWAS variants (CHR 1, POS 0..99, alleles A/C)."""
+    """A prior table matching the synthetic GWAS variants (CHR 1, POS 0..99).
+
+    Reference-oriented like the gwas: prior A1 == REF maps (in load_prior) to the
+    gwas NEA. The gwas is EA=A, NEA=C, so the prior is A1=C, A2=A and the exact
+    (CHR, POS, EA, NEA) join lines up."""
     m = 100
     prior_data = pd.DataFrame(
         {
             "CHR": [1] * m,
             "BP": list(range(m)),
-            "A1": "A",
-            "A2": "C",
+            "A1": "C",
+            "A2": "A",
             "snpvar": np.linspace(1.0, 2.0, m),
         }
     )
@@ -389,14 +393,17 @@ def test_fine_mapping_with_explicit_prior(
 
 @pytest.fixture
 def dummy_prior_task_missing_one(tmp_path: Path) -> Iterator[Task]:
-    """Prior table covering only 99 of the 100 synthetic variants (POS 0 omitted)."""
+    """Prior table covering only 99 of the 100 synthetic variants (POS 0 omitted).
+
+    Reference-oriented (A1=C, A2=A) like dummy_prior_task, so the exact join covers
+    99 variants and the single gap is genuinely POS 0, not an orientation mismatch."""
     m = 100
     prior_data = pd.DataFrame(
         {
             "CHR": [1] * (m - 1),
             "BP": list(range(1, m)),  # omits BP == 0
-            "A1": "A",
-            "A2": "C",
+            "A1": "C",
+            "A2": "A",
             "snpvar": np.linspace(1.0, 2.0, m - 1),
         }
     )

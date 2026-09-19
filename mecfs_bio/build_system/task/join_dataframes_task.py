@@ -142,6 +142,7 @@ class JoinDataFramesTask(Task):
                 extension=extension,
                 read_spec=read_spec,
                 sub_dir=source_meta.sub_dir,
+                harmonization_info=source_meta.harmonization_info,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
             meta = GWASSummaryDataFileMeta(

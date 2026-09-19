@@ -28,6 +28,10 @@ from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
+from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta import (
     ReferenceDataDirectoryMeta,
 )
@@ -103,7 +107,20 @@ def simple_meta_to_relative_path(m: Meta) -> PurePath:
             pth = pth / str(m.id + m.extension)
         return pth
 
+    if isinstance(m, HarmonizableReferenceTableMeta):
+        pth = _REFERENCE_DATA / m.group / m.sub_group / m.sub_folder
+        if m.filename is not None:
+            pth = pth / (m.filename + m.extension)
+        else:
+            pth = pth / str(m.id + m.extension)
+        return pth
+
     if isinstance(m, ReferenceDataDirectoryMeta):
+        dirname = m.dirname if m.dirname is not None else m.id
+        pth = _REFERENCE_DATA / m.group / m.sub_group / m.sub_folder / dirname
+        return pth
+
+    if isinstance(m, FASTAMeta):
         dirname = m.dirname if m.dirname is not None else m.id
         pth = _REFERENCE_DATA / m.group / m.sub_group / m.sub_folder / dirname
         return pth

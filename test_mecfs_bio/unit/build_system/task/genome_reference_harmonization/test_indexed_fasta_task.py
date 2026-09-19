@@ -59,7 +59,7 @@ def _build_indexed_fasta(tmp_path: Path) -> IndexedFasta:
             id=AssetId(_GZ_ID),
         )
     )
-    task = IndexedFastaTask.create(fasta_gz_task=source, asset_id="indexed")
+    task = IndexedFastaTask.create(fasta_gz_task=source, asset_id="indexed", build="19")
 
     def fetch(asset_id: AssetId) -> Asset:
         assert asset_id == _GZ_ID
