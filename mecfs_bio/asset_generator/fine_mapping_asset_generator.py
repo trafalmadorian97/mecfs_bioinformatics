@@ -175,18 +175,12 @@ def generate_assets_broad_ukbb_fine_map(
             "rsid": GWASLAB_RSID_COL,
             "chromosome": GWASLAB_CHROM_COL,
             "position": GWASLAB_POS_COL,
-            # allele1 is the reference allele -> NEA. See:
             # https://github.com/omerwe/polyfun/issues/208#issuecomment-2563832487
             "allele1": GWASLAB_NON_EFFECT_ALLELE_COL,
             "allele2": GWASLAB_EFFECT_ALLELE_COL,
         },
     )
 
-    # The gwas is fed directly to SUSIE, which aligns it to the (reference-oriented)
-    # LD panel via an exact (CHR, POS, EA, NEA) join. What HarmonizeGWASWithReference
-    # ViaAlleles used to do inline -- dedup, palindrome drop, chrom-range filter --
-    # is reproduced here as a gwas pipe; its allele-flip was a no-op for the
-    # reference-oriented inputs. This is indel-safe (no unordered allele key).
     gwas_pipe_steps: list[DataProcessingPipe] = [
         sumstats_pipe,
         UniquePipe(
@@ -342,14 +336,6 @@ def generate_assets_broad_ukbb_fine_map(
         ],
         sep="__",
         new_col_name=variant_id,
-    )
-
-    filtered_id_variant_pipe_005 = CompositePipe(
-        [id_variant_pipe, FilterRowsByMinInCol(min_value=0.05, col=PIP_COLUMN)]
-    )
-
-    filtered_id_variant_pipe_0025 = CompositePipe(
-        [id_variant_pipe, FilterRowsByMinInCol(min_value=0.025, col=PIP_COLUMN)]
     )
 
     filtered_id_variant_pipe_001 = CompositePipe(
