@@ -56,6 +56,14 @@ class DirSetSource:
 SetSource = FileSetSource | DirSetSource
 
 
+def _distinct_preserving_order(ids: list[str]) -> list[str]:
+    """Collapse an id column to its distinct values in first-seen order. A single
+    source can list the same member more than once (e.g. a variant that belongs
+    to two of a SUSIE run's credible sets), but an UpSet set is defined by
+    membership, so each member must appear at most once."""
+    return list(dict.fromkeys(ids))
+
+
 def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
     if isinstance(set_source, FileSetSource):
         asset = fetch(set_source.task.asset_id)
@@ -66,7 +74,7 @@ def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
             .collect()
             .to_pandas()
         )
-        return df[set_source.col_name].tolist()
+        return _distinct_preserving_order(df[set_source.col_name].tolist())
     elif isinstance(set_source, DirSetSource):
         asset = fetch(set_source.task.asset_id)
         assert isinstance(asset, DirectoryAsset)
@@ -79,7 +87,7 @@ def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
             .collect()
             .to_pandas()
         )
-        return df[set_source.col_name].tolist()
+        return _distinct_preserving_order(df[set_source.col_name].tolist())
     else:
         raise ValueError("Unknown set source")
 
