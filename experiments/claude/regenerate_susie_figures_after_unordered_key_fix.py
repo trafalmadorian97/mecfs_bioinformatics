@@ -55,6 +55,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindrom
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.figures.figure_task_list import ALL_FIGURE_TASKS
+from mecfs_bio.figures.key_scripts.push_figures import push_figures
 from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
 
 logger = structlog.get_logger()
@@ -144,3 +145,4 @@ if __name__ == "__main__":
     else:
         _print_plan()
         regenerate_figures(SUSIE_FIGURE_TASKS)
+        push_figures()
