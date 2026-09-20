@@ -4,7 +4,7 @@ tags:
 ---
 # Chr15 54M-55M
 
-I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal on Chromosome 15, using the same methodology as I applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
+I applied PolyFun[@weissbrod2020functionally] [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal on Chromosome 15, using the same methodology as I applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
 
 
 ## Results

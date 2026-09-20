@@ -5,7 +5,7 @@ hide:
   - toc
 ---
 # Chr20 47M-48.2M
-I applied PolyFun[@weissbrod2020functionally] SUSIE[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal on Chromosome 20, using the same methodology I previously applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
+I applied PolyFun[@weissbrod2020functionally] [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal on Chromosome 20, using the same methodology I previously applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).  
 
 
 
@@ -77,7 +77,7 @@ susie_polyfun_variant_detail_table(src="docs/_figs/decode_me_polyfun_explainchr2
 
 ### Analysis
 
-Given the significance differences between the $L=10$ and $L=2$ SUSIE results on the one hand, and the $L=1$ and strict $L=10$ SUSIE results on the other, it is difficult to know which to credit. As was the case in the uniform-prior SUSIE runs, the $L=10$ and $L=2$ PolyFun-prior runs assigns very high confidence to **20:47743125:C:A**  being a causal SNP, while the $L=1$ and strict $L=10$ run does not weight it at all.
+Given the significance differences between the $L=10$ and $L=2$ SUSIE results on the one hand, and the $L=1$ and strict $L=10$ SUSIE results on the other, it is difficult to know which to credit. As was the case in the uniform-prior SUSIE runs, the $L=10$ and $L=2$ PolyFun-prior runs assigns very high confidence to **20:47743125:C:A**  being a causal SNP, while the $L=1$ and strict $L=10$ run do not weight it at all.
 
 However, all the PolyFun SUSIE runs at this locus do assign significant PIP to the variant **20:47663382:A:G**, which has high-weight promoter functional annotations.  This consensus across configurations may increase our confidence in this variant.
 

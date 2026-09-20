@@ -9,12 +9,12 @@ hide:
 
 ## Methodology
 
-To narrow down the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 17 using SUSIE[@wang2020simple]. The parameters of my runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
+To narrow down the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) the GWAS-1 hit on chromosome 17 using [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple]. The parameters of my runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
 
 
 ## Results
 
-Each of the 4 SUSIE runs produced a single credible set with the same 63 variants, as illustrated by the UpSet plot below:
+Each of the 4 SUSIE runs produced a single credible set with the same variants, as illustrated by the UpSet plot below:
 
 
 {{ static_img_embed("docs/_figs/decode_mechr17_50000000_51000000_palindromes_keep_upset_plot.png", alt="chr17_upset") }}
