@@ -26,12 +26,12 @@ $L$ refers to the maximum number of credible sets that can found by SUSIE.  A lo
 
 "Variant filtering" refers to removal of outlier variants according to a [Kriging](https://en.wikipedia.org/wiki/Kriging)-based likelihood ratio test.  Zou et al.[@zou2022fine] propose this filtering strategy to mitigate instability in SUSIE due to mismatch between the LD and GWAS populations.  In the first three runs above, I filter variants with a likelihood ratio ($\mathrm{LR}$) and absolute $z$ score greater than 2, [consistent with the SUSIE documentation](https://stephenslab.github.io/susieR/reference/kriging_rss.html).  In the final run I instead filter variants with $\mathrm{LR}\ge 2$ and $|z|\ge 1$, to evaluate the sensitivity of the results to the filtering threshold.
 
-In my SUSIE runs, I retained palindromic SNPs whose strand orientation GWASLAB was able to determine from allele frequencies in the Thousand Genomes Project, and discarded other palindromic SNPs.
+In my SUSIE runs, I retained [palindromic SNPs](../../../../../Bioinformatics_Concepts/Sumstats_Standardization.md#palindromic-variants) and [ambiguous indels](../../../../../Bioinformatics_Concepts/Sumstats_Standardization.md#ambiguous-indels) whose orientation could be determined by comparison with allele frequencies in the Thousand Genomes Project.
 
 
 ## Results
 
-In all 4 runs, SUSIE found a single diffuse credible set.  Moreover, this credible set contained the same 86 variants in all four runs, as illustrated in the UpSet plot below:
+In all 4 runs, SUSIE found a single diffuse credible set.  Moreover, this credible set contained the same variants in all four runs, as illustrated in the UpSet plot below:
 
 
 {{ static_img_embed("docs/_figs/decode_mechr1_173500000_174500000_palindromes_keep_upset_plot.png", alt="upset_chrom_1") }}

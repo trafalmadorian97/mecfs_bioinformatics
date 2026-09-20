@@ -9,12 +9,12 @@ hide:
 
 ## Methodology
 
-To narrow the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) the second hit on chromosome 6 using SUSIE[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
+To narrow the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal, I [fine-mapped](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) the second hit on chromosome 6 using [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple]. The parameters of my SUSIE runs were the same as for the [chromosome 1 locus](a_Chr1_173M_174M_Locus.md).
 
 
 ## Results
 
-The 4 SUSIE runs each produced a single credible set containing 98 variants.  These  credible sets were largely but not entirely overlapping:
+The 4 SUSIE runs each produced a single credible set.  These  credible sets were largely but not entirely overlapping:
 
 {{ static_img_embed("docs/_figs/decode_mechr6_97500000_99000000_palindromes_keep_upset_plot.png", alt="chr6b_upsetplot") }}
 
