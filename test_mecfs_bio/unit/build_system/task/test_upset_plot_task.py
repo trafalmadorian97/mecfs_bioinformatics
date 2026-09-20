@@ -29,6 +29,13 @@ from mecfs_bio.build_system.wf.base_wf import make_wf
             pd.DataFrame({"col1": ["B", "C", "D"]}),
         ),
         (pd.DataFrame({"col1": []}), pd.DataFrame({"col1": []})),
+        # A source may list the same member twice (e.g. a variant in two of a
+        # SUSIE run's credible sets). Each source's members are still a set, so
+        # the task must collapse the repeat rather than error on it.
+        (
+            pd.DataFrame({"col1": ["A", "B", "B"]}),
+            pd.DataFrame({"col1": ["B", "C", "D"]}),
+        ),
     ],
 )
 def test_upset_plot_task(
