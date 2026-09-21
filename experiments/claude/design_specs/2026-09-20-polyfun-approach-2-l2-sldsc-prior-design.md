@@ -105,24 +105,30 @@ onto it is a separate change gated by a numeric-equivalence test.
    task now and `RidgeAnnotationWeightsTask` after a gated migration.
 4. **Weights source — derive, don't download.** LDSC weights are
    `omega_i = 1 / (het_i * oc_i)` with `het_i = (1 + N * h2bar * l_i / M)^2` and
-   `oc_i = max(l_i, 1)`, where `l_i` is the variant's total LD-score. Use the
-   baseline-LF **`base` annotation's LD-score column** (the all-ones annotation,
-   whose LD-score is the total LD-score) for `l_i`, and compute `M` as
-   `sum_j a_j,base` over the annotation matrix. This avoids a separate
-   `--w-ld-chr` weights download and a separate `.l2.M` file, at the cost of using
-   the base LD-score as the over-counting weight rather than a dedicated
-   regression-SNP weight file — an acceptable pragmatic simplification consistent
-   with decision 1. `h2bar` is a scalar from a first unweighted streaming pass —
-   and is itself **per-parity** (`h2bar_odd`, `h2bar_even`), so the weights of the
-   odd-fit model use only odd-chromosome data (decision 8). `M` and `l_i` are
-   reference/annotation properties carrying no GWAS signal, so they stay global.
+   `oc_i = max(l_i, 1)`, where `l_i` is the variant's total LD-score. The
+   distributed baseline-LF LD-score members have **no `base` (all-ones)
+   column** (schema spike, 2026-09-21), but the 20 `MAFbin_*` annotations
+   partition every SNP (each SNP is in exactly one MAF bin, so their annotation
+   values sum to 1 per SNP). Therefore `l_i = sum over the 20 MAFbin_* LD-score
+   columns` is the exact total LD-score, and `M` = the reference SNP count
+   (number of rows in the LD-score members / annotation matrix). This uses the
+   LD-score members only (no `base` column, no separate `--w-ld-chr` weights
+   download, no `.l2.M` file). Using `l_i` as the over-counting weight (rather
+   than a dedicated regression-SNP weight file) is an acceptable pragmatic
+   simplification consistent with decision 1 and with PolyFun's dense UKB setup,
+   which uses essentially the same SNP set for LD-scores and regression. `h2bar`
+   is a scalar from a first unweighted streaming pass — and is itself
+   **per-parity** (`h2bar_odd`, `h2bar_even`), so the weights of the odd-fit model
+   use only odd-chromosome data (decision 8). `M` and `l_i` carry no GWAS signal,
+   so they stay global.
 5. **Floor at the seam, not in `snpvar`.** The output is raw `snpvar`; the
    `max/q` floor is applied by reusing `create_prior_col_pipe(q)` inside the
    `PriorInfo`, identical to Approach 1. Keeps the two approaches swap-compatible.
-6. **`M` and total-LD-score self-consistency.** Both are derived from the
-   annotation matrix / its `base` LD-score column, which assumes the LD-score
-   reference set equals the annotation-matrix variant set — true for the
-   baseline-LF UKB bundle (same SNP set builds both members). Asserted at build.
+6. **`M` and total-LD-score self-consistency.** `l_i` (MAFbin-sum) comes from
+   the LD-score members; `M` (reference SNP count) is the row count of that same
+   set. The LD-score column names are identical to the annotation-matrix column
+   names (schema spike), so `tau_c` (fit on LD-scores) applies directly to `a_ic`
+   (annotation matrix) by name. Assert the two column-name sets match at build.
 7. **Exact `(chrom, pos, nea, ea)` join key — non-negotiable.** Every join
    between per-variant frames (munged sumstats, annotation LD-scores, annotation
    matrix, the snpvar output, the `PriorInfo` join in SUSIE) is on the exact
@@ -166,12 +172,13 @@ onto it is a separate change gated by a numeric-equivalence test.
   Acceptable one-time-per-machine cost; the alternative (store the 30GB tarball
   once and extract both member kinds) is noted but rejected to keep the existing
   annotation task untouched and avoid 30GB at rest.
-- **Open item (verify at implementation, gates the plan):** a tiny throwaway
-  spike reads one member's schema to confirm (a) the 187 LD-score column names
-  and whether a `base` column exists, and (b) that the members carry
-  `(chrom, pos, nea, ea)` (under whatever names, mappable to the four-part key).
-  Per decision 7, if they carry only `SNP`/rsid with no allele/position columns,
-  **STOP and ask** — there is no rsid fallback.
+- **Schema (RESOLVED by spike 2026-09-21,
+  `experiments/claude/polyfun_approach2_ldscore_schema_spike/`):** each member has
+  `CHR:int64, SNP:string, BP:int64, A1:string, A2:string` + the **187 annotation
+  LD-score columns named identically to the annotation matrix** (192 columns
+  total). So the four-part key is available (`CHR,BP` + `A1/A2`; baseline-LF is
+  REF-oriented so `A1=REF=nea`, `A2=ALT=ea`). There is **no `base` column** —
+  handled by the MAFbin-sum total LD-score (decision 4). No stop-and-ask needed.
 
 ### B. Chromosome-blocked ridge submodule (new, pure numpy)
 
@@ -213,9 +220,9 @@ onto it is a separate change gated by a numeric-equivalence test.
      `(chrom, pos, nea, ea)` (chi-square = Z^2; filter `chi2 < 80`, PolyFun's
      `MAX_CHI2`). Reuse the repo's degenerate-Z guard before squaring. Assert
      every frame carries the four-part key before any join.
-  2. **Derive `M` and per-variant total LD-score** from the annotation matrix's
-     `base` annotation and its LD-score column (decisions 4, 6) — global (no
-     parity split; these carry no GWAS signal).
+  2. **Derive `M` and per-variant total LD-score `l_i`** from the LD-score
+     members: `l_i = sum of the 20 MAFbin_* LD-score columns`, `M` = reference
+     SNP count (decisions 4, 6) — global (no parity split; no GWAS signal).
   3. **Pass A (per-parity scalar h2bar):** stream chromosomes accumulating
      *unweighted* blocks (`w=None`) per chromosome; `h2bar_odd` from
      `combine(odd unweighted blocks)`, `h2bar_even` from the even ones (rough fit
@@ -307,12 +314,10 @@ onto it is a separate change gated by a numeric-equivalence test.
 
 ## Risks / open questions
 
-1. **LD-score member schema** (Component A open item): column naming, presence of
-   a `base` column, and — critically — whether the members carry
-   `(chrom, pos, nea, ea)`. Resolved by a one-member schema spike before the plan
-   hardens. If there is no `base` column, derive the total LD-score as the base
-   annotation's LD-score column by another route. **If the members lack the
-   four-part key, STOP and ask (decision 7) — no rsid fallback.**
+1. **LD-score member schema — RESOLVED** (spike 2026-09-21): members carry
+   `CHR,SNP,BP,A1,A2` + 187 annotation-named LD-score columns; four-part key
+   available; no `base` column (handled via MAFbin-sum, decision 4). See Component
+   A.
 2. **Munge path:** reuse the rpy2-free genomic_sem Python munge vs the gwaslab
    path — pick whichever already emits a clean HapMap3-independent chi-square + N
    keyed to the LD-score members. (The regression is dense, so munge need not
