@@ -34,7 +34,10 @@ Regress GWAS chi-square on the baseline-LF **annotation LD-scores** with LDSC
 weights and an L2 (ridge) penalty; the fitted annotation coefficients `tau_c`
 give each variant a predicted per-SNP heritability `snpvar_i = sum_c a_ic tau_c`.
 To avoid winner's curse, `tau` is fit on even chromosomes to score odd
-chromosomes and vice versa (`num_chr_sets = 2`). The result is a per-variant
+chromosomes and vice versa (`num_chr_sets = 2`) — and the ridge lambda (and the
+weights) for each parity's fit are selected using only that parity's chromosomes,
+so nothing that scores a chromosome is fit on data from its own parity (decision
+8). The result is a per-variant
 `snpvar` table that plugs into `PriorInfo` exactly where the Approach-1 prior does
 (the floor/constrain is applied at the `PriorInfo` seam via the existing
 `create_prior_col_pipe(q)`, not baked into `snpvar`).
@@ -81,11 +84,12 @@ onto it is a separate change gated by a numeric-equivalence test.
 ## Definition of done
 
 - A new task produces a durable per-variant `snpvar` table
-  (`CHR, BP, A1, A2, snpvar`) from a munged GWAS + the baseline-LF annotation
+  (`chrom, pos, nea, ea, snpvar`) from a munged GWAS + the baseline-LF annotation
   LD-scores, green under `pixi r invoke green`.
 - On synthetic data with planted annotation enrichment, the recovered `snpvar`
-  ranking recovers the planted ordering (Spearman near 1) and the even/odd split
-  leaves out the correct chromosomes.
+  ranking recovers the planted ordering (Spearman near 1), and every input to
+  scoring a chromosome's parity is fit only on the opposite parity (weights,
+  lambda, and coefficients — see decision 8).
 - The fine-mapping generator accepts an injectable prior source; passing the
   Approach-2 asset yields a matched SUSIE run whose credible sets can be diffed
   against the Approach-1 run on the same locus.
@@ -108,7 +112,10 @@ onto it is a separate change gated by a numeric-equivalence test.
    `--w-ld-chr` weights download and a separate `.l2.M` file, at the cost of using
    the base LD-score as the over-counting weight rather than a dedicated
    regression-SNP weight file — an acceptable pragmatic simplification consistent
-   with decision 1. `h2bar` is a scalar from a first unweighted streaming pass.
+   with decision 1. `h2bar` is a scalar from a first unweighted streaming pass —
+   and is itself **per-parity** (`h2bar_odd`, `h2bar_even`), so the weights of the
+   odd-fit model use only odd-chromosome data (decision 8). `M` and `l_i` are
+   reference/annotation properties carrying no GWAS signal, so they stay global.
 5. **Floor at the seam, not in `snpvar`.** The output is raw `snpvar`; the
    `max/q` floor is applied by reusing `create_prior_col_pipe(q)` inside the
    `PriorInfo`, identical to Approach 1. Keeps the two approaches swap-compatible.
@@ -116,6 +123,26 @@ onto it is a separate change gated by a numeric-equivalence test.
    annotation matrix / its `base` LD-score column, which assumes the LD-score
    reference set equals the annotation-matrix variant set — true for the
    baseline-LF UKB bundle (same SNP set builds both members). Asserted at build.
+7. **Exact `(chrom, pos, nea, ea)` join key — non-negotiable.** Every join
+   between per-variant frames (munged sumstats, annotation LD-scores, annotation
+   matrix, the snpvar output, the `PriorInfo` join in SUSIE) is on the exact
+   four-part key `(chrom, pos, nea, ea)`. No rsid join, no unordered-allele key,
+   no position-only join — any of those risk silent information loss. This aligns
+   with the in-flight exact-join direction ([[project_unordered_allele_key_cleanup]],
+   REF-oriented per [[project_baselinelf_and_broad_ld_are_ref_oriented]]). **If
+   any required input lacks these four columns (e.g. the LD-score members turn out
+   to carry only `SNP`/rsid), STOP and ask before proceeding** — do not fall back
+   to another key.
+8. **Ridge lambda AND weights nested within each parity fold (no leakage).** To
+   score the even chromosomes we fit a model *entirely on odd chromosomes*: the
+   weights use `h2bar_odd`, and lambda is chosen by leave-one-odd-chromosome-out
+   CV over the **odd** chromosomes only, then the model is refit on all odd
+   chromosomes at that lambda to produce `tau_odd` (which scores even
+   chromosomes). The even-fit model is symmetric and scores odd chromosomes. So
+   `select_alpha_loco` runs twice — once on the odd block dict, once on the even —
+   never once globally. This is stricter than PolyFun (which selects lambda
+   globally) and guarantees no aspect of the even-scoring model is fit on even
+   data.
 
 ## Components
 
@@ -139,12 +166,12 @@ onto it is a separate change gated by a numeric-equivalence test.
   Acceptable one-time-per-machine cost; the alternative (store the 30GB tarball
   once and extract both member kinds) is noted but rejected to keep the existing
   annotation task untouched and avoid 30GB at rest.
-- **Open item (verify at implementation):** confirm the `.l2.ldscore.parquet`
-  schema — column names of the 187 LD-score columns (do they match the annotation
-  names? is there a `base` column?), and whether they carry `A1/A2` or only `SNP`
-  (drives the regression join key: allele-aware on (CHR, BP, allele-key) if
-  present, else rsid). A tiny throwaway spike reading one member's schema settles
-  this before the plan hardens.
+- **Open item (verify at implementation, gates the plan):** a tiny throwaway
+  spike reads one member's schema to confirm (a) the 187 LD-score column names
+  and whether a `base` column exists, and (b) that the members carry
+  `(chrom, pos, nea, ea)` (under whatever names, mappable to the four-part key).
+  Per decision 7, if they carry only `SNP`/rsid with no allele/position columns,
+  **STOP and ask** — there is no rsid fallback.
 
 ### B. Chromosome-blocked ridge submodule (new, pure numpy)
 
@@ -180,30 +207,37 @@ onto it is a separate change gated by a numeric-equivalence test.
   optional `regression_snp_restriction_task` (default `None` = dense).
   The annotation matrix is a dep both to derive `M` / total LD-score and to score
   `snpvar` densely.
-- `execute` (uniformly per-chromosome streaming; `p = 187`):
-  1. **Load munged chi-square + N** keyed for join to the LD-score members
-     (chi-square = Z^2; filter `chi2 < 80`, PolyFun's `MAX_CHI2`). Reuse the
-     repo's degenerate-Z guard before squaring.
+- `execute` (uniformly per-chromosome streaming; `p = 187`; all joins on
+  `(chrom, pos, nea, ea)` per decision 7):
+  1. **Load munged chi-square + N** joined to the LD-score members on
+     `(chrom, pos, nea, ea)` (chi-square = Z^2; filter `chi2 < 80`, PolyFun's
+     `MAX_CHI2`). Reuse the repo's degenerate-Z guard before squaring. Assert
+     every frame carries the four-part key before any join.
   2. **Derive `M` and per-variant total LD-score** from the annotation matrix's
-     `base` annotation and its LD-score column (decisions 4, 6).
-  3. **Pass A (scalar h2bar):** stream chromosomes accumulating *unweighted*
-     blocks (`w=None`) via the submodule; `fit` at a nominal alpha -> rough `tau`
-     -> preliminary `h2bar` scalar. Only the scalar is retained.
-  4. **Pass B (weighted per-chromosome blocks):** stream again; per chromosome
-     form `omega_i = 1/(het_i * oc_i)` from `h2bar`, `N`, total-LD-score, `M`
-     (`omega = het * oc` per the repo's batched-LDSC note), accumulate one
-     weighted `ChromRidgeBlock` per chromosome. Store all 22 (~35k floats each).
-  5. **Lambda by LOCO-CV** over the stored blocks (`select_alpha_loco`).
-  6. **Even/odd tau:** `tau_even = fit(combine(even_blocks), alpha)`,
-     `tau_odd = fit(combine(odd_blocks), alpha)`; `tau = beta_raw / Nbar`. Each
-     SNP is scored with the *opposite-parity* tau.
-  7. **Score dense:** stream the annotation matrix per chromosome,
-     `snpvar_i = a_i . tau[opposite_parity(chr_i)]`; write
-     `snpvar.parquet` (`CHR, BP, A1, A2, snpvar`) via
+     `base` annotation and its LD-score column (decisions 4, 6) — global (no
+     parity split; these carry no GWAS signal).
+  3. **Pass A (per-parity scalar h2bar):** stream chromosomes accumulating
+     *unweighted* blocks (`w=None`) per chromosome; `h2bar_odd` from
+     `combine(odd unweighted blocks)`, `h2bar_even` from the even ones (rough fit
+     at a nominal alpha). Only the two scalars are retained.
+  4. **Pass B (weighted per-chromosome blocks):** stream again; each chromosome is
+     weighted with **its own parity's** h2bar — `omega_i = 1/(het_i * oc_i)`,
+     `het_i = (1 + N * h2bar_parity(chrom_i) * l_i / M)^2`, `oc_i = max(l_i, 1)`
+     (`omega = het * oc` per the repo's batched-LDSC note). Accumulate one weighted
+     `ChromRidgeBlock` per chromosome; keep the odd and even block dicts separate.
+  5. **Per-parity lambda + tau (nested, decision 8):**
+     `sel_odd = select_alpha_loco(odd_blocks)`, refit
+     `tau_odd = fit(combine(odd_blocks), sel_odd.alpha).beta_raw / Nbar`; symmetric
+     `tau_even` from the even blocks. `select_alpha_loco` is thus called once per
+     parity, its LOCO folds drawn only from that parity's chromosomes.
+  6. **Score dense:** stream the annotation matrix per chromosome; an even
+     chromosome is scored with `tau_odd`, an odd chromosome with `tau_even`
+     (`snpvar_i = a_i . tau[opposite_parity(chrom_i)]`); write `snpvar.parquet`
+     (`chrom, pos, nea, ea, snpvar`) via
      `write_df_according_to_format(..., ParquetOutFormat())`.
-  8. **Diagnostics json:** chosen `alpha`, per-chrom held-out R^2, total h2,
-     `Nbar`, and the per-annotation `tau` table (even/odd) — feeds later
-     comparison/explainability and is cheap insurance.
+  7. **Diagnostics json:** chosen `alpha` per parity, per-chrom held-out R^2,
+     total h2, `Nbar`, and the per-annotation `tau` table (odd + even) — feeds
+     later comparison/explainability and is cheap insurance.
 - Output: `DirectoryAsset` (snpvar parquet + diagnostics json),
   `ResultDirectoryMeta` derived in `create()` from the munged sumstats task's
   meta (trait/project pulled from the dep, per repo convention — never accepted as
@@ -247,9 +281,11 @@ onto it is a separate change gated by a numeric-equivalence test.
 - **Estimator (C):** synthetic annotations + LD-scores where a known annotation
   subset carries all heritability; simulate chi-square consistent with a chosen
   `tau`; assert recovered `snpvar` ranking recovers the planted ordering
-  (Spearman near 1 — relative, not absolute, per decision 1) and that the
-  even/odd split scores each chromosome from the opposite parity. Task-level,
-  no network, no R (cf. the CT-LDSC synthetic recipe).
+  (Spearman near 1 — relative, not absolute, per decision 1). **No-leakage
+  assertions (decision 8):** each chromosome is scored from the opposite parity;
+  and the even-scoring `tau`/lambda are invariant to perturbing the chi-square of
+  an even chromosome (only odd data may influence them), and symmetrically.
+  Task-level, no network, no R (cf. the CT-LDSC synthetic recipe).
 - **Coverage:** the snpvar output covers 100% of the annotation-matrix variants,
   so the SUSIE `PriorInfo` join cannot drop variants.
 - **Migration gate (see Phasing):** numeric-equivalence test asserting the
@@ -272,11 +308,11 @@ onto it is a separate change gated by a numeric-equivalence test.
 ## Risks / open questions
 
 1. **LD-score member schema** (Component A open item): column naming, presence of
-   a `base` column, and `A1/A2` vs rsid-only. Resolved by a one-member schema
-   spike before the plan hardens. If there is no `base` column, derive the total
-   LD-score as the row-sum of the LD-score columns that correspond to the
-   annotation matrix's `base` annotation, or fall back to a dedicated `--w-ld`
-   download.
+   a `base` column, and — critically — whether the members carry
+   `(chrom, pos, nea, ea)`. Resolved by a one-member schema spike before the plan
+   hardens. If there is no `base` column, derive the total LD-score as the base
+   annotation's LD-score column by another route. **If the members lack the
+   four-part key, STOP and ask (decision 7) — no rsid fallback.**
 2. **Munge path:** reuse the rpy2-free genomic_sem Python munge vs the gwaslab
    path — pick whichever already emits a clean HapMap3-independent chi-square + N
    keyed to the LD-score members. (The regression is dense, so munge need not
