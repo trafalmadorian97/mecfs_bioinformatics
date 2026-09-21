@@ -4,12 +4,12 @@ Statistical dependence between genetic variants is called _linkage disequilibriu
 ## The LD Matrix
 
 - When we are interested in patterns of LD across a genomic region with $n$ variants, it is convenient to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
-- Note, however, that while the $R$ provides a useful description of the LD structure of a region, it reflects only pairwise dependence, and so is not a complete characterization of LD.  There are many possible higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
+- While $R$ usefully describes the LD structure of a region, it does not fully characterize the region's LD, because it contains only pairwise dependence information.  There are many possible higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
 
 
 ## Haplotypes
 
-The _haplotype_ is an important concept in the study of LD.  A haplotype is defined to be a group of genetic variants that are inherited together.
+The _haplotype_ is an important concept in the study of LD.  A haplotype is defined to be a group of genetic variants that are typically inherited together.
 
 ## Drivers
 
@@ -17,7 +17,7 @@ There are two main drivers of LD: mutation and recombination.
 
 ### Mutation
 
-For simplicity, first consider LD in the absence of recombination, as occurs in mitochondrial DNA, certain regions of the Y chromosome, and a some other genomic regions.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutations.
+First consider LD in the absence of recombination, as occurs in mitochondrial DNA, certain regions of the Y chromosome, and some other genomic regions.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD depends on patterns of historical mutation.
 
 The diagram below illustrates this concept: variants are correlated if the mutations that produced them occurred on the same branch of the haplotype genealogical tree. Genomic position is irrelevant.
 
