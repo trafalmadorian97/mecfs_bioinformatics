@@ -315,6 +315,24 @@ from attrs import frozen
 
 @frozen
 class ChromRidgeBlock:
+    """Weighted cross-product sufficient statistics for one chromosome.
+
+    For the SNPs i in one chromosome, let x_i be the length-p feature row
+    (annotation LD-scores), y_i the target (chi-square), and w_i >= 0 the
+    regression weight. Every field is a weighted sum over those SNPs:
+
+        sw   = sum_i w_i                     scalar (total weight; = n when w == 1)
+        swx  = sum_i w_i x_i                 length p   (weighted feature sum)
+        swxx = sum_i w_i x_i x_i^T           p x p      (weighted Gram, X^T W X)
+        swxy = sum_i w_i x_i y_i             length p   (weighted feature-target, X^T W y)
+        swy  = sum_i w_i y_i                 scalar
+        swyy = sum_i w_i y_i^2               scalar
+
+    These are exactly the statistics the weighted-ridge normal equations need,
+    and every one is additive across chromosomes, so any leave-one-out or
+    odd/even training set is formed by summing the relevant blocks (combine).
+    """
+
     sw: float
     swx: np.ndarray
     swxx: np.ndarray
@@ -332,6 +350,28 @@ class ChromRidgeBlock:
 
 @frozen
 class StandardizedSystem:
+    """The weighted ridge system after centering and per-column standardization.
+
+    Built from a ChromRidgeBlock. With weighted moments mean_j = swx_j / sw,
+    mean_y = swy / sw, and sd_j = sqrt(diag(swxx)_j / sw - mean_j^2) (zeros
+    replaced by 1), define the standardized feature z_ij = (x_ij - mean_j)/sd_j.
+    Then:
+
+        mean   length p   weighted per-feature mean, mean_j = (sum_i w_i x_ij)/(sum_i w_i)
+        sd     length p   weighted per-feature std dev (used to standardize/unstandardize)
+        mean_y scalar     weighted mean of the target y
+        g_std  p x p      standardized weighted Gram of centered features:
+                          g_std[j,k] = (sum_i w_i (x_ij-mean_j)(x_ik-mean_k)) / (sd_j sd_k)
+                                     = (swxx - sw * outer(mean, mean))[j,k] / (sd_j sd_k)
+        b_std  length p   standardized weighted feature-target cross term:
+                          b_std[j] = (sum_i w_i (x_ij-mean_j)(y_i-mean_y)) / sd_j
+                                   = (swxy - mean * swy)[j] / sd_j
+                          (centering on y is automatic since sum_i w_i (x_ij-mean_j) = 0)
+
+    solve() returns beta_std from (g_std + alpha I) beta_std = b_std; fit() then
+    unstandardizes: beta_raw = beta_std / sd, intercept = mean_y - beta_raw . mean.
+    """
+
     g_std: np.ndarray
     b_std: np.ndarray
     mean: np.ndarray
