@@ -475,7 +475,7 @@ def parquet_cs_table_task(
     """Copy a SUSIE run's combined credible-set table out of its directory as a
     standalone parquet FileAsset."""
     return CopyFileFromDirectoryTask.create_result_table(
-        asset_id=base_name + "_copy_cs_from_directory",
+        asset_id=base_name + "_parquet_result_table",
         source_directory_task=susie_finemap_task,
         path_inside_directory=Path(COMBINED_CS_FILENAME),
         extension=".parquet",
