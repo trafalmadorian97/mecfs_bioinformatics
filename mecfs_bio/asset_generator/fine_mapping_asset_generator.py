@@ -95,6 +95,12 @@ class BroadFineMapTaskGroup:
     susie_strict_credible_set_markdown_table: Task
     susie_1_credible_set_markdown_table: Task
     susie_2_credible_set_markdown_table: Task
+    # The same credible-set tables as standalone parquet FileAssets, so docs can
+    # render them as filterable, downloadable tables.
+    susie_base_credible_set_parquet_table: Task
+    susie_strict_credible_set_parquet_table: Task
+    susie_1_credible_set_parquet_table: Task
+    susie_2_credible_set_parquet_table: Task
     upset_plot_task: Task
     upset_plot_task_pip001: Task
 
@@ -114,6 +120,10 @@ class BroadFineMapTaskGroup:
             self.susie_strict_credible_set_markdown_table,
             self.susie_1_credible_set_markdown_table,
             self.susie_2_credible_set_markdown_table,
+            self.susie_base_credible_set_parquet_table,
+            self.susie_strict_credible_set_parquet_table,
+            self.susie_1_credible_set_parquet_table,
+            self.susie_2_credible_set_parquet_table,
         ]
 
 
@@ -245,8 +255,12 @@ def generate_assets_broad_ukbb_fine_map(
             heatmap_bin_options=None, mode="ld2", cmap="plasma"
         ),
     )
-    susie_base_credible_set_markdown_table = markdown_cs_table_task(
+    susie_base_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task, base_name=base_name + "_susie_base"
+    )
+    susie_base_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_base_credible_set_parquet_table,
+        base_name=base_name + "_susie_base",
     )
 
     susie_finemap_task_strict = SusieRFinemapTask.create(
@@ -270,8 +284,12 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    susie_strict_credible_set_markdown_table = markdown_cs_table_task(
+    susie_strict_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task_strict,
+        base_name=base_name + "_susie_strict",
+    )
+    susie_strict_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_strict_credible_set_parquet_table,
         base_name=base_name + "_susie_strict",
     )
 
@@ -296,8 +314,12 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    susie_1_credible_set_markdown_table = markdown_cs_table_task(
+    susie_1_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task_1_credible_set,
+        base_name=base_name + "_susie_1",
+    )
+    susie_1_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_1_credible_set_parquet_table,
         base_name=base_name + "_susie_1",
     )
 
@@ -322,8 +344,12 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    susie_2_credible_set_markdown_table = markdown_cs_table_task(
+    susie_2_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task_2_credible_set,
+        base_name=base_name + "_susie_2",
+    )
+    susie_2_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_2_credible_set_parquet_table,
         base_name=base_name + "_susie_2",
     )
     variant_id = "__variant_id"
@@ -434,15 +460,21 @@ def generate_assets_broad_ukbb_fine_map(
         susie_strict_credible_set_markdown_table=susie_strict_credible_set_markdown_table,
         susie_1_credible_set_markdown_table=susie_1_credible_set_markdown_table,
         susie_2_credible_set_markdown_table=susie_2_credible_set_markdown_table,
+        susie_base_credible_set_parquet_table=susie_base_credible_set_parquet_table,
+        susie_strict_credible_set_parquet_table=susie_strict_credible_set_parquet_table,
+        susie_1_credible_set_parquet_table=susie_1_credible_set_parquet_table,
+        susie_2_credible_set_parquet_table=susie_2_credible_set_parquet_table,
         upset_plot_task=upset_plot,
         upset_plot_task_pip001=upset_plot_pip001,
     )
 
 
-def markdown_cs_table_task(
+def parquet_cs_table_task(
     susie_finemap_task: SusieRFinemapTask, base_name: str
 ) -> Task:
-    copy_cs = CopyFileFromDirectoryTask.create_result_table(
+    """Copy a SUSIE run's combined credible-set table out of its directory as a
+    standalone parquet FileAsset."""
+    return CopyFileFromDirectoryTask.create_result_table(
         asset_id=base_name + "_copy_cs_from_directory",
         source_directory_task=susie_finemap_task,
         path_inside_directory=Path(COMBINED_CS_FILENAME),
@@ -450,8 +482,9 @@ def markdown_cs_table_task(
         read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
     )
 
-    cs_markdown = ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+
+def markdown_cs_table_task(cs_parquet_table_task: Task, base_name: str) -> Task:
+    return ConvertDataFrameToMarkdownTask.create_from_result_table_task(
         asset_id=base_name + "_convert_cs_to_markdown",
-        source_task=copy_cs,
+        source_task=cs_parquet_table_task,
     )
-    return cs_markdown
