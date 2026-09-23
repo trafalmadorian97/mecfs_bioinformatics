@@ -33,7 +33,9 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_BETA_COL,
     GWASLAB_POS_COL,
+    GWASLAB_SE_COL,
     GWASLAB_Z_COL,
 )
 from mecfs_bio.constants.polyfun_constants import (
@@ -81,7 +83,9 @@ class _Fixture:
         raise ValueError(f"unknown asset id {asset_id}")
 
 
-def _build_fixture(tmp_path: Path, perturb_chrom: int | None) -> _Fixture:
+def _build_fixture(
+    tmp_path: Path, perturb_chrom: int | None, z_as_beta_se: bool = False
+) -> _Fixture:
     """Synthetic data in which the ENRICHED annotation carries most heritability.
 
     Each variant's annotation LD-score and annotation value are the same number, so
@@ -89,7 +93,8 @@ def _build_fixture(tmp_path: Path, perturb_chrom: int | None) -> _Fixture:
     bin, so the MAFbin LD-scores sum to its total LD-score l_i. The MAFbins carry a
     small uniform tau so that chi2 rises with l, as in real data; otherwise h2bar
     would sit at its floor and the regression weights would ignore the sumstats.
-    perturb_chrom, if given, rescales that chromosome's Z.
+    perturb_chrom, if given, rescales that chromosome's Z. z_as_beta_se replaces
+    the Z column with BETA and SE columns whose ratio is Z.
     """
     tmp_path.mkdir(parents=True)
     rng = np.random.default_rng(0)
@@ -143,7 +148,13 @@ def _build_fixture(tmp_path: Path, perturb_chrom: int | None) -> _Fixture:
     annot_path = tmp_path / "annot.parquet"
     pl.concat(annot_frames).write_parquet(annot_path)
     sumstats_path = tmp_path / "sumstats.parquet"
-    pl.concat(sumstats_frames).write_parquet(sumstats_path)
+    sumstats = pl.concat(sumstats_frames)
+    if z_as_beta_se:
+        se = pl.Series(GWASLAB_SE_COL, rng.uniform(0.01, 0.1, size=sumstats.height))
+        sumstats = sumstats.with_columns(se).with_columns(
+            (pl.col(GWASLAB_Z_COL) * pl.col(GWASLAB_SE_COL)).alias(GWASLAB_BETA_COL)
+        ).drop(GWASLAB_Z_COL)
+    sumstats.write_parquet(sumstats_path)
 
     task = L2RegularizedSldscSnpvarTask.create(
         asset_id="snpvar",
@@ -226,3 +237,14 @@ def test_no_leakage_even_perturbation_does_not_move_even_scores(tmp_path: Path):
     assert base_diag["tau_even"] != perturbed_diag["tau_even"]
     assert _snpvar_by_parity(base, 0).equals(_snpvar_by_parity(perturbed, 0))
     assert not _snpvar_by_parity(base, 1).equals(_snpvar_by_parity(perturbed, 1))
+
+
+def test_beta_and_se_stand_in_for_missing_z(tmp_path: Path):
+    from_z = _run(_build_fixture(tmp_path / "z_in", perturb_chrom=None), tmp_path / "z")
+    from_beta_se = _run(
+        _build_fixture(tmp_path / "b_in", perturb_chrom=None, z_as_beta_se=True),
+        tmp_path / "b",
+    )
+    expected = pl.read_parquet(from_z / SNPVAR_PARQUET_FILENAME)[SNPVAR_COL]
+    got = pl.read_parquet(from_beta_se / SNPVAR_PARQUET_FILENAME)[SNPVAR_COL]
+    assert np.allclose(got.to_numpy(), expected.to_numpy(), rtol=1e-9, atol=0)

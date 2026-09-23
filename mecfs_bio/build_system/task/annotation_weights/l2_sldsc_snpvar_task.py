@@ -71,10 +71,12 @@ from mecfs_bio.build_system.task.annotation_weights.stream_extract_annotation_pa
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
+    GWASLAB_SE_COL,
     GWASLAB_Z_COL,
 )
 from mecfs_bio.constants.polyfun_constants import (
@@ -308,12 +310,26 @@ def _cast_key(frame: pl.DataFrame) -> pl.DataFrame:
 
 
 def _load_sumstats(frame: nw.LazyFrame) -> pl.DataFrame:
-    """The four-part key and Z, keeping only variants with a finite Z and a key
-    that occurs exactly once (a duplicated key cannot be matched unambiguously)."""
+    """The four-part key and Z, keeping only variants with a finite Z and a key that
+    occurs exactly once (a duplicated key cannot be matched unambiguously).
+
+    Z is resolved in gwaslab's order: an existing Z column, otherwise BETA / SE.
+    A non-finite Z (e.g. SE == 0) is dropped.
+    """
     names = frame.collect_schema().names()
-    missing = [c for c in [*_JOIN_KEYS, GWASLAB_Z_COL] if c not in names]
-    assert not missing, f"sumstats lack required columns {missing}"
-    loaded = _cast_key(frame.select(*_JOIN_KEYS, GWASLAB_Z_COL).collect().to_polars())
+    missing_key = [c for c in _JOIN_KEYS if c not in names]
+    assert not missing_key, f"sumstats lack join-key columns {missing_key}"
+    if GWASLAB_Z_COL in names:
+        z = nw.col(GWASLAB_Z_COL)
+    else:
+        assert GWASLAB_BETA_COL in names and GWASLAB_SE_COL in names, (
+            f"sumstats need {GWASLAB_Z_COL}, or {GWASLAB_BETA_COL} and "
+            f"{GWASLAB_SE_COL}; found {names}"
+        )
+        z = nw.col(GWASLAB_BETA_COL) / nw.col(GWASLAB_SE_COL)
+    loaded = _cast_key(
+        frame.select(*_JOIN_KEYS, z.alias(GWASLAB_Z_COL)).collect().to_polars()
+    )
     finite = loaded.filter(pl.col(GWASLAB_Z_COL).is_finite())
     unique = finite.unique(subset=_JOIN_KEYS, keep="none")
     logger.info(
