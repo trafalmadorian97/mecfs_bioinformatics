@@ -1,17 +1,18 @@
-"""Compare SUSIE credible sets at the DecodeME chr15:54.9Mb locus between the
-precomputed PolyFun prior (Approach 1) and the DecodeME L2-regularized S-LDSC prior
-(Approach 2), plus the uniform-prior baseline, for each run config.
+"""Compare SUSIE credible sets at a DecodeME locus between the precomputed PolyFun
+prior (Approach 1) and the DecodeME L2-regularized S-LDSC prior (Approach 2), plus
+the uniform-prior baseline, for each run config.
 
-Run: pixi r python experiments/claude/polyfun_approach2_real_run/compare_chr15_credible_sets.py \
-    | tee experiments/claude/polyfun_approach2_real_run/compare_chr15_credible_sets.log
+Run: pixi r python experiments/claude/polyfun_approach2_real_run/compare_credible_sets.py \
+    chr1_173500000_174500000_palindromes_keep \
+    | tee experiments/claude/polyfun_approach2_real_run/compare_credible_sets_chr1.log
 """
 
+import sys
 from pathlib import Path
 
 import polars as pl
 
 BASE = Path("assets/base_asset_store/gwas/ME_CFS/DecodeME/analysis")
-LOCUS = "chr15_54500000_55500000_palindromes_keep"
 RUNS = {
     "uniform": "decode_me_polyfun_explain{locus}_{cfg}_susie_uniform",
     "approach1": "decode_me_polyfun_explain{locus}_{cfg}_susie_polyfun",
@@ -21,8 +22,8 @@ CONFIGS = ("l1", "l2", "l10", "l10_strict")
 KEY = ["CHR", "POS", "EA", "NEA"]
 
 
-def _cs(run: str, cfg: str) -> pl.DataFrame:
-    path = BASE / RUNS[run].format(locus=LOCUS, cfg=cfg) / "combined_cs.parquet"
+def _cs(run: str, cfg: str, locus: str) -> pl.DataFrame:
+    path = BASE / RUNS[run].format(locus=locus, cfg=cfg) / "combined_cs.parquet"
     return pl.read_parquet(path)
 
 
@@ -42,10 +43,10 @@ def _variants(cs: pl.DataFrame) -> set[tuple]:
     return set(cs.select(KEY).iter_rows())
 
 
-def main() -> None:
+def main(locus: str) -> None:
     for cfg in CONFIGS:
         print(f"\n===== {cfg} =====")
-        sets = {run: _cs(run, cfg) for run in RUNS}
+        sets = {run: _cs(run, cfg, locus) for run in RUNS}
         for run, cs in sets.items():
             print(f"  {run:>9}: {_describe(cs)}")
         v = {run: _variants(cs) for run, cs in sets.items()}
@@ -65,4 +66,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1])

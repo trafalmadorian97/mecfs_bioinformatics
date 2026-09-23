@@ -133,7 +133,11 @@ _JOIN_KEYS = [
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_EFFECT_ALLELE_COL,
 ]
-_DEFAULT_ALPHAS: tuple[float, ...] = (0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
+# Half-decade steps from 1e-1 to 1e12. The per-SNP chi2 regression is noise
+# dominated, so cross-validation can favor very heavy shrinkage; if it selects the
+# largest value, widen this grid and refit. Scoring extra penalties is cheap: each
+# solves one p x p system per cross-validation fold.
+_DEFAULT_ALPHAS: tuple[float, ...] = tuple(10.0 ** (k / 2) for k in range(-2, 25))
 
 
 @frozen
