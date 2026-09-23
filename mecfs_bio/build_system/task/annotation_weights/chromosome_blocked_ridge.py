@@ -165,7 +165,12 @@ def combine(blocks: Sequence[ChromRidgeBlock]) -> ChromRidgeBlock:
 
 
 def standardized_system(block: ChromRidgeBlock) -> StandardizedSystem:
-    """Center and standardize a block's normal equations (see StandardizedSystem)."""
+    """Center and standardize a block's normal equations (see StandardizedSystem).
+
+    The centered Gram follows from expanding the outer product:
+    sum_i w_i (x_i - mean)(x_i - mean)^T = swxx - 2 sw outer(mean, mean)
+    + sw outer(mean, mean) = swxx - sw outer(mean, mean).
+    """
     n = block.sw
     mean = block.swx / n
     var = np.diag(block.swxx) / n - mean**2
@@ -209,7 +214,9 @@ def heldout_r2(
              = (swxx - outer(m, swx) - outer(swx, m) + sw outer(m, m))[j,k] / (s_j s_k)
         SS_tot = sum_i w_i (y_i - ybar)^2 = swyy - sw ybar^2, with ybar = swy / sw
 
-    and R^2 = 1 - SS_res / SS_tot.
+    and R^2 = 1 - SS_res / SS_tot. SS_res is taken about the training intercept c,
+    while SS_tot uses the held-out block's own mean ybar: the R^2 null model is
+    "predict the held-out mean".
     """
     n = held.sw
     c = train_mean_y
