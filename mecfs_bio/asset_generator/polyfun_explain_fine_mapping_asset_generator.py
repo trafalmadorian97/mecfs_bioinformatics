@@ -120,10 +120,20 @@ class PolyfunPriorSource:
     named here (chr/pos plus the REF-oriented non-effect and effect alleles), and a
     heritability weight column. The generator floors the weights at max / q_factor
     to form the prior, identically for every source.
+
+    The two explanation weights tasks yield annotation coefficient tables in the
+    RidgeAnnotationWeightsTask schema that the explainability contrast uses to
+    attribute the prior to annotations: one for loci on odd chromosomes and one
+    for loci on even chromosomes. A source whose prior is modeled the same way on
+    every chromosome passes the same task for both; a source that scores each half
+    of the genome with coefficients fit on the other half passes the coefficients
+    that scored each half.
     """
 
     prior_task: Task
     weight_col: str
+    odd_chrom_explanation_weights_task: Task
+    even_chrom_explanation_weights_task: Task
     chr_col: str = POLYFUN_CHR_COL
     pos_col: str = POLYFUN_BP_COL
     nea_col: str = POLYFUN_A1_COL
@@ -131,10 +141,22 @@ class PolyfunPriorSource:
 
 
 # PolyFun Approach 1: the precomputed prior meta-analyzed over 15 UK Biobank traits.
+# Its explanation weights are a ridge surrogate of the prior on the annotations.
 PRECOMPUTED_POLYFUN_PRIOR_SOURCE = PolyfunPriorSource(
     prior_task=COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
     weight_col=POLYFUN_H_WEIGHT_COL,
+    odd_chrom_explanation_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
+    even_chrom_explanation_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
 )
+
+
+def _explanation_weights_task_for_chrom(source: PolyfunPriorSource, chrom: int) -> Task:
+    """The annotation coefficients that explain source's prior on chromosome chrom."""
+    return (
+        source.odd_chrom_explanation_weights_task
+        if chrom % 2 == 1
+        else source.even_chrom_explanation_weights_task
+    )
 
 
 @frozen
@@ -167,6 +189,8 @@ class SharedFineMapInputs:
     ld_matrix_task: Task
     gene_info_task: Task
     effective_sample_size: int
+    # Annotation coefficients explaining the polyfun prior at this locus.
+    explanation_weights_task: Task
     genome_build: GenomeBuild = "19"
     q_factor: int = 100
     secondary_position_from_snpid: SecondaryPositionFromSnpid | None = None
@@ -273,7 +297,7 @@ def generate_polyfun_explain_group(
         asset_id=f"{stem}_explain_contrast",
         susie_uniform_task=susie_uniform,
         susie_polyfun_task=susie_polyfun,
-        ridge_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
+        ridge_weights_task=shared.explanation_weights_task,
         annotation_parquet_task=BASELINE_LF_ANNOTATION_MATRIX,
         secondary_position=shared.secondary_position_from_snpid,
     )
@@ -284,7 +308,7 @@ def generate_polyfun_explain_group(
         contrast_task=contrast,
         annotation_parquet_task=BASELINE_LF_ANNOTATION_MATRIX,
         gene_info_task=shared.gene_info_task,
-        ridge_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
+        ridge_weights_task=shared.explanation_weights_task,
         genetic_map_task=GENETIC_MAP_HG19,
         genome_build=shared.genome_build,
         gene_info_pipe=IdentityPipe(),
@@ -514,6 +538,9 @@ def _build_shared_locus_inputs(
         ld_matrix_task=ld_matrix_task,
         gene_info_task=gene_info_task,
         effective_sample_size=sample_size,
+        explanation_weights_task=_explanation_weights_task_for_chrom(
+            prior_source, chrom
+        ),
         genome_build=genome_build,
         q_factor=q_factor,
         secondary_position_from_snpid=secondary_position_from_snpid,

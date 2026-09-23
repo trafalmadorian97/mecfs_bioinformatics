@@ -4,8 +4,9 @@ precomputed PolyFun prior.
 
 Same locus, sumstats, sample size, palindrome strategy, and chrom range as
 susie_explain_decode_me_37_chr15_54_925_638, so the two sets of credible sets
-differ only in the prior. The contrast and plot tasks still describe annotations
-with the ridge weights fit to the precomputed prior.
+differ only in the prior. The contrast attributes the prior to annotations with
+the DecodeME tau that scored chr15 (fit on the even chromosomes), which explains the
+unfloored prior exactly.
 """
 
 from mecfs_bio.asset_generator.polyfun_explain_fine_mapping_asset_generator import (

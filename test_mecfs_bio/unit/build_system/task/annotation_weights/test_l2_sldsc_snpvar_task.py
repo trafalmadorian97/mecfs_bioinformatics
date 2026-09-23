@@ -280,5 +280,7 @@ def test_tau_weights_tables_reproduce_snpvar_exactly(tmp_path: Path):
         assert weights[FAMILY_COL].null_count() == 0
         scored = joined.filter(pl.col(GWASLAB_CHROM_COL) % 2 == scored_parity)
         gamma = weights[GAMMA_RAW_COL].to_numpy()
-        reconstructed = scored.select(weights[ANNOTATION_COL].to_list()).to_numpy() @ gamma
+        reconstructed = (
+            scored.select(weights[ANNOTATION_COL].to_list()).to_numpy() @ gamma
+        )
         assert np.allclose(reconstructed, scored[SNPVAR_COL].to_numpy(), rtol=1e-12)

@@ -114,8 +114,8 @@ _TOP_VARIANT_PIP_GAP = 0.20
 # Internal columns used while building the per-variant annotation table.
 _VARIANT_LABEL_COL = "variant"
 _ANNOT_VALUE_COL = "value"
-# Per-annotation context columns on the per-variant table: the ridge regression
-# coefficient gamma_raw_c, and abar_c (the uniform-run PIP-weighted mean of the
+# Per-annotation context columns on the per-variant table: the annotation
+# coefficient gamma_raw_c (see ridge_weights_task), and abar_c (the uniform-run PIP-weighted mean of the
 # annotation over the locus variants).
 DISP_GAMMA = "gamma"
 DISP_ALPHA_BAR = "alpha_bar"
@@ -190,6 +190,9 @@ class PolyfunExplainContrastTask(Task):
     meta: Meta
     susie_uniform_task: Task
     susie_polyfun_task: Task
+    # Annotation coefficients gamma_raw_c (RidgeAnnotationWeightsTask schema) that
+    # model the polyfun prior: a ridge surrogate of the precomputed prior, or the
+    # tau of a trait-specific L2-regularized S-LDSC prior, which models it exactly.
     ridge_weights_task: Task
     annotation_parquet_task: Task
     n_important_families: int = 3
@@ -747,7 +750,7 @@ def _per_variant_annotation_table(
     abar: dict[str, float],
 ) -> pl.DataFrame:
     """Characterization table: one row per detailed annotation (a family and an
-    annotation column), then two per-annotation context columns -- the ridge
+    annotation column), then two per-annotation context columns -- the annotation
     coefficient gamma_raw_c and abar_c (the uniform-run PIP-weighted mean of the
     annotation) -- then one column per selected top variant (labelled
     chr:pos:nea:ea in hg19), holding the raw annotation value a_ic (no gamma).

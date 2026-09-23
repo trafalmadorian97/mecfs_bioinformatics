@@ -28,6 +28,8 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.task.annotation_weights.l2_sldsc_snpvar_task import (
     SNPVAR_COL,
     SNPVAR_PARQUET_FILENAME,
+    TAU_EVEN_WEIGHTS_FILENAME,
+    TAU_ODD_WEIGHTS_FILENAME,
     L2RegularizedSldscSnpvarTask,
 )
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
@@ -59,9 +61,29 @@ DECODE_ME_L2_SLDSC_SNPVAR_TABLE = CopyFileFromDirectoryTask.create_result_table(
     read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
 )
 
+# tau fit on the odd chromosomes (it scores, so explains, the even chromosomes).
+DECODE_ME_L2_SLDSC_TAU_ODD_WEIGHTS = CopyFileFromDirectoryTask.create_result_table(
+    asset_id="decode_me_gwas_1_l2_sldsc_tau_odd_weights",
+    source_directory_task=DECODE_ME_L2_SLDSC_SNPVAR,
+    path_inside_directory=PurePath(TAU_ODD_WEIGHTS_FILENAME),
+    extension=".parquet",
+    read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+)
+
+# tau fit on the even chromosomes (it scores, so explains, the odd chromosomes).
+DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS = CopyFileFromDirectoryTask.create_result_table(
+    asset_id="decode_me_gwas_1_l2_sldsc_tau_even_weights",
+    source_directory_task=DECODE_ME_L2_SLDSC_SNPVAR,
+    path_inside_directory=PurePath(TAU_EVEN_WEIGHTS_FILENAME),
+    extension=".parquet",
+    read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+)
+
 DECODE_ME_L2_SLDSC_PRIOR_SOURCE = PolyfunPriorSource(
     prior_task=DECODE_ME_L2_SLDSC_SNPVAR_TABLE,
     weight_col=SNPVAR_COL,
+    odd_chrom_explanation_weights_task=DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS,
+    even_chrom_explanation_weights_task=DECODE_ME_L2_SLDSC_TAU_ODD_WEIGHTS,
     chr_col=GWASLAB_CHROM_COL,
     pos_col=GWASLAB_POS_COL,
     nea_col=GWASLAB_NON_EFFECT_ALLELE_COL,

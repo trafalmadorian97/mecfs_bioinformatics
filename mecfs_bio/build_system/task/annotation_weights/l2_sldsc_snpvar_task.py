@@ -480,7 +480,9 @@ def _fit_parity(
     )
 
 
-def _tau_weights_table(parity_fit: _ParityFit, annot_cols: Sequence[str]) -> pl.DataFrame:
+def _tau_weights_table(
+    parity_fit: _ParityFit, annot_cols: Sequence[str]
+) -> pl.DataFrame:
     """One half's tau as a ridge-weights table. family_for_annotation hard-fails on
     an annotation outside the known baseline-LF set."""
     return pl.DataFrame(
