@@ -30,10 +30,10 @@ from mecfs_bio.build_system.task.annotation_weights.l2_sldsc_snpvar_task import 
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
-    GWASLAB_BETA_COL,
     GWASLAB_POS_COL,
     GWASLAB_SE_COL,
     GWASLAB_Z_COL,
@@ -151,9 +151,13 @@ def _build_fixture(
     sumstats = pl.concat(sumstats_frames)
     if z_as_beta_se:
         se = pl.Series(GWASLAB_SE_COL, rng.uniform(0.01, 0.1, size=sumstats.height))
-        sumstats = sumstats.with_columns(se).with_columns(
-            (pl.col(GWASLAB_Z_COL) * pl.col(GWASLAB_SE_COL)).alias(GWASLAB_BETA_COL)
-        ).drop(GWASLAB_Z_COL)
+        sumstats = (
+            sumstats.with_columns(se)
+            .with_columns(
+                (pl.col(GWASLAB_Z_COL) * pl.col(GWASLAB_SE_COL)).alias(GWASLAB_BETA_COL)
+            )
+            .drop(GWASLAB_Z_COL)
+        )
     sumstats.write_parquet(sumstats_path)
 
     task = L2RegularizedSldscSnpvarTask.create(
