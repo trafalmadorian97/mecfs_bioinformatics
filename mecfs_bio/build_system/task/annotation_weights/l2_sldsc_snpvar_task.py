@@ -410,6 +410,20 @@ def _reference_variant_count(ldscore_paths: Mapping[int, Path]) -> int:
     )
 
 
+def _read_ldscore_member(path: Path, columns: Sequence[str]) -> pl.DataFrame:
+    """Read the given columns of one LD-score member with buffered reads.
+
+    The members (~29GB) are candidates for an asset-store remap onto a network-like
+    mount (e.g. a WSL2 DrvFs drive), where polars' memory-mapped parquet reader
+    faults the file in one page at a time and runs orders of magnitude slower than
+    large sequential reads. pyarrow with memory_map=False reads whole column chunks.
+    """
+    table = pq.read_table(path, columns=list(columns), memory_map=False)
+    frame = pl.from_arrow(table)
+    assert isinstance(frame, pl.DataFrame)
+    return frame
+
+
 def _ldscore_regression_frame(
     ldscore_path: Path, sumstats: pl.DataFrame, ldscore_cols: Sequence[str]
 ) -> pl.DataFrame:
@@ -420,16 +434,16 @@ def _ldscore_regression_frame(
     _CHI2_CAP) and the MAFbin-sum total LD-score l.
     """
     ld = _cast_key(
-        pl.scan_parquet(ldscore_path)
-        .select(
-            POLYFUN_CHR_COL,
-            POLYFUN_BP_COL,
-            POLYFUN_A1_COL,
-            POLYFUN_A2_COL,
-            *ldscore_cols,
-        )
-        .collect()
-        .rename(POLYFUN_TO_GWASLAB_KEY_RENAME)
+        _read_ldscore_member(
+            ldscore_path,
+            columns=[
+                POLYFUN_CHR_COL,
+                POLYFUN_BP_COL,
+                POLYFUN_A1_COL,
+                POLYFUN_A2_COL,
+                *ldscore_cols,
+            ],
+        ).rename(POLYFUN_TO_GWASLAB_KEY_RENAME)
     )
     mafbins = [c for c in ldscore_cols if _is_mafbin(c)]
     assert len(mafbins) == _N_MAFBINS, (
