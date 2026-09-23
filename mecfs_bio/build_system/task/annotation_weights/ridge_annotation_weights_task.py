@@ -45,6 +45,12 @@ from mecfs_bio.build_system.task.dataframe_output import (
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.polyfun_annotation_families import family_for_annotation
+from mecfs_bio.constants.polyfun_constants import (
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_CHR_COL,
+)
 
 WEIGHTS_PARQUET_FILENAME = "weights.parquet"
 DIAGNOSTICS_JSON_FILENAME = "diagnostics.json"
@@ -53,15 +59,11 @@ GAMMA_RAW_COL = "gamma_raw"
 GAMMA_STANDARDIZED_COL = "gamma_standardized"
 FAMILY_COL = "family"
 SNPVAR_COL = "snpvar_bin"
-_CHR_COL = "CHR"
-_BP_COL = "BP"
-_A1_COL = "A1"
-_A2_COL = "A2"
 # Both the annotation matrix and snpvar_meta carry alleles (A1/A2), so the
 # annotation<->snpvar join is exact on (CHR, BP, A1, A2), both sides
 # reference-oriented (A1 == REF). This pairs each allele of a multiallelic site --
 # and each orientation of a mirrored indel -- with its own snpvar_bin.
-_JOIN_KEYS = [_CHR_COL, _BP_COL, _A1_COL, _A2_COL]
+_JOIN_KEYS = [POLYFUN_CHR_COL, POLYFUN_BP_COL, POLYFUN_A1_COL, POLYFUN_A2_COL]
 
 _DEFAULT_ALPHAS: tuple[float, ...] = (0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
 
@@ -118,7 +120,13 @@ class RidgeAnnotationWeightsTask(Task):
         meta_asset = fetch(self.snpvar_meta_task.asset_id)
         meta = (
             scan_dataframe_asset(meta_asset, self.snpvar_meta_task.meta)
-            .select(_CHR_COL, _BP_COL, _A1_COL, _A2_COL, SNPVAR_COL)
+            .select(
+                POLYFUN_CHR_COL,
+                POLYFUN_BP_COL,
+                POLYFUN_A1_COL,
+                POLYFUN_A2_COL,
+                SNPVAR_COL,
+            )
             .collect()
             .to_polars()
             .unique(subset=_JOIN_KEYS)
@@ -195,7 +203,7 @@ def _accumulate_per_chromosome(
 ) -> dict[int, _ChromStats]:
     chroms = (
         pl.scan_parquet(annot_path)
-        .select(_CHR_COL)
+        .select(POLYFUN_CHR_COL)
         .unique()
         .collect()
         .to_series()
@@ -204,7 +212,9 @@ def _accumulate_per_chromosome(
     per_chrom: dict[int, _ChromStats] = {}
     for chrom in sorted(chroms):
         annot_chrom = (
-            pl.scan_parquet(annot_path).filter(pl.col(_CHR_COL) == chrom).collect()
+            pl.scan_parquet(annot_path)
+            .filter(pl.col(POLYFUN_CHR_COL) == chrom)
+            .collect()
         )
         frame = annot_chrom.join(meta, on=_JOIN_KEYS, how="inner")
         # meta is unique on the join key and the annotation matrix is unique on
