@@ -1,7 +1,7 @@
 """Asset generator for polyfun explainability fine-mapping.
 
 Inner generator: given a locus's shared inputs and one run config, produce a
-matched pair of SUSIE runs (polyfun precomputed prior + uniform) plus the
+matched pair of SUSIE runs (polyfun prior + uniform) plus the
 contrast and plot tasks that explain the pair in annotation terms. Outer
 generator: build the per-locus shared inputs (LD interval, renamed LD labels,
 harmonized sumstats), then call the inner generator for each of the four run
@@ -39,6 +39,7 @@ from mecfs_bio.assets.reference_data.polyfun.annotations.baseline_lf_annotations
 )
 from mecfs_bio.assets.reference_data.polyfun.precomputed_prior.polyfun_precomputed_prior import (
     COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
+    POLYFUN_H_WEIGHT_COL,
     POLYFUN_PRIOR_COL,
     create_prior_col_pipe,
 )
@@ -101,8 +102,39 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
 )
+from mecfs_bio.constants.polyfun_constants import (
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_CHR_COL,
+)
 
 logger = structlog.get_logger()
+
+
+@frozen
+class PolyfunPriorSource:
+    """Where the polyfun SUSIE run's per-variant prior comes from.
+
+    prior_task yields a table with one row per variant, keyed by the four columns
+    named here (chr/pos plus the REF-oriented non-effect and effect alleles), and a
+    heritability weight column. The generator floors the weights at max / q_factor
+    to form the prior, identically for every source.
+    """
+
+    prior_task: Task
+    weight_col: str
+    chr_col: str = POLYFUN_CHR_COL
+    pos_col: str = POLYFUN_BP_COL
+    nea_col: str = POLYFUN_A1_COL
+    ea_col: str = POLYFUN_A2_COL
+
+
+# PolyFun Approach 1: the precomputed prior meta-analyzed over 15 UK Biobank traits.
+PRECOMPUTED_POLYFUN_PRIOR_SOURCE = PolyfunPriorSource(
+    prior_task=COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
+    weight_col=POLYFUN_H_WEIGHT_COL,
+)
 
 
 @frozen
@@ -138,6 +170,7 @@ class SharedFineMapInputs:
     genome_build: GenomeBuild = "19"
     q_factor: int = 100
     secondary_position_from_snpid: SecondaryPositionFromSnpid | None = None
+    prior_source: PolyfunPriorSource = PRECOMPUTED_POLYFUN_PRIOR_SOURCE
 
 
 @frozen
@@ -204,10 +237,15 @@ def generate_polyfun_explain_group(
     """Build one matched pair (uniform vs polyfun prior) under one run config,
     with the contrast and plot tasks explaining that pair."""
     stem = f"{shared.base_name}_{config.label}"
+    source = shared.prior_source
     prior_info = PriorInfo(
-        prior_task=COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
-        prior_pipe=create_prior_col_pipe(shared.q_factor),
+        prior_task=source.prior_task,
+        prior_pipe=create_prior_col_pipe(shared.q_factor, weight_col=source.weight_col),
         prior_col=POLYFUN_PRIOR_COL,
+        prior_chr_col=source.chr_col,
+        prior_bp_cp=source.pos_col,
+        prior_a1_col=source.nea_col,
+        prior_a2_col=source.ea_col,
     )
     susie_uniform = SusieRFinemapTask.create(
         asset_id=f"{stem}_susie_uniform",
@@ -394,6 +432,7 @@ def _build_shared_locus_inputs(
     palindrome_strategy: PalindromeStrategy,
     genome_build: GenomeBuild,
     secondary_position_from_snpid: SecondaryPositionFromSnpid | None,
+    prior_source: PolyfunPriorSource,
 ) -> SharedFineMapInputs:
     """Per-locus shared setup: LD interval lookup, LD-label renaming, and
     harmonization of the sumstats against the renamed labels. Mirrors the inline
@@ -478,6 +517,7 @@ def _build_shared_locus_inputs(
         genome_build=genome_build,
         q_factor=q_factor,
         secondary_position_from_snpid=secondary_position_from_snpid,
+        prior_source=prior_source,
     )
 
 
@@ -493,6 +533,7 @@ def generate_assets_polyfun_explain_fine_map(
     chrom_range: ChromRange | None = None,
     palindrome_strategy: PalindromeStrategy = "drop",
     secondary_position_from_snpid: SecondaryPositionFromSnpid | None = None,
+    prior_source: PolyfunPriorSource = PRECOMPUTED_POLYFUN_PRIOR_SOURCE,
 ) -> PolyfunExplainOuterGroup:
     """Build the full explainability asset set for one locus: the per-locus
     shared inputs, then a matched uniform/polyfun SUSIE pair (+ contrast + plot)
@@ -501,7 +542,10 @@ def generate_assets_polyfun_explain_fine_map(
     secondary_position_from_snpid, when given, adds a build-labelled secondary
     position column (e.g. pos_hg38) to the display tables, parsed from the
     variants' SNPID. Only correct when the SNPID position field is in the
-    asserted build (true for gwaslab sumstats lifted over from that build)."""
+    asserted build (true for gwaslab sumstats lifted over from that build).
+
+    prior_source selects the polyfun run's prior: the precomputed PolyFun prior by
+    default, or e.g. a trait-specific L2-regularized S-LDSC snpvar table."""
     shared = _build_shared_locus_inputs(
         chrom=chrom,
         pos=pos,
@@ -514,6 +558,7 @@ def generate_assets_polyfun_explain_fine_map(
         chrom_range=chrom_range,
         palindrome_strategy=palindrome_strategy,
         secondary_position_from_snpid=secondary_position_from_snpid,
+        prior_source=prior_source,
         # Fixed to hg19: this generator runs on build-37 sumstats against the
         # Broad build-37 LD panel, the hg19 genetic map, and the hg19 baseline-LF
         # annotations. It drives the plot's x-axis coordinate-system label.
