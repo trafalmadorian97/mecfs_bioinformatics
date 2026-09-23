@@ -25,7 +25,14 @@ from mecfs_bio.build_system.task.annotation_weights.l2_sldsc_snpvar_task import 
     DIAGNOSTICS_JSON_FILENAME,
     SNPVAR_COL,
     SNPVAR_PARQUET_FILENAME,
+    TAU_EVEN_WEIGHTS_FILENAME,
+    TAU_ODD_WEIGHTS_FILENAME,
     L2RegularizedSldscSnpvarTask,
+)
+from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+    GAMMA_RAW_COL,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
@@ -252,3 +259,26 @@ def test_beta_and_se_stand_in_for_missing_z(tmp_path: Path):
     expected = pl.read_parquet(from_z / SNPVAR_PARQUET_FILENAME)[SNPVAR_COL]
     got = pl.read_parquet(from_beta_se / SNPVAR_PARQUET_FILENAME)[SNPVAR_COL]
     assert np.allclose(got.to_numpy(), expected.to_numpy(), rtol=1e-9, atol=0)
+
+
+def test_tau_weights_tables_reproduce_snpvar_exactly(tmp_path: Path):
+    # Each weights table holds one half's tau in the ridge-weights schema. The
+    # chromosomes that half scores must have snpvar == sum_c a_ic gamma_raw_c
+    # exactly, so a contrast built from these weights explains the prior exactly.
+    fixture = _build_fixture(tmp_path / "in", perturb_chrom=None)
+    out = _run(fixture, tmp_path)
+    snpvar = pl.read_parquet(out / SNPVAR_PARQUET_FILENAME)
+    ann = pl.read_parquet(fixture.annot_path).rename(POLYFUN_TO_GWASLAB_KEY_RENAME)
+    joined = snpvar.join(ann, on=_KEY, how="inner")
+    # tau fit on odd chromosomes scores even ones, and vice versa.
+    for filename, scored_parity in (
+        (TAU_ODD_WEIGHTS_FILENAME, 0),
+        (TAU_EVEN_WEIGHTS_FILENAME, 1),
+    ):
+        weights = pl.read_parquet(out / filename)
+        assert set(weights[ANNOTATION_COL]) == set(ANNOTS + MAFBINS)
+        assert weights[FAMILY_COL].null_count() == 0
+        scored = joined.filter(pl.col(GWASLAB_CHROM_COL) % 2 == scored_parity)
+        gamma = weights[GAMMA_RAW_COL].to_numpy()
+        reconstructed = scored.select(weights[ANNOTATION_COL].to_list()).to_numpy() @ gamma
+        assert np.allclose(reconstructed, scored[SNPVAR_COL].to_numpy(), rtol=1e-12)

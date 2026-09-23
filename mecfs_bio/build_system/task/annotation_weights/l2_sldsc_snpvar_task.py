@@ -32,6 +32,11 @@ chromosome's LD-score member (or annotation-matrix slice) at a time, and the
 regression is carried by per-chromosome sufficient statistics (see
 chromosome_blocked_ridge).
 
+Outputs: snpvar.parquet (CHR, POS, NEA, EA, snpvar), one weights table per half
+holding its tau in the RidgeAnnotationWeightsTask schema, and diagnostics.json.
+Since snpvar is exactly linear in the annotations, the weights table of the tau
+that scored a chromosome explains that chromosome's snpvar exactly.
+
 All per-variant joins use the exact (CHR, POS, NEA, EA) key. The PolyFun inputs are
 REF-oriented (A1 == REF == NEA, A2 == ALT == EA), so the sumstats must be
 genome-reference harmonized (NEA == hg19 REF).
@@ -65,6 +70,12 @@ from mecfs_bio.build_system.task.annotation_weights.chromosome_blocked_ridge imp
     fit,
     select_alpha_loco,
 )
+from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+    GAMMA_RAW_COL,
+    GAMMA_STANDARDIZED_COL,
+)
 from mecfs_bio.build_system.task.annotation_weights.stream_extract_annotation_parquets_task import (
     LDSCORE_PARQUET_MEMBER_RE,
 )
@@ -79,6 +90,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
     GWASLAB_Z_COL,
 )
+from mecfs_bio.constants.polyfun_annotation_families import family_for_annotation
 from mecfs_bio.constants.polyfun_constants import (
     POLYFUN_A1_COL,
     POLYFUN_A2_COL,
@@ -93,6 +105,12 @@ logger = structlog.get_logger()
 SNPVAR_PARQUET_FILENAME = "snpvar.parquet"
 DIAGNOSTICS_JSON_FILENAME = "diagnostics.json"
 SNPVAR_COL = "snpvar"
+# Per-half tau in the RidgeAnnotationWeightsTask weights schema (annotation,
+# gamma_raw, gamma_standardized, family), so the polyfun explainability contrast
+# can consume them in place of the ridge surrogate of the precomputed prior.
+# tau fit on odd chromosomes scores the even chromosomes, and vice versa.
+TAU_ODD_WEIGHTS_FILENAME = "weights_tau_odd.parquet"
+TAU_EVEN_WEIGHTS_FILENAME = "weights_tau_even.parquet"
 MAFBIN_LDSCORE_RE = re.compile(r"^MAFbin_(lowfreq|frequent)_\d+$")
 _N_MAFBINS = 20
 # chi2_i = Z_i^2, the regression target.
@@ -125,6 +143,9 @@ class _ParityFit:
     h2bar: float
     selection: AlphaSelection
     tau: np.ndarray
+    # tau on the standardized-LD-score scale (beta_std / N), comparable across
+    # annotations.
+    tau_standardized: np.ndarray
     n_regression_variants: int
 
 
@@ -239,6 +260,13 @@ class L2RegularizedSldscSnpvarTask(Task):
             tau_by_parity={parity: fits[1 - parity].tau for parity in (0, 1)},
             out_path=scratch_dir / SNPVAR_PARQUET_FILENAME,
         )
+        for parity, filename in (
+            (1, TAU_ODD_WEIGHTS_FILENAME),
+            (0, TAU_EVEN_WEIGHTS_FILENAME),
+        ):
+            _tau_weights_table(fits[parity], annot_cols).write_parquet(
+                scratch_dir / filename
+            )
         (scratch_dir / DIAGNOSTICS_JSON_FILENAME).write_text(
             json.dumps(
                 _diagnostics(
@@ -447,7 +475,21 @@ def _fit_parity(
         h2bar=h2bar,
         selection=selection,
         tau=ridge.beta_raw / n_bar,
+        tau_standardized=ridge.beta_std / n_bar,
         n_regression_variants=n_regression_variants,
+    )
+
+
+def _tau_weights_table(parity_fit: _ParityFit, annot_cols: Sequence[str]) -> pl.DataFrame:
+    """One half's tau as a ridge-weights table. family_for_annotation hard-fails on
+    an annotation outside the known baseline-LF set."""
+    return pl.DataFrame(
+        {
+            ANNOTATION_COL: list(annot_cols),
+            GAMMA_RAW_COL: parity_fit.tau,
+            GAMMA_STANDARDIZED_COL: parity_fit.tau_standardized,
+            FAMILY_COL: [family_for_annotation(c) for c in annot_cols],
+        }
     )
 
 
