@@ -30,6 +30,14 @@ with the existing `RidgeAnnotationWeightsTask`. The prior plugs into the existin
   GWASLAB_EFFECT_ALLELE_COL`). No rsid, unordered-allele, or position-only join.
   baseline-LF members are REF-oriented: their `A1 == REF == nea`,
   `A2 == ALT == ea`. If any input lacks the four-part key, STOP.
+- **PolyFun column constants:** every read, rename, select, or fixture of a
+  PolyFun-provided dataframe (annotation members, LD-score members, the annotation
+  matrix, the precomputed prior) names its key columns through
+  `mecfs_bio/constants/polyfun_constants.py` (created in Task 1 Step 0):
+  `POLYFUN_CHR_COL, POLYFUN_BP_COL, POLYFUN_SNP_COL, POLYFUN_A1_COL,
+  POLYFUN_A2_COL`, plus `POLYFUN_TO_GWASLAB_KEY_RENAME`, the single mapping
+  used to turn a PolyFun key into the gwaslab four-part key. No `"CHR"`/`"BP"`/
+  `"A1"`/`"A2"` literals in new code or tests.
 - **Memory budget:** 16GB. Never materialize the dense design matrix; stream one
   chromosome at a time. Large extracted assets are `path_remap` candidates.
 - **No leakage (spec decision 8):** nothing that scores a chromosome may be fit
@@ -47,6 +55,10 @@ with the existing `RidgeAnnotationWeightsTask`. The prior plugs into the existin
 ### Task 1: baseline-LF annotation LD-score members (stream-extract + asset)
 
 **Files:**
+- Create: `mecfs_bio/constants/polyfun_constants.py`
+- Modify (constants only): `mecfs_bio/build_system/task/annotation_weights/build_baseline_lf_annotation_parquet_task.py`,
+  `mecfs_bio/build_system/task/annotation_weights/ridge_annotation_weights_task.py`,
+  `mecfs_bio/build_system/task/r_tasks/susie_r_finemap_task.py`
 - Modify: `mecfs_bio/build_system/task/annotation_weights/stream_extract_annotation_parquets_task.py`
 - Create: `mecfs_bio/assets/reference_data/polyfun/annotations/baseline_lf_ldscores.py`
 - Test: `test_mecfs_bio/unit/build_system/task/annotation_weights/test_stream_extract_annotation_parquets_task.py` (extend)
@@ -60,17 +72,64 @@ The existing `StreamExtractAnnotationParquetsTask` hardcodes the annot-member
 regex and destination name. Generalize it with two injected, defaulted fields so a
 second instantiation extracts the LD-score members, then add the asset.
 
+- [ ] **Step 0: Add the PolyFun column constants and adopt them**
+
+Create `mecfs_bio/constants/polyfun_constants.py`:
+
+```python
+"""Column names used by PolyFun-provided dataframes.
+
+The baseline-LF annotation members, LD-score members, derived annotation matrix,
+and precomputed prior all key variants by CHR, BP, SNP, A1, A2. A1 and A2 are
+REF-oriented: A1 is the hg19 reference allele (the gwaslab non-effect allele) and
+A2 is the alternate allele (the gwaslab effect allele).
+"""
+
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_CHROM_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
+)
+
+POLYFUN_CHR_COL = "CHR"
+POLYFUN_BP_COL = "BP"
+POLYFUN_SNP_COL = "SNP"
+POLYFUN_A1_COL = "A1"
+POLYFUN_A2_COL = "A2"
+
+# Renames a PolyFun variant key to the gwaslab four-part join key.
+POLYFUN_TO_GWASLAB_KEY_RENAME: dict[str, str] = {
+    POLYFUN_CHR_COL: GWASLAB_CHROM_COL,
+    POLYFUN_BP_COL: GWASLAB_POS_COL,
+    POLYFUN_A1_COL: GWASLAB_NON_EFFECT_ALLELE_COL,
+    POLYFUN_A2_COL: GWASLAB_EFFECT_ALLELE_COL,
+}
+```
+
+Then replace the duplicated private copies with these shared constants (a pure
+rename, no behavior change):
+- `build_baseline_lf_annotation_parquet_task.py`: `_CHR_COL/_BP_COL/_A1_COL/_A2_COL`
+  and the literals in `ANNOT_KEY_COLUMNS`.
+- `ridge_annotation_weights_task.py`: `_CHR_COL/_BP_COL/_A1_COL/_A2_COL`.
+- `susie_r_finemap_task.py`: the `PriorInfo` defaults `prior_chr_col`,
+  `prior_bp_cp`, `prior_a1_col`, `prior_a2_col`.
+- the existing `_annot_frame` fixture in
+  `test_stream_extract_annotation_parquets_task.py`.
+
+Run the existing tests for those modules; they should pass unchanged.
+
 - [ ] **Step 1: Write the failing test** (add to the existing test file)
 
 ```python
 def _ldscore_frame(chrom: int) -> pl.DataFrame:
     return pl.DataFrame(
         {
-            "CHR": [chrom, chrom],
-            "BP": [1, 2],
-            "SNP": ["rsA", "rsB"],
-            "A1": ["A", "G"],
-            "A2": ["C", "T"],
+            POLYFUN_CHR_COL: [chrom, chrom],
+            POLYFUN_BP_COL: [1, 2],
+            POLYFUN_SNP_COL: ["rsA", "rsB"],
+            POLYFUN_A1_COL: ["A", "G"],
+            POLYFUN_A2_COL: ["C", "T"],
             "Coding_UCSC_common": [0.1, 0.2],
         }
     )
@@ -109,7 +168,8 @@ def test_extracts_only_ldscore_members(tmp_path: Path):
     ]
 ```
 
-Import `LDSCORE_PARQUET_MEMBER_RE` from the task module (added in Step 3).
+Import `LDSCORE_PARQUET_MEMBER_RE` from the task module (added in Step 3) and the
+`POLYFUN_*_COL` constants from `mecfs_bio.constants.polyfun_constants`.
 
 - [ ] **Step 2: Run test to verify it fails**
 
@@ -193,7 +253,11 @@ BASELINE_LF_ANNOTATION_LDSCORE_MEMBERS = StreamExtractAnnotationParquetsTask(
 - [ ] **Step 6: Commit**
 
 ```bash
-git add mecfs_bio/build_system/task/annotation_weights/stream_extract_annotation_parquets_task.py \
+git add mecfs_bio/constants/polyfun_constants.py \
+        mecfs_bio/build_system/task/annotation_weights/build_baseline_lf_annotation_parquet_task.py \
+        mecfs_bio/build_system/task/annotation_weights/ridge_annotation_weights_task.py \
+        mecfs_bio/build_system/task/r_tasks/susie_r_finemap_task.py \
+        mecfs_bio/build_system/task/annotation_weights/stream_extract_annotation_parquets_task.py \
         mecfs_bio/assets/reference_data/polyfun/annotations/baseline_lf_ldscores.py \
         test_mecfs_bio/unit/build_system/task/annotation_weights/test_stream_extract_annotation_parquets_task.py
 git commit -m "feat: extract baseline-LF LD-score members for Approach-2 prior"
@@ -525,7 +589,8 @@ git commit -m "feat: pure-numpy chromosome-blocked weighted ridge submodule"
   regression_snp_restriction_task=None)`. Output `DirectoryAsset`:
   `snpvar.parquet` (`CHR, POS, NEA, EA, snpvar`) + `diagnostics.json`. Module
   constants: `SNPVAR_PARQUET_FILENAME`, `DIAGNOSTICS_JSON_FILENAME`, `SNPVAR_COL`,
-  `MAFBIN_LDSCORE_RE`.
+  `MAFBIN_LDSCORE_RE`; private column constants `_CHI2_COL` ("chi2") and
+  `_TOTAL_LDSCORE_COL` ("l").
 
 **Algorithm (from spec Component C, with the schema-spike corrections):** total
 LD-score `l_i` = sum of the 20 `MAFbin_*` LD-score columns; `M` = reference SNP
@@ -567,6 +632,14 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_Z_COL,
 )
+from mecfs_bio.constants.polyfun_constants import (
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_CHR_COL,
+    POLYFUN_SNP_COL,
+    POLYFUN_TO_GWASLAB_KEY_RENAME,
+)
 
 ANNOTS = ["Coding_UCSC_common", "Repressed_Hoffman_common"]
 MAFBINS = [f"MAFbin_lowfreq_{i}" for i in range(1, 11)] + [
@@ -588,11 +661,12 @@ def _fixture(tmp_path, n_chrom=6, n_per=300, effective_n=100_000):
         chi2 = 1.0 + effective_n * (a @ tau) + rng.normal(scale=0.05, size=n_per)
         z = np.sqrt(np.maximum(chi2, 1e-6))
         for i in range(n_per):
-            key = dict(CHR=chrom, BP=i + 1, A1="A", A2="G")
-            ld_rows.append({**key, "SNP": f"rs{chrom}_{i}",
+            key = {POLYFUN_CHR_COL: chrom, POLYFUN_BP_COL: i + 1,
+                   POLYFUN_A1_COL: "A", POLYFUN_A2_COL: "G"}
+            ld_rows.append({**key, POLYFUN_SNP_COL: f"rs{chrom}_{i}",
                             **{ANNOTS[k]: a[i, k] for k in range(len(ANNOTS))},
                             **{MAFBINS[k]: mafbin[i, k] for k in range(len(MAFBINS))}})
-            ann_rows.append({**key, "SNP": f"rs{chrom}_{i}",
+            ann_rows.append({**key, POLYFUN_SNP_COL: f"rs{chrom}_{i}",
                              **{ANNOTS[k]: a[i, k] for k in range(len(ANNOTS))}})
             ss_rows.append({GWASLAB_CHROM_COL: chrom, GWASLAB_POS_COL: i + 1,
                             GWASLAB_NON_EFFECT_ALLELE_COL: "A",
@@ -612,7 +686,8 @@ def test_recovers_enriched_annotation_ranking(tmp_path):
     result = task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
     assert isinstance(result, DirectoryAsset)
     snpvar = pl.read_parquet(result.path / SNPVAR_PARQUET_FILENAME)
-    ann = pl.read_parquet(annots)  # the annotation matrix
+    # the annotation matrix, keyed PolyFun-style; rename to the gwaslab key to join
+    ann = pl.read_parquet(annots).rename(POLYFUN_TO_GWASLAB_KEY_RENAME)
     joined = snpvar.join(
         ann, on=[GWASLAB_CHROM_COL, GWASLAB_POS_COL,
                  GWASLAB_NON_EFFECT_ALLELE_COL, GWASLAB_EFFECT_ALLELE_COL]
@@ -656,6 +731,10 @@ MAFBIN_LDSCORE_RE = re.compile(r"^MAFbin_(lowfreq|frequent)_\d+$")
 SNPVAR_PARQUET_FILENAME = "snpvar.parquet"
 DIAGNOSTICS_JSON_FILENAME = "diagnostics.json"
 SNPVAR_COL = "snpvar"
+# chi2_i = Z_i^2, the regression response.
+_CHI2_COL = "chi2"
+# l_i = sum over the 20 MAFbin_* LD-score columns = total LD-score of variant i.
+_TOTAL_LDSCORE_COL = "l"
 _CHI2_CAP = 80.0
 _JOIN_KEYS = [
     GWASLAB_CHROM_COL, GWASLAB_POS_COL,
@@ -664,22 +743,20 @@ _JOIN_KEYS = [
 
 
 def _ldscore_regression_frame(
-    ldscore_path: Path, sumstats: pl.DataFrame, annot_cols: list[str]
+    ldscore_path: Path, sumstats: pl.DataFrame
 ) -> pl.DataFrame:
     """One chromosome's join of LD-scores to sumstats on the four-part key,
-    renaming the member's A1/A2 (REF-oriented) to NEA/EA. Adds chi2 and the
-    MAFbin-sum total LD-score `l`. Asserts the join key is present."""
-    ld = pl.read_parquet(ldscore_path).rename(
-        {"CHR": GWASLAB_CHROM_COL, "BP": GWASLAB_POS_COL,
-         "A1": GWASLAB_NON_EFFECT_ALLELE_COL, "A2": GWASLAB_EFFECT_ALLELE_COL}
-    )
+    renaming the member's REF-oriented A1/A2 to NEA/EA. Keeps every LD-score
+    column (callers select the annotation columns) and adds chi2 and the
+    MAFbin-sum total LD-score l."""
+    ld = pl.read_parquet(ldscore_path).rename(POLYFUN_TO_GWASLAB_KEY_RENAME)
     mafbins = [c for c in ld.columns if MAFBIN_LDSCORE_RE.match(c)]
     assert len(mafbins) == 20, f"expected 20 MAFbin columns, got {len(mafbins)}"
-    ld = ld.with_columns(pl.sum_horizontal(mafbins).alias("l"))
+    ld = ld.with_columns(pl.sum_horizontal(mafbins).alias(_TOTAL_LDSCORE_COL))
     frame = ld.join(sumstats, on=_JOIN_KEYS, how="inner")
-    return frame.with_columns((pl.col(GWASLAB_Z_COL) ** 2).alias("chi2")).filter(
-        pl.col("chi2") < _CHI2_CAP
-    )
+    return frame.with_columns(
+        (pl.col(GWASLAB_Z_COL) ** 2).alias(_CHI2_COL)
+    ).filter(pl.col(_CHI2_COL) < _CHI2_CAP)
 ```
 
 `execute` orchestration:
@@ -693,12 +770,12 @@ def _ldscore_regression_frame(
 3. `M` = total reference SNP count (accumulate row counts while streaming the
    LD-score members in pass A).
 4. **Pass A (per-parity h2bar):** for each chromosome member, build the
-   regression frame, accumulate univariate sufficient stats of `(l, chi2)`
+   regression frame, accumulate univariate sufficient stats of `(_TOTAL_LDSCORE_COL, _CHI2_COL)`
    per chromosome; combine odd / even; `h2bar_parity = max(slope * M / Nbar, 1e-8)`
    where `slope = cov(l, chi2) / var(l)` from the combined univariate sums.
 5. **Pass B (per-parity weighted blocks):** for each chromosome member, build the
    regression frame, compute `omega` with `h2bar_parity(chrom)`, and
-   `accumulate_block(x=frame[annot_cols], y=frame["chi2"], w=omega)` into the odd
+   `accumulate_block(x=frame[annot_cols], y=frame[_CHI2_COL], w=omega)` into the odd
    or even block dict (keyed by chromosome).
 6. `sel_odd = select_alpha_loco(odd_blocks, alphas)`;
    `tau_odd = fit(combine(odd_blocks.values()), sel_odd.alpha).beta_raw / Nbar`;
@@ -707,7 +784,7 @@ def _ldscore_regression_frame(
    even chromosome use `tau_odd`, for an odd chromosome use `tau_even`;
    `snpvar = annotation_values @ tau`; write `snpvar.parquet` via a streaming
    pyarrow writer with columns `CHR, POS, NEA, EA, snpvar` (rename the annotation
-   matrix's `A1/A2` -> `NEA/EA`).
+   matrix's PolyFun key via `POLYFUN_TO_GWASLAB_KEY_RENAME`).
 8. Write `diagnostics.json`: `alpha` per parity, `mean_heldout_r2` per parity,
    `Nbar`, `M`, `h2bar_odd`, `h2bar_even`, and `tau_odd`/`tau_even` as
    annotation->value maps.
