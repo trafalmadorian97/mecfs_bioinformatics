@@ -281,6 +281,12 @@ def define_env(env):
         )
 
     @env.macro
+    def susie_uniform_variant_detail_table(src, id, height="775px", precision=4):
+        return data_table(
+            src=src, id=id, height=height, precision=precision, caption=""
+        )
+
+    @env.macro
     def ldsc_diagnostic_plot(
         src,
         id,
@@ -364,7 +370,12 @@ def define_env(env):
             if caption
             else ""
         )
+        # The frame holds the button and the table together, so that when the
+        # script narrows it to the table's natural width the button stays
+        # aligned with the table's right edge. The auto margins centre a
+        # narrowed frame; a full-width one is unaffected.
         return (
+            f'<div id="{id}-frame" style="margin:0 auto;">\n'
             f'<div style="display:flex; justify-content:flex-end; margin:.25rem 0;">\n'
             f'<button id="{id}-download"\n'
             f'  style="cursor:pointer; background:none; border:1px solid #ccc; '
@@ -374,6 +385,7 @@ def define_env(env):
             f"</div>\n"
             f'<div id="{id}" style="height:{height};">'
             f'<em id="{id}-status">Loading table…</em></div>\n'
+            f"</div>\n"
             f"{caption_html}"
             f"{script}"
         )
@@ -444,7 +456,20 @@ _DATA_TABLE_SCRIPT = """<script type="module">
         }),
     });
 
-    table.on("tableBuilt", () => status?.remove());
+    table.on("tableBuilt", () => {
+      status?.remove();
+      // fitDataFill pads a table narrower than the page out to full width with
+      // an empty filler region. Cap the frame at the columns' natural width
+      // instead; a table wider than the page is unaffected and still scrolls.
+      const holder = container.querySelector(".tabulator-tableholder");
+      const scrollbar = holder.offsetWidth - holder.clientWidth;
+      const border = container.offsetWidth - container.clientWidth;
+      const columnsWidth = table
+        .getColumns()
+        .reduce((total, column) => total + column.getWidth(), 0);
+      document.getElementById("__TABLE_ID__-frame").style.maxWidth =
+        `${columnsWidth + scrollbar + border}px`;
+    });
     document
       .getElementById("__TABLE_ID__-download")
       .addEventListener("click", () => table.download("csv", "__DOWNLOAD_NAME__"));
