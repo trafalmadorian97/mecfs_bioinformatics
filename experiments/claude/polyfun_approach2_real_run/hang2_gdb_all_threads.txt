@@ -1,0 +1,1276 @@
+[New LWP 238455]
+[New LWP 238289]
+[New LWP 238288]
+[New LWP 238287]
+[New LWP 238286]
+[New LWP 238285]
+[New LWP 238284]
+[New LWP 238283]
+[New LWP 238282]
+[New LWP 238281]
+[New LWP 238280]
+[New LWP 238279]
+[New LWP 238278]
+[New LWP 238277]
+[New LWP 238276]
+[New LWP 238275]
+[New LWP 238274]
+[New LWP 238273]
+[New LWP 238272]
+[New LWP 238271]
+[New LWP 238270]
+[New LWP 238269]
+[New LWP 238268]
+[New LWP 238267]
+[New LWP 238266]
+[New LWP 238265]
+[New LWP 238264]
+[New LWP 238263]
+[New LWP 238262]
+[New LWP 238261]
+[New LWP 238260]
+[New LWP 238259]
+[New LWP 238258]
+[New LWP 238257]
+[New LWP 238256]
+[New LWP 238255]
+[New LWP 238254]
+[New LWP 238253]
+[New LWP 238252]
+[New LWP 238251]
+[New LWP 238250]
+[New LWP 238249]
+[New LWP 238248]
+[New LWP 238247]
+[New LWP 238246]
+[New LWP 238245]
+[New LWP 238244]
+[New LWP 238243]
+[New LWP 238242]
+[New LWP 238241]
+[New LWP 238240]
+[New LWP 238239]
+[New LWP 238205]
+[New LWP 238204]
+[New LWP 238203]
+[New LWP 238202]
+[New LWP 238201]
+[New LWP 238200]
+[New LWP 238199]
+[New LWP 238198]
+[New LWP 238197]
+[New LWP 238196]
+[New LWP 238195]
+[New LWP 238193]
+[New LWP 238192]
+[New LWP 238191]
+[New LWP 238190]
+[New LWP 238172]
+[New LWP 238171]
+[New LWP 238170]
+[New LWP 238169]
+[New LWP 238168]
+[New LWP 238167]
+[New LWP 238166]
+[New LWP 238165]
+[New LWP 238164]
+[New LWP 238163]
+[New LWP 238162]
+[New LWP 238161]
+[New LWP 238160]
+[New LWP 238159]
+[New LWP 238158]
+[New LWP 238121]
+[New LWP 238120]
+[New LWP 238119]
+[New LWP 238118]
+[New LWP 238117]
+[New LWP 238116]
+[New LWP 238115]
+[New LWP 238114]
+[New LWP 238113]
+[New LWP 238112]
+[New LWP 238111]
+[New LWP 238110]
+[New LWP 238109]
+[New LWP 238108]
+[New LWP 238107]
+[New LWP 238068]
+[New LWP 238067]
+[New LWP 238066]
+[New LWP 238065]
+[New LWP 238064]
+[New LWP 238063]
+[New LWP 238062]
+[New LWP 238061]
+[New LWP 238060]
+[New LWP 238059]
+[New LWP 238058]
+[New LWP 238057]
+[New LWP 238056]
+[New LWP 238055]
+[New LWP 238054]
+[New LWP 238053]
+[New LWP 238052]
+[New LWP 238051]
+[New LWP 238050]
+[New LWP 238049]
+[New LWP 238048]
+[New LWP 238047]
+[New LWP 238046]
+[New LWP 238045]
+[New LWP 238044]
+[New LWP 238043]
+[New LWP 238042]
+[New LWP 238041]
+[New LWP 238040]
+[New LWP 238039]
+[New LWP 238038]
+[New LWP 238034]
+[New LWP 238033]
+[New LWP 238032]
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 132 (Thread 0x7efdd41ff640 (LWP 238032) "jemalloc_bg_thd"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3e5b in pthread_cond_timedwait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efddc2d550d in background_thread_entry () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 131 (Thread 0x7efdd39fe640 (LWP 238033) "polars-ooc-clea"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd8513e47 in <std::sync::mpmc::list::Channel<polars_ooc::spill_file::CleanRequest>>::recv::{closure#1} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd851015e in std::sys::backtrace::__rust_begin_short_backtrace::<polars_ooc::spill_file::SPILL_CLEANER::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd8533175 in <std::thread::lifecycle::spawn_unchecked<polars_ooc::spill_file::SPILL_CLEANER::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#6  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 130 (Thread 0x7efdd31ff640 (LWP 238034) "jemalloc_bg_thd"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3e5b in pthread_cond_timedwait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efddc2d4e69 in background_thread_entry () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 129 (Thread 0x7efd9edff640 (LWP 238038) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 128 (Thread 0x7efd9e5fe640 (LWP 238039) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 127 (Thread 0x7efd9ddfd640 (LWP 238040) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 126 (Thread 0x7efd9d5fc640 (LWP 238041) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 125 (Thread 0x7efd9cdfb640 (LWP 238042) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 124 (Thread 0x7efd9c5fa640 (LWP 238043) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 123 (Thread 0x7efd9bdf9640 (LWP 238044) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 122 (Thread 0x7efd9b5f8640 (LWP 238045) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 121 (Thread 0x7efd9adf7640 (LWP 238046) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 120 (Thread 0x7efd9a5f6640 (LWP 238047) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 119 (Thread 0x7efd99df5640 (LWP 238048) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 118 (Thread 0x7efd995f4640 (LWP 238049) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 117 (Thread 0x7efd98df3640 (LWP 238050) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 116 (Thread 0x7efd985f2640 (LWP 238051) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 115 (Thread 0x7efd97df1640 (LWP 238052) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efdbfc7681b in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/numpy/_core/../../numpy.libs/libscipy_openblas64_-fdde5778.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 114 (Thread 0x7efd905ff640 (LWP 238053) "jemalloc_bg_thd"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd94a383a6 in background_thread_sleep (info=0x7efd90c16600, interval=<optimized out>, tsdn=<optimized out>) at src/background_thread.c:137
+#3  0x00007efd94a38b1b in background_work_sleep_once (tsdn=<optimized out>, info=<optimized out>, ind=0) at src/background_thread.c:229
+#4  background_thread0_work (tsd=<optimized out>) at src/background_thread.c:374
+#5  background_work (tsd=<optimized out>, ind=<optimized out>) at src/background_thread.c:412
+#6  background_thread_entry (ind_arg=<optimized out>) at src/background_thread.c:444
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 113 (Thread 0x7efd643ff640 (LWP 238054) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 112 (Thread 0x7efd63bfe640 (LWP 238055) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 111 (Thread 0x7efd633fd640 (LWP 238056) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 110 (Thread 0x7efd62bfc640 (LWP 238057) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 109 (Thread 0x7efd623fb640 (LWP 238058) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 108 (Thread 0x7efd61bfa640 (LWP 238059) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 107 (Thread 0x7efd613f9640 (LWP 238060) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 106 (Thread 0x7efd60bf8640 (LWP 238061) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 105 (Thread 0x7efd603f7640 (LWP 238062) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 104 (Thread 0x7efd5fbf6640 (LWP 238063) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 103 (Thread 0x7efd5f3f5640 (LWP 238064) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 102 (Thread 0x7efd5ebf4640 (LWP 238065) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 101 (Thread 0x7efd5e3f3640 (LWP 238066) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 100 (Thread 0x7efd5dbf2640 (LWP 238067) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 99 (Thread 0x7efd5d3f1640 (LWP 238068) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd854479df in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/scipy/linalg/../../scipy.libs/libscipy_openblas-5f890258.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 98 (Thread 0x7efcd604f640 (LWP 238107) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 97 (Thread 0x7efcd584e640 (LWP 238108) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 96 (Thread 0x7efcd504d640 (LWP 238109) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 95 (Thread 0x7efcd484c640 (LWP 238110) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 94 (Thread 0x7efcd404b640 (LWP 238111) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 93 (Thread 0x7efcd384a640 (LWP 238112) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 92 (Thread 0x7efcd3049640 (LWP 238113) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 91 (Thread 0x7efcd2848640 (LWP 238114) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 90 (Thread 0x7efcd2047640 (LWP 238115) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 89 (Thread 0x7efcd1846640 (LWP 238116) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 88 (Thread 0x7efcd1045640 (LWP 238117) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 87 (Thread 0x7efcd0844640 (LWP 238118) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 86 (Thread 0x7efcd0043640 (LWP 238119) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 85 (Thread 0x7efccf842640 (LWP 238120) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 84 (Thread 0x7efccf041640 (LWP 238121) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efd56ac781c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/worktrees/pop_strat/.pixi/envs/default/lib/libopenblas.so.0
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 83 (Thread 0x7efc4ba97640 (LWP 238158) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 82 (Thread 0x7efc4b296640 (LWP 238159) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 81 (Thread 0x7efc4aa95640 (LWP 238160) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 80 (Thread 0x7efc4a294640 (LWP 238161) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 79 (Thread 0x7efc49a93640 (LWP 238162) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 78 (Thread 0x7efc49292640 (LWP 238163) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 77 (Thread 0x7efc48a91640 (LWP 238164) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 76 (Thread 0x7efc48290640 (LWP 238165) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 75 (Thread 0x7efc47a8f640 (LWP 238166) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 74 (Thread 0x7efc4728e640 (LWP 238167) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 73 (Thread 0x7efc46a8d640 (LWP 238168) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 72 (Thread 0x7efc4628c640 (LWP 238169) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 71 (Thread 0x7efc45a8b640 (LWP 238170) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 70 (Thread 0x7efc4528a640 (LWP 238171) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 69 (Thread 0x7efc44a89640 (LWP 238172) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3a01 in pthread_cond_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efccbf8f81c in blas_thread_server () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/R/library/stats/libs/../../../../liblapack.so.3
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 68 (Thread 0x7efc3f7ff640 (LWP 238190) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31fa6a0) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 67 (Thread 0x7efc3effe640 (LWP 238191) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31fa750) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 66 (Thread 0x7efc3e7fd640 (LWP 238192) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f04b0) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 65 (Thread 0x7efc3dffc640 (LWP 238193) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f6e70) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 64 (Thread 0x7efc3d7fb640 (LWP 238195) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31fa6d0) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 63 (Thread 0x7efc3cffa640 (LWP 238196) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f0440) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 62 (Thread 0x7efc3c7f9640 (LWP 238197) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31efec0) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 61 (Thread 0x7efc3bff8640 (LWP 238198) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f8250) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 60 (Thread 0x7efc3b7f7640 (LWP 238199) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f0550) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 59 (Thread 0x7efc3aff6640 (LWP 238200) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f0a10) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 58 (Thread 0x7efc3a7f5640 (LWP 238201) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f1950) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 57 (Thread 0x7efc39ff4640 (LWP 238202) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f1110) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 56 (Thread 0x7efc397f3640 (LWP 238203) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31efc90) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 55 (Thread 0x7efc38ff2640 (LWP 238204) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f1e50) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 54 (Thread 0x7efc387f1640 (LWP 238205) "python"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1acc38 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efc42903f86 in duckdb::TaskScheduler::ExecuteForever(std::atomic<bool>*) () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_duckdb.cpython-313-x86_64-linux-gnu.so
+#3  0x00007efdd136fb86 in std::execute_native_thread_routine (__p=0x55bbe31f03f0) at ../../../../../libstdc++-v3/src/c++11/thread.cc:105
+#4  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#5  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 53 (Thread 0x7efbebc3c640 (LWP 238239) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 52 (Thread 0x7efbeb83c640 (LWP 238240) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 51 (Thread 0x7efbeb43c640 (LWP 238241) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 50 (Thread 0x7efbeb23b640 (LWP 238242) "tokio-rt-worker"):
+#0  0x00007efdde235ebe in epoll_wait () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc27797b in <tokio::runtime::io::driver::Driver>::turn () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc2775ca in <tokio::runtime::time::Driver>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc274602 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#8  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#9  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#10 0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 49 (Thread 0x7efbeb03a640 (LWP 238243) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 48 (Thread 0x7efbeae39640 (LWP 238244) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 47 (Thread 0x7efbeac38640 (LWP 238245) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 46 (Thread 0x7efbeaa37640 (LWP 238246) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 45 (Thread 0x7efbea53b640 (LWP 238247) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 44 (Thread 0x7efbea33a640 (LWP 238248) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 43 (Thread 0x7efbea139640 (LWP 238249) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 42 (Thread 0x7efbe9f38640 (LWP 238250) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 41 (Thread 0x7efbe9d37640 (LWP 238251) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 40 (Thread 0x7efbe9b36640 (LWP 238252) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 39 (Thread 0x7efbe9935640 (LWP 238253) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 38 (Thread 0x7efbe9734640 (LWP 238254) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc274707 in <tokio::runtime::scheduler::multi_thread::worker::Context>::park_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc27343c in tokio::runtime::scheduler::multi_thread::worker::run () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc271403 in tokio::runtime::task::raw::poll::<tokio::runtime::blocking::task::BlockingTask<<tokio::runtime::scheduler::multi_thread::worker::Launch>::launch::{closure#0}>, tokio::runtime::blocking::schedule::BlockingSchedule> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc267758 in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 37 (Thread 0x7efbe9533640 (LWP 238255) "polars-unmap-0"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 36 (Thread 0x7efbe8fff640 (LWP 238256) "jemalloc_bg_thd"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3e5b in pthread_cond_timedwait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efddc2d4e69 in background_thread_entry () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 35 (Thread 0x7efbe87fe640 (LWP 238257) "polars-0"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 34 (Thread 0x7efbe85fd640 (LWP 238258) "polars-1"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 33 (Thread 0x7efbe83fc640 (LWP 238259) "polars-2"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 32 (Thread 0x7efb93fff640 (LWP 238260) "polars-3"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 31 (Thread 0x7efb93dfe640 (LWP 238261) "polars-4"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 30 (Thread 0x7efb937ff640 (LWP 238262) "polars-5"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 29 (Thread 0x7efb933fe640 (LWP 238263) "polars-6"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 28 (Thread 0x7efb931fd640 (LWP 238264) "polars-7"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 27 (Thread 0x7efb92dfc640 (LWP 238265) "polars-8"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 26 (Thread 0x7efb91ffe640 (LWP 238266) "polars-9"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 25 (Thread 0x7efb91dfd640 (LWP 238267) "polars-10"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 24 (Thread 0x7efb91bfc640 (LWP 238268) "polars-11"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 23 (Thread 0x7efb919fb640 (LWP 238269) "polars-12"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 22 (Thread 0x7efb927ff640 (LWP 238270) "jemalloc_bg_thd"):
+#0  0x00007efdde1a10d7 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdde1a3e5b in pthread_cond_timedwait () from /lib/x86_64-linux-gnu/libc.so.6
+#2  0x00007efddc2d4e69 in background_thread_entry () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#4  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 21 (Thread 0x7efb911ff640 (LWP 238271) "polars-13"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 20 (Thread 0x7efb9097f640 (LWP 238272) "polars-14"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 19 (Thread 0x7efb9057e640 (LWP 238273) "polars-15"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddbe84ec7 in <rayon_core::sleep::Sleep>::sleep::<<rayon_core::registry::WorkerThread>::wait_until_cold::{closure#0}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddbe847ed in <rayon_core::registry::WorkerThread>::wait_until_cold () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddbe83f2d in std::sys::backtrace::__rust_begin_short_backtrace::<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddbe89947 in <std::thread::lifecycle::spawn_unchecked<<rayon_core::registry::DefaultSpawn as rayon_core::registry::ThreadSpawn>::spawn::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#7  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 18 (Thread 0x7efb631ff640 (LWP 238274) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 17 (Thread 0x7efb627ff640 (LWP 238275) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 16 (Thread 0x7efb623fe640 (LWP 238276) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 15 (Thread 0x7efb617ff640 (LWP 238277) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 14 (Thread 0x7efb611ff640 (LWP 238278) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 13 (Thread 0x7efb607ff640 (LWP 238279) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 12 (Thread 0x7efb53dff640 (LWP 238280) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 11 (Thread 0x7efb535ff640 (LWP 238281) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 10 (Thread 0x7efb531fe640 (LWP 238282) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 9 (Thread 0x7efb52ffd640 (LWP 238283) "async-executor-"):
+#0  0x00007efdde2b0b8a in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc06dd71 in <snap::decompress::Decoder>::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd933a945 in polars_parquet::parquet::compression::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd933879d in polars_parquet::parquet::read::compression::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd9353f4b in <polars_parquet::parquet::read::compression::DataPageItem>::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd950eb74 in <polars_parquet::arrow::read::deserialize::utils::PageDecoder<polars_parquet::arrow::read::deserialize::primitive::float::FloatDecoder<f64, f64, polars_parquet::arrow::read::deserialize::primitive::UnitDecoderFunction<f64>>>>::collect () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdd94d2251 in <polars_parquet::arrow::read::deserialize::utils::PageDecoder<polars_parquet::arrow::read::deserialize::primitive::float::FloatDecoder<f64, f64, polars_parquet::arrow::read::deserialize::primitive::UnitDecoderFunction<f64>>>>::collect_boxed () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdd946c922 in polars_parquet::arrow::read::deserialize::simple::page_iter_to_array () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#8  0x00007efdd82a4dff in polars_io::parquet::read::mmap::to_deserializer () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#9  0x00007efddb7c1e16 in polars_stream::nodes::io_sources::parquet::row_group_decode::decode_column () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#10 0x00007efddb7c14bc in <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <polars_stream::nodes::io_sources::parquet::row_group_decode::RowGroupDecoder>::decode_projected_columns::{closure#0}::{closure#2}::{closure#0}::{closure#0}>, core::result::Result<core::convert::Infallible, polars_error::PolarsError>> as core::iter::traits::iterator::Iterator>::next () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#11 0x00007efddb7bbe6f in <polars_stream::nodes::io_sources::parquet::row_group_decode::RowGroupDecoder>::decode_projected_columns::{closure#0}::{closure#2}::{closure#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+
+Thread 8 (Thread 0x7efb52dfc640 (LWP 238284) "async-executor-"):
+#0  0x00007efdde2b0b8a in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc06dd71 in <snap::decompress::Decoder>::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd933a945 in polars_parquet::parquet::compression::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd933879d in polars_parquet::parquet::read::compression::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd9353f4b in <polars_parquet::parquet::read::compression::DataPageItem>::decompress () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd950eb74 in <polars_parquet::arrow::read::deserialize::utils::PageDecoder<polars_parquet::arrow::read::deserialize::primitive::float::FloatDecoder<f64, f64, polars_parquet::arrow::read::deserialize::primitive::UnitDecoderFunction<f64>>>>::collect () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efdd94d2251 in <polars_parquet::arrow::read::deserialize::utils::PageDecoder<polars_parquet::arrow::read::deserialize::primitive::float::FloatDecoder<f64, f64, polars_parquet::arrow::read::deserialize::primitive::UnitDecoderFunction<f64>>>>::collect_boxed () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdd946c922 in polars_parquet::arrow::read::deserialize::simple::page_iter_to_array () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#8  0x00007efdd82a4dff in polars_io::parquet::read::mmap::to_deserializer () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#9  0x00007efddb7c1e16 in polars_stream::nodes::io_sources::parquet::row_group_decode::decode_column () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#10 0x00007efddb7c14bc in <core::iter::adapters::GenericShunt<core::iter::adapters::map::Map<core::ops::range::Range<usize>, <polars_stream::nodes::io_sources::parquet::row_group_decode::RowGroupDecoder>::decode_projected_columns::{closure#0}::{closure#2}::{closure#0}::{closure#0}>, core::result::Result<core::convert::Infallible, polars_error::PolarsError>> as core::iter::traits::iterator::Iterator>::next () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#11 0x00007efddb7bbe6f in <polars_stream::nodes::io_sources::parquet::row_group_decode::RowGroupDecoder>::decode_projected_columns::{closure#0}::{closure#2}::{closure#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+
+Thread 7 (Thread 0x7efb52bfb640 (LWP 238285) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 6 (Thread 0x7efb529fa640 (LWP 238286) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 5 (Thread 0x7efb527f9640 (LWP 238287) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 4 (Thread 0x7efb525f8640 (LWP 238288) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 3 (Thread 0x7efb523f7640 (LWP 238289) "async-executor-"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efdd612713c in <parking_lot::condvar::Condvar>::wait_until_internal () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efdd6293b78 in <polars_async::executor::park_group::ParkAttempt>::park_slow () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efdd6290945 in <polars_async::executor::Executor>::runner () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efdd628f911 in std::sys::backtrace::__rust_begin_short_backtrace::<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdd6299b23 in <std::thread::lifecycle::spawn_unchecked<<polars_async::executor::Executor>::global::{closure#0}::{closure#0}::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#8  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 2 (Thread 0x7efa2db7f640 (LWP 238455) "tokio-rt-worker"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc236ebb in <std::sys::sync::condvar::futex::Condvar>::wait_timeout () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddc26769c in std::sys::backtrace::__rust_begin_short_backtrace::<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddc26be59 in <std::thread::lifecycle::spawn_unchecked<<tokio::runtime::blocking::pool::Spawner>::spawn_thread::{closure#0}, ()>::{closure#1} as core::ops::function::FnOnce<()>>::call_once::{shim:vtable#0} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddc2372de in <std::sys::thread::unix::Thread>::new::thread_start () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efdde1a4a83 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+#6  0x00007efdde2368e0 in ?? () from /lib/x86_64-linux-gnu/libc.so.6
+
+Thread 1 (Thread 0x7efdde10f440 (LWP 238031) "python"):
+#0  0x00007efdde22e9dd in syscall () from /lib/x86_64-linux-gnu/libc.so.6
+#1  0x00007efddc26fc36 in <tokio::runtime::park::Inner>::park () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#2  0x00007efddba9a0aa in <tokio::runtime::runtime::Runtime>::block_on::<polars_stream::execute::run_subgraph::{closure#1}::{closure#2}> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#3  0x00007efddba91362 in polars_stream::execute::run_subgraph::{closure#1} () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#4  0x00007efddba8830d in polars_stream::execute::execute_graph () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#5  0x00007efddba82c4b in <polars_stream::skeleton::StreamingQuery>::execute () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#6  0x00007efddba828e1 in <polars_stream::dispatch::StreamingQueryExecutor as polars_mem_engine::executors::executor::Executor>::execute () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#7  0x00007efdd83e4cf0 in <polars_mem_engine::executors::executor::SinkExecutor as polars_mem_engine::executors::executor::Executor>::execute () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#8  0x00007efdd8349949 in <polars_lazy::frame::LazyFrame>::collect_with_engine () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#9  0x00007efddb158a3b in <polars_python::lazyframe::PyLazyFrame>::__pymethod_collect__ () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#10 0x00007efdd9f1bce0 in pyo3::impl_::trampoline::trampoline::<pyo3::impl_::trampoline::fastcall_cfunction_with_keywords::inner::{closure#0}, *mut pyo3_ffi::object::PyObject> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+#11 0x00007efddb11d760 in pyo3::impl_::trampoline::fastcall_cfunction_with_keywords::<polars_python::lazyframe::general::_::__INVENTORY::Def> () from /home/paiforsyth/src/traf/biostatistics/.pixi/envs/default/lib/python3.13/site-packages/_polars_runtime_32/_polars_runtime.abi3.so
+[Inferior 1 (process 238031) detached]
