@@ -4,7 +4,7 @@ tags:
 hide:
 - toc
 ---
-# cis-pQTL MR Analysis
+# cis-pQTL MR
 
 
 I applied [Mendelian Randomization](../../../Bioinformatics_Concepts/Mendelian_Randomization.md) to DecodeME GWAS-1[@genetics2025initial] using cis-pQTL from the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.  I aimed to identify candidate proteins that may be causal in the ME/CFS disease process.
