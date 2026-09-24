@@ -7,7 +7,7 @@ hide:
 
 
 
-# MR with cis-pQTLs
+# cis-pQTL MR
 
 I applied [Mendelian Randomization](../../../Bioinformatics_Concepts/Mendelian_Randomization.md) to the European-ancestry subset of the IBD GWAS of Liu et al.[@liu2023genetic], using cis-pQTLs from the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md)[@sun2023plasma] as instruments.
 
