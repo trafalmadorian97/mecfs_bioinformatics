@@ -119,11 +119,18 @@ class RidgeFit:
 @frozen
 class AlphaSelection:
     """The ridge penalty chosen by leave-one-chromosome-out cross-validation,
-    with its mean held-out weighted R^2 and the per-held-out-chromosome R^2."""
+    with its mean held-out weighted R^2, the per-held-out-chromosome R^2, and the
+    mean held-out R^2 of every candidate penalty (the cross-validation curve)."""
 
     alpha: float
     mean_r2: float
     r2_per_chrom: dict[int, float]
+    mean_r2_by_alpha: dict[float, float]
+
+    def __attrs_post_init__(self) -> None:
+        assert self.mean_r2_by_alpha[self.alpha] == self.mean_r2, (
+            "the selected alpha's score must match its entry in the curve"
+        )
 
 
 def accumulate_block(
@@ -239,8 +246,10 @@ def select_alpha_loco(
     leave-one-chromosome-out folds of the given blocks."""
     assert len(blocks_by_chrom) >= 2, "LOCO needs at least two chromosome blocks"
     assert len(alphas) > 0, "need at least one candidate alpha"
+    assert len(set(alphas)) == len(alphas), "candidate alphas must be distinct"
     chroms = sorted(blocks_by_chrom)
-    best = AlphaSelection(alpha=alphas[0], mean_r2=-np.inf, r2_per_chrom={})
+    r2_per_chrom_by_alpha: dict[float, dict[int, float]] = {}
+    mean_r2_by_alpha: dict[float, float] = {}
     for alpha in alphas:
         r2s: dict[int, float] = {}
         for held in chroms:
@@ -254,10 +263,16 @@ def select_alpha_loco(
                 train_sd=system.sd,
                 train_mean_y=system.mean_y,
             )
-        mean_r2 = float(np.mean(list(r2s.values())))
-        if mean_r2 > best.mean_r2:
-            best = AlphaSelection(alpha=alpha, mean_r2=mean_r2, r2_per_chrom=r2s)
-    return best
+        r2_per_chrom_by_alpha[alpha] = r2s
+        mean_r2_by_alpha[alpha] = float(np.mean(list(r2s.values())))
+    # max keeps the first of tied maxima, so ties go to the earlier candidate.
+    best_alpha = max(alphas, key=lambda a: mean_r2_by_alpha[a])
+    return AlphaSelection(
+        alpha=best_alpha,
+        mean_r2=mean_r2_by_alpha[best_alpha],
+        r2_per_chrom=r2_per_chrom_by_alpha[best_alpha],
+        mean_r2_by_alpha=mean_r2_by_alpha,
+    )
 
 
 def fit(block: ChromRidgeBlock, alpha: float) -> RidgeFit:

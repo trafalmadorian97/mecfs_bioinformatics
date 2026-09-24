@@ -284,3 +284,17 @@ def test_tau_weights_tables_reproduce_snpvar_exactly(tmp_path: Path):
             scored.select(weights[ANNOTATION_COL].to_list()).to_numpy() @ gamma
         )
         assert np.allclose(reconstructed, scored[SNPVAR_COL].to_numpy(), rtol=1e-12)
+
+
+def test_diagnostics_record_each_halfs_cv_curve(tmp_path: Path):
+    # The whole curve, not just its argmax, shows whether the grid resolves the
+    # optimum: a selected alpha at the grid's edge, or a flat curve, both show up.
+    fixture = _build_fixture(tmp_path / "in", perturb_chrom=None)
+    diagnostics = json.loads(
+        (_run(fixture, tmp_path) / DIAGNOSTICS_JSON_FILENAME).read_text()
+    )
+    for name in ("odd", "even"):
+        curve = diagnostics[f"cv_curve_{name}"]
+        assert [point["alpha"] for point in curve] == list(fixture.task.alphas)
+        best = max(curve, key=lambda point: point["mean_heldout_r2"])
+        assert best["alpha"] == diagnostics[f"alpha_{name}"]

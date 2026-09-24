@@ -45,6 +45,17 @@ def test_select_alpha_loco_prefers_small_alpha_on_clean_signal():
     assert sel.mean_r2 > 0.999
 
 
+def test_select_alpha_loco_reports_the_cv_curve():
+    beta = np.array([3.0, -2.0, 1.0])
+    alphas = (1e-6, 1.0, 1e3, 1e6)
+    sel = select_alpha_loco(_chrom_blocks(2, beta), alphas=alphas)
+    assert sorted(sel.mean_r2_by_alpha) == sorted(alphas)
+    assert sel.mean_r2_by_alpha[sel.alpha] == max(sel.mean_r2_by_alpha.values())
+    assert sorted(sel.r2_per_chrom) == [1, 2, 3, 4, 5, 6]
+    # Heavier shrinkage fits clean signal worse, so the curve must actually vary.
+    assert sel.mean_r2_by_alpha[1e6] < sel.mean_r2_by_alpha[1e-6]
+
+
 def test_weights_change_the_fit():
     # Half the points are corrupted; down-weighting them should recover beta
     # better than the unweighted fit does.

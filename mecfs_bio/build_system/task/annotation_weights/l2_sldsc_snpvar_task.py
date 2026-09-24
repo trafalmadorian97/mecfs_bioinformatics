@@ -137,7 +137,9 @@ _JOIN_KEYS = [
 # dominated, so cross-validation can favor very heavy shrinkage; if it selects the
 # largest value, widen this grid and refit. Scoring extra penalties is cheap: each
 # solves one p x p system per cross-validation fold.
-_DEFAULT_ALPHAS: tuple[float, ...] = tuple(10.0 ** (k / 2) for k in range(-2, 25))
+DEFAULT_L2_SLDSC_ALPHAS: tuple[float, ...] = tuple(
+    10.0 ** (k / 2) for k in range(-2, 25)
+)
 
 
 @frozen
@@ -160,7 +162,7 @@ class L2RegularizedSldscSnpvarTask(Task):
     annotation_ldscore_members_task: Task
     annotation_matrix_task: Task
     effective_sample_size: float
-    alphas: tuple[float, ...] = _DEFAULT_ALPHAS
+    alphas: tuple[float, ...] = DEFAULT_L2_SLDSC_ALPHAS
 
     def __attrs_post_init__(self) -> None:
         assert self.effective_sample_size > 0, "effective_sample_size must be positive"
@@ -295,7 +297,7 @@ class L2RegularizedSldscSnpvarTask(Task):
         effective_sample_size: float,
         annotation_ldscore_members_task: Task,
         annotation_matrix_task: Task,
-        alphas: tuple[float, ...] = _DEFAULT_ALPHAS,
+        alphas: tuple[float, ...] = DEFAULT_L2_SLDSC_ALPHAS,
     ) -> "L2RegularizedSldscSnpvarTask":
         source_meta = sumstats_task.meta
         assert isinstance(source_meta, (FilteredGWASDataMeta, ResultTableMeta)), (
@@ -576,6 +578,10 @@ def _diagnostics(
         out[f"heldout_r2_per_chrom_{name}"] = {
             str(c): r2 for c, r2 in sorted(f.selection.r2_per_chrom.items())
         }
+        out[f"cv_curve_{name}"] = [
+            {"alpha": alpha, "mean_heldout_r2": r2}
+            for alpha, r2 in f.selection.mean_r2_by_alpha.items()
+        ]
         out[f"n_regression_variants_{name}"] = f.n_regression_variants
         out[f"tau_{name}"] = dict(zip(annot_cols, f.tau.tolist()))
     return out
