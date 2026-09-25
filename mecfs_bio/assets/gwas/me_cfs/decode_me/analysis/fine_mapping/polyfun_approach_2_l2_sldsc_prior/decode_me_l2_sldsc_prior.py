@@ -1,10 +1,7 @@
 """DecodeME-specific per-SNP heritability prior (PolyFun Approach 2).
 
 An L2-regularized S-LDSC over the baseline-LF annotations, fit on the DecodeME
-build-37 sumstats themselves (genome-reference harmonized, so NEA is the hg19 REF
-allele and joins exactly with the REF-oriented baseline-LF tables). Used as an
-alternative to the precomputed 15-trait PolyFun prior, to check whether the
-generic prior mismatches DecodeME.
+build-37 sumstats themselves.
 """
 
 from pathlib import PurePath
