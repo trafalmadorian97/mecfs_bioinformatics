@@ -190,74 +190,33 @@ class L2RegularizedSldscSnpvarTask(Task):
         ldscore_paths = _ldscore_member_paths(ldscore_dir)
         annot_cols = _annotation_columns(annot_path)
         _assert_ldscore_columns_match(ldscore_paths, annot_cols)
-        mafbins = [c for c in annot_cols if _is_mafbin(c)]
-        assert len(mafbins) == _N_MAFBINS, (
-            f"expected {_N_MAFBINS} MAFbin columns, got {len(mafbins)}"
-        )
+        mafbins = _mafbin_columns(annot_cols)
         m_ref = _reference_variant_count(ldscore_paths)
         n_bar = self.effective_sample_size
 
         # Pass A: per-chromosome univariate (l, chi2) blocks for per-parity h2bar.
-        univariate: dict[int, ChromRidgeBlock] = {}
-        for chrom, path in sorted(ldscore_paths.items()):
-            frame = _ldscore_regression_frame(
-                ldscore_path=path,
-                sumstats=sumstats.filter(pl.col(GWASLAB_CHROM_COL) == chrom),
-                ldscore_cols=mafbins,
-            )
-            univariate[chrom] = accumulate_block(
-                x=frame.select(_TOTAL_LDSCORE_COL).to_numpy(),
-                y=frame[_CHI2_COL].to_numpy(),
-            )
-        h2bar = {
-            parity: _h2bar(
-                combine(list(_of_parity(univariate, parity).values())),
-                m_ref=m_ref,
-                n_bar=n_bar,
-            )
-            for parity in (0, 1)
-        }
+        univariate = _univariate_blocks(
+            ldscore_paths=ldscore_paths, sumstats=sumstats, mafbins=mafbins
+        )
+        h2bar = _h2bar_by_parity(univariate, m_ref=m_ref, n_bar=n_bar)
 
         # Pass B: per-chromosome weighted blocks over the annotation LD-scores,
         # each chromosome weighted with its own parity's h2bar.
-        weighted: dict[int, ChromRidgeBlock] = {}
-        for chrom, path in sorted(ldscore_paths.items()):
-            frame = _ldscore_regression_frame(
-                ldscore_path=path,
-                sumstats=sumstats.filter(pl.col(GWASLAB_CHROM_COL) == chrom),
-                ldscore_cols=annot_cols,
-            )
-            total_ld = frame[_TOTAL_LDSCORE_COL].to_numpy()
-            weighted[chrom] = accumulate_block(
-                x=frame.select(annot_cols).to_numpy(),
-                y=frame[_CHI2_COL].to_numpy(),
-                w=_ldsc_weights(
-                    total_ld=total_ld,
-                    h2bar=h2bar[chrom % 2],
-                    m_ref=m_ref,
-                    n_bar=n_bar,
-                ),
-            )
-            logger.info(
-                "accumulated weighted S-LDSC block",
-                chromosome=chrom,
-                n_regression_variants=frame.height,
-            )
-
-        fits = {
-            parity: _fit_parity(
-                _of_parity(weighted, parity),
-                h2bar=h2bar[parity],
-                # Pass A and pass B filter identically, so the unweighted pass-A
-                # blocks count the regression variants.
-                n_regression_variants=sum(
-                    _block_count(b) for b in _of_parity(univariate, parity).values()
-                ),
-                alphas=self.alphas,
-                n_bar=n_bar,
-            )
-            for parity in (0, 1)
-        }
+        weighted = _weighted_blocks(
+            ldscore_paths=ldscore_paths,
+            sumstats=sumstats,
+            annot_cols=annot_cols,
+            h2bar_by_parity=h2bar,
+            m_ref=m_ref,
+            n_bar=n_bar,
+        )
+        fits = _fit_parities(
+            weighted=weighted,
+            univariate=univariate,
+            h2bar_by_parity=h2bar,
+            alphas=self.alphas,
+            n_bar=n_bar,
+        )
 
         # Pass C: score every annotation-matrix variant with the opposite parity's tau.
         n_scored = _write_snpvar(
@@ -266,25 +225,14 @@ class L2RegularizedSldscSnpvarTask(Task):
             tau_by_parity={parity: fits[1 - parity].tau for parity in (0, 1)},
             out_path=scratch_dir / SNPVAR_PARQUET_FILENAME,
         )
-        for parity, filename in (
-            (1, TAU_ODD_WEIGHTS_FILENAME),
-            (0, TAU_EVEN_WEIGHTS_FILENAME),
-        ):
-            _tau_weights_table(fits[parity], annot_cols).write_parquet(
-                scratch_dir / filename
-            )
-        (scratch_dir / DIAGNOSTICS_JSON_FILENAME).write_text(
-            json.dumps(
-                _diagnostics(
-                    fits=fits,
-                    annot_cols=annot_cols,
-                    n_bar=n_bar,
-                    m_ref=m_ref,
-                    n_scored=n_scored,
-                ),
-                indent=2,
-                sort_keys=True,
-            )
+        _write_tau_weights_tables(fits, annot_cols=annot_cols, out_dir=scratch_dir)
+        _write_diagnostics(
+            out_path=scratch_dir / DIAGNOSTICS_JSON_FILENAME,
+            fits=fits,
+            annot_cols=annot_cols,
+            n_bar=n_bar,
+            m_ref=m_ref,
+            n_scored=n_scored,
         )
         return DirectoryAsset(scratch_dir)
 
@@ -336,6 +284,15 @@ def _fetch_annotation_matrix_path(fetch: Fetch, annotation_matrix_task: Task) ->
 
 def _is_mafbin(col: str) -> bool:
     return MAFBIN_LDSCORE_RE.match(col) is not None
+
+
+def _mafbin_columns(cols: Sequence[str]) -> list[str]:
+    """The MAFbin columns among cols, whose LD-scores sum to the total LD-score l."""
+    mafbins = [c for c in cols if _is_mafbin(c)]
+    assert len(mafbins) == _N_MAFBINS, (
+        f"expected {_N_MAFBINS} MAFbin columns, got {len(mafbins)}"
+    )
+    return mafbins
 
 
 def _of_parity(
@@ -466,11 +423,9 @@ def _ldscore_regression_frame(
             ],
         ).rename(POLYFUN_TO_GWASLAB_KEY_RENAME)
     )
-    mafbins = [c for c in ldscore_cols if _is_mafbin(c)]
-    assert len(mafbins) == _N_MAFBINS, (
-        f"expected {_N_MAFBINS} MAFbin columns, got {len(mafbins)}"
+    ld = ld.with_columns(
+        pl.sum_horizontal(_mafbin_columns(ldscore_cols)).alias(_TOTAL_LDSCORE_COL)
     )
-    ld = ld.with_columns(pl.sum_horizontal(mafbins).alias(_TOTAL_LDSCORE_COL))
     frame = ld.join(sumstats, on=_JOIN_KEYS, how="inner")
     # sumstats are unique on the key, so the join cannot multiply LD-score rows.
     assert frame.height <= ld.height, "LD-score/sumstats join multiplied rows"
@@ -493,6 +448,129 @@ def _ldsc_weights(
     het = (1.0 + n_bar * h2bar * total_ld / m_ref) ** 2
     oc = np.maximum(total_ld, 1.0)
     return 1.0 / (het * oc)
+
+
+def _univariate_block(
+    ldscore_path: Path, chrom_sumstats: pl.DataFrame, mafbins: Sequence[str]
+) -> ChromRidgeBlock:
+    """One chromosome's unweighted regression of chi2 on the total LD-score l."""
+    frame = _ldscore_regression_frame(
+        ldscore_path=ldscore_path, sumstats=chrom_sumstats, ldscore_cols=mafbins
+    )
+    return accumulate_block(
+        x=frame.select(_TOTAL_LDSCORE_COL).to_numpy(),
+        y=frame[_CHI2_COL].to_numpy(),
+    )
+
+
+def _univariate_blocks(
+    ldscore_paths: Mapping[int, Path],
+    sumstats: pl.DataFrame,
+    mafbins: Sequence[str],
+) -> dict[int, ChromRidgeBlock]:
+    """Pass A: the univariate chi2-on-l block of every chromosome."""
+    return {
+        chrom: _univariate_block(
+            ldscore_path=path,
+            chrom_sumstats=sumstats.filter(pl.col(GWASLAB_CHROM_COL) == chrom),
+            mafbins=mafbins,
+        )
+        for chrom, path in sorted(ldscore_paths.items())
+    }
+
+
+def _h2bar_by_parity(
+    univariate: Mapping[int, ChromRidgeBlock], m_ref: int, n_bar: float
+) -> dict[int, float]:
+    """Each parity's h2bar, from the univariate blocks of its chromosomes only."""
+    return {
+        parity: _h2bar(
+            combine(list(_of_parity(univariate, parity).values())),
+            m_ref=m_ref,
+            n_bar=n_bar,
+        )
+        for parity in (0, 1)
+    }
+
+
+def _weighted_block(
+    chrom: int,
+    ldscore_path: Path,
+    chrom_sumstats: pl.DataFrame,
+    annot_cols: Sequence[str],
+    h2bar: float,
+    m_ref: int,
+    n_bar: float,
+) -> ChromRidgeBlock:
+    """One chromosome's LDSC-weighted regression of chi2 on the annotation
+    LD-scores."""
+    frame = _ldscore_regression_frame(
+        ldscore_path=ldscore_path, sumstats=chrom_sumstats, ldscore_cols=annot_cols
+    )
+    block = accumulate_block(
+        x=frame.select(annot_cols).to_numpy(),
+        y=frame[_CHI2_COL].to_numpy(),
+        w=_ldsc_weights(
+            total_ld=frame[_TOTAL_LDSCORE_COL].to_numpy(),
+            h2bar=h2bar,
+            m_ref=m_ref,
+            n_bar=n_bar,
+        ),
+    )
+    logger.info(
+        "accumulated weighted S-LDSC block",
+        chromosome=chrom,
+        n_regression_variants=frame.height,
+    )
+    return block
+
+
+def _weighted_blocks(
+    ldscore_paths: Mapping[int, Path],
+    sumstats: pl.DataFrame,
+    annot_cols: Sequence[str],
+    h2bar_by_parity: Mapping[int, float],
+    m_ref: int,
+    n_bar: float,
+) -> dict[int, ChromRidgeBlock]:
+    """Pass B: the weighted annotation block of every chromosome, each weighted
+    with its own parity's h2bar."""
+    return {
+        chrom: _weighted_block(
+            chrom=chrom,
+            ldscore_path=path,
+            chrom_sumstats=sumstats.filter(pl.col(GWASLAB_CHROM_COL) == chrom),
+            annot_cols=annot_cols,
+            h2bar=h2bar_by_parity[chrom % 2],
+            m_ref=m_ref,
+            n_bar=n_bar,
+        )
+        for chrom, path in sorted(ldscore_paths.items())
+    }
+
+
+def _fit_parities(
+    weighted: Mapping[int, ChromRidgeBlock],
+    univariate: Mapping[int, ChromRidgeBlock],
+    h2bar_by_parity: Mapping[int, float],
+    alphas: Sequence[float],
+    n_bar: float,
+) -> dict[int, _ParityFit]:
+    """Fit each parity's tau on its own chromosomes' weighted blocks."""
+    return {
+        parity: _fit_parity(
+            _of_parity(weighted, parity),
+            h2bar=h2bar_by_parity[parity],
+            # Pass A and pass B filter identically, so the unweighted pass-A
+            # blocks count the regression variants.
+            n_regression_variants=sum(
+                _block_count(b) for b in _of_parity(univariate, parity).values()
+            ),
+            alphas=alphas,
+            n_bar=n_bar,
+        )
+        for parity in (0, 1)
+    }
 
 
 def _fit_parity(
@@ -527,6 +605,41 @@ def _tau_weights_table(
             GAMMA_STANDARDIZED_COL: parity_fit.tau_standardized,
             FAMILY_COL: [family_for_annotation(c) for c in annot_cols],
         }
+    )
+
+
+def _write_tau_weights_tables(
+    fits: Mapping[int, _ParityFit], annot_cols: Sequence[str], out_dir: Path
+) -> None:
+    """Write each parity's tau as a ridge-weights table."""
+    for parity, filename in (
+        (1, TAU_ODD_WEIGHTS_FILENAME),
+        (0, TAU_EVEN_WEIGHTS_FILENAME),
+    ):
+        _tau_weights_table(fits[parity], annot_cols).write_parquet(out_dir / filename)
+
+
+def _write_diagnostics(
+    out_path: Path,
+    fits: Mapping[int, _ParityFit],
+    annot_cols: Sequence[str],
+    n_bar: float,
+    m_ref: int,
+    n_scored: int,
+) -> None:
+    """Write the fit diagnostics as JSON."""
+    out_path.write_text(
+        json.dumps(
+            _diagnostics(
+                fits=fits,
+                annot_cols=annot_cols,
+                n_bar=n_bar,
+                m_ref=m_ref,
+                n_scored=n_scored,
+            ),
+            indent=2,
+            sort_keys=True,
+        )
     )
 
 
