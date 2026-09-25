@@ -38,13 +38,22 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.polyfun_constants import (
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_CHR_COL,
+    POLYFUN_SNP_COL,
+)
 
 # The annotation source now carries alleles, so the position key includes A1/A2.
-ANNOT_KEY_COLUMNS: list[str] = ["CHR", "BP", "SNP", "A1", "A2"]
-_CHR_COL = "CHR"
-_BP_COL = "BP"
-_A1_COL = "A1"
-_A2_COL = "A2"
+ANNOT_KEY_COLUMNS: list[str] = [
+    POLYFUN_CHR_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_SNP_COL,
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+]
 _ANNOT_MEMBER_RE = re.compile(r"baselineLF2\.2\.UKB\.(\d+)\.annot\.parquet$")
 
 
@@ -129,7 +138,7 @@ def _dedup_one_chromosome(member_path: Path) -> pl.DataFrame:
     lazy = pl.scan_parquet(member_path)
     schema = lazy.collect_schema()
     annot_cols = [c for c in schema.names() if c not in ANNOT_KEY_COLUMNS]
-    key_cols = [_CHR_COL, _BP_COL, _A1_COL, _A2_COL]
+    key_cols = [POLYFUN_CHR_COL, POLYFUN_BP_COL, POLYFUN_A1_COL, POLYFUN_A2_COL]
     deduped = (
         lazy.with_columns([pl.col(c).cast(pl.Float32) for c in annot_cols])
         .unique(subset=[*key_cols, *annot_cols], keep="first")
@@ -142,4 +151,4 @@ def _dedup_one_chromosome(member_path: Path) -> pl.DataFrame:
     )
     # unique() may reorder; restore per-chromosome BP order so the streamed
     # concatenation of chromosomes is globally (CHR, BP)-sorted.
-    return deduped.sort(_BP_COL)
+    return deduped.sort(POLYFUN_BP_COL)

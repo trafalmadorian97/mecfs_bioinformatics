@@ -19,13 +19,17 @@ POLYFUN_H_WEIGHT_COL = "snpvar_bin"
 POLYFUN_PRIOR_COL = "prior"
 
 
-def create_prior_col_pipe(q: int) -> DataProcessingPipe:
-    max_weight = narwhals.col(POLYFUN_H_WEIGHT_COL).max()
+def create_prior_col_pipe(
+    q: int, weight_col: str = POLYFUN_H_WEIGHT_COL
+) -> DataProcessingPipe:
+    """Derive the SUSIE prior column from a per-variant heritability weight column,
+    flooring every weight at max(weight) / q."""
+    max_weight = narwhals.col(weight_col).max()
     floor = max_weight / q
     prior_with_floor_pipe = ExprPipe(
-        narwhals.when(narwhals.col(POLYFUN_H_WEIGHT_COL) <= floor)
+        narwhals.when(narwhals.col(weight_col) <= floor)
         .then(floor)
-        .otherwise(narwhals.col(POLYFUN_H_WEIGHT_COL))
+        .otherwise(narwhals.col(weight_col))
         .alias(POLYFUN_PRIOR_COL)
     )
     return prior_with_floor_pipe

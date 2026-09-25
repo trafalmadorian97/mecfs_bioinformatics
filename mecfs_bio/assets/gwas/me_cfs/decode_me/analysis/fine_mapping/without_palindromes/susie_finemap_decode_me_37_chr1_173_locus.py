@@ -3,6 +3,9 @@ Apply SUSIE to finemap the main DecodeME GWAS hit on chromosome 1.
 As a reference, use the UK Biobank LD matrix from the Broad Institute.
 """
 
+from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
+    DECODE_ME_PREVALENCE_INFO,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.prep_for_fine_mapping.chr1_173_locus.harmonize_with_polyfun_reference_alleles import (
     DECODE_ME_HARMONIZE_WITH_CHR1_173_000_001_LD_VIA_ALLELES,
 )
@@ -33,7 +36,7 @@ DECODE_ME_GWAS_1_SUSIE_FINEMAP_CHR1_173_000_001_LOCUS = SusieRFinemapTask.create
     ld_matrix_source=BroadInstituteFormatLDMatrix(
         CHR1_173000001_17600000_UKBB_LD_MATRIX_DOWNLOAD
     ),
-    effective_sample_size=4 / (1 / 15_579 + 1 / 259_909),  # 4/(1/cases + 1/controls)
+    effective_sample_size=DECODE_ME_PREVALENCE_INFO.effective_sample_size,
     ld_labels_pipe=CompositePipe(
         [
             RenameColPipe(old_name="rsid", new_name=GWASLAB_RSID_COL),

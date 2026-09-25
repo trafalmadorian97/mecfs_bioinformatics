@@ -45,6 +45,12 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.constants.polyfun_constants import (
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_CHR_COL,
+)
 
 logger = structlog.get_logger()
 
@@ -98,10 +104,10 @@ _PRIOR_COL = "prior_col"
 class PriorInfo:
     prior_task: Task
     prior_col: str
-    prior_chr_col: str = "CHR"
-    prior_bp_cp: str = "BP"
-    prior_a1_col: str = "A1"
-    prior_a2_col: str = "A2"
+    prior_chr_col: str = POLYFUN_CHR_COL
+    prior_bp_cp: str = POLYFUN_BP_COL
+    prior_a1_col: str = POLYFUN_A1_COL
+    prior_a2_col: str = POLYFUN_A2_COL
     prior_pipe: DataProcessingPipe = IdentityPipe()
 
 
