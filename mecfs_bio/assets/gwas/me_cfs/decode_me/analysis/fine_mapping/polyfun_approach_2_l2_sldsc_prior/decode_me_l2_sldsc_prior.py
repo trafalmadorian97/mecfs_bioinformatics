@@ -12,6 +12,9 @@ from pathlib import PurePath
 from mecfs_bio.asset_generator.polyfun_explain_fine_mapping_asset_generator import (
     PolyfunPriorSource,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
+    DECODE_ME_PREVALENCE_INFO,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
@@ -43,9 +46,6 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
 )
 
-# 4 / (1/cases + 1/controls), as in the DecodeME fine-mapping modules.
-DECODE_ME_EFFECTIVE_SAMPLE_SIZE = int(4 / (1 / 15_579 + 1 / 259_909))
-
 # On the default half-decade grid, cross-validation chose alpha = 10^4.5 (odd half)
 # and 10^5 (even half). The default grid plus twenty steps per decade over
 # [10^3, 10^6], a decade and more either side of both, resolves each optimum to
@@ -57,7 +57,7 @@ DECODE_ME_L2_SLDSC_ALPHAS: tuple[float, ...] = tuple(
 DECODE_ME_L2_SLDSC_SNPVAR = L2RegularizedSldscSnpvarTask.create(
     asset_id="decode_me_gwas_1_l2_sldsc_snpvar",
     sumstats_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
-    effective_sample_size=DECODE_ME_EFFECTIVE_SAMPLE_SIZE,
+    effective_sample_size=DECODE_ME_PREVALENCE_INFO.effective_sample_size,
     annotation_ldscore_members_task=BASELINE_LF_ANNOTATION_LDSCORE_MEMBERS,
     annotation_matrix_task=BASELINE_LF_ANNOTATION_MATRIX,
     alphas=DECODE_ME_L2_SLDSC_ALPHAS,

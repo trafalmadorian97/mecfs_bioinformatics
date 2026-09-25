@@ -9,6 +9,9 @@ operate on the same harmonized inputs.
 from mecfs_bio.asset_generator.polyfun_explain_fine_mapping_asset_generator import (
     generate_assets_polyfun_explain_fine_map,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
+    DECODE_ME_PREVALENCE_INFO,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
     DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
 )
@@ -26,9 +29,7 @@ POLYFUN_EXPLAIN_CHR6_26 = generate_assets_polyfun_explain_fine_map(
     build_37_sumstats_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
     base_name="decode_me_polyfun_explain",
     sumstats_pipe=IdentityPipe(),
-    sample_size_or_effect_sample_size=int(
-        4 / (1 / 15_579 + 1 / 259_909)
-    ),  # 4/(1/cases + 1/controls)
+    sample_size_or_effect_sample_size=DECODE_ME_PREVALENCE_INFO.effective_sample_size,
     palindrome_strategy="keep",
     chrom_range=ChromRange(6, 26_000_000, 27_000_000),
     secondary_position_from_snpid=SecondaryPositionFromSnpid(build_label="hg38"),
