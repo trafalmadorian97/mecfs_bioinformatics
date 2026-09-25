@@ -89,13 +89,15 @@ DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS = CopyFileFromDirectoryTask.create_result_ta
     read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
 )
 
-DECODE_ME_L2_SLDSC_PRIOR_SOURCE = PolyfunPriorSource(
-    prior_task=DECODE_ME_L2_SLDSC_SNPVAR_TABLE,
-    weight_col=SNPVAR_COL,
-    odd_chrom_explanation_weights_task=DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS,
-    even_chrom_explanation_weights_task=DECODE_ME_L2_SLDSC_TAU_ODD_WEIGHTS,
-    chr_col=GWASLAB_CHROM_COL,
-    pos_col=GWASLAB_POS_COL,
-    nea_col=GWASLAB_NON_EFFECT_ALLELE_COL,
-    ea_col=GWASLAB_EFFECT_ALLELE_COL,
+DECODE_ME_L2_SLDSC_PRIOR_SOURCE = (
+    PolyfunPriorSource.with_parity_split_explanation_weights(
+        prior_task=DECODE_ME_L2_SLDSC_SNPVAR_TABLE,
+        weight_col=SNPVAR_COL,
+        odd_chrom_explanation_weights_task=DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS,
+        even_chrom_explanation_weights_task=DECODE_ME_L2_SLDSC_TAU_ODD_WEIGHTS,
+        chr_col=GWASLAB_CHROM_COL,
+        pos_col=GWASLAB_POS_COL,
+        nea_col=GWASLAB_NON_EFFECT_ALLELE_COL,
+        ea_col=GWASLAB_EFFECT_ALLELE_COL,
+    )
 )

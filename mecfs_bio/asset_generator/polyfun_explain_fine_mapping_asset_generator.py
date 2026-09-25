@@ -121,42 +121,90 @@ class PolyfunPriorSource:
     heritability weight column. The generator floors the weights at max / q_factor
     to form the prior, identically for every source.
 
-    The two explanation weights tasks yield annotation coefficient tables in the
-    RidgeAnnotationWeightsTask schema that the explainability contrast uses to
-    attribute the prior to annotations: one for loci on odd chromosomes and one
-    for loci on even chromosomes. A source whose prior is modeled the same way on
-    every chromosome passes the same task for both; a source that scores each half
-    of the genome with coefficients fit on the other half passes the coefficients
-    that scored each half.
+    Each chromosome also has an explanation weights task: an annotation coefficient
+    table in the RidgeAnnotationWeightsTask schema that the explainability contrast
+    uses to attribute the prior to annotations. How those tasks are assigned to
+    chromosomes is an internal detail: build a source with one of the classmethod
+    constructors rather than directly, and look a chromosome's task up with
+    explanation_weights_task_for_chrom rather than reading the fields.
     """
 
     prior_task: Task
     weight_col: str
     odd_chrom_explanation_weights_task: Task
     even_chrom_explanation_weights_task: Task
-    chr_col: str = POLYFUN_CHR_COL
-    pos_col: str = POLYFUN_BP_COL
-    nea_col: str = POLYFUN_A1_COL
-    ea_col: str = POLYFUN_A2_COL
+    chr_col: str
+    pos_col: str
+    nea_col: str
+    ea_col: str
+
+    @classmethod
+    def with_shared_explanation_weights(
+        cls,
+        prior_task: Task,
+        weight_col: str,
+        explanation_weights_task: Task,
+        chr_col: str = POLYFUN_CHR_COL,
+        pos_col: str = POLYFUN_BP_COL,
+        nea_col: str = POLYFUN_A1_COL,
+        ea_col: str = POLYFUN_A2_COL,
+    ) -> "PolyfunPriorSource":
+        """A source whose prior is explained by the same coefficients on every
+        chromosome."""
+        return cls(
+            prior_task=prior_task,
+            weight_col=weight_col,
+            odd_chrom_explanation_weights_task=explanation_weights_task,
+            even_chrom_explanation_weights_task=explanation_weights_task,
+            chr_col=chr_col,
+            pos_col=pos_col,
+            nea_col=nea_col,
+            ea_col=ea_col,
+        )
+
+    @classmethod
+    def with_parity_split_explanation_weights(
+        cls,
+        prior_task: Task,
+        weight_col: str,
+        odd_chrom_explanation_weights_task: Task,
+        even_chrom_explanation_weights_task: Task,
+        chr_col: str = POLYFUN_CHR_COL,
+        pos_col: str = POLYFUN_BP_COL,
+        nea_col: str = POLYFUN_A1_COL,
+        ea_col: str = POLYFUN_A2_COL,
+    ) -> "PolyfunPriorSource":
+        """A source whose prior is explained by different coefficients on odd and
+        even chromosomes, e.g. one that scores each half of the genome with
+        coefficients fit on the other half. Each task explains the prior on the
+        chromosomes of its parity."""
+        return cls(
+            prior_task=prior_task,
+            weight_col=weight_col,
+            odd_chrom_explanation_weights_task=odd_chrom_explanation_weights_task,
+            even_chrom_explanation_weights_task=even_chrom_explanation_weights_task,
+            chr_col=chr_col,
+            pos_col=pos_col,
+            nea_col=nea_col,
+            ea_col=ea_col,
+        )
+
+    def explanation_weights_task_for_chrom(self, chrom: int) -> Task:
+        """The annotation coefficients that explain the prior on chromosome chrom."""
+        return (
+            self.odd_chrom_explanation_weights_task
+            if chrom % 2 == 1
+            else self.even_chrom_explanation_weights_task
+        )
 
 
 # PolyFun Approach 1: the precomputed prior meta-analyzed over 15 UK Biobank traits.
 # Its explanation weights are a ridge surrogate of the prior on the annotations.
-PRECOMPUTED_POLYFUN_PRIOR_SOURCE = PolyfunPriorSource(
+PRECOMPUTED_POLYFUN_PRIOR_SOURCE = PolyfunPriorSource.with_shared_explanation_weights(
     prior_task=COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
     weight_col=POLYFUN_H_WEIGHT_COL,
-    odd_chrom_explanation_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
-    even_chrom_explanation_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
+    explanation_weights_task=BASELINE_LF_ANNOTATION_RIDGE_WEIGHTS,
 )
-
-
-def _explanation_weights_task_for_chrom(source: PolyfunPriorSource, chrom: int) -> Task:
-    """The annotation coefficients that explain source's prior on chromosome chrom."""
-    return (
-        source.odd_chrom_explanation_weights_task
-        if chrom % 2 == 1
-        else source.even_chrom_explanation_weights_task
-    )
 
 
 @frozen
@@ -538,9 +586,7 @@ def _build_shared_locus_inputs(
         ld_matrix_task=ld_matrix_task,
         gene_info_task=gene_info_task,
         effective_sample_size=sample_size,
-        explanation_weights_task=_explanation_weights_task_for_chrom(
-            prior_source, chrom
-        ),
+        explanation_weights_task=prior_source.explanation_weights_task_for_chrom(chrom),
         genome_build=genome_build,
         q_factor=q_factor,
         secondary_position_from_snpid=secondary_position_from_snpid,
