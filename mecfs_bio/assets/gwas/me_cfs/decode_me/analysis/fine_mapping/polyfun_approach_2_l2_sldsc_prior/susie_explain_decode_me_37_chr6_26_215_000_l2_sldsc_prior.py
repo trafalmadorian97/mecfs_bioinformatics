@@ -2,11 +2,6 @@
 DecodeME-specific L2-regularized S-LDSC prior (PolyFun Approach 2) in place of the
 precomputed PolyFun prior.
 
-Same locus, sumstats, sample size, palindrome strategy, and chrom range as
-polyfun_explainability.susie_explain_decode_me_37_chr6_26_215_000, so the two sets of
-credible sets differ only in the prior. The contrast attributes the prior to
-annotations with the DecodeME tau that scored chr6 (fit on the odd
-chromosomes), which explains the unfloored prior exactly.
 """
 
 from mecfs_bio.asset_generator.polyfun_explain_fine_mapping_asset_generator import (

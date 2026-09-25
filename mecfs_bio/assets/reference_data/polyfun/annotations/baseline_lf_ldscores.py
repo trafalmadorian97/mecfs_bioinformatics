@@ -1,8 +1,6 @@
 """Reference asset: the baseline-LF 2.2.UKB per-chromosome annotation LD-score parquets.
 
-Streamed from the same ~30GB baselineLF_v2.2.UKB.polyfun.tar.gz bundle as the
-annotation matrix, keeping the .l2.ldscore.parquet members (each: CHR, SNP, BP,
-A1, A2 + 187 annotation-named LD-score columns). The members directory is a
+ The members directory is a
 path_remap candidate (~29GB, few files, rarely read).
 """
 

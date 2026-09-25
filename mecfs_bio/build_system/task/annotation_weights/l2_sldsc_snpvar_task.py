@@ -177,18 +177,18 @@ class L2RegularizedSldscSnpvarTask(Task):
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:
-        ldscore_asset = fetch(self.annotation_ldscore_members_task.asset_id)
-        assert isinstance(ldscore_asset, DirectoryAsset)
-        annot_asset = fetch(self.annotation_matrix_task.asset_id)
-        assert isinstance(annot_asset, FileAsset)
+        ldscore_dir = _fetch_ldscore_members_dir(
+            fetch, self.annotation_ldscore_members_task
+        )
+        annot_path = _fetch_annotation_matrix_path(fetch, self.annotation_matrix_task)
         sumstats = _load_sumstats(
             scan_dataframe_asset(
                 fetch(self.sumstats_task.asset_id), self.sumstats_task.meta
             )
         )
 
-        ldscore_paths = _ldscore_member_paths(ldscore_asset.path)
-        annot_cols = _annotation_columns(annot_asset.path)
+        ldscore_paths = _ldscore_member_paths(ldscore_dir)
+        annot_cols = _annotation_columns(annot_path)
         _assert_ldscore_columns_match(ldscore_paths, annot_cols)
         mafbins = [c for c in annot_cols if _is_mafbin(c)]
         assert len(mafbins) == _N_MAFBINS, (
@@ -261,7 +261,7 @@ class L2RegularizedSldscSnpvarTask(Task):
 
         # Pass C: score every annotation-matrix variant with the opposite parity's tau.
         n_scored = _write_snpvar(
-            annot_path=annot_asset.path,
+            annot_path=annot_path,
             annot_cols=annot_cols,
             tau_by_parity={parity: fits[1 - parity].tau for parity in (0, 1)},
             out_path=scratch_dir / SNPVAR_PARQUET_FILENAME,
@@ -317,6 +317,21 @@ class L2RegularizedSldscSnpvarTask(Task):
             effective_sample_size=effective_sample_size,
             alphas=alphas,
         )
+
+
+def _fetch_ldscore_members_dir(fetch: Fetch, ldscore_members_task: Task) -> Path:
+    """The directory of per-chromosome LD-score parquets that ldscore_members_task
+    produces."""
+    asset = fetch(ldscore_members_task.asset_id)
+    assert isinstance(asset, DirectoryAsset)
+    return asset.path
+
+
+def _fetch_annotation_matrix_path(fetch: Fetch, annotation_matrix_task: Task) -> Path:
+    """The annotation matrix parquet that annotation_matrix_task produces."""
+    asset = fetch(annotation_matrix_task.asset_id)
+    assert isinstance(asset, FileAsset)
+    return asset.path
 
 
 def _is_mafbin(col: str) -> bool:
