@@ -242,11 +242,11 @@ def define_env(env):
         return button + iframe
 
     @env.macro
-    def ppp_rg_data_table(src, id, height="775px", precision=4):
+    def ppp_rg_data_table(src, id, page_size=20, precision=4):
         return data_table(
             src=src,
             id=id,
-            height=height,
+            page_size=page_size,
             precision=precision,
             caption=PPP_RG_DATA_TABLE_CAPTION,
         )
@@ -261,29 +261,29 @@ def define_env(env):
         )
 
     @env.macro
-    def susie_polyfun_data_table(src, id, height="775px", precision=4):
+    def susie_polyfun_data_table(src, id, page_size=20, precision=4):
         return data_table(
             src=src,
             id=id,
-            height=height,
+            page_size=page_size,
             precision=precision,
             caption=SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION,
         )
 
     @env.macro
-    def susie_polyfun_variant_detail_table(src, id, height="775px", precision=4):
+    def susie_polyfun_variant_detail_table(src, id, page_size=20, precision=4):
         return data_table(
             src=src,
             id=id,
-            height=height,
+            page_size=page_size,
             precision=precision,
             caption=SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION,
         )
 
     @env.macro
-    def susie_uniform_variant_detail_table(src, id, height="775px", precision=4):
+    def susie_uniform_variant_detail_table(src, id, page_size=20, precision=4):
         return data_table(
-            src=src, id=id, height=height, precision=precision, caption=""
+            src=src, id=id, page_size=page_size, precision=precision, caption=""
         )
 
     @env.macro
@@ -300,14 +300,20 @@ def define_env(env):
         )
 
     @env.macro
-    def data_table(src, id, height="600px", precision=4, caption=""):
-        """Embed a large tabular asset as a sortable, filterable, virtualised table.
+    def data_table(src, id, page_size=20, precision=4, caption=""):
+        """Embed a large tabular asset as a sortable, filterable, paginated table.
 
         For tables too large for markdown_table --- which renders every row into
         the page DOM at build time, and becomes unworkable in the thousands ---
         this instead ships the data as a parquet asset and renders it client-side
-        with Tabulator. Only the visible rows exist in the DOM, so row count
-        barely affects page weight.
+        with Tabulator. Only the current page of rows exists in the DOM, so row
+        count barely affects page weight.
+
+        The table is paginated rather than given a fixed-height scrolling
+        viewport. It grows to fit one page of rows, so there is no inner vertical
+        scrollbar competing with the page's own for the mouse wheel. Sorting,
+        filtering and the CSV download all operate on the full dataset, not just
+        the visible page.
 
         Parquet rather than CSV because the values stay exactly as the build
         system produced them: full precision, no rounding decision baked
@@ -331,9 +337,9 @@ def define_env(env):
             (e.g. "docs/_figs/my_table.parquet").
         id : str
             A unique HTML id for the table container (must be unique per page).
-        height : str
-            CSS height of the table viewport, e.g. "600px". Virtualisation keys
-            off this, so it must be a fixed height rather than "auto".
+        page_size : int
+            Initial number of rows per page. Readers can change it with the page
+            size selector in the table footer.
         precision : int
             Decimal places used when *displaying* non-integer values. Does not
             affect the underlying data or the CSV download.
@@ -360,7 +366,7 @@ def define_env(env):
             ("__DATA_URL__", relative_url),
             ("__PRECISION__", str(precision)),
             ("__DOWNLOAD_NAME__", download_name),
-            ("__HEIGHT__", height),
+            ("__PAGE_SIZE__", str(page_size)),
         ):
             script = script.replace(token, value)
 
@@ -383,7 +389,7 @@ def define_env(env):
             f"  Download CSV &#x2913;\n"
             f"</button>\n"
             f"</div>\n"
-            f'<div id="{id}" style="height:{height};">'
+            f'<div id="{id}">'
             f'<em id="{id}-status">Loading table…</em></div>\n'
             f"</div>\n"
             f"{caption_html}"
@@ -435,10 +441,12 @@ _DATA_TABLE_SCRIPT = """<script type="module">
 
     const table = new Tabulator(container, {
       data: rows,
-      // Must be a concrete CSS length, not "100%": Tabulator only virtualises
-      // when it can resolve the viewport height, and silently falls back to
-      // rendering every row when it cannot.
-      height: "__HEIGHT__",
+      // No fixed height: the table grows to fit one page, so the page's own
+      // scrollbar is the only vertical one.
+      pagination: true,
+      paginationSize: __PAGE_SIZE__,
+      paginationSizeSelector: [10, 20, 50, 100],
+      paginationCounter: "rows",
       layout: "fitDataFill",
       autoColumns: true,
       autoColumnsDefinitions: (definitions) =>
