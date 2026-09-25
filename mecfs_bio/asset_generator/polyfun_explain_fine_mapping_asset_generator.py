@@ -114,20 +114,7 @@ logger = structlog.get_logger()
 
 @frozen
 class PolyfunPriorSource:
-    """Where the polyfun SUSIE run's per-variant prior comes from.
-
-    prior_task yields a table with one row per variant, keyed by the four columns
-    named here (chr/pos plus the REF-oriented non-effect and effect alleles), and a
-    heritability weight column. The generator floors the weights at max / q_factor
-    to form the prior, identically for every source.
-
-    Each chromosome also has an explanation weights task: an annotation coefficient
-    table in the RidgeAnnotationWeightsTask schema that the explainability contrast
-    uses to attribute the prior to annotations. How those tasks are assigned to
-    chromosomes is an internal detail: build a source with one of the classmethod
-    constructors rather than directly, and look a chromosome's task up with
-    explanation_weights_task_for_chrom rather than reading the fields.
-    """
+    """Where the polyfun SUSIE run's per-variant prior comes from."""
 
     prior_task: Task
     weight_col: str
