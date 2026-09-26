@@ -28,7 +28,7 @@ from mecfs_bio.build_system.task.specificity_frac_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class PrepareSpecificityCepo(Task):
     """
     Task to compute the specificity of genes for cell types using the CEPO specificity metric.

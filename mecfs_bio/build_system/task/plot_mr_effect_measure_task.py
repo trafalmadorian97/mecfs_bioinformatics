@@ -22,7 +22,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class EffectMeasurePlotConfig:
     y_label_col: str
     y_label: str
@@ -35,7 +35,7 @@ class EffectMeasurePlotConfig:
     figsize: tuple[float, float] = (7, 3)
 
 
-@frozen
+@frozen(slots=True)
 class PlotMREffectMeasure(Task):
     """
     Task to create an effect measure plot

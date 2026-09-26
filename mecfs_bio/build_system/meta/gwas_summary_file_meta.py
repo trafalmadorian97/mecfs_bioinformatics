@@ -11,7 +11,7 @@ from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 
-@frozen
+@frozen(slots=True)
 class GWASSummaryDataFileMeta(FileMeta):
     @property
     def asset_id(self) -> AssetId:

@@ -7,7 +7,7 @@ from plotly.graph_objs import Figure
 from mecfs_bio.constants.xr_constants import XR_SPECIFICITY_MATRIX, XR_TISSUE_DIMENSION
 
 
-@frozen
+@frozen(slots=True)
 class GeneNormalizedPlotMode:
     max_multiple: float
 
@@ -15,7 +15,7 @@ class GeneNormalizedPlotMode:
 XRHeatmapPlotMode = GeneNormalizedPlotMode
 
 
-@frozen
+@frozen(slots=True)
 class XRHeatmapPlotSpec:
     plot_mode: XRHeatmapPlotMode
     color_scale: str | list[str]

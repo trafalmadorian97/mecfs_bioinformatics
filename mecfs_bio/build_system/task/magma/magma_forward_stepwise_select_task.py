@@ -40,7 +40,7 @@ RETAINED_CLUSTERS_COLUMN = "Retained_clusters"
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class MagmaForwardStepwiseSelectTask(Task):
     """
     - Since the gene expression patterns of many cell types are highly correlated, it can be difficult

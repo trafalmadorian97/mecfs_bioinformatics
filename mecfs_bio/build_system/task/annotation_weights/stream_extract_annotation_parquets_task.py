@@ -43,7 +43,7 @@ def _default_stream_opener(url: str) -> BinaryIO:
     return urllib.request.urlopen(url)
 
 
-@frozen
+@frozen(slots=True)
 class StreamExtractAnnotationParquetsTask(Task):
     meta: Meta
     url: str

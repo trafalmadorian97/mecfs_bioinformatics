@@ -270,7 +270,7 @@ def _run_contrast_task(
     return result
 
 
-@frozen
+@frozen(slots=True)
 class _ExplainInputs:
     """Shared synthetic fixture for the polyfun-explain contrast and plot
     tasks: the task objects (so a caller can wire them as deps into a

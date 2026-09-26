@@ -17,7 +17,7 @@ from mecfs_bio.util.download.verify import verify_hash
 from mecfs_bio.util.subproc.run_command import execute_command_with_retries
 
 
-@frozen
+@frozen(slots=True)
 class OSFRetrievalTask(GeneratingTask):
     """
     A task that fetches GWAS data from the Open Science data store

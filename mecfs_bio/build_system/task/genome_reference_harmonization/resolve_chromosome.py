@@ -78,7 +78,7 @@ class PanelLoader(Protocol):
         ...
 
 
-@frozen
+@frozen(slots=True)
 class ChromosomeContext:
     chrom: int
     fasta: IndexedFasta

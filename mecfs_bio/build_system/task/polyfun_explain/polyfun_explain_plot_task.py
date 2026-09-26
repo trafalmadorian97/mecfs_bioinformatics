@@ -108,7 +108,7 @@ _PANEL_HEIGHT_IN = 2.9
 _PNG_DPI = 200
 
 
-@frozen
+@frozen(slots=True)
 class PolyfunExplainPlotTask(Task):
     """Render the polyfun-vs-uniform explainability figure."""
 

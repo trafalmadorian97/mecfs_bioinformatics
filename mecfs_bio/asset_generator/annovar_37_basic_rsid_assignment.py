@@ -36,7 +36,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 
 
-@frozen
+@frozen(slots=True)
 class RSIDAssignmentTaskGroup:
     """
     Collection of tasks used to assign rsIDs by joining with an existing dataframe of SNPs

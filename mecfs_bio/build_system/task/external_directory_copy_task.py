@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExternalDirectoryCopyTask(GeneratingTask):
     """
     Copies a directory from an external source.

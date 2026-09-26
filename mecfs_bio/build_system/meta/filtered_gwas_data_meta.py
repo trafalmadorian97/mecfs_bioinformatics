@@ -12,7 +12,7 @@ from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 
-@frozen
+@frozen(slots=True)
 class FilteredGWASDataMeta(FileMeta):
     @property
     def asset_id(self) -> AssetId:

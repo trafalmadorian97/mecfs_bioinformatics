@@ -32,7 +32,7 @@ from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 _COPY_CHUNK_BYTES = 16 * 1024 * 1024
 
 
-@frozen
+@frozen(slots=True)
 class IndexedFastaTask(Task):
     meta: FASTAMeta
     fasta_gz_task: Task

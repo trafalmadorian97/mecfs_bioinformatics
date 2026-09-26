@@ -142,7 +142,7 @@ def _one_chromosome(sites: pl.LazyFrame, code: int, names: list[str]) -> pl.Data
     )
 
 
-@frozen
+@frozen(slots=True)
 class ReferencePanelAlleleFrequencyTask(Task):
     meta: HarmonizableReferenceTableMeta
     vcf_task: Task

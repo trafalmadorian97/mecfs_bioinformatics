@@ -54,7 +54,7 @@ from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.build_system.wf.wf_downloader import RobustWFDownloader
 
 
-@frozen
+@frozen(slots=True)
 class SimpleRunner:
     """
     Simple wrapper class that orchestrates

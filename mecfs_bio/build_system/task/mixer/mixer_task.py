@@ -69,7 +69,7 @@ MIXER_FIT_JSON_PATTERN = "trait1.fit.@.json"
 MIXER_TEST_JSON_PATTERN = "trait1.test.@.json"
 
 
-@frozen
+@frozen(slots=True)
 class MixerDataSource:
     """
     A source for data for use in Mixer.
@@ -87,7 +87,7 @@ class MixerDataSource:
         return self.task.asset_id
 
 
-@frozen
+@frozen(slots=True)
 class PreformattedMixerDataSource:
     """
     A source for data that is already in MiXeR sumstats format
@@ -105,12 +105,12 @@ class PreformattedMixerDataSource:
         return self.task.asset_id
 
 
-@frozen
+@frozen(slots=True)
 class BivariateMode:
     trait_2_source: MixerDataSource
 
 
-@frozen
+@frozen(slots=True)
 class UnivariateMode:
     pass
 
@@ -120,7 +120,7 @@ MixerMode = BivariateMode | UnivariateMode
 CONTAINER_REF_DIR = Path("/ref_data")
 
 
-@frozen
+@frozen(slots=True)
 class MixerTask(Task):
     """
     Core task to fit the MiXeR Gaussian mixture model to GWAS data
@@ -352,7 +352,7 @@ def _prep_summary_statistics_for_mixer(
     return out_path
 
 
-@frozen
+@frozen(slots=True)
 class MixerLDGenerationTask(Task):
     """
     Implemented by Claude to facilitate testing.

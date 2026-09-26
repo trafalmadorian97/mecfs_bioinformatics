@@ -23,7 +23,7 @@ class Downloader(ABC):
         pass
 
 
-@frozen
+@frozen(slots=True)
 class AriaDownloader(Downloader):
     """
     Downloader that uses aria2

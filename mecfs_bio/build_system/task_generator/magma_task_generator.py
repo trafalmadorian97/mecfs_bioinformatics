@@ -64,12 +64,12 @@ from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.constants.gwaslab_constants import GwaslabKnownFormat
 
 
-@frozen
+@frozen(slots=True)
 class GGetSettings:
     limit_genes: int | None = None
 
 
-@frozen
+@frozen(slots=True)
 class StandardMagmaTaskGenerator:
     """
     A Task Generator that generates all the Tasks required to perform the main steps of the MAGMA workflow, up to plotting the results of tissue-specific gene-set analysis
@@ -245,7 +245,7 @@ class StandardMagmaTaskGenerator:
         )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaTaskGeneratorFromRaw:
     """
     As above, but starts from raw data.
@@ -309,7 +309,7 @@ class MagmaTaskGeneratorFromRaw:
         )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaTaskGeneratorFromRawCompute37RSIDs:
     """
     As above, but assumes RSIDs are either not present,

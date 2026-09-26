@@ -9,7 +9,7 @@ from mecfs_bio.build_system.meta.base_meta import DirMeta
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 
-@frozen
+@frozen(slots=True)
 class FASTAMeta(DirMeta):
     group: str
     sub_group: str

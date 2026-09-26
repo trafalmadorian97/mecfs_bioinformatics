@@ -19,7 +19,7 @@ import numpy as np
 from attrs import frozen
 
 
-@frozen
+@frozen(slots=True)
 class LdscDiagnosticBins:
     """Per-bin summaries of variants grouped into equal-count LD-score bins, ordered by
     ascending LD score. Every array is 1-D of length n_bins."""

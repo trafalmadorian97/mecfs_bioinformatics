@@ -25,7 +25,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_region_plot_task_arbitrary_locu
 )
 
 
-@frozen
+@frozen(slots=True)
 class UKBBPPPGWASPrep:
     """
     Grouping of tasks for downloading and preprocessing data from a UK Biobank Pharma Proteomics Project GWAS.

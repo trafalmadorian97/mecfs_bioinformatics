@@ -8,7 +8,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 _PALINDROME_PAIRS = (("A", "T"), ("T", "A"), ("C", "G"), ("G", "C"))
 
 
-@frozen
+@frozen(slots=True)
 class DropPalindromesPipe(DataProcessingPipe):
     ea_col: str
     nea_col: str

@@ -72,7 +72,7 @@ _FASTA_ID = "fasta"
 _PANEL_ID = "panel"
 
 
-@frozen
+@frozen(slots=True)
 class Variant:
     pos: int
     ea: str
@@ -82,7 +82,7 @@ class Variant:
     chrom: int = 1
 
 
-@frozen
+@frozen(slots=True)
 class PanelRecord:
     pos: int
     ref: str

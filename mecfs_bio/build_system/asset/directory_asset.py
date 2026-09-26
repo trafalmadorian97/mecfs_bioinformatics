@@ -9,7 +9,7 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 
 
-@frozen
+@frozen(slots=True)
 class DirectoryAsset(Asset):
     """
     A materialized directory output of a Task.

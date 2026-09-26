@@ -57,7 +57,7 @@ def _protein_file_from_row(row: dict) -> PppProteinFile:
     return protein_file
 
 
-@frozen
+@frozen(slots=True)
 class PppSlimProteinTaskCollection:
     protein_tasks: tuple[BuildSlimProteinParquetTask, ...]
 

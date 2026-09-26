@@ -43,7 +43,7 @@ DEFAULT_FIELDS = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class GetUniProtReferenceDataTask(Task):
     """
     Task to download reference data about proteins from UniProt

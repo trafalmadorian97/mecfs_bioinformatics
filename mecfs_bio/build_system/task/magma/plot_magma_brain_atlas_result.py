@@ -42,13 +42,13 @@ KEY_HBA_ANNOTATION_COLUMNS = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class PlotSettings:
     plot_mode: PlotMode = "plotly_dark"
     include_top_annotation: bool = False
 
 
-@frozen
+@frozen(slots=True)
 class PlotMagmaBrainAtlasResultTask(Task):
     """
     Task to create a plot of the results of applying MAGMA using the human brain atlas data as a reference

@@ -19,7 +19,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.subproc.run_command import execute_command
 
 
-@frozen
+@frozen(slots=True)
 class TypstDiagramTask(GeneratingTask):
     """
     Compiles a Typst source (a .typ file or an inline string) into an SVG

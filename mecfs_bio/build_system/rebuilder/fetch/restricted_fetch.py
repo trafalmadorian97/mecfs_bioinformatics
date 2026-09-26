@@ -6,7 +6,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 
 
-@frozen
+@frozen(slots=True)
 class RestrictedFetch(Fetch):
     """
     A Fetch the prevents the retrieval of assets except those on a given list.

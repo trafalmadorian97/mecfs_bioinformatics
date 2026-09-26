@@ -11,7 +11,7 @@ from mecfs_bio.util.file_io.atomic_write import atomic_write_yaml
 TraceRecord = tuple[str, list[tuple[AssetId, str]]]
 
 
-@define
+@define(slots=True)
 class VerifyingTraceInfo:
     """
     Stores persistent data relevant to the verifying trace rebuilder

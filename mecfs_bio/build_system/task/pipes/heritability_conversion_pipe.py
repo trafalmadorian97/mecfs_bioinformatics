@@ -24,7 +24,7 @@ def _get_liability_scale_heritability(
     )
 
 
-@frozen
+@frozen(slots=True)
 class HeritabilityConversionPipe(DataProcessingPipe):
     observed_heritability_column: str
     liability_heritability_column: str

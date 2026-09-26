@@ -35,7 +35,7 @@ DEFAULT_N_BLOCKS = 200
 _CHI2_1DF_MEDIAN = 0.4549364231195724
 
 
-@frozen
+@frozen(slots=True)
 class BatchedH2Result:
     """Per-protein heritability outputs; all arrays are length K (protein order preserved)."""
 
@@ -157,7 +157,7 @@ def batched_h2(
     )
 
 
-@frozen
+@frozen(slots=True)
 class ExactH2Result:
     h2: float
     h2_se: float

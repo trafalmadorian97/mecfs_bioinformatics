@@ -50,7 +50,7 @@ class AbstractFigureExporter(ABC):
         pass
 
 
-@frozen
+@frozen(slots=True)
 class FigureExporter(AbstractFigureExporter):
     """
     Responsible for invoking the build system to generate Assets corresponding to figures, then copying those assets to the figure directory.

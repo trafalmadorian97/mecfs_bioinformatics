@@ -44,7 +44,7 @@ Method = Literal["fdr_bh", "fdr_by", "bonferroni"]
 REJECT_NULL_LABEL = "Reject Null"
 
 
-@frozen
+@frozen(slots=True)
 class MultipleTestingTableTask(Task):
     """
     Task to read a table of statistical test results with p values,

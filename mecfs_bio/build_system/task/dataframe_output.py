@@ -21,7 +21,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 ParquetCompression = Literal["snappy", "zstd", "gzip", "brotli", "lz4", "none"]
 
 
-@frozen
+@frozen(slots=True)
 class ParquetWriteOptions:
     """How to encode a parquet output, when the defaults are not good enough."""
 
@@ -30,12 +30,12 @@ class ParquetWriteOptions:
     byte_stream_split_floats: bool = False
 
 
-@frozen
+@frozen(slots=True)
 class ParquetOutFormat:
     write_options: ParquetWriteOptions | None = None
 
 
-@frozen
+@frozen(slots=True)
 class CSVOutFormat:
     sep: str
 

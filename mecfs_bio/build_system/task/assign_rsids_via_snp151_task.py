@@ -34,7 +34,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class AssignRSIDSToSNPsViaSNP151Task(Task):
     """
     Assigns RSIDS to the SNP genetic variants in a file of Gwas summary statistics

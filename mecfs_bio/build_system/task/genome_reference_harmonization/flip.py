@@ -70,7 +70,7 @@ assert set(get_args(FlipRule)) == {
 }
 
 
-@frozen
+@frozen(slots=True)
 class InvertedBoundPair:
     """Ratio confidence bounds: on a flip, lower becomes 1/upper and upper becomes 1/lower."""
 
@@ -78,7 +78,7 @@ class InvertedBoundPair:
     upper: str
 
 
-@frozen
+@frozen(slots=True)
 class ExtraColumnRule:
     column: str
     rule: FlipRule

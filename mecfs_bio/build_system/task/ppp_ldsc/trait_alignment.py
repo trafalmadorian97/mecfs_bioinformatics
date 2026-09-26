@@ -55,7 +55,7 @@ _TRAIT_Z = "__trait_z__"
 _TRAIT_N = "__trait_n__"
 
 
-@frozen
+@frozen(slots=True)
 class TraitAligned:
     """The trait aligned to the context SNP set (parallel (S,) arrays in context row order).
 

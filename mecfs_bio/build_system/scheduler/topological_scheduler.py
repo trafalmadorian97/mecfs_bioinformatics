@@ -128,7 +128,7 @@ def _print_progress(
     logger.info(_get_progress_list(todo=todo, done=done))
 
 
-@frozen
+@frozen(slots=True)
 class TopologicalSchedulerSettings:
     print_progress: bool = False
 

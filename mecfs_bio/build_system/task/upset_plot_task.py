@@ -35,7 +35,7 @@ from vendored.upsetplot import UpSet, from_contents
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class FileSetSource:
     name: str
     task: Task
@@ -43,7 +43,7 @@ class FileSetSource:
     pipe: DataProcessingPipe = IdentityPipe()
 
 
-@frozen
+@frozen(slots=True)
 class DirSetSource:
     name: str
     task: Task
@@ -92,7 +92,7 @@ def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
         raise ValueError("Unknown set source")
 
 
-@frozen
+@frozen(slots=True)
 class UpSetPlotTask(Task):
     """
     Create an upset plot to describe the intersection of sets represented as dataframe columns

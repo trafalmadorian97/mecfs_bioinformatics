@@ -10,7 +10,7 @@ from attrs import frozen
 _SOURCE_FILENAME = "diagram.typ"
 
 
-@frozen
+@frozen(slots=True)
 class TypstSource:
     """
     Holds exactly one of a path to a .typ file or a literal string of Typst

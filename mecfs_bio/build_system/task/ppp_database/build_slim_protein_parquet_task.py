@@ -274,7 +274,7 @@ def extract_protein_tar(tar_path: Path, dest_dir: Path) -> Path:
     return extract_dir
 
 
-@frozen
+@frozen(slots=True)
 class PppProteinFile:
     """Structured identity of one UKB-PPP per-protein summary-statistics file (a manifest row).
 
@@ -295,7 +295,7 @@ class PppProteinFile:
         return f"{self.gene}_{self.uniprot}_{self.oid}_{self.version}_{self.panel}.tar"
 
 
-@frozen
+@frozen(slots=True)
 class BuildSlimProteinParquetTask(GeneratingTask):
     """
     Download one UKB-PPP protein from Synapse and store only its aligned beta/se (and

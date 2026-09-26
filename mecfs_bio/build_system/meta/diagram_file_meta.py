@@ -10,7 +10,7 @@ from mecfs_bio.build_system.meta.base_meta import FileMeta
 DIAGRAM_EXTENSION = ".svg"
 
 
-@frozen
+@frozen(slots=True)
 class DiagramFileMeta(FileMeta):
     """
     Metadata describing a single SVG diagram.

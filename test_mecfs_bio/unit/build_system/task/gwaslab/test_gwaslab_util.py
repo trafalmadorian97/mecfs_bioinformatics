@@ -11,7 +11,7 @@ _REF = "1kg_eur_hg19"
 _STALE_MD5 = "734069d895009d38c2f962bfbb6fab52"
 
 
-@define
+@define(slots=True)
 class FakeGwaslabRefStore:
     """Stands in for gwaslab's on-disk reference cache plus its config registry.
 

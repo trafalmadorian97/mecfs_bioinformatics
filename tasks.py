@@ -8,6 +8,7 @@ Note that when running tasks this way, underscores (_) in task names should be r
 
 import datetime as _dt
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -216,6 +217,39 @@ def fix_init_files(c):
         print("Nothing to fix.")
 
 
+# ty learns about attrs classes through dataclass_transform (PEP 681), which cannot
+# express attrs' slots=True default.  Without an explicit slots=True, ty does not
+# see that a field overrides an abstract property, and reports the class as abstract.
+ATTRS_SLOTS_CHECK_PATHS = (SRC_PATH, Path("test_mecfs_bio"), Path("experiments"))
+BARE_ATTRS_DECORATOR_PATTERN = re.compile(
+    r"^\s*@(attrs\.)?(frozen|define|mutable)\b(?!\(.*\bslots=)", re.MULTILINE
+)
+
+
+@task
+def check_attrs_slots(c):
+    """
+    Verify that every attrs frozen/define decorator passes slots explicitly.
+
+    Works around https://github.com/astral-sh/ty/issues/4591
+    """
+    print("Checking that attrs decorators pass slots explicitly...")
+    offenders = [
+        f"{path}:{text.count(chr(10), 0, match.start()) + 1}"
+        for root in ATTRS_SLOTS_CHECK_PATHS
+        for path in sorted(root.rglob("*.py"))
+        for text in [path.read_text()]
+        for match in BARE_ATTRS_DECORATOR_PATTERN.finditer(text)
+    ]
+    if offenders:
+        print("ERROR: use @frozen(slots=True) / @define(slots=True) at:")
+        for offender in offenders:
+            print(f"  {offender}")
+        sys.exit(1)
+    else:
+        print("OK: all attrs decorators pass slots explicitly.")
+
+
 @task
 def check_all_links(c):
     """
@@ -409,6 +443,7 @@ def lint_actions(c):
         check_local_links,
         fix_table_trailing_newlines,
         checkimports,
+        check_attrs_slots,
         # fix_init_files,
         typecheck,
         lint_actions,

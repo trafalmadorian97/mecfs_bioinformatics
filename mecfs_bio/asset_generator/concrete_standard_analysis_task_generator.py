@@ -98,12 +98,12 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 
-@frozen
+@frozen(slots=True)
 class ManhattanPlotSettings:
     anno_mode: AnnoMode = None
 
 
-@frozen
+@frozen(slots=True)
 class StandardAnalysisTaskGroup:
     """
     Collection of standard analysis tasks for GWAS summary statistics.
@@ -356,7 +356,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     )
 
 
-@frozen
+@frozen(slots=True)
 class StandardAnalysisTaskGroupAddRSIDS:
     """
     Collection to tasks to assign rsids to GWAS data, then apply standard analysis techniques.

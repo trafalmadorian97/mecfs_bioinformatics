@@ -56,7 +56,7 @@ _VARIANT_KEY_COLUMNS = [
 GenomeBuildMode = Literal["infer", "19", "38"]
 
 
-@frozen
+@frozen(slots=True)
 class GWASLabColumnSpecifiers:
     rsid: str | None = None
     snpid: str | None = None
@@ -151,7 +151,7 @@ def _get_sumstats(
     )
 
 
-@frozen
+@frozen(slots=True)
 class GWASLabCreateSumstatsTask(Task):
     """
     Task that processes a DataFrame of GWAS summary statistics using the GWASLab pipeline.
@@ -240,7 +240,7 @@ def _sumstats_raise_on_error(sumstats: gl.Sumstats):
         raise ValueError("No rows survive GWASLAB quality control!")
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabTransformSpec:
     basic_check: bool = True
     genome_build: GenomeBuildMode = "infer"

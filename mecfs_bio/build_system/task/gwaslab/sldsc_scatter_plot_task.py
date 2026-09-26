@@ -20,7 +20,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
-@frozen
+@frozen(slots=True)
 class SLDSCScatterPlotTask(Task):
     """
     Generate a plot from the resulting of applying S-LDSC to GWAS summary statistics

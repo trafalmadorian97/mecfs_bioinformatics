@@ -54,7 +54,7 @@ from mecfs_bio.util.type_related.unwrap import unwrap
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class SNPHeritabilityByLDSCTask(Task):
     meta: Meta
     source_sumstats_task: Task

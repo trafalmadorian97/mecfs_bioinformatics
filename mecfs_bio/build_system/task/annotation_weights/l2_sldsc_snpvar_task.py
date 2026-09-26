@@ -142,7 +142,7 @@ DEFAULT_L2_SLDSC_ALPHAS: tuple[float, ...] = tuple(
 )
 
 
-@frozen
+@frozen(slots=True)
 class _ParityFit:
     """Everything fit on one parity's chromosomes; it scores the other parity."""
 
@@ -155,7 +155,7 @@ class _ParityFit:
     n_regression_variants: int
 
 
-@frozen
+@frozen(slots=True)
 class L2RegularizedSldscSnpvarTask(Task):
     meta: Meta
     sumstats_task: Task

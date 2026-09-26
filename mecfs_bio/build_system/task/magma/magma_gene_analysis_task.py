@@ -38,7 +38,7 @@ SynonymMode = Literal["skip", "drop", "drop-dup"]
 DuplicateMode = Literal["first", "last", "error"]
 
 
-@frozen
+@frozen(slots=True)
 class MagmaGeneAnalysisTask(Task):
     meta: Meta
     magma_binary_task: Task

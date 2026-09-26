@@ -41,7 +41,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class JoinDataFramesTask(Task):
     """
     Task to load to dataframes, join them, and then write out the resulting dataframe.

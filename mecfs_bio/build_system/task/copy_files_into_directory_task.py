@@ -15,14 +15,14 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class CopySource:
     task: Task
     suffix: str | None = None
     name_in_dir: str | None = None
 
 
-@frozen
+@frozen(slots=True)
 class CopyFilesIntoDirectoryTask(Task):
     sources: list[CopySource]
     meta: Meta

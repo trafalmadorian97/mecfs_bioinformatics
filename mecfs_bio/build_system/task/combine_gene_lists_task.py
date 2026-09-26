@@ -30,7 +30,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 ENSEMBL_ID_LABEL = "Ensembl ID"
 
 
-@frozen
+@frozen(slots=True)
 class SrcGeneList:
     task: Task
     name: str
@@ -38,7 +38,7 @@ class SrcGeneList:
     pipe: DataProcessingPipe = IdentityPipe()
 
 
-@frozen
+@frozen(slots=True)
 class CombineGeneListsTask(Task):
     """
     Task to aggregate gene lists from multiple sources

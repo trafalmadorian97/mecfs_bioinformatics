@@ -54,7 +54,7 @@ def _make_source_task() -> FakeTask:
     )
 
 
-@frozen
+@frozen(slots=True)
 class _FileFetch(Fetch):
     path: Path
 

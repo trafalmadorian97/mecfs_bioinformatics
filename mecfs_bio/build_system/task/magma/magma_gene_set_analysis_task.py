@@ -27,7 +27,7 @@ logger = structlog.get_logger()
 GENE_SET_ANALYSIS_OUTPUT_STEM_NAME = "gene_set_analysis_output"
 
 
-@frozen
+@frozen(slots=True)
 class DirectoryGeneSetSpec:
     gene_set_task: Task
     path_in_dir: PurePath
@@ -36,7 +36,7 @@ class DirectoryGeneSetSpec:
 SetOrCovar = Literal["set", "covar"]
 
 
-@frozen()
+@frozen(slots=True)
 class ModelParams:
     direction_covar: str | None
     condition_hide: Sequence[str]
@@ -57,7 +57,7 @@ class ModelParams:
         return result
 
 
-@frozen
+@frozen(slots=True)
 class MagmaGeneSetAnalysisTask(Task):
     """
     The final step in the canonical MAGMA pipeline.

@@ -9,7 +9,7 @@ from attrs import frozen
 from mecfs_bio.build_system.asset.base_asset import Asset
 
 
-@frozen
+@frozen(slots=True)
 class FileAsset(Asset):
     """
     A materialized file output of a Task.

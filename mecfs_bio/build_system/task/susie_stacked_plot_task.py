@@ -57,7 +57,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
-@frozen
+@frozen(slots=True)
 class BinOptions:
     num_bins: int
 
@@ -83,14 +83,14 @@ seaborn_rocket_cmap = sns.color_palette("rocket", n_colors=256)
 _matplotlib_rocket_cmap = ListedColormap(seaborn_rocket_cmap)
 
 
-@frozen
+@frozen(slots=True)
 class RegionSelectOverride:
     chrom: int
     start: int
     end: int
 
 
-@frozen
+@frozen(slots=True)
 class RegionSelectDefault:
     pass
 
@@ -119,14 +119,14 @@ def get_region(mode: RegionSelect, susie_output_path: Path) -> tuple[int, int, i
 HeatMapPlotMode = Literal["ld2", "ld_abs"]
 
 
-@frozen
+@frozen(slots=True)
 class HeatmapOptions:
     heatmap_bin_options: BinOptions | None
     mode: HeatMapPlotMode
     cmap: str | ListedColormap = "plasma"
 
 
-@frozen
+@frozen(slots=True)
 class SusieStackPlotTask(Task):
     """
     Create a plot to illustrate the results of a SUSIE run on a given locus.

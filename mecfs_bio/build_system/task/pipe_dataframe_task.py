@@ -36,7 +36,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class PipeDataFrameTask(Task):
     source_data_task: Task
     pipes: Sequence[DataProcessingPipe]

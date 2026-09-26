@@ -30,7 +30,7 @@ from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
     """
     Task to prune a gene specificity matrix to include only the gene-property/gene-covariates that

@@ -32,13 +32,13 @@ BIVARIATE_COMBINED_FIT_FILENAME_PREFIX = "mixer_bivariate.fit"
 BIVARIATE_COMBINED_TEST_FILENAME_PREFIX = "mixer_bivariate.test"
 
 
-@frozen
+@frozen(slots=True)
 class BivariateMixerRunSource:
     task: BivariateMixerTask
     rep: int
 
 
-@frozen
+@frozen(slots=True)
 class MixerBivariateCombine(Task):
     """
     Task to combine Bivariate MiXeR run outputs to produce a single result.

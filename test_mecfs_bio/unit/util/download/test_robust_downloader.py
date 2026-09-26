@@ -8,7 +8,7 @@ from mecfs_bio.util.download.verify import calc_md5_checksum
 _TRUE_FILE_CONTENTS = "ABC"
 
 
-@attrs.define
+@attrs.define(slots=True)
 class FakeDownloader(Downloader):
     """
     Simulate a download that fails outright once,

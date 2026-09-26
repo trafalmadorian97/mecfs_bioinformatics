@@ -35,7 +35,7 @@ from mecfs_bio.util.gene_set.msigdb_lookup import apply_spec_mask
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class PrepareGeneSetsForMagmaTask(Task):
     """
     Reads MSigDB gene sets from a parquet database and writes a MAGMA

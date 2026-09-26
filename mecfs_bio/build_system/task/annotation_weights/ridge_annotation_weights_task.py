@@ -75,7 +75,7 @@ _JOIN_KEYS = [POLYFUN_CHR_COL, POLYFUN_BP_COL, POLYFUN_A1_COL, POLYFUN_A2_COL]
 _DEFAULT_ALPHAS: tuple[float, ...] = (0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0)
 
 
-@frozen
+@frozen(slots=True)
 class RidgeAnnotationWeightsTask(Task):
     meta: Meta
     annotation_parquet_task: Task

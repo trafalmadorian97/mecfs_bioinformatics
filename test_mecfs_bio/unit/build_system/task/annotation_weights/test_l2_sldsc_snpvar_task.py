@@ -73,7 +73,7 @@ _KEY = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class _Fixture:
     task: L2RegularizedSldscSnpvarTask
     ldscore_dir: Path

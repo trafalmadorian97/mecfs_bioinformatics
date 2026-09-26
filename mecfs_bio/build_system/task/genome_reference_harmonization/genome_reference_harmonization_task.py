@@ -151,7 +151,7 @@ def chromosomes_to_harmonize(
     return kept
 
 
-@frozen
+@frozen(slots=True)
 class ParquetPanelLoader:
     """Reads one chromosome's panel rows at requested positions from the panel parquet."""
 
@@ -326,7 +326,7 @@ def resolve_harmonized_build(fasta_task: Task, panel_task: Task) -> GenomeBuild:
     return fasta_meta.build
 
 
-@frozen
+@frozen(slots=True)
 class GenomeReferenceHarmonizationTask(Task):
     meta: FilteredGWASDataMeta
     sumstats_task: Task

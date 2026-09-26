@@ -31,7 +31,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabRegionPlotTargetLocusTask(Task):
     """
     A task to generate region plots around arbitrary locus in genome.

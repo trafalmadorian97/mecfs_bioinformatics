@@ -107,7 +107,7 @@ def read_ld_scores(dir_path: Path) -> narwhals.LazyFrame:
     )
 
 
-@frozen
+@frozen(slots=True)
 class ConsolidateLDScoresTask(Task):
     """
     Task to read LD scores in the standard format defined by the authors of LD score regression,

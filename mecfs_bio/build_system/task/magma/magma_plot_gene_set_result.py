@@ -28,7 +28,7 @@ logger = structlog.get_logger()
 MAGMA_GENE_SET_PLOT_NAME = "magma_gene_set_plot"
 
 
-@frozen
+@frozen(slots=True)
 class MAGMAPlotGeneSetResult(Task):
     meta: Meta
     gene_set_analysis_task: Task

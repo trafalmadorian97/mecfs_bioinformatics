@@ -34,7 +34,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabSumstatsToTableTask(Task):
     """
     Task to write a sumstats object to a plain table for further processing.

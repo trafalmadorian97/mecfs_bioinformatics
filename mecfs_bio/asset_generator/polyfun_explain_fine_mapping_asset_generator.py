@@ -112,7 +112,7 @@ from mecfs_bio.constants.polyfun_constants import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class PolyfunPriorSource:
     """Where the polyfun SUSIE run's per-variant prior comes from."""
 
@@ -194,7 +194,7 @@ PRECOMPUTED_POLYFUN_PRIOR_SOURCE = PolyfunPriorSource.with_shared_explanation_we
 )
 
 
-@frozen
+@frozen(slots=True)
 class RunConfig:
     """One SUSIE parameterization applied to both members of a matched pair."""
 
@@ -213,7 +213,7 @@ RUN_CONFIGS: tuple[RunConfig, ...] = (
 )
 
 
-@frozen
+@frozen(slots=True)
 class SharedFineMapInputs:
     """Per-locus inputs shared by every run config's matched pair."""
 
@@ -232,7 +232,7 @@ class SharedFineMapInputs:
     prior_source: PolyfunPriorSource = PRECOMPUTED_POLYFUN_PRIOR_SOURCE
 
 
-@frozen
+@frozen(slots=True)
 class PolyfunExplainGroup:
     """A matched uniform/polyfun SUSIE pair plus the tasks explaining it.
 
@@ -259,7 +259,7 @@ class PolyfunExplainGroup:
     label: str
 
 
-@frozen
+@frozen(slots=True)
 class PolyfunExplainOuterGroup:
     """All matched pairs (one per run config) for a single locus, plus the two
     UpSet plots comparing the polyfun runs' credible-set variants across the four

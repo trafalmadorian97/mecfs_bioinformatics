@@ -57,7 +57,7 @@ from mecfs_bio.constants.ppp_ldsc_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class PppRgTasks:
     rg_task: Task
     display_frame_task: Task
