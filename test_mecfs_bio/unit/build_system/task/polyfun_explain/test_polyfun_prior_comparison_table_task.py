@@ -11,12 +11,15 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
     SecondaryPositionFromSnpid,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_table_task import (
+    PolyfunPriorComparisonTableTask,
+)
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_variants import (
     CS_PF_EXT_COL,
     CS_U_COL,
     LIFT_EXT_COL,
     LIFT_INT_COL,
     PIP_PF_INT_COL,
-    PolyfunPriorComparisonTableTask,
+    PriorComparisonRuns,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from test_mecfs_bio.unit.build_system.task.polyfun_explain.test_polyfun_explain_contrast_task import (
@@ -30,11 +33,13 @@ def test_table_rows_are_credible_set_union_with_lifts(tmp_path: Path):
     inputs = build_synthetic_explain_inputs(tmp_path)
     task = PolyfunPriorComparisonTableTask.create(
         asset_id="table",
-        susie_uniform_task=inputs.uni_task,
-        external_prior_susie_task=inputs.pf_task,
-        external_prior_contrast_task=inputs.contrast_task,
-        internal_prior_susie_task=inputs.pf_task,
-        internal_prior_contrast_task=inputs.contrast_task,
+        runs=PriorComparisonRuns(
+            susie_uniform_task=inputs.uni_task,
+            external_prior_susie_task=inputs.pf_task,
+            external_prior_contrast_task=inputs.contrast_task,
+            internal_prior_susie_task=inputs.pf_task,
+            internal_prior_contrast_task=inputs.contrast_task,
+        ),
         secondary_position=SecondaryPositionFromSnpid(build_label="hg38"),
     )
     fetch_map = dict(inputs.fetch_map)

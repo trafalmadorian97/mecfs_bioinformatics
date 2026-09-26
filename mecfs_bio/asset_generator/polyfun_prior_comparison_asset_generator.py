@@ -47,6 +47,12 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task impor
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_table_task import (
     PolyfunPriorComparisonTableTask,
 )
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_variants import (
+    PriorComparisonRuns,
+)
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_lift_scatter_task import (
+    PolyfunPriorLiftScatterTask,
+)
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 EXTERNAL_PRIOR_LABEL = "external prior"
@@ -66,6 +72,9 @@ class PolyfunPriorComparisonGroup:
     # Credible-set numbers, PIPs, and prior lifts of all three runs, one row per
     # credible-set variant of any run.
     table: Task
+    # Interactive (html) scatter of the two priors' lifts over every locus
+    # variant.
+    lift_scatter: Task
 
 
 @frozen(slots=True)
@@ -75,7 +84,11 @@ class PolyfunPriorComparisonOuterGroup:
     groups: list[PolyfunPriorComparisonGroup]
 
     def terminal_tasks(self) -> list[Task]:
-        return [task for g in self.groups for task in (g.plot_png, g.plot_svg, g.table)]
+        return [
+            task
+            for g in self.groups
+            for task in (g.plot_png, g.plot_svg, g.table, g.lift_scatter)
+        ]
 
     @cached_property
     def groups_by_label(self) -> Mapping[str, PolyfunPriorComparisonGroup]:
@@ -95,8 +108,9 @@ def generate_polyfun_prior_comparison_group(
     secondary_position: SecondaryPositionFromSnpid | None = None,
 ) -> PolyfunPriorComparisonGroup:
     """Build the comparison tasks for one run config: a stacked plot with PIP
-    rows for the uniform, external-prior, and internal-prior runs, and a table of
-    the three runs' credible sets, PIPs, and prior lifts.
+    rows for the uniform, external-prior, and internal-prior runs, a table of
+    the three runs' credible sets, PIPs, and prior lifts, and an interactive
+    scatter of the two priors' lifts.
 
     secondary_position, when given, adds a build-labelled secondary position
     column (e.g. pos_hg38) to the table, parsed from the uniform run's SNPIDs."""
@@ -133,17 +147,30 @@ def generate_polyfun_prior_comparison_group(
         path_inside_directory=PurePath(PLOT_SVG_FILENAME),
         extension=".svg",
     )
-    table = PolyfunPriorComparisonTableTask.create(
-        asset_id=f"{stem}_prior_comparison_table",
+    runs = PriorComparisonRuns(
         susie_uniform_task=susie_uniform,
         external_prior_susie_task=external_prior_susie,
         external_prior_contrast_task=external_prior_contrast,
         internal_prior_susie_task=internal_prior_susie,
         internal_prior_contrast_task=internal_prior_contrast,
+    )
+    table = PolyfunPriorComparisonTableTask.create(
+        asset_id=f"{stem}_prior_comparison_table",
+        runs=runs,
+        secondary_position=secondary_position,
+    )
+    lift_scatter = PolyfunPriorLiftScatterTask.create(
+        asset_id=f"{stem}_prior_lift_scatter",
+        runs=runs,
         secondary_position=secondary_position,
     )
     return PolyfunPriorComparisonGroup(
-        label=label, plot=plot, plot_png=plot_png, plot_svg=plot_svg, table=table
+        label=label,
+        plot=plot,
+        plot_png=plot_png,
+        plot_svg=plot_svg,
+        table=table,
+        lift_scatter=lift_scatter,
     )
 
 
