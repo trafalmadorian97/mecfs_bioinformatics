@@ -35,11 +35,17 @@ from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
+    SecondaryPositionFromSnpid,
+)
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task import (
     PLOT_PNG_FILENAME,
     PLOT_SVG_FILENAME,
     PolyfunExplainPlotTask,
     PriorRun,
+)
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_table_task import (
+    PolyfunPriorComparisonTableTask,
 )
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
@@ -57,6 +63,9 @@ class PolyfunPriorComparisonGroup:
     # so docs can include either figure format on its own.
     plot_png: Task
     plot_svg: Task
+    # Credible-set numbers, PIPs, and prior lifts of all three runs, one row per
+    # credible-set variant of any run.
+    table: Task
 
 
 @frozen(slots=True)
@@ -66,7 +75,7 @@ class PolyfunPriorComparisonOuterGroup:
     groups: list[PolyfunPriorComparisonGroup]
 
     def terminal_tasks(self) -> list[Task]:
-        return [task for g in self.groups for task in (g.plot_png, g.plot_svg)]
+        return [task for g in self.groups for task in (g.plot_png, g.plot_svg, g.table)]
 
     @cached_property
     def groups_by_label(self) -> Mapping[str, PolyfunPriorComparisonGroup]:
@@ -83,9 +92,14 @@ def generate_polyfun_prior_comparison_group(
     internal_prior_contrast: Task,
     gene_info_task: Task = MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
     genome_build: GenomeBuild = "19",
+    secondary_position: SecondaryPositionFromSnpid | None = None,
 ) -> PolyfunPriorComparisonGroup:
     """Build the comparison tasks for one run config: a stacked plot with PIP
-    rows for the uniform, external-prior, and internal-prior runs."""
+    rows for the uniform, external-prior, and internal-prior runs, and a table of
+    the three runs' credible sets, PIPs, and prior lifts.
+
+    secondary_position, when given, adds a build-labelled secondary position
+    column (e.g. pos_hg38) to the table, parsed from the uniform run's SNPIDs."""
     stem = f"{base_name}_{label}"
     plot = PolyfunExplainPlotTask.create(
         asset_id=f"{stem}_prior_comparison_plot",
@@ -119,8 +133,17 @@ def generate_polyfun_prior_comparison_group(
         path_inside_directory=PurePath(PLOT_SVG_FILENAME),
         extension=".svg",
     )
+    table = PolyfunPriorComparisonTableTask.create(
+        asset_id=f"{stem}_prior_comparison_table",
+        susie_uniform_task=susie_uniform,
+        external_prior_susie_task=external_prior_susie,
+        external_prior_contrast_task=external_prior_contrast,
+        internal_prior_susie_task=internal_prior_susie,
+        internal_prior_contrast_task=internal_prior_contrast,
+        secondary_position=secondary_position,
+    )
     return PolyfunPriorComparisonGroup(
-        label=label, plot=plot, plot_png=plot_png, plot_svg=plot_svg
+        label=label, plot=plot, plot_png=plot_png, plot_svg=plot_svg, table=table
     )
 
 
@@ -130,6 +153,7 @@ def generate_assets_polyfun_prior_comparison(
     internal_prior: PolyfunExplainOuterGroup,
     gene_info_task: Task = MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
     genome_build: GenomeBuild = "19",
+    secondary_position: SecondaryPositionFromSnpid | None = None,
 ) -> PolyfunPriorComparisonOuterGroup:
     """Build one comparison group per run config shared by the two outer groups,
     which must come from the same locus and inputs, differing only in prior.
@@ -149,6 +173,7 @@ def generate_assets_polyfun_prior_comparison(
             internal=internal_prior.groups_by_label[external.label],
             gene_info_task=gene_info_task,
             genome_build=genome_build,
+            secondary_position=secondary_position,
         )
         for external in external_prior.groups
     ]
@@ -161,6 +186,7 @@ def _comparison_group_for_config(
     internal: PolyfunExplainGroup,
     gene_info_task: Task,
     genome_build: GenomeBuild,
+    secondary_position: SecondaryPositionFromSnpid | None,
 ) -> PolyfunPriorComparisonGroup:
     assert external.label == internal.label
     return generate_polyfun_prior_comparison_group(
@@ -173,4 +199,5 @@ def _comparison_group_for_config(
         internal_prior_contrast=internal.contrast,
         gene_info_task=gene_info_task,
         genome_build=genome_build,
+        secondary_position=secondary_position,
     )

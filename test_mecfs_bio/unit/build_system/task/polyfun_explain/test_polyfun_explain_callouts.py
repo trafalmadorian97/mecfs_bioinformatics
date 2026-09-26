@@ -6,11 +6,11 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
     FAMILY_COL,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
-    _CS_NUMBER_COL,
+    CS_NUMBER_COL,
     FAMILY_CONTRAST_COL,
     _callout_families,
     _format_callout_label,
-    _load_cs_numbers,
+    load_cs_numbers,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
@@ -89,7 +89,7 @@ def test_callout_families_skips_degenerate_sd():
 
 def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path):
     # A SUSIE run that finds no credible set writes an empty combined_cs whose
-    # parquet key columns default to Float64. _load_cs_numbers must still return
+    # parquet key columns default to Float64. load_cs_numbers must still return
     # canonical Int64 keys (+ a cs_number column) so union_keys/joins line up
     # with runs that did find a credible set.
     pl.DataFrame(
@@ -100,10 +100,10 @@ def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path):
             GWASLAB_NON_EFFECT_ALLELE_COL: pl.String,
         }
     ).write_parquet(tmp_path / COMBINED_CS_FILENAME)
-    out = _load_cs_numbers(tmp_path)
+    out = load_cs_numbers(tmp_path)
     assert out.schema[GWASLAB_CHROM_COL] == pl.Int64
     assert out.schema[GWASLAB_POS_COL] == pl.Int64
-    assert _CS_NUMBER_COL in out.columns
+    assert CS_NUMBER_COL in out.columns
 
 
 def test_format_label_with_and_without_families():

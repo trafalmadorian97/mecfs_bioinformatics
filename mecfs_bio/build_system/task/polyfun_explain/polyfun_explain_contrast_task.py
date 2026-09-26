@@ -20,7 +20,6 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
-from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
@@ -30,7 +29,7 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
     ANNOTATION_COL,
     FAMILY_COL,
     GAMMA_RAW_COL,
-    WEIGHTS_PARQUET_FILENAME,
+    load_annotation_weights,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
@@ -139,17 +138,17 @@ _ANNOT_BP_COL = "BP"
 _ANNOT_A1_COL = "A1"
 _ANNOT_A2_COL = "A2"
 
-_KEY = [
+VARIANT_KEY = [
     GWASLAB_CHROM_COL,
     GWASLAB_POS_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
 ]
-_CS_NUMBER_COL = "cs_number"
+CS_NUMBER_COL = "cs_number"
 # Canonical key dtypes. A SUSIE run that finds no credible sets writes an empty
 # combined_cs whose parquet columns default to Float64; without this the empty
 # frame's CHR (f64) would poison the union_keys concat and break the i64 join in
-# _contrasts. Casting every keyed frame to these types keeps all _KEY joins
+# _contrasts. Casting every keyed frame to these types keeps all VARIANT_KEY joins
 # consistent regardless of whether a run found a credible set.
 _KEY_SCHEMA: dict[str, pl.DataType] = {
     GWASLAB_CHROM_COL: pl.Int64(),
@@ -163,7 +162,7 @@ _KEY_SCHEMA: dict[str, pl.DataType] = {
 
 # Internal name for the parsed secondary position before it is renamed to its
 # build-labelled display name (e.g. pos_hg38).
-_SECONDARY_POS_COL = "secondary_pos"
+SECONDARY_POS_COL = "secondary_pos"
 
 
 @frozen(slots=True)
@@ -211,12 +210,12 @@ class PolyfunExplainContrastTask(Task):
         uni_dir = _dir(fetch, self.susie_uniform_task)
         pf_dir = _dir(fetch, self.susie_polyfun_task)
 
-        uni_variants = _load_run_variants(uni_dir, self.secondary_position)
-        pf_variants = _load_run_variants(pf_dir, self.secondary_position)
+        uni_variants = load_run_variants(uni_dir, self.secondary_position)
+        pf_variants = load_run_variants(pf_dir, self.secondary_position)
         pf_prior = pl.read_parquet(pf_dir / PRIOR_FILENAME)
 
         # The secondary display position (e.g. pos_hg38) is 1:1 with the hg19
-        # _KEY, so either run supplies it; coalescing across both covers variants
+        # VARIANT_KEY, so either run supplies it; coalescing across both covers variants
         # that are in only one run's credible sets.
         secondary_pos_col: str | None = None
         secondary_map: pl.DataFrame | None = None
@@ -224,13 +223,13 @@ class PolyfunExplainContrastTask(Task):
             secondary_pos_col = f"pos_{self.secondary_position.build_label}"
             secondary_map = pl.concat(
                 [
-                    pf_variants.select(*_KEY, _SECONDARY_POS_COL),
-                    uni_variants.select(*_KEY, _SECONDARY_POS_COL),
+                    pf_variants.select(*VARIANT_KEY, SECONDARY_POS_COL),
+                    uni_variants.select(*VARIANT_KEY, SECONDARY_POS_COL),
                 ],
                 how="vertical",
-            ).unique(subset=_KEY, keep="first")
+            ).unique(subset=VARIANT_KEY, keep="first")
 
-        weights = _load_weights(fetch, self.ridge_weights_task)
+        weights = load_annotation_weights(fetch, self.ridge_weights_task)
         annot_cols = weights[ANNOTATION_COL].to_list()
         gamma = dict(zip(weights[ANNOTATION_COL], weights[GAMMA_RAW_COL]))
         family = dict(zip(weights[ANNOTATION_COL], weights[FAMILY_COL]))
@@ -245,7 +244,7 @@ class PolyfunExplainContrastTask(Task):
         # abar_c: uniform PIP-weighted mean of each annotation over all uniform vars.
         # If the uniform run found no signal (all PIPs ~0), fall back to an
         # unweighted mean so every locus variant contributes equally.
-        uni_annot = uni_variants.join(annot, on=_KEY, how="inner")
+        uni_annot = uni_variants.join(annot, on=VARIANT_KEY, how="inner")
         w = uni_annot[PIP_COLUMN].to_numpy()
         if w.sum() <= 0.0:
             w = None
@@ -260,13 +259,13 @@ class PolyfunExplainContrastTask(Task):
         pf_variants = pf_variants.with_columns(pl.Series(name=DISP_LIFT, values=lift))
 
         # attribution row set: union of the two runs' credible-set variants.
-        cs_pf = _load_cs_numbers(pf_dir)
-        cs_u = _load_cs_numbers(uni_dir)
+        cs_pf = load_cs_numbers(pf_dir)
+        cs_u = load_cs_numbers(uni_dir)
         union_keys = pl.concat(
-            [cs_pf.select(_KEY), cs_u.select(_KEY)], how="vertical"
+            [cs_pf.select(VARIANT_KEY), cs_u.select(VARIANT_KEY)], how="vertical"
         ).unique()
 
-        pf_annot = pf_variants.join(annot, on=_KEY, how="inner")
+        pf_annot = pf_variants.join(annot, on=VARIANT_KEY, how="inner")
 
         per_annot, per_family = _contrasts(
             pf_annot, union_keys, annot_cols, gamma, family, abar
@@ -278,7 +277,7 @@ class PolyfunExplainContrastTask(Task):
         )
 
         focal = pf_variants.sort(PIP_COLUMN, descending=True).head(1)
-        focal_key = {k: focal[k][0] for k in _KEY}
+        focal_key = {k: focal[k][0] for k in VARIANT_KEY}
         focal_families = _select_families(
             per_family, focal_key, self.n_important_families
         )
@@ -305,7 +304,7 @@ class PolyfunExplainContrastTask(Task):
 
         per_annot.write_parquet(scratch_dir / PER_ANNOTATION_CONTRAST_FILENAME)
         per_family.write_parquet(scratch_dir / PER_FAMILY_CONTRAST_FILENAME)
-        pf_variants.select(*_KEY, DISP_LIFT).write_parquet(
+        pf_variants.select(*VARIANT_KEY, DISP_LIFT).write_parquet(
             scratch_dir / PRIOR_LIFT_FILENAME
         )
         top_line.write_parquet(scratch_dir / TOP_LINE_DISPLAY_TABLE_FILENAME)
@@ -376,14 +375,14 @@ def _dir(fetch: Fetch, task: Task) -> Path:
     return asset.path
 
 
-def _load_run_variants(
+def load_run_variants(
     run_dir: Path, secondary_position: SecondaryPositionFromSnpid | None = None
 ) -> pl.DataFrame:
     """filtered_gwas keyed rows + the run's PIP, in the same order. The rows carry
-    _KEY (CHR, POS, EA, NEA), which the annotation matrix is joined on directly.
+    VARIANT_KEY (CHR, POS, EA, NEA), which the annotation matrix is joined on directly.
     When a secondary-position config is given, the SNPID column is also read and its
-    position field parsed into _SECONDARY_POS_COL."""
-    select_cols = list(_KEY)
+    position field parsed into SECONDARY_POS_COL."""
+    select_cols = list(VARIANT_KEY)
     if secondary_position is not None:
         select_cols.append(secondary_position.snpid_col)
     gwas = (
@@ -401,7 +400,7 @@ def _load_run_variants(
 def _add_secondary_position(
     variants: pl.DataFrame, cfg: SecondaryPositionFromSnpid
 ) -> pl.DataFrame:
-    """Parse cfg's SNPID position field into an integer _SECONDARY_POS_COL and
+    """Parse cfg's SNPID position field into an integer SECONDARY_POS_COL and
     drop the SNPID column. Fails fast if any SNPID does not yield an integer at
     that field, since a silently null secondary position would mislabel the
     display table."""
@@ -410,9 +409,9 @@ def _add_secondary_position(
         .str.split(":")
         .list.get(cfg.position_field_index, null_on_oob=True)
         .cast(pl.Int64, strict=False)
-        .alias(_SECONDARY_POS_COL)
+        .alias(SECONDARY_POS_COL)
     ).drop(cfg.snpid_col)
-    n_null = parsed[_SECONDARY_POS_COL].null_count()
+    n_null = parsed[SECONDARY_POS_COL].null_count()
     if n_null:
         raise ValueError(
             f"{n_null} SNPID value(s) in column {cfg.snpid_col!r} did not yield an "
@@ -422,30 +421,19 @@ def _add_secondary_position(
     return parsed
 
 
-def _load_cs_numbers(run_dir: Path) -> pl.DataFrame:
+def load_cs_numbers(run_dir: Path) -> pl.DataFrame:
     """One row per credible-set variant with its 1-based L-index (lowest if many)."""
     cs = pl.read_parquet(run_dir / COMBINED_CS_FILENAME)
     if cs.height == 0:
-        return pl.DataFrame(schema={**_KEY_SCHEMA, _CS_NUMBER_COL: pl.Int32()})
+        return pl.DataFrame(schema={**_KEY_SCHEMA, CS_NUMBER_COL: pl.Int32()})
     return (
         cs.with_columns(
             *(pl.col(k).cast(dt) for k, dt in _KEY_SCHEMA.items()),
-            pl.col(CS_COLUMN).str.replace("L", "").cast(pl.Int32).alias(_CS_NUMBER_COL),
+            pl.col(CS_COLUMN).str.replace("L", "").cast(pl.Int32).alias(CS_NUMBER_COL),
         )
-        .group_by(_KEY)
-        .agg(pl.col(_CS_NUMBER_COL).min())
+        .group_by(VARIANT_KEY)
+        .agg(pl.col(CS_NUMBER_COL).min())
     )
-
-
-def _load_weights(fetch: Fetch, task: Task) -> pl.DataFrame:
-    asset = fetch(task.asset_id)
-    assert isinstance(asset, (FileAsset, DirectoryAsset))
-    path = (
-        asset.path
-        if isinstance(asset, FileAsset)
-        else asset.path / WEIGHTS_PARQUET_FILENAME
-    )
-    return pl.read_parquet(path)
 
 
 def _load_annotations(
@@ -471,7 +459,7 @@ def _load_annotations(
     )
     # Map the annotation's (BP, A1, A2) onto the run's key (POS, NEA, EA): the
     # annotation A1 is the reference allele (A1 == REF == gwas NEA), so A1 -> NEA
-    # and A2 -> EA. The result then joins to a run's variants on the exact _KEY.
+    # and A2 -> EA. The result then joins to a run's variants on the exact VARIANT_KEY.
     result = frame.rename(
         {
             _ANNOT_BP_COL: GWASLAB_POS_COL,
@@ -496,7 +484,7 @@ def _assert_annotation_keys_unique(
     annotation slice itself, rather than on a join result, localizes the cause.
     """
     n_rows = annot.height
-    n_unique = annot.select(_KEY).n_unique()
+    n_unique = annot.select(VARIANT_KEY).n_unique()
     if n_unique != n_rows:
         raise ValueError(
             f"Annotation source has {n_rows - n_unique} duplicate "
@@ -515,9 +503,12 @@ def _contrasts(
     family: dict[str, str],
     abar: dict[str, float],
 ) -> tuple[pl.DataFrame, pl.DataFrame]:
-    rows = pf_annot.join(union_keys, on=_KEY, how="inner")
+    rows = pf_annot.join(union_keys, on=VARIANT_KEY, how="inner")
     long = rows.unpivot(
-        on=annot_cols, index=_KEY, variable_name=ANNOTATION_COL, value_name="a_ic"
+        on=annot_cols,
+        index=VARIANT_KEY,
+        variable_name=ANNOTATION_COL,
+        value_name="a_ic",
     ).with_columns(
         (
             pl.col(ANNOTATION_COL).replace_strict(gamma)
@@ -525,11 +516,11 @@ def _contrasts(
         ).alias(CONTRAST_COL),
         pl.col(ANNOTATION_COL).replace_strict(family).alias(FAMILY_COL),
     )
-    per_annotation = long.select(*_KEY, ANNOTATION_COL, FAMILY_COL, CONTRAST_COL)
+    per_annotation = long.select(*VARIANT_KEY, ANNOTATION_COL, FAMILY_COL, CONTRAST_COL)
     per_family = (
-        long.group_by([*_KEY, FAMILY_COL])
+        long.group_by([*VARIANT_KEY, FAMILY_COL])
         .agg(pl.col(CONTRAST_COL).sum().alias(FAMILY_CONTRAST_COL))
-        .sort([*_KEY, FAMILY_COL])
+        .sort([*VARIANT_KEY, FAMILY_COL])
     )
     return per_annotation, per_family
 
@@ -542,15 +533,18 @@ def _family_scaled(
 ) -> pl.DataFrame:
     """Per variant per family: sum_c gamma_raw_c * a_ic (raw scaled value)."""
     long = pf_annot.unpivot(
-        on=annot_cols, index=_KEY, variable_name=ANNOTATION_COL, value_name="a_ic"
+        on=annot_cols,
+        index=VARIANT_KEY,
+        variable_name=ANNOTATION_COL,
+        value_name="a_ic",
     ).with_columns(
         (pl.col(ANNOTATION_COL).replace_strict(gamma) * pl.col("a_ic")).alias("scaled"),
         pl.col(ANNOTATION_COL).replace_strict(family).alias(FAMILY_COL),
     )
     return (
-        long.group_by([*_KEY, FAMILY_COL])
+        long.group_by([*VARIANT_KEY, FAMILY_COL])
         .agg(pl.col("scaled").sum().alias(FAMILY_SCALED_COL))
-        .sort([*_KEY, FAMILY_COL])
+        .sort([*VARIANT_KEY, FAMILY_COL])
     )
 
 
@@ -631,11 +625,11 @@ def _family_background_sd(
     over the uniform-run variants. Falls back to equal weights when the uniform
     run carried no signal (total PIP <= 0), matching the abar fallback."""
     fs = _family_scaled(uni_annot, annot_cols, gamma, family)
-    weight = uni_annot.select(*_KEY, pl.col(PIP_COLUMN).alias("w"))
+    weight = uni_annot.select(*VARIANT_KEY, pl.col(PIP_COLUMN).alias("w"))
     if uni_annot[PIP_COLUMN].sum() <= 0.0:
         weight = weight.with_columns(pl.lit(1.0).alias("w"))
     stats = (
-        fs.join(weight, on=_KEY, how="inner")
+        fs.join(weight, on=VARIANT_KEY, how="inner")
         .group_by(FAMILY_COL)
         .agg(
             (pl.col("w") * pl.col(FAMILY_SCALED_COL)).sum().alias("wx"),
@@ -670,13 +664,13 @@ def _build_callouts(
     whose families do not qualify) still gets a callout carrying just its
     identifier."""
     uni_pip = {
-        tuple(row[k] for k in _KEY): row[PIP_COLUMN]
-        for row in uni_variants.select(*_KEY, PIP_COLUMN).iter_rows(named=True)
+        tuple(row[k] for k in VARIANT_KEY): row[PIP_COLUMN]
+        for row in uni_variants.select(*VARIANT_KEY, PIP_COLUMN).iter_rows(named=True)
     }
     rows: list[dict] = []
     for row in top_variants.iter_rows(named=True):
-        focal_key = {k: row[k] for k in _KEY}
-        u = uni_pip.get(tuple(row[k] for k in _KEY), 0.0)
+        focal_key = {k: row[k] for k in VARIANT_KEY}
+        u = uni_pip.get(tuple(row[k] for k in VARIANT_KEY), 0.0)
         pip_pf = float(row[PIP_COLUMN])
         families = (
             _callout_families(per_family, focal_key, family_sd, _MAX_CALLOUT_FAMILIES)
@@ -685,8 +679,8 @@ def _build_callouts(
         )
         rows.append(
             {
-                **{k: focal_key[k] for k in _KEY},
-                CALLOUT_CS_COL: int(row[_CS_NUMBER_COL]),
+                **{k: focal_key[k] for k in VARIANT_KEY},
+                CALLOUT_CS_COL: int(row[CS_NUMBER_COL]),
                 CALLOUT_PIP_PF_COL: pip_pf,
                 CALLOUT_PIP_U_COL: float(u),
                 CALLOUT_LABEL_COL: _format_callout_label(focal_key, families),
@@ -701,16 +695,18 @@ def _select_top_variants(
     """The top variants of each polyfun credible set, for the per-variant
     annotation table. Within a set the max-PIP variant is always kept; any other
     variant is kept only if its polyfun PIP exceeds _TOP_VARIANT_PIP_FLOOR and is
-    within _TOP_VARIANT_PIP_GAP of the set's top PIP. Returns _KEY plus the
+    within _TOP_VARIANT_PIP_GAP of the set's top PIP. Returns VARIANT_KEY plus the
     credible-set number and polyfun PIP, ordered by (credible set, descending PIP)
     so the table's variant columns follow that order."""
-    cs = cs_pf.join(pf_variants.select(*_KEY, PIP_COLUMN), on=_KEY, how="inner")
+    cs = cs_pf.join(
+        pf_variants.select(*VARIANT_KEY, PIP_COLUMN), on=VARIANT_KEY, how="inner"
+    )
     if cs.height == 0:
         return pl.DataFrame(
-            schema={**_KEY_SCHEMA, _CS_NUMBER_COL: pl.Int32(), PIP_COLUMN: pl.Float64()}
+            schema={**_KEY_SCHEMA, CS_NUMBER_COL: pl.Int32(), PIP_COLUMN: pl.Float64()}
         )
     kept: list[pl.DataFrame] = []
-    for _, grp in cs.group_by(_CS_NUMBER_COL, maintain_order=True):
+    for _, grp in cs.group_by(CS_NUMBER_COL, maintain_order=True):
         top_pip = grp[PIP_COLUMN].max()
         kept.append(
             grp.filter(
@@ -723,8 +719,8 @@ def _select_top_variants(
         )
     return (
         pl.concat(kept, how="vertical")
-        .select(*_KEY, _CS_NUMBER_COL, PIP_COLUMN)
-        .sort([_CS_NUMBER_COL, PIP_COLUMN], descending=[False, True])
+        .select(*VARIANT_KEY, CS_NUMBER_COL, PIP_COLUMN)
+        .sort([CS_NUMBER_COL, PIP_COLUMN], descending=[False, True])
     )
 
 
@@ -765,13 +761,15 @@ def _per_variant_annotation_table(
         pl.col(ANNOTATION_COL).replace_strict(abar).alias(DISP_ALPHA_BAR),
     )
 
-    sel = pf_annot.join(top_variants.select(*_KEY), on=_KEY, how="inner")
+    sel = pf_annot.join(top_variants.select(*VARIANT_KEY), on=VARIANT_KEY, how="inner")
     n_selected = top_variants.height
-    if sel.select(_KEY).n_unique() != n_selected:
-        missing = top_variants.join(pf_annot.select(_KEY), on=_KEY, how="anti")
+    if sel.select(VARIANT_KEY).n_unique() != n_selected:
+        missing = top_variants.join(
+            pf_annot.select(VARIANT_KEY), on=VARIANT_KEY, how="anti"
+        )
         raise ValueError(
             f"{missing.height} selected top variant(s) have no annotation row and "
-            f"cannot be characterized: {missing.select(_KEY).rows()}"
+            f"cannot be characterized: {missing.select(VARIANT_KEY).rows()}"
         )
 
     ordered_labels: list[str] = []
@@ -823,34 +821,36 @@ def _display_base(
     secondary_map: pl.DataFrame | None = None,
 ) -> pl.DataFrame:
     """The identifier + per-run credible-set / PIP / prior-lift columns shared by
-    both display tables, keyed (still under _KEY names) on the union of the two
+    both display tables, keyed (still under VARIANT_KEY names) on the union of the two
     runs' credible-set variants so family columns can be joined on before the
     final rename. When secondary_map is given, its per-variant secondary position
     is joined on as well."""
     base = (
         union_keys.join(
-            pf_variants.select(*_KEY, pl.col(PIP_COLUMN).alias(DISP_PIP_PF), DISP_LIFT),
-            on=_KEY,
+            pf_variants.select(
+                *VARIANT_KEY, pl.col(PIP_COLUMN).alias(DISP_PIP_PF), DISP_LIFT
+            ),
+            on=VARIANT_KEY,
             how="left",
         )
         .join(
-            uni_variants.select(*_KEY, pl.col(PIP_COLUMN).alias(DISP_PIP_U)),
-            on=_KEY,
+            uni_variants.select(*VARIANT_KEY, pl.col(PIP_COLUMN).alias(DISP_PIP_U)),
+            on=VARIANT_KEY,
             how="left",
         )
         .join(
-            cs_pf.select(*_KEY, pl.col(_CS_NUMBER_COL).alias(DISP_CS_PF)),
-            on=_KEY,
+            cs_pf.select(*VARIANT_KEY, pl.col(CS_NUMBER_COL).alias(DISP_CS_PF)),
+            on=VARIANT_KEY,
             how="left",
         )
         .join(
-            cs_u.select(*_KEY, pl.col(_CS_NUMBER_COL).alias(DISP_CS_U)),
-            on=_KEY,
+            cs_u.select(*VARIANT_KEY, pl.col(CS_NUMBER_COL).alias(DISP_CS_U)),
+            on=VARIANT_KEY,
             how="left",
         )
     )
     if secondary_map is not None:
-        base = base.join(secondary_map, on=_KEY, how="left")
+        base = base.join(secondary_map, on=VARIANT_KEY, how="left")
     return base
 
 
@@ -868,7 +868,7 @@ def _finalize_display(
         GWASLAB_NON_EFFECT_ALLELE_COL: DISP_NEA,
     }
     if secondary_pos_col is not None:
-        rename_map[_SECONDARY_POS_COL] = secondary_pos_col
+        rename_map[SECONDARY_POS_COL] = secondary_pos_col
     out = out.rename(rename_map).with_columns(
         pl.col(DISP_CHR).cast(pl.Int32), pl.col(DISP_POS).cast(pl.Int32)
     )
@@ -927,9 +927,9 @@ def _detailed_display_table(
     for fam in families:
         col = f"{DISP_ANNOT_PREFIX}{fam}"
         fam_col = per_family.filter(pl.col(FAMILY_COL) == fam).select(
-            *_KEY, pl.col(FAMILY_CONTRAST_COL).alias(col)
+            *VARIANT_KEY, pl.col(FAMILY_CONTRAST_COL).alias(col)
         )
-        out = out.join(fam_col, on=_KEY, how="left")
+        out = out.join(fam_col, on=VARIANT_KEY, how="left")
     return _finalize_display(
         out, [f"{DISP_ANNOT_PREFIX}{fam}" for fam in families], secondary_pos_col
     )

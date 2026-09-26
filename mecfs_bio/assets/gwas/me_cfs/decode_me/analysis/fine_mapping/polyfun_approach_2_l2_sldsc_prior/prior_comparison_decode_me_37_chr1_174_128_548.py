@@ -10,9 +10,13 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approa
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr1_174_128_548 import (
     POLYFUN_EXPLAIN_CHR1_174,
 )
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
+    SecondaryPositionFromSnpid,
+)
 
 POLYFUN_PRIOR_COMPARISON_CHR1_174 = generate_assets_polyfun_prior_comparison(
     base_name="decode_me_polyfun_prior_comparison_chr1_174_128_548",
     external_prior=POLYFUN_EXPLAIN_CHR1_174,
     internal_prior=POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR,
+    secondary_position=SecondaryPositionFromSnpid(build_label="hg38"),
 )

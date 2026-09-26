@@ -135,7 +135,7 @@ def _make_contrast_fixture(
     the fixture shape stays in one place. weights_dir mirrors the real shape
     RidgeAnnotationWeightsTask.execute produces (a DirectoryAsset containing
     weights.parquet), not a bare file, so the production DirectoryAsset branch
-    of _load_weights is what the tests actually exercise.
+    of load_annotation_weights is what the tests actually exercise.
     """
     assert len(uniform_pip) == _N_VARIANTS
     variants = pl.DataFrame(
