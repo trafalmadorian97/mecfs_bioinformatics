@@ -22,7 +22,7 @@ IntArray = npt.NDArray[np.intp]
 ArrayLike1D = npt.ArrayLike
 
 
-@frozen
+@frozen(slots=True)
 class CrossTraitLDScoreResult:
     """
     Result of the cross-trait LDSC-style regression.
@@ -32,7 +32,7 @@ class CrossTraitLDScoreResult:
     intercept: float
 
 
-@frozen
+@frozen(slots=True)
 class TraitLDScoreResult:
     """
     Result of the univariate LDSC-style regression for a single trait.
@@ -42,7 +42,7 @@ class TraitLDScoreResult:
     intercept: float
 
 
-@frozen
+@frozen(slots=True)
 class MomentEstimate:
     """
     Quantities estimated from one dataset (or one jackknife leave-block-out subset).
@@ -72,7 +72,7 @@ class MomentEstimate:
         )
 
 
-@frozen
+@frozen(slots=True)
 class JackknifeSummary:
     """
     Block jackknife matrix and the summary quantities derived from it.
@@ -89,7 +89,7 @@ LCV_PVAL_ZERO_COL = "pvalue_gcp_zero_two_sides"
 LCV_MEAN_GCP_COL = "posterior_mean_gcp"
 
 
-@frozen
+@frozen(slots=True)
 class LCVResult:
     """
     Final LCV output.

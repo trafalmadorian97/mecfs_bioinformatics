@@ -74,7 +74,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class BroadFineMapTaskGroup:
     ld_labels_task: Task
     ld_matrix_task: Task
@@ -127,7 +127,7 @@ class BroadFineMapTaskGroup:
         ]
 
 
-@frozen()
+@frozen(slots=True)
 class PriorSpec:
     q_factor: int = 100
 

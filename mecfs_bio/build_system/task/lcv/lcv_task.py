@@ -61,14 +61,14 @@ Z_SCORE_1 = "_z_score_1_"
 Z_SCORE_2 = "_z_score_2_"
 
 
-@frozen
+@frozen(slots=True)
 class LCVConfig:
     chisq_exclude_factor_threshold: float = 50
     build: GenomeBuild = "19"
     exclude_mhc_region: MHCRegion | None = "extended"
 
 
-@frozen
+@frozen(slots=True)
 class LCVTask(Task):
     """
     Task to apply the Latent Causal Variable technique of O'Connor and Price to attempt

@@ -55,14 +55,14 @@ _REF_COLS_ALLELE_MATCH = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class ChromRange:
     chrom: int
     start: int
     end: int
 
 
-@frozen
+@frozen(slots=True)
 class HarmonizeGWASWithReferenceViaAlleles(Task):
     """
     Given a table of reference genetic variants, harmonize gwas data with that table of reference variants

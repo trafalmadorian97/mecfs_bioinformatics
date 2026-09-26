@@ -37,7 +37,7 @@ MIXER_BIVARIATE_TEST_PREFIX_PATTERN = "mixer_bivariate.test.@"
 MIXER_BIVARIATE_TEST_JSON_PATTERN = MIXER_BIVARIATE_TEST_PREFIX_PATTERN + ".json"
 
 
-@frozen
+@frozen(slots=True)
 class BivariateMixerTask(Task):
     """
     Bivariate (cross-trait) MiXeR analysis.

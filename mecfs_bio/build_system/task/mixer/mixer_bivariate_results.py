@@ -24,7 +24,7 @@ _CONTAINER_COMBINED_DIR = Path("/container_combine")
 BIVARIATE_OUTPUT_PREFIX = "bivariate_results"
 
 
-@frozen
+@frozen(slots=True)
 class MixerBivariateSummarizeResultsTask(Task):
     """
     Task to take the results of a Bivarirate MiXeR run and produce tables and plots.

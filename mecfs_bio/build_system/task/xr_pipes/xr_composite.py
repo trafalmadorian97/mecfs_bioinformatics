@@ -11,7 +11,7 @@ from mecfs_bio.build_system.task.xr_pipes.xr_data_pipe import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class XRCompositePipe(XRDataPipe):
     """
     Combine multiple XRDataPipes

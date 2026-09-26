@@ -10,7 +10,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class DropIndelsPipe(DataProcessingPipe):
     """
     Keep only variants whose EA and NEA are both a single base.

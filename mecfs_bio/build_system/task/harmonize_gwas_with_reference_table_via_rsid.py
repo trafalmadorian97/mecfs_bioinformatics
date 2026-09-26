@@ -67,7 +67,7 @@ _REF_COLS = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class HarmonizeGWASWithReferenceViaRSIDTask(Task):
     """
     Given a table of reference genetic variants, harmonize gwas data with that table of reference variants using rsid for matching

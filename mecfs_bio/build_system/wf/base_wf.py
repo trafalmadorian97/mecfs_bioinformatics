@@ -12,7 +12,7 @@ from mecfs_bio.build_system.wf.wf_downloader import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class WF:
     """
     An interface to the external world.

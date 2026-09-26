@@ -41,7 +41,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class CellAnalysisByLDSCTask(Task):
     """
         Task to run cell specific analysis using stratified LDSC
@@ -186,7 +186,7 @@ class CellAnalysisByLDSCTask(Task):
         )
 
 
-@frozen
+@frozen(slots=True)
 class LDCTSFileEntry:
     label: str
     target_gene_data_path: Path

@@ -15,7 +15,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class FakeTask(Task):
     meta: Meta
     deps: list[Task] = Factory(list)

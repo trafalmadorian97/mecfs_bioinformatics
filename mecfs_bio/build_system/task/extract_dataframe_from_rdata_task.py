@@ -27,7 +27,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExtractDataFrameFromRDataTask(Task):
     """
     RData files can bundle together many R objects.  This is a Task to extract a single dataframe from such a file.

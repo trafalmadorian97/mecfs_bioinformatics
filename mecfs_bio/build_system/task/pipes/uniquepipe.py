@@ -7,7 +7,7 @@ from narwhals.typing import UniqueKeepStrategy
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
-@frozen
+@frozen(slots=True)
 class UniquePipe(DataProcessingPipe):
     by: Sequence[str]
     keep: UniqueKeepStrategy

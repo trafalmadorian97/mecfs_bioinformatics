@@ -21,7 +21,7 @@ from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.sort_pipe import SortPipe
 
 
-@frozen
+@frozen(slots=True)
 class MasterGeneListTasks:
     combine_task: Task
     gget_label_task: Task

@@ -65,7 +65,7 @@ from rpy2.robjects.vectors import DataFrame as RDataFrame
 IgnoreOrRaise = typing.Literal["ignore", "raise"]
 
 
-@frozen
+@frozen(slots=True)
 class MRInputColSpec:
     rsid_col: str
     beta_col: str
@@ -158,23 +158,23 @@ REPORT_SUBDIR_PATH = PurePath("reports")
 STEIGER_RESULT_PATH = PurePath("steiger_result.csv")
 
 
-@frozen
+@frozen(slots=True)
 class ClumpOptions:
     pass
 
 
-@frozen
+@frozen(slots=True)
 class MRReportOptions:
     pass
 
 
-@frozen
+@frozen(slots=True)
 class SteigerFilteringOptions:
     drop_failures: bool
     p_value_thresh: float | None = None
 
 
-@frozen
+@frozen(slots=True)
 class TwoSampleMRConfig:
     clump_exposure_data: ClumpOptions | None
     report_options: MRReportOptions | None = None
@@ -191,7 +191,7 @@ class TwoSampleMRConfig:
 NEEDED_COLS = [TSM_RSID_COL, TSM_BETA_COL, TSM_SE_COL, TSM_EFFECT_ALLELE_COL]
 
 
-@frozen
+@frozen(slots=True)
 class TwoSampleMRTask(Task):
     """
     Task to run mendelian randomization using the R package TwoSampleMR.
@@ -389,7 +389,7 @@ def steiger_filtering_write_output(
         return harmonized
 
 
-@frozen
+@frozen(slots=True)
 class TwoSampleMRResult:
     result: pd.DataFrame
 

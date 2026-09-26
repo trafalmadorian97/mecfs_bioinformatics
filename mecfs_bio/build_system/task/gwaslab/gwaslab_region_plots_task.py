@@ -50,7 +50,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabRegionPlotsFromLeadVariantsTask(Task):
     """
     A task to generate region plots near the lead variants described by GWAS summary statistics

@@ -28,7 +28,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExtractSheetFromExelFileTask(Task):
     """
     Task for extracting a sheet from an excel file

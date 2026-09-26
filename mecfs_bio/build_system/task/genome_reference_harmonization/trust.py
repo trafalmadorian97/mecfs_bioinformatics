@@ -52,7 +52,7 @@ _SUSPICIOUS = "suspicious"
 _CHECKABLE = "checkable"
 
 
-@frozen
+@frozen(slots=True)
 class TrustCounts:
     consistent_snvs: int
     inconsistent_snvs: int
@@ -77,7 +77,7 @@ class TrustCounts:
         )
 
 
-@frozen
+@frozen(slots=True)
 class SuspiciousIndelCounts:
     suspicious: (
         int  # ambiguous indels whose panel frequency contradicts the source orientation
@@ -99,7 +99,7 @@ class SuspiciousIndelCounts:
         return self.suspicious / self.checkable if self.checkable else 0.0
 
 
-@frozen
+@frozen(slots=True)
 class TrustEvidence:
     counts: TrustCounts
     suspicious: SuspiciousIndelCounts

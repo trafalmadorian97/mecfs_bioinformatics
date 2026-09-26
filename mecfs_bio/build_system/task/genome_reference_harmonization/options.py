@@ -11,7 +11,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.flip import (
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_CODE_FOR_NAME
 
 
-@frozen
+@frozen(slots=True)
 class GenomeReferenceHarmonizationOptions:
     """
     min_checkable_snvs, min_checkable_indels: a table is trusted only if it has at least

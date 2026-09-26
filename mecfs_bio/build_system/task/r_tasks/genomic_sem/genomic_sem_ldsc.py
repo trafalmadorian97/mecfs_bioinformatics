@@ -75,7 +75,7 @@ _A1_X_COL = f"{MUNGE_A1_COL}{_X_SUFFIX}"
 _A1_Y_COL = f"{MUNGE_A1_COL}{_Y_SUFFIX}"
 
 
-@frozen
+@frozen(slots=True)
 class LDSCResult:
     """Output of :func:`run_ldsc`, mirroring GenomicSEM's covstruc list."""
 
@@ -88,7 +88,7 @@ class LDSCResult:
     V_Stand: np.ndarray | None  # (n_V, n_V) sampling cov of vech(S_Stand)
 
 
-@frozen
+@frozen(slots=True)
 class _PairEstimate:
     """Result of one heritability or covariance LDSC regression.
 

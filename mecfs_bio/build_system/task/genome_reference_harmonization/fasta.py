@@ -28,7 +28,7 @@ _ASCII_UPPERCASE_MASK = 0xDF
 _MAIN_CONTIG = re.compile(r"^(?:chr)?([0-9]+|X|Y|M|MT)$")
 
 
-@frozen
+@frozen(slots=True)
 class FaiEntry:
     length: int  # Number of actual nucleotide bases
     offset: int  # Location in fasta file where first base starts
@@ -49,7 +49,7 @@ def contig_to_gwaslab_code(name: str) -> int | None:
     return int(token)
 
 
-@frozen
+@frozen(slots=True)
 class IndexedFasta:
     """An uncompressed FASTA and its .fai entries, keyed by gwaslab chromosome code."""
 

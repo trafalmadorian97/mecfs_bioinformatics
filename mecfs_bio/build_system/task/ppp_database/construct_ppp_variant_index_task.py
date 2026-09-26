@@ -93,7 +93,7 @@ INDEX_COLUMNS = [
 _FLOAT_COLUMNS = [GWASLAB_EFFECT_ALLELE_FREQ_COL]
 
 
-@frozen
+@frozen(slots=True)
 class ConstructPppVariantIndexTask(GeneratingTask):
     """
     Build the shared PPP variant index by intersecting a template protein's

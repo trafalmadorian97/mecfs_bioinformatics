@@ -17,12 +17,12 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class GWASLabRSIDAssignmentOptions:
     threads: int = 1
 
 
-@frozen
+@frozen(slots=True)
 class GWASLabAssignRSIDSViaSweepTask(Task):
     """
     Task to use GWASLab's sweep functionality to assign RSIDs

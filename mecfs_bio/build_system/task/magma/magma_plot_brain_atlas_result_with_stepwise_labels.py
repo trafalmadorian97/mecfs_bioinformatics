@@ -27,12 +27,12 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import MatplotLibFormat, write_plots_to_dir
 
 
-@frozen
+@frozen(slots=True)
 class HBAIndepPlotOptions:
     annotation_text_size: int | None = None
 
 
-@frozen
+@frozen(slots=True)
 class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
     """
     Create a plot of the results of applying MAGMA to a GWAS using HBA reference data

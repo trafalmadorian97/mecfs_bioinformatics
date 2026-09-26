@@ -11,7 +11,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class ComputePFromBetaSEPipeIfNeeded(DataProcessingPipe):
     p_col: str = GWASLAB_P_COL
     se_col: str = GWASLAB_SE_COL

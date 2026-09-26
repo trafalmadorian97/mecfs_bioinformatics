@@ -80,18 +80,18 @@ from mecfs_bio.constants.uniprot_constants import (
 PROTEIN_EXPOSURE_COL = "protein_exposure_id"
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class BinaryOutcomeConfig:
     n_case: int
     n_control: int
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class QuantOutcomeConfig:
     sample_size: int
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class CisMRTasks:
     mr_task: Task
     extract_task: Task

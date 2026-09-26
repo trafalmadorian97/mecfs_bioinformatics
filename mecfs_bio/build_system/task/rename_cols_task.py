@@ -48,7 +48,7 @@ def remap_harmonization_info(
     return HarmonizationInfo(build=info.build, ref_allele_col=new_ref, pos_col=new_pos)
 
 
-@frozen
+@frozen(slots=True)
 class RenameColsTask(Task):
     meta: Meta
     source_task: Task

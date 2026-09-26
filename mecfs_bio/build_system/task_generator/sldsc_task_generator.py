@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 
-@frozen
+@frozen(slots=True)
 class CellOrTissueLabelRecord:
     cell_or_tissue_label_task: Task
     pipe_left: DataProcessingPipe = IdentityPipe()
@@ -32,7 +32,7 @@ class CellOrTissueLabelRecord:
     right_join_on: str = "Tissue_Or_Cell"
 
 
-@frozen
+@frozen(slots=True)
 class PartitionedLDScoresRecord:
     entry_name: str
     ref_ld_chr_cts_task: Task
@@ -40,7 +40,7 @@ class PartitionedLDScoresRecord:
     cell_or_tissue_labels_task: CellOrTissueLabelRecord | None
 
 
-@frozen
+@frozen(slots=True)
 class CellAnalysisTaskGroup:
     cell_analysis_task: CellAnalysisByLDSCTask
     multiple_testing_task: Task
@@ -63,7 +63,7 @@ class CellAnalysisTaskGroup:
         return result
 
 
-@frozen
+@frozen(slots=True)
 class SLDSCTaskGenerator:
     """
        Task generator to apply cell- and tissue-type specific Stratified Linkage Disequilibrium Score Regression

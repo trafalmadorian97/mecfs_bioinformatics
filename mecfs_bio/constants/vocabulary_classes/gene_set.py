@@ -1,7 +1,7 @@
 from attrs import frozen
 
 
-@frozen
+@frozen(slots=True)
 class MSigDBGeneSetSpec:
     """
     A reference to an MSIGDB gene set

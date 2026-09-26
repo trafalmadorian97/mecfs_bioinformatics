@@ -121,7 +121,7 @@ _FIT_COLOR = "#d62728"
 _REFERENCE_COLOR = "#7f7f7f"
 
 
-@frozen
+@frozen(slots=True)
 class LdscDiagnosticPlotConfig:
     """How the diagnostic is binned and framed.
 
@@ -136,7 +136,7 @@ class LdscDiagnosticPlotConfig:
     title: str | None = None
 
 
-@frozen
+@frozen(slots=True)
 class LdscFit:
     """The observed-scale LD-score-regression fit needed to draw the line and annotate it."""
 
@@ -144,7 +144,7 @@ class LdscFit:
     h2_obs: float
 
 
-@frozen
+@frozen(slots=True)
 class MergedDiagnosticData:
     """Per-variant chi-square and LD score for the variants shared by the summary statistics and
     the LD reference. Both arrays are 1-D of the same length, aligned row-for-row."""
@@ -416,7 +416,7 @@ def _read_sumstats(asset: Asset) -> LdscSumstats:
     return cast(LdscSumstats, read_sumstats(asset))
 
 
-@frozen
+@frozen(slots=True)
 class LdscDiagnosticPlotTask(Task):
     """Draw the LD-score-regression diagnostic plot for a SNPHeritabilityByLDSCTask analysis."""
 

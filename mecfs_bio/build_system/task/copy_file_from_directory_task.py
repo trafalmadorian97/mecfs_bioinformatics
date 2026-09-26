@@ -26,7 +26,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class CopyFileFromDirectoryTask(Task):
     """
     Copy a file within a DirectoryAsset to create a FileAsset.  Useful when downstream tasks require FileAssets.

@@ -38,7 +38,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class CaseControlSampleInfo:
     """
     Specifies the number of cases and controls in a case control study
@@ -54,7 +54,7 @@ class CaseControlSampleInfo:
 SampleInfo = CaseControlSampleInfo  # add other types of sample info later
 
 
-@frozen
+@frozen(slots=True)
 class GwasSource:
     """
     Describes a source from which to draw GWAS data in order to perform a meta analysis
@@ -65,7 +65,7 @@ class GwasSource:
     pipe: DataProcessingPipe = IdentityPipe()
 
 
-@frozen
+@frozen(slots=True)
 class FixedEffectsMetaAnalysisTask(Task):
     """
     Task to perform a fixed effects meta analysis on non-overlapping GWAS of the same trait

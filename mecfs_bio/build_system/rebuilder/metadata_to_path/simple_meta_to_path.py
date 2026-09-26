@@ -157,7 +157,7 @@ def simple_meta_to_relative_path(m: Meta) -> PurePath:
     raise ValueError(f"Unknown meta {m} of type {type(m)}.")
 
 
-@frozen
+@frozen(slots=True)
 class SimpleMetaToPath(MetaToPath):
     """
     Place every asset under a single store root, using the standard relative layout.

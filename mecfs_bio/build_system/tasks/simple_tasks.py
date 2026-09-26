@@ -7,7 +7,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.tasks.base_tasks import Tasks
 
 
-@frozen
+@frozen(slots=True)
 class SimpleTasks(Tasks):
     tasks: Mapping[AssetId, Task]
 

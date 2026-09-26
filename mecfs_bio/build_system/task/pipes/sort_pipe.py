@@ -6,7 +6,7 @@ from attrs import frozen
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
-@frozen
+@frozen(slots=True)
 class SortPipe(DataProcessingPipe):
     by: Sequence[str]
     desc: Sequence[bool] | bool = False

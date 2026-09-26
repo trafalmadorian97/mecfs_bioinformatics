@@ -45,7 +45,7 @@ XR_TRAIT_2_DIM = "trait_2"
 NUM_PAIRS = "num_pairs"
 
 
-@frozen
+@frozen(slots=True)
 class GeneticCorrSource:
     """
     Describe a dataframe from which to load genetic correlation data
@@ -141,7 +141,7 @@ def load_xr_corr_dataset(
     return ds
 
 
-@frozen
+@frozen(slots=True)
 class BonferoniSig:
     alpha: float = 0.05
 
@@ -149,13 +149,13 @@ class BonferoniSig:
 SigMode = BonferoniSig
 
 
-@frozen
+@frozen(slots=True)
 class RGWithAsterisk:
     sig_mode: SigMode = BonferoniSig()
     color_scale: str = "RdBu_r"
 
 
-@frozen
+@frozen(slots=True)
 class RGHideNonSig:
     pass
 
@@ -222,7 +222,7 @@ def rg_plot(ds: xr.Dataset, plot_mode: GeneticCorrPlotMode) -> Figure:
     raise NotImplementedError()
 
 
-@frozen
+@frozen(slots=True)
 class GeneticCorrelationClustermapTask(Task):
     """
     Task to generate a heatmap of genetic correlation

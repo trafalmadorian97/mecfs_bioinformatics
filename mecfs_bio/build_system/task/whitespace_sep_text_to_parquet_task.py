@@ -45,7 +45,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class WhitespaceSepTextToParquetTask(Task):
     meta: Meta
     source_task: Task

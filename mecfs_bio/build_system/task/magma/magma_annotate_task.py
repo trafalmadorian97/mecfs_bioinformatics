@@ -16,7 +16,7 @@ from mecfs_bio.util.subproc.run_command import execute_command
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class MagmaAnnotateTask(Task):
     """
     Perform the annotate step of the MAGMA pipeline.

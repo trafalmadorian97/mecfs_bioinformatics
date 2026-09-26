@@ -20,7 +20,7 @@ from mecfs_bio.util.subproc.run_command import execute_command
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class DownloadEntry:
     """
     A file to download into the directory,
@@ -42,7 +42,7 @@ class DownloadEntry:
         )
 
 
-@frozen
+@frozen(slots=True)
 class DownloadFilesIntoDirectoryTask(Task):
     """
     A directory consisting of one or more downloaded files

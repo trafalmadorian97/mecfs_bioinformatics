@@ -15,21 +15,21 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.constants.xr_constants import XR_SPECIFICITY_MATRIX
 
 
-@frozen
+@frozen(slots=True)
 class SpecificityMatrixSource:
     task: Task
     pipe: DataProcessingPipe
     gene_col: str
 
 
-@frozen
+@frozen(slots=True)
 class GeneInfoSource:
     task: Task
     pipe: DataProcessingPipe
     gene_col: str | None
 
 
-@frozen
+@frozen(slots=True)
 class TissueInfoSource:
     task: Task
     pipe: DataProcessingPipe

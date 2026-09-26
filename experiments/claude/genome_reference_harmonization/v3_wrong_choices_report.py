@@ -68,7 +68,7 @@ FLANK_BASES = 20
 ABSENT = "absent"
 
 
-@frozen
+@frozen(slots=True)
 class Site:
     chrom: int
     pos: int

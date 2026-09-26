@@ -56,7 +56,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExpressionMatrixClusterMapTaskV2(Task):
     """
     Task to make a heatmap plot with genes as rows and tissue/cell types as columns

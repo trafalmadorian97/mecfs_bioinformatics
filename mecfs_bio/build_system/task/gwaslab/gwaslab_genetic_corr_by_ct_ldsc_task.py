@@ -63,7 +63,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class FilterSettings:
     """
     Options for SNP filtering for CT-LDSC
@@ -97,7 +97,7 @@ def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build:
     logger.debug(f"dropped {len_before - len_after} variants with identical rsids")
 
 
-@frozen
+@frozen(slots=True)
 class BinaryPhenotypeSampleInfo:
     """
     For binary phenotypes, sample prevalence and population prevalence are required to convert heritability from the observed scale to the liability scale.
@@ -123,7 +123,7 @@ class BinaryPhenotypeSampleInfo:
         return int(4 / (1 / self.ncases + 1 / self.ncontrols))
 
 
-@frozen
+@frozen(slots=True)
 class QuantPhenotype:
     """
     Marker class to indicate that a phenotype is quantitative, not binary, and so does not need to be converted to the liability scale.
@@ -135,7 +135,7 @@ class QuantPhenotype:
 PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
 
 
-@frozen
+@frozen(slots=True)
 class SumstatsSource:
     """
     A source of GWASlab sumstats to use for computing genetic correlation
@@ -151,7 +151,7 @@ class SumstatsSource:
         return self.task.asset_id
 
 
-@frozen
+@frozen(slots=True)
 class GeneticCorrelationByCTLDSCTask(Task):
     """
     Estimate genetic correlation by cross-trait linkage disequilibrium score regression.

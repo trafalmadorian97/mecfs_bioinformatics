@@ -57,7 +57,7 @@ ANNOT_KEY_COLUMNS: list[str] = [
 _ANNOT_MEMBER_RE = re.compile(r"baselineLF2\.2\.UKB\.(\d+)\.annot\.parquet$")
 
 
-@frozen
+@frozen(slots=True)
 class BuildBaselineLFAnnotationParquetTask(Task):
     """Build a single sorted allele-bearing annotation parquet from the members."""
 

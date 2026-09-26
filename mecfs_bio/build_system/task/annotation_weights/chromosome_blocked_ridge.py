@@ -21,7 +21,7 @@ import numpy as np
 from attrs import frozen
 
 
-@frozen
+@frozen(slots=True)
 class ChromRidgeBlock:
     """Weighted cross-product sufficient statistics for one chromosome.
 
@@ -60,7 +60,7 @@ class ChromRidgeBlock:
         assert self.sw > 0, f"block total weight must be positive, got {self.sw}"
 
 
-@frozen
+@frozen(slots=True)
 class StandardizedSystem:
     """The weighted ridge system after centering and per-column standardization.
 
@@ -99,7 +99,7 @@ class StandardizedSystem:
         assert np.all(self.sd > 0), "sd must be strictly positive"
 
 
-@frozen
+@frozen(slots=True)
 class RidgeFit:
     """A fitted ridge model: y ~ intercept + x . beta_raw.
 
@@ -116,7 +116,7 @@ class RidgeFit:
         assert self.beta_std.shape == self.beta_raw.shape
 
 
-@frozen
+@frozen(slots=True)
 class AlphaSelection:
     """The ridge penalty chosen by leave-one-chromosome-out cross-validation,
     with its mean held-out weighted R^2, the per-held-out-chromosome R^2, and the

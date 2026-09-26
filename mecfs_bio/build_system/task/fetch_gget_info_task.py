@@ -63,7 +63,7 @@ PRIMARY_GENE_NAME = "primary_gene_name"
 SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
 
 
-@frozen
+@frozen(slots=True)
 class FetchGGetInfoTask(Task):
     """
     Task to use gget (https://github.com/pachterlab/gget) to retrieve database information about a list of genes from a dataframe

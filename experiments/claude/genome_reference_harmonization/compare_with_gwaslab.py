@@ -116,14 +116,14 @@ GWASLAB_STATUS_DIGIT7_INDEL_FLIPPED = "4"
 OPTIONS = GenomeReferenceHarmonizationOptions()
 
 
-@frozen
+@frozen(slots=True)
 class ComparisonCase:
     label: str
     pre_harmonization: Task
     gwaslab_harmonized: Task
 
 
-@frozen
+@frozen(slots=True)
 class DropReport:
     trusted: bool
     dropped: pl.DataFrame

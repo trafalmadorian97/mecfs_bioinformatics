@@ -90,7 +90,7 @@ BUILD_38_TABLE = GwasLabSumstatsToTableTask.create_from_source_task(
 )
 
 
-@frozen
+@frozen(slots=True)
 class ChromosomeAmbiguousIndels:
     rows: pl.DataFrame
     panel: pl.DataFrame

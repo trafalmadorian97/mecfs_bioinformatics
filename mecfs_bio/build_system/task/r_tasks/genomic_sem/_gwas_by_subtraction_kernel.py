@@ -112,7 +112,7 @@ from attrs import frozen
 from scipy.stats import norm
 
 
-@frozen
+@frozen(slots=True)
 class SubtractionLoadings:
     """
     Cholesky factor loadings (constant across SNPs).
@@ -147,7 +147,7 @@ class SubtractionLoadings:
         )
 
 
-@frozen
+@frozen(slots=True)
 class FactorBetas:
     """Per-SNP factor effects (each shape (N,))."""
 

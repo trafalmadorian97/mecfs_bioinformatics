@@ -6,7 +6,7 @@ from attrs import field, frozen
 Compression = Literal["gzip"]
 
 
-@frozen
+@frozen(slots=True)
 class DataFrameTextFormat:
     separator: str
     null_values: Sequence[str] | None = None
@@ -17,12 +17,12 @@ class DataFrameTextFormat:
     comment_char: str | None = None
 
 
-@frozen
+@frozen(slots=True)
 class DataFrameParquetFormat:
     pass
 
 
-@frozen
+@frozen(slots=True)
 class DataFrameWhiteSpaceSepTextFormat:
     comment_code: str
     col_names: list[str] | None = None
@@ -33,7 +33,7 @@ DataFrameFormat = (
 )
 
 
-@frozen
+@frozen(slots=True)
 class DataFrameReadSpec:
     """
     Specifies how a file containing a dataframe should be read.

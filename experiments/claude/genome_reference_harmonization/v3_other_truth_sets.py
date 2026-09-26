@@ -104,7 +104,7 @@ MAX_EXAMPLES = 30
 BUILD_PROBE_CHROMOSOME = 1
 
 
-@frozen
+@frozen(slots=True)
 class Build:
     name: str
     fasta_task: Task
@@ -153,7 +153,7 @@ def _consistency(counts: TrustCounts) -> str:
     )
 
 
-@frozen
+@frozen(slots=True)
 class OpenedBuild:
     fasta: IndexedFasta
     panel_path: Path

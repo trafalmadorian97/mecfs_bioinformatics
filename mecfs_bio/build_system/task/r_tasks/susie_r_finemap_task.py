@@ -55,7 +55,7 @@ from mecfs_bio.constants.polyfun_constants import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class BroadInstituteFormatLDMatrix:
     """
     Wraps a task to recovery an LD matrix stored in Broad Institute Format.
@@ -100,7 +100,7 @@ CS_COLUMN = "cs"
 _PRIOR_COL = "prior_col"
 
 
-@frozen
+@frozen(slots=True)
 class PriorInfo:
     prior_task: Task
     prior_col: str
@@ -136,7 +136,7 @@ def assert_gwas_harmonized_to_ld(gwas_task: Task, ld_labels_task: Task) -> None:
     )
 
 
-@frozen
+@frozen(slots=True)
 class SusieRFinemapTask(Task):
     """
     This task uses susie_rss function from the R library susieR to fine map a GWAS at a locus.

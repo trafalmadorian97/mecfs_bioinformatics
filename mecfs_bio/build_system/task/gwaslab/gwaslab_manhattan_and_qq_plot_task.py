@@ -25,7 +25,7 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 AnnoMode = Literal["GENENAME"] | None
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class GWASLabManhattanAndQQPlotTask(Task):
     """
     A task to generate a manhattan plot and/or a qq plot.

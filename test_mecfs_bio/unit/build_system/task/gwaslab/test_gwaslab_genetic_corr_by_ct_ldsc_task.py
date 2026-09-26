@@ -43,7 +43,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task im
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-@frozen
+@frozen(slots=True)
 class HapmapSNP:
     """A single HapMap3 variant. Hardcoded entries below are real HapMap3 SNPs."""
 

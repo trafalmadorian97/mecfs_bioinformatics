@@ -55,7 +55,7 @@ XR_LCV_RHO_ARRAY = "lcv_rho"
 NUM_PAIRS = "num_pairs"
 
 
-@frozen
+@frozen(slots=True)
 class LCVSource:
     """
     Describe a dataframe from which to load LCV data
@@ -137,7 +137,7 @@ def load_xr_lcv_dataset(
     return ds
 
 
-@frozen
+@frozen(slots=True)
 class BonferoniSig:
     alpha: float = 0.05
 
@@ -145,7 +145,7 @@ class BonferoniSig:
 SigMode = BonferoniSig
 
 
-@frozen
+@frozen(slots=True)
 class GCPWithAsterisk:
     sig_mode: SigMode = BonferoniSig()
     color_scale: str = "RdBu_r"
@@ -220,7 +220,7 @@ def gcp_plot(ds: xr.Dataset, plot_mode: LCVPlotMode) -> Figure:
     raise NotImplementedError()
 
 
-@frozen
+@frozen(slots=True)
 class LCVClustermapTask(Task):
     """
     Task to generate a heatmap of LCV results

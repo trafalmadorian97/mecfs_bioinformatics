@@ -28,7 +28,7 @@ TEST_OUTPUT_PREFIX = "trait_plot_test"
 FIT_OUTPUT_PREFIX = "trait_plot_fit"
 
 
-@frozen
+@frozen(slots=True)
 class MixerUnivariateSummarizeResultsTask(Task):
     """
     Task to take the results of a MiXeR run and produce tables and plots.

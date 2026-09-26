@@ -275,7 +275,7 @@ def test_long_alleles_are_classified_with_a_tiny_gather_budget(tmp_path: Path) -
     assert swapped[BETA] == pytest.approx(-0.2)
 
 
-@frozen
+@frozen(slots=True)
 class _SwitchToDuckDbPipe(DataProcessingPipe):
     def process(self, x: narwhals.LazyFrame) -> narwhals.LazyFrame:
         return x.collect().lazy(backend="duckdb")

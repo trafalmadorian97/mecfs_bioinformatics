@@ -21,7 +21,7 @@ from mecfs_bio.build_system.task.make_executable_wrapper_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExtractFromZipTask(Task):
     """
     Task to extract a single file from a zip archive

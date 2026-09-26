@@ -35,7 +35,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.getLogger()
 
 
-@frozen
+@frozen(slots=True)
 class ConcatFramesInDirTask(Task):
     """
     Task to concatenate dataframes in a directory matching a glob pattern

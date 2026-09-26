@@ -28,7 +28,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaSNPFileTask(Task):
     gwas_parquet_with_rsid_task: Task
     extra_columns_to_output: list[str]

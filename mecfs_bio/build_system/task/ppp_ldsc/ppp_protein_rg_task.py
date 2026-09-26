@@ -150,7 +150,7 @@ def _read_sample_sizes(
     }
 
 
-@frozen
+@frozen(slots=True)
 class PppRgConfig:
     variant_set: PppVariantSet = PPP_VARIANT_SET_ALL
     # Constant trait N used only when the trait sumstats lack a per-SNP N column.
@@ -165,7 +165,7 @@ class PppRgConfig:
     min_trait_snps: int = 200_000
 
 
-@frozen
+@frozen(slots=True)
 class PppProteinCrossTraitRgTask(GeneratingTask):
     """Compute the trait-vs-protein genetic correlation for every UKB-PPP protein.
 

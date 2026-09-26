@@ -166,7 +166,7 @@ _KEY_SCHEMA: dict[str, pl.DataType] = {
 _SECONDARY_POS_COL = "secondary_pos"
 
 
-@frozen
+@frozen(slots=True)
 class SecondaryPositionFromSnpid:
     """Opt-in derivation of a secondary genomic position for the display tables.
 
@@ -185,7 +185,7 @@ class SecondaryPositionFromSnpid:
     position_field_index: int = 1
 
 
-@frozen
+@frozen(slots=True)
 class PolyfunExplainContrastTask(Task):
     meta: Meta
     susie_uniform_task: Task

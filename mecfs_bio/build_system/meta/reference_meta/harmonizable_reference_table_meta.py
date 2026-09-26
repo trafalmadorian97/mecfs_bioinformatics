@@ -10,7 +10,7 @@ from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 
-@frozen
+@frozen(slots=True)
 class HarmonizableReferenceTableMeta(FileMeta):
     group: str
     sub_group: str

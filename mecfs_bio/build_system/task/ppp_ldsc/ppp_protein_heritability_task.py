@@ -94,7 +94,7 @@ _INDEX_CONTEXT_COLUMNS = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class PppHeritabilityConfig:
     drop_strand_ambiguous: bool = True
     exclude_mhc: bool = True
@@ -123,7 +123,7 @@ def constant_sample_size(n_at_context: np.ndarray, label: str) -> float:
     return float(unique[0])
 
 
-@frozen
+@frozen(slots=True)
 class PppProteinHeritabilityTask(GeneratingTask):
     """Compute all-variants and cis-excluded LDSC heritability for every UKB-PPP protein.
 

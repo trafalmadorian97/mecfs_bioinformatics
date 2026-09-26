@@ -10,7 +10,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 
 
-@frozen
+@frozen(slots=True)
 class ExecutableMeta(FileMeta):
     """
     Metadata for executable files

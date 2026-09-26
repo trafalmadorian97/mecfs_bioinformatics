@@ -29,7 +29,7 @@ def _read_sample_size(f, sample_size: int) -> bytes:
     return data
 
 
-@frozen
+@frozen(slots=True)
 class ImoHasher(Tracer):
     """
     Based on : https://github.com/kalafut/py-imohash/blob/master/imohash/imohash.py

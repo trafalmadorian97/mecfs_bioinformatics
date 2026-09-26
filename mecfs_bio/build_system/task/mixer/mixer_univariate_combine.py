@@ -31,13 +31,13 @@ COMBINED_FIT_FILENAME_PREFIX = "trait1.fit"
 COMBINED_TEST_FILENAME_PREFIX = "trait1.test"
 
 
-@frozen
+@frozen(slots=True)
 class MixerRunSource:
     task: Task
     rep: int
 
 
-@frozen
+@frozen(slots=True)
 class MixerUnivariateCombine(Task):
     """
     Task to combine MiXeR run outputs to produce a single result.

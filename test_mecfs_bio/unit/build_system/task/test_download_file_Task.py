@@ -16,7 +16,7 @@ from mecfs_bio.build_system.wf.wf_downloader import WFDownloader
 from mecfs_bio.util.download.verify import calc_md5_checksum, head_file, verify_hash
 
 
-@frozen
+@frozen(slots=True)
 class FakeWFDownloader(WFDownloader):
     source_file: Path
 
