@@ -8,7 +8,8 @@ bundle for its annotation LD-score members on first run), the per-half tau
 weights tables that explain it, and each selected locus's 8-run outer group with
 its contrast and plot tasks. Compare against the matching
 polyfun_explainability locus module, which uses the precomputed prior on the same
-inputs.
+inputs; the prior-comparison plots draw both priors' PIPs against the uniform run
+in one figure.
 
 The build cache does not track task code or fields: after changing the estimator,
 pass must_rebuild_transitive=[DECODE_ME_L2_SLDSC_SNPVAR] to refit the prior and
@@ -20,6 +21,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approa
     DECODE_ME_L2_SLDSC_SNPVAR_TABLE,
     DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS,
     DECODE_ME_L2_SLDSC_TAU_ODD_WEIGHTS,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr1_174_128_548 import (
+    POLYFUN_PRIOR_COMPARISON_CHR1_174,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr1_174_128_548_l2_sldsc_prior import (
     POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR,
@@ -44,7 +48,8 @@ def run_decode_me_polyfun_l2_sldsc_prior_fine_mapping():
             DECODE_ME_L2_SLDSC_TAU_ODD_WEIGHTS,
             DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS,
         ]
-        + [task for locus in loci for task in locus.terminal_tasks()],
+        + [task for locus in loci for task in locus.terminal_tasks()]
+        + POLYFUN_PRIOR_COMPARISON_CHR1_174.terminal_tasks(),
     )
 
 

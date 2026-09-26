@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import polars as pl
+import pytest
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -17,6 +18,7 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task impor
     PLOT_PNG_FILENAME,
     PLOT_SVG_FILENAME,
     PolyfunExplainPlotTask,
+    PriorRun,
     _wrap_callout_label,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
@@ -50,7 +52,8 @@ def test_wrap_callout_label_short_unchanged_long_wrapped():
     )
 
 
-def test_plot_writes_png_and_svg(tmp_path: Path):
+@pytest.mark.parametrize("n_prior_runs", [1, 2])
+def test_plot_writes_png_and_svg(tmp_path: Path, n_prior_runs: int):
     inputs = build_synthetic_explain_inputs(tmp_path)
 
     gene_info = pl.DataFrame(
@@ -86,13 +89,20 @@ def test_plot_writes_png_and_svg(tmp_path: Path):
         )
     )
 
+    # The fixture has one prior run; drawing it under several labels exercises
+    # the one-row-per-prior layout without a second synthetic run.
+    prior_runs = tuple(
+        PriorRun(
+            label=f"prior {i}",
+            susie_task=inputs.pf_task,
+            contrast_task=inputs.contrast_task,
+        )
+        for i in range(n_prior_runs)
+    )
     plot_task = PolyfunExplainPlotTask.create(
         asset_id="plot",
         susie_uniform_task=inputs.uni_task,
-        susie_polyfun_task=inputs.pf_task,
-        contrast_task=inputs.contrast_task,
-        ridge_weights_task=inputs.weights_task,
-        annotation_parquet_task=inputs.annot_task,
+        prior_runs=prior_runs,
         gene_info_task=gene_task,
         genetic_map_task=gmap_task,
         gene_info_pipe=IdentityPipe(),
