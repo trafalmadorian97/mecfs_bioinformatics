@@ -80,6 +80,7 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_plot_task impor
     PLOT_PNG_FILENAME,
     PLOT_SVG_FILENAME,
     PolyfunExplainPlotTask,
+    PriorRun,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
@@ -339,11 +340,10 @@ def generate_polyfun_explain_group(
     plot = PolyfunExplainPlotTask.create(
         asset_id=f"{stem}_explain_plot",
         susie_uniform_task=susie_uniform,
-        susie_polyfun_task=susie_polyfun,
-        contrast_task=contrast,
-        annotation_parquet_task=BASELINE_LF_ANNOTATION_MATRIX,
+        prior_runs=(
+            PriorRun(label="polyfun", susie_task=susie_polyfun, contrast_task=contrast),
+        ),
         gene_info_task=shared.gene_info_task,
-        ridge_weights_task=shared.explanation_weights_task,
         genetic_map_task=GENETIC_MAP_HG19,
         genome_build=shared.genome_build,
         gene_info_pipe=IdentityPipe(),
