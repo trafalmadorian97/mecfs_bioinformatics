@@ -75,6 +75,7 @@ class MAGMAPlotGeneSetResult(Task):
                 "Not Significant": px.colors.qualitative.Plotly[0],
             },
         )
+        plot.update_layout(showlegend=False)
         plot.add_hline(
             -np.log10(thresh),
             line_dash="dot",
