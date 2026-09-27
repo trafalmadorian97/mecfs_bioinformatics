@@ -163,6 +163,7 @@ class PolyfunExplainPlotTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         uni_dir = _dir(fetch, self.susie_uniform_task)
         locus = _load_locus(uni_dir)
+        _assert_prior_runs_on_chromosome(fetch, self.prior_runs, locus.chrom)
         pip_rows = [_uniform_pip_row(uni_dir)] + [
             _prior_pip_row(fetch, run) for run in self.prior_runs
         ]
@@ -253,10 +254,36 @@ def _load_locus(uni_dir: Path) -> _Locus:
     return _Locus(
         gwas=gwas,
         ld=np.load(uni_dir / FILTERED_LD_FILENAME),
-        chrom=int(gwas[GWASLAB_CHROM_COL][0]),
+        chrom=_single_chromosome(gwas, run_name=UNIFORM_ROW_LABEL),
         bp_min=int(pos.min()),
         bp_max=int(pos.max()),
     )
+
+
+def _single_chromosome(gwas: pl.DataFrame, run_name: str) -> int:
+    chroms = gwas[GWASLAB_CHROM_COL].unique().to_list()
+    assert len(chroms) == 1, (
+        f"The {run_name} run's variants span chromosomes {sorted(chroms)}; "
+        f"expected a single-chromosome locus"
+    )
+    return int(chroms[0])
+
+
+def _assert_prior_runs_on_chromosome(
+    fetch: Fetch, prior_runs: tuple[PriorRun, ...], chrom: int
+) -> None:
+    """Every prior run must fine-map the uniform run's chromosome, or its PIP row
+    would be drawn against the wrong Manhattan, recombination, and gene tracks."""
+    for run in prior_runs:
+        gwas = pl.read_parquet(
+            _dir(fetch, run.susie_task) / FILTERED_GWAS_FILENAME,
+            columns=[GWASLAB_CHROM_COL],
+        )
+        run_chrom = _single_chromosome(gwas, run_name=run.label)
+        assert run_chrom == chrom, (
+            f"The {run.label} run is on chromosome {run_chrom}, but the "
+            f"{UNIFORM_ROW_LABEL} run is on chromosome {chrom}"
+        )
 
 
 def _uniform_pip_row(uni_dir: Path) -> _PipRow:
