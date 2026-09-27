@@ -185,19 +185,6 @@ class PolyfunPriorSource:
             else self.even_chrom_explanation_weights_task
         )
 
-    def distinct_explanation_weights_tasks(self) -> tuple[Task, ...]:
-        """Every distinct set of annotation coefficients explaining the prior,
-        across all chromosomes."""
-        if (
-            self.odd_chrom_explanation_weights_task
-            is self.even_chrom_explanation_weights_task
-        ):
-            return (self.odd_chrom_explanation_weights_task,)
-        return (
-            self.odd_chrom_explanation_weights_task,
-            self.even_chrom_explanation_weights_task,
-        )
-
 
 # PolyFun Approach 1: the precomputed prior meta-analyzed over 15 UK Biobank traits.
 # Its explanation weights are a ridge surrogate of the prior on the annotations.

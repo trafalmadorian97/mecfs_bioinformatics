@@ -88,7 +88,7 @@ class PriorComparisonRuns:
         ]
 
 
-def secondary_pos_display_col(
+def _secondary_pos_display_col(
     secondary_position: SecondaryPositionFromSnpid | None,
 ) -> str | None:
     if secondary_position is None:
@@ -127,7 +127,7 @@ def load_prior_comparison_variants(
         f"Runs do not share one variant set; variants missing a PIP or lift: "
         f"{n_missing}"
     )
-    return _to_display_columns(rows, secondary_pos_display_col(secondary_position))
+    return _to_display_columns(rows, _secondary_pos_display_col(secondary_position))
 
 
 def _dir(fetch: Fetch, task: Task) -> Path:

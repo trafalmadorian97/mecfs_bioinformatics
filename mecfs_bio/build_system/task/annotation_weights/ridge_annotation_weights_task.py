@@ -202,17 +202,3 @@ def _accumulate_per_chromosome(
         y = frame.select(SNPVAR_COL).to_numpy().ravel().astype(np.float64)
         per_chrom[chrom] = accumulate_block(x=x, y=y)
     return per_chrom
-
-
-def load_annotation_weights(fetch: Fetch, task: Task) -> pl.DataFrame:
-    """Read an annotation weights table in this module's schema (annotation,
-    gamma_raw, gamma_standardized, family), from either this task's directory
-    or a standalone table file such as a copied-out tau weights table."""
-    asset = fetch(task.asset_id)
-    assert isinstance(asset, (FileAsset, DirectoryAsset))
-    path = (
-        asset.path
-        if isinstance(asset, FileAsset)
-        else asset.path / WEIGHTS_PARQUET_FILENAME
-    )
-    return pl.read_parquet(path)

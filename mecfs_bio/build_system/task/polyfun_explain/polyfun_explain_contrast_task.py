@@ -20,6 +20,7 @@ from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
+from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
@@ -29,7 +30,7 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
     ANNOTATION_COL,
     FAMILY_COL,
     GAMMA_RAW_COL,
-    load_annotation_weights,
+    WEIGHTS_PARQUET_FILENAME,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
@@ -229,7 +230,7 @@ class PolyfunExplainContrastTask(Task):
                 how="vertical",
             ).unique(subset=VARIANT_KEY, keep="first")
 
-        weights = load_annotation_weights(fetch, self.ridge_weights_task)
+        weights = _load_weights(fetch, self.ridge_weights_task)
         annot_cols = weights[ANNOTATION_COL].to_list()
         gamma = dict(zip(weights[ANNOTATION_COL], weights[GAMMA_RAW_COL]))
         family = dict(zip(weights[ANNOTATION_COL], weights[FAMILY_COL]))
@@ -434,6 +435,17 @@ def load_cs_numbers(run_dir: Path) -> pl.DataFrame:
         .group_by(VARIANT_KEY)
         .agg(pl.col(CS_NUMBER_COL).min())
     )
+
+
+def _load_weights(fetch: Fetch, task: Task) -> pl.DataFrame:
+    asset = fetch(task.asset_id)
+    assert isinstance(asset, (FileAsset, DirectoryAsset))
+    path = (
+        asset.path
+        if isinstance(asset, FileAsset)
+        else asset.path / WEIGHTS_PARQUET_FILENAME
+    )
+    return pl.read_parquet(path)
 
 
 def _load_annotations(

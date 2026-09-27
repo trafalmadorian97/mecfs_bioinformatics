@@ -17,9 +17,6 @@ rerun everything downstream of it.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.annotation_weights_comparison import (
-    DECODE_ME_ANNOTATION_WEIGHTS_COMPARISON,
-)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.decode_me_l2_sldsc_prior import (
     DECODE_ME_L2_SLDSC_SNPVAR_TABLE,
     DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS,
@@ -50,7 +47,6 @@ def run_decode_me_polyfun_l2_sldsc_prior_fine_mapping():
             DECODE_ME_L2_SLDSC_SNPVAR_TABLE,
             DECODE_ME_L2_SLDSC_TAU_ODD_WEIGHTS,
             DECODE_ME_L2_SLDSC_TAU_EVEN_WEIGHTS,
-            DECODE_ME_ANNOTATION_WEIGHTS_COMPARISON,
         ]
         + [task for locus in loci for task in locus.terminal_tasks()]
         + POLYFUN_PRIOR_COMPARISON_CHR1_174.terminal_tasks(),
