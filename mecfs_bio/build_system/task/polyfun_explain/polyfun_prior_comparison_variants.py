@@ -1,11 +1,12 @@
 """Per-variant view of an external and an internal prior's SUSIE runs against the
-uniform run at one locus, shared by the prior comparison table and plots.
+uniform run at one locus, as used by the prior comparison table.
 
 Every locus variant gets each run's credible-set number and PIP, and each prior's
 lift m*pi_i (from its contrast task's prior_lift.parquet). The three runs share
 one variant set (a prior run requires its prior to cover every variant), so the
-PIP and lift columns are filled on every row; a credible-set column is null only
-when the variant is not in that run's credible sets.
+PIP and lift columns are filled on every row (asserted, with unique variant keys);
+a credible-set column is null only when the variant is not in that run's
+credible sets.
 """
 
 from pathlib import Path
@@ -50,13 +51,6 @@ CS_COLS = [CS_PF_EXT_COL, CS_PF_INT_COL, CS_U_COL]
 
 _RUN_COLS = [
     *CS_COLS,
-    PIP_PF_EXT_COL,
-    PIP_PF_INT_COL,
-    PIP_U_COL,
-    LIFT_EXT_COL,
-    LIFT_INT_COL,
-]
-_FILLED_ON_EVERY_ROW = [
     PIP_PF_EXT_COL,
     PIP_PF_INT_COL,
     PIP_U_COL,
@@ -108,26 +102,38 @@ def load_prior_comparison_variants(
     ext_dir = _dir(fetch, runs.external_prior_susie_task)
     int_dir = _dir(fetch, runs.internal_prior_susie_task)
     rows = _pip(load_run_variants(uni_dir, secondary_position), PIP_U_COL)
-    for frame in [
-        _pip(load_run_variants(ext_dir), PIP_PF_EXT_COL),
-        _pip(load_run_variants(int_dir), PIP_PF_INT_COL),
-        _lift(fetch, runs.external_prior_contrast_task, LIFT_EXT_COL),
-        _lift(fetch, runs.internal_prior_contrast_task, LIFT_INT_COL),
+    # Filled on every row: each covers exactly the uniform run's variants.
+    per_variant = {
+        PIP_PF_EXT_COL: _pip(load_run_variants(ext_dir), PIP_PF_EXT_COL),
+        PIP_PF_INT_COL: _pip(load_run_variants(int_dir), PIP_PF_INT_COL),
+        LIFT_EXT_COL: _lift(fetch, runs.external_prior_contrast_task, LIFT_EXT_COL),
+        LIFT_INT_COL: _lift(fetch, runs.internal_prior_contrast_task, LIFT_INT_COL),
+    }
+    for name, frame in per_variant.items():
+        _assert_same_variants(reference=rows, other=frame, other_name=name)
+    # Credible-set members only; null elsewhere.
+    credible_sets = [
         _cs(uni_dir, CS_U_COL),
         _cs(ext_dir, CS_PF_EXT_COL),
         _cs(int_dir, CS_PF_INT_COL),
-    ]:
-        rows = rows.join(frame, on=VARIANT_KEY, how="left")
-    n_missing = {
-        col: rows[col].null_count()
-        for col in _FILLED_ON_EVERY_ROW
-        if rows[col].null_count()
-    }
-    assert not n_missing, (
-        f"Runs do not share one variant set; variants missing a PIP or lift: "
-        f"{n_missing}"
-    )
+    ]
+    for frame in [*per_variant.values(), *credible_sets]:
+        rows = rows.join(frame, on=VARIANT_KEY, how="left", validate="1:1")
     return _to_display_columns(rows, _secondary_pos_display_col(secondary_position))
+
+
+def _assert_same_variants(
+    reference: pl.DataFrame, other: pl.DataFrame, other_name: str
+) -> None:
+    """The comparison left-joins every per-variant frame onto the uniform run's
+    variants, so a variant missing from other would get a null and one only in
+    other would be dropped silently. Require the two variant sets to match."""
+    n_missing = reference.join(other, on=VARIANT_KEY, how="anti").height
+    n_extra = other.join(reference, on=VARIANT_KEY, how="anti").height
+    assert n_missing == 0 and n_extra == 0, (
+        f"{other_name} does not cover the uniform run's variants: {n_missing} "
+        f"uniform variant(s) missing from it, {n_extra} variant(s) only in it"
+    )
 
 
 def _dir(fetch: Fetch, task: Task) -> Path:
