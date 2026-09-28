@@ -291,6 +291,17 @@ def define_env(env):
         )
 
     @env.macro
+    def susie_polyfun_internal_external_explain_plot(
+        src,
+        alt="",
+    ):
+        return static_img_embed(
+            src=src,
+            alt=alt,
+            caption=SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_PLOT_CAPTION,
+        )
+
+    @env.macro
     def susie_polyfun_data_table(src, id, page_size=20, precision=4):
         return data_table(
             src=src,
@@ -298,6 +309,16 @@ def define_env(env):
             page_size=page_size,
             precision=precision,
             caption=SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION,
+        )
+
+    @env.macro
+    def susie_polyfun_internal_external_data_table(src, id, page_size=20, precision=4):
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption=SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_TABLE_CAPTION,
         )
 
     @env.macro
@@ -524,6 +545,7 @@ _DATA_TABLE_SCRIPT = """<script type="module">
 PPP_RG_DATA_TABLE_CAPTION = "Columns: oid: Olink assay ID; gene: name of gene/protein under study; rg: CT-LDSC genetic correlation estimate; rg_se: jackknife standard error of CT-LDSC genetic correlation estimate; rg_p: p value of test that rg is not zero; gcov: estimated genetic covariance; inter: intercept term in CT-LDSC regression; h2_trait: trait heritability estimate; h2_prot: protein heritability estimate; n_snps: number of hapmap3 variants included; spr: for cases in which multiple rows corresponding to distinct Olink assays of the same protein have been merged into a single row, this gives the maximum spread between the rg values of the merged rows; s_bh: True if the null hypothesis is rejected under the Benjamini-Hochberg procedure at an FDR of 0.05; s_bon: True if the null hypothesis is rejected under the Bonferroni correction at a significance level of 0.05."
 
 SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION = "Plot illustrating results of applying SUSIE with a PolyFun prior to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs (Posterior Inclusion Probabilities) from SUSIE run with uniform prior. Each credible set is assigned its own color.  Third panel: PIPs from SUSIE run with PolyFun prior. Each credible set is assigned its own color. Callouts: variants with the highest PIPs in the PolyFun-prior SUSIE run are marked with callouts. If such a high-PIP variant has an increased PolyFun prior due to certain functional annotations, these key annotations are listed along with the variant. Fourth Panel: genes at locus."
+SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_PLOT_CAPTION = "Plot illustrating results of applying SUSIE with two different PolyFun priors to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs (Posterior Inclusion Probabilities) from SUSIE run with uniform prior. Each credible set is assigned its own color.  Third panel: PIPs from SUSIE run with external PolyFun prior. Each credible set is assigned its own color. Fourth panel: PIPs from SUSIE run with internal PolyFun prior. Each credible set is assigned its own color. Callouts: variants with the highest PIPs in the PolyFun-prior SUSIE runs are marked with callouts. If such a high-PIP variant has an increased PolyFun prior due to certain functional annotations, these key annotations are listed along with the variant. Fifth Panel: genes at locus."
 
 SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = _columns_caption(
     {
@@ -540,6 +562,7 @@ SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = _columns_caption(
         f"{DISP_ANNOT_PREFIX}X": "Approximate contribution of annotation family X to PolyFun prior minus averaged contribution of annotation family X over all variants selected by uniform-prior SUSIE run.",
     }
 )
+SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_TABLE_CAPTION = "Columns: chr: chromosome; pos: hg19 genomic position; pos_hg38: hg38 genomic position; nea: non-effect allele; ea: effect allele; cs_pf_ext: credible set number in PolyFun external-prior run; cs_pf_int:credible set number in PolyFun internal-prior run; cs_u: credible set number in uniform-prior run; pip_pf_ext: PIP (Posterior Inclusion Probability) in PolyFun external-prior SUSIE run; pip_pf_int:PIP (Posterior Inclusion Probability) in PolyFun internal-prior SUSIE run; pip_u: PIP in uniform-prior SUSIE run; lift_ext: proportional increase in prior weight when switching from uniform prior to PolyFun external prior; lift_int: proportional increase in prior weight when switching from uniform prior to PolyFun internal prior."
 
 
 SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = "Columns: family: name of high-level annotation family; annotation: granular annotation name; gamma: regression coefficient of PolyFun prior weight on granular annotation, which indicates the extent to which the annotation can affect the prior. alpha_bar: PIP-weighted mean value of this annotation across all variants in uniform-prior SUSIE credible sets, which can be used as a baseline against which to compare the annotation values of key variants.  other columns: the values of all annotations for key variants under consideration."
