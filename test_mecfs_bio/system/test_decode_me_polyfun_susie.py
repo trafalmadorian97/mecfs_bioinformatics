@@ -31,7 +31,7 @@ from test_mecfs_bio.system.util import log_on_error
 _L10_LABEL = "l10"
 
 # The documented top PolyFun SUSIE variant at the DecodeME chr1:173.5M-174.5M locus,
-# from docs/Analysis/ME_CFS/DecodeME/Fine_Mapping/SUSIE-PolyFun_(External Prior)/
+# from docs/Analysis/ME_CFS/DecodeME/Fine_Mapping/SUSIE-PolyFun_(External_Prior)/
 # a_Polyfun_Chr1_173M_174M_Locus.md. POS is hg19 (the Broad UKBB LD panel's build);
 # note the gwaslab SNPID keeps the original hg38 position, so the lead variant is
 # identified here by chromosome, hg19 position, and allele pair rather than SNPID.

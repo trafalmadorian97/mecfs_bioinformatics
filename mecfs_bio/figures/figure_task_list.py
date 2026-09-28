@@ -77,6 +77,12 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabga
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr1_174_128_548 import (
+    POLYFUN_PRIOR_COMPARISON_CHR1_174,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr1_174_128_548_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr1_174_128_548 import (
     POLYFUN_EXPLAIN_CHR1_174,
 )
@@ -272,7 +278,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.susie_base_credible_set_parquet_table,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_base_credible_set_parquet_table,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_strict_credible_set_parquet_table,
-    # Polyfun SUSIE results,
+    # Polyfun SUSIE results (external prior),
     POLYFUN_EXPLAIN_CHR1_174.upset_all_polyfun,
     POLYFUN_EXPLAIN_CHR1_174.upset_cs50_polyfun,
     POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].plot_svg,
@@ -296,6 +302,11 @@ ALL_FIGURE_TASKS: list[Task] = [
     POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l1"].plot_svg,
     POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l1"].detailed_table,
     POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l1"].per_variant_annotation_table,
+    # PolyFun susie results (internal prior),
+    POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].table,
     # H-magma
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "adult_brain"
