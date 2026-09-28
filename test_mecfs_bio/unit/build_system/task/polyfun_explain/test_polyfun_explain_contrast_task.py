@@ -28,11 +28,6 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     DETAILED_DISPLAY_TABLE_FILENAME,
-    DISP_ANNOT_PREFIX,
-    DISP_CS_PF,
-    DISP_CS_U,
-    DISP_LIFT,
-    DISP_PIP_PF,
     PER_FAMILY_CONTRAST_FILENAME,
     PER_VARIANT_ANNOTATION_TABLE_FILENAME,
     SELECTION_JSON_FILENAME,
@@ -57,6 +52,13 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SNPID_COL,
 )
 from mecfs_bio.constants.polyfun_annotation_families import FAMILY_SHORT_LABELS
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    DISP_ANNOT_PREFIX,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_LIFT,
+    DISP_PIP_PF,
+)
 
 # Two real baseline-LF annotations from different families so family aggregation
 # is exercised: Coding_UCSC_common -> coding, GERP.NS -> conserved.

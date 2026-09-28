@@ -12,7 +12,6 @@ from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMet
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
-    DISP_POS,
     SecondaryPositionFromSnpid,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_table_task import (
@@ -31,6 +30,9 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PIP_FILENAME,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    DISP_POS,
+)
 from test_mecfs_bio.unit.build_system.task.polyfun_explain.test_polyfun_explain_contrast_task import (
     _ExplainInputs,
     build_synthetic_explain_inputs,

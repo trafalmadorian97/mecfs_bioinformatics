@@ -19,11 +19,6 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     CS_NUMBER_COL,
-    DISP_CHR,
-    DISP_EA,
-    DISP_LIFT,
-    DISP_NEA,
-    DISP_POS,
     PRIOR_LIFT_FILENAME,
     SECONDARY_POS_COL,
     VARIANT_KEY,
@@ -37,6 +32,14 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
+)
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    DISP_CHR,
+    DISP_EA,
+    DISP_LIFT,
+    DISP_NEA,
+    DISP_POS,
+    secondary_pos_display_col,
 )
 
 CS_PF_EXT_COL = "cs_pf_ext"
@@ -87,7 +90,7 @@ def _secondary_pos_display_col(
 ) -> str | None:
     if secondary_position is None:
         return None
-    return f"pos_{secondary_position.build_label}"
+    return secondary_pos_display_col(secondary_position.build_label)
 
 
 def load_prior_comparison_variants(
