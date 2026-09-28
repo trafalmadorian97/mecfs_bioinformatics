@@ -18,11 +18,6 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_table_
     PolyfunPriorComparisonTableTask,
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_variants import (
-    CS_PF_EXT_COL,
-    CS_U_COL,
-    LIFT_EXT_COL,
-    LIFT_INT_COL,
-    PIP_PF_INT_COL,
     PriorComparisonRuns,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
@@ -31,7 +26,12 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.polyfun_explain_display_columns import (
+    CS_PF_EXT_COL,
+    CS_U_COL,
     DISP_POS,
+    LIFT_EXT_COL,
+    LIFT_INT_COL,
+    PIP_PF_INT_COL,
 )
 from test_mecfs_bio.unit.build_system.task.polyfun_explain.test_polyfun_explain_contrast_task import (
     _ExplainInputs,

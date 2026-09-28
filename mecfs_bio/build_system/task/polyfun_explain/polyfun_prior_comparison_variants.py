@@ -34,22 +34,22 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
 )
 from mecfs_bio.constants.polyfun_explain_display_columns import (
+    CS_PF_EXT_COL,
+    CS_PF_INT_COL,
+    CS_U_COL,
     DISP_CHR,
     DISP_EA,
     DISP_LIFT,
     DISP_NEA,
     DISP_POS,
+    LIFT_EXT_COL,
+    LIFT_INT_COL,
+    PIP_PF_EXT_COL,
+    PIP_PF_INT_COL,
+    PIP_U_COL,
     secondary_pos_display_col,
 )
 
-CS_PF_EXT_COL = "cs_pf_ext"
-CS_PF_INT_COL = "cs_pf_int"
-CS_U_COL = "cs_u"
-PIP_PF_EXT_COL = "pip_pf_ext"
-PIP_PF_INT_COL = "pip_pf_int"
-PIP_U_COL = "pip_u"
-LIFT_EXT_COL = "lift_ext"
-LIFT_INT_COL = "lift_int"
 CS_COLS = [CS_PF_EXT_COL, CS_PF_INT_COL, CS_U_COL]
 
 _RUN_COLS = [

@@ -22,6 +22,17 @@ DISP_ANNOT_PREFIX = "annot_"
 DISP_GAMMA = "gamma"
 DISP_ALPHA_BAR = "alpha_bar"
 
+# Columns of the prior comparison table, which sets an external and an internal
+# PolyFun prior's SUSIE runs side by side with the uniform-prior run.
+CS_PF_EXT_COL = "cs_pf_ext"
+CS_PF_INT_COL = "cs_pf_int"
+CS_U_COL = "cs_u"
+PIP_PF_EXT_COL = "pip_pf_ext"
+PIP_PF_INT_COL = "pip_pf_int"
+PIP_U_COL = "pip_u"
+LIFT_EXT_COL = "lift_ext"
+LIFT_INT_COL = "lift_int"
+
 
 def secondary_pos_display_col(build_label: str) -> str:
     """Name of the display column holding a secondary-build position, e.g. pos_hg38."""
