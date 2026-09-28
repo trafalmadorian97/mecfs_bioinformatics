@@ -1,6 +1,21 @@
+import html
 import os
 import textwrap
 from pathlib import Path
+
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    DISP_ANNOT_PREFIX,
+    DISP_CHR,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_EA,
+    DISP_LIFT,
+    DISP_NEA,
+    DISP_PIP_PF,
+    DISP_PIP_U,
+    DISP_POS,
+    secondary_pos_display_col,
+)
 
 
 def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
@@ -25,6 +40,21 @@ def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
     """
     site_path = Path(src).resolve().relative_to(Path(docs_dir).resolve())
     return os.path.relpath(site_path, Path(page_dest_uri).parent)
+
+
+def _columns_caption(columns: dict[str, str]) -> str:
+    """Render a table caption describing each column, with column names in bold.
+
+    Parameters
+    ----------
+    columns : dict[str, str]
+        Maps each column name, as it appears in the table, to a plain-text
+        description. Both are HTML-escaped.
+    """
+    return "Columns: " + "; ".join(
+        f"{html.escape(name)}: {html.escape(description)}"
+        for name, description in columns.items()
+    )
 
 
 def define_env(env):
@@ -495,7 +525,21 @@ PPP_RG_DATA_TABLE_CAPTION = "Columns: oid: Olink assay ID; gene: name of gene/pr
 
 SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION = "Plot illustrating results of applying SUSIE with a PolyFun prior to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs (Posterior Inclusion Probabilities) from SUSIE run with uniform prior. Each credible set is assigned its own color.  Third panel: PIPs from SUSIE run with PolyFun prior. Each credible set is assigned its own color. Callouts: variants with the highest PIPs in the PolyFun-prior SUSIE run are marked with callouts. If such a high-PIP variant has an increased PolyFun prior due to certain functional annotations, these key annotations are listed along with the variant. Fourth Panel: genes at locus."
 
-SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = "Columns: chr: chromosome; pos: hg19 genomic position; pos_hg38: hg38 genomic position; nea: non-effect allele; ea: effect allele; cs_pf: credible set number in PolyFun-prior run; cs_u: credible set number in uniform-prior run; pip_pf: PIP (Posterior Inclusion Probability) in PolyFun-prior SUSIE run; pip_u: PIP in uniform-prior SUSIE run; lift: proportional increase in prior weight when switching from uniform prior to PolyFun prior; annot_X: Approximate contribution of annotation family X to PolyFun prior minus averaged contribution of annotation family X over all variants selected by uniform-prior SUSIE run."
+SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = _columns_caption(
+    {
+        DISP_CHR: "chromosome",
+        DISP_POS: "hg19 genomic position",
+        secondary_pos_display_col("hg38"): "hg38 genomic position",
+        DISP_NEA: "non-effect allele",
+        DISP_EA: "effect allele",
+        DISP_CS_PF: "credible set number in PolyFun-prior run",
+        DISP_CS_U: "credible set number in uniform-prior run",
+        DISP_PIP_PF: "PIP (Posterior Inclusion Probability) in PolyFun-prior SUSIE run",
+        DISP_PIP_U: "PIP in uniform-prior SUSIE run",
+        DISP_LIFT: "proportional increase in prior weight when switching from uniform prior to PolyFun prior",
+        f"{DISP_ANNOT_PREFIX}X": "Approximate contribution of annotation family X to PolyFun prior minus averaged contribution of annotation family X over all variants selected by uniform-prior SUSIE run.",
+    }
+)
 
 
 SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = "Columns: family: name of high-level annotation family; annotation: granular annotation name; gamma: regression coefficient of PolyFun prior weight on granular annotation, which indicates the extent to which the annotation can affect the prior. alpha_bar: PIP-weighted mean value of this annotation across all variants in uniform-prior SUSIE credible sets, which can be used as a baseline against which to compare the annotation values of key variants.  other columns: the values of all annotations for key variants under consideration."
