@@ -31,7 +31,9 @@ FINNGEN_R13_MIGRAINE_TRIPTAN_DATA_RAW = DownloadFileTask(
         project="finngen_r13_migraine_triptan",
         sub_dir="raw",
         project_path=PurePath("finngen_R13_MIGRAINE_TRIPTAN.gz"),
-        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
+        read_spec=DataFrameReadSpec(
+            format=DataFrameTextFormat(separator="\t", null_values=["NA"])
+        ),
     ),
     url="https://storage.googleapis.com/finngen-public-data-r13/summary_stats/finngen_R13_MIGRAINE_TRIPTAN.gz",
     md5_hash="f281dadfb34a6ecbdbd3fb17394db576",

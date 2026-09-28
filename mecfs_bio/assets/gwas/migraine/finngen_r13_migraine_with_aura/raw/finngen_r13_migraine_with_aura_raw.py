@@ -30,7 +30,9 @@ FINNGEN_R13_MIGRAINE_WITH_AURA_DATA_RAW = DownloadFileTask(
         project="finngen_r13_migraine_with_aura",
         sub_dir="raw",
         project_path=PurePath("finngen_R13_G6_MIGRAINE_WITH_AURA.gz"),
-        read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
+        read_spec=DataFrameReadSpec(
+            format=DataFrameTextFormat(separator="\t", null_values=["NA"])
+        ),
     ),
     url="https://storage.googleapis.com/finngen-public-data-r13/summary_stats/finngen_R13_G6_MIGRAINE_WITH_AURA.gz",
     md5_hash="abb7380162e534d43b436dc59fd9dbe8",
