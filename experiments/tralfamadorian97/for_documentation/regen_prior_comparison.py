@@ -7,7 +7,14 @@ from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
 
 def go():
     regenerate_figures(
-        POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.terminal_tasks()
+        [
+
+            POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.upset_all_polyfun,
+            POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+            POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].plot_svg,
+            POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].table,
+        ]
+        # POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.terminal_tasks()
     )
     # regenerate_figures(
     #

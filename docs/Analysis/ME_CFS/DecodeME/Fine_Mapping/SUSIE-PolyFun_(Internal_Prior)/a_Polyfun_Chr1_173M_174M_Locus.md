@@ -68,17 +68,17 @@ The plot below illustrates the results of $L=10$ SUSIE fine mapping with the uni
 
 
 {{
-susie_polyfun_explain_plot("docs/_figs/decode_me_polyfun_prior_comparison_chr1_174_128_548_l10_prior_comparison_plot_svg.svg")
+susie_polyfun_internal_external_explain_plot("docs/_figs/decode_me_polyfun_prior_comparison_chr1_174_128_548_l10_prior_comparison_plot_svg.svg")
 }}
 
 The table below provides detailed information on $L=10$ SUSIE credible-set variants with and without the polyfun prior.
 
 {{
-data_table(src="docs/_figs/decode_me_polyfun_prior_comparison_chr1_174_128_548_l10_prior_comparison_table.parquet",
+susie_polyfun_internal_external_data_table(src="docs/_figs/decode_me_polyfun_prior_comparison_chr1_174_128_548_l10_prior_comparison_table.parquet",
 id="chr1_polyfun_susie_table")
 }}
 
-
+Comparing the internal and external prior lift columns in the table above ( _lift_int_ and _lift_ext_ ) we see that at this locus, the two priors boost broadly the same set of variants, but the details differ, resulting in different variants being selected at the top.  Moreover, _lift_ext_ has a higher maximum than _lift_int_, indicating that the external prior is more peaked than the internal prior.  This is consistent with there being a stronger statistical signal in the 15 pooled UK Biobank GWAS than used to construct the external prior than in the opposite-parity DecodeME GWAS used to construct the internal prior.
 
 
 
