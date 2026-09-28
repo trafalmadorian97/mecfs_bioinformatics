@@ -1,6 +1,6 @@
 """Column names of the docs-facing SUSIE-PolyFun explanation tables.
 
-Kept free of heavy imports so the docs macros (main.py) can import these names
+Kept free of heavy imports so the docs macros (docs_macros) can import these names
 to describe the columns in figure captions.
 """
 
