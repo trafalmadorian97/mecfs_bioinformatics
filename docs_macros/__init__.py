@@ -1,6 +1,50 @@
+import html
 import os
 import textwrap
 from pathlib import Path
+
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+)
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    CS_PF_EXT_COL,
+    CS_PF_INT_COL,
+    CS_U_COL,
+    DISP_ALPHA_BAR,
+    DISP_ANNOT_PREFIX,
+    DISP_CHR,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_EA,
+    DISP_GAMMA,
+    DISP_LIFT,
+    DISP_NEA,
+    DISP_PIP_PF,
+    DISP_PIP_U,
+    DISP_POS,
+    LIFT_EXT_COL,
+    LIFT_INT_COL,
+    PIP_PF_EXT_COL,
+    PIP_PF_INT_COL,
+    PIP_U_COL,
+    secondary_pos_display_col,
+)
+from mecfs_bio.constants.ppp_ldsc_constants import (
+    PPP_RG_DISPLAY_GCOV_INTERCEPT_COL,
+    PPP_RG_DISPLAY_H2_PROTEIN_COL,
+    PPP_RG_GCOV_COL,
+    PPP_RG_GENE_COL,
+    PPP_RG_H2_TRAIT_COL,
+    PPP_RG_N_SNPS_COL,
+    PPP_RG_OID_COL,
+    PPP_RG_RG_COL,
+    PPP_RG_RG_P_COL,
+    PPP_RG_RG_SE_COL,
+    PPP_RG_RG_SPREAD_COL,
+    PPP_RG_SIGNIFICANT_BH_COL,
+    PPP_RG_SIGNIFICANT_BONFERRONI_COL,
+)
 
 
 def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
@@ -25,6 +69,21 @@ def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
     """
     site_path = Path(src).resolve().relative_to(Path(docs_dir).resolve())
     return os.path.relpath(site_path, Path(page_dest_uri).parent)
+
+
+def _columns_caption(columns: dict[str, str]) -> str:
+    """Render a table caption describing each column.
+
+    Parameters
+    ----------
+    columns : dict[str, str]
+        Maps each column name, as it appears in the table, to a plain-text
+        description. Both are HTML-escaped.
+    """
+    return "Columns: " + "; ".join(
+        f"{html.escape(name)}: {html.escape(description)}"
+        for name, description in columns.items()
+    )
 
 
 def define_env(env):
@@ -512,15 +571,69 @@ _DATA_TABLE_SCRIPT = """<script type="module">
 </script>"""
 
 
-PPP_RG_DATA_TABLE_CAPTION = "Columns: oid: Olink assay ID; gene: name of gene/protein under study; rg: CT-LDSC genetic correlation estimate; rg_se: jackknife standard error of CT-LDSC genetic correlation estimate; rg_p: p value of test that rg is not zero; gcov: estimated genetic covariance; inter: intercept term in CT-LDSC regression; h2_trait: trait heritability estimate; h2_prot: protein heritability estimate; n_snps: number of hapmap3 variants included; spr: for cases in which multiple rows corresponding to distinct Olink assays of the same protein have been merged into a single row, this gives the maximum spread between the rg values of the merged rows; s_bh: True if the null hypothesis is rejected under the Benjamini-Hochberg procedure at an FDR of 0.05; s_bon: True if the null hypothesis is rejected under the Bonferroni correction at a significance level of 0.05."
+PPP_RG_DATA_TABLE_CAPTION = _columns_caption(
+    {
+        PPP_RG_OID_COL: "Olink assay ID",
+        PPP_RG_GENE_COL: "name of gene/protein under study",
+        PPP_RG_RG_COL: "CT-LDSC genetic correlation estimate",
+        PPP_RG_RG_SE_COL: "jackknife standard error of CT-LDSC genetic correlation estimate",
+        PPP_RG_RG_P_COL: "p value of test that rg is not zero",
+        PPP_RG_GCOV_COL: "estimated genetic covariance",
+        PPP_RG_DISPLAY_GCOV_INTERCEPT_COL: "intercept term in CT-LDSC regression",
+        PPP_RG_H2_TRAIT_COL: "trait heritability estimate",
+        PPP_RG_DISPLAY_H2_PROTEIN_COL: "protein heritability estimate",
+        PPP_RG_N_SNPS_COL: "number of hapmap3 variants included",
+        PPP_RG_RG_SPREAD_COL: "for cases in which multiple rows corresponding to distinct Olink assays of the same protein have been merged into a single row, this gives the maximum spread between the rg values of the merged rows",
+        PPP_RG_SIGNIFICANT_BH_COL: "True if the null hypothesis is rejected under the Benjamini-Hochberg procedure at an FDR of 0.05",
+        PPP_RG_SIGNIFICANT_BONFERRONI_COL: "True if the null hypothesis is rejected under the Bonferroni correction at a significance level of 0.05.",
+    }
+)
 
 SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION = "Plot illustrating results of applying SUSIE with a PolyFun prior to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs (Posterior Inclusion Probabilities) from SUSIE run with uniform prior. Each credible set is assigned its own color.  Third panel: PIPs from SUSIE run with PolyFun prior. Each credible set is assigned its own color. Callouts: variants with the highest PIPs in the PolyFun-prior SUSIE run are marked with callouts. If such a high-PIP variant has an increased PolyFun prior due to certain functional annotations, these key annotations are listed along with the variant. Fourth Panel: genes at locus."
 SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_PLOT_CAPTION = "Plot illustrating results of applying SUSIE with two different PolyFun priors to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs (Posterior Inclusion Probabilities) from SUSIE run with uniform prior. Each credible set is assigned its own color.  Third panel: PIPs from SUSIE run with external PolyFun prior. Each credible set is assigned its own color. Fourth panel: PIPs from SUSIE run with internal PolyFun prior. Each credible set is assigned its own color. Callouts: variants with the highest PIPs in the PolyFun-prior SUSIE runs are marked with callouts. If such a high-PIP variant has an increased PolyFun prior due to certain functional annotations, these key annotations are listed along with the variant. Fifth Panel: genes at locus."
 
-SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = "Columns: chr: chromosome; pos: hg19 genomic position; pos_hg38: hg38 genomic position; nea: non-effect allele; ea: effect allele; cs_pf: credible set number in PolyFun-prior run; cs_u: credible set number in uniform-prior run; pip_pf: PIP (Posterior Inclusion Probability) in PolyFun-prior SUSIE run; pip_u: PIP in uniform-prior SUSIE run; lift: proportional increase in prior weight when switching from uniform prior to PolyFun prior; annot_X: Approximate contribution of annotation family X to PolyFun prior minus averaged contribution of annotation family X over all variants selected by uniform-prior SUSIE run."
-SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_TABLE_CAPTION = "Columns: chr: chromosome; pos: hg19 genomic position; pos_hg38: hg38 genomic position; nea: non-effect allele; ea: effect allele; cs_pf_ext: credible set number in PolyFun external-prior run; cs_pf_int:credible set number in PolyFun internal-prior run; cs_u: credible set number in uniform-prior run; pip_pf_ext: PIP (Posterior Inclusion Probability) in PolyFun external-prior SUSIE run; pip_pf_int:PIP (Posterior Inclusion Probability) in PolyFun internal-prior SUSIE run; pip_u: PIP in uniform-prior SUSIE run; lift_ext: proportional increase in prior weight when switching from uniform prior to PolyFun external prior; lift_int: proportional increase in prior weight when switching from uniform prior to PolyFun internal prior."
+SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = _columns_caption(
+    {
+        DISP_CHR: "chromosome",
+        DISP_POS: "hg19 genomic position",
+        secondary_pos_display_col("hg38"): "hg38 genomic position",
+        DISP_NEA: "non-effect allele",
+        DISP_EA: "effect allele",
+        DISP_CS_PF: "credible set number in PolyFun-prior run",
+        DISP_CS_U: "credible set number in uniform-prior run",
+        DISP_PIP_PF: "PIP (Posterior Inclusion Probability) in PolyFun-prior SUSIE run",
+        DISP_PIP_U: "PIP in uniform-prior SUSIE run",
+        DISP_LIFT: "proportional increase in prior weight when switching from uniform prior to PolyFun prior",
+        f"{DISP_ANNOT_PREFIX}X": "Approximate contribution of annotation family X to PolyFun prior minus averaged contribution of annotation family X over all variants selected by uniform-prior SUSIE run.",
+    }
+)
+SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_TABLE_CAPTION = _columns_caption(
+    {
+        DISP_CHR: "chromosome",
+        DISP_POS: "hg19 genomic position",
+        secondary_pos_display_col("hg38"): "hg38 genomic position",
+        DISP_NEA: "non-effect allele",
+        DISP_EA: "effect allele",
+        CS_PF_EXT_COL: "credible set number in PolyFun external-prior run",
+        CS_PF_INT_COL: "credible set number in PolyFun internal-prior run",
+        CS_U_COL: "credible set number in uniform-prior run",
+        PIP_PF_EXT_COL: "PIP (Posterior Inclusion Probability) in PolyFun external-prior SUSIE run",
+        PIP_PF_INT_COL: "PIP (Posterior Inclusion Probability) in PolyFun internal-prior SUSIE run",
+        PIP_U_COL: "PIP in uniform-prior SUSIE run",
+        LIFT_EXT_COL: "proportional increase in prior weight when switching from uniform prior to PolyFun external prior",
+        LIFT_INT_COL: "proportional increase in prior weight when switching from uniform prior to PolyFun internal prior.",
+    }
+)
 
 
-SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = "Columns: family: name of high-level annotation family; annotation: granular annotation name; gamma: regression coefficient of PolyFun prior weight on granular annotation, which indicates the extent to which the annotation can affect the prior. alpha_bar: PIP-weighted mean value of this annotation across all variants in uniform-prior SUSIE credible sets, which can be used as a baseline against which to compare the annotation values of key variants.  other columns: the values of all annotations for key variants under consideration."
+SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = _columns_caption(
+    {
+        FAMILY_COL: "name of high-level annotation family",
+        ANNOTATION_COL: "granular annotation name",
+        DISP_GAMMA: "regression coefficient of PolyFun prior weight on granular annotation, which indicates the extent to which the annotation can affect the prior",
+        DISP_ALPHA_BAR: "PIP-weighted mean value of this annotation across all variants in uniform-prior SUSIE credible sets, which can be used as a baseline against which to compare the annotation values of key variants",
+        "other columns": "the values of all annotations for key variants under consideration.",
+    }
+)
 
 LDSC_DIAGNOSTIC_PLOT_CAPTION = "LDSC diagnostic plot.  Genetic variants are binned by LD Score.  For each bin, we plot the mean LD score of variants in the bin (x axis) against Wald chi squared statistic (y axis 1) and scaled Wald chi squared statistic (y axis 2). Each plotted bin includes error bars indicating the standard error of bin chi squared mean. We also plot the LDSC regression line (solid) and the line corresponding to chi squared =1 (dashed).  If the LDSC model fits the data perfectly, we should expect that the intercept of the regression line is at chi squared=1"

@@ -51,6 +51,12 @@ from mecfs_bio.build_system.task.dataframe_output import (
     write_df_according_to_format,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+    GAMMA_RAW_COL,
+    GAMMA_STANDARDIZED_COL,
+)
 from mecfs_bio.constants.polyfun_annotation_families import family_for_annotation
 from mecfs_bio.constants.polyfun_constants import (
     POLYFUN_A1_COL,
@@ -61,10 +67,6 @@ from mecfs_bio.constants.polyfun_constants import (
 
 WEIGHTS_PARQUET_FILENAME = "weights.parquet"
 DIAGNOSTICS_JSON_FILENAME = "diagnostics.json"
-ANNOTATION_COL = "annotation"
-GAMMA_RAW_COL = "gamma_raw"
-GAMMA_STANDARDIZED_COL = "gamma_standardized"
-FAMILY_COL = "family"
 SNPVAR_COL = "snpvar_bin"
 # Both the annotation matrix and snpvar_meta carry alleles (A1/A2), so the
 # annotation<->snpvar join is exact on (CHR, BP, A1, A2), both sides

@@ -46,12 +46,16 @@ from mecfs_bio.build_system.task.ppp_ldsc.ppp_protein_rg_task import (
     PppRgConfig,
 )
 from mecfs_bio.constants.ppp_ldsc_constants import (
+    PPP_RG_DISPLAY_GCOV_INTERCEPT_COL,
+    PPP_RG_DISPLAY_H2_PROTEIN_COL,
     PPP_RG_GCOV_INTERCEPT_COL,
     PPP_RG_H2_PROTEIN_COL,
     PPP_RG_N_ASSAYS_COL,
     PPP_RG_RG_COL,
     PPP_RG_RG_P_COL,
     PPP_RG_RG_SE_COL,
+    PPP_RG_SIGNIFICANT_BH_COL,
+    PPP_RG_SIGNIFICANT_BONFERRONI_COL,
     PPP_RG_VARIANT_SET_COL,
     PPP_VARIANT_SET_CIS_EXCLUDED,
 )
@@ -124,10 +128,14 @@ def generate_ppp_rg_assets(
                 default=narwhals.col(PPP_RG_RG_P_COL),
             ),  # nan values contaminate the multiple testing correction
             MultipleTestingPipe(
-                p_col=PPP_RG_RG_P_COL, reject_name="s_bh", method="fdr_bh"
+                p_col=PPP_RG_RG_P_COL,
+                reject_name=PPP_RG_SIGNIFICANT_BH_COL,
+                method="fdr_bh",
             ),
             MultipleTestingPipe(
-                p_col=PPP_RG_RG_P_COL, reject_name="s_bon", method="bonferroni"
+                p_col=PPP_RG_RG_P_COL,
+                reject_name=PPP_RG_SIGNIFICANT_BONFERRONI_COL,
+                method="bonferroni",
             ),
             DropNanPipe(cols=[PPP_RG_RG_COL, PPP_RG_RG_SE_COL]),
             FilterRowsByMinInCol(min_value=0.02, col=PPP_RG_H2_PROTEIN_COL),
@@ -141,9 +149,9 @@ def generate_ppp_rg_assets(
             CastFloatsToFloat32Pipe(),
             CastIntsToInt32Pipe(),
             RenameColPipe(
-                PPP_RG_GCOV_INTERCEPT_COL, "inter"
+                PPP_RG_GCOV_INTERCEPT_COL, PPP_RG_DISPLAY_GCOV_INTERCEPT_COL
             ),  # shorten column names so table fits on screen in docs
-            RenameColPipe(PPP_RG_H2_PROTEIN_COL, "h2_prot"),
+            RenameColPipe(PPP_RG_H2_PROTEIN_COL, PPP_RG_DISPLAY_H2_PROTEIN_COL),
         ],
         asset_id=base_name + "_display_frame",
         out_format=ParquetOutFormat(
