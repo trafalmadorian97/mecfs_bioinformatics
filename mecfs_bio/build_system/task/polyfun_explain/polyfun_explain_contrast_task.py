@@ -27,9 +27,6 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    ANNOTATION_COL,
-    FAMILY_COL,
-    GAMMA_RAW_COL,
     WEIGHTS_PARQUET_FILENAME,
 )
 from mecfs_bio.build_system.task.base_task import Task
@@ -43,6 +40,11 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PRIOR_WEIGHT_COLUMN,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+    GAMMA_RAW_COL,
+)
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -53,6 +55,21 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.constants.polyfun_annotation_families import (
     FAMILY_SHORT_LABELS,
     AnnotationFamily,
+)
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    DISP_ALPHA_BAR,
+    DISP_ANNOT_PREFIX,
+    DISP_CHR,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_EA,
+    DISP_GAMMA,
+    DISP_LIFT,
+    DISP_NEA,
+    DISP_PIP_PF,
+    DISP_PIP_U,
+    DISP_POS,
+    secondary_pos_display_col,
 )
 
 # Two docs-facing display tables. The top-line table is the headline result
@@ -114,24 +131,6 @@ _TOP_VARIANT_PIP_GAP = 0.20
 # Internal columns used while building the per-variant annotation table.
 _VARIANT_LABEL_COL = "variant"
 _ANNOT_VALUE_COL = "value"
-# Per-annotation context columns on the per-variant table: the annotation
-# coefficient gamma_raw_c (see ridge_weights_task), and abar_c (the uniform-run PIP-weighted mean of the
-# annotation over the locus variants).
-DISP_GAMMA = "gamma"
-DISP_ALPHA_BAR = "alpha_bar"
-
-DISP_CHR = "chr"
-DISP_POS = "pos"
-DISP_EA = "ea"
-DISP_NEA = "nea"
-DISP_CS_PF = "cs_pf"
-DISP_CS_U = "cs_u"
-DISP_PIP_PF = "pip_pf"
-DISP_PIP_U = "pip_u"
-DISP_LIFT = "lift"
-# Prefix on the detailed table's per-family contrast columns, e.g. annot_coding.
-DISP_ANNOT_PREFIX = "annot_"
-
 FAMILY_CONTRAST_COL = "family_contrast"
 FAMILY_SCALED_COL = "family_scaled"  # sum_c gamma_raw_c * a_ic (NOT the contrast)
 CONTRAST_COL = "contrast"
@@ -221,7 +220,9 @@ class PolyfunExplainContrastTask(Task):
         secondary_pos_col: str | None = None
         secondary_map: pl.DataFrame | None = None
         if self.secondary_position is not None:
-            secondary_pos_col = f"pos_{self.secondary_position.build_label}"
+            secondary_pos_col = secondary_pos_display_col(
+                self.secondary_position.build_label
+            )
             secondary_map = pl.concat(
                 [
                     pf_variants.select(*VARIANT_KEY, SECONDARY_POS_COL),

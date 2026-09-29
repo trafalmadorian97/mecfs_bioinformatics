@@ -70,17 +70,17 @@ from mecfs_bio.build_system.task.annotation_weights.chromosome_blocked_ridge imp
     fit,
     select_alpha_loco,
 )
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    ANNOTATION_COL,
-    FAMILY_COL,
-    GAMMA_RAW_COL,
-    GAMMA_STANDARDIZED_COL,
-)
 from mecfs_bio.build_system.task.annotation_weights.stream_extract_annotation_parquets_task import (
     LDSCORE_PARQUET_MEMBER_RE,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+    GAMMA_RAW_COL,
+    GAMMA_STANDARDIZED_COL,
+)
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
