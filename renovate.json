@@ -60,6 +60,7 @@
         "ibis-framework",
         "actions/cache",
         "actions/setup-python",
+        "dawidd6/action-download-artifact",
         "dorny/paths-filter",
         "actionlint",
         "narwhals",
