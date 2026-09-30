@@ -2,9 +2,6 @@ from pathlib import Path
 
 import polars as pl
 
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    FAMILY_COL,
-)
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     CS_NUMBER_COL,
     FAMILY_CONTRAST_COL,
@@ -14,6 +11,9 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
+)
+from mecfs_bio.constants.annotation_weights_constants import (
+    FAMILY_COL,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,

@@ -32,12 +32,14 @@ from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task i
 )
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_prior_comparison_variants import (
     CS_COLS,
-    PIP_PF_EXT_COL,
-    PIP_PF_INT_COL,
     PriorComparisonRuns,
     load_prior_comparison_variants,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    PIP_PF_EXT_COL,
+    PIP_PF_INT_COL,
+)
 
 
 @frozen(slots=True)

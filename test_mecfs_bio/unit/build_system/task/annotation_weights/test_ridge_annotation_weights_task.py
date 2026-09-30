@@ -18,15 +18,17 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 )
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    ANNOTATION_COL,
     DIAGNOSTICS_JSON_FILENAME,
-    GAMMA_RAW_COL,
-    GAMMA_STANDARDIZED_COL,
     WEIGHTS_PARQUET_FILENAME,
     RidgeAnnotationWeightsTask,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    GAMMA_RAW_COL,
+    GAMMA_STANDARDIZED_COL,
+)
 
 # Output of the task on the noisy fixture in test_noisy_shrunk_fit_is_numerically_pinned,
 # recorded from a known-good run.

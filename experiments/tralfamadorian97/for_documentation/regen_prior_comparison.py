@@ -41,6 +41,9 @@ def go():
             POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR.upset_cs50_polyfun,
             POLYFUN_PRIOR_COMPARISON_CHR15_54.groups_by_label["l10"].plot_svg,
             POLYFUN_PRIOR_COMPARISON_CHR15_54.groups_by_label["l10"].table,
+            # POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR.upset_all_polyfun,
+            # POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+            # POLYFUN_PRIOR_COMPARISON_CHR15_54.groups_by_label["l10"].table,
 
         ]
     )

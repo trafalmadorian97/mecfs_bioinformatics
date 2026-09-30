@@ -29,13 +29,13 @@ from mecfs_bio.build_system.task.annotation_weights.l2_sldsc_snpvar_task import 
     TAU_ODD_WEIGHTS_FILENAME,
     L2RegularizedSldscSnpvarTask,
 )
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
+from mecfs_bio.build_system.task.fake_task import FakeTask
+from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.annotation_weights_constants import (
     ANNOTATION_COL,
     FAMILY_COL,
     GAMMA_RAW_COL,
 )
-from mecfs_bio.build_system.task.fake_task import FakeTask
-from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,

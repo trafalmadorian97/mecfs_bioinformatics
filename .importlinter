@@ -3,6 +3,7 @@ root_packages =
     mecfs_bio
     test_mecfs_bio
     experiments
+    docs_macros
 
 [importlinter:contract:layers]
 name = Enforce layered architecture: application code cannot import test code or experimental code, and test code cannot import experimental code.
@@ -23,3 +24,20 @@ layers =
     mecfs_bio.build_system
     mecfs_bio.util
     mecfs_bio.constants
+
+
+[importlinter:contract:docs_macros]
+name = The mkdocs macros (docs_macros) may import from mecfs_bio.constants, but no other part of the codebase.
+type = forbidden
+source_modules =
+    docs_macros
+forbidden_modules =
+    mecfs_bio.analysis
+    mecfs_bio.assets
+    mecfs_bio.asset_generator
+    mecfs_bio.build_system
+    mecfs_bio.figures
+    mecfs_bio.util
+    mecfs_bio.vend_files
+    test_mecfs_bio
+    experiments
