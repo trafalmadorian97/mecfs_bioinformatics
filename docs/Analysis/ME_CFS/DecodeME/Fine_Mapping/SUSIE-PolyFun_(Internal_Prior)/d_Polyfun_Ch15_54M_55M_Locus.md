@@ -48,4 +48,4 @@ id="chr15_polyfun_susie_table")
 }}
 
 
-These results indicate that at the chromosome 15 locus, there are no relevant high-impact annotations in the S-LDSC baseline model that could tilt either the external or internal priors away from the uniform prior.
+These results indicate that at the chromosome 15 locus, there are no relevant high-impact annotations in the S-LDSC baseline model that could tilt either the external or internal priors away from the uniform prior. With all three priors, the most likely variant is **15:55158922:A:G**.
