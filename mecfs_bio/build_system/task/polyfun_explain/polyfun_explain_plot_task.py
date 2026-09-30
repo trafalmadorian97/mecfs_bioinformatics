@@ -107,6 +107,14 @@ _FIGURE_WIDTH_IN = 18.0
 _PANEL_HEIGHT_IN = 2.9
 # Raster resolution
 _PNG_DPI = 200
+# Default font size (points) for every axis label (panel y-labels, the recomb
+# twin axis, the r^2 colorbar, and the position x-label). Well above matplotlib's
+# 10pt default because the figure is large and is usually shrunk to fit a docs
+# column, especially when it carries several PIP rows.
+DEFAULT_AXIS_LABEL_FONTSIZE = 16.0
+# Font size (points) of the "recomb rate" key under the r^2 colorbar. It sits in
+# the narrow legend column, clear of the cM/Mb label and ticks to its left.
+_RECOMB_KEY_FONTSIZE = 16.0
 
 
 UNIFORM_ROW_LABEL = "uniform"
@@ -138,9 +146,13 @@ class PolyfunExplainPlotTask(Task):
     genetic_map_task: Task
     genome_build: GenomeBuild = "19"
     gene_info_pipe: DataProcessingPipe = IdentityPipe()
+    axis_label_fontsize: float = DEFAULT_AXIS_LABEL_FONTSIZE
 
     def __attrs_post_init__(self) -> None:
         assert len(self.prior_runs) >= 1, "Need at least one prior run to plot"
+        assert self.axis_label_fontsize > 0, (
+            f"axis_label_fontsize must be positive, got {self.axis_label_fontsize}"
+        )
         labels = [UNIFORM_ROW_LABEL] + [run.label for run in self.prior_runs]
         assert len(set(labels)) == len(labels), (
             f"PIP row labels must be unique: {labels}"
@@ -186,6 +198,7 @@ class PolyfunExplainPlotTask(Task):
             genes=genes,
             recomb=recomb,
             genome_build=self.genome_build,
+            axis_label_fontsize=self.axis_label_fontsize,
         )
         return DirectoryAsset(scratch_dir)
 
@@ -199,6 +212,7 @@ class PolyfunExplainPlotTask(Task):
         genetic_map_task: Task,
         genome_build: GenomeBuild = "19",
         gene_info_pipe: DataProcessingPipe = IdentityPipe(),
+        axis_label_fontsize: float = DEFAULT_AXIS_LABEL_FONTSIZE,
     ) -> "PolyfunExplainPlotTask":
         source_meta = susie_uniform_task.meta
         if not isinstance(source_meta, ResultDirectoryMeta):
@@ -217,6 +231,7 @@ class PolyfunExplainPlotTask(Task):
             genetic_map_task=genetic_map_task,
             genome_build=genome_build,
             gene_info_pipe=gene_info_pipe,
+            axis_label_fontsize=axis_label_fontsize,
         )
 
 
@@ -346,6 +361,7 @@ def _render(
     genes: pl.DataFrame,
     recomb: pl.DataFrame,
     genome_build: GenomeBuild,
+    axis_label_fontsize: float,
 ) -> None:
     # manhattan + one row per PIP run + genes, one panel each.
     n_panels = 1 + len(pip_rows) + 1
@@ -379,6 +395,7 @@ def _render(
         genome_build=genome_build,
     )
     _tidy_shared_x(axes, bp_min=locus.bp_min, bp_max=locus.bp_max)
+    _set_axis_label_fontsize(fig, axis_label_fontsize)
 
     fig.savefig(scratch_dir / PLOT_PNG_FILENAME, dpi=_PNG_DPI, bbox_inches="tight")
     fig.savefig(scratch_dir / PLOT_SVG_FILENAME, bbox_inches="tight")
@@ -438,7 +455,7 @@ def _plot_manhattan(fig: Figure, gs, ax0, locus: _Locus, recomb: pl.DataFrame) -
         transform=cbar_cell.transAxes,
         ha="center",
         va="top",
-        fontsize=7,
+        fontsize=_RECOMB_KEY_FONTSIZE,
     )
 
 
@@ -519,6 +536,16 @@ def _tidy_shared_x(axes: list, bp_min: int, bp_max: int) -> None:
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
     axes[-1].spines["left"].set_visible(False)
+
+
+def _set_axis_label_fontsize(fig: Figure, fontsize: float) -> None:
+    """Apply one font size to the x- and y-axis labels of every axes in the
+    figure, including the recomb twin axis and the r^2 colorbar. The colorbar is
+    an inset axes, which fig.axes omits, so each axes' child_axes are included."""
+    for ax in fig.axes:
+        for target in [ax, *ax.child_axes]:
+            target.xaxis.label.set_fontsize(fontsize)
+            target.yaxis.label.set_fontsize(fontsize)
 
 
 def _shared_pip_top(cs_frames: list[pl.DataFrame]) -> float:
