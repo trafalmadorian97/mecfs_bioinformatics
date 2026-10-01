@@ -31,7 +31,7 @@ alt=" 50 percentile upset plot for chrom 15")
 
 ### Detailed Fine mapping results
 
-At this locus, all three priors (uniform, external, internal) produce very similar results.  The plot and table below provide  details.
+At this locus, all three priors (uniform, external, internal) produce very similar results.  The plot and table below provide details.
 
 
 
