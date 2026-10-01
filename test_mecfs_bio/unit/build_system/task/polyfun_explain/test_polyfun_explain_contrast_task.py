@@ -20,19 +20,12 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
 from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    ANNOTATION_COL,
-    FAMILY_COL,
     WEIGHTS_PARQUET_FILENAME,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
     DETAILED_DISPLAY_TABLE_FILENAME,
-    DISP_ANNOT_PREFIX,
-    DISP_CS_PF,
-    DISP_CS_U,
-    DISP_LIFT,
-    DISP_PIP_PF,
     PER_FAMILY_CONTRAST_FILENAME,
     PER_VARIANT_ANNOTATION_TABLE_FILENAME,
     SELECTION_JSON_FILENAME,
@@ -51,12 +44,23 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PRIOR_WEIGHT_COLUMN,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+)
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_SE_COL,
     GWASLAB_SNPID_COL,
 )
 from mecfs_bio.constants.polyfun_annotation_families import FAMILY_SHORT_LABELS
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    DISP_ANNOT_PREFIX,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_LIFT,
+    DISP_PIP_PF,
+)
 
 # Two real baseline-LF annotations from different families so family aggregation
 # is exercised: Coding_UCSC_common -> coding, GERP.NS -> conserved.

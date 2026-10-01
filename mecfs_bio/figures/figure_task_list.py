@@ -80,8 +80,26 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr1_174_128_548 import (
     POLYFUN_PRIOR_COMPARISON_CHR1_174,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr15_54_925_638 import (
+    POLYFUN_PRIOR_COMPARISON_CHR15_54,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr17_50_237_377 import (
+    POLYFUN_PRIOR_COMPARISON_CHR17_50,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr20_47_653_230 import (
+    POLYFUN_PRIOR_COMPARISON_CHR20_47,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr1_174_128_548_l2_sldsc_prior import (
     POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr15_54_925_638_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr17_50_237_377_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR17_50_L2_SLDSC_PRIOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr20_47_653_230_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR20_47_L2_SLDSC_PRIOR,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr1_174_128_548 import (
     POLYFUN_EXPLAIN_CHR1_174,
@@ -307,6 +325,20 @@ ALL_FIGURE_TASKS: list[Task] = [
     POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.upset_cs50_polyfun,
     POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].plot_svg,
     POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].table,
+    POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_PRIOR_COMPARISON_CHR15_54.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR15_54.groups_by_label["l10"].table,
+    POLYFUN_PRIOR_COMPARISON_CHR17_50.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR17_50.groups_by_label["l10"].table,
+    POLYFUN_EXPLAIN_CHR17_50_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR17_50_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_EXPLAIN_CHR20_47_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR20_47_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l10"].table,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l1"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l1"].table,
     # H-magma
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "adult_brain"

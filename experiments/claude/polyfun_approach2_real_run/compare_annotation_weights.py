@@ -17,7 +17,7 @@ from pathlib import Path
 import polars as pl
 from scipy.stats import pearsonr, spearmanr
 
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
+from mecfs_bio.constants.annotation_weights_constants import (
     ANNOTATION_COL,
     FAMILY_COL,
     GAMMA_STANDARDIZED_COL,
