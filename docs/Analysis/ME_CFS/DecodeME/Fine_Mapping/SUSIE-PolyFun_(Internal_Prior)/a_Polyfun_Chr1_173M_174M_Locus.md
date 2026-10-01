@@ -9,14 +9,14 @@ hide:
 
 ## Methodology
 
-To extend my [earlier](../SUSIE-PolyFun_(External_Prior)/a_Polyfun_Chr1_173M_174M_Locus.md) PolyFun[@weissbrod2020functionally] [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) of the [DecodeME](../../../../../Data_Sources/DecodeME.md) GWAS-1 signal[@genetics2025initial], I applied PolyFun SUSIE again, but this time used an internal [prior](https://en.wikipedia.org/wiki/Prior_probability) derived the DecodeME summary statistics itself, rather than an external prior derived from [UK Biobank](../../../../../Data_Sources/UKBB.md) GWAS.
+To extend my [earlier](../SUSIE-PolyFun_(External_Prior)/a_Polyfun_Chr1_173M_174M_Locus.md) PolyFun[@weissbrod2020functionally] [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) of the [DecodeME](../../../../../Data_Sources/DecodeME.md) GWAS-1 signal[@genetics2025initial], I applied PolyFun SUSIE again, but this time used an internal [prior](https://en.wikipedia.org/wiki/Prior_probability) derived the DecodeME summary statistics themselves, rather than an external prior derived from the [UK Biobank](../../../../../Data_Sources/UKBB.md).
 
-There is a tradeoff between using an internal and an external prior when running PolyFun SUSIE.
+In the context of PolyFun SUSIE, the internal and external prior each have their advantages.
 
-- An external prior allows one to benefit from the statistical power of large UK Biobank GWAS.  Moreover, because certain classes of genetic variants (like evolutionarily conserved variants) carry high heritability across many traits, there is a good chance that the external prior will contain information highly relevant to the trait under study.
-- On the other hand, there may be aspects of the heritability enrichment implied by the external prior that not applicable to the trait of interest.  Thus in some circumstances, the use of the external prior may produce misleading results.  Using an internal prior avoid this danger.
+- The external prior leverages the statistical power of large UK Biobank GWAS, and is thus less noisy than the internal prior.  Moreover, because certain classes of genetic variants (like evolutionarily conserved variants) carry high heritability across many traits, it is likely that the external prior will contain information highly relevant to any trait under study.
+- On the other hand, there may be aspects of the external prior that not applicable to the trait of interest. For instance, it may be that certain annotations are associated with heritability enrichment across most traits, but not in DecodeME.  Using an internal prior mitigates this danger.
 
-I experimented with using an external prior in my DecodeME fine-mapping to explore this tradeoff.
+I experimented with using an internal prior in my DecodeME fine-mapping to explore this tradeoff.
 
 As a linkage disequilibrium reference, I used a [UK Biobank LD matrix hosted on AWS Open Data](https://registry.opendata.aws/ukbb-ld/).  Because this LD reference uses GRCh37 coordinates, I used [GWASLab](https://github.com/Cloufield/gwaslab) to liftover the DecodeME GWAS-1 summary statistics to GRCh37.
 
@@ -35,9 +35,9 @@ As before, in my SUSIE runs, I retained [palindromic SNPs](../../../../../Bioinf
 
 I constructed the internal prior as follows:
 
-1.  I ran l2-regularized [stratified linkage disequilibrium score regression](../../../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) separately on the odd and even chromosomes of the DecodeME GWAS summary statistics[^annotation_note]. The weight of the l2-regularization was determined by within-parity cross validation.  Thus, no information from even chromosomes was used in the odd-chromosome fit, and vice-versa.
+1.  I ran $l2$-regularized [stratified linkage disequilibrium score regression](../../../../../Bioinformatics_Concepts/S_LDSC_For_Cell_And_Tissue_ID.md) separately on the odd and even chromosomes of the DecodeME GWAS summary statistics[^annotation_note]. The weight of the $l2$-regularization was determined by within-parity cross validation.  Thus, no information from even chromosomes was used in the odd-chromosome fit, and vice versa.
 2. I then used the annotation weights learned from odd-chromosome S-LDSC above to predicts weights for even-chromosome genetic variants based on their annotations, and vice versa.
-3. These predicted weights were used as a prior
+3. These predicted weights were used as a prior.
 
 The resulting prior upweights genetic variants with functional annotations that are associated with high heritability on opposite parity chromosomes.   The purpose of the odd/even split is to avoid using the same data both to fine map a locus and to learn the prior for that locus.
 
@@ -71,14 +71,14 @@ The plot below illustrates the results of $L=10$ SUSIE fine mapping with the uni
 susie_polyfun_internal_external_explain_plot("docs/_figs/decode_me_polyfun_prior_comparison_chr1_174_128_548_l10_prior_comparison_plot_svg.svg")
 }}
 
-The table below provides detailed information on $L=10$ SUSIE credible-set variants with and without the polyfun prior.
+The table below provides detailed information on $L=10$ SUSIE credible-set variants with and without the PolyFun prior.
 
 {{
 susie_polyfun_internal_external_data_table(src="docs/_figs/decode_me_polyfun_prior_comparison_chr1_174_128_548_l10_prior_comparison_table.parquet",
 id="chr1_polyfun_susie_table")
 }}
 
-Comparing the internal and external prior lift columns in the table above ( _lift_int_ and _lift_ext_ ) we see that at this locus, the two priors boost broadly the same set of variants, but the details differ, resulting in different variants being selected at the top.  Moreover, _lift_ext_ has a higher maximum than _lift_int_, indicating that the external prior is more peaked than the internal prior.  This is consistent with there being a stronger statistical signal in the 15 pooled UK Biobank GWAS than used to construct the external prior than in the opposite-parity DecodeME GWAS used to construct the internal prior.
+Comparing the internal and external prior lift columns in the table above (_lift_int_ and _lift_ext_) we see that at this locus, the two priors boost broadly the same set of variants, but the details differ, resulting in different variants being selected at the top.  Moreover, _lift_ext_ has a higher maximum than _lift_int_, indicating that the external prior is more peaked than the internal prior.  This is consistent with there being a stronger statistical signal in the 15 pooled UK Biobank GWAS used to construct the external prior than in the opposite-parity DecodeME GWAS used to construct the internal prior.
 
 
 
@@ -86,4 +86,4 @@ Comparing the internal and external prior lift columns in the table above ( _lif
 
 
 
-[^annotation_note]: The functional annotations used here come from the baseline model first described in Finucane et al. 2015[@finucane2015partitioning] and which have been extended by the Broad institute since then.  The version of the baseline model used by Polyfun author included 187 functional annotations[@weissbrod2020functionally], which cover domains as diverse as evolutionarily conserved regions, qtls, [epigenetic marks](../../../../../Bioinformatics_Concepts/Epigenetics.md), non-synomous regions, promoters and enhancers, and more.
+[^annotation_note]: The functional annotations used here come from the baseline model first described in Finucane et al. 2015[@finucane2015partitioning] and extended by Broad Institute researchers.  The version of the baseline model used by PolyFun authors included 187 functional annotations[@weissbrod2020functionally], which cover domains as diverse as evolutionarily conserved regions, QTLs, [epigenetic marks](../../../../../Bioinformatics_Concepts/Epigenetics.md), non-synonymous regions, promoters and enhancers, and more.
