@@ -4,7 +4,7 @@ tags:
 ---
 # Chr15 54M-55M
 
-I applied internal-prior PolyFun[@weissbrod2020functionally] [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] GWAS-1 signal on Chromosome 15, using the same methodology as I applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).
+I applied internal-prior PolyFun[@weissbrod2020functionally] [SUSIE](../../../../../Bioinformatics_Concepts/SUSIE.md)[@wang2020simple] [fine-mapping](../../../../../Bioinformatics_Concepts/Fine_Mapping.md) to the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025initial] Chromosome 15 GWAS-1 signal, using the same methodology as was applied to the [chromosome 1 locus](a_Polyfun_Chr1_173M_174M_Locus.md).
 
 
 
@@ -21,7 +21,7 @@ alt="upset plot for chrom 15")
 }}
 
 
-The second UpSetPlot compares the minimal set of variants needed to achieve 50% PIP.  Again, this set of variants is identical across all 4 SUSIE configurations.
+The second UpSetPlot compares the minimal set of variants needed to achieve 50% PIP across the 4 configurations.  Again, this set of variants is identical across all 4 SUSIE configurations.
 
 
 {{
@@ -31,7 +31,7 @@ alt=" 50 percentile upset plot for chrom 15")
 
 ### Detailed Fine mapping results
 
-At this locus, all three priors (uniform, external, internal) produce very similar results.  The plot and table below provide the details.
+At this locus, all three priors (uniform, external, internal) produce very similar results.  The plot and table below provide  details.
 
 
 
