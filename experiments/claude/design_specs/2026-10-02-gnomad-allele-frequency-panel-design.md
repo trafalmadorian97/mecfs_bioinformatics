@@ -305,9 +305,9 @@ execute():
 2. **Stream the bgzipped manifest directly** with pyarrow's streaming CSV reader over a gzip
    input stream (tab separator, "NA" as null, explicit schema for the selected columns,
    other columns skipped). BGZF is multi-member gzip, and a reader that stopped after the
-   first member would silently truncate the panel. The plan's first step confirms pyarrow
-   consumes every member, and a unit test with a fixture spanning several BGZF blocks guards
-   it. Fallback if not: decompress to scratch with bgzip -dc (9 GB) first.
+   first member would silently truncate the panel. Confirmed 2026-10-03: pyarrow 25's gzip
+   input stream read all 300,000 rows of a multi-block bgzipped manifest sample. A unit test
+   with a fixture spanning several BGZF blocks guards it.
 3. Per batch: rename af_{pop} to AF_ukb_{pop} as Float32, assert no null AF, then run the
    shared panel batch checks with contigs "1".."22", "X" mapped to gwaslab codes.
 4. At the end: assert the total ref_mismatch count equals expected_ref_mismatches, that no
