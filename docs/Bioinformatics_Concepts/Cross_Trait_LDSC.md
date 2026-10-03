@@ -242,6 +242,19 @@ $$
 $(\ref{ct_ldsc_eqn})$ is the key regression equation in CT-LDSC.
 
 
-### Note on derivation
+
+## Binary Traits Derivation
+
+The above derivation assumed that both traits of interest were quantitative, but most disease GWAS are binary.  The present section extends the CT-LDSC derivation to the case of binary traits.
+
+### Liability-Scale Data Generating Model
+
+We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).
+
+
+todo
+
+
+## Note on derivation
 
 The derivation in **the supplementary material to the original paper[@bulik2015atlas]** contains several typos and implicit approximations.  In the version above, I have corrected typos and make approximations explicit.
