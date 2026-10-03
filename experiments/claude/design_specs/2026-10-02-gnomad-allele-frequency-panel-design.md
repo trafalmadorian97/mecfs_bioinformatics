@@ -116,10 +116,18 @@ inspect_swaps.py).
 - Other columns, not used: rsid, info, gnomAD v2 genome frequencies joined in, and
   high_quality (passes gnomAD and agrees with gnomAD frequency in all four shared groups).
 - REF vs the UCSC hg19 FASTA: 28,987,239 rows match. 295 do not (chr21 47, chr22 86, X 162).
-  They are directly genotyped sites (info = 1.0). Most are SNVs whose ref and alt are swapped
-  relative to the FASTA; a few are indels that do not match at all. All have high_quality =
-  false and no gnomAD match, so nothing in the file confirms which allele their af refers
-  to. No row lies over an N or IUPAC base.
+  They are directly genotyped sites (info = 1.0), and every one is a ref/alt swap: SNVs
+  with the FASTA base as alt, and insertions written as deletions (manifest CT>C where
+  gnomAD has C>CT). All have high_quality = false and no gnomAD match, because Pan-UKBB's
+  gnomAD join is on ordered alleles. No row lies over an N or IUPAC base.
+- The af of a swapped row describes its listed alt, which is the reference allele. On chr21
+  (swaps_vs_gnomad_chr21.py), 45 of the 47 have a gnomAD v2 record with the same alleles in
+  FASTA orientation, and af_EUR is within 0.05 of 1 - gnomAD AF_nfe for 44 of them.
+- Origin: the Pan-UKBB pipeline (github.com/atgu/ukbb_pan_ancestry, resources/genotypes.py)
+  takes alleles straight from UK Biobank's v3 imputed BGEN files with hl.import_bgen and
+  never checks them against a reference. The swap is therefore in UK Biobank's own allele
+  order for these sites. Why only chr21, chr22 and X (with 89 of the 162 X rows at 88-92
+  Mb) is not determinable from public data.
 
 ## Decisions
 
@@ -147,8 +155,10 @@ inspect_swaps.py).
 10. **The 295 Pan-UKBB mismatches are dropped, and their count is asserted exactly.** The
     download is pinned by md5, so the count is deterministic. Asserting it equal to 295,
     rather than tolerating some, keeps the zero-surprise guarantee: any change in the file or
-    in our parsing fails the build. They are dropped rather than swapped back because
-    nothing confirms which allele their af describes.
+    in our parsing fails the build. They are dropped rather than swapped back (with af
+    replaced by 1 - af): gnomAD supports swapping back for 44 of 47 chr21 rows but not all,
+    confirming the rest would couple this panel to gnomAD, and 295 rows are 0.001% of the
+    panel.
 11. **Pan-UKBB stores AF only.** Its AN is constant per contig and would suggest per-site
     information that does not exist.
 
@@ -465,5 +475,6 @@ pixi r invoke green must pass, including import-linter.
 - **Building the hg38 panel** (about 14 h, about 10 GiB).
 - **Choosing a default panel** for new harmonizations, once step 3 has been reviewed.
 - **Pan-UKBB on hg38.** No GRCh38 manifest is known; liftover is out of scope.
-- **Recovering the 295 swapped Pan-UKBB rows** by swapping alleles back, if some
-  independent source ever confirms which allele their af describes.
+- **Recovering the 295 swapped Pan-UKBB rows** by swapping alleles back and using 1 - af.
+  The chr21 evidence supports it; it is deferred only because the rows are too few to
+  matter.
