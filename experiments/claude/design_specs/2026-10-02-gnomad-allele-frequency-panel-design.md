@@ -275,8 +275,15 @@ The Task combines it with reference_matches.
 - **Do not wrap this Task in DiscardDepsWrapper.** That wrapper rebuilds the inner Task's
   whole dependency graph inside a temporary store. The 14 h build would become all-or-nothing
   again, and the FASTA would be rebuilt in the temporary store. The per-chromosome parts
-  therefore stay in the asset store, costing roughly one extra panel's worth of disk; they
-  can be deleted by hand once the panel exists.
+  therefore stay in the asset store, costing roughly one extra panel's worth of disk. They
+  cannot be deleted: the build system materializes every transitive dependency of a
+  target, so a deleted part would be re-streamed the next time anything downstream is
+  built. Instead, the parts' metas use their own sub_folder (for example
+  reference_data/gnomad/<release>/per_chromosome/), distinct from the panel's. That lets a
+  path_remap prefix in the machine-local default_runner_config.yaml move exactly the parts
+  to the external drive (24 large files, rarely read: the profile path_remap suits) while
+  the panel, which harmonization reads, stays local. Adding that rule is a later,
+  machine-local step, not part of this project.
 
 ### Pan-UKBB extraction (mecfs_bio/build_system/task/genome_reference_harmonization/pan_ukbb/)
 
@@ -322,7 +329,9 @@ reads 2.7 GB locally and should take minutes, so no per-chromosome split is need
 - PAN_UKBB_HG19_ALLELE_FREQUENCIES: PanUkbbAlleleFrequencyPanelTask with all six groups,
   chromosomes 1-22 and X, expected_ref_mismatches = 295, and UCSC_HG19_INDEXED_FASTA. Like
   the gnomAD panel it is not wrapped in DiscardDepsWrapper, which would rebuild the FASTA in a
-  temporary store; the 2.7 GB download stays in the asset store and can be deleted by hand.
+  temporary store. The 2.7 GB download is a permanent dependency for the same reason as the
+  gnomAD parts, so its meta likewise gets its own sub_folder (raw/) apart from the panel
+  (processed/), making it a candidate for the same path_remap treatment.
 
 ### Harmonizer changes
 
@@ -473,6 +482,8 @@ pixi r invoke green must pass, including import-linter.
 - **Sample-size-aware rules using AN.**
 - **The pipe fix in ReferencePanelAlleleFrequencyTask** (a comment only, in this project).
 - **Building the hg38 panel** (about 14 h, about 10 GiB).
+- **path_remap rules** moving the gnomAD per-chromosome parts and the Pan-UKBB download
+  to the external drive (machine-local config, after the builds).
 - **Choosing a default panel** for new harmonizations, once step 3 has been reviewed.
 - **Pan-UKBB on hg38.** No GRCh38 manifest is known; liftover is out of scope.
 - **Recovering the 295 swapped Pan-UKBB rows** by swapping alleles back and using 1 - af.
