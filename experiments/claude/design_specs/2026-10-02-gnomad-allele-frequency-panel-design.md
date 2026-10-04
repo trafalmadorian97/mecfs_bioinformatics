@@ -204,7 +204,7 @@ list is non-empty and has no MT, and that the template contains the placeholder.
 
 **GnomadChromosomeAlleleFrequencyTask** (gnomad_chromosome_allele_frequency_task.py)
 
-- Fields: meta, release, chrom (gwaslab code), fasta_task, read_block_size_bytes (production
+- Fields: meta, release, chrom (gwaslab code), fasta_task, batch_rows (production
   default), and the retry policy (max attempts and sleep; production defaults from
   execute_command_with_retries).
 - Deps: fasta_task. create() asserts the FASTAMeta build equals release.build, and that chrom
@@ -221,8 +221,9 @@ execute():
    a view | query pipe. execute_command runs through sh, where a pipeline's exit status is the
    last command's, so a network failure upstream could yield a truncated TSV and exit 0. A
    single process lets htslib's BGZF CRC and EOF checks fail the Task.
-3. **TSV to parquet, memory-bounded.** pyarrow's streaming CSV reader (explicit schema, "." as
-   null, block size read_block_size_bytes) feeds a ParquetWriter. Each batch passes through
+3. **TSV to parquet, memory-bounded.** polars scan_csv (explicit schema, "." as null)
+   streamed with collect_batches(chunk_size=batch_rows) feeds a pyarrow ParquetWriter, one
+   row group per batch. Each batch passes through
    the shared panel batch checks (below), with the release's contig naming as the only
    allowed contig. Then, for every group, AF must be null exactly where AN == 0.
    **REF vs FASTA**: any mismatch over a pure-ACGT span fails the Task (the batch check's
@@ -291,7 +292,7 @@ The Task combines it with reference_matches.
 
 - Fields: meta, manifest_task (the downloaded manifest), fasta_task, groups (the
   PanUkbbGroup values to extract, mapped to manifest population codes), chromosomes (gwaslab
-  codes expected), expected_ref_mismatches (int), read_block_size_bytes (production
+  codes expected), expected_ref_mismatches (int), batch_rows (production
   default).
 - Deps: manifest_task and fasta_task. create() asserts the FASTAMeta build is GRCh37 (the
   manifest is GRCh37-only, so this is a constant of the class, not a field) and builds
@@ -300,14 +301,17 @@ The Task combines it with reference_matches.
 
 execute():
 
-1. **Header check.** Read the first line of the manifest and assert that chrom, pos, ref, alt
-   and af_{pop} for every configured group are present.
-2. **Stream the bgzipped manifest directly** with pyarrow's streaming CSV reader over a gzip
-   input stream (tab separator, "NA" as null, explicit schema for the selected columns,
-   other columns skipped). BGZF is multi-member gzip, and a reader that stopped after the
-   first member would silently truncate the panel. Confirmed 2026-10-03: pyarrow 25's gzip
-   input stream read all 300,000 rows of a multi-block bgzipped manifest sample. A unit test
-   with a fixture spanning several BGZF blocks guards it.
+1. **Read through the repo's standard reader.** The manifest download's meta carries a
+   read_spec (tab separator, "NA" as null, chrom read as a string), and the Task scans it
+   with scan_dataframe_asset, so polars detects the compression; nothing assumes gzip.
+   Header check: the scanned schema must contain chrom, pos, ref, alt and af_{pop} for
+   every configured group.
+2. **Stream** the selected columns with collect_batches(chunk_size=batch_rows). BGZF is
+   multi-member gzip, and a reader that stopped after the first member would silently
+   truncate the panel. Measured 2026-10-04 on the full manifest with polars 1.44: all
+   28,987,534 rows, 29 batches of 1,000,000 rows, 26 s, about 3 GB peak RSS. A unit test
+   with a fixture spanning several BGZF blocks guards it. collect_batches is marked
+   unstable in polars, which that test also guards.
 3. Per batch: rename af_{pop} to AF_ukb_{pop} as Float32, assert no null AF, then run the
    shared panel batch checks with contigs "1".."22", "X" mapped to gwaslab codes.
 4. At the end: assert the total ref_mismatch count equals expected_ref_mismatches, that no
@@ -368,7 +372,7 @@ gnomAD VCF URL (per chromosome)
 
 Pan-UKBB manifest URL (md5-pinned DownloadFileTask)
 -> local bgzipped TSV
--> pyarrow streaming reader over gzip, shared batch checks, 295 REF mismatches dropped
+-> polars scan via its read_spec, batched, shared batch checks, 295 REF mismatches dropped
 -> panel parquet with CHR, POS, REF, ALT, AF_ukb_g...
 -> ParquetPanelLoader selects AF_ukb_<group> (never null here)
 -> unchanged resolution rules.
@@ -418,7 +422,7 @@ GnomadChromosomeAlleleFrequencyTask:
 - REF over an N or IUPAC FASTA base is dropped, not fatal.
 - A header missing an expected field fails.
 - A duplicate key fails, including a pair split across a batch boundary (forced with a tiny
-  read_block_size_bytes). A decreasing POS fails.
+  batch_rows = 1). A decreasing POS fails.
 - A truncated VCF fails (one retry attempt, no sleep).
 
 GnomadAlleleFrequencyPanelTask:

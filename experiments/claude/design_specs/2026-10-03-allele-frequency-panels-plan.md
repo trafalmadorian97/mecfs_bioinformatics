@@ -14,7 +14,7 @@ checker (contig mapping, ACGT alleles, order, uniqueness, REF vs FASTA) into par
 built one chromosome per Task (bcftools query over HTTPS, resumable), then concatenated;
 Pan-UKBB is one Task over a pinned download.
 
-**Tech Stack:** Python 3, polars, pyarrow 25 (streaming CSV reader, ParquetWriter), numpy
+**Tech Stack:** Python 3, polars (scan_csv + collect_batches for reading), pyarrow 25 (ParquetWriter), numpy
 memmap FASTA gather, bcftools 1.24 / htslib (pixi), attrs, pytest, the repo's build system.
 
 **Spec:** experiments/claude/design_specs/2026-10-02-gnomad-allele-frequency-panel-design.md
@@ -38,10 +38,10 @@ memmap FASTA gather, bcftools 1.24 / htslib (pixi), attrs, pytest, the repo's bu
 
 ## Review Focus
 
-1. Split multiallelic sites: two gnomAD records at one position with different ALT (A>G, A>T) must both be kept, not flagged as duplicates, including when the pair straddles a read-batch boundary. Pinned in Task 4's happy-path test and test_split_multiallelic_site_across_batches_is_not_a_duplicate.
+1. Split multiallelic sites: two gnomAD records at one position with different ALT (A>G, A>T) must both be kept, not flagged as duplicates, including when the pair straddles a batch boundary. Pinned in Task 4's happy-path test, run with default and one-row batches.
 2. Long REF alleles (gnomAD has deletions of hundreds of bases): the FASTA gather must classify them, not crash or allocate unboundedly. Pinned in Task 4's happy-path test with a 30-base deletion.
 3. A REF span running past the end of its FASTA contig (wrong build or contig naming): must fail loudly, not be silently counted as FASTA-ambiguous. Pinned in Task 3 (test_ref_span_beyond_contig_end_fails).
-4. A chromosome with no PASS record polymorphic in a main group (bcftools writes an empty TSV): must fail with a clear message rather than a pyarrow "empty CSV" error or an empty panel. Pinned in Task 4 (test_chromosome_without_polymorphic_pass_records_fails).
+4. A chromosome with no PASS record polymorphic in a main group (bcftools writes an empty TSV): must fail with a clear message rather than a CSV-reader error or an empty panel. Pinned in Task 4 (test_chromosome_without_polymorphic_pass_records_fails).
 5. A panel whose chosen ancestry column is null at a site (AN = 0 in that group): the variant must be treated as absent from the panel, not resolved with AF 0. Pinned in Task 1 (test_null_chosen_ancestry_frequency_counts_as_absent).
 
 ---
@@ -757,9 +757,10 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: `panel_af_col`, `PanUkbbGroup`, `PanelAlleleFrequencyColumns.prefixed` (Task 1); `parquet_encoding`, `open_parquet_writer` (Task 2); `load_fasta` from genome_reference_harmonization_task; `write_fasta` fixture (Task 1).
 - Produces (used by Tasks 4 and 5):
   - fasta.py: `gwaslab_code_to_contig_name(code: int) -> str`; `reference_is_acgt(fasta, chrom, positions: np.ndarray, lengths: np.ndarray, max_gather_bytes=DEFAULT_MAX_GATHER_BYTES) -> np.ndarray`.
-  - panel_batch_checks.py: `SOURCE_CONTIG_COL = "contig"`; `PanelBatchCounts(rows_in, fasta_ambiguous, ref_mismatch)`; `PanelBatchContext(fasta: IndexedFasta, contig_codes: Mapping[str, int], max_gather_bytes: int = DEFAULT_MAX_GATHER_BYTES)`; `PanelWriteSummary(rows_written: int, counts: PanelBatchCounts, chromosomes: frozenset[int])`; `write_checked_panel(batches: Iterable[pl.DataFrame], out_path: Path, context: PanelBatchContext, byte_stream_split_columns: Sequence[str]) -> PanelWriteSummary`; `fetch_file_path(fetch: Fetch, task: Task) -> Path`; `DEFAULT_READ_BLOCK_SIZE_BYTES = 128 * 1024 * 1024`.
+  - panel_batch_checks.py: `SOURCE_CONTIG_COL = "contig"`; `PanelBatchCounts(rows_in, fasta_ambiguous, ref_mismatch)`; `PanelBatchContext(fasta: IndexedFasta, contig_codes: Mapping[str, int], max_gather_bytes: int = DEFAULT_MAX_GATHER_BYTES)`; `PanelWriteSummary(rows_written: int, counts: PanelBatchCounts, chromosomes: frozenset[int])`; `write_checked_panel(batches: Iterable[pl.DataFrame], out_path: Path, context: PanelBatchContext, byte_stream_split_columns: Sequence[str]) -> PanelWriteSummary`; `fetch_file_path(fetch: Fetch, task: Task) -> Path`; `DEFAULT_BATCH_ROWS = 1_000_000`.
+  - Panel sources are read with polars (`scan_csv(...).collect_batches(chunk_size=batch_rows)`), which detects compression itself; no reader assumes a compression format.
   - Input batches carry SOURCE_CONTIG_COL (String), POS, REF, ALT and value columns; output tables carry CHR (Int32) first, then POS (Int32), REF, ALT, then the value columns in input order.
-  - `PanUkbbAlleleFrequencyPanelTask.create(asset_id, manifest_task, fasta_task, groups, chromosomes, expected_ref_mismatches)`.
+  - `PanUkbbAlleleFrequencyPanelTask.create(asset_id, manifest_task, fasta_task, groups, chromosomes, expected_ref_mismatches)`; `PAN_UKBB_MANIFEST_READ_SPEC` (the manifest's DataFrameReadSpec, used by the download asset in Task 6). The manifest is read through `scan_dataframe_asset`, the repo's standard reader, so the download meta must carry that read_spec.
 
 - [ ] **Step 1: Write the failing Pan-UKBB tests**
 
@@ -786,6 +787,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.genome_reference_harmonization.pan_ukbb.pan_ukbb_allele_frequency_panel_task import (
+    PAN_UKBB_MANIFEST_READ_SPEC,
     PanUkbbAlleleFrequencyPanelTask,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
@@ -889,6 +891,11 @@ def _write_manifest(path: Path, rows: list[ManifestRow], header: list[str]) -> N
     pysam.tabix_compress(str(plain), str(path), force=True)
 
 
+# Small batches, so the manifest arrives in many batches and chromosome changes and
+# swapped rows fall inside and across batch boundaries.
+_TEST_BATCH_ROWS = 97
+
+
 def _run(
     tmp_path: Path,
     rows: list[ManifestRow],
@@ -899,7 +906,7 @@ def _run(
     _write_manifest(manifest_path, rows, header)
     fasta_dir = tmp_path / "fasta"
     write_fasta(fasta_dir, {"chr1": _CHR1, "chrX": _CHRX})
-    task = PanUkbbAlleleFrequencyPanelTask.create(
+    created = PanUkbbAlleleFrequencyPanelTask.create(
         asset_id="pan_ukbb_panel",
         manifest_task=FakeTask(
             ReferenceFileMeta(
@@ -908,6 +915,7 @@ def _run(
                 sub_folder=PurePath("raw"),
                 extension=".txt.bgz",
                 id=AssetId(_MANIFEST_ID),
+                read_spec=PAN_UKBB_MANIFEST_READ_SPEC,
             )
         ),
         fasta_task=FakeTask(
@@ -923,6 +931,7 @@ def _run(
         chromosomes=(1, 23),
         expected_ref_mismatches=expected_ref_mismatches,
     )
+    task = attrs.evolve(created, batch_rows=_TEST_BATCH_ROWS)
     assets: dict[str, Asset] = {
         _MANIFEST_ID: FileAsset(manifest_path),
         _FASTA_ID: DirectoryAsset(fasta_dir),
@@ -1180,8 +1189,9 @@ from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL, GWASLAB_POS
 
 SOURCE_CONTIG_COL = "contig"
 PANEL_KEY_COLUMNS = [GWASLAB_CHROM_COL, GWASLAB_POS_COL, PANEL_REF_COL, PANEL_ALT_COL]
-# Large enough that a streamed batch fills a reasonable parquet row group.
-DEFAULT_READ_BLOCK_SIZE_BYTES = 128 * 1024 * 1024
+# Rows per streamed batch; each batch becomes one parquet row group. On the full Pan-UKBB
+# manifest, 1,000,000-row batches peaked at about 3 GB RSS.
+DEFAULT_BATCH_ROWS = 1_000_000
 _ACGT_ALLELE = r"^[ACGT]+$"
 _FASTA_ACGT_COL = "_fasta_acgt"
 _REF_MATCHES_COL = "_ref_matches"
@@ -1447,16 +1457,17 @@ BGEN allele order. expected_ref_mismatches pins their number, so any change in t
 the parsing fails the build. Allele numbers are not stored: in the manifest they are
 constant within a contig and carry no per-site information.
 
+The manifest is read through the asset's read_spec with polars, which detects the
+compression, and streamed in batches of batch_rows rows. collect_batches is marked unstable
+in polars; the Task tests pin that every row of a multi-block bgzipped file arrives.
+
 See experiments/claude/design_specs/2026-10-02-gnomad-allele-frequency-panel-design.md.
 """
 
-import gzip
 from collections.abc import Iterator, Sequence
 from pathlib import Path, PurePath
 
 import polars as pl
-import pyarrow
-import pyarrow.csv
 import structlog
 from attrs import frozen
 
@@ -1464,10 +1475,13 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
+from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
+    DataFrameTextFormat,
 )
+from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
 from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
     HarmonizableReferenceTableMeta,
@@ -1487,11 +1501,10 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference
     load_fasta,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.panel_batch_checks import (
-    DEFAULT_READ_BLOCK_SIZE_BYTES,
+    DEFAULT_BATCH_ROWS,
     SOURCE_CONTIG_COL,
     PanelBatchContext,
     PanelWriteSummary,
-    fetch_file_path,
     write_checked_panel,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
@@ -1514,7 +1527,15 @@ _MANIFEST_CONTIG_COL = "chrom"
 _MANIFEST_POS_COL = "pos"
 _MANIFEST_REF_COL = "ref"
 _MANIFEST_ALT_COL = "alt"
-_MANIFEST_NULL = "NA"
+# How to read the manifest. chrom must be read as a string: schema inference over the
+# leading rows would otherwise type it as an integer and fail at "X".
+PAN_UKBB_MANIFEST_READ_SPEC = DataFrameReadSpec(
+    DataFrameTextFormat(
+        separator="\t",
+        null_values=["NA"],
+        schema_overrides={_MANIFEST_CONTIG_COL: pl.String()},
+    )
+)
 
 
 def manifest_af_col(group: PanUkbbGroup) -> str:
@@ -1530,27 +1551,28 @@ class PanUkbbAlleleFrequencyPanelTask(Task):
     groups: tuple[PanUkbbGroup, ...]
     chromosomes: tuple[int, ...]
     expected_ref_mismatches: int
-    read_block_size_bytes: int = DEFAULT_READ_BLOCK_SIZE_BYTES
+    batch_rows: int = DEFAULT_BATCH_ROWS
 
     def __attrs_post_init__(self):
         assert self.groups, "at least one Pan-UKBB group is required"
         assert len(set(self.groups)) == len(self.groups), f"duplicate groups {self.groups}"
         assert self.chromosomes, "at least one chromosome is required"
         assert self.expected_ref_mismatches >= 0
+        assert self.batch_rows > 0
 
     @property
     def deps(self) -> list[Task]:
         return [self.manifest_task, self.fasta_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        manifest_path = fetch_file_path(fetch, self.manifest_task)
+        manifest = scan_manifest(
+            fetch(self.manifest_task.asset_id), self.manifest_task.meta
+        )
         fasta = load_fasta(fetch, self.fasta_task)
-        assert_manifest_columns(manifest_path, self.groups)
+        assert_manifest_columns(manifest, self.groups)
         out_path = scratch_dir / (PAN_UKBB_PANEL_FILENAME + ".parquet")
         summary = write_checked_panel(
-            read_manifest_batches(
-                manifest_path, self.groups, self.read_block_size_bytes
-            ),
+            manifest_batches(manifest, self.groups, self.batch_rows),
             out_path,
             PanelBatchContext(
                 fasta=fasta, contig_codes=manifest_contig_codes(self.chromosomes)
@@ -1589,6 +1611,9 @@ class PanUkbbAlleleFrequencyPanelTask(Task):
         assert isinstance(source_meta, ReferenceFileMeta), (
             f"expected a ReferenceFileMeta manifest, got {type(source_meta).__name__}"
         )
+        assert source_meta.read_spec is not None, (
+            "the manifest meta needs a read_spec (PAN_UKBB_MANIFEST_READ_SPEC)"
+        )
         return cls(
             meta=HarmonizableReferenceTableMeta(
                 group=source_meta.group,
@@ -1618,9 +1643,19 @@ def manifest_contig_codes(chromosomes: Sequence[int]) -> dict[str, int]:
     return {gwaslab_code_to_contig_name(code): code for code in chromosomes}
 
 
-def assert_manifest_columns(path: Path, groups: Sequence[PanUkbbGroup]) -> None:
-    with gzip.open(path, "rt") as handle:
-        header = handle.readline().rstrip("\n").split("\t")
+def scan_manifest(asset: Asset, meta: Meta) -> pl.LazyFrame:
+    """The manifest as a polars LazyFrame, read through the asset's read_spec."""
+    native = scan_dataframe_asset(asset, meta).to_native()
+    assert isinstance(native, pl.LazyFrame), (
+        f"expected a polars LazyFrame for the manifest, got {type(native).__name__}"
+    )
+    return native
+
+
+def assert_manifest_columns(
+    manifest: pl.LazyFrame, groups: Sequence[PanUkbbGroup]
+) -> None:
+    present = manifest.collect_schema().names()
     required = [
         _MANIFEST_CONTIG_COL,
         _MANIFEST_POS_COL,
@@ -1628,48 +1663,33 @@ def assert_manifest_columns(path: Path, groups: Sequence[PanUkbbGroup]) -> None:
         _MANIFEST_ALT_COL,
         *[manifest_af_col(group) for group in groups],
     ]
-    missing = [column for column in required if column not in header]
-    assert not missing, f"Pan-UKBB manifest {path} lacks columns {missing}"
+    missing = [column for column in required if column not in present]
+    assert not missing, f"the Pan-UKBB manifest lacks columns {missing}"
 
 
-def read_manifest_batches(
-    path: Path, groups: Sequence[PanUkbbGroup], block_size_bytes: int
+def manifest_batches(
+    manifest: pl.LazyFrame, groups: Sequence[PanUkbbGroup], batch_rows: int
 ) -> Iterator[pl.DataFrame]:
-    """Stream the bgzipped manifest (every BGZF member) as renamed polars batches."""
+    """Stream the manifest's needed columns, renamed to the panel's, in batches."""
     af_columns = {manifest_af_col(group): panel_af_col(group) for group in groups}
-    column_types = {
-        _MANIFEST_CONTIG_COL: pyarrow.string(),
-        _MANIFEST_POS_COL: pyarrow.int32(),
-        _MANIFEST_REF_COL: pyarrow.string(),
-        _MANIFEST_ALT_COL: pyarrow.string(),
-    } | {column: pyarrow.float32() for column in af_columns}
-    renames = {
-        _MANIFEST_CONTIG_COL: SOURCE_CONTIG_COL,
-        _MANIFEST_POS_COL: GWASLAB_POS_COL,
-        _MANIFEST_REF_COL: PANEL_REF_COL,
-        _MANIFEST_ALT_COL: PANEL_ALT_COL,
-    } | af_columns
-    with pyarrow.input_stream(str(path), compression="gzip") as stream:
-        reader = pyarrow.csv.open_csv(
-            stream,
-            read_options=pyarrow.csv.ReadOptions(block_size=block_size_bytes),
-            parse_options=pyarrow.csv.ParseOptions(delimiter="\t", quote_char=False),
-            convert_options=pyarrow.csv.ConvertOptions(
-                include_columns=list(column_types),
-                column_types=column_types,
-                null_values=[_MANIFEST_NULL],
-            ),
+    query = manifest.select(
+        pl.col(_MANIFEST_CONTIG_COL).cast(pl.String).alias(SOURCE_CONTIG_COL),
+        pl.col(_MANIFEST_POS_COL).alias(GWASLAB_POS_COL),
+        pl.col(_MANIFEST_REF_COL).alias(PANEL_REF_COL),
+        pl.col(_MANIFEST_ALT_COL).alias(PANEL_ALT_COL),
+        *[
+            pl.col(source).cast(pl.Float32).alias(target)
+            for source, target in af_columns.items()
+        ],
+    )
+    for batch in query.collect_batches(chunk_size=batch_rows):
+        null_counts = batch.select(
+            [pl.col(column).null_count() for column in af_columns.values()]
+        ).row(0, named=True)
+        assert not any(null_counts.values()), (
+            f"null allele frequencies in the Pan-UKBB manifest: {null_counts}"
         )
-        for batch in reader:
-            frame = pl.from_arrow(batch)
-            assert isinstance(frame, pl.DataFrame)
-            null_counts = frame.select(
-                [pl.col(column).null_count() for column in af_columns]
-            ).row(0, named=True)
-            assert not any(null_counts.values()), (
-                f"null allele frequencies in the Pan-UKBB manifest: {null_counts}"
-            )
-            yield frame.rename(renames)
+        yield batch
 
 
 def assert_pan_ukbb_summary(
@@ -1718,7 +1738,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: Task 3's panel_batch_checks API, `gwaslab_code_to_contig_name`; Task 1's `panel_af_col`, `panel_an_col`, `GnomadGroup`; `load_fasta`; `execute_command_with_retries` from `mecfs_bio.util.subproc.run_command`.
 - Produces (used by Tasks 5 and 6):
   - `GnomadRelease(name, build, vcf_url_template, contig_prefix: ContigPrefix, chromosomes, main_groups, extra_groups, header_assembly)` with property `groups`; `CHROM_PLACEHOLDER = "{chrom}"`; `gnomad_contig_name(release, chrom) -> str`; `gnomad_vcf_url(release, chrom) -> str`; `GNOMAD_GROUP = "gnomad"`.
-  - `GnomadChromosomeAlleleFrequencyTask(meta: ReferenceFileMeta, release, chrom, fasta_task, read_block_size_bytes=DEFAULT_READ_BLOCK_SIZE_BYTES, max_attempts=DEFAULT_MAX_ATTEMPTS)`; `.create(release, chrom, fasta_task)`; `read_vcf_header(url, max_attempts) -> str`; `assert_gnomad_header(header, release, chrom)`.
+  - `GnomadChromosomeAlleleFrequencyTask(meta: ReferenceFileMeta, release, chrom, fasta_task, batch_rows=DEFAULT_BATCH_ROWS, max_attempts=DEFAULT_MAX_ATTEMPTS)`; `.create(release, chrom, fasta_task)`; `read_vcf_header(url, max_attempts) -> str`; `assert_gnomad_header(header, release, chrom)`.
   - Output parquet columns: CHR, POS, REF, ALT, then AF_g and AN_g for each group of release.groups, interleaved (AF_g1, AN_g1, AF_g2, AN_g2, ...).
 
 - [ ] **Step 1: Write the failing tests**
@@ -1751,7 +1771,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_re
     GnomadRelease,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.panel_batch_checks import (
-    DEFAULT_READ_BLOCK_SIZE_BYTES,
+    DEFAULT_BATCH_ROWS,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.allele_frequency_panel_constants import (
@@ -1772,10 +1792,8 @@ _EXTRA_GROUPS: tuple[GnomadGroup, ...] = ("nfe_nwe",)
 _ALL_GROUPS = _MAIN_GROUPS + _EXTRA_GROUPS
 _ASSEMBLY = "gnomAD_GRCh37"
 _FASTA_ID = "fasta"
-# The short-allele TSV rows bcftools writes here are about 28 bytes, so a 40-byte read
-# block holds one row and every adjacent pair straddles a batch boundary. Only tests
-# without the 30-base deletion use it (a row longer than a block is a pyarrow error).
-_ONE_ROW_BLOCK_BYTES = 40
+# One row per batch, so every adjacent pair of records straddles a batch boundary.
+_ONE_ROW_BATCH = 1
 _LONG_DELETION_REF = _CHR1[8:38]  # 30 bases from pos 9
 
 
@@ -1840,7 +1858,7 @@ def _run(
     tmp_path: Path,
     records: list[Record],
     header: list[str] | None = None,
-    read_block_size_bytes: int = DEFAULT_READ_BLOCK_SIZE_BYTES,
+    batch_rows: int = DEFAULT_BATCH_ROWS,
     truncate: bool = False,
 ) -> Path:
     plain = tmp_path / "sites.1.vcf"
@@ -1866,7 +1884,7 @@ def _run(
         GnomadChromosomeAlleleFrequencyTask.create(
             release=_release(tmp_path), chrom=1, fasta_task=fasta_task
         ),
-        read_block_size_bytes=read_block_size_bytes,
+        batch_rows=batch_rows,
         max_attempts=1,
     )
 
@@ -1899,10 +1917,11 @@ _HAPPY_RECORDS = [
 ]
 
 
+@pytest.mark.parametrize("batch_rows", [DEFAULT_BATCH_ROWS, _ONE_ROW_BATCH])
 def test_polymorphic_pass_records_become_an_allele_frequency_table(
-    tmp_path: Path,
+    tmp_path: Path, batch_rows: int
 ) -> None:
-    path = _run(tmp_path, _HAPPY_RECORDS)
+    path = _run(tmp_path, _HAPPY_RECORDS, batch_rows=batch_rows)
     table = pl.read_parquet(path)
     assert table.select(GWASLAB_POS_COL, "ALT").rows() == [
         (1, "G"),
@@ -1923,14 +1942,6 @@ def test_polymorphic_pass_records_become_an_allele_frequency_table(
         assert "RLE_DICTIONARY" in _encodings(path, panel_af_col(group))
 
 
-def test_split_multiallelic_site_across_batches_is_not_a_duplicate(
-    tmp_path: Path,
-) -> None:
-    records = [Record(1, "A", "G", afr="0.1"), Record(1, "A", "T", nfe="0.01")]
-    path = _run(tmp_path, records, read_block_size_bytes=_ONE_ROW_BLOCK_BYTES)
-    assert pl.read_parquet(path)["ALT"].to_list() == ["G", "T"]
-
-
 def test_ref_mismatch_over_acgt_reference_fails(tmp_path: Path) -> None:
     # pos 6 holds C
     with pytest.raises(AssertionError):
@@ -1946,13 +1957,11 @@ def test_header_missing_a_group_field_fails(tmp_path: Path) -> None:
         )
 
 
-@pytest.mark.parametrize(
-    "read_block_size_bytes", [DEFAULT_READ_BLOCK_SIZE_BYTES, _ONE_ROW_BLOCK_BYTES]
-)
-def test_duplicate_key_fails(tmp_path: Path, read_block_size_bytes: int) -> None:
+@pytest.mark.parametrize("batch_rows", [DEFAULT_BATCH_ROWS, _ONE_ROW_BATCH])
+def test_duplicate_key_fails(tmp_path: Path, batch_rows: int) -> None:
     records = [Record(1, "A", "G", afr="0.1"), Record(1, "A", "G", afr="0.2")]
     with pytest.raises(AssertionError):
-        _run(tmp_path, records, read_block_size_bytes=read_block_size_bytes)
+        _run(tmp_path, records, batch_rows=batch_rows)
 
 
 def test_decreasing_position_fails(tmp_path: Path) -> None:
@@ -2085,8 +2094,6 @@ from collections.abc import Iterator
 from pathlib import Path, PurePath
 
 import polars as pl
-import pyarrow
-import pyarrow.csv
 import structlog
 from attrs import frozen
 
@@ -2116,7 +2123,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_re
     gnomad_vcf_url,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.panel_batch_checks import (
-    DEFAULT_READ_BLOCK_SIZE_BYTES,
+    DEFAULT_BATCH_ROWS,
     SOURCE_CONTIG_COL,
     PanelBatchContext,
     PanelWriteSummary,
@@ -2151,7 +2158,7 @@ class GnomadChromosomeAlleleFrequencyTask(Task):
     release: GnomadRelease
     chrom: int
     fasta_task: Task
-    read_block_size_bytes: int = DEFAULT_READ_BLOCK_SIZE_BYTES
+    batch_rows: int = DEFAULT_BATCH_ROWS
     max_attempts: int = DEFAULT_MAX_ATTEMPTS
 
     @property
@@ -2171,7 +2178,7 @@ class GnomadChromosomeAlleleFrequencyTask(Task):
         )
         out_path = scratch_dir / "allele_frequencies.parquet"
         summary = write_checked_panel(
-            read_gnomad_tsv_batches(tsv_path, self.release, self.read_block_size_bytes),
+            gnomad_tsv_batches(tsv_path, self.release, self.batch_rows),
             out_path,
             PanelBatchContext(
                 fasta=fasta,
@@ -2277,36 +2284,34 @@ def gnomad_query_command(
     ]
 
 
-def read_gnomad_tsv_batches(
-    tsv_path: Path, release: GnomadRelease, block_size_bytes: int
+def gnomad_tsv_batches(
+    tsv_path: Path, release: GnomadRelease, batch_rows: int
 ) -> Iterator[pl.DataFrame]:
+    """Stream the headerless bcftools TSV in batches of batch_rows rows."""
     assert tsv_path.stat().st_size > 0, (
         f"{release.name}: no PASS records polymorphic in a main group in {tsv_path}"
     )
-    column_types = {
-        SOURCE_CONTIG_COL: pyarrow.string(),
-        GWASLAB_POS_COL: pyarrow.int32(),
-        PANEL_REF_COL: pyarrow.string(),
-        PANEL_ALT_COL: pyarrow.string(),
+    schema: dict[str, pl.DataType] = {
+        SOURCE_CONTIG_COL: pl.String(),
+        GWASLAB_POS_COL: pl.Int32(),
+        PANEL_REF_COL: pl.String(),
+        PANEL_ALT_COL: pl.String(),
     }
     for group in release.groups:
-        column_types[panel_af_col(group)] = pyarrow.float32()
-        column_types[panel_an_col(group)] = pyarrow.int32()
-    reader = pyarrow.csv.open_csv(
+        schema[panel_af_col(group)] = pl.Float32()
+        schema[panel_an_col(group)] = pl.Int32()
+    records = pl.scan_csv(
         tsv_path,
-        read_options=pyarrow.csv.ReadOptions(
-            column_names=list(column_types), block_size=block_size_bytes
-        ),
-        parse_options=pyarrow.csv.ParseOptions(delimiter="\t", quote_char=False),
-        convert_options=pyarrow.csv.ConvertOptions(
-            column_types=column_types, null_values=[_TSV_NULL]
-        ),
+        separator="\t",
+        has_header=False,
+        schema=schema,
+        null_values=[_TSV_NULL],
+        quote_char=None,
     )
-    for batch in reader:
-        frame = pl.from_arrow(batch)
-        assert isinstance(frame, pl.DataFrame)
-        _assert_af_null_exactly_where_an_is_zero(frame, release.groups)
-        yield frame
+    # collect_batches is marked unstable in polars; the Task tests pin its batching.
+    for batch in records.collect_batches(chunk_size=batch_rows):
+        _assert_af_null_exactly_where_an_is_zero(batch, release.groups)
+        yield batch
 
 
 def _assert_af_null_exactly_where_an_is_zero(
@@ -2336,7 +2341,7 @@ def assert_gnomad_summary(summary: PanelWriteSummary, chrom: int) -> None:
 - [ ] **Step 5: Run the tests to verify they pass**
 
 Run: `pixi r python -m pytest test_mecfs_bio/unit/build_system/task/genome_reference_harmonization/test_gnomad_chromosome_allele_frequency_task.py -v`
-Expected: all PASS. If pyarrow rejects the 40-byte block ("straddling object"), print the TSV row lengths in the test's scratch dir and set `_ONE_ROW_BLOCK_BYTES` to the smallest value at least as large as the longest row; the comment above it must stay true.
+Expected: all PASS.
 
 - [ ] **Step 6: Run green and commit**
 
@@ -2784,6 +2789,9 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
 from mecfs_bio.build_system.task.download_file_task import DownloadFileTask
+from mecfs_bio.build_system.task.genome_reference_harmonization.pan_ukbb.pan_ukbb_allele_frequency_panel_task import (
+    PAN_UKBB_MANIFEST_READ_SPEC,
+)
 
 PAN_UKBB_VARIANT_MANIFEST = DownloadFileTask(
     meta=ReferenceFileMeta(
@@ -2792,6 +2800,7 @@ PAN_UKBB_VARIANT_MANIFEST = DownloadFileTask(
         sub_group="variant_manifest",
         sub_folder=PurePath("raw"),
         extension=".txt.bgz",
+        read_spec=PAN_UKBB_MANIFEST_READ_SPEC,
     ),
     url=(
         "https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_release/"
