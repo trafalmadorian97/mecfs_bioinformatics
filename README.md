@@ -5,3 +5,6 @@ Welcome to the ME/CFS bioinformatics repo!
 # Documentation
 See [here](https://trafalmadorian97.github.io/mecfs_bioinformatics/) for documentation.
 
+# AI Usage Statement
+
+Some code is AI-generated.  All AI-generated code is reviewed in detail by a human.  All text in the documentation site is written by a human.
