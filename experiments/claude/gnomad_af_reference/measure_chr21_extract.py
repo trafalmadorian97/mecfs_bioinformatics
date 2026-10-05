@@ -36,7 +36,7 @@ _KEY_COLUMNS = ["CHR", "POS", "REF", "ALT"]
 _PALINDROMIC_PAIRS = {("A", "T"), ("T", "A"), ("C", "G"), ("G", "C")}
 
 
-@frozen
+@frozen(slots=True)
 class Release:
     vcf_url: str
     chr21_vcf_gib: float

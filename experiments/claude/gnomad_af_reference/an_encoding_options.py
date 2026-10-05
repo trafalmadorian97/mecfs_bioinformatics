@@ -35,7 +35,7 @@ from parquet_format_options import compressed_bytes_by_family
 from mecfs_bio.build_system.task.dataframe_output import ParquetCompression
 
 
-@frozen
+@frozen(slots=True)
 class AnEncoding:
     name: str
     as_float32: bool

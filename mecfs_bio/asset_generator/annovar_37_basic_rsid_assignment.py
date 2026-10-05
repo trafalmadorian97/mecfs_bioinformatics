@@ -79,6 +79,7 @@ def annovar_37_basic_rsid_assignment(
         sumstats_task=pre_harmonization_table_task,
         fasta_task=UCSC_HG19_INDEXED_FASTA,
         panel_task=THOUSAND_GENOMES_EUR_HG19_PANEL_ALLELE_FREQUENCIES,
+        panel_ancestry="eur",
         options=GenomeReferenceHarmonizationOptions(
             keep_unresolved_palindromes=not drop_palindromic_ambiguous
         ),

@@ -40,7 +40,7 @@ from mecfs_bio.build_system.task.dataframe_output import (
 _AF_RELATIVE_TOLERANCE = 1e-5
 
 
-@frozen
+@frozen(slots=True)
 class Variant:
     name: str
     representation: str  # "af" or "ac"
