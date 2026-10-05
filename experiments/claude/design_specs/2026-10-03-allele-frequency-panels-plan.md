@@ -58,6 +58,7 @@ Create:
 - `mecfs_bio/build_system/task/genome_reference_harmonization/gnomad/gnomad_release.py`
 - `mecfs_bio/build_system/task/genome_reference_harmonization/gnomad/gnomad_chromosome_allele_frequency_task.py`
 - `mecfs_bio/build_system/task/genome_reference_harmonization/gnomad/gnomad_allele_frequency_panel_task.py`
+- `mecfs_bio/build_system/task_generator/gnomad_allele_frequency_panel_task_generator.py` (builds the parts and the panel together)
 - `mecfs_bio/assets/reference_data/gnomad/__init__.py` (empty), `gnomad_releases.py`, `gnomad_allele_frequency_panels.py`
 - `mecfs_bio/assets/reference_data/pan_ukbb/__init__.py` (empty), `pan_ukbb_variant_manifest.py`, `pan_ukbb_allele_frequencies.py`
 - Tests in `test_mecfs_bio/unit/build_system/task/genome_reference_harmonization/`: `test_pan_ukbb_allele_frequency_panel_task.py`, `test_gnomad_chromosome_allele_frequency_task.py`, `test_gnomad_allele_frequency_panel_task.py`
@@ -2355,15 +2356,18 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ---
 
-### Task 5: gnomAD panel concatenation Task
+### Task 5: gnomAD panel concatenation Task and its task generator
 
 **Files:**
 - Create: `mecfs_bio/build_system/task/genome_reference_harmonization/gnomad/gnomad_allele_frequency_panel_task.py`
+- Create: `mecfs_bio/build_system/task_generator/gnomad_allele_frequency_panel_task_generator.py`
 - Test: `test_mecfs_bio/unit/build_system/task/genome_reference_harmonization/test_gnomad_allele_frequency_panel_task.py`
 
 **Interfaces:**
 - Consumes: `GnomadRelease`, `GNOMAD_GROUP`, `GnomadChromosomeAlleleFrequencyTask.create` (Task 4); `fetch_file_path` (Task 3); `parquet_encoding`, `open_parquet_writer` (Task 2); `PanelAlleleFrequencyColumns.prefixed`, `panel_an_col` (Task 1).
-- Produces: `GnomadAlleleFrequencyPanelTask.create(asset_id: str, release: GnomadRelease, fasta_task: Task)`; fields `meta`, `release`, `part_tasks: tuple[GnomadChromosomeAlleleFrequencyTask, ...]`.
+- Produces:
+  - `GnomadAlleleFrequencyPanelTask.create(asset_id: str, release: GnomadRelease, part_tasks: Sequence[GnomadChromosomeAlleleFrequencyTask])`; fields `meta`, `release`, `part_tasks: tuple[GnomadChromosomeAlleleFrequencyTask, ...]`. The parts are injected, not built by create(); construction asserts they are exactly the release's chromosomes, in release order, from the same release.
+  - `generate_gnomad_allele_frequency_panel_tasks(asset_id: str, release: GnomadRelease, fasta_task: Task) -> GnomadAlleleFrequencyPanelTasks`; `GnomadAlleleFrequencyPanelTasks` (frozen) has `part_tasks`, `panel_task`, `terminal_tasks()`. This is the repo's usual home for building a group of related Tasks: `build_system/task_generator` (generic, may use Task classes but no concrete asset instances), as opposed to `asset_generator` (may reference concrete assets).
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -2385,6 +2389,9 @@ from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_allele_frequency_panel_task import (
     GnomadAlleleFrequencyPanelTask,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_chromosome_allele_frequency_task import (
+    GnomadChromosomeAlleleFrequencyTask,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_release import (
     GnomadRelease,
@@ -2446,10 +2453,22 @@ def _part(chrom: int, positions: list[int], extra_column: bool = False) -> pl.Da
     return frame
 
 
-def _run(tmp_path: Path, parts: dict[int, pl.DataFrame]) -> Path:
-    task = GnomadAlleleFrequencyPanelTask.create(
-        asset_id="gnomad_panel", release=_RELEASE, fasta_task=_FASTA
+def _part_task(chrom: int) -> GnomadChromosomeAlleleFrequencyTask:
+    return GnomadChromosomeAlleleFrequencyTask.create(
+        release=_RELEASE, chrom=chrom, fasta_task=_FASTA
     )
+
+
+def _panel_task() -> GnomadAlleleFrequencyPanelTask:
+    return GnomadAlleleFrequencyPanelTask.create(
+        asset_id="gnomad_panel",
+        release=_RELEASE,
+        part_tasks=[_part_task(chrom) for chrom in _RELEASE.chromosomes],
+    )
+
+
+def _run(tmp_path: Path, parts: dict[int, pl.DataFrame]) -> Path:
+    task = _panel_task()
     assets: dict[str, Asset] = {}
     for part_task in task.part_tasks:
         path = tmp_path / f"{part_task.asset_id}.parquet"
@@ -2474,10 +2493,7 @@ def test_parts_are_concatenated_in_chromosome_order(tmp_path: Path) -> None:
         (1, 7),
         (23, 5),
     ]
-    task = GnomadAlleleFrequencyPanelTask.create(
-        asset_id="gnomad_panel", release=_RELEASE, fasta_task=_FASTA
-    )
-    columns = task.meta.allele_frequency_columns
+    columns = _panel_task().meta.allele_frequency_columns
     assert columns is not None
     assert columns.column_for("nfe") in panel.columns
     row_group = pq.ParquetFile(path).metadata.row_group(0)
@@ -2492,6 +2508,19 @@ def test_parts_are_concatenated_in_chromosome_order(tmp_path: Path) -> None:
 def test_parts_with_different_schemas_fail(tmp_path: Path) -> None:
     with pytest.raises(AssertionError):
         _run(tmp_path, {1: _part(1, [3]), 23: _part(23, [5], extra_column=True)})
+
+
+@pytest.mark.parametrize("chromosomes", [[1], [23, 1], [1, 23, 23]])
+def test_parts_not_matching_the_release_chromosomes_are_rejected(
+    chromosomes: list[int],
+) -> None:
+    # A missing, reordered or repeated part would give an incomplete or unsorted panel.
+    with pytest.raises(AssertionError):
+        GnomadAlleleFrequencyPanelTask.create(
+            asset_id="gnomad_panel",
+            release=_RELEASE,
+            part_tasks=[_part_task(chrom) for chrom in chromosomes],
+        )
 ```
 
 - [ ] **Step 2: Run them to verify they fail**
@@ -2509,14 +2538,16 @@ A gnomAD release's allele-frequency panel: the per-chromosome tables concatenate
 chromosome order into one parquet sorted by (CHR, POS), so the harmonizer's per-chromosome
 filter prunes row groups.
 
-The per-chromosome Tasks are ordinary dependencies, kept in the asset store under their own
-sub_folder. They cannot be deleted to save space, because the build system materializes
+The per-chromosome Tasks are injected by the caller (normally
+generate_gnomad_allele_frequency_panel_tasks) and are ordinary dependencies, kept in the asset
+store under their own sub_folder. They cannot be deleted to save space, because the build system materializes
 every transitive dependency of a target; a path_remap rule can move them to another disk.
 Do not wrap this Task in DiscardDepsWrapper: the multi-hour build would become
 all-or-nothing again and the FASTA would be rebuilt in a temporary store.
 """
 
 from pathlib import Path, PurePath
+from typing import Sequence
 
 import pyarrow
 import pyarrow.parquet
@@ -2568,6 +2599,19 @@ class GnomadAlleleFrequencyPanelTask(Task):
     release: GnomadRelease
     part_tasks: tuple[GnomadChromosomeAlleleFrequencyTask, ...]
 
+    def __attrs_post_init__(self) -> None:
+        # Exactly the release's chromosomes, in release order: concatenation relies on it
+        # for a complete panel sorted by (CHR, POS).
+        part_chromosomes = tuple(part.chrom for part in self.part_tasks)
+        assert part_chromosomes == self.release.chromosomes, (
+            f"{self.release.name}: parts cover chromosomes {part_chromosomes}, "
+            f"expected {self.release.chromosomes} in that order"
+        )
+        foreign = [
+            part.asset_id for part in self.part_tasks if part.release != self.release
+        ]
+        assert not foreign, f"parts from a release other than {self.release.name}: {foreign}"
+
     @property
     def deps(self) -> list[Task]:
         return list(self.part_tasks)
@@ -2588,7 +2632,10 @@ class GnomadAlleleFrequencyPanelTask(Task):
 
     @classmethod
     def create(
-        cls, asset_id: str, release: GnomadRelease, fasta_task: Task
+        cls,
+        asset_id: str,
+        release: GnomadRelease,
+        part_tasks: Sequence[GnomadChromosomeAlleleFrequencyTask],
     ) -> "GnomadAlleleFrequencyPanelTask":
         return cls(
             meta=HarmonizableReferenceTableMeta(
@@ -2609,12 +2656,7 @@ class GnomadAlleleFrequencyPanelTask(Task):
                 ),
             ),
             release=release,
-            part_tasks=tuple(
-                GnomadChromosomeAlleleFrequencyTask.create(
-                    release=release, chrom=chrom, fasta_task=fasta_task
-                )
-                for chrom in release.chromosomes
-            ),
+            part_tasks=tuple(part_tasks),
         )
 
 
@@ -2654,11 +2696,60 @@ def concatenate_parts(
 Run: `pixi r python -m pytest test_mecfs_bio/unit/build_system/task/genome_reference_harmonization/test_gnomad_allele_frequency_panel_task.py -v`
 Expected: PASS. (Parts written by polars carry int32/float32 and large_string; the writer's schema is the parts' schema, so the tables match it.)
 
-- [ ] **Step 5: Run green and commit**
+- [ ] **Step 5: Add the task generator**
+
+`mecfs_bio/build_system/task_generator/gnomad_allele_frequency_panel_task_generator.py`. It is wiring only, so it has no test of its own (repo convention); Task 6's asset module constructs it at import time.
+
+```python
+"""
+Builds a gnomAD release's allele-frequency panel together with its per-chromosome parts.
+"""
+
+from attrs import frozen
+
+from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_allele_frequency_panel_task import (
+    GnomadAlleleFrequencyPanelTask,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_chromosome_allele_frequency_task import (
+    GnomadChromosomeAlleleFrequencyTask,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_release import (
+    GnomadRelease,
+)
+
+
+@frozen(slots=True)
+class GnomadAlleleFrequencyPanelTasks:
+    part_tasks: tuple[GnomadChromosomeAlleleFrequencyTask, ...]
+    panel_task: GnomadAlleleFrequencyPanelTask
+
+    def terminal_tasks(self) -> list[Task]:
+        return [self.panel_task]
+
+
+def generate_gnomad_allele_frequency_panel_tasks(
+    asset_id: str, release: GnomadRelease, fasta_task: Task
+) -> GnomadAlleleFrequencyPanelTasks:
+    part_tasks = tuple(
+        GnomadChromosomeAlleleFrequencyTask.create(
+            release=release, chrom=chrom, fasta_task=fasta_task
+        )
+        for chrom in release.chromosomes
+    )
+    return GnomadAlleleFrequencyPanelTasks(
+        part_tasks=part_tasks,
+        panel_task=GnomadAlleleFrequencyPanelTask.create(
+            asset_id=asset_id, release=release, part_tasks=part_tasks
+        ),
+    )
+```
+
+- [ ] **Step 6: Run green and commit**
 
 ```bash
 pixi r invoke green 2>&1 | tee /tmp/claude-1000/green_task5.log
-git add mecfs_bio/build_system/task/genome_reference_harmonization/gnomad test_mecfs_bio/unit/build_system/task/genome_reference_harmonization/test_gnomad_allele_frequency_panel_task.py
+git add mecfs_bio/build_system/task/genome_reference_harmonization/gnomad mecfs_bio/build_system/task_generator/gnomad_allele_frequency_panel_task_generator.py test_mecfs_bio/unit/build_system/task/genome_reference_harmonization/test_gnomad_allele_frequency_panel_task.py
 git commit -m "Add gnomAD allele-frequency panel concatenation Task
 
 Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
@@ -2674,7 +2765,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Create: `experiments/claude/gnomad_af_reference/check_release_headers.py`
 
 **Interfaces:**
-- Consumes: `GnomadRelease`, `GnomadAlleleFrequencyPanelTask.create`, `read_vcf_header`, `assert_gnomad_header`, `gnomad_vcf_url` (Tasks 4-5); `PanUkbbAlleleFrequencyPanelTask.create` (Task 3); `DownloadFileTask`; `UCSC_HG19_INDEXED_FASTA`, `UCSC_HG38_INDEXED_FASTA`.
+- Consumes: `GnomadRelease`, `generate_gnomad_allele_frequency_panel_tasks`, `read_vcf_header`, `assert_gnomad_header`, `gnomad_vcf_url` (Tasks 4-5); `PanUkbbAlleleFrequencyPanelTask.create` (Task 3); `DownloadFileTask`; `UCSC_HG19_INDEXED_FASTA`, `UCSC_HG38_INDEXED_FASTA`.
 - Produces: `GNOMAD_V2_1_1_GENOMES`, `GNOMAD_V4_1_GENOMES`, `GNOMAD_V2_1_1_GENOMES_HG19_ALLELE_FREQUENCIES`, `GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES`, `PAN_UKBB_VARIANT_MANIFEST`, `PAN_UKBB_HG19_ALLELE_FREQUENCIES`.
 
 There is no unit test for asset wiring (repo convention: import-time construction, which green's import of all asset modules exercises, is enough). The live probe in Step 4 is the check.
@@ -2753,20 +2844,24 @@ from mecfs_bio.assets.reference_data.gnomad.gnomad_releases import (
     GNOMAD_V2_1_1_GENOMES,
     GNOMAD_V4_1_GENOMES,
 )
-from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_allele_frequency_panel_task import (
-    GnomadAlleleFrequencyPanelTask,
+from mecfs_bio.build_system.task_generator.gnomad_allele_frequency_panel_task_generator import (
+    generate_gnomad_allele_frequency_panel_tasks,
 )
 
-GNOMAD_V2_1_1_GENOMES_HG19_ALLELE_FREQUENCIES = GnomadAlleleFrequencyPanelTask.create(
-    asset_id="gnomad_v2_1_1_genomes_hg19_allele_frequencies",
-    release=GNOMAD_V2_1_1_GENOMES,
-    fasta_task=UCSC_HG19_INDEXED_FASTA,
+GNOMAD_V2_1_1_GENOMES_HG19_ALLELE_FREQUENCIES = (
+    generate_gnomad_allele_frequency_panel_tasks(
+        asset_id="gnomad_v2_1_1_genomes_hg19_allele_frequencies",
+        release=GNOMAD_V2_1_1_GENOMES,
+        fasta_task=UCSC_HG19_INDEXED_FASTA,
+    ).panel_task
 )
 
-GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES = GnomadAlleleFrequencyPanelTask.create(
-    asset_id="gnomad_v4_1_genomes_hg38_allele_frequencies",
-    release=GNOMAD_V4_1_GENOMES,
-    fasta_task=UCSC_HG38_INDEXED_FASTA,
+GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES = (
+    generate_gnomad_allele_frequency_panel_tasks(
+        asset_id="gnomad_v4_1_genomes_hg38_allele_frequencies",
+        release=GNOMAD_V4_1_GENOMES,
+        fasta_task=UCSC_HG38_INDEXED_FASTA,
+    ).panel_task
 )
 ```
 

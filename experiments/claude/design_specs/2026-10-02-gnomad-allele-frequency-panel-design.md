@@ -265,7 +265,11 @@ The Task combines it with reference_matches.
 
 **GnomadAlleleFrequencyPanelTask** (gnomad_allele_frequency_panel_task.py)
 
-- Deps: one GnomadChromosomeAlleleFrequencyTask per release chromosome.
+- Deps: one GnomadChromosomeAlleleFrequencyTask per release chromosome, injected into
+  create() rather than built there. Construction asserts the parts are exactly the release's
+  chromosomes, in release order, from that release. A task generator in
+  mecfs_bio/build_system/task_generator (generate_gnomad_allele_frequency_panel_tasks)
+  builds the parts and the panel together; the assets call it.
 - execute(): reads the parts in gwaslab code order (1-22, X=23, Y=24) with
   ParquetFile.iter_batches. Asserts every part has the identical arrow schema. Writes one
   FileAsset with the same writer settings. The output is sorted by (CHR, POS), so
