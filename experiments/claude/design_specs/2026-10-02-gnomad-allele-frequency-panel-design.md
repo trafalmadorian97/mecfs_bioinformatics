@@ -508,6 +508,22 @@ pixi r invoke green must pass, including import-linter.
   1000 Genomes AF did not match (AF_MISMATCH falls by 79%). That fits a panel whose population
   (UK, imputed) matches DecodeME's. Neither panel changes NOT_IN_PANEL much. The AF = 0
   palindrome question is small in practice.
+- **The 35 opposite-orientation conflicts are undetected Pan-UKBB swaps**
+  (inspect_orientation_conflicts.log, probe_undetected_pan_ukbb_swaps.log). All 35 are
+  ambiguous indels on chr21 (11) or chr22 (24). Each is genotyped (info 1.0), with
+  high_quality false and no gnomAD-genomes frequency. In each, the Pan-UKBB panel lists
+  REF/ALT the other way round from 1000 Genomes, with AF close to 1 minus the 1000 Genomes AF.
+  This is the known UK Biobank allele-order swap. Both orientations of an ambiguous indel lie
+  on the FASTA, so the REF check (the 295) cannot see it. Genome-wide, the manifest's
+  genotyped rows with no gnomAD frequency on chr21, chr22 and X number 434: the 295 REF
+  mismatches already dropped, 130 indels that reach the panel, and 9 SNVs. All 130 indels
+  have af_EUR > 0.5 (median 0.97), so the listed alt is the major allele. On the other
+  chromosomes, the 24 such indels have median af_EUR 0.011 and look correctly labelled.
+  So about 130 swapped ambiguous indels are in the panel, and with Pan-UKBB 35 DecodeME
+  variants are kept with the wrong orientation (BETA sign flipped).
+  Proposed fix: the Pan-UKBB Task drops the whole signature (chrom in 21, 22, X; info == 1.0;
+  gnomad_genomes_af_EUR null). The count is pinned at 434, so the REF-mismatch count left
+  afterwards should be 0.
 - **Not yet run, at the user's request:** the gnomAD v2.1.1 build (about 14 h,
   build_panel.py gnomad_v2) and the DecodeME four-way comparison
   (decode_me_panel_comparison.py), which needs the gnomAD panel. Before running the
