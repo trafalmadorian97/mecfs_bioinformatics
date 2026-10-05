@@ -251,9 +251,27 @@ The above derivation assumed that both traits of interest were quantitative, but
 
 We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).
 
+We have
 
-todo
 
+$$
+\begin{align}
+\psi^1&= Y\beta + \delta \label{bin_dg1}\\
+\psi^2&= Z\gamma + \epsilon \label{bin_dg2}\\
+y_1 &= 1_{\psi^1>\tau_1}\\
+y_2 &= 1_{\psi^2>\tau_2}\\
+\end{align}
+$$
+
+
+- There are $M  \gg 0$ genetic variants.
+- There are $N_1 \gg 0$ individuals in the trait 1 GWAS and $N_2 \gg 0$ individuals in the trait 2 GWAS.
+- There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
+- $y_1\in \{0,1\}^{N_1}$ and $y_2 \in \{0,1\}^{N_2}$ are the binary phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
+- $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
+- $\psi^1\in\mathbb{R}^{N_1}$ and $\psi^2\in\mathbb{R}^{N_2}$ are the latent liability scores for the two GWAS
+
+to be continued
 
 ## Note on derivation
 
