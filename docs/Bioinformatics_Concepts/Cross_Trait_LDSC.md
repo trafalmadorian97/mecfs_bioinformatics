@@ -271,6 +271,7 @@ $$
 - $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
 - $\psi^1\in\mathbb{R}^{N_1}$ and $\psi^2\in\mathbb{R}^{N_2}$ are the latent liability scores for the two GWAS
 
+to be continued
 
 ## Note on derivation
 
