@@ -479,6 +479,18 @@ pixi r invoke green must pass, including import-linter.
    - palindromes decided by a chosen-group AF of exactly 0.
    The script lives in experiments/claude/gnomad_af_reference/ and tees its log.
 
+## Validation results (2026-10-05, partial)
+
+- **Byte identity: passed.** DecodeME's harmonized table (8,371,657 rows) was force-rebuilt
+  with the refactored code. Frames equal and bytes equal (byte_identity_1000g.log).
+- **Pan-UKBB build: passed.** 28,987,534 manifest rows in, 28,987,239 written; exactly 295
+  REF mismatches dropped and 0 FASTA-ambiguous rows; 23 chromosomes; 0.58 GiB in 29 row groups
+  (build_panel_pan_ukbb.log).
+- **Not yet run, at the user's request:** the gnomAD v2.1.1 build (about 14 h,
+  build_panel.py gnomad_v2) and the DecodeME four-way comparison
+  (decode_me_panel_comparison.py), which needs the gnomAD panel. Before running the
+  comparison, confirm that SNPID exists in DecodeME's pre-harmonization table.
+
 ## Deferred
 
 - **Palindromes decided by AF = 0.** At the chosen filter, a gnomAD panel has many rows where
