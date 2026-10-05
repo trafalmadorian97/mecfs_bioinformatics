@@ -7,12 +7,18 @@ pre-harmonization table. Reported: the trust decision, drop-reason counts (kept,
 AF_MISMATCH, ...), per-variant agreement of the outcome (kept orientation or drop reason)
 between choices, and palindromes kept or flipped on a chosen-ancestry AF of exactly 0.
 
-Usage:
+Usage (all four choices; needs the gnomAD v2.1.1 panel, a 14 h build):
     pixi r python -m experiments.claude.gnomad_af_reference.decode_me_panel_comparison \
         2>&1 | tee experiments/claude/gnomad_af_reference/decode_me_panel_comparison.log
+Pass choice labels to compare a subset, building only the panels they need:
+    pixi r python -m experiments.claude.gnomad_af_reference.decode_me_panel_comparison \
+        1000g_eur pan_ukbb_eur \
+        2>&1 | tee experiments/claude/gnomad_af_reference/decode_me_panel_comparison_1000g_pan_ukbb.log
 """
 
 import itertools
+import sys
+from collections.abc import Sequence
 
 import polars as pl
 from attrs import frozen
@@ -166,6 +172,13 @@ def report_agreement(outcomes: dict[str, pl.DataFrame]) -> None:
         )
         differing = joined.filter(pl.col(OUTCOME_COL) != pl.col(OUTCOME_COL + "_right"))
         print(f"{left} vs {right}: {differing.height} of {joined.height}")
+        both_kept = differing.filter(
+            pl.col(OUTCOME_COL).str.starts_with(KEPT)
+            & pl.col(OUTCOME_COL + "_right").str.starts_with(KEPT)
+        )
+        print(
+            f"{left} vs {right}: kept by both in opposite orientations: {both_kept.height}"
+        )
         with pl.Config(tbl_rows=10, fmt_str_lengths=40):
             print(
                 differing.group_by(OUTCOME_COL, OUTCOME_COL + "_right")
@@ -214,12 +227,21 @@ def report_zero_af_palindromes(
     )
 
 
-def main() -> None:
+def select_choices(labels: Sequence[str]) -> list[PanelChoice]:
+    """The named choices, in CHOICES order; all of them when no label is given."""
+    known = [choice.label for choice in CHOICES]
+    unknown = sorted(set(labels) - set(known))
+    assert not unknown, f"unknown choices {unknown}; known: {known}"
+    return [choice for choice in CHOICES if not labels or choice.label in labels]
+
+
+def main(labels: Sequence[str]) -> None:
+    choices = select_choices(labels)
     pre_task = (
         DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.pre_harmonization_table_task
     )
     panel_tasks = list(
-        {choice.panel_task.asset_id: choice.panel_task for choice in CHOICES}.values()
+        {choice.panel_task.asset_id: choice.panel_task for choice in choices}.values()
     )
     assets = DEFAULT_RUNNER.run([pre_task, UCSC_HG19_INDEXED_FASTA, *panel_tasks])
     fasta_asset = assets[UCSC_HG19_INDEXED_FASTA.asset_id]
@@ -228,8 +250,11 @@ def main() -> None:
     sumstats = scan_sumstats_as_polars(
         assets[pre_task.asset_id], pre_task.meta, IdentityPipe()
     )
+    assert GWASLAB_SNPID_COL in sumstats.collect_schema().names(), (
+        f"the agreement join needs {GWASLAB_SNPID_COL} in the pre-harmonization table"
+    )
     outcomes: dict[str, pl.DataFrame] = {}
-    for choice in CHOICES:
+    for choice in choices:
         panel = PanelTable(
             path=_file(assets[choice.panel_task.asset_id]).path,
             af_col=resolve_panel_af_col(choice.panel_task, choice.ancestry),
@@ -241,4 +266,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])

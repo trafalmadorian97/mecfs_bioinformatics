@@ -486,6 +486,28 @@ pixi r invoke green must pass, including import-linter.
 - **Pan-UKBB build: passed.** 28,987,534 manifest rows in, 28,987,239 written; exactly 295
   REF mismatches dropped and 0 FASTA-ambiguous rows; 23 chromosomes; 0.58 GiB in 29 row groups
   (build_panel_pan_ukbb.log).
+- **Two-way DecodeME comparison (1000 Genomes "eur" vs Pan-UKBB "ukb_eur"),**
+  decode_me_panel_comparison_1000g_pan_ukbb.log. Both runs: untrusted table, so every
+  palindrome and ambiguous indel goes to the panel. Counts are per input row, before the
+  Task's final drop of rows whose oriented keys collide.
+
+  | outcome | 1000g_eur | pan_ukbb_eur |
+  |---|---|---|
+  | kept | 8,371,659 | 8,496,285 |
+  | palindrome_unresolved | 184,011 | 180,603 |
+  | ambiguous_indel_not_in_panel | 169,040 | 165,800 |
+  | ambiguous_indel_af_mismatch | 147,493 | 30,389 |
+  | ambiguous_indel_af_indecisive | 886 | 12 |
+  | indel_not_on_reference | 503 | 503 |
+  | not_on_reference | 2 | 2 |
+
+  Outcomes differ for 221,625 of 8,873,594 rows; nearly all are dropped under one panel and
+  kept under the other. 35 rows are kept under both panels in opposite orientations.
+  Palindromes decided by a chosen-ancestry AF of exactly 0: 180 (1000 Genomes), 1 (Pan-UKBB).
+  Reading: Pan-UKBB keeps 124,626 more variants, mostly ambiguous indels that the
+  1000 Genomes AF did not match (AF_MISMATCH falls by 79%). That fits a panel whose population
+  (UK, imputed) matches DecodeME's. Neither panel changes NOT_IN_PANEL much. The AF = 0
+  palindrome question is small in practice.
 - **Not yet run, at the user's request:** the gnomAD v2.1.1 build (about 14 h,
   build_panel.py gnomad_v2) and the DecodeME four-way comparison
   (decode_me_panel_comparison.py), which needs the gnomAD panel. Before running the
