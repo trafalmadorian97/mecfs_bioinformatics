@@ -2996,7 +2996,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 ### Task 7: Validation on real data
 
-These steps build real assets in the shared asset store. **Before Step 1, ask the user** whether another build job is using the store. The runner config in the main checkout uses paths relative to it, so from this worktree create a gitignored `default_runner_config.yaml` that copies the main checkout's (`/home/paiforsyth/src/traf/biostatistics/default_runner_config.yaml`), with `asset_root` and `info_store` made absolute under `/home/paiforsyth/src/traf/biostatistics/`. Show the user the file before using it. Two processes writing the same info store at once can corrupt it.
+These steps build real assets in the shared asset store, run from the main checkout with its existing `default_runner_config.yaml`. **Before Step 1, ask the user** whether another build job is using the store: two processes writing the same info store at once can corrupt it.
 
 **Files:**
 - Create: `experiments/claude/gnomad_af_reference/byte_identity_1000g.py`, `build_panel.py`, `decode_me_panel_comparison.py`
