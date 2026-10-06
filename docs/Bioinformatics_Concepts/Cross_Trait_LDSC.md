@@ -73,7 +73,7 @@ Note that this implies that the true genetic effects have mean zero:
 
 $$
 \begin{align}
-\mathbb{E}( Y\beta_1) &= \mathbb{E}(Y) \mathbb{E}(\beta) &\text{ by independence}\\
+\mathbb{E}( Y\beta_1) &= \mathbb{E}(Y) \mathbb{E}(\beta_1) &\text{ by independence}\\
 &=0
 \end{align}
 $$
@@ -94,19 +94,19 @@ First, let us compute the [genetic covariances](Genetic_Correlation.md#genetic-c
 
 $$
 \begin{align}
-&\mathbb{Cov}\left( \sum_j X_j \beta_j, \sum_k X_k \gamma_k \right)\\
-&= \mathbb{E}\left(  \left(\sum_j X_j \beta_j\right)\left(\sum_k X_k \gamma_k \right)  \right)& \text{mean 0}\\
-&=\sum_{j,k} \mathbb{E} \left( X_j X_k \beta_j \gamma_k \right) & \text{linearity}\\
-&=\sum_{j,k}\mathbb{E} (X_jX_k) \mathbb{E}(\beta_j \gamma_k) & \text{independence}\\
-&=\sum_{j}\mathbb{E} (X_j^2) \mathbb{E}(\beta_j \gamma_j) & \text{by (\ref{cov_beta_gamma})}\\
-&=\sum_j \mathbb{E} (\beta_j \gamma_j) & \text{ by (\ref{y_z_var})}\\
+&\mathbb{Cov}\left( \sum_j X_j \beta_{j,1}, \sum_k X_k \gamma_k \right)\\
+&= \mathbb{E}\left(  \left(\sum_j X_j \beta_{j,1}\right)\left(\sum_k X_k \gamma_k \right)  \right)& \text{mean 0}\\
+&=\sum_{j,k} \mathbb{E} \left( X_j X_k \beta_{j,1} \gamma_k \right) & \text{linearity}\\
+&=\sum_{j,k}\mathbb{E} (X_jX_k) \mathbb{E}(\beta_{j,1} \gamma_k) & \text{independence}\\
+&=\sum_{j}\mathbb{E} (X_j^2) \mathbb{E}(\beta_{j,1} \gamma_j) & \text{by (\ref{cov_beta_gamma})}\\
+&=\sum_j \mathbb{E} (\beta_{j,1} \gamma_j) & \text{ by (\ref{y_z_var})}\\
 &=\rho_g. & \text{by (\ref{cov_beta_gamma})}
 \end{align}
 $$
 
 ### Genetic Correlation
 
-Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By the derivation of LDSC, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
+Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By the derivation of LDSC, we have $\mathbb{Var}(\sum_j X_j \beta_{j,1})=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
 
 Since we have assumed phenotypic variance is standardized to 1 (see $(\ref{e_Y})$, $(\ref{e_Z})$, and $(\ref{y_z_var})$), it follows that the genetic correlation of the two traits can be computed as their genetic covariance divided by the square root of the product of their [heritabilities](Heritability.md):
 
@@ -120,8 +120,8 @@ Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the [Wa
 
 $$
 \begin{align}
-\chi_{j,1}^2 &\approx N \hat{\beta}_{j,1}^2=\frac{(y_1^T Y_{j})^2}{N_1}\\
-\chi_{j,2}^2 &\approx N \hat{\beta}_{j21}^2=\frac{(y_1^T Z_{j})^2}{N_2}.
+\chi_{j,1}^2 &\approx N \hat{\beta_1}_{j,1}^2=\frac{(y_1^T Y_{j})^2}{N_1}\\
+\chi_{j,2}^2 &\approx N \hat{\beta_1}_{j21}^2=\frac{(y_1^T Z_{j})^2}{N_2}.
 \end{align}
 $$
 
@@ -150,8 +150,8 @@ $$
 \begin{align}
 &\mathbb{E}(z_{j,1}z_{j,2}|Z,Y)\\
 &\approx\frac{1}{\sqrt{N_1N_2}} \mathbb{E}\left(Y_j^T y_1 y_1^T Z_j|Z,Y \right) & \text{ by (\ref{d1}, \ref{d2})}\\
-&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \mathbb{E}\left( (Y\beta+\delta)(Z\gamma+\epsilon)^T  |Z,Y\right)Z_j & \text{ by (\ref{dg1},\ref{dg2})}\\
-&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \left(Y \mathbb{E}(\beta \gamma^T)Z^T +  \mathbb{E}(\delta \gamma^T) Z^T + Y \mathbb{E}(\beta \epsilon^T) + \mathbb{E}(\epsilon \delta^T) \right)Z_j & \text{linearity, independence}\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \mathbb{E}\left( (Y\beta_1+\delta)(Z\gamma+\epsilon)^T  |Z,Y\right)Z_j & \text{ by (\ref{dg1},\ref{dg2})}\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \left(Y \mathbb{E}(\beta_1 \gamma^T)Z^T +  \mathbb{E}(\delta \gamma^T) Z^T + Y \mathbb{E}(\beta_1 \epsilon^T) + \mathbb{E}(\epsilon \delta^T) \right)Z_j & \text{linearity, independence}\\
 &=\frac{1}{\sqrt{N_1N_2}}Y^T_j\left(\frac{\rho_g}{M}YZ^T + \rho_e Q\right)Z_j & \text{ by (\ref{cov_beta_gamma},\ref{cov_delta_epsilon})}\\
 &=\frac{1}{\sqrt{N_1N_2}}\left(\frac{\rho_g}{M}Y_j^TYZ^TZ_j + \rho_e Y_j^T QZ_j\right) \label{cond_exp}
 \end{align}
