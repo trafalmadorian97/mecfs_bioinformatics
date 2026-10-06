@@ -13,8 +13,8 @@ Recall that LDSC assumes a linear data-generating model. CT-LDSC assumes two lin
 
 $$
 \begin{align}
-y_1&= Y\beta + \delta \label{dg1}\\
-y_2&= Z\gamma + \epsilon \label{dg2}
+y_1&= Y\beta_1 + \delta \label{dg1}\\
+y_2&= Z\beta_2 + \epsilon \label{dg2}
 \end{align}
 $$
 
@@ -26,11 +26,11 @@ where:
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
 - $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
-- $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits. 
-- $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of per-individual genetic effects in the two GWAS.
+- $\beta_1,\gamma\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits. 
+- $Y\beta_1\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of per-individual genetic effects in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 
-We model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties:
+We model $Y,Z,\beta_1,\gamma, \delta,\epsilon$ as random variables with the following properties:
 
 
 $$
@@ -41,11 +41,11 @@ $$
 \rho_e &\text{ if } j=k \le N_s \\
 0 & \text{ else }
 \end{cases} & \text{ for some }\rho_e>0 \label{cov_delta_epsilon}\\
-\mathbb{Var}(\beta) &= \frac{1}{M} h_1^2 I \label{var_beta} \\
+\mathbb{Var}(\beta_1) &= \frac{1}{M} h_1^2 I \label{var_beta} \\
 \mathbb{Var}(\gamma) &= \frac{1}{M} h_2^2 I  \label{var_gamma}  \\
-\mathbb{Cov}(\beta, \gamma)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{cov_beta_gamma}\\
+\mathbb{Cov}(\beta_1, \gamma)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{cov_beta_gamma}\\
 \mathbb{E}(\delta)&=0\label{e_delta}\\
-\mathbb{E}(\beta)&=0  \label{e_beta} \\
+\mathbb{E}(\beta_1)&=0  \label{e_beta} \\
 \mathbb{E} Y &=0 \label{e_Y} \\ 
 \mathbb{E}(\epsilon)&=0   \label{e_epsilon} \\
 \mathbb{E}(\gamma)&=0  \label{e_gamma} \\
@@ -65,15 +65,15 @@ Furthermore, we assume the following relationships between the random variables,
 
 - The rows of $Y$ and $Z$ are mutually independent, except in the case that a row of $Y$ and $Z$ refer to the same individual (one of the $N_s$ individuals present in both GWAS).
 - The rows of $Y$ and $Z$ are identically distributed. That is, the two GWAS samples are drawn independently from the sample population.
-- $Y, \beta, \delta$ are all mutually independent, as are $Z,\gamma, \epsilon$.
-- $\beta$ is independent of $\epsilon$ and $Z$, and $\gamma$ is independent of $\delta$ and $Y$.
+- $Y, \beta_1, \delta$ are all mutually independent, as are $Z,\gamma, \epsilon$.
+- $\beta_1$ is independent of $\epsilon$ and $Z$, and $\gamma$ is independent of $\delta$ and $Y$.
 
 
 Note that this implies that the true genetic effects have mean zero:
 
 $$
 \begin{align}
-\mathbb{E}( Y\beta) &= \mathbb{E}(Y) \mathbb{E}(\beta) &\text{ by independence}\\
+\mathbb{E}( Y\beta_1) &= \mathbb{E}(Y) \mathbb{E}(\beta) &\text{ by independence}\\
 &=0
 \end{align}
 $$
@@ -256,10 +256,10 @@ We have
 
 $$
 \begin{align}
-\psi^1&= Y\beta + \delta \label{bin_dg1}\\
-\psi^2&= Z\gamma + \epsilon \label{bin_dg2}\\
-y_1 &= 1_{\psi^1>\tau_1}\\
-y_2 &= 1_{\psi^2>\tau_2}\\
+\psi&= Y\beta_1 + \delta \label{bin_dg1}\\
+\omega&= Z\gamma + \epsilon \label{bin_dg2}\\
+y_1 &= 1_{\psi>\tau_1}\\
+y_2 &= 1_{\omega>\tau_2}\\
 \end{align}
 $$
 
@@ -269,7 +269,7 @@ $$
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \{0,1\}^{N_1}$ and $y_2 \in \{0,1\}^{N_2}$ are the binary phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
 - $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
-- $\psi^1\in\mathbb{R}^{N_1}$ and $\psi^2\in\mathbb{R}^{N_2}$ are the latent liability scores for the two GWAS
+- $\psi\in\mathbb{R}^{N_1}$ and $\omega\in\mathbb{R}^{N_2}$ are the latent liability scores for the two traits.
 
 to be continued
 
