@@ -13,8 +13,8 @@ Recall that LDSC assumes a linear data-generating model. CT-LDSC assumes two lin
 
 $$
 \begin{align}
-y_1&= Y\beta + \delta \label{dg1}\\
-y_2&= Z\gamma + \epsilon \label{dg2}
+y_1&= Y\beta_1 + \delta \label{dg1}\\
+y_2&= Z\beta_2 + \epsilon \label{dg2}
 \end{align}
 $$
 
@@ -26,11 +26,11 @@ where:
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \mathbb{R}^{N_1}$ and $y_2 \in \mathbb{R}^{N_2}$ are the phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
 - $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
-- $\beta,\gamma\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits. 
-- $Y\beta\in\mathbb{R}^{N_1}$ and $Z\gamma\in\mathbb{R}^{N_2}$ are thus the vectors of per-individual genetic effects in the two GWAS.
+- $\beta_1,\beta_2\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits. 
+- $Y\beta_1\in\mathbb{R}^{N_1}$ and $Z\beta_2\in\mathbb{R}^{N_2}$ are thus the vectors of per-individual genetic effects in the two GWAS.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 
-We model $Y,Z,\beta,\gamma, \delta,\epsilon$ as random variables with the following properties:
+We model $Y,Z,\beta_1,\beta_2, \delta,\epsilon$ as random variables with the following properties:
 
 
 $$
@@ -41,14 +41,14 @@ $$
 \rho_e &\text{ if } j=k \le N_s \\
 0 & \text{ else }
 \end{cases} & \text{ for some }\rho_e>0 \label{cov_delta_epsilon}\\
-\mathbb{Var}(\beta) &= \frac{1}{M} h_1^2 I \label{var_beta} \\
-\mathbb{Var}(\gamma) &= \frac{1}{M} h_2^2 I  \label{var_gamma}  \\
-\mathbb{Cov}(\beta, \gamma)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{cov_beta_gamma}\\
+\mathbb{Var}(\beta_1) &= \frac{1}{M} h_1^2 I \label{var_beta} \\
+\mathbb{Var}(\beta_2) &= \frac{1}{M} h_2^2 I  \label{var_gamma}  \\
+\mathbb{Cov}(\beta_1, \beta_2)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{cov_beta_gamma}\\
 \mathbb{E}(\delta)&=0\label{e_delta}\\
-\mathbb{E}(\beta)&=0  \label{e_beta} \\
+\mathbb{E}(\beta_1)&=0  \label{e_beta} \\
 \mathbb{E} Y &=0 \label{e_Y} \\ 
 \mathbb{E}(\epsilon)&=0   \label{e_epsilon} \\
-\mathbb{E}(\gamma)&=0  \label{e_gamma} \\
+\mathbb{E}(\beta_2)&=0  \label{e_gamma} \\
 \mathbb{E} (Z) &=0  \label{e_Z} \\ 
 \mathbb{E}(Y_i^2) &=\mathbb{E}(Z_i^2)=1 &\text{ for all }i \label{y_z_var}
 \end{align}
@@ -65,20 +65,20 @@ Furthermore, we assume the following relationships between the random variables,
 
 - The rows of $Y$ and $Z$ are mutually independent, except in the case that a row of $Y$ and $Z$ refer to the same individual (one of the $N_s$ individuals present in both GWAS).
 - The rows of $Y$ and $Z$ are identically distributed. That is, the two GWAS samples are drawn independently from the sample population.
-- $Y, \beta, \delta$ are all mutually independent, as are $Z,\gamma, \epsilon$.
-- $\beta$ is independent of $\epsilon$ and $Z$, and $\gamma$ is independent of $\delta$ and $Y$.
+- $Y, \beta_1, \delta$ are all mutually independent, as are $Z,\beta_2, \epsilon$.
+- $\beta_1$ is independent of $\epsilon$ and $Z$, and $\beta_2$ is independent of $\delta$ and $Y$.
 
 
 Note that this implies that the true genetic effects have mean zero:
 
 $$
 \begin{align}
-\mathbb{E}( Y\beta) &= \mathbb{E}(Y) \mathbb{E}(\beta) &\text{ by independence}\\
+\mathbb{E}( Y\beta_1) &= \mathbb{E}(Y) \mathbb{E}(\beta_1) &\text{ by independence}\\
 &=0
 \end{align}
 $$
 
-and similarly, $\mathbb{E}(Z\gamma)=0$.
+and similarly, $\mathbb{E}(Z\beta_2)=0$.
 
 Define the following quantities related to [Linkage Disequilibrium](Linkage_Disequilibrium.md) (LD):
 
@@ -88,25 +88,29 @@ Define the following quantities related to [Linkage Disequilibrium](Linkage_Dise
 - The LD score of a SNP $j$ is defined to be $l_j:= \sum_k r_{jk}^2$. It quantifies the magnitude of the dependence between $j$ and other SNPs.
 
 
+
+Denote by $\hat\beta_1,\hat\beta_2\in\mathbb{R}^M$ the marginal GWAS regression coefficients from GWAS 1 and 2.  Note the critical distinction between $\beta_1,\beta_2$, which are underlying causal, joint effects of genetic variants, and $\hat\beta_1,\hat\beta_2$, which are the outputs of per-variant univariate marginal regressions.
+
+
 ### Genetic Covariance
 
 First, let us compute the [genetic covariances](Genetic_Correlation.md#genetic-covariance) between the two phenotypes.  Let $X\in\mathbb{R}^M$ denote the genotype of an arbitrary individual.  By definition, genetic covariance is:
 
 $$
 \begin{align}
-&\mathbb{Cov}\left( \sum_j X_j \beta_j, \sum_k X_k \gamma_k \right)\\
-&= \mathbb{E}\left(  \left(\sum_j X_j \beta_j\right)\left(\sum_k X_k \gamma_k \right)  \right)& \text{mean 0}\\
-&=\sum_{j,k} \mathbb{E} \left( X_j X_k \beta_j \gamma_k \right) & \text{linearity}\\
-&=\sum_{j,k}\mathbb{E} (X_jX_k) \mathbb{E}(\beta_j \gamma_k) & \text{independence}\\
-&=\sum_{j}\mathbb{E} (X_j^2) \mathbb{E}(\beta_j \gamma_j) & \text{by (\ref{cov_beta_gamma})}\\
-&=\sum_j \mathbb{E} (\beta_j \gamma_j) & \text{ by (\ref{y_z_var})}\\
+&\mathbb{Cov}\left( \sum_j X_j \beta_{j,1}, \sum_k X_k \beta_{k,2} \right)\\
+&= \mathbb{E}\left(  \left(\sum_j X_j \beta_{j,1}\right)\left(\sum_k X_k \beta_{k,2} \right)  \right)& \text{mean 0}\\
+&=\sum_{j,k} \mathbb{E} \left( X_j X_k \beta_{j,1} \beta_{k,2} \right) & \text{linearity}\\
+&=\sum_{j,k}\mathbb{E} (X_jX_k) \mathbb{E}(\beta_{j,1} \beta_{k,2}) & \text{independence}\\
+&=\sum_{j}\mathbb{E} (X_j^2) \mathbb{E}(\beta_{j,1} \beta_{j,2}) & \text{by (\ref{cov_beta_gamma})}\\
+&=\sum_j \mathbb{E} (\beta_{j,1} \beta_{j,2}) & \text{ by (\ref{y_z_var})}\\
 &=\rho_g. & \text{by (\ref{cov_beta_gamma})}
 \end{align}
 $$
 
 ### Genetic Correlation
 
-Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By the derivation of LDSC, we have $\mathbb{Var}(\sum_j X_j \beta_j)=h_1^2$ and $\mathbb{Var}(\sum_j X_j \gamma_j)=h_2^2$.
+Note that the model ($\ref{dg1},\ref{dg2}$) is an extension of the model used in [LDSC](LDSC.md).  By the derivation of LDSC, we have $\mathbb{Var}(\sum_j X_j \beta_{j,1})=h_1^2$ and $\mathbb{Var}(\sum_j X_j \beta_{j,2})=h_2^2$.
 
 Since we have assumed phenotypic variance is standardized to 1 (see $(\ref{e_Y})$, $(\ref{e_Z})$, and $(\ref{y_z_var})$), it follows that the genetic correlation of the two traits can be computed as their genetic covariance divided by the square root of the product of their [heritabilities](Heritability.md):
 
@@ -120,8 +124,8 @@ Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the [Wa
 
 $$
 \begin{align}
-\chi_{j,1}^2 &\approx N \hat{\beta}_{j,1}^2=\frac{(y_1^T Y_{j})^2}{N_1}\\
-\chi_{j,2}^2 &\approx N \hat{\beta}_{j21}^2=\frac{(y_1^T Z_{j})^2}{N_2}.
+\chi_{j,1}^2 &\approx N \hat{\beta_1}_{j,1}^2=\frac{(y_1^T Y_{j})^2}{N_1}\\
+\chi_{j,2}^2 &\approx N \hat{\beta_1}_{j,1}^2=\frac{(y_1^T Z_{j})^2}{N_2}.
 \end{align}
 $$
 
@@ -150,8 +154,8 @@ $$
 \begin{align}
 &\mathbb{E}(z_{j,1}z_{j,2}|Z,Y)\\
 &\approx\frac{1}{\sqrt{N_1N_2}} \mathbb{E}\left(Y_j^T y_1 y_1^T Z_j|Z,Y \right) & \text{ by (\ref{d1}, \ref{d2})}\\
-&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \mathbb{E}\left( (Y\beta+\delta)(Z\gamma+\epsilon)^T  |Z,Y\right)Z_j & \text{ by (\ref{dg1},\ref{dg2})}\\
-&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \left(Y \mathbb{E}(\beta \gamma^T)Z^T +  \mathbb{E}(\delta \gamma^T) Z^T + Y \mathbb{E}(\beta \epsilon^T) + \mathbb{E}(\epsilon \delta^T) \right)Z_j & \text{linearity, independence}\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \mathbb{E}\left( (Y\beta_1+\delta)(Z\beta_2+\epsilon)^T  |Z,Y\right)Z_j & \text{ by (\ref{dg1},\ref{dg2})}\\
+&=\frac{1}{\sqrt{N_1N_2}}Y^T_j \left(Y \mathbb{E}(\beta_1 \beta_2^T)Z^T +  \mathbb{E}(\delta \beta_2^T) Z^T + Y \mathbb{E}(\beta_1 \epsilon^T) + \mathbb{E}(\epsilon \delta^T) \right)Z_j & \text{linearity, independence}\\
 &=\frac{1}{\sqrt{N_1N_2}}Y^T_j\left(\frac{\rho_g}{M}YZ^T + \rho_e Q\right)Z_j & \text{ by (\ref{cov_beta_gamma},\ref{cov_delta_epsilon})}\\
 &=\frac{1}{\sqrt{N_1N_2}}\left(\frac{\rho_g}{M}Y_j^TYZ^TZ_j + \rho_e Y_j^T QZ_j\right) \label{cond_exp}
 \end{align}
@@ -242,6 +246,37 @@ $$
 $(\ref{ct_ldsc_eqn})$ is the key regression equation in CT-LDSC.
 
 
-### Note on derivation
+
+## Binary Traits Derivation
+
+The above derivation assumed that both traits of interest were quantitative, but most disease GWAS are binary.  The present section extends the CT-LDSC derivation to the case of binary traits.
+
+### Liability-Scale Data Generating Model
+
+We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).
+
+We have
+
+
+$$
+\begin{align}
+\psi&= Y\beta_1 + \delta \label{bin_dg1}\\
+\omega&= Z\beta_2 + \epsilon \label{bin_dg2}\\
+y_1 &= 1_{\psi>\tau_1}\\
+y_2 &= 1_{\omega>\tau_2}\\
+\end{align}
+$$
+
+
+- There are $M  \gg 0$ genetic variants.
+- There are $N_1 \gg 0$ individuals in the trait 1 GWAS and $N_2 \gg 0$ individuals in the trait 2 GWAS.
+- There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
+- $y_1\in \{0,1\}^{N_1}$ and $y_2 \in \{0,1\}^{N_2}$ are the binary phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
+- $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
+- $\psi\in\mathbb{R}^{N_1}$ and $\omega\in\mathbb{R}^{N_2}$ are the latent liability scores for the two traits.
+
+to be continued
+
+## Note on derivation
 
 The derivation in **the supplementary material to the original paper[@bulik2015atlas]** contains several typos and implicit approximations.  In the version above, I have corrected typos and make approximations explicit.
