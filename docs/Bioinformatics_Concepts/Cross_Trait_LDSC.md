@@ -88,6 +88,10 @@ Define the following quantities related to [Linkage Disequilibrium](Linkage_Dise
 - The LD score of a SNP $j$ is defined to be $l_j:= \sum_k r_{jk}^2$. It quantifies the magnitude of the dependence between $j$ and other SNPs.
 
 
+
+Denote by $\hat\beta_1,\hat\beta_2\in\mathbb{R}^M$ the marginal GWAS regression coefficients from GWAS 1 and 2.  Note the critical distinction between $\beta_1,\beta_2$, which are underlying causal, joint effects of genetic variants, and $\hat\beta_1,\hat\beta_2$, which are the outputs of per-variant univariate marginal regressions.
+
+
 ### Genetic Covariance
 
 First, let us compute the [genetic covariances](Genetic_Correlation.md#genetic-covariance) between the two phenotypes.  Let $X\in\mathbb{R}^M$ denote the genotype of an arbitrary individual.  By definition, genetic covariance is:
