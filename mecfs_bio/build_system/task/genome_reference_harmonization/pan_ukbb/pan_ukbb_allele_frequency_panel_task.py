@@ -8,11 +8,11 @@ frequency af_{POP} for the groups AFR, AMR, CSA, EAS, EUR and MID. This Task str
 and writes CHR, POS, REF, ALT and one AF_ukb_{pop} column per configured group, through the
 shared panel batch checks.
 
-Every manifest row is kept except those whose ref disagrees with the FASTA. The manifest
-holds a known set of such rows: ref and alt swapped, inherited from UK Biobank's imputed
-BGEN allele order. expected_ref_mismatches pins their number, so any change in the file or in
-the parsing fails the build. Allele numbers are not stored: in the manifest they are
-constant within a contig and carry no per-site information.
+On chr21, chr22 and X, the manifest has genotyped rows with ref and alt swapped. Rows with
+that profile are dropped first (see drop_swap_profile_rows). Every other row is kept except
+those whose ref disagrees with the FASTA. expected_ref_mismatches pins their number, so any
+change in the file or in the parsing fails the build. Allele numbers are not stored: in the
+manifest they are constant within a contig and carry no per-site information.
 
 The manifest is read through the asset's read_spec with polars, which detects the
 compression, and streamed in batches of batch_rows rows. collect_batches is marked unstable
@@ -84,6 +84,9 @@ _MANIFEST_CONTIG_COL = "chrom"
 _MANIFEST_POS_COL = "pos"
 _MANIFEST_REF_COL = "ref"
 _MANIFEST_ALT_COL = "alt"
+_MANIFEST_INFO_COL = "info"
+_MANIFEST_GNOMAD_EUR_AF_COL = "gnomad_genomes_af_EUR"
+SWAP_PROFILE_CONTIGS = ("21", "22", "X")
 # How to read the manifest. chrom must be read as a string: schema inference over the
 # leading rows would otherwise type it as an integer and fail at "X".
 PAN_UKBB_MANIFEST_READ_SPEC = DataFrameReadSpec(
@@ -131,7 +134,9 @@ class PanUkbbAlleleFrequencyPanelTask(Task):
         assert_manifest_columns(manifest, self.groups)
         out_path = scratch_dir / (PAN_UKBB_PANEL_FILENAME + ".parquet")
         summary = write_checked_panel(
-            manifest_batches(manifest, self.groups, self.batch_rows),
+            manifest_batches(
+                drop_swap_profile_rows(manifest), self.groups, self.batch_rows
+            ),
             out_path,
             PanelBatchContext(
                 fasta=fasta, contig_codes=manifest_contig_codes(self.chromosomes)
@@ -218,10 +223,36 @@ def assert_manifest_columns(
         _MANIFEST_POS_COL,
         _MANIFEST_REF_COL,
         _MANIFEST_ALT_COL,
+        _MANIFEST_INFO_COL,
+        _MANIFEST_GNOMAD_EUR_AF_COL,
         *[manifest_af_col(group) for group in groups],
     ]
     missing = [column for column in required if column not in present]
     assert not missing, f"the Pan-UKBB manifest lacks columns {missing}"
+
+
+def drop_swap_profile_rows(manifest: pl.LazyFrame) -> pl.LazyFrame:
+    """Drop manifest rows on chr21, chr22 and X that are genotyped and lack a gnomAD frequency.
+
+    On those three chromosomes, genotyped rows (info exactly 1) without a
+    gnomad_genomes_af_EUR value have ref and alt swapped: gnomAD v2.1.1 genomes and 1000
+    Genomes EUR list the same alleles the other way round, and af_EUR is close to one minus
+    their frequency. The missing gnomAD frequency is a consequence of the swap, since the
+    manifest's own gnomAD match fails on the swapped alleles. Swapped SNVs would also fail
+    the FASTA check, but swapped ambiguous indels (both alleles on the genome) would pass it.
+
+    The rule is empirical, not derived from a known cause. In the 2020-08-28 manifest, about
+    100% of such rows on chr21, chr22 and X disagree with gnomAD, against 0 of about 440 on
+    the other chromosomes, where the same profile marks correctly oriented rows; genotyped
+    rows that have a gnomAD frequency agree everywhere. The evidence is produced by
+    experiments/claude/gnomad_af_reference/evaluate_pan_ukbb_swap_profile.py.
+    """
+    swap_profile = (
+        pl.col(_MANIFEST_CONTIG_COL).cast(pl.String).is_in(SWAP_PROFILE_CONTIGS)
+        & (pl.col(_MANIFEST_INFO_COL) == 1.0)
+        & pl.col(_MANIFEST_GNOMAD_EUR_AF_COL).is_null()
+    ).fill_null(False)
+    return manifest.filter(~swap_profile)
 
 
 def manifest_batches(

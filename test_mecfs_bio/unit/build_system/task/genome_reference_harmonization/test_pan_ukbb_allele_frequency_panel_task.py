@@ -70,6 +70,8 @@ class ManifestRow:
     ref: str
     alt: str
     af: float
+    info: float = 0.95
+    gnomad_af: float | None = None
 
 
 def _reference_rows(chrom: str, sequence: str, n_positions: int) -> list[ManifestRow]:
@@ -109,7 +111,10 @@ def _write_manifest(path: Path, rows: list[ManifestRow], header: Sequence[str]) 
             "ref": row.ref,
             "alt": row.alt,
             "varid": f"{row.chrom}:{row.pos}_{row.ref}_{row.alt}",
-            "info": "9.5000e-01",
+            "info": f"{row.info:.4e}",
+            "gnomad_genomes_af_EUR": (
+                "NA" if row.gnomad_af is None else f"{row.gnomad_af:.4e}"
+            ),
             "nearest_genes": "GENE1,GENE2",
         }
         for column in header:
@@ -196,6 +201,24 @@ def test_manifest_becomes_a_panel_without_the_swapped_rows(tmp_path: Path) -> No
     assert not set(_SWAPPED_POSITIONS) & set(chr1[GWASLAB_POS_COL].to_list())
     at_100 = chr1.filter(pl.col(GWASLAB_POS_COL) == 100).row(0, named=True)
     assert at_100[panel_af_col("ukb_eur")] == pytest.approx(0.01)
+
+
+def test_swap_profile_rows_dropped_only_on_chr21_chr22_and_x(tmp_path: Path) -> None:
+    genotyped_no_gnomad = {"info": 1.0, "gnomad_af": None}
+    chrx = _chrx_rows()
+    # A swapped genotyped chrX row without a gnomAD frequency: the profile drops it before
+    # the FASTA check, so it is not a ref mismatch.
+    chrx[50] = attrs.evolve(_swapped(chrx[50]), **genotyped_no_gnomad)
+    # The same profile on chrX with a gnomAD frequency, and on chr1, is kept.
+    chrx[60] = attrs.evolve(chrx[60], info=1.0, gnomad_af=0.2)
+    chr1 = _chr1_rows()
+    chr1[200] = attrs.evolve(chr1[200], **genotyped_no_gnomad)
+    panel = _run(tmp_path, chr1 + chrx)
+    kept = set(panel.select(GWASLAB_CHROM_COL, GWASLAB_POS_COL).iter_rows())
+    assert (23, chrx[50].pos) not in kept
+    assert (23, chrx[60].pos) in kept
+    assert (1, chr1[200].pos) in kept
+    assert panel.height == len(chr1) + len(chrx) - len(_SWAPPED_POSITIONS) - 1
 
 
 def test_unexpected_number_of_ref_mismatches_fails(tmp_path: Path) -> None:

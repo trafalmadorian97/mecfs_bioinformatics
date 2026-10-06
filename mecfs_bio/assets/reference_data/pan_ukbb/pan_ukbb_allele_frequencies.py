@@ -2,9 +2,11 @@
 Pan-UK Biobank allele-frequency panel (GRCh37, imputed UK Biobank, six genetic-ancestry
 groups) for genome-reference harmonization.
 
-295 manifest rows (chr21 47, chr22 86, X 162) have ref and alt swapped relative to the hg19
-FASTA, inherited from UK Biobank's imputed BGEN allele order; the panel drops them and the
-build fails if the count changes. Measured by experiments/claude/pan_ukbb_manifest/.
+On chr21, chr22 and X, genotyped manifest rows without a gnomAD frequency have ref and alt
+swapped; the Task drops them (drop_swap_profile_rows). They include all 295 rows whose ref
+disagrees with the hg19 FASTA (chr21 47, chr22 86, X 162; measured by
+experiments/claude/pan_ukbb_manifest/), so no FASTA mismatch remains and the build fails if
+one appears.
 """
 
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg19_fasta import (
@@ -23,5 +25,5 @@ PAN_UKBB_HG19_ALLELE_FREQUENCIES = PanUkbbAlleleFrequencyPanelTask.create(
     fasta_task=UCSC_HG19_INDEXED_FASTA,
     groups=("ukb_afr", "ukb_amr", "ukb_csa", "ukb_eas", "ukb_eur", "ukb_mid"),
     chromosomes=(*range(1, 23), 23),
-    expected_ref_mismatches=295,
+    expected_ref_mismatches=0,
 )
