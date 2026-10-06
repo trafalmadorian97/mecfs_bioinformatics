@@ -121,7 +121,7 @@ Using the same logic as in [derivation of LDSC](LDSC.md), we approximate the [Wa
 $$
 \begin{align}
 \chi_{j,1}^2 &\approx N \hat{\beta_1}_{j,1}^2=\frac{(y_1^T Y_{j})^2}{N_1}\\
-\chi_{j,2}^2 &\approx N \hat{\beta_1}_{j21}^2=\frac{(y_1^T Z_{j})^2}{N_2}.
+\chi_{j,2}^2 &\approx N \hat{\beta_1}_{j,1}^2=\frac{(y_1^T Z_{j})^2}{N_2}.
 \end{align}
 $$
 
