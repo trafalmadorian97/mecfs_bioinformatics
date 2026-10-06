@@ -524,11 +524,36 @@ pixi r invoke green must pass, including import-linter.
   Proposed fix: the Pan-UKBB Task drops the whole signature (chrom in 21, 22, X; info == 1.0;
   gnomad_genomes_af_EUR null). The count is pinned at 434, so the REF-mismatch count left
   afterwards should be 0.
-- **Not yet run, at the user's request:** the gnomAD v2.1.1 build (about 14 h,
-  build_panel.py gnomad_v2) and the DecodeME four-way comparison
-  (decode_me_panel_comparison.py), which needs the gnomAD panel. Before running the
-  comparison, confirm that SNPID exists in DecodeME's pre-harmonization table.
+- **gnomAD v2.1.1 build** (build_panel_gnomad_v2.log, 2026-10-05 17:40 to 2026-10-06 06:27, no
+  retries): 224,844,618 rows, 3.89 GiB, 237 row groups, all 23 chromosomes; REF/FASTA
+  mismatches 0 and FASTA-ambiguous drops 0 on every chromosome.
+- **Four-way DecodeME comparison** (decode_me_panel_comparison.log):
 
+  | outcome | 1000g_eur | gnomad_nfe | gnomad_nfe_nwe | pan_ukbb_eur |
+  |---|---|---|---|---|
+  | kept | 8,371,659 | 8,568,241 | 8,631,618 | 8,496,285 |
+  | palindrome_unresolved | 184,011 | 164,760 | 159,908 | 180,603 |
+  | ambiguous_indel_not_in_panel | 169,040 | 24,331 | 24,700 | 165,800 |
+  | ambiguous_indel_af_mismatch | 147,493 | 76,829 | 28,453 | 30,389 |
+  | ambiguous_indel_af_indecisive | 886 | 38,928 | 28,410 | 12 |
+  | palindromes decided by AF exactly 0 | 180 | 464 | 692 | 1 |
+
+  gnomAD cuts NOT_IN_PANEL by about 85%, and nfe_nwe keeps the most variants. The two
+  gnomAD groups never keep a variant in opposite orientations.
+- **The 68 variants kept in opposite orientations by some pair of choices**
+  (inspect_four_way_conflicts.log). 47 carry the Pan-UKBB swap signature, and in every one
+  gnomAD sides against Pan-UKBB (with 1000 Genomes when it keeps the variant). That
+  independently confirms the undetected-swap diagnosis. The other 21 are all ambiguous indels
+  at multiallelic gnomAD sites, mostly homopolymer runs. gnomAD splits these into biallelic
+  records, so an insertion (C>CA) and a deletion (CA>C) can both appear at one position with
+  separate frequencies. The two readings of an ambiguous indel then refer to different
+  variants rather than two orientations of one. In 15 of the 21, gnomAD is the odd one out
+  against 1000 Genomes and/or Pan-UKBB. In 6, Pan-UKBB is. Which panel is right at these
+  sites is not settled by frequency matching.
+- **Open questions raised:** (1) the Pan-UKBB swap-signature fix; (2) whether ambiguous
+  indels at positions where the panel has several records (multiallelic) should be resolved
+  by frequency at all, or dropped; (3) the AF-exactly-0 palindromes, which are more common
+  with gnomAD (464 to 692) because a group can have AF 0 at a site polymorphic elsewhere.
 ## Deferred
 
 - **Palindromes decided by AF = 0.** At the chosen filter, a gnomAD panel has many rows where
