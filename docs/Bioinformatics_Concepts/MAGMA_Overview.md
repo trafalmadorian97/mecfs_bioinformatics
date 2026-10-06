@@ -26,7 +26,7 @@ Gene analysis requires:
  Let $Y$ be the phenotype of interest in a GWAS.  Let $X_i$ be the ith variant.
 
 
-In a GWAS, we essentially[^pop_strat_note] estimate
+In a GWAS, we essentially[^pop_stratify_note] estimate
 
 $$
 Y= \beta_i X_i +\epsilon_i,
@@ -111,4 +111,4 @@ The above discussion is based on:
 
 
 
-[^pop_strat_note]: But see [this documentation page](Population_Stratification.md) for how the basic GWAS regression is modified to control for population stratification.
+[^pop_stratify_note]: But see [this documentation page](Population_Stratification.md) for how the basic GWAS regression is modified to control for population stratification.
