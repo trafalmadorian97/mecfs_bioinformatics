@@ -1,15 +1,19 @@
 """
-Strand resolution of palindromic SNVs in untrusted tables, following gwaslab's rule.
+Strand resolution of palindromic SNVs in untrusted tables: gwaslab's rule plus a distance check.
 
 Rows arrive oriented so that NEA is the reference base, so a panel record with
 REF = NEA and ALT = EA describes the same variant. A variant is resolvable only when:
 
 - its EAF is at most palindrome_maf_threshold, or at least 1 - palindrome_maf_threshold;
 - the panel record exists;
-- the panel MAF is at most panel_maf_threshold.
+- the panel MAF is at most panel_maf_threshold;
+- after the decision, its EAF is within palindrome_max_af_distance of the panel AF.
 
 It is kept when EAF and panel AF lie on the same side of 0.5, and strand-flipped
-(statistics flipped, alleles unchanged) otherwise.
+(statistics flipped, alleles unchanged) otherwise. The distance check is not part of
+gwaslab's rule. On DecodeME, panels contradict each other's strand call for about one in ten
+palindromes beyond a distance of 0.1, against about one in five thousand within 0.02; see
+experiments/claude/gnomad_af_reference/palindrome_distance_vs_panel_disagreement.md.
 """
 
 import polars as pl
@@ -63,8 +67,13 @@ def decide_palindrome_strands(
     panel_informative = (
         pl.min_horizontal(af, 1 - af) <= options.panel_maf_threshold + FREQUENCY_EPSILON
     )
-    resolvable = (eaf_informative & panel_informative).fill_null(False)
     same_side = ((af < 0.5) & (eaf < 0.5)) | ((af > 0.5) & (eaf > 0.5))
+    # The EAF the variant would have after the decision: unchanged if kept, 1 - EAF if flipped.
+    decided_eaf = pl.when(same_side).then(eaf).otherwise(1 - eaf)
+    close_to_panel = (decided_eaf - af).abs() <= (
+        options.palindrome_max_af_distance + FREQUENCY_EPSILON
+    )
+    resolvable = (eaf_informative & panel_informative & close_to_panel).fill_null(False)
     return joined.select(
         pl.when(~resolvable)
         .then(pl.lit(PALINDROME_UNRESOLVED))

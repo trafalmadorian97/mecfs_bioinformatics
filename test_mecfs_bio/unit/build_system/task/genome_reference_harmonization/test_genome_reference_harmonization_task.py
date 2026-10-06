@@ -348,6 +348,41 @@ def test_unresolved_palindromes_can_be_kept(tmp_path: Path) -> None:
     assert set(_UNRESOLVED_PALINDROME_POSITIONS) <= set(positions(result))
 
 
+# Same side of 0.5 as the panel AF of 0, but 0.3 away from it.
+_FAR_PALINDROME = Variant(pos=13, ea="A", nea="T", eaf=0.3)
+_FAR_PALINDROME_PANEL = [PanelRecord(pos=13, ref="T", alt="A", af=0.0)]
+
+
+@pytest.mark.parametrize("max_af_distance, resolved", [(0.1, False), (0.35, True)])
+def test_palindrome_far_from_panel_frequency_is_unresolved(
+    tmp_path: Path, max_af_distance: float, resolved: bool
+) -> None:
+    options = attrs.evolve(TEST_OPTIONS, palindrome_max_af_distance=max_af_distance)
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, _FAR_PALINDROME]),
+        panel=_FAR_PALINDROME_PANEL,
+        options=options,
+    )
+    assert (13 in positions(result)) == resolved
+
+
+def test_kept_unresolved_far_palindrome_keeps_source_strand(tmp_path: Path) -> None:
+    # Opposite side of 0.5 from the panel AF of 0, so the side rule alone would flip it; after
+    # the flip its EAF would be 0.3 away from the panel, so it is unresolved and not flipped.
+    far = Variant(pos=13, ea="A", nea="T", eaf=0.7, beta=0.3)
+    options = attrs.evolve(TEST_OPTIONS, keep_unresolved_palindromes=True)
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, far]),
+        panel=_FAR_PALINDROME_PANEL,
+        options=options,
+    )
+    row = row_at(result, 13)
+    assert (row[EA], row[NEA]) == ("A", "T")
+    assert (row[BETA], row[EAF]) == (pytest.approx(0.3), pytest.approx(0.7))
+
+
 def test_trusted_palindromes_keep_source_strand(tmp_path: Path) -> None:
     opposite_side = Variant(pos=18, ea="A", nea="T", eaf=0.9, beta=0.3)
     result = run_harmonization(
