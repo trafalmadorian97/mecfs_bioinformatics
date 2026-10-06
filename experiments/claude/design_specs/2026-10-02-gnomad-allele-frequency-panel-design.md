@@ -554,21 +554,114 @@ pixi r invoke green must pass, including import-linter.
   indels at positions where the panel has several records (multiallelic) should be resolved
   by frequency at all, or dropped; (3) the AF-exactly-0 palindromes, which are more common
   with gnomAD (464 to 692) because a group can have AF 0 at a site polymorphic elsewhere.
+
+## Validation results (2026-10-06): the open questions
+
+All three open questions are settled. Scripts are in experiments/claude/gnomad_af_reference/;
+their logs are not committed.
+
+- **(1) Pan-UKBB swap profile: evidence, then fix (commit d7ea48eb).**
+  evaluate_pan_ukbb_swap_profile.py takes every genotyped (info 1.0) manifest row on every
+  chromosome. It compares the row's REF/ALT with gnomAD v2.1.1 and with 1000 Genomes EUR at
+  the same position. The profile group is rows with no gnomad_genomes_af_EUR; the control
+  group is genotyped rows that have one.
+
+  | group | chromosomes | gnomAD disagree / comparable | 1000 Genomes disagree / comparable |
+  |---|---|---|---|
+  | profile, indel | 21, 22, X | 140 / 140 | 144 / 145 |
+  | profile, SNV | 21, 22, X | 253 / 253 | 280 / 289 |
+  | profile, indel | all others | 1 / 1 | 0 / 24 |
+  | profile, SNV | all others | 0 / 0 | 0 / about 415 |
+  | control (about 750,000 SNVs, 3,000 indels) | all | 0 | 1 (one chr22 indel) |
+
+  - Nearly every disagreeing row has af_EUR close to 1 minus the panel AF, so the labels are
+    swapped.
+  - The missing gnomAD frequency is a consequence of the swap. Pan-UKBB's own gnomAD match
+    failed on the swapped alleles: on 21, 22 and X gnomAD has every profile row, reversed.
+    On other chromosomes, profile rows are simply absent from gnomAD.
+  - On 21, 22 and X almost all genotyped indels are swapped. Only 5, 8 and 8 are unswapped,
+    against 100 to 280 per chromosome elsewhere.
+  - No mechanism is known. The rule rests on the jump from about 100% to 0% at the chromosome
+    boundary. The same profile elsewhere marks correctly oriented rows, so a rule applied to
+    every chromosome would wrongly drop about 445 rows.
+
+  The fix: drop_swap_profile_rows in the Pan-UKBB Task drops the profile on 21, 22 and X
+  before the FASTA check. Rebuilt panel:
+  - 434 rows dropped (28,987,534 in, 28,987,100 written).
+  - REF mismatches 0, so all 295 former mismatches are inside the profile, and the pin
+    expected_ref_mismatches is now 0.
+  - The other 139 dropped rows (about 130 ambiguous indels and 9 SNVs) were swaps the FASTA
+    check could not see.
+  - The dropped count itself is not pinned.
+
+  Four-way rerun: variants kept in opposite orientations fell to 1 for 1000g vs Pan-UKBB
+  (was 35), 10 for gnomad_nfe vs Pan-UKBB (was 55) and 11 for gnomad_nfe_nwe vs Pan-UKBB
+  (was 58). That is the background level of 1000g vs gnomAD (14 to 15). Under pan_ukbb_eur,
+  49 variants moved from kept to ambiguous_indel_not_in_panel. Other choices are unchanged.
+
+- **(2) Ambiguous indels at multiallelic sites: no change.**
+  inspect_multiallelic_ambiguous_indels.py.
+  - What these sites look like: at chr1:763769, a run of 10 T's, gnomAD has A>AT (AF_nfe
+    0.72), A>ATT (0.002), AT>A (0.151) and ATT>A (0.0). These are four lengths of the same
+    repeat. DecodeME's A/AT row (EAF 0.129) clearly matches the T9 deletion. It is dropped
+    as indecisive only because its distance, 0.022, is just over the 0.02 tolerance.
+  - Of 767,295 DecodeME ambiguous indels, 274,541 (36%) sit at positions with more than one
+    gnomAD record.
+  - 126,836 have both readings as usable nfe records. The rule keeps 87,834 of them, swaps
+    74 and drops 38,928 as indecisive. These account for the whole af_indecisive count in
+    the four-way table.
+  - At multiallelic sites, about 102,000 variants are kept or swapped by both gnomad_nfe and
+    1000 Genomes. Only 15 get opposite orientations.
+  - So the extra records cost variants dropped as indecisive, not wrong orientations, and no
+    rule change was made. Strictly, the flip reading's 1 - AF is the other allele's
+    frequency only at a biallelic site. The tolerance and the margin cover this in practice.
+
+- **(3) Palindromes: a distance check (commit eb8c7a31).** palindrome_eaf_distribution.py.
+  - The palindrome rule is gwaslab's side-of-0.5 rule, with both MAF thresholds at 0.4. Unlike
+    the indel rule, it had no distance check, and AF exactly 0 was not a special case; it is
+    the extreme of a general looseness.
+  - Across panel choices, strand disagreement rises steeply with the distance |EAF - panel
+    AF| after the decision: about 0.02% within 0.02, 2% at 0.05 to 0.1, 10% at 0.1 to 0.2,
+    and 14 to 35% beyond 0.2. Full tables are in
+    experiments/claude/gnomad_af_reference/palindrome_distance_vs_panel_disagreement.md.
+  - DecodeME has no AF-0 or AF-1 palindrome with MAF below 0.01, so these are never "rare in
+    both". Many are common in DecodeME.
+  - Strand flips cluster at large distances: for gnomad_nfe, 381 of 801 flips are among the
+    2,832 palindromes beyond 0.1. Genuine flips should be rare in DecodeME's REF-oriented
+    input.
+  - Fix: a new option, palindrome_max_af_distance (default 0.1), leaves a palindrome
+    unresolved unless its EAF after the decision is within the distance of the panel AF.
+    Unresolved palindromes still follow keep_unresolved_palindromes; when kept, they stay in
+    the source strand.
+  - Cost on DecodeME: 1,679 (1000 Genomes), 2,832 (gnomad_nfe), 2,777 (gnomad_nfe_nwe) and
+    895 (Pan-UKBB) of about 1.07 million resolved palindromes.
+  - This changes existing 1000 Genomes harmonizations once they are rebuilt, so the earlier
+    byte-identity result no longer holds by construction. The four-way tables above predate
+    this check.
+
+- **Choosing a panel.** On DecodeME, gnomad_nfe_nwe keeps the most variants, has the fewest
+  AF mismatches among gnomAD choices (28,453 against 76,829 for nfe), and its palindromes sit
+  closest to their panel AF (99% within 0.02, against 92% for nfe). That fits a UK cohort.
+  nfe is broader and has a larger sample, so it may suit southern-European-heavy cohorts
+  better.
+  annovar_37_basic_rsid_assignment still uses 1000 Genomes EUR. Its chain runs in the CI
+  system tests, and building the gnomAD panel there (about 451 GiB streamed, 14 h) is not
+  feasible.
+
 ## Deferred
 
-- **Palindromes decided by AF = 0.** At the chosen filter, a gnomAD panel has many rows where
-  the chosen group's AF is exactly 0, for example a variant seen in afr but never in nfe. The
-  palindrome rules treat panel AF 0 as decisive and call KEEP when EAF < 0.5. The ambiguous-indel
-  rules already treat monomorphic records as absent. 1000 Genomes EUR has the same behaviour
-  today, but gnomAD will make it more frequent. Decide from validation step 3 whether
-  palindromes should also treat monomorphic records as absent.
+- **Palindromes decided by AF = 0.** Resolved (2026-10-06) by palindrome_max_af_distance;
+  see the validation results.
 - **Sample-size-aware rules using AN.**
 - **The pipe fix in ReferencePanelAlleleFrequencyTask** (a comment only, in this project).
 - **Building the hg38 panel** (about 14 h, about 10 GiB).
 - **path_remap rules** moving the gnomAD per-chromosome parts and the Pan-UKBB download
   to the external drive (machine-local config, after the builds).
-- **Choosing a default panel** for new harmonizations, once step 3 has been reviewed.
+- **Choosing a default panel** for new harmonizations. gnomad_nfe_nwe performed best on
+  DecodeME. Switching annovar_37_basic_rsid_assignment to it first needs the preprocessed
+  gnomAD v2.1.1 panel hosted separately, plus a Task that downloads it, so CI does not
+  rebuild it from the 451 GiB source.
 - **Pan-UKBB on hg38.** No GRCh38 manifest is known; liftover is out of scope.
-- **Recovering the 295 swapped Pan-UKBB rows** by swapping alleles back and using 1 - af.
-  The chr21 evidence supports it; it is deferred only because the rows are too few to
+- **Recovering the 434 swap-profile Pan-UKBB rows** by swapping alleles back and using
+  1 - af. The evidence supports it; it is deferred only because the rows are too few to
   matter.
