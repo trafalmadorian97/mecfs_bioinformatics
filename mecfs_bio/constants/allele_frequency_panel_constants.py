@@ -12,7 +12,41 @@ AN_<ancestry>.
 
 from typing import Literal
 
-GnomadGroup = Literal[
+# gnomAD genetic-ancestry group codes, with gnomAD's own names. Source: the gnomAD FAQ
+# "How are genetic ancestry group names abbreviated?",
+# https://gnomad.broadinstitute.org/help/how-are-genetic-ancestry-group-names-abbreviated
+# (text in https://github.com/broadinstitute/gnomad-browser/blob/main/browser/help/faq/technical-details/how-are-genetic-ancestry-group-names-abbreviated.md).
+#   afr: African/African American
+#   ami: Amish
+#   amr: Admixed American
+#   asj: Ashkenazi Jewish
+#   eas: East Asian
+#   fin: European (Finnish)
+#   mid: Middle Eastern
+#   nfe: European (non-Finnish)
+#   nfe_est: Estonian (nfe subgroup, v2)
+#   nfe_nwe: North-western European (nfe subgroup, v2), e.g. UK and Nordic cohorts
+#   nfe_onf: Other non-Finnish European (nfe subgroup, v2)
+#   nfe_seu: Southern European (nfe subgroup, v2)
+#   oth: Other (v2)
+#   remaining: Remaining individuals (v4; the successor of oth)
+#   sas: South Asian
+# Groups present in gnomAD v2.1.1 genomes (the hg19 panel).
+GnomadV2Group = Literal[
+    "afr",
+    "amr",
+    "asj",
+    "eas",
+    "fin",
+    "nfe",
+    "nfe_est",
+    "nfe_nwe",
+    "nfe_onf",
+    "nfe_seu",
+    "oth",
+]
+# Groups present in gnomAD v4.1 genomes (the hg38 panel).
+GnomadV4Group = Literal[
     "afr",
     "ami",
     "amr",
@@ -21,14 +55,10 @@ GnomadGroup = Literal[
     "fin",
     "mid",
     "nfe",
-    "nfe_est",
-    "nfe_nwe",
-    "nfe_onf",
-    "nfe_seu",
-    "oth",
     "remaining",
     "sas",
 ]
+GnomadGroup = GnomadV2Group | GnomadV4Group
 PanUkbbGroup = Literal["ukb_afr", "ukb_amr", "ukb_csa", "ukb_eas", "ukb_eur", "ukb_mid"]
 ThousandGenomesSuperPopulation = Literal["eur"]
 PanelAncestry = GnomadGroup | PanUkbbGroup | ThousandGenomesSuperPopulation

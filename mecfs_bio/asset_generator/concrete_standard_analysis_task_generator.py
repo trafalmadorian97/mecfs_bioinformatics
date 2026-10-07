@@ -92,6 +92,7 @@ from mecfs_bio.build_system.task_generator.master_gene_list_task_generator impor
 from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     SLDSCTaskGenerator,
 )
+from mecfs_bio.constants.allele_frequency_panel_constants import GnomadV2Group
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
@@ -375,6 +376,7 @@ def concrete_standard_analysis_generator_no_rsid(
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
     sample_size: int | SampleSizeSpec,
+    gnomad_ancestry_for_harmonization: GnomadV2Group,
     sample_size_for_sldsc: int | SampleSizeSpec | None = None,
     pre_pipe_after_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_pipe_before_rsid_assignment: DataProcessingPipe = IdentityPipe(),
@@ -392,6 +394,10 @@ def concrete_standard_analysis_generator_no_rsid(
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
     Assume that the GWAS data does not contain rsids,and so these need to be assigned.
 
+    gnomad_ancestry_for_harmonization is the gnomAD v2.1.1 group used to orient palindromes
+    and ambiguous indels during rsID assignment; see annovar_37_basic_rsid_assignment. It has
+    no default, so each caller picks the group that matches its cohort.
+
     """
     sumstats_37_task = GWASLabCreateSumstatsTask(
         df_source_task=raw_gwas_data_task,
@@ -405,6 +411,7 @@ def concrete_standard_analysis_generator_no_rsid(
     rsids_assigned_task_group = annovar_37_basic_rsid_assignment(
         sumstats_task=sumstats_37_task,
         base_name=base_name,
+        panel_ancestry=gnomad_ancestry_for_harmonization,
         use_gwaslab_rsids_convention=True,
         drop_palindromic_ambiguous=drop_palindromic_in_harmonized,
         filter_indels_in_harmonized=filter_indels_in_harmonized,

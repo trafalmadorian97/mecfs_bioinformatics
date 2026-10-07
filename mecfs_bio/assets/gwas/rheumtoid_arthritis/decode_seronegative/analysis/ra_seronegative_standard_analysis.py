@@ -58,6 +58,7 @@ SERONEGATIVE_RA_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid
         n=GWASLAB_SAMPLE_SIZE_COLUMN,
     ),
     sample_size=PerVariantSampleSize(),
+    gnomad_ancestry_for_harmonization="nfe_nwe",  # Iceland, Nordic countries and the UK (north-western Europe)
     pre_pipe_before_rsid_assignment=_pre_gwaslab_pipe,
     pre_pipe_after_rsid_assignment=CompositePipe([ComputeBetaPipe(), ComputeSEPipe()]),
     filter_indels_in_harmonized=True,

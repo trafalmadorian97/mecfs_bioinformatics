@@ -11,8 +11,8 @@ from mecfs_bio.assets.reference_data.db_snp.db_sn150_build_37_annovar_proc_parqu
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg19_fasta import (
     UCSC_HG19_INDEXED_FASTA,
 )
-from mecfs_bio.assets.reference_data.thousand_genomes.eur_panel_allele_frequencies import (
-    THOUSAND_GENOMES_EUR_HG19_PANEL_ALLELE_FREQUENCIES,
+from mecfs_bio.assets.reference_data.gnomad.gnomad_allele_frequency_panels import (
+    GNOMAD_V2_1_1_GENOMES_HG19_ALLELE_FREQUENCIES_REHOSTED,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.dataframe_output import (
@@ -34,6 +34,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.drop_indels_pipe import DropIndelsPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
+from mecfs_bio.constants.allele_frequency_panel_constants import GnomadV2Group
 
 
 @frozen(slots=True)
@@ -50,6 +51,7 @@ class RSIDAssignmentTaskGroup:
 def annovar_37_basic_rsid_assignment(
     sumstats_task: Task,
     base_name: str,
+    panel_ancestry: GnomadV2Group,
     use_gwaslab_rsids_convention: bool = False,
     drop_palindromic_ambiguous: bool = True,
     filter_indels_in_harmonized: bool = False,
@@ -59,7 +61,14 @@ def annovar_37_basic_rsid_assignment(
     sumstats datasets using the annovar dbSNP reference data.
 
     The gwaslab Sumstats object is dumped to a table and oriented by genome-reference
-    harmonization against the UCSC hg19 FASTA and the 1000 Genomes EUR panel.
+    harmonization against the UCSC hg19 FASTA and the gnomAD v2.1.1 genomes panel (the
+    rehosted copy, so no 14 h build is needed).
+
+    panel_ancestry is the gnomAD group whose allele frequencies resolve palindromes and
+    ambiguous indels. It has no default: choose the group that best matches the GWAS
+    cohort, for example nfe_nwe for UK Biobank or other north-western European cohorts, and
+    nfe for cohorts spread across Europe. The codes are spelled out in
+    mecfs_bio/constants/allele_frequency_panel_constants.py.
 
     Set drop_palindromic_ambiguous to False to keep palindromic SNVs whose strand cannot be
     resolved. Ambiguous indels are never kept on that basis.
@@ -78,8 +87,8 @@ def annovar_37_basic_rsid_assignment(
         asset_id=base_name + "_genome_reference_harmonized",
         sumstats_task=pre_harmonization_table_task,
         fasta_task=UCSC_HG19_INDEXED_FASTA,
-        panel_task=THOUSAND_GENOMES_EUR_HG19_PANEL_ALLELE_FREQUENCIES,
-        panel_ancestry="eur",
+        panel_task=GNOMAD_V2_1_1_GENOMES_HG19_ALLELE_FREQUENCIES_REHOSTED,
+        panel_ancestry=panel_ancestry,
         options=GenomeReferenceHarmonizationOptions(
             keep_unresolved_palindromes=not drop_palindromic_ambiguous
         ),

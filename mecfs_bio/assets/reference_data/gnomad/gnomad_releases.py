@@ -6,8 +6,14 @@ to us). Groups and header facts were measured on chr21; see
 experiments/claude/design_specs/2026-10-02-gnomad-allele-frequency-panel-design.md.
 """
 
+from typing import get_args
+
 from mecfs_bio.build_system.task.genome_reference_harmonization.gnomad.gnomad_release import (
     GnomadRelease,
+)
+from mecfs_bio.constants.allele_frequency_panel_constants import (
+    GnomadV2Group,
+    GnomadV4Group,
 )
 
 _AUTOSOMES = tuple(range(1, 23))
@@ -41,3 +47,13 @@ GNOMAD_V4_1_GENOMES = GnomadRelease(
     extra_groups=("ami", "mid", "remaining"),
     header_assembly="gnomAD_GRCh38",
 )
+
+# The release group lists and the per-release Literal types must describe the same groups.
+for _release, _literal in [
+    (GNOMAD_V2_1_1_GENOMES, GnomadV2Group),
+    (GNOMAD_V4_1_GENOMES, GnomadV4Group),
+]:
+    assert set(_release.groups) == set(get_args(_literal)), (
+        f"{_release.name} groups {sorted(_release.groups)} differ from "
+        f"{sorted(get_args(_literal))}"
+    )
