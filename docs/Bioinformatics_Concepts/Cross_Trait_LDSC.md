@@ -253,29 +253,51 @@ The above derivation assumed that both traits of interest were quantitative, but
 
 ### Liability-Scale Data Generating Model
 
-We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).
+We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).  
 
 We have
 
 
 $$
 \begin{align}
-\psi&= Y\beta_1 + \delta \label{bin_dg1}\\
-\omega&= Z\beta_2 + \epsilon \label{bin_dg2}\\
-y_1 &= 1_{\psi>\tau_1}\\
-y_2 &= 1_{\omega>\tau_2}\\
+\psi_1&= Y\beta_1 + \delta \label{bin_dg1}\\
+\psi_2&= Z\beta_2 + \epsilon \label{bin_dg2}\\
+y_1 &= 1_{\psi_1>\tau_1}\\
+y_2 &= 1_{\psi_2>\tau_2}\\
 \end{align}
 $$
 
+where
 
 - There are $M  \gg 0$ genetic variants.
 - There are $N_1 \gg 0$ individuals in the trait 1 GWAS and $N_2 \gg 0$ individuals in the trait 2 GWAS.
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \{0,1\}^{N_1}$ and $y_2 \in \{0,1\}^{N_2}$ are the binary phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
+- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
+- $p_j\in\mathbb{R}$ is the population-level probability that an arbitrary individual has variant $j$j\in\mathbb{R}$ is the population-level probability that an arbitrary individual has variant $j$.
+- $G_1\in\mathbb{R}^{N_1\times M}$ and $G_2\in\mathbb{R}^{N_2\times M}$ are the non-normalized genotype matrices from the two GWAS.  Thus $Y_{i,j}=\frac{G_{1,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$ and Thus $Z_{i,j}=\frac{G_{2,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$.
+- $\beta_1,\beta_2\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits.
+- $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 - $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
-- $\psi\in\mathbb{R}^{N_1}$ and $\omega\in\mathbb{R}^{N_2}$ are the latent liability scores for the two traits.
+- $\psi_1\in\mathbb{R}^{N_1}$ and $\psi_2\in\mathbb{R}^{N_2}$ are the latent liability scores for the two traits.
 
-to be continued
+
+### Case proportions
+
+We assume that in the general population, the proportion of cases for the two traits is $K_1,K_2$ respectively.  However, we allow for the possibility that GWAS 1 is ascertained for trait 1 and GWAS 2 is ascertained for trait 2, so that the proportion of cases in GWAS 1 is $P_1$, and the proportion of cases in GWAS 2 is $P_2$.
+
+### Marginal Regression Coefficients
+
+
+- Analogously [to the above](Cross_Trait_LDSC.md#data-generating-model), we use $\hat\beta_1,\hat\beta_2\in\mathbb{R}^M$ to denote the marginal sample GWAS regression coefficients from GWAS 1 and 2.  
+- Note that we will operate under the assumption that $\hat\beta_{1,i}$ and $\hat\beta_{2,i}$ are produced by linearly regressing the binary phenotypes $y_1,y_2$ on the appropriate columns of the genotype matrix $Y_i,Z_i$. Most modern GWAS of binary traits do not actually use linear regression, but instead use some version of logistic regression.
+
+
+
+
+
+- We also introduce population level marginal GWAS regression coefficients $\overline\beta_1,\overline\beta_2\in\mathbb{R}^{M}$.  $\hat\beta_1\to\overline\beta_1$ as $N_1\to\infty$ and $\hat\beta_2\to\overline\beta_2$ as $N_2\to\infty$. 
+- Recall that the various 
 
 ## Note on derivation
 
