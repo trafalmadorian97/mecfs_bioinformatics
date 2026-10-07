@@ -2,9 +2,7 @@
 gnomAD genome allele-frequency panels for genome-reference harmonization.
 
 The hg19 panel is built from v2.1.1 (about 14 h streaming, about 3.7 GiB). The hg38 panel
-from v4.1 is defined but built only on request (about 14 h, about 10 GiB). Neither is wrapped
-in DiscardDepsWrapper; the per-chromosome parts stay in the asset store under
-reference_data/gnomad/<release>/per_chromosome/, which a path_remap rule may move.
+from v4.1 (about 14 h, about 10 GiB).
 """
 
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg19_fasta import (
