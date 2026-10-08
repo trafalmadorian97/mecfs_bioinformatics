@@ -217,6 +217,51 @@ def fix_init_files(c):
         print("Nothing to fix.")
 
 
+ASSETS_PATH = SRC_PATH / "assets"
+
+
+def _module_name(path: Path) -> str:
+    parts = path.with_suffix("").parts
+    if parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
+
+
+@task
+def check_asset_imports(c):
+    """
+    Verify that every module under mecfs_bio/assets/ can be imported.
+
+    Many Tasks assert their preconditions on construction, and asset modules construct
+    Tasks at import time.  A refactoring that invalidates one of those preconditions
+    surfaces here, rather than only when someone happens to import the affected module.
+    """
+    import importlib
+    import time
+    import traceback
+
+    print(f"Checking that every module under {ASSETS_PATH}/ imports cleanly...")
+    start = time.perf_counter()
+    module_names = [_module_name(path) for path in sorted(ASSETS_PATH.rglob("*.py"))]
+    failures: list[tuple[str, str]] = []
+    for name in module_names:
+        try:
+            importlib.import_module(name)
+        except Exception:
+            failures.append((name, traceback.format_exc()))
+    elapsed = time.perf_counter() - start
+    print(f"Imported {len(module_names)} module(s) in {elapsed:.1f}s.")
+    if failures:
+        for name, formatted in failures:
+            print(f"\n=== {name} ===\n{formatted}")
+        print(f"ERROR: {len(failures)} module(s) failed to import:")
+        for name, _ in failures:
+            print(f"  {name}")
+        sys.exit(1)
+    else:
+        print("OK: all asset modules import cleanly.")
+
+
 # ty learns about attrs classes through dataclass_transform (PEP 681), which cannot
 # express attrs' slots=True default.  Without an explicit slots=True, ty does not
 # see that a field overrides an abstract property, and reports the class as abstract.
@@ -444,6 +489,7 @@ def lint_actions(c):
         fix_table_trailing_newlines,
         checkimports,
         check_attrs_slots,
+        check_asset_imports,
         # fix_init_files,
         typecheck,
         lint_actions,
