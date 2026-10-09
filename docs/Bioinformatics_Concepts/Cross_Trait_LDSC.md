@@ -294,14 +294,14 @@ $$
 \mathbb{Cov}(\delta_j,\epsilon_k) &= \begin{cases}
 \rho_e &\text{ if } j=k \le N_s \\
 0 & \text{ else }
-\end{cases} & \text{ for some }\rho_e>0 \label{cov_delta_epsilon}\\
-\mathbb{Var}(\beta_1) &= \frac{1}{M} h_1^2 I \label{var_beta} \\
-\mathbb{Var}(\beta_2) &= \frac{1}{M} h_2^2 I  \label{var_gamma}  \\
-\mathbb{Cov}(\beta_1, \beta_2)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{cov_beta_gamma}\\
-\mathbb{E}(\delta)&=0\label{e_delta}\\
-\mathbb{E}(\beta_1)&=0  \label{e_beta} \\
-\mathbb{E}(\epsilon)&=0   \label{e_epsilon} \\
-\mathbb{E}(\beta_2)&=0  \label{e_gamma} \\
+\end{cases} & \text{ for some }\rho_e>0 \label{bin_cov_delta_epsilon}\\
+\mathbb{Var}(\beta_1) &= \frac{1}{M} h_1^2 I \label{bin_var_beta} \\
+\mathbb{Var}(\beta_2) &= \frac{1}{M} h_2^2 I  \label{bin_var_gamma}  \\
+\mathbb{Cov}(\beta_1, \beta_2)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{bin_cov_beta_gamma}\\
+\mathbb{E}(\delta)&=0\label{bin_e_delta}\\
+\mathbb{E}(\beta_1)&=0  \label{bin_e_beta} \\
+\mathbb{E}(\epsilon)&=0   \label{bin_e_epsilon} \\
+\mathbb{E}(\beta_2)&=0  \label{bin_e_gamma} \\
 \end{align}
 $$
 
