@@ -11,7 +11,7 @@ validation, sumstats method flags, lavaan-component sanitisation) live in
 from __future__ import annotations
 
 import tempfile
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
@@ -135,7 +135,7 @@ def add_sample_size_if_missing(
 @contextmanager
 def ld_dir_with_genomic_sem_naming(
     ld_path: Path, basename_prefix: str
-) -> Iterator[Path]:
+) -> Generator[Path]:
     """
     GenomicSEM::ldsc constructs LD score paths as "<ld>/<chr>.l2.ldscore.gz",
     so when the on-disk files have a basename prefix (e.g. "LDscore.") we
