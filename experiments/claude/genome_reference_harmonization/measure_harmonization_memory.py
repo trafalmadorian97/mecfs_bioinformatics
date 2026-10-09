@@ -98,6 +98,7 @@ def _scenario_task(name: str) -> Task:
         sumstats_task=_DECODE_ME_PRE_TABLE,
         fasta_task=UCSC_HG19_INDEXED_FASTA,
         panel_task=THOUSAND_GENOMES_EUR_HG19_PANEL_ALLELE_FREQUENCIES,
+        panel_ancestry="eur",
         pipe=pipe,
     )
 

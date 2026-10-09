@@ -67,6 +67,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     IndexedFasta,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference_harmonization_task import (
+    PanelTable,
     chromosomes_to_harmonize,
     count_trust_evidence_genome_wide,
 )
@@ -268,7 +269,7 @@ def main() -> None:
                 sumstats,
                 [BUILD_PROBE_CHROMOSOME],
                 opened_candidate.fasta,
-                opened_candidate.panel_path,
+                PanelTable(path=opened_candidate.panel_path, af_col=PANEL_AF_COL),
                 BASE_OPTIONS,
             ).counts
             consistent_by_build[candidate.name] = counts.consistent_snvs
@@ -281,13 +282,19 @@ def main() -> None:
         sumstats = sumstats.filter(pl.col(GWASLAB_CHROM_COL).is_in(list(fasta.entries)))
         chromosomes = chromosomes_to_harmonize(sumstats, fasta, BASE_OPTIONS)
         evidence = count_trust_evidence_genome_wide(
-            sumstats, chromosomes, fasta, panel_path, BASE_OPTIONS
+            sumstats,
+            chromosomes,
+            fasta,
+            PanelTable(path=panel_path, af_col=PANEL_AF_COL),
+            BASE_OPTIONS,
         )
         counts = evidence.counts
         trusted = decide_trust(evidence, BASE_OPTIONS)
         print(f"build {build.name}: {counts}")
         print(f"{_consistency(counts)} -> trusted={trusted}")
-        print(f"suspicious: {evidence.suspicious} -> {evidence.suspicious.fraction:.2e}")
+        print(
+            f"suspicious: {evidence.suspicious} -> {evidence.suspicious.fraction:.2e}"
+        )
         if not trusted:
             return
         _print_eaf_calibration(sumstats, fasta, panel_path)

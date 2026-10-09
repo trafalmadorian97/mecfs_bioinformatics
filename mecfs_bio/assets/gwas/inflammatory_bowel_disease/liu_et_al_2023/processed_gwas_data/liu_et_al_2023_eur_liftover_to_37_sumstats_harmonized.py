@@ -37,4 +37,5 @@ LIU_ET_AL_2023_IBD_EUR_HARMONIZE = GenomeReferenceHarmonizationTask.create(
     sumstats_task=LIU_ET_AL_2023_IBD_EUR_PRE_HARMONIZATION_TABLE,
     fasta_task=UCSC_HG19_INDEXED_FASTA,
     panel_task=THOUSAND_GENOMES_EUR_HG19_PANEL_ALLELE_FREQUENCIES,
+    panel_ancestry="eur",
 )

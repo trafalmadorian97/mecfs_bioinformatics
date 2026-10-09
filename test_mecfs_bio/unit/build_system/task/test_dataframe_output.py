@@ -3,12 +3,15 @@ from pathlib import Path
 import narwhals
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from mecfs_bio.build_system.task.dataframe_output import (
     CSVOutFormat,
     ParquetOutFormat,
     ParquetWriteOptions,
+    open_parquet_writer,
+    parquet_encoding,
     write_df_according_to_format,
     write_parquet_table,
 )
@@ -143,3 +146,27 @@ def test_pandas_frame_is_accepted_via_from_native(tmp_path: Path):
         out_format=ParquetOutFormat(),
     )
     assert pl.read_parquet(out_path)["x"].to_list() == [1, 2]
+
+
+def test_streaming_writer_splits_named_int_columns_and_keeps_dictionary_elsewhere(
+    tmp_path: Path,
+):
+    table = pa.table(
+        {
+            "count": pa.array([1, 2, 3, 4], pa.int32()),
+            "label": ["a", "b", "a", "b"],
+        }
+    )
+    encoding = parquet_encoding(
+        table.schema.names,
+        compression="zstd",
+        compression_level=None,
+        byte_stream_split_columns=["count"],
+    )
+    path = tmp_path / "out.parquet"
+    with open_parquet_writer(path, table.schema, encoding) as writer:
+        writer.write_table(table)
+        writer.write_table(table)
+    assert "BYTE_STREAM_SPLIT" in _encodings(path, "count")
+    assert "RLE_DICTIONARY" in _encodings(path, "label")
+    assert pq.read_table(path).num_rows == 8

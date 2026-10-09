@@ -46,6 +46,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     IndexedFasta,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference_harmonization_task import (
+    PanelTable,
     ParquetPanelLoader,
     chromosomes_to_harmonize,
     count_trust_evidence_genome_wide,
@@ -57,6 +58,9 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
 from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import (
     ACTION_KEEP,
     ACTION_SWAP,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
+    PANEL_AF_COL,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.trust import (
     decide_trust,
@@ -113,7 +117,7 @@ def _ambiguous_indels(
     ambiguous = classified.filter(pl.col(ALLELE_CLASS_COL) == CLASS_INDEL_BOTH).select(
         ROW_COLUMNS
     )
-    panel = ParquetPanelLoader(panel_path=panel_path, chrom=chrom)(
+    panel = ParquetPanelLoader(panel_path=panel_path, af_col=PANEL_AF_COL, chrom=chrom)(
         ambiguous[GWASLAB_POS_COL]
     )
     return ChromosomeAmbiguousIndels(rows=ambiguous, panel=panel)
@@ -138,7 +142,11 @@ def main() -> None:
     )
     chromosomes = chromosomes_to_harmonize(sumstats, fasta, BASE_OPTIONS)
     evidence = count_trust_evidence_genome_wide(
-        sumstats, chromosomes, fasta, panel_asset.path, BASE_OPTIONS
+        sumstats,
+        chromosomes,
+        fasta,
+        PanelTable(path=panel_asset.path, af_col=PANEL_AF_COL),
+        BASE_OPTIONS,
     )
     print(f"build-38 trust counts: {evidence.counts}")
     assert decide_trust(evidence, BASE_OPTIONS), (

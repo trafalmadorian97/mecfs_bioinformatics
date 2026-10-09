@@ -20,6 +20,10 @@ class GenomeReferenceHarmonizationOptions:
     palindrome_maf_threshold, panel_maf_threshold: an untrusted palindromic SNV is resolved
         by frequency only when both its summary-statistic MAF and its panel MAF are at most
         these (gwaslab's defaults).
+    palindrome_max_af_distance: an untrusted palindromic SNV is resolved only if, after the
+        strand decision, its EAF is within this distance of the panel AF. Beyond 0.1, panels
+        often contradict each other's strand call; see
+        experiments/claude/gnomad_af_reference/palindrome_distance_vs_panel_disagreement.md.
     indel_max_af_distance, indel_min_af_margin: stringent rules for untrusted ambiguous indels.
         A reading is chosen only if its predicted EAF is within the distance and beats the
         other reading by at least the margin.
@@ -43,6 +47,7 @@ class GenomeReferenceHarmonizationOptions:
     min_checkable_indels: int = 1_000
     palindrome_maf_threshold: float = 0.4
     panel_maf_threshold: float = 0.4
+    palindrome_max_af_distance: float = 0.1
     indel_max_af_distance: float = 0.02
     indel_min_af_margin: float = 0.3
     max_suspicious_indel_fraction: float = 1e-4
@@ -56,6 +61,7 @@ class GenomeReferenceHarmonizationOptions:
         assert self.min_checkable_snvs >= 1 and self.min_checkable_indels >= 1
         assert 0 < self.palindrome_maf_threshold < 0.5
         assert 0 < self.panel_maf_threshold < 0.5
+        assert 0 < self.palindrome_max_af_distance < 1
         assert 0 < self.indel_max_af_distance < 1
         assert 0 < self.indel_min_af_margin < 1, (
             "a strictly positive margin keeps the keep and flip readings from both being chosen"
