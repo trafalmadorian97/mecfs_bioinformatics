@@ -2,13 +2,6 @@
 A gnomAD release's allele-frequency panel: the per-chromosome tables concatenated in gwaslab
 chromosome order into one parquet sorted by (CHR, POS), so the harmonizer's per-chromosome
 filter prunes row groups.
-
-The per-chromosome Tasks are injected by the caller (normally
-generate_gnomad_allele_frequency_panel_tasks) and are ordinary dependencies, kept in the asset
-store under their own sub_folder. They cannot be deleted to save space, because the build system materializes
-every transitive dependency of a target; a path_remap rule can move them to another disk.
-Do not wrap this Task in DiscardDepsWrapper: the multi-hour build would become
-all-or-nothing again and the FASTA would be rebuilt in a temporary store.
 """
 
 from pathlib import Path, PurePath

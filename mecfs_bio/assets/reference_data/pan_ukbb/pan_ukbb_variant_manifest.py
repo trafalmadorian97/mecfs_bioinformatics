@@ -2,8 +2,6 @@
 The Pan-UK Biobank variant manifest (full_variant_qc_metrics.txt.bgz, 2.7 GB, GRCh37),
 pinned by md5 (equal to its S3 ETag; last modified 2020-08-28).
 
-It stays in the asset store as a dependency of the Pan-UKBB panel; its own sub_folder
-(raw/) lets a path_remap rule move it to another disk.
 """
 
 from pathlib import PurePath
