@@ -137,7 +137,9 @@ def write_checked_panel(
                         byte_stream_split_columns=byte_stream_split_columns,
                     ),
                 )
-            writer.write_table(table)
+            # An empty row group gets zero page offsets, which polars refuses to read.
+            if table.num_rows > 0:
+                writer.write_table(table)
             rows_written += checked.table.height
             chromosomes.update(checked.table[GWASLAB_CHROM_COL].unique().to_list())
     finally:
