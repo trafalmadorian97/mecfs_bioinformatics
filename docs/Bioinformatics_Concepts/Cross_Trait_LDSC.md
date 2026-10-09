@@ -273,9 +273,10 @@ where
 - There are $N_1 \gg 0$ individuals in the trait 1 GWAS and $N_2 \gg 0$ individuals in the trait 2 GWAS.
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \{0,1\}^{N_1}$ and $y_2 \in \{0,1\}^{N_2}$ are the binary phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
-- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the genotype matrices from the two GWAS, normalized to have columns with sample mean 0 and variance 1.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
-- $p_j\in\mathbb{R}$ is the population-level probability that an arbitrary individual has variant $j$j\in\mathbb{R}$ is the population-level probability that an arbitrary individual has variant $j$.
-- $G_1\in\mathbb{R}^{N_1\times M}$ and $G_2\in\mathbb{R}^{N_2\times M}$ are the non-normalized genotype matrices from the two GWAS.  Thus $Y_{i,j}=\frac{G_{1,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$ and Thus $Z_{i,j}=\frac{G_{2,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$.
+- $G_1\in\mathbb{R}^{N_1\times M}$ and $G_2\in\mathbb{R}^{N_2\times M}$ are the non-normalized genotype matrices from the two GWAS.
+- $p_j\in\mathbb{R}$ is the population-level probability that an arbitrary individual has variant $j$.
+- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the population-standardized genotype matrices from the two GWAS.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices. Thus $Y_{i,j}=\frac{G_{1,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$ and $Z_{i,j}=\frac{G_{2,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$.
+  
 - $\beta_1,\beta_2\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 - $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
