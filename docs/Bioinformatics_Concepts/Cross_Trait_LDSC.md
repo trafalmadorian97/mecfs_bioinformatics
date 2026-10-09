@@ -255,7 +255,6 @@ The above derivation assumed that both traits of interest were quantitative, but
 
 We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).  
 
-Let $K_1,K_2\in (0,1)$ denote the proportion of cases of the two traits in the general population.  To allow for the possibility that participants in the GWAS under study have been selected through a [case-control ascertainment procedure](Liability_Threshold_Model.md#ascertained-case-control-studies),  we let $P_1,P_2\in (0,1)$ denote the case-proportions in the two GWAS, which may differ from $K_1,K_2$.
 
 
 We have
@@ -284,6 +283,10 @@ where
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 - $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
 - $\psi_1\in\mathbb{R}^{N_1}$ and $\psi_2\in\mathbb{R}^{N_2}$ are the latent liability scores for the two traits.
+
+
+Let $K_1,K_2\in (0,1)$ denote the proportion of cases of the two traits in the general population.  To allow for the possibility that participants in the GWAS under study have been selected through a [case-control ascertainment procedure](Liability_Threshold_Model.md#ascertained-case-control-studies),  we let $P_1,P_2\in (0,1)$ denote the case-proportions in the two GWAS, which may differ from $K_1,K_2$.
+
 
 Mirroring the quantitative-trait derivation, we model $G_1,G_2,\beta_1,\beta_2,\delta,\epsilon$ as random variables with the following properties
 
