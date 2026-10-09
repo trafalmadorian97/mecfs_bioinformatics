@@ -315,7 +315,9 @@ we assume the following relationships between the random variables:
 - $\beta_1$ is independent of $\epsilon$ and $Z$, and $\beta_2$ is independent of $\delta$ and $Y$.
 
 
-For convenience, also define $g_p\in\{0,1\}^{M}$ to be the raw random vector corresponding to the genotype of an individual selected at random from the general population. Define $x_p\in\mathbb{R}^{M}$ by $x_{p,j}=\frac{g_p-p_j}{\sqrt{p_j(1-p_j)}}$ so that $x_p$ is the random standardized genotype vector.  Note that we now have three genotype distributions:
+For convenience, also define $g_p\in\{0,1\}^{M}$ to be the raw random vector corresponding to the genotype of an individual selected at random from the general population. Define $x_p\in\mathbb{R}^{M}$ by $x_{p,j}=\frac{g_{p,j}-p_j}{\sqrt{p_j(1-p_j)}}$ so that $x_p$ is the random standardized genotype vector.  Note that we now have three genotype distributions:
+
+
 - The distribution of genotypes in the general population.
 - The distribution of genotypes in GWAS 1.
 - The distribution of genotypes in GWAS 2.
@@ -325,7 +327,7 @@ For convenience, also define $g_p\in\{0,1\}^{M}$ to be the raw random vector cor
 
 Define the following quantities related to [Linkage Disequilibrium](Linkage_Disequilibrium.md) (LD):
 
-- The LD between SNP $j$ and SNP $k$ is denoted by $r_{jk}:=\mathbb{E}(x_{p,j}x_{p,k})$. Note that we use the population-level distribution here
+- The LD between SNP $j$ and SNP $k$ is denoted by $r_{jk}:=\mathbb{E}(x_{p,j}x_{p,k})$. Note that we use the population-level distribution here.
 
 - The LD score of a SNP $j$ is defined to be $l_j:= \sum_k r_{jk}^2$. It quantifies the magnitude of the dependence between $j$ and other SNPs.
 
