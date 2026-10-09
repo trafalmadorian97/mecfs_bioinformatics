@@ -26,9 +26,14 @@ class GnomadRelease:
 
     vcf_url_template contains CHROM_PLACEHOLDER, replaced by the bare chromosome name
     (1-22, X, Y). contig_prefix is what the VCF prepends to contig names ("chr" in GRCh38
-    releases). main_groups admit records (a record is kept when polymorphic in one of
-    them); extra_groups are stored but admit nothing. header_assembly is the assembly
-    string every ##contig header line must carry.
+    releases). header_assembly is the assembly string every ##contig header line must carry.
+
+    A record is kept only if it passes all filters and has a non-zero allele frequency in at
+    least one of main_groups. Allele frequencies are stored for both main_groups and
+    extra_groups, but extra_groups play no part in deciding which records are kept. So a
+    variant polymorphic only in an extra group is absent from the panel. The nfe subgroups
+    lose nothing, since they are subsets of nfe. oth, ami, mid and remaining lose their
+    private variants.
     """
 
     name: str
