@@ -5,7 +5,7 @@ hide:
 # CT-LDSC
 Cross Trait Linkage Disequilibrium Score Regression (CT-LDSC)[@bulik2015atlas] is an extension of [Linkage Disequilibrium Score Regression](LDSC.md) (LDSC)[@bulik2015ld] that estimates [genetic correlation](Genetic_Correlation.md).
 
-## Derivation
+## Derivation for Quantitative Traits
 
 ### Data Generating Model
 
@@ -61,7 +61,7 @@ $$
 
 
 
-Furthermore, we assume the following relationships between the random variables, which are faily standard in linear data-generating models:
+Furthermore, we assume the following relationships between the random variables, which are fairly standard in linear data-generating models:
 
 - The rows of $Y$ and $Z$ are mutually independent, except in the case that a row of $Y$ and $Z$ refer to the same individual (one of the $N_s$ individuals present in both GWAS).
 - The rows of $Y$ and $Z$ are identically distributed. That is, the two GWAS samples are drawn independently from the sample population.
@@ -247,13 +247,15 @@ $(\ref{ct_ldsc_eqn})$ is the key regression equation in CT-LDSC.
 
 
 
-## Binary Traits Derivation
+## Derivation for Binary Traits
 
 The above derivation assumed that both traits of interest were quantitative, but most disease GWAS are binary.  The present section extends the CT-LDSC derivation to the case of binary traits.
 
 ### Liability-Scale Data Generating Model
 
 We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).  
+
+
 
 We have
 
@@ -273,19 +275,69 @@ where
 - There are $N_1 \gg 0$ individuals in the trait 1 GWAS and $N_2 \gg 0$ individuals in the trait 2 GWAS.
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \{0,1\}^{N_1}$ and $y_2 \in \{0,1\}^{N_2}$ are the binary phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
-- $G_1\in\mathbb{R}^{N_1\times M}$ and $G_2\in\mathbb{R}^{N_2\times M}$ are the non-normalized genotype matrices from the two GWAS.
+- $G_1\in\{0,1\}^{N_1\times M}$ and $G_2\in\mathbb{R}^{N_2\times M}$ are the raw genotype matrices from the two GWAS.  Note that like the original paper, we work with haploid genotypes for simplicity.  The authors argue that their results can easily be extended to diploid genotypes.
 - $p_j\in\mathbb{R}$ is the population-level probability that an arbitrary individual has variant $j$.
-- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the population-standardized genotype matrices from the two GWAS.  $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices. Thus $Y_{i,j}=\frac{G_{1,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$ and $Z_{i,j}=\frac{G_{2,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$.
-  
+- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the population-standardized genotype matrices from the two GWAS.   Thus $Y_{i,j}=\frac{G_{1,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$ and $Z_{i,j}=\frac{G_{2,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$. Note that because we allow for the possibility of case-control ascertainment, the columns of $Y$ and $Z$ may not actually have mean 0 and variance 1.
+- $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
 - $\beta_1,\beta_2\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 - $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
 - $\psi_1\in\mathbb{R}^{N_1}$ and $\psi_2\in\mathbb{R}^{N_2}$ are the latent liability scores for the two traits.
 
 
-### Case proportions
+Let $K_1,K_2\in (0,1)$ denote the proportion of cases of the two traits in the general population.  To allow for the possibility that participants in the GWAS under study have been selected through a [case-control ascertainment procedure](Liability_Threshold_Model.md#ascertained-case-control-studies),  we let $P_1,P_2\in (0,1)$ denote the case-proportions in the two GWAS, which may differ from $K_1,K_2$.
 
-We assume that in the general population, the proportion of cases for the two traits is $K_1,K_2$ respectively.  However, we allow for the possibility that GWAS 1 is ascertained for trait 1 and GWAS 2 is ascertained for trait 2, so that the proportion of cases in GWAS 1 is $P_1$, and the proportion of cases in GWAS 2 is $P_2$.
+
+Mirroring the quantitative-trait derivation, we model $G_1,G_2,\beta_1,\beta_2,\delta,\epsilon$ as random variables with the following properties
+
+$$
+\begin{align}
+\mathbb{Var(\delta)} &= (1-h_1^2)I & \text{ for some }h_1>0\\
+\mathbb{Var(\epsilon)} &= (1-h_2^2)I& \text{ for some }h_2>0\\
+\mathbb{Cov}(\delta_j,\epsilon_k) &= \begin{cases}
+\rho_e &\text{ if } j=k \le N_s \\
+0 & \text{ else }
+\end{cases} & \text{ for some }\rho_e>0 \label{bin_cov_delta_epsilon}\\
+\mathbb{Var}(\beta_1) &= \frac{1}{M} h_1^2 I \label{bin_var_beta} \\
+\mathbb{Var}(\beta_2) &= \frac{1}{M} h_2^2 I  \label{bin_var_gamma}  \\
+\mathbb{Cov}(\beta_1, \beta_2)&= \frac{1}{M}\rho_gI & \text{ for some }\rho_g>0 \label{bin_cov_beta_gamma}\\
+\mathbb{E}(\delta)&=0\label{bin_e_delta}\\
+\mathbb{E}(\beta_1)&=0  \label{bin_e_beta} \\
+\mathbb{E}(\epsilon)&=0   \label{bin_e_epsilon} \\
+\mathbb{E}(\beta_2)&=0  \label{bin_e_gamma} \\
+\end{align}
+$$
+
+we assume the following relationships between the random variables:
+
+- The rows of $G_1$ and $G_2$ are independent, except when they refer to the same individual (one of the $N_s$ individuals present in both GWAS).
+- $Y, \beta_1, \delta$ are all mutually independent, as are $Z,\beta_2, \epsilon$.
+- $\beta_1$ is independent of $\epsilon$ and $Z$, and $\beta_2$ is independent of $\delta$ and $Y$.
+
+
+For convenience, also define $g_p\in\{0,1\}^{M}$ to be the raw random vector corresponding to the genotype of an individual selected at random from the general population. Define $x_p\in\mathbb{R}^{M}$ by $x_{p,j}=\frac{g_{p,j}-p_j}{\sqrt{p_j(1-p_j)}}$ so that $x_p$ is the random standardized genotype vector.  Note that we now have three genotype distributions:
+
+
+- The distribution of genotypes in the general population.
+- The distribution of genotypes in GWAS 1.
+- The distribution of genotypes in GWAS 2.
+
+
+
+
+Define the following quantities related to [Linkage Disequilibrium](Linkage_Disequilibrium.md) (LD):
+
+- The LD between SNP $j$ and SNP $k$ is denoted by $r_{jk}:=\mathbb{E}(x_{p,j}x_{p,k})$. Note that we use the population-level distribution here.
+
+- The LD score of a SNP $j$ is defined to be $l_j:= \sum_k r_{jk}^2$. It quantifies the magnitude of the dependence between $j$ and other SNPs.
+
+
+
+
+[//]: # (### Case proportions)
+
+[//]: # ()
+[//]: # (We assume that in the general population, the proportion of cases for the two traits is $K_1,K_2$ respectively.  However, we allow for the possibility that GWAS 1 is ascertained for trait 1 and GWAS 2 is ascertained for trait 2, so that the proportion of cases in GWAS 1 is $P_1$, and the proportion of cases in GWAS 2 is $P_2$.)
 
 ### Marginal Regression Coefficients
 
