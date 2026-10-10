@@ -35,6 +35,9 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
     HarmonizableReferenceTableMeta,
 )
+from mecfs_bio.build_system.meta.reference_meta.panel_allele_frequency_columns import (
+    PanelAlleleFrequencyColumns,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
 )
@@ -44,6 +47,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     contig_to_gwaslab_code,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.allele_frequency_panel_constants import PanelAncestry
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL, GWASLAB_POS_COL
 from mecfs_bio.util.subproc.run_command import execute_command
@@ -66,6 +70,10 @@ _SITE_KEYS = [GWASLAB_POS_COL, PANEL_REF_COL, PANEL_ALT_COL]
 
 
 def _write_sites_tsv(vcf_path: Path, tsv_path: Path) -> None:
+    # execute_command runs this through sh, where a pipeline's exit status is the last
+    # command's: if bcftools view failed partway (for example on a truncated VCF), query
+    # could still exit 0 after writing a truncated TSV. A single "bcftools query -i"
+    # process, as GnomadChromosomeAlleleFrequencyTask uses, would fail instead.
     execute_command(
         [
             "bcftools",
@@ -173,7 +181,11 @@ class ReferencePanelAlleleFrequencyTask(Task):
 
     @classmethod
     def create(
-        cls, vcf_task: Task, asset_id: str, build: GenomeBuild
+        cls,
+        vcf_task: Task,
+        asset_id: str,
+        build: GenomeBuild,
+        ancestry: PanelAncestry,
     ) -> "ReferencePanelAlleleFrequencyTask":
         source_meta = vcf_task.meta
         assert isinstance(source_meta, ReferenceFileMeta), (
@@ -190,6 +202,9 @@ class ReferencePanelAlleleFrequencyTask(Task):
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
                 harmonization_info=HarmonizationInfo(
                     build=build, ref_allele_col=PANEL_REF_COL, pos_col=GWASLAB_POS_COL
+                ),
+                allele_frequency_columns=PanelAlleleFrequencyColumns.single(
+                    ancestry, PANEL_AF_COL
                 ),
             ),
             vcf_task=vcf_task,

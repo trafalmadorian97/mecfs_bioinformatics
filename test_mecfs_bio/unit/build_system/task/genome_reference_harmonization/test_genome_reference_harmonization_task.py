@@ -16,6 +16,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
     GenomeReferenceHarmonizationOptions,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.constants.allele_frequency_panel_constants import PanelAncestry
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -33,10 +34,13 @@ from mecfs_bio.constants.regenie_constants import REGENIE_A1FREQ_CASES_COL
 from test_mecfs_bio.unit.build_system.task.genome_reference_harmonization.genome_reference_fixtures import (
     CONSISTENT_INDEL,
     CONSISTENT_SNV,
+    EUR_PANEL_COLUMNS,
     INCONSISTENT_SNV,
     TEST_OPTIONS,
+    AncestryPanelRecord,
     PanelRecord,
     Variant,
+    harmonization_task,
     positions,
     row_at,
     run_harmonization,
@@ -344,6 +348,41 @@ def test_unresolved_palindromes_can_be_kept(tmp_path: Path) -> None:
     assert set(_UNRESOLVED_PALINDROME_POSITIONS) <= set(positions(result))
 
 
+# Same side of 0.5 as the panel AF of 0, but 0.3 away from it.
+_FAR_PALINDROME = Variant(pos=13, ea="A", nea="T", eaf=0.3)
+_FAR_PALINDROME_PANEL = [PanelRecord(pos=13, ref="T", alt="A", af=0.0)]
+
+
+@pytest.mark.parametrize("max_af_distance, resolved", [(0.1, False), (0.35, True)])
+def test_palindrome_far_from_panel_frequency_is_unresolved(
+    tmp_path: Path, max_af_distance: float, resolved: bool
+) -> None:
+    options = attrs.evolve(TEST_OPTIONS, palindrome_max_af_distance=max_af_distance)
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, _FAR_PALINDROME]),
+        panel=_FAR_PALINDROME_PANEL,
+        options=options,
+    )
+    assert (13 in positions(result)) == resolved
+
+
+def test_kept_unresolved_far_palindrome_keeps_source_strand(tmp_path: Path) -> None:
+    # Opposite side of 0.5 from the panel AF of 0, so the side rule alone would flip it; after
+    # the flip its EAF would be 0.3 away from the panel, so it is unresolved and not flipped.
+    far = Variant(pos=13, ea="A", nea="T", eaf=0.7, beta=0.3)
+    options = attrs.evolve(TEST_OPTIONS, keep_unresolved_palindromes=True)
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, far]),
+        panel=_FAR_PALINDROME_PANEL,
+        options=options,
+    )
+    row = row_at(result, 13)
+    assert (row[EA], row[NEA]) == ("A", "T")
+    assert (row[BETA], row[EAF]) == (pytest.approx(0.3), pytest.approx(0.7))
+
+
 def test_trusted_palindromes_keep_source_strand(tmp_path: Path) -> None:
     opposite_side = Variant(pos=18, ea="A", nea="T", eaf=0.9, beta=0.3)
     result = run_harmonization(
@@ -496,3 +535,64 @@ def test_table_without_eaf_is_untrusted(tmp_path: Path) -> None:
     result = run_harmonization(tmp_path / "run", frame)
     assert 5 not in positions(result)
     assert set(positions(result)) >= {1, 21}
+
+
+_ANCESTRY_PALINDROME = Variant(pos=13, ea="A", nea="T", eaf=0.1, beta=0.3)
+# nfe is on the same side of 0.5 as the EAF (keep); nfe_nwe is on the other (strand flip).
+_ANCESTRY_PALINDROME_PANEL = [
+    AncestryPanelRecord(pos=13, ref="T", alt="A", nfe=0.15, nfe_nwe=0.9)
+]
+_ANCESTRY_CASES: list[tuple[PanelAncestry, float, float]] = [
+    ("nfe", 0.3, 0.1),
+    ("nfe_nwe", -0.3, 0.9),
+]
+
+
+@pytest.mark.parametrize("ancestry, expected_beta, expected_eaf", _ANCESTRY_CASES)
+def test_palindrome_is_resolved_with_the_chosen_ancestry_column(
+    tmp_path: Path, ancestry: PanelAncestry, expected_beta: float, expected_eaf: float
+) -> None:
+    result = run_harmonization(
+        tmp_path / "run",
+        sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, _ANCESTRY_PALINDROME]),
+        ancestry_panel=_ANCESTRY_PALINDROME_PANEL,
+        panel_ancestry=ancestry,
+    )
+    row = row_at(result, 13)
+    assert (row[EA], row[NEA]) == ("A", "T")
+    assert (row[BETA], row[EAF]) == (
+        pytest.approx(expected_beta),
+        pytest.approx(expected_eaf),
+    )
+
+
+def test_null_chosen_ancestry_frequency_counts_as_absent(tmp_path: Path) -> None:
+    # The nfe reading fits (see test_untrusted_ambiguous_indels_follow_the_stringent_rules,
+    # pos 33); nfe_nwe has no frequency (AN 0), so under it the indel is not in the panel.
+    variant = Variant(pos=33, ea="T", nea="TT", eaf=0.3)
+    panel = [AncestryPanelRecord(pos=33, ref="TT", alt="T", nfe=0.32, nfe_nwe=None)]
+    ancestries: list[PanelAncestry] = ["nfe", "nfe_nwe"]
+    kept = {
+        ancestry: 33
+        in positions(
+            run_harmonization(
+                tmp_path / ancestry,
+                sumstats_frame([CONSISTENT_SNV, INCONSISTENT_SNV, variant]),
+                ancestry_panel=panel,
+                panel_ancestry=ancestry,
+                options=_STRINGENT_OPTIONS,
+            )
+        )
+        for ancestry in ancestries
+    }
+    assert kept == {"nfe": True, "nfe_nwe": False}
+
+
+def test_undeclared_panel_ancestry_is_rejected() -> None:
+    with pytest.raises(AssertionError):
+        harmonization_task(panel_columns=EUR_PANEL_COLUMNS, panel_ancestry="nfe")
+
+
+def test_panel_without_declared_columns_is_rejected() -> None:
+    with pytest.raises(AssertionError):
+        harmonization_task(panel_columns=None, panel_ancestry="eur")

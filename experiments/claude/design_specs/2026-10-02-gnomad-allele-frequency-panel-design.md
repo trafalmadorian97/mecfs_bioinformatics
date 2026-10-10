@@ -1,0 +1,667 @@
+# gnomAD and Pan-UKBB Allele-Frequency Panels for Genome-Reference Harmonization --- Design
+
+Date: 2026-10-02 (Pan-UKBB added 2026-10-03)
+
+## Goal
+
+Give genome-reference harmonization (GenomeReferenceHarmonizationTask) allele-frequency
+panels built from large population resources, with every ancestry group's frequencies
+available, and let each harmonization choose the panel and ancestry that match its GWAS.
+
+- hg19, gnomAD: built now, from gnomAD v2.1.1 genomes (GRCh37).
+- hg19, Pan-UKBB: built now, from the Pan-UK Biobank variant manifest (GRCh37, imputed UK
+  Biobank). It complements gnomAD: far larger European sample, but imputed and limited to
+  imputation-panel sites.
+- hg38, gnomAD: same code, from gnomAD v4.1 genomes (GRCh38). The asset is defined in this
+  project but built only on request.
+
+The 1000 Genomes EUR panels stay. Existing harmonized outputs must not change.
+
+Non-goals: changing any resolution rule (palindromes, ambiguous indels, trust); using AN in
+the harmonizer; lifting v4 down to hg19 or Pan-UKBB up to hg38; adding an ancestry field to
+GWAS metadata; combining panels into one table.
+
+## Why
+
+The panel resolves palindromic SNVs and ambiguous indels in untrusted tables, and drives the
+suspicious-indel trust gate (palindromes.py, ambiguous_indels.py, trust.py). The 1000 Genomes
+EUR panel has about 1,006 chromosomes. At AF 0.3 its sampling SE is about 0.014, which uses
+up most of the ambiguous-indel tolerance (indel_max_af_distance = 0.02). gnomAD NFE has
+15,436 chromosomes in v2.1.1 and 68,058 in v4.1, with SEs of about 0.004 and 0.002.
+Pan-UKBB EUR has 917,874 (SE about 0.0005), and its population (mostly British) is the
+closest match to DecodeME. Its frequencies are imputed dosages rather than sequenced calls,
+so their accuracy rests on imputation quality, which the manifest bounds at INFO > 0.8. The
+expected gain is mainly in fewer correct ambiguous indels dropped as AF_MISMATCH. That is
+a prediction; validation step 3 measures it for each panel.
+
+A panel restricted to SNVs would silently disable ambiguous-indel resolution and the trust
+gate, so the panel keeps indels.
+
+## Measured facts
+
+All measurements are on chr21, from experiments/claude/gnomad_af_reference/ (scripts are
+committed; logs are gitignored, so the numbers are recorded here).
+
+Sources, from the public bucket gnomad-public-us-east-1, which allows anonymous access and
+has no egress charge to us:
+
+| | v2.1.1 genomes | v4.1 genomes |
+|---|---|---|
+| Path | release/2.1.1/vcf/genomes/gnomad.genomes.r2.1.1.sites.{chrom}.vcf.bgz | release/4.1/vcf/genomes/gnomad.genomes.v4.1.sites.chr{chrom}.vcf.bgz |
+| Build, contig naming | GRCh37, "21" | GRCh38, "chr21" |
+| Chromosomes | 1-22, X | 1-22, X, Y |
+| Total VCF size | 451 GiB (per-chromosome files) | 524 GiB |
+| chr21 records, PASS | 3.48 M, 2.91 M | 10.96 M, 8.20 M |
+| Multiallelics | already split (one ALT per record) | already split |
+| FILTER values | PASS, RF, AC0, InbreedingCoeff | PASS, AS_VQSR, AC0, InbreedingCoeff |
+
+Ancestry groups (approximate samples = max AN / 2, PASS records):
+
+- v2.1.1: afr 4,359; amr 424; asj 145; eas 780; fin 1,738; nfe 7,718; oth 544; and the NFE
+  subgroups nfe_nwe 4,299, nfe_est 2,297, nfe_onf 1,069, nfe_seu 53. There is no sas group.
+- v4.1: afr 20,805; amr 7,657; asj 1,736; eas 2,604; fin 5,316; nfe 34,029; sas 2,419;
+  ami 456; mid 158; remaining 1,058.
+
+Within every group, median AN is within about 0.3% of max AN. In both releases AF is missing
+exactly where AN = 0. None of the v4.1 genomes are UK Biobank samples, so v4's non_ukb strata
+(exome-only) are irrelevant here.
+
+Streaming chr21 over HTTPS with bcftools took 11.5 min (v2) and 11.8 min (v4), about
+10 MiB/s, with bcftools using 40-65% of one core. A serial genome-wide pass is therefore about
+14 h per release.
+
+Panel size at the chosen filter (PASS, and AF > 0 in at least one main group), storing AF and
+AN for every group:
+
+| | chr21 rows | genome-wide rows (extrapolated) | genome-wide size, chosen encoding |
+|---|---|---|---|
+| v2.1.1 | 2.84 M | ~210 M | ~3.7 GiB |
+| v4.1 | 8.10 M | ~590 M | ~10 GiB (int32 byte-stream-split for AN was measured on v2 only; v4 is extrapolated from its 10.9 GiB at default encoding) |
+
+Encoding measurements (v2 chr21 at the chosen filter; v4 agrees):
+
+- Byte-stream-split on the AF columns makes them 50-75% larger and slows reads. AFs are
+  quantized (AC / AN, about 6 significant digits) and mostly exactly 0, so dictionary + RLE
+  wins. Byte-stream-split requires disabling the dictionary.
+- AN columns at default encoding cost about as much as all the AF columns together. AN takes
+  almost every even value from 0 to max (7,712 distinct values for v2 nfe). Its order-0
+  entropy sums to 42.5 bits per row over 11 groups, a floor of 14.4 MiB for chr21.
+  Int32 byte-stream-split reaches 16.0 MiB at zstd default and 14.3 MiB at zstd 19, against
+  19.9 MiB for dictionary. Float32 byte-stream-split reaches 18.8 MiB and delta encoding
+  28.1 MiB.
+- zstd level: default (3) writes chr21 in 3.1 s at 55.0 MiB, level 9 in 6.0 s at 52.3 MiB,
+  and level 19 in 71 s at 46.1 MiB. pyarrow compresses on one core.
+
+REF vs FASTA: all 2,844,308 v2 chr21 REF alleles match the UCSC hg19 FASTA exactly. No
+record lies over an N or IUPAC base, and no REF or ALT has a non-ACGT character.
+
+### Pan-UKBB variant manifest
+
+Measured genome-wide by experiments/claude/pan_ukbb_manifest/ (inspect_manifest.py,
+inspect_swaps.py).
+
+- Source: https://pan-ukb-us-east-1.s3.amazonaws.com/sumstats_release/full_variant_qc_metrics.txt.bgz,
+  public S3. One bgzipped TSV of 2.7 GB (9.0 GB uncompressed) with a tabix index, last
+  modified 2020-08-28, md5 e70ebc8289f762dd8d5086f54e766654 (equal to its S3 ETag).
+- Content: UK Biobank imputed variants (HRC + UK10K/1000 Genomes imputation, GRCh37) with
+  INFO > 0.8. 28,987,534 rows on 1-22 and X, in gwaslab chromosome order; 26.99 M SNVs and
+  2.00 M indels; no duplicate keys; all alleles ACGT; one ALT per row.
+- Columns used: chrom ("1".."22", "X"), pos, ref, alt, and af_{pop} for AFR, AMR, CSA, EAS,
+  EUR, MID. af is the frequency of the listed alt. It has no nulls, and af = 0 occurs (EUR
+  3,521 rows, EAS 1.16 M).
+- ac is a fractional dosage sum and an is constant within a contig (EUR 917,874 on the
+  autosomes, 916,634 on X), so AN carries no per-site information. Pan-UKBB reports 420,531
+  EUR individuals against the 458,937 implied by an; the difference is unexplained and does
+  not matter for orientation.
+- Other columns, not used: rsid, info, gnomAD v2 genome frequencies joined in, and
+  high_quality (passes gnomAD and agrees with gnomAD frequency in all four shared groups).
+- REF vs the UCSC hg19 FASTA: 28,987,239 rows match. 295 do not (chr21 47, chr22 86, X 162).
+  They are directly genotyped sites (info = 1.0), and every one is a ref/alt swap: SNVs
+  with the FASTA base as alt, and insertions written as deletions (manifest CT>C where
+  gnomAD has C>CT). All have high_quality = false and no gnomAD match, because Pan-UKBB's
+  gnomAD join is on ordered alleles. No row lies over an N or IUPAC base.
+- The af of a swapped row describes its listed alt, which is the reference allele. On chr21
+  (swaps_vs_gnomad_chr21.py), 45 of the 47 have a gnomAD v2 record with the same alleles in
+  FASTA orientation, and af_EUR is within 0.05 of 1 - gnomAD AF_nfe for 44 of them.
+- Origin: the Pan-UKBB pipeline (github.com/atgu/ukbb_pan_ancestry, resources/genotypes.py)
+  takes alleles straight from UK Biobank's v3 imputed BGEN files with hl.import_bgen and
+  never checks them against a reference. The swap is therefore in UK Biobank's own allele
+  order for these sites. Why only chr21, chr22 and X (with 89 of the 162 X rows at 88-92
+  Mb) is not determinable from public data.
+
+## Decisions
+
+1. **Builds.** v2.1.1 genomes for hg19 now, v4.1 genomes for hg38 with the same code.
+2. **One streaming pass per release**, storing AF_g and AN_g for every ancestry group of the
+   release.
+3. **Filter**: FILTER == PASS and AF_g > 0 for at least one main group. Main groups are the
+   large continental groups: v2 afr, amr, asj, eas, fin, nfe; v4 those plus sas. Extra groups
+   (NFE subgroups, oth, ami, mid, remaining) are stored but do not admit records, since a
+   single allele in a small group would admit noise. Any nonzero AF threshold would mostly
+   admit records through small groups: at 1e-3 on v2, 20% of rows enter only through asj or
+   amr. Size does not justify a threshold.
+4. **Encoding.** AF_g Float32 with dictionary encoding; AN_g Int32 with byte-stream-split;
+   zstd default level. Keys CHR (Int32 gwaslab code), POS (Int32), REF, ALT (String).
+5. **Ancestry is chosen at harmonization time**, through a required argument.
+6. **AN is stored but not read by the harmonizer** in this project. It preserves the option of
+   sample-size-aware rules later.
+7. **gnomAD REF must match the FASTA**, enforced while building.
+8. **Pan-UKBB is a separate hg19 panel**, not merged with gnomAD. Each harmonization picks
+   one panel and one ancestry; validation step 3 compares them.
+9. **Pan-UKBB keeps every manifest row except REF/FASTA mismatches.** No frequency filter
+   (the manifest is already filtered) and no high_quality filter. That filter would drop
+   2.3 M further rows (1.39 M absent from gnomAD, 0.73 M gnomAD-PASS but frequency-
+   discordant, 0.18 M failing gnomAD filters) and would couple the panel to gnomAD v2.
+10. **The 295 Pan-UKBB mismatches are dropped, and their count is asserted exactly.** The
+    download is pinned by md5, so the count is deterministic. Asserting it equal to 295,
+    rather than tolerating some, keeps the zero-surprise guarantee: any change in the file or
+    in our parsing fails the build. They are dropped rather than swapped back (with af
+    replaced by 1 - af): gnomAD supports swapping back for 44 of 47 chr21 rows but not all,
+    confirming the rest would couple this panel to gnomAD, and 295 rows are 0.001% of the
+    panel.
+11. **Pan-UKBB stores AF only.** Its AN is constant per contig and would suggest per-site
+    information that does not exist.
+
+## Architecture
+
+Classes live under mecfs_bio/build_system. Concrete releases, URLs and asset instances live
+under mecfs_bio/assets. Vocabularies that build_system code types against live in
+mecfs_bio/constants.
+
+### Vocabulary (mecfs_bio/constants/)
+
+- GnomadGroup = Literal["afr", "ami", "amr", "asj", "eas", "fin", "mid", "nfe", "nfe_est",
+  "nfe_nwe", "nfe_onf", "nfe_seu", "oth", "remaining", "sas"]
+- PanUkbbGroup = Literal["ukb_afr", "ukb_amr", "ukb_csa", "ukb_eas", "ukb_eur", "ukb_mid"].
+  The prefix keeps Pan-UKBB's genetically assigned groups distinct from gnomAD's groups and
+  from 1000 Genomes "eur".
+- PanelAncestry = GnomadGroup | PanUkbbGroup | Literal["eur"]. "eur" is the 1000 Genomes EUR
+  super-population and is deliberately not a synonym for gnomAD nfe or ukb_eur.
+
+### Panel column declaration (mecfs_bio/build_system/meta/)
+
+- PanelAlleleFrequencyColumns: frozen. Holds (ancestry, column) pairs as a tuple of tuples, so
+  it stays hashable on a frozen Task. __attrs_post_init__ asserts the ancestries are unique.
+  column_for(ancestry) returns the column, and the assertion message lists the available
+  ancestries.
+- HarmonizableReferenceTableMeta gains allele_frequency_columns: PanelAlleleFrequencyColumns |
+  None = None. The default keeps the other users (UKBB LD labels, RenameColsTask) unchanged.
+
+### gnomAD extraction (mecfs_bio/build_system/task/genome_reference_harmonization/gnomad/)
+
+**GnomadRelease** (gnomad_release.py): a frozen descriptor holding
+
+- name;
+- build;
+- vcf_url_template, with a chromosome placeholder;
+- contig naming (the contig name for a gwaslab code);
+- chromosomes, as gwaslab codes;
+- main_groups and extra_groups (GnomadGroup tuples);
+- header_assembly, the header's contig assembly string.
+
+__attrs_post_init__ asserts that the groups are disjoint and non-empty, that the chromosome
+list is non-empty and has no MT, and that the template contains the placeholder.
+
+**GnomadChromosomeAlleleFrequencyTask** (gnomad_chromosome_allele_frequency_task.py)
+
+- Fields: meta, release, chrom (gwaslab code), fasta_task, batch_rows (production
+  default), and the retry policy (max attempts and sleep; production defaults from
+  execute_command_with_retries).
+- Deps: fasta_task. create() asserts the FASTAMeta build equals release.build, and that chrom
+  is in release.chromosomes.
+
+execute():
+
+1. **Header check.** Run bcftools view -h on the URL. Assert every AF_g and AN_g for the
+   release's groups is declared, and that the header's contig assembly equals
+   release.header_assembly. This fails in seconds, before a long stream.
+2. **Stream, as one process**: bcftools query -i 'FILTER="PASS" && (AF_g1>0 || AF_g2>0 ...)'
+   -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/AF_g\t%INFO/AN_g...\n' URL -o scratch TSV. Run through
+   execute_command_with_retries; each attempt overwrites the TSV. It must be one process, not
+   a view | query pipe. execute_command runs through sh, where a pipeline's exit status is the
+   last command's, so a network failure upstream could yield a truncated TSV and exit 0. A
+   single process lets htslib's BGZF CRC and EOF checks fail the Task.
+3. **TSV to parquet, memory-bounded.** polars scan_csv (explicit schema, "." as null)
+   streamed with collect_batches(chunk_size=batch_rows) feeds a pyarrow ParquetWriter, one
+   row group per batch. Each batch passes through
+   the shared panel batch checks (below), with the release's contig naming as the only
+   allowed contig. Then, for every group, AF must be null exactly where AN == 0.
+   **REF vs FASTA**: any mismatch over a pure-ACGT span fails the Task (the batch check's
+   mismatch count must be zero).
+4. The output must have at least one row. Log row counts, FASTA-ambiguous drops and per-group
+   max AN with structlog.
+
+### Shared panel batch checks (mecfs_bio/build_system/task/genome_reference_harmonization/panel_batch_checks.py)
+
+Both the gnomAD and the Pan-UKBB extraction stream large sorted tables into parquet and need
+the same invariants, so one helper holds them. PanelBatchChecker is a small stateful object
+(it carries the previous row across batches) constructed with the IndexedFasta and the map
+from source contig name to gwaslab code. Its check(batch) returns the cleaned batch and
+per-batch counts as a frozen result object:
+
+- The contig column must hold only mapped names; it is replaced by an Int32 CHR gwaslab code.
+- REF and ALT must be non-null and ACGT-only.
+- (CHR, POS) must be non-decreasing, and there must be no duplicate (CHR, POS, REF, ALT).
+  Duplicates are adjacent in sorted input, so each row is compared with its predecessor, and
+  the last row is carried across batch boundaries.
+- **REF vs FASTA.** Records whose FASTA span contains N or another IUPAC code are dropped and
+  counted as fasta_ambiguous: their orientation is unverifiable, and the harmonizer's own
+  FASTA classification would reject them anyway. Records whose REF differs from a pure-ACGT
+  span are dropped and counted as ref_mismatch. The calling Task decides what count is
+  acceptable: gnomAD requires zero, Pan-UKBB requires exactly its expected count.
+
+At the end the caller asserts that every expected contig appeared.
+
+Writer settings: the AN columns are passed as byte_stream_split columns, AF columns keep the
+dictionary, and compression is zstd at the default level. These settings come from one helper
+in dataframe_output.py that returns the pyarrow writer keyword arguments. write_parquet_table
+and both streaming writers use that helper, so the dictionary-versus-split rule lives in one
+place. Its docstring is updated: the split applies to any fixed-width column (pyarrow 25
+supports Int32), not only floats.
+
+FASTA gather: add a sibling of reference_matches in fasta.py that reports, per record, whether
+the reference span is pure ACGT. It reuses the same memory-bounded, case-insensitive gather.
+The Task combines it with reference_matches.
+
+**GnomadAlleleFrequencyPanelTask** (gnomad_allele_frequency_panel_task.py)
+
+- Deps: one GnomadChromosomeAlleleFrequencyTask per release chromosome, injected into
+  create() rather than built there. Construction asserts the parts are exactly the release's
+  chromosomes, in release order, from that release. A task generator in
+  mecfs_bio/build_system/task_generator (generate_gnomad_allele_frequency_panel_tasks)
+  builds the parts and the panel together; the assets call it.
+- execute(): reads the parts in gwaslab code order (1-22, X=23, Y=24) with
+  ParquetFile.iter_batches. Asserts every part has the identical arrow schema. Writes one
+  FileAsset with the same writer settings. The output is sorted by (CHR, POS), so
+  ParquetPanelLoader's per-chromosome filter prunes row groups.
+- create() builds HarmonizableReferenceTableMeta with:
+  - harmonization_info: build = release.build, ref_allele_col REF, pos_col POS;
+  - allele_frequency_columns = {g: "AF_g"} for every group of the release.
+- **Do not wrap this Task in DiscardDepsWrapper.** That wrapper rebuilds the inner Task's
+  whole dependency graph inside a temporary store. The 14 h build would become all-or-nothing
+  again, and the FASTA would be rebuilt in the temporary store. The per-chromosome parts
+  therefore stay in the asset store, costing roughly one extra panel's worth of disk. They
+  cannot be deleted: the build system materializes every transitive dependency of a
+  target, so a deleted part would be re-streamed the next time anything downstream is
+  built. Instead, the parts' metas use their own sub_folder (for example
+  reference_data/gnomad/<release>/per_chromosome/), distinct from the panel's. That lets a
+  path_remap prefix in the machine-local default_runner_config.yaml move exactly the parts
+  to the external drive (24 large files, rarely read: the profile path_remap suits) while
+  the panel, which harmonization reads, stays local. Adding that rule is a later,
+  machine-local step, not part of this project.
+
+### Pan-UKBB extraction (mecfs_bio/build_system/task/genome_reference_harmonization/pan_ukbb/)
+
+**PanUkbbAlleleFrequencyPanelTask** (pan_ukbb_allele_frequency_panel_task.py)
+
+- Fields: meta, manifest_task (the downloaded manifest), fasta_task, groups (the
+  PanUkbbGroup values to extract, mapped to manifest population codes), chromosomes (gwaslab
+  codes expected), expected_ref_mismatches (int), batch_rows (production
+  default).
+- Deps: manifest_task and fasta_task. create() asserts the FASTAMeta build is GRCh37 (the
+  manifest is GRCh37-only, so this is a constant of the class, not a field) and builds
+  HarmonizableReferenceTableMeta with harmonization_info build GRCh37, ref_allele_col REF,
+  pos_col POS, and allele_frequency_columns {ukb_g: "AF_ukb_g"} for every group.
+
+execute():
+
+1. **Read through the repo's standard reader.** The manifest download's meta carries a
+   read_spec (tab separator, "NA" as null, chrom read as a string), and the Task scans it
+   with scan_dataframe_asset, so polars detects the compression; nothing assumes gzip.
+   Header check: the scanned schema must contain chrom, pos, ref, alt and af_{pop} for
+   every configured group.
+2. **Stream** the selected columns with collect_batches(chunk_size=batch_rows). BGZF is
+   multi-member gzip, and a reader that stopped after the first member would silently
+   truncate the panel. Measured 2026-10-04 on the full manifest with polars 1.44: all
+   28,987,534 rows, 29 batches of 1,000,000 rows, 26 s, about 3 GB peak RSS. A unit test
+   with a fixture spanning several BGZF blocks guards it. collect_batches is marked
+   unstable in polars, which that test also guards.
+3. Per batch: rename af_{pop} to AF_ukb_{pop} as Float32, assert no null AF, then run the
+   shared panel batch checks with contigs "1".."22", "X" mapped to gwaslab codes.
+4. At the end: assert the total ref_mismatch count equals expected_ref_mismatches, that no
+   row was FASTA-ambiguous (the measurement found none; a change is a surprise), that every
+   chromosome appeared, and that the output is non-empty. Log counts with structlog.
+
+The output is one parquet sorted by (CHR, POS), because the manifest is already in gwaslab
+order and the batch checks enforce it. Writer settings are the shared helper's, with no AN
+columns. Estimated size is well under 1 GiB; validation step 2 records it. The whole build
+reads 2.7 GB locally and should take minutes, so no per-chromosome split is needed.
+
+### Assets (mecfs_bio/assets/reference_data/gnomad/ and mecfs_bio/assets/reference_data/pan_ukbb/)
+
+- GNOMAD_V2_1_1_GENOMES and GNOMAD_V4_1_GENOMES: GnomadRelease instances with the values in
+  Measured facts.
+- GNOMAD_V2_1_1_GENOMES_HG19_ALLELE_FREQUENCIES (with UCSC_HG19_INDEXED_FASTA) and
+  GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES (with the hg38 indexed FASTA).
+- PAN_UKBB_VARIANT_MANIFEST: a DownloadFileTask with the manifest URL and its md5.
+- PAN_UKBB_HG19_ALLELE_FREQUENCIES: PanUkbbAlleleFrequencyPanelTask with all six groups,
+  chromosomes 1-22 and X, expected_ref_mismatches = 295, and UCSC_HG19_INDEXED_FASTA. Like
+  the gnomAD panel it is not wrapped in DiscardDepsWrapper, which would rebuild the FASTA in a
+  temporary store. The 2.7 GB download is a permanent dependency for the same reason as the
+  gnomAD parts, so its meta likewise gets its own sub_folder (raw/) apart from the panel
+  (processed/), making it a candidate for the same path_remap treatment.
+
+### Harmonizer changes
+
+- ReferencePanelAlleleFrequencyTask.create gains a required ancestry: PanelAncestry, and
+  declares {ancestry: "AF"}. The 1000 Genomes assets pass "eur". Their parquet files do not
+  change.
+- GenomeReferenceHarmonizationTask.create gains a required panel_ancestry: PanelAncestry. It
+  is required rather than defaulted, because a silent default is how the wrong ancestry slips
+  in. create() asserts the panel meta has allele_frequency_columns that include
+  panel_ancestry, then stores the resolved column as the field panel_af_col.
+- ParquetPanelLoader gains af_col. It selects pl.col(af_col).alias(PANEL_AF_COL) and drops
+  rows where it is null (AN == 0: nobody in that group was called, so the record is treated
+  as absent). Both construction sites (trust pass, per-chromosome pass) receive the column.
+- palindromes.py, ambiguous_indels.py, trust.py and GenomeReferenceHarmonizationOptions do not
+  change.
+- Call sites: the annovar_37_basic_rsid_assignment generator, the IBD liu_et_al_2023 asset and
+  the test_harmonize_drop_ambiguous system test pass panel_ancestry="eur". The unit-test
+  fixture's FakeTask panel meta declares {"eur": "AF"}.
+- ReferencePanelAlleleFrequencyTask gets a comment noting that its bcftools view | query pipe
+  has an unreliable exit status under sh, and that a single bcftools query -i would fix it.
+  The fix itself is out of scope.
+
+## Data flow
+
+gnomAD VCF URL (per chromosome)
+-> bcftools query -i PASS-and-polymorphic (one process, retried)
+-> scratch TSV
+-> pyarrow streaming reader, with invariants and REF/FASTA checks per batch
+-> chromosome parquet (per-chromosome Task, cached, so a failure costs one chromosome)
+-> GnomadAlleleFrequencyPanelTask concatenation
+-> panel parquet with CHR, POS, REF, ALT, AF_g..., AN_g...
+-> ParquetPanelLoader selects AF_<panel_ancestry> as AF and drops null AF
+-> unchanged resolution rules.
+
+Pan-UKBB manifest URL (md5-pinned DownloadFileTask)
+-> local bgzipped TSV
+-> polars scan via its read_spec, batched, shared batch checks, 295 REF mismatches dropped
+-> panel parquet with CHR, POS, REF, ALT, AF_ukb_g...
+-> ParquetPanelLoader selects AF_ukb_<group> (never null here)
+-> unchanged resolution rules.
+
+## Error handling
+
+Fail the Task on any of the following:
+
+- missing INFO field, or wrong header assembly;
+- bcftools non-zero exit after retries, which includes BGZF CRC/EOF failures on truncated
+  or corrupt streams;
+- unexpected contig;
+- null or non-ACGT allele;
+- decreasing POS or duplicate key;
+- AF/AN null inconsistency;
+- REF mismatch over pure-ACGT reference (gnomAD), or a Pan-UKBB mismatch count other than
+  expected_ref_mismatches;
+- Pan-UKBB: missing manifest column, null AF, any FASTA-ambiguous row, or a missing
+  chromosome;
+- md5 mismatch on the manifest download (DownloadFileTask);
+- empty output;
+- schema mismatch between parts;
+- FASTA/release build mismatch, or an undeclared panel ancestry (both fail at graph
+  construction).
+
+Records over N/IUPAC reference bases are dropped and logged, not fatal. If v4 turns out to
+contain non-ACGT alleles such as spanning-deletion "*", the assertion reports it and the
+handling is decided then.
+
+## Testing
+
+Tests are Task-level, use no mocks, and do not match on error text.
+
+Fixtures: a tiny bgzipped VCF written in tmp_path with the release's INFO fields, a test
+GnomadRelease whose URL template points to that local file (bcftools reads local paths and
+URLs the same way), and the synthetic FASTA from genome_reference_fixtures.
+
+GnomadChromosomeAlleleFrequencyTask:
+
+- **Happy path.**
+  - Kept: PASS records polymorphic in a main group.
+  - Dropped: non-PASS records, and records whose only nonzero AF is in an extra group.
+  - Preserved: AF null where AN = 0.
+  - Output: expected columns, dtypes and CHR code; parquet metadata shows BYTE_STREAM_SPLIT
+    on the AN columns and dictionary encoding on AF.
+- REF mismatch over ACGT fails.
+- REF over an N or IUPAC FASTA base is dropped, not fatal.
+- A header missing an expected field fails.
+- A duplicate key fails, including a pair split across a batch boundary (forced with a tiny
+  batch_rows = 1). A decreasing POS fails.
+- A truncated VCF fails (one retry attempt, no sleep).
+
+GnomadAlleleFrequencyPanelTask:
+
+- Parts are concatenated in gwaslab chromosome order (X after 22), and the encodings are
+  preserved.
+- Mismatched part schemas fail.
+
+PanUkbbAlleleFrequencyPanelTask (fixture: a synthetic manifest with the real header, bgzipped
+in tmp_path, large enough to span several BGZF blocks, and the synthetic FASTA):
+
+- **Happy path.** Every row arrives (guards multi-member gzip reading); columns AF_ukb_g are
+  Float32; CHR codes and (CHR, POS) order are right; the meta declares every group.
+- Rows whose ref is swapped relative to the FASTA are dropped when their count equals
+  expected_ref_mismatches, and the Task fails when it does not.
+- A row over an N FASTA base fails.
+- A missing af column fails, and out-of-order chromosomes fail.
+
+The shared batch checks are covered through these two Tasks' tests, not tested directly.
+
+GenomeReferenceHarmonizationTask:
+
+- Existing tests pass with panel_ancestry="eur" and unchanged expectations.
+- A panel with AF_nfe and AF_nfe_nwe set so that one palindrome resolves KEEP under one
+  ancestry and STRAND_FLIP under the other, proving the chosen column is read.
+- A null chosen AF makes an ambiguous indel NOT_IN_PANEL.
+- create() rejects an undeclared ancestry, and a panel without allele_frequency_columns.
+
+Not tested: GnomadRelease and PanelAlleleFrequencyColumns as data holders, whose invariants
+run at import when the asset constants are built; asset definitions, which are wiring only;
+a CI test against live gnomAD, which would need a test-only region field and network access,
+while the real build enforces every invariant genome-wide.
+
+pixi r invoke green must pass, including import-linter.
+
+## Validation on real data (experiments/claude/gnomad_af_reference/)
+
+1. **Byte identity.** Force-rebuild one existing 1000 Genomes harmonized asset (DecodeME or
+   IBD) after the refactor and confirm the parquet output is identical. The build cache does
+   not track code changes, so the rebuild must be forced.
+2. **Full builds.** gnomAD v2.1.1 (about 14 h) doubles as the genome-wide REF/FASTA and
+   invariant check; record its size and FASTA-ambiguous drop count. Pan-UKBB (minutes): record
+   its size and confirm the 295-mismatch assertion holds through the Task's own parsing.
+3. **DecodeME comparison.** Re-harmonize with four panel/ancestry choices: 1000 Genomes "eur",
+   gnomAD v2.1.1 "nfe" and "nfe_nwe", and Pan-UKBB "ukb_eur". For each, report:
+   - drop-reason counts, especially AF_MISMATCH for ambiguous indels and NOT_IN_PANEL
+     (panel coverage: Pan-UKBB lacks sites outside the imputation panels);
+   - palindromes and ambiguous indels resolved, and how often the four panels agree on each
+     resolution (a disagreement between gnomAD and Pan-UKBB is a variant worth inspecting);
+   - palindromes decided by a chosen-group AF of exactly 0.
+   The script lives in experiments/claude/gnomad_af_reference/ and tees its log.
+
+## Validation results (2026-10-05, partial)
+
+- **Byte identity: passed.** DecodeME's harmonized table (8,371,657 rows) was force-rebuilt
+  with the refactored code. Frames equal and bytes equal (byte_identity_1000g.log).
+- **Pan-UKBB build: passed.** 28,987,534 manifest rows in, 28,987,239 written; exactly 295
+  REF mismatches dropped and 0 FASTA-ambiguous rows; 23 chromosomes; 0.58 GiB in 29 row groups
+  (build_panel_pan_ukbb.log).
+- **Two-way DecodeME comparison (1000 Genomes "eur" vs Pan-UKBB "ukb_eur"),**
+  decode_me_panel_comparison_1000g_pan_ukbb.log. Both runs: untrusted table, so every
+  palindrome and ambiguous indel goes to the panel. Counts are per input row, before the
+  Task's final drop of rows whose oriented keys collide.
+
+  | outcome | 1000g_eur | pan_ukbb_eur |
+  |---|---|---|
+  | kept | 8,371,659 | 8,496,285 |
+  | palindrome_unresolved | 184,011 | 180,603 |
+  | ambiguous_indel_not_in_panel | 169,040 | 165,800 |
+  | ambiguous_indel_af_mismatch | 147,493 | 30,389 |
+  | ambiguous_indel_af_indecisive | 886 | 12 |
+  | indel_not_on_reference | 503 | 503 |
+  | not_on_reference | 2 | 2 |
+
+  Outcomes differ for 221,625 of 8,873,594 rows; nearly all are dropped under one panel and
+  kept under the other. 35 rows are kept under both panels in opposite orientations.
+  Palindromes decided by a chosen-ancestry AF of exactly 0: 180 (1000 Genomes), 1 (Pan-UKBB).
+  Reading: Pan-UKBB keeps 124,626 more variants, mostly ambiguous indels that the
+  1000 Genomes AF did not match (AF_MISMATCH falls by 79%). That fits a panel whose population
+  (UK, imputed) matches DecodeME's. Neither panel changes NOT_IN_PANEL much. The AF = 0
+  palindrome question is small in practice.
+- **The 35 opposite-orientation conflicts are undetected Pan-UKBB swaps**
+  (inspect_orientation_conflicts.log, probe_undetected_pan_ukbb_swaps.log). All 35 are
+  ambiguous indels on chr21 (11) or chr22 (24). Each is genotyped (info 1.0), with
+  high_quality false and no gnomAD-genomes frequency. In each, the Pan-UKBB panel lists
+  REF/ALT the other way round from 1000 Genomes, with AF close to 1 minus the 1000 Genomes AF.
+  This is the known UK Biobank allele-order swap. Both orientations of an ambiguous indel lie
+  on the FASTA, so the REF check (the 295) cannot see it. Genome-wide, the manifest's
+  genotyped rows with no gnomAD frequency on chr21, chr22 and X number 434: the 295 REF
+  mismatches already dropped, 130 indels that reach the panel, and 9 SNVs. All 130 indels
+  have af_EUR > 0.5 (median 0.97), so the listed alt is the major allele. On the other
+  chromosomes, the 24 such indels have median af_EUR 0.011 and look correctly labelled.
+  So about 130 swapped ambiguous indels are in the panel, and with Pan-UKBB 35 DecodeME
+  variants are kept with the wrong orientation (BETA sign flipped).
+  Proposed fix: the Pan-UKBB Task drops the whole signature (chrom in 21, 22, X; info == 1.0;
+  gnomad_genomes_af_EUR null). The count is pinned at 434, so the REF-mismatch count left
+  afterwards should be 0.
+- **gnomAD v2.1.1 build** (build_panel_gnomad_v2.log, 2026-10-05 17:40 to 2026-10-06 06:27, no
+  retries): 224,844,618 rows, 3.89 GiB, 237 row groups, all 23 chromosomes; REF/FASTA
+  mismatches 0 and FASTA-ambiguous drops 0 on every chromosome.
+- **Four-way DecodeME comparison** (decode_me_panel_comparison.log):
+
+  | outcome | 1000g_eur | gnomad_nfe | gnomad_nfe_nwe | pan_ukbb_eur |
+  |---|---|---|---|---|
+  | kept | 8,371,659 | 8,568,241 | 8,631,618 | 8,496,285 |
+  | palindrome_unresolved | 184,011 | 164,760 | 159,908 | 180,603 |
+  | ambiguous_indel_not_in_panel | 169,040 | 24,331 | 24,700 | 165,800 |
+  | ambiguous_indel_af_mismatch | 147,493 | 76,829 | 28,453 | 30,389 |
+  | ambiguous_indel_af_indecisive | 886 | 38,928 | 28,410 | 12 |
+  | palindromes decided by AF exactly 0 | 180 | 464 | 692 | 1 |
+
+  gnomAD cuts NOT_IN_PANEL by about 85%, and nfe_nwe keeps the most variants. The two
+  gnomAD groups never keep a variant in opposite orientations.
+- **The 68 variants kept in opposite orientations by some pair of choices**
+  (inspect_four_way_conflicts.log). 47 carry the Pan-UKBB swap signature, and in every one
+  gnomAD sides against Pan-UKBB (with 1000 Genomes when it keeps the variant). That
+  independently confirms the undetected-swap diagnosis. The other 21 are all ambiguous indels
+  at multiallelic gnomAD sites, mostly homopolymer runs. gnomAD splits these into biallelic
+  records, so an insertion (C>CA) and a deletion (CA>C) can both appear at one position with
+  separate frequencies. The two readings of an ambiguous indel then refer to different
+  variants rather than two orientations of one. In 15 of the 21, gnomAD is the odd one out
+  against 1000 Genomes and/or Pan-UKBB. In 6, Pan-UKBB is. Which panel is right at these
+  sites is not settled by frequency matching.
+- **Open questions raised:** (1) the Pan-UKBB swap-signature fix; (2) whether ambiguous
+  indels at positions where the panel has several records (multiallelic) should be resolved
+  by frequency at all, or dropped; (3) the AF-exactly-0 palindromes, which are more common
+  with gnomAD (464 to 692) because a group can have AF 0 at a site polymorphic elsewhere.
+
+## Validation results (2026-10-06): the open questions
+
+All three open questions are settled. Scripts are in experiments/claude/gnomad_af_reference/;
+their logs are not committed.
+
+- **(1) Pan-UKBB swap profile: evidence, then fix (commit d7ea48eb).**
+  evaluate_pan_ukbb_swap_profile.py takes every genotyped (info 1.0) manifest row on every
+  chromosome. It compares the row's REF/ALT with gnomAD v2.1.1 and with 1000 Genomes EUR at
+  the same position. The profile group is rows with no gnomad_genomes_af_EUR; the control
+  group is genotyped rows that have one.
+
+  | group | chromosomes | gnomAD disagree / comparable | 1000 Genomes disagree / comparable |
+  |---|---|---|---|
+  | profile, indel | 21, 22, X | 140 / 140 | 144 / 145 |
+  | profile, SNV | 21, 22, X | 253 / 253 | 280 / 289 |
+  | profile, indel | all others | 1 / 1 | 0 / 24 |
+  | profile, SNV | all others | 0 / 0 | 0 / about 415 |
+  | control (about 750,000 SNVs, 3,000 indels) | all | 0 | 1 (one chr22 indel) |
+
+  - Nearly every disagreeing row has af_EUR close to 1 minus the panel AF, so the labels are
+    swapped.
+  - The missing gnomAD frequency is a consequence of the swap. Pan-UKBB's own gnomAD match
+    failed on the swapped alleles: on 21, 22 and X gnomAD has every profile row, reversed.
+    On other chromosomes, profile rows are simply absent from gnomAD.
+  - On 21, 22 and X almost all genotyped indels are swapped. Only 5, 8 and 8 are unswapped,
+    against 100 to 280 per chromosome elsewhere.
+  - No mechanism is known. The rule rests on the jump from about 100% to 0% at the chromosome
+    boundary. The same profile elsewhere marks correctly oriented rows, so a rule applied to
+    every chromosome would wrongly drop about 445 rows.
+
+  The fix: drop_swap_profile_rows in the Pan-UKBB Task drops the profile on 21, 22 and X
+  before the FASTA check. Rebuilt panel:
+  - 434 rows dropped (28,987,534 in, 28,987,100 written).
+  - REF mismatches 0, so all 295 former mismatches are inside the profile, and the pin
+    expected_ref_mismatches is now 0.
+  - The other 139 dropped rows (about 130 ambiguous indels and 9 SNVs) were swaps the FASTA
+    check could not see.
+  - The dropped count itself is not pinned.
+
+  Four-way rerun: variants kept in opposite orientations fell to 1 for 1000g vs Pan-UKBB
+  (was 35), 10 for gnomad_nfe vs Pan-UKBB (was 55) and 11 for gnomad_nfe_nwe vs Pan-UKBB
+  (was 58). That is the background level of 1000g vs gnomAD (14 to 15). Under pan_ukbb_eur,
+  49 variants moved from kept to ambiguous_indel_not_in_panel. Other choices are unchanged.
+
+- **(2) Ambiguous indels at multiallelic sites: no change.**
+  inspect_multiallelic_ambiguous_indels.py.
+  - What these sites look like: at chr1:763769, a run of 10 T's, gnomAD has A>AT (AF_nfe
+    0.72), A>ATT (0.002), AT>A (0.151) and ATT>A (0.0). These are four lengths of the same
+    repeat. DecodeME's A/AT row (EAF 0.129) clearly matches the T9 deletion. It is dropped
+    as indecisive only because its distance, 0.022, is just over the 0.02 tolerance.
+  - Of 767,295 DecodeME ambiguous indels, 274,541 (36%) sit at positions with more than one
+    gnomAD record.
+  - 126,836 have both readings as usable nfe records. The rule keeps 87,834 of them, swaps
+    74 and drops 38,928 as indecisive. These account for the whole af_indecisive count in
+    the four-way table.
+  - At multiallelic sites, about 102,000 variants are kept or swapped by both gnomad_nfe and
+    1000 Genomes. Only 15 get opposite orientations.
+  - So the extra records cost variants dropped as indecisive, not wrong orientations, and no
+    rule change was made. Strictly, the flip reading's 1 - AF is the other allele's
+    frequency only at a biallelic site. The tolerance and the margin cover this in practice.
+
+- **(3) Palindromes: a distance check (commit eb8c7a31).** palindrome_eaf_distribution.py.
+  - The palindrome rule is gwaslab's side-of-0.5 rule, with both MAF thresholds at 0.4. Unlike
+    the indel rule, it had no distance check, and AF exactly 0 was not a special case; it is
+    the extreme of a general looseness.
+  - Across panel choices, strand disagreement rises steeply with the distance |EAF - panel
+    AF| after the decision: about 0.02% within 0.02, 2% at 0.05 to 0.1, 10% at 0.1 to 0.2,
+    and 14 to 35% beyond 0.2. Full tables are in
+    experiments/claude/gnomad_af_reference/palindrome_distance_vs_panel_disagreement.md.
+  - DecodeME has no AF-0 or AF-1 palindrome with MAF below 0.01, so these are never "rare in
+    both". Many are common in DecodeME.
+  - Strand flips cluster at large distances: for gnomad_nfe, 381 of 801 flips are among the
+    2,832 palindromes beyond 0.1. Genuine flips should be rare in DecodeME's REF-oriented
+    input.
+  - Fix: a new option, palindrome_max_af_distance (default 0.1), leaves a palindrome
+    unresolved unless its EAF after the decision is within the distance of the panel AF.
+    Unresolved palindromes still follow keep_unresolved_palindromes; when kept, they stay in
+    the source strand.
+  - Cost on DecodeME: 1,679 (1000 Genomes), 2,832 (gnomad_nfe), 2,777 (gnomad_nfe_nwe) and
+    895 (Pan-UKBB) of about 1.07 million resolved palindromes.
+  - This changes existing 1000 Genomes harmonizations once they are rebuilt, so the earlier
+    byte-identity result no longer holds by construction. The four-way tables above predate
+    this check.
+
+- **Choosing a panel.** On DecodeME, gnomad_nfe_nwe keeps the most variants, has the fewest
+  AF mismatches among gnomAD choices (28,453 against 76,829 for nfe), and its palindromes sit
+  closest to their panel AF (99% within 0.02, against 92% for nfe). That fits a UK cohort.
+  nfe is broader and has a larger sample, so it may suit southern-European-heavy cohorts
+  better.
+  annovar_37_basic_rsid_assignment still uses 1000 Genomes EUR. Its chain runs in the CI
+  system tests, and building the gnomAD panel there (about 451 GiB streamed, 14 h) is not
+  feasible.
+
+## Deferred
+
+- **Palindromes decided by AF = 0.** Resolved (2026-10-06) by palindrome_max_af_distance;
+  see the validation results.
+- **Sample-size-aware rules using AN.**
+- **The pipe fix in ReferencePanelAlleleFrequencyTask** (a comment only, in this project).
+- **Building the hg38 panel** (about 14 h, about 10 GiB).
+- **path_remap rules** moving the gnomAD per-chromosome parts and the Pan-UKBB download
+  to the external drive (machine-local config, after the builds).
+- **Choosing a default panel** for new harmonizations. gnomad_nfe_nwe performed best on
+  DecodeME. Switching annovar_37_basic_rsid_assignment to it first needs the preprocessed
+  gnomAD v2.1.1 panel hosted separately, plus a Task that downloads it, so CI does not
+  rebuild it from the 451 GiB source.
+- **Pan-UKBB on hg38.** No GRCh38 manifest is known; liftover is out of scope.
+- **Recovering the 434 swap-profile Pan-UKBB rows** by swapping alleles back and using
+  1 - af. The evidence supports it; it is deferred only because the rows are too few to
+  matter.

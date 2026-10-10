@@ -8,6 +8,9 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
+from mecfs_bio.build_system.meta.reference_meta.panel_allele_frequency_columns import (
+    PanelAlleleFrequencyColumns,
+)
 
 
 @frozen(slots=True)
@@ -20,6 +23,8 @@ class HarmonizableReferenceTableMeta(FileMeta):
     filename: str | None = None
     read_spec: ReadSpec | None = None
     harmonization_info: HarmonizationInfo | None = None
+    # Set by allele-frequency panels: which column holds which ancestry's frequency.
+    allele_frequency_columns: PanelAlleleFrequencyColumns | None = None
 
     def __attrs_post_init__(self):
         assert self.extension.startswith(".") or self.extension == ""

@@ -34,11 +34,11 @@ from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
 from mecfs_bio.assets.reference_data.thousand_genomes.eur_panel_allele_frequencies import (
     THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
 )
-from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     IndexedFasta,
 )
 from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference_harmonization_task import (
+    PanelTable,
     chromosomes_to_harmonize,
     count_trust_evidence_genome_wide,
     scan_sumstats_as_polars,
@@ -46,7 +46,12 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference
 from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
     GenomeReferenceHarmonizationOptions,
 )
-from mecfs_bio.build_system.task.genome_reference_harmonization.trust import decide_trust
+from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
+    PANEL_AF_COL,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.trust import (
+    decide_trust,
+)
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_CHROM_COL
 
@@ -67,11 +72,17 @@ _PICKLES = {
 }
 
 
-def _report(label: str, sumstats: pl.LazyFrame, fasta: IndexedFasta, panel_path: Path) -> None:
+def _report(
+    label: str, sumstats: pl.LazyFrame, fasta: IndexedFasta, panel_path: Path
+) -> None:
     sumstats = sumstats.filter(pl.col(GWASLAB_CHROM_COL).is_in(list(fasta.entries)))
     chromosomes = chromosomes_to_harmonize(sumstats, fasta, CALIB_OPTIONS)
     evidence = count_trust_evidence_genome_wide(
-        sumstats, chromosomes, fasta, panel_path, CALIB_OPTIONS
+        sumstats,
+        chromosomes,
+        fasta,
+        PanelTable(path=panel_path, af_col=PANEL_AF_COL),
+        CALIB_OPTIONS,
     )
     trusted = decide_trust(evidence, CALIB_OPTIONS)
     suspicious = evidence.suspicious

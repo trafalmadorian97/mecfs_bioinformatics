@@ -74,6 +74,7 @@ _harmonized_task = GenomeReferenceHarmonizationTask.create(
     sumstats_task=_pre_harmonization_table,
     fasta_task=UCSC_HG19_INDEXED_FASTA,
     panel_task=THOUSAND_GENOMES_EUR_HG19_PANEL_ALLELE_FREQUENCIES,
+    panel_ancestry="eur",
 )
 
 

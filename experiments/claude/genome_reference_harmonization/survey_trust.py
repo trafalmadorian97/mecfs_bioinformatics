@@ -28,8 +28,11 @@ from mecfs_bio.assets.reference_data.thousand_genomes.eur_panel_allele_frequenci
 )
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
-from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import IndexedFasta
+from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
+    IndexedFasta,
+)
 from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference_harmonization_task import (
+    PanelTable,
     chromosomes_to_harmonize,
     count_trust_evidence_genome_wide,
     scan_sumstats_as_polars,
@@ -37,7 +40,12 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference
 from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
     GenomeReferenceHarmonizationOptions,
 )
-from mecfs_bio.build_system.task.genome_reference_harmonization.trust import decide_trust
+from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
+    PANEL_AF_COL,
+)
+from mecfs_bio.build_system.task.genome_reference_harmonization.trust import (
+    decide_trust,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
 )
@@ -61,7 +69,9 @@ def _groups() -> list[RSIDAssignmentTaskGroup]:
         for value in vars(module).values():
             if isinstance(value, RSIDAssignmentTaskGroup):
                 found[value.harmonize_task.asset_id] = value
-    print(f"found {len(found)} rsID-assignment groups; {unimportable} modules un-importable")
+    print(
+        f"found {len(found)} rsID-assignment groups; {unimportable} modules un-importable"
+    )
     return list(found.values())
 
 
@@ -86,7 +96,11 @@ def main() -> None:
         sumstats = scan_sumstats_as_polars(table_asset, table_task.meta, IdentityPipe())
         chromosomes = chromosomes_to_harmonize(sumstats, fasta, OPTIONS)
         evidence = count_trust_evidence_genome_wide(
-            sumstats, chromosomes, fasta, panel_asset.path, OPTIONS
+            sumstats,
+            chromosomes,
+            fasta,
+            PanelTable(path=panel_asset.path, af_col=PANEL_AF_COL),
+            OPTIONS,
         )
         trusted = decide_trust(evidence, OPTIONS)
         print(

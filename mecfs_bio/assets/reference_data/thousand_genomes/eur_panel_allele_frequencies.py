@@ -22,6 +22,7 @@ THOUSAND_GENOMES_EUR_HG19_PANEL_ALLELE_FREQUENCIES = DiscardDepsWrapper(
         vcf_task=THOUSAND_GENOMES_EUR_HG19_VCF,
         asset_id="thousand_genomes_eur_hg19_panel_allele_frequencies",
         build="19",
+        ancestry="eur",
     )
 )
 
@@ -30,5 +31,6 @@ THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES = DiscardDepsWrapper(
         vcf_task=THOUSAND_GENOMES_EUR_HG38_30X_VCF,
         asset_id="thousand_genomes_eur_hg38_panel_allele_frequencies",
         build="38",
+        ancestry="eur",
     )
 )

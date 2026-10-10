@@ -1,6 +1,6 @@
 """Synthetic genome, reference panel and Task runner for genome-reference harmonization tests."""
 
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path, PurePath
 
 import polars as pl
@@ -21,6 +21,9 @@ from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
 from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
     HarmonizableReferenceTableMeta,
 )
+from mecfs_bio.build_system.meta.reference_meta.panel_allele_frequency_columns import (
+    PanelAlleleFrequencyColumns,
+)
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.genome_reference_harmonization.fasta import (
     FASTA_FILENAME,
@@ -39,6 +42,10 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.allele_frequency_panel_constants import (
+    PanelAncestry,
+    panel_af_col,
+)
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -121,11 +128,17 @@ def sumstats_frame(variants: Sequence[Variant]) -> pl.DataFrame:
     )
 
 
-def _write_fasta(directory: Path) -> None:
+SYNTHETIC_SEQUENCES: Mapping[str, str] = {"chr1": CHR1_SEQUENCE, "chr2": CHR2_SEQUENCE}
+
+
+def write_fasta(
+    directory: Path, sequences: Mapping[str, str] = SYNTHETIC_SEQUENCES
+) -> None:
+    """Write an uncompressed, faidx-indexed FASTA with LINE_WIDTH-base lines."""
     directory.mkdir()
     fasta_path = directory / FASTA_FILENAME
     lines: list[str] = []
-    for name, sequence in {"chr1": CHR1_SEQUENCE, "chr2": CHR2_SEQUENCE}.items():
+    for name, sequence in sequences.items():
         lines.append(f">{name}")
         lines.extend(
             sequence[start : start + LINE_WIDTH]
@@ -154,23 +167,52 @@ def _write_panel(path: Path, records: Sequence[PanelRecord]) -> None:
     ).sort(GWASLAB_CHROM_COL, GWASLAB_POS_COL).write_parquet(path)
 
 
-def run_harmonization(
-    work_dir: Path,
-    sumstats: pl.DataFrame,
-    panel: Sequence[PanelRecord] = (),
+EUR_PANEL_COLUMNS = PanelAlleleFrequencyColumns.single("eur", PANEL_AF_COL)
+ANCESTRY_PANEL_COLUMNS = PanelAlleleFrequencyColumns.prefixed(("nfe", "nfe_nwe"))
+
+
+@frozen(slots=True)
+class AncestryPanelRecord:
+    """A panel record with gnomAD-style AF_nfe and AF_nfe_nwe columns (None = AN 0)."""
+
+    pos: int
+    ref: str
+    alt: str
+    nfe: float | None
+    nfe_nwe: float | None
+    chrom: int = 1
+
+
+def _write_ancestry_panel(path: Path, records: Sequence[AncestryPanelRecord]) -> None:
+    pl.DataFrame(
+        {
+            GWASLAB_CHROM_COL: [r.chrom for r in records],
+            GWASLAB_POS_COL: [r.pos for r in records],
+            PANEL_REF_COL: [r.ref for r in records],
+            PANEL_ALT_COL: [r.alt for r in records],
+            panel_af_col("nfe"): [r.nfe for r in records],
+            panel_af_col("nfe_nwe"): [r.nfe_nwe for r in records],
+        },
+        schema={
+            GWASLAB_CHROM_COL: pl.Int32,
+            GWASLAB_POS_COL: pl.Int32,
+            PANEL_REF_COL: pl.String,
+            PANEL_ALT_COL: pl.String,
+            panel_af_col("nfe"): pl.Float32,
+            panel_af_col("nfe_nwe"): pl.Float32,
+        },
+    ).sort(GWASLAB_CHROM_COL, GWASLAB_POS_COL).write_parquet(path)
+
+
+def harmonization_task(
+    panel_columns: PanelAlleleFrequencyColumns | None,
+    panel_ancestry: PanelAncestry,
     options: GenomeReferenceHarmonizationOptions = TEST_OPTIONS,
     pipe: DataProcessingPipe = IdentityPipe(),
-) -> pl.DataFrame:
-    """Execute the Task on synthetic inputs in a fresh work_dir and return the output table."""
-    work_dir.mkdir(parents=True)
-    sumstats_path = work_dir / "sumstats.parquet"
-    sumstats.write_parquet(sumstats_path)
-    fasta_dir = work_dir / "fasta"
-    _write_fasta(fasta_dir)
-    panel_path = work_dir / "panel.parquet"
-    _write_panel(panel_path, panel)
+) -> GenomeReferenceHarmonizationTask:
+    """The Task under test, wired to FakeTask inputs whose ids run_harmonization serves."""
     parquet_spec = DataFrameReadSpec(DataFrameParquetFormat())
-    task = GenomeReferenceHarmonizationTask.create(
+    return GenomeReferenceHarmonizationTask.create(
         asset_id="harmonized",
         sumstats_task=FakeTask(
             FilteredGWASDataMeta(
@@ -201,8 +243,44 @@ def run_harmonization(
                 harmonization_info=HarmonizationInfo(
                     build="19", ref_allele_col=PANEL_REF_COL, pos_col=GWASLAB_POS_COL
                 ),
+                allele_frequency_columns=panel_columns,
             )
         ),
+        panel_ancestry=panel_ancestry,
+        options=options,
+        pipe=pipe,
+    )
+
+
+def run_harmonization(
+    work_dir: Path,
+    sumstats: pl.DataFrame,
+    panel: Sequence[PanelRecord] = (),
+    options: GenomeReferenceHarmonizationOptions = TEST_OPTIONS,
+    pipe: DataProcessingPipe = IdentityPipe(),
+    ancestry_panel: Sequence[AncestryPanelRecord] | None = None,
+    panel_ancestry: PanelAncestry = "eur",
+) -> pl.DataFrame:
+    """Execute the Task on synthetic inputs in a fresh work_dir and return the output table.
+
+    By default the panel is the single-ancestry "eur" panel built from panel. Pass
+    ancestry_panel to use a panel with AF_nfe and AF_nfe_nwe columns instead.
+    """
+    work_dir.mkdir(parents=True)
+    sumstats_path = work_dir / "sumstats.parquet"
+    sumstats.write_parquet(sumstats_path)
+    fasta_dir = work_dir / "fasta"
+    write_fasta(fasta_dir)
+    panel_path = work_dir / "panel.parquet"
+    if ancestry_panel is None:
+        _write_panel(panel_path, panel)
+        panel_columns = EUR_PANEL_COLUMNS
+    else:
+        _write_ancestry_panel(panel_path, ancestry_panel)
+        panel_columns = ANCESTRY_PANEL_COLUMNS
+    task = harmonization_task(
+        panel_columns=panel_columns,
+        panel_ancestry=panel_ancestry,
         options=options,
         pipe=pipe,
     )

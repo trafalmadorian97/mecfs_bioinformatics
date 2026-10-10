@@ -19,6 +19,9 @@ Memory is bounded by one chromosome. Pass 1 reads the key columns and, when pres
 per chromosome to decide trust, consulting the panel at ambiguous-indel positions for the
 suspicious-indel gate. Pass 2 resolves one chromosome at a time into parquet parts, which
 are then concatenated with a streaming sink.
+
+The panel's allele-frequency column is chosen per harmonization through panel_ancestry, from
+the ancestries the panel's meta declares.
 """
 
 from collections.abc import Sequence
@@ -85,6 +88,7 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.trust import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.allele_frequency_panel_constants import PanelAncestry
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
@@ -152,10 +156,23 @@ def chromosomes_to_harmonize(
 
 
 @frozen(slots=True)
+class PanelTable:
+    """A reference panel parquet and the allele-frequency column this harmonization reads."""
+
+    path: Path
+    af_col: str
+
+
+@frozen(slots=True)
 class ParquetPanelLoader:
-    """Reads one chromosome's panel rows at requested positions from the panel parquet."""
+    """Reads one chromosome's panel rows at requested positions from the panel parquet.
+
+    The chosen af_col is returned as PANEL_AF_COL. Rows where it is null (nobody in that
+    ancestry was called at the site) are dropped, so the record counts as absent.
+    """
 
     panel_path: Path
+    af_col: str
     chrom: int
 
     def __call__(self, positions: pl.Series) -> pl.DataFrame:
@@ -168,8 +185,9 @@ class ParquetPanelLoader:
                 pl.col(GWASLAB_POS_COL).cast(pl.Int64),
                 PANEL_REF_COL,
                 PANEL_ALT_COL,
-                PANEL_AF_COL,
+                pl.col(self.af_col).alias(PANEL_AF_COL),
             )
+            .filter(pl.col(PANEL_AF_COL).is_not_null())
             .collect()
         )
 
@@ -185,7 +203,7 @@ def count_trust_evidence_genome_wide(
     sumstats: pl.LazyFrame,
     chromosomes: Sequence[int],
     fasta: IndexedFasta,
-    panel_path: Path,
+    panel: PanelTable,
     options: GenomeReferenceHarmonizationOptions,
 ) -> TrustEvidence:
     names = sumstats.collect_schema().names()
@@ -209,11 +227,11 @@ def count_trust_evidence_genome_wide(
         )
         counts = counts + count_trust_evidence(classified)
         if eaf_present:
-            panel = ParquetPanelLoader(panel_path=panel_path, chrom=chrom)(
-                _ambiguous_positions(classified)
-            )
+            panel_rows = ParquetPanelLoader(
+                panel_path=panel.path, af_col=panel.af_col, chrom=chrom
+            )(_ambiguous_positions(classified))
             suspicious = suspicious + count_suspicious_indels(
-                classified, panel, options
+                classified, panel_rows, options
             )
     return TrustEvidence(counts=counts, suspicious=suspicious, eaf_present=eaf_present)
 
@@ -226,7 +244,7 @@ def _variant_key_is_duplicated() -> pl.Expr:
 
 
 def resolve_chromosome_rows(
-    sumstats: pl.LazyFrame, context: ChromosomeContext, panel_path: Path
+    sumstats: pl.LazyFrame, context: ChromosomeContext, panel: PanelTable
 ) -> pl.DataFrame:
     """All rows of one chromosome, resolved, with DROP_REASON_COL (used by experiments too)."""
     rows = sumstats.filter(pl.col(GWASLAB_CHROM_COL) == context.chrom).collect(
@@ -243,17 +261,19 @@ def resolve_chromosome_rows(
     return resolve_chromosome(
         rows,
         context,
-        load_panel=ParquetPanelLoader(panel_path=panel_path, chrom=context.chrom),
+        load_panel=ParquetPanelLoader(
+            panel_path=panel.path, af_col=panel.af_col, chrom=context.chrom
+        ),
     )
 
 
 def _write_chromosome_part(
     sumstats: pl.LazyFrame,
     context: ChromosomeContext,
-    panel_path: Path,
+    panel: PanelTable,
     parts_dir: Path,
 ) -> Path:
-    resolved = resolve_chromosome_rows(sumstats, context, panel_path)
+    resolved = resolve_chromosome_rows(sumstats, context, panel)
     rows_by_reason = {
         (_KEPT_LABEL if reason is None else reason): count
         for reason, count in resolved.group_by(DROP_REASON_COL).len().rows()
@@ -326,12 +346,25 @@ def resolve_harmonized_build(fasta_task: Task, panel_task: Task) -> GenomeBuild:
     return fasta_meta.build
 
 
+def resolve_panel_af_col(panel_task: Task, panel_ancestry: PanelAncestry) -> str:
+    """The panel column holding panel_ancestry's allele frequency, from the panel's meta."""
+    panel_meta = panel_task.meta
+    assert (
+        isinstance(panel_meta, HarmonizableReferenceTableMeta)
+        and panel_meta.allele_frequency_columns is not None
+    ), (
+        "panel_task must carry HarmonizableReferenceTableMeta with allele_frequency_columns"
+    )
+    return panel_meta.allele_frequency_columns.column_for(panel_ancestry)
+
+
 @frozen(slots=True)
 class GenomeReferenceHarmonizationTask(Task):
     meta: FilteredGWASDataMeta
     sumstats_task: Task
     fasta_task: Task
     panel_task: Task
+    panel_af_col: str
     options: GenomeReferenceHarmonizationOptions
     pipe: DataProcessingPipe = IdentityPipe()
 
@@ -344,14 +377,16 @@ class GenomeReferenceHarmonizationTask(Task):
             fetch(self.sumstats_task.asset_id), self.sumstats_task.meta, self.pipe
         )
         fasta = load_fasta(fetch, self.fasta_task)
-        panel_path = load_panel_path(fetch, self.panel_task)
+        panel = PanelTable(
+            path=load_panel_path(fetch, self.panel_task), af_col=self.panel_af_col
+        )
         rules = resolve_column_rules(
             columns=sumstats.collect_schema().names(),
             extra=self.options.extra_column_rules,
         )
         chromosomes = chromosomes_to_harmonize(sumstats, fasta, self.options)
         evidence = count_trust_evidence_genome_wide(
-            sumstats, chromosomes, fasta, panel_path, self.options
+            sumstats, chromosomes, fasta, panel, self.options
         )
         trusted = decide_trust(evidence, self.options)
         logger.info(
@@ -373,7 +408,7 @@ class GenomeReferenceHarmonizationTask(Task):
                     rules=rules,
                     options=self.options,
                 ),
-                panel_path=panel_path,
+                panel=panel,
                 parts_dir=parts_dir,
             )
             for chrom in chromosomes
@@ -392,9 +427,15 @@ class GenomeReferenceHarmonizationTask(Task):
         sumstats_task: Task,
         fasta_task: Task,
         panel_task: Task,
+        panel_ancestry: PanelAncestry,
         options: GenomeReferenceHarmonizationOptions = GenomeReferenceHarmonizationOptions(),
         pipe: DataProcessingPipe = IdentityPipe(),
     ) -> "GenomeReferenceHarmonizationTask":
+        """Build the Task; trait, project and genome build come from the inputs' metas.
+
+        panel_ancestry is required, never defaulted: a silent default is how the wrong
+        ancestry slips in.
+        """
         source_meta = sumstats_task.meta
         assert isinstance(source_meta, FilteredGWASDataMeta), (
             f"expected a FilteredGWASDataMeta source for {asset_id}, got {type(source_meta).__name__}"
@@ -416,6 +457,7 @@ class GenomeReferenceHarmonizationTask(Task):
             sumstats_task=sumstats_task,
             fasta_task=fasta_task,
             panel_task=panel_task,
+            panel_af_col=resolve_panel_af_col(panel_task, panel_ancestry),
             options=options,
             pipe=pipe,
         )

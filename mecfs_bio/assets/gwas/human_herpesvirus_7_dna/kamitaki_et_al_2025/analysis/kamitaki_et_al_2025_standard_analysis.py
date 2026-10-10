@@ -14,6 +14,7 @@ from mecfs_bio.build_system.task.pipes.filter_rows_by_info_score import (
 KAMITAKI_ET_AL_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
     base_name="kamitaki_et_al_2025_hhv7",
     raw_gwas_data_task=KAMITAKI_ET_AL_HHV7_DNA_RAW,
+    gnomad_ancestry_for_harmonization="nfe_nwe",  # UK Biobank only (the blood HHV-7 file)
     fmt=GWASLabColumnSpecifiers(
         snpid="SNP",
         chrom="CHR",
