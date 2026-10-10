@@ -249,11 +249,11 @@ $(\ref{ct_ldsc_eqn})$ is the key regression equation in CT-LDSC.
 
 ## Derivation for Binary Traits
 
-The above derivation assumed that both traits of interest were quantitative, but most disease GWAS are binary.  The present section extends the CT-LDSC derivation to the case of binary traits.
+Above, we assumed quantitative traits, but most disease traits are binary.  Here, we modify the CT-LDSC derivation to cover the case of binary traits and ascertained case-control GWAS.
 
 ### Liability-Scale Data Generating Model
 
-We extend the model [above](Cross_Trait_LDSC.md#data-generating-model) to the binary-trait context using a [liability threshold strategy](Liability_Threshold_Model.md).  
+We model binary traits via a [liability threshold ](Liability_Threshold_Model.md).  
 
 
 
@@ -275,20 +275,20 @@ where
 - There are $N_1 \gg 0$ individuals in the trait 1 GWAS and $N_2 \gg 0$ individuals in the trait 2 GWAS.
 - There are $N_s$ individuals included in both GWAS.  Without loss of generality, assume these $N_s$ individuals are listed first in the lists of participants in both studies.
 - $y_1\in \{0,1\}^{N_1}$ and $y_2 \in \{0,1\}^{N_2}$ are the binary phenotype vectors for the trait 1 and trait 2 GWAS, respectively.
-- $G_1\in\{0,1\}^{N_1\times M}$ and $G_2\in\mathbb{R}^{N_2\times M}$ are the raw genotype matrices from the two GWAS.  Note that like the original paper, we work with haploid genotypes for simplicity.  The authors argue that their results can easily be extended to diploid genotypes.
+- $G_1\in\{0,1\}^{N_1\times M}$ and $G_2\in\{0,1\}^{N_2\times M}$ are the raw genotype matrices of the two GWAS.  Like the original paper, we work with haploid genomes for simplicity.  The authors argue that results can easily be extended to diploid genomes.
 - $p_j\in\mathbb{R}$ is the population-level probability that an arbitrary individual has variant $j$.
-- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the population-standardized genotype matrices from the two GWAS.   Thus $Y_{i,j}=\frac{G_{1,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$ and $Z_{i,j}=\frac{G_{2,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$. Note that because we allow for the possibility of case-control ascertainment, the columns of $Y$ and $Z$ may not actually have mean 0 and variance 1.
+- $Y\in\mathbb{R}^{N_1\times M}$ and $Z\in\mathbb{R}^{N_2\times M}$ are the population-standardized genotype matrices from the two GWAS.   Thus $Y_{i,j}=\frac{G_{1,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$ and $Z_{i,j}=\frac{G_{2,i,j}-p_j}{\sqrt{p_j(1-p_j)}}$. Note that because of case-control ascertainment, the columns of $Y$ and $Z$ may have sample means far from 0 and variances far from 1.
 - $Y_j\in\mathbb{R}^{N_1}$ and $Z_j \in \mathbb{R}^{N_2}$ denote the $j$th columns of the two matrices.
 - $\beta_1,\beta_2\in\mathbb{R}^M$ are the vectors of true per-variant genetic effect sizes for the two traits.
 - $\epsilon\in\mathbb{R}^{N_1}$ and $\delta\in\mathbb{R}^{N_2}$ are the vectors of non-genetic effects in the two GWAS.
 - $\tau_1,\tau_2\in\mathbb{R}$ are the liability thresholds for traits 1 and 2 respectively.
-- $\psi_1\in\mathbb{R}^{N_1}$ and $\psi_2\in\mathbb{R}^{N_2}$ are the latent liability scores for the two traits.
+- $\psi_1\in\mathbb{R}^{N_1}$ is the latent liability score for trait 1 for participants in GWAS 1. $\psi_2\in\mathbb{R}^{N_2}$ is the latent liability score for trait 2 for participants in GWAS 2.
 
 
-Let $K_1,K_2\in (0,1)$ denote the proportion of cases of the two traits in the general population.  To allow for the possibility that participants in the GWAS under study have been selected through a [case-control ascertainment procedure](Liability_Threshold_Model.md#ascertained-case-control-studies),  we let $P_1,P_2\in (0,1)$ denote the case-proportions in the two GWAS, which may differ from $K_1,K_2$.
+Let $K_1 \in (0,1)$ denote the proportion of individuals with trait 1 in the general population, and let $K_2 \in (0,1)$ denote the proportion of individuals with trait 2 in the general population.  Because of [case-control ascertainment](Liability_Threshold_Model.md#ascertained-case-control-studies) these proportionals may not hold in the GWAS.  We let $P_1\in (0,1)$ denote the proportion of GWAS 1 participants with trait 1, and $P_2$ denote the proportion of GWAS 2 participants with trait 2.
 
 
-Mirroring the quantitative-trait derivation, we model $G_1,G_2,\beta_1,\beta_2,\delta,\epsilon$ as random variables with the following properties
+We model $G_1,G_2,\beta_1,\beta_2,\delta,\epsilon$ as random variables with the following properties
 
 $$
 \begin{align}
@@ -308,24 +308,27 @@ $$
 \end{align}
 $$
 
-we assume the following relationships between the random variables:
+
+$h_1,h_2$ are the [liability-scale heritabilities](Liability_Threshold_Model.md#liability-scale-heritability) of trait 1 and trait 2, while $\rho_g$ is the liability-scale genetic covariance.
+
+We assume the following relationships between the random variables:
 
 - The rows of $G_1$ and $G_2$ are independent, except when they refer to the same individual (one of the $N_s$ individuals present in both GWAS).
 - $Y, \beta_1, \delta$ are all mutually independent, as are $Z,\beta_2, \epsilon$.
 - $\beta_1$ is independent of $\epsilon$ and $Z$, and $\beta_2$ is independent of $\delta$ and $Y$.
 
 
-For convenience, also define $g_p\in\{0,1\}^{M}$ to be the raw random vector corresponding to the genotype of an individual selected at random from the general population. Define $x_p\in\mathbb{R}^{M}$ by $x_{p,j}=\frac{g_{p,j}-p_j}{\sqrt{p_j(1-p_j)}}$ so that $x_p$ is the random standardized genotype vector.  Note that we now have three genotype distributions:
+For convenience, also define $g_p\in\{0,1\}^{M}$ to be the genotype of an individual selected at random from the general population. Define $x_p\in\mathbb{R}^{M}$ by $x_{p,j}=\frac{g_{p,j}-p_j}{\sqrt{p_j(1-p_j)}}$ so that $x_p$ is the corresponding standardized genotype vector.  Note that we now have three genotype distributions:
 
 
-- The distribution of genotypes in the general population.
-- The distribution of genotypes in GWAS 1.
-- The distribution of genotypes in GWAS 2.
+- The distribution of genotypes in the general population ($g_p,x_p$).
+- The distribution of genotypes in GWAS 1 ($G_1,Y$).
+- The distribution of genotypes in GWAS 2 ($G_2,Z$).
 
 
 
 
-Define the following quantities related to [Linkage Disequilibrium](Linkage_Disequilibrium.md) (LD):
+Define the following  [Linkage Disequilibrium](Linkage_Disequilibrium.md) (LD) quantities:
 
 - The LD between SNP $j$ and SNP $k$ is denoted by $r_{jk}:=\mathbb{E}(x_{p,j}x_{p,k})$. Note that we use the population-level distribution here.
 
@@ -342,9 +345,11 @@ Define the following quantities related to [Linkage Disequilibrium](Linkage_Dise
 ### Marginal Regression Coefficients
 
 
-- Analogously [to the above](Cross_Trait_LDSC.md#data-generating-model), we use $\hat\beta_1,\hat\beta_2\in\mathbb{R}^M$ to denote the marginal sample GWAS regression coefficients from GWAS 1 and 2.  
-- Note that we will operate under the assumption that $\hat\beta_{1,i}$ and $\hat\beta_{2,i}$ are produced by linearly regressing the binary phenotypes $y_1,y_2$ on the appropriate columns of the genotype matrix $Y_i,Z_i$. Most modern GWAS of binary traits do not actually use linear regression, but instead use some version of logistic regression.
+- Analogously [to the above](Cross_Trait_LDSC.md#data-generating-model), let $\hat\beta_1,\hat\beta_2\in\mathbb{R}^M$ denote the marginal sample GWAS regression coefficients from GWAS 1 and 2.  Thus $\hat\beta_{1,j}$ is the outcome of regressing $y_1$ on $Y_i$.
 
+[//]: # (- Note that we will operate under the assumption that $\hat\beta_{1,i}$ and $\hat\beta_{2,i}$ are produced by linearly regressing the binary phenotypes $y_1,y_2$ on the appropriate columns of the genotype matrix $Y_i,Z_i$. Most modern GWAS of binary traits do not actually use linear regression, but instead use some version of logistic regression.)
+
+- We will assume that ordinary linear regression is used.
 
 
 
