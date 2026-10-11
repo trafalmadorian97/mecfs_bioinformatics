@@ -15,10 +15,10 @@ To narrow the [DecodeME](../../../../../Data_Sources/DecodeME.md)[@genetics2025i
 ## Results
 
 
-At the chromosome 20 locus, the $L=10$ run returned three credible sets, while the $L=2$ run returned two.  One of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant, while the others are diffuse.  In contrast, the $L=1$ and strict $L=10$ SUSIE runs return a single diffuse credible set.  It is unclear which of these results is correct.  It would be interesting to re-run SUSIE on this locus using individual-level data.
+At the chromosome 20 locus, the $L=10$ and $L=2$ runs both returned the same two credible sets.  One of these credible sets is highly concentrated, consisting of a single $\mathrm{PIP}=1.0$ variant, while the other is diffuse.  In contrast, the $L=1$ and strict $L=10$ SUSIE runs return a single diffuse credible set.  It is unclear which of these results is correct.  It would be interesting to re-run SUSIE on this locus using individual-level data.
 
 
-As expected, the UpSet plot for this locus reveals that the variants found by the $L=1$ and strict $L=10$ runs are identical, while the other runs differ. 
+As expected, the UpSet plot for this locus reveals that the $L=1$ and strict $L=10$ runs find the same variants, which differ from the variants found by the $L=10$ and $L=2$ runs.
 
 
 
@@ -28,7 +28,7 @@ As expected, the UpSet plot for this locus reveals that the variants found by th
 ### L=10 Result
 
 
-The Stackplot and variant list for the base $L=10$ run shows the highly concentrated nature of one of the credible sets and the diffuse nature of the others.
+The Stackplot and variant list for the base $L=10$ run shows the highly concentrated nature of one of the credible sets and the diffuse nature of the other.
 
 
 {{ static_img_embed("docs/_figs/decode_mechr20_47000000_48200000_palindromes_keep_susie_stackplot.png", alt="chr20_l10") }}

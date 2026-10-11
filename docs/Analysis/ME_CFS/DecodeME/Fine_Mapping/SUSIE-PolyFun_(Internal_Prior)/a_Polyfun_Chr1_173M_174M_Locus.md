@@ -29,7 +29,7 @@ As before, to assess robustness and sensitivity to configuration, I ran SUSIE fo
 
 where $L$ refers to the maximum number of credible sets discoverable by SUSIE.
 
-As before, in my SUSIE runs, I retained [palindromic SNPs](../../../../../Bioinformatics_Concepts/Sumstats_Standardization.md#palindromic-variants) and [ambiguous indels](../../../../../Bioinformatics_Concepts/Sumstats_Standardization.md#ambiguous-indels) whose orientation could be determined from allele frequencies in the Thousand Genomes Project.
+As before, in my SUSIE runs, I retained [palindromic SNPs](../../../../../Bioinformatics_Concepts/Sumstats_Standardization.md#palindromic-variants) and [ambiguous indels](../../../../../Bioinformatics_Concepts/Sumstats_Standardization.md#ambiguous-indels) whose orientation could be determined from allele frequencies in [gnomAD v2.1.1](https://gnomad.broadinstitute.org/).
 
 ### Prior Construction
 
