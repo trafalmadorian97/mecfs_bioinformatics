@@ -489,7 +489,7 @@ def lint_actions(c):
         fix_table_trailing_newlines,
         checkimports,
         check_attrs_slots,
-        check_asset_imports,
+        # check_asset_imports, # skip: too slow to run in dev loop.  Can still run in CI
         # fix_init_files,
         typecheck,
         lint_actions,
