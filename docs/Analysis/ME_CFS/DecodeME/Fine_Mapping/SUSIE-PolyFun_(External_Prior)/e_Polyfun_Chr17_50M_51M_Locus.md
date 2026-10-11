@@ -49,7 +49,7 @@ id="chr17_polyfun_susie_table")
 
 
 
-While the uniform-prior SUSIE run produces a large and diffuse credible set, the PolyFun-prior SUSIE credible set is more concentrated, focusing especially on the three evolutionarily conserved variants **17:50291040:C:T**,  **17:50299079:G:A**, and **17:50296459:G:T**.
+While the uniform-prior SUSIE run produces a large and diffuse credible set, the PolyFun-prior SUSIE credible set is more concentrated, focusing especially on the two evolutionarily conserved variants **17:50291040:C:T** and  **17:50299079:G:A**.
 
 
 The next table shows the functional annotations for these top variants in full detail.

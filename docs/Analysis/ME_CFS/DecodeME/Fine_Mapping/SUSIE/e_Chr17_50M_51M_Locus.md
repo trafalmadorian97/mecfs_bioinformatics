@@ -20,7 +20,7 @@ Each of the 4 SUSIE runs produced a single credible set with the same variants, 
 {{ static_img_embed("docs/_figs/decode_mechr17_50000000_51000000_palindromes_keep_upset_plot.png", alt="chr17_upset") }}
 
 
-The distribution of probability mass across these variants was slightly different across the runs, as illustrated by the following UpSet plot, which is restricted to variants of $PIP>0.01$.
+The distribution of probability mass across these variants was closely matched across the runs, as illustrated by the following UpSet plot, which is restricted to variants of $PIP>0.01$.
 
 
 
