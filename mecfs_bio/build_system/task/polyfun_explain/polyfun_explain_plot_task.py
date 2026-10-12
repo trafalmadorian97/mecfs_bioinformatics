@@ -36,7 +36,9 @@ import numpy as np
 import polars as pl
 import textalloc as ta
 from attrs import frozen
+from matplotlib.axes import Axes
 from matplotlib.figure import Figure
+from matplotlib.gridspec import GridSpec
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -343,7 +345,7 @@ def _load_recomb(
     )
 
 
-def _plot_recomb(ax, recomb: pl.DataFrame) -> None:
+def _plot_recomb(ax: Axes, recomb: pl.DataFrame) -> None:
     bp = recomb[GMAP_POS_COL].to_numpy().astype(float)
     rate = recomb[GMAP_RATE_COL].to_numpy().astype(float)
     if len(bp) >= 1:
@@ -401,7 +403,9 @@ def _render(
     fig.savefig(scratch_dir / PLOT_SVG_FILENAME, bbox_inches="tight")
 
 
-def _plot_manhattan(fig: Figure, gs, ax0, locus: _Locus, recomb: pl.DataFrame) -> None:
+def _plot_manhattan(
+    fig: Figure, gs: GridSpec, ax0: Axes, locus: _Locus, recomb: pl.DataFrame
+) -> None:
     """Manhattan colored by LD with the lead (min-p) variant, with the
     recombination rate on a twin axis and their keys in the right column."""
     x = locus.gwas[GWASLAB_POS_COL].to_numpy()
@@ -461,8 +465,8 @@ def _plot_manhattan(fig: Figure, gs, ax0, locus: _Locus, recomb: pl.DataFrame) -
 
 def _plot_pip_rows(
     fig: Figure,
-    gs,
-    axes: list,
+    gs: GridSpec,
+    axes: list[Axes],
     pip_rows: list[_PipRow],
     xlims: tuple[float, float],
 ) -> None:
@@ -497,7 +501,7 @@ def _plot_pip_rows(
 
 
 def _plot_genes(
-    ax_gene,
+    ax_gene: Axes,
     genes: pl.DataFrame,
     chrom: int,
     bp_min: int,
@@ -561,7 +565,7 @@ def _shared_pip_top(cs_frames: list[pl.DataFrame]) -> float:
     return min(1.0, max(tops) * 1.05)
 
 
-def _cap_pip_ticks(ax) -> None:
+def _cap_pip_ticks(ax: Axes) -> None:
     """Keep the PIP axis's ticks/labels within [0, 1]: the panel extends above 1
     to make room for callout labels, but PIP is a probability so a tick above 1
     would misread. Drops any auto tick outside [0, 1] (a no-op for low-PIP panels
@@ -571,9 +575,9 @@ def _cap_pip_ticks(ax) -> None:
 
 def _plot_pip_panel(
     fig: Figure,
-    gs,
+    gs: GridSpec,
     row: int,
-    ax_pip,
+    ax_pip: Axes,
     cs_df: pl.DataFrame,
     label: str,
 ) -> None:
@@ -593,7 +597,7 @@ def _plot_pip_panel(
 
 
 def _place_callouts(
-    ax_pf,
+    ax_pf: Axes,
     callouts: pl.DataFrame,
     stem_df: pl.DataFrame,
     xlims: tuple[float, float],

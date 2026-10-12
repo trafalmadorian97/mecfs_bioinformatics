@@ -66,7 +66,7 @@ def _make_dummy_sumstats(n_rows: int = 5) -> pl.DataFrame:
 def _make_source(
     asset_id: str,
     alias: str,
-    sample_size,
+    sample_size: float | None,
 ) -> GenomicSEMSumstatsSource:
     task = FakeTask(
         SimpleFileMeta(

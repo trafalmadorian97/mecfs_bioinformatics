@@ -147,7 +147,7 @@ _susie_n = 2500
 
 @pytest.fixture(params=[[0, -1], []])
 def susie_prerequisite_file_tasks(
-    tmp_path: Path, request
+    tmp_path: Path, request: pytest.FixtureRequest
 ) -> Iterator[tuple[Task, Task, Task, list[int]]]:
     n = _susie_n
     m = 100

@@ -150,7 +150,7 @@ def create_new_meta(
     source_meta: Meta,
     asset_id: str,
     format: DataFrameFormat = DataFrameParquetFormat(),
-    extension=".parquet",
+    extension: str = ".parquet",
 ) -> Meta:
     meta: Meta
     if isinstance(source_meta, SimpleFileMeta):

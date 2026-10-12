@@ -13,6 +13,8 @@ import scipy.sparse
 import structlog
 import yaml
 from attrs import frozen
+from rpy2.rinterface import FloatSexpVector
+from rpy2.rinterface_lib.sexp import SexpVector
 from rpy2.robjects import numpy2ri, pandas2ri
 from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import (
@@ -492,11 +494,11 @@ def apply_subsample(
     )
 
 
-def convert_r_named_list_to_python_dict(rdata) -> dict:
+def convert_r_named_list_to_python_dict(rdata: ro.ListVector) -> dict:
     return dict(zip(rdata.names, list(rdata)))
 
 
-def r_to_py_recursive(r_obj):
+def r_to_py_recursive(r_obj: object):
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
     if isinstance(r_obj, ro.DataFrame):
         with localconverter(conv):
@@ -512,7 +514,7 @@ def r_to_py_recursive(r_obj):
         return {name: r_to_py_recursive(r_obj.rx2(name)) for name in names}
 
     try:
-        if hasattr(r_obj, "__len__"):
+        if isinstance(r_obj, SexpVector):
             if len(r_obj) == 1:
                 return r_obj[0]
             return list(r_obj)
@@ -659,7 +661,7 @@ def extract_cs_data_tables(
     return cs_data_tables
 
 
-def check_symmetric(array: np.ndarray, tol=1e-6):
+def check_symmetric(array: np.ndarray, tol: float = 1e-6):
     assert np.max(np.abs(array - array.T)) <= tol
 
 
@@ -692,8 +694,8 @@ def _load_partial_ld_matrix(path: Path) -> csr_matrix:
 
 
 def _make_diagnostic_plot_and_table(
-    zscores_r,
-    ld_matrix_r,
+    zscores_r: FloatSexpVector,
+    ld_matrix_r: FloatSexpVector,
     effective_sample_size: int,
     susie_package: RPackageType,
     ggplot2_package: RPackageType,

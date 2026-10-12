@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import BinaryIO
 
 import xxhash
 from attrs import frozen
@@ -17,7 +18,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.simple_ha
 
 
 # Reads exactly sample_size bytes from file object f, erroring if EOF is reached before that.
-def _read_sample_size(f, sample_size: int) -> bytes:
+def _read_sample_size(f: BinaryIO, sample_size: int) -> bytes:
     data = b""
     while len(data) < sample_size:
         chunk = f.read(sample_size - len(data))

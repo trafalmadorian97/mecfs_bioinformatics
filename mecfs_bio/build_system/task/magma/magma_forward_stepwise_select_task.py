@@ -140,7 +140,7 @@ class MagmaForwardStepwiseSelectTask(Task):
         magma_marginal_output_task: Task,
         magma_conditional_output_task: Task,
         min_prop_sig: float = 0.5,
-        significance_threshold=0.05,
+        significance_threshold: float = 0.05,
     ):
         source_meta = magma_marginal_output_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)

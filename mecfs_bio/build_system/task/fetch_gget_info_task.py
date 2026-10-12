@@ -217,14 +217,14 @@ def _clear_lists(ser: pd.Series) -> pd.Series:
     return ser.apply(lambda x: _clean(x) if isinstance(x, list) else x)
 
 
-def _is_all_nan(l) -> bool:
+def _is_all_nan(l: object) -> bool:
     if not isinstance(l, list):
         return False
     return all(math.isnan(x) for x in l)
 
 
 def _unnest_list(s: pd.Series) -> pd.Series:
-    def _unest(x):
+    def _unest(x: object) -> object:
         if (
             isinstance(x, list)
             and len(x) == 1
@@ -233,4 +233,4 @@ def _unnest_list(s: pd.Series) -> pd.Series:
             return list(x[0])
         return x
 
-    return s.apply(_unest)
+    return pd.Series([_unest(x) for x in s], index=s.index, name=s.name)
