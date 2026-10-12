@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 import yaml
-from invoke import task
+from invoke import Context, task
 
 from mecfs_bio.util.link_check_streak import (
     dump_state,
@@ -85,7 +85,7 @@ def _set_enable_api_autonav() -> None:
 
 # dev tasks
 @task
-def test(c):
+def test(c: Context):
     print(
         "Running unit and integration tests with pytest, while skipping un-needed tests with testmon..."
     )
@@ -95,7 +95,7 @@ def test(c):
 
 
 @task
-def test_debug(c):
+def test_debug(c: Context):
     """
     Run tests with extra information printed.  Useful for debugging.
     """
@@ -106,7 +106,7 @@ def test_debug(c):
 
 
 @task
-def format(c):
+def format(c: Context):
     """
     Format code
     """
@@ -115,7 +115,7 @@ def format(c):
 
 
 @task
-def formatcheck(c):
+def formatcheck(c: Context):
     """
     Check for format errors
     """
@@ -124,19 +124,19 @@ def formatcheck(c):
 
 
 @task
-def lintfix(c):
+def lintfix(c: Context):
     print("linting and applying lint auto-fixes using ruff...")
     c.run("  ruff check --fix --unsafe-fixes")
 
 
 @task
-def lintcheck(c):
+def lintcheck(c: Context):
     print("linting using ruff...")
     c.run("ruff check")
 
 
 @task
-def typecheck(c):
+def typecheck(c: Context):
     """
     Check for type errors
     """
@@ -145,7 +145,7 @@ def typecheck(c):
 
 
 @task
-def spellcheck_docs(c):
+def spellcheck_docs(c: Context):
     """
     check docs for spelling errors
     Edit _typos.toml to add exceptions
@@ -157,7 +157,7 @@ def spellcheck_docs(c):
 
 
 @task
-def spellcheck_src(c):
+def spellcheck_src(c: Context):
     """
     check code for spelling errors
     Edit _typos.toml to add exceptions
@@ -169,7 +169,7 @@ def spellcheck_src(c):
 
 
 @task
-def checkimports(c):
+def checkimports(c: Context):
     """
     Use import linter to enforce architectural constraints
     """
@@ -186,7 +186,7 @@ def _missing_init_dirs() -> list[Path]:
 
 
 @task
-def check_init_files(c):
+def check_init_files(c: Context):
     """
     Verify that every directory under mecfs_bio/ contains an __init__.py.
     """
@@ -202,7 +202,7 @@ def check_init_files(c):
 
 
 @task
-def fix_init_files(c):
+def fix_init_files(c: Context):
     """
     Add a blank __init__.py to any directory under mecfs_bio/ that is missing one.
     """
@@ -228,7 +228,7 @@ def _module_name(path: Path) -> str:
 
 
 @task
-def check_asset_imports(c):
+def check_asset_imports(c: Context):
     """
     Verify that every module under mecfs_bio/assets/ can be imported.
 
@@ -272,7 +272,7 @@ BARE_ATTRS_DECORATOR_PATTERN = re.compile(
 
 
 @task
-def check_attrs_slots(c):
+def check_attrs_slots(c: Context):
     """
     Verify that every attrs frozen/define decorator passes slots explicitly.
 
@@ -296,7 +296,7 @@ def check_attrs_slots(c):
 
 
 @task
-def check_all_links(c):
+def check_all_links(c: Context):
     """
     Check all links with lychee.
 
@@ -308,7 +308,9 @@ def check_all_links(c):
 
 
 @task(help={"threshold": "Consecutive failing runs required to fail the task."})
-def check_all_links_with_streak(c, threshold=LINK_CHECK_DEFAULT_THRESHOLD):
+def check_all_links_with_streak(
+    c: Context, threshold: int = LINK_CHECK_DEFAULT_THRESHOLD
+):
     """
     Run lychee and update the per-URL consecutive-failure streak state.
 
@@ -394,7 +396,7 @@ def check_all_links_with_streak(c, threshold=LINK_CHECK_DEFAULT_THRESHOLD):
 
 
 @task
-def check_table_trailing_newlines(c):
+def check_table_trailing_newlines(c: Context):
     """
     Added by Claude:
     Check that markdown docs ending with a table have at least one blank line after the table.
@@ -431,7 +433,7 @@ def check_table_trailing_newlines(c):
 
 
 @task
-def fix_table_trailing_newlines(c):
+def fix_table_trailing_newlines(c: Context):
     """
     Added by Claude:
     Autofix markdown files that end with a table but lack a trailing blank line.
@@ -461,7 +463,7 @@ def fix_table_trailing_newlines(c):
 
 
 @task
-def check_local_links(c):
+def check_local_links(c: Context):
     """
     Check local links with lychee
     """
@@ -472,7 +474,7 @@ def check_local_links(c):
 
 
 @task
-def lint_actions(c):
+def lint_actions(c: Context):
     print("Linting github actions...")
     cmd = "actionlint"
     print(f"running {cmd}")
@@ -496,12 +498,12 @@ def lint_actions(c):
         test,
     ]
 )
-def green(c):
+def green(c: Context):
     pass
 
 
 @task
-def install_r_packages(c):
+def install_r_packages(c: Context):
     """
     Install R packages such as TwoSampleMR and LAVA
     """
@@ -513,7 +515,7 @@ def install_r_packages(c):
 
 
 @task()
-def pfig(c):
+def pfig(c: Context):
     """
     Pull figures from github to populate the _figs directory
     """
@@ -521,7 +523,7 @@ def pfig(c):
 
 
 @task()
-def publish_figures(c):
+def publish_figures(c: Context):
     """
     Run the end-to-end figure-system workflow: generate any missing
     figures from ALL_FIGURE_TASKS, prune orphan manifest entries (after
@@ -533,7 +535,7 @@ def publish_figures(c):
 
 @task
 def serve_docs(
-    c,
+    c: Context,
     strict: bool = True,
     include_authors: bool = False,
     enable_api_autonav: bool = False,
@@ -562,7 +564,7 @@ def serve_docs(
         pfig,
     ]
 )
-def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
+def sdocs(c: Context, include_authors: bool = False, enable_api_autonav: bool = False):
     """
     Retrieve figures, then serve docs
     """
@@ -572,7 +574,7 @@ def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
 
 
 @task
-def build_docs(c):
+def build_docs(c: Context):
     cmd = "mkdocs build --strict"
     print(f"running {cmd}")
     c.run(cmd)
@@ -609,7 +611,7 @@ def _dir_size(path: Path) -> str:
     }
 )
 def migrate_asset_store(
-    c, execute: bool = False, reverse: bool = False, only: str | None = None
+    c: Context, execute: bool = False, reverse: bool = False, only: str | None = None
 ):
     """
     Reconcile the asset store on disk with the path_remap rules in
@@ -720,7 +722,7 @@ def migrate_asset_store(
 
 # initialization
 @task(pre=[install_r_packages, pfig, green])
-def init(c):
+def init(c: Context):
     """
     Initial repo setup
     """

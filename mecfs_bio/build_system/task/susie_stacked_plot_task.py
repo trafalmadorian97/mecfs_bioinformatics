@@ -16,8 +16,10 @@ from attrs import frozen
 
 # import pandas as pd
 from matplotlib import gridspec
+from matplotlib.axes import Axes
 from matplotlib.colors import TABLEAU_COLORS, ListedColormap
 from matplotlib.figure import Figure
+from matplotlib.gridspec import SubplotSpec
 from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from polars import String
@@ -409,7 +411,7 @@ def get_array_and_edges_for_ld_heatmap(
 
 
 def plot_gene_tracks(
-    ax,
+    ax: Axes,
     gene_df: pl.DataFrame,
     start_bp: int,
     end_bp: int,
@@ -535,9 +537,9 @@ def plot_gene_tracks(
 
 
 def draw_manhattan_track(
-    fig,
-    target_gridspec_cell,  # e.g. gs[0, 0]
-    colorbar_axis,
+    fig: Figure,
+    target_gridspec_cell: SubplotSpec,  # e.g. gs[0, 0]
+    colorbar_axis: Axes,
     gwas_df: pl.DataFrame,
     ld2_colors: np.ndarray,  # Pre-calculated colors for the scatter points
     gwas_pos_col: str,
@@ -664,13 +666,9 @@ def draw_manhattan_track(
 
         # Draw Diagonal "Cut" Lines
         d = 0.006
-        kwargs = dict(transform=ax_top.transAxes, color="k", clip_on=False)
-        ax_top.plot((-d, +d), (-d, +d), **kwargs)  # top-left
-        ax_top.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right
-
-        kwargs.update(transform=ax_bottom.transAxes)
-        ax_bottom.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left
-        ax_bottom.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right
+        for ax, y in ((ax_top, (-d, +d)), (ax_bottom, (1 - d, 1 + d))):
+            for x in ((-d, +d), (1 - d, 1 + d)):  # left, right
+                ax.plot(x, y, transform=ax.transAxes, color="k", clip_on=False)
 
         # Label: Center it on the "entire" side using figure coords is best,
         # or just place it on the top axis to be safe.
@@ -688,7 +686,7 @@ def draw_manhattan_track(
 CredibleSetLabelMode = Literal["positional", "susie_index"]
 
 
-def _credible_set_label(cs_key, index: int, mode: CredibleSetLabelMode) -> str:
+def _credible_set_label(cs_key: object, index: int, mode: CredibleSetLabelMode) -> str:
     """Legend label for one credible set. "positional" numbers the sets 1..N in
     plotting order (the original behavior). "susie_index" uses SUSIE's own
     credible-set index parsed from the group's cs label (L2 -> "CS 2"), so the
@@ -703,8 +701,8 @@ def _credible_set_label(cs_key, index: int, mode: CredibleSetLabelMode) -> str:
 
 def plot_susie_track(
     susie_cs_df: pl.DataFrame | None,
-    ax_pip,
-    pip_legend_ax,
+    ax_pip: Axes,
+    pip_legend_ax: Axes,
     susie_cs_col: str = CS_COLUMN,
     susie_pip_col: str = PIP_COLUMN,
     susie_pos_col: str = GWASLAB_POS_COL,
@@ -752,9 +750,9 @@ def plot_ld_heatmap(
     ld_np: np.ndarray,
     gwas_df: pl.DataFrame,
     options: HeatmapOptions,
-    ax_ld,
-    fig,
-    ld_cax,
+    ax_ld: Axes,
+    fig: Figure,
+    ld_cax: Axes,
     gwas_pos_col: str = GWASLAB_POS_COL,
 ):
     if options.mode == "ld_abs":

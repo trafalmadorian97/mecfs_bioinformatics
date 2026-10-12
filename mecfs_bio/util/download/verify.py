@@ -20,7 +20,7 @@ def verify_hash(downloaded_file: Path, expected_hash: str | None):
     )
 
 
-def head_file(filename: Path, n=10):
+def head_file(filename: Path, n: int = 10):
     """Prints the first n lines of a file, like the Unix head command."""
     logger.debug(f"Attempting first {n} lines of file {filename}:")
     try:

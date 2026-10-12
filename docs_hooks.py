@@ -24,6 +24,10 @@ rendering the sidebar, so the nav stays short.
 import re
 from pathlib import PurePath
 
+from mkdocs.config.defaults import MkDocsConfig
+from mkdocs.structure.files import Files
+from mkdocs.structure.pages import Page
+
 # Analysis pages live at Analysis/<Trait>/<Study>/<page>.md. Anything shallower
 # (section landing pages) or under a different top-level folder is left alone.
 ANALYSIS_ROOT = "Analysis"
@@ -75,7 +79,9 @@ def _analysis_context(src_uri: str) -> str | None:
     return ", ".join([*reversed(studies), trait])
 
 
-def on_page_markdown(markdown: str, *, page, config, files) -> str:
+def on_page_markdown(
+    markdown: str, *, page: Page, config: MkDocsConfig, files: Files
+) -> str:
     """Give analysis pages a verbose title for search, tags, and the browser tab.
 
     The short original title is preserved in page.meta under nav_title so the

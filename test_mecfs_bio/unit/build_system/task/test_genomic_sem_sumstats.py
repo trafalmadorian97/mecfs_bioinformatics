@@ -17,7 +17,9 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_sumstats impor
 )
 
 
-def _ref(snps, a1, a2, maf) -> pl.DataFrame:
+def _ref(
+    snps: list[str], a1: list[str], a2: list[str], maf: list[float]
+) -> pl.DataFrame:
     return pl.DataFrame({"SNP": snps, "A1": a1, "A2": a2, "MAF": maf})
 
 

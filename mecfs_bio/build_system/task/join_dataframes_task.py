@@ -108,7 +108,7 @@ class JoinDataFramesTask(Task):
         cls,
         asset_id: str,
         result_df_task: Task,
-        reference_df_task,
+        reference_df_task: Task,
         how: JoinStrategy,
         left_on: Sequence[str],
         right_on: Sequence[str],
