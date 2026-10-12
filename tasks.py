@@ -26,6 +26,7 @@ from mecfs_bio.util.link_check_streak import (
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
+TEST_PATH = Path("test_mecfs_bio")
 DOCS_PATH = Path("docs")
 
 USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
@@ -141,7 +142,9 @@ def typecheck(c: Context):
     Check for type errors
     """
     print("Typechecking with ty...")
-    c.run(f"ty check {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
+    c.run(
+        f"ty check {SRC_PATH} {TEST_PATH} tasks.py docs_macros docs_hooks.py", pty=True
+    )
 
 
 @task
