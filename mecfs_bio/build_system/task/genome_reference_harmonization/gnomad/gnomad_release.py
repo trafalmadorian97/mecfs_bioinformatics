@@ -45,7 +45,7 @@ class GnomadRelease:
     extra_groups: tuple[GnomadGroup, ...]
     header_assembly: str
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert CHROM_PLACEHOLDER in self.vcf_url_template, (
             f"vcf_url_template must contain {CHROM_PLACEHOLDER}"
         )

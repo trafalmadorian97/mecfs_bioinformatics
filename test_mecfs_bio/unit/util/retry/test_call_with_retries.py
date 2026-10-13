@@ -3,7 +3,7 @@ import pytest
 from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 
-def test_retries_then_succeeds():
+def test_retries_then_succeeds() -> None:
     """A call that fails twice then succeeds is retried to success."""
     calls = {"n": 0}
     slept: list[float] = []
@@ -26,7 +26,7 @@ def test_retries_then_succeeds():
     assert len(slept) == 2
 
 
-def test_reraises_after_exhausting_attempts():
+def test_reraises_after_exhausting_attempts() -> None:
     """After max_attempts failures the last error is re-raised."""
     max_attempts = 3
     calls = {"n": 0}
@@ -47,7 +47,7 @@ def test_reraises_after_exhausting_attempts():
     assert calls["n"] == max_attempts
 
 
-def test_exception_outside_retry_on_propagates_immediately():
+def test_exception_outside_retry_on_propagates_immediately() -> None:
     """Exception types not named in retry_on are not retried."""
     calls = {"n": 0}
 
@@ -66,7 +66,7 @@ def test_exception_outside_retry_on_propagates_immediately():
     assert calls["n"] == 1
 
 
-def test_retries_on_any_listed_exception_type():
+def test_retries_on_any_listed_exception_type() -> None:
     """Every exception type in retry_on triggers a retry."""
     errors: list[Exception] = [ConnectionError(), TimeoutError()]
 
@@ -86,7 +86,7 @@ def test_retries_on_any_listed_exception_type():
     assert errors == []
 
 
-def test_backoff_is_jittered_and_capped():
+def test_backoff_is_jittered_and_capped() -> None:
     """Backoffs grow but never exceed max_backoff_seconds."""
     max_backoff_seconds = 4.0
     slept: list[float] = []

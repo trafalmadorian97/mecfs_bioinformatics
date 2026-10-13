@@ -144,7 +144,7 @@ def get_ld_labels_and_matrix_task_for_chrom_pos_build_37(
 
 def get_ld_labels_and_matrix_task_for_genomic_interval_build_37(
     interval: GenomicInterval,
-):
+) -> tuple[Task, Task]:
     return (
         get_genomic_interval_ld_labels_task(interval=interval),
         get_genomic_interval_ld_matrix_task(interval=interval),

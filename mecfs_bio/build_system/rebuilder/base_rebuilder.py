@@ -40,5 +40,5 @@ class Rebuilder[Info](ABC):
 
     @classmethod
     @abstractmethod
-    def save_info(cls, info: Info, path: Path):
+    def save_info(cls, info: Info, path: Path) -> None:
         pass

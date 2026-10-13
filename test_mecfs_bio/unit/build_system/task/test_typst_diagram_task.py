@@ -19,7 +19,7 @@ def _no_fetch(asset_id: AssetId) -> Asset:
     raise ValueError("TypstDiagramTask has no dependencies")
 
 
-def test_renders_svg_from_inline_code(tmp_path: Path):
+def test_renders_svg_from_inline_code(tmp_path: Path) -> None:
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     task = TypstDiagramTask(
@@ -32,7 +32,7 @@ def test_renders_svg_from_inline_code(tmp_path: Path):
     assert head.startswith(b"<svg") or head.startswith(b"<?xml")
 
 
-def test_renders_svg_from_file_source(tmp_path: Path):
+def test_renders_svg_from_file_source(tmp_path: Path) -> None:
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     typ_file = tmp_path / "diagram.typ"

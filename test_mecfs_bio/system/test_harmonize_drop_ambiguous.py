@@ -78,7 +78,9 @@ _harmonized_task = GenomeReferenceHarmonizationTask.create(
 )
 
 
-def test_genome_reference_harmonization_orients_every_kept_variant_to_the_reference():
+def test_genome_reference_harmonization_orients_every_kept_variant_to_the_reference() -> (
+    None
+):
     with tempfile.TemporaryDirectory() as tempdirname:
         tempdir = Path(tempdirname)
         asset_root = tempdir / "asset_store"

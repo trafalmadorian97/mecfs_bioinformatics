@@ -6,7 +6,7 @@ import structlog
 logger = structlog.get_logger()
 
 
-def verify_hash(downloaded_file: Path, expected_hash: str | None):
+def verify_hash(downloaded_file: Path, expected_hash: str | None) -> None:
     if expected_hash is None:
         return
     logger.debug("Verifying MD5 hash of downloaded file...")
@@ -20,7 +20,7 @@ def verify_hash(downloaded_file: Path, expected_hash: str | None):
     )
 
 
-def head_file(filename: Path, n: int = 10):
+def head_file(filename: Path, n: int = 10) -> None:
     """Prints the first n lines of a file, like the Unix head command."""
     logger.debug(f"Attempting first {n} lines of file {filename}:")
     try:

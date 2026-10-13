@@ -13,7 +13,7 @@ def _get_liability_scale_heritability(
     observed_heritability: float,
     sample_prev: float,
     population_prev: float,
-):
+) -> float:
     T = scipy.stats.norm.ppf(1 - population_prev)
     a = scipy.stats.norm.pdf(T)
     return (

@@ -1,3 +1,5 @@
+from typing import Self
+
 import structlog
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -89,7 +91,7 @@ class GwasLabRegionPlotTargetLocusTask(Task):
         chrom: int,
         pos: int,
         buffer: int = 500_000,
-    ):
+    ) -> Self:
         reference_meta = sumstats_task.meta
         assert isinstance(reference_meta, GWASLabSumStatsMeta)
         meta = GWASLabRegionPlotsMeta(

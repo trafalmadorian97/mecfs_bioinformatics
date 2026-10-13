@@ -22,7 +22,7 @@ class GWASPlotFileMeta(FileMeta):
     id: AssetId = field(converter=AssetId)
     sub_dir: PurePath = PurePath("analysis/plots")
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.extension.startswith(".")
 
     @property

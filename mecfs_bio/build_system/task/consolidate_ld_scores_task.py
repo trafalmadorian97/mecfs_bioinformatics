@@ -12,6 +12,7 @@ variants it describes can never come from different sets of chromosomes.
 """
 
 from pathlib import Path
+from typing import Self
 
 import narwhals
 from attrs import frozen
@@ -129,7 +130,7 @@ class ConsolidateLDScoresTask(Task):
         return FileAsset(out_path)
 
     @classmethod
-    def create(cls, asset_id: str, extracted_ld_score_task: Task):
+    def create(cls, asset_id: str, extracted_ld_score_task: Task) -> Self:
         source_meta = extracted_ld_score_task.meta
         assert isinstance(source_meta, ReferenceDataDirectoryMeta)
         meta = ReferenceFileMeta(

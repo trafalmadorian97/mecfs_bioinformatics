@@ -158,7 +158,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     sumstats_ref_task: Task
     config: GWASBySubtractionFullPythonConfig = GWASBySubtractionFullPythonConfig()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.composite_trait_source.alias != self.reference_trait_source.alias, (
             "composite and reference trait aliases must differ"
         )

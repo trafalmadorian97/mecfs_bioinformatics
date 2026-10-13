@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import pandas as pd
 from attrs import frozen
@@ -106,7 +107,7 @@ class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
         specificity_matrix_task: Task,
         magma_gene_covar_analysis_task: MagmaGeneSetAnalysisTask,
         nominal_sig_level: float = 0.05,
-    ):
+    ) -> Self:
         source_meta = magma_gene_covar_analysis_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = ResultTableMeta(

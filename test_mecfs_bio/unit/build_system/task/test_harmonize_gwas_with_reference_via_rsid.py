@@ -25,7 +25,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-def test_harmonize_gwas_with_reference(tmp_path: Path):
+def test_harmonize_gwas_with_reference(tmp_path: Path) -> None:
     dummy_gwas = pd.DataFrame(
         [
             {

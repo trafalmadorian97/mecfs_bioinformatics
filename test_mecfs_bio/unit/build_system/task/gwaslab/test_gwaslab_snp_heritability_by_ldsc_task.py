@@ -14,7 +14,7 @@ from mecfs_bio.constants.ldsc_constants import LDSC_Z_COL
 _ID_COL = "SNP"
 
 
-def test_drops_zero_se_variants():
+def test_drops_zero_se_variants() -> None:
     # SE == 0 with BETA == 0 (odds ratio rounded to 1.00) -> Z would be NaN;
     # SE == 0 with BETA != 0 (underflowed p-value) -> Z would be inf.
     data = pd.DataFrame(
@@ -28,7 +28,7 @@ def test_drops_zero_se_variants():
     assert result[_ID_COL].tolist() == ["a", "d"]
 
 
-def test_keeps_all_finite_se_variants():
+def test_keeps_all_finite_se_variants() -> None:
     data = pd.DataFrame(
         {
             _ID_COL: ["a", "b"],
@@ -40,7 +40,7 @@ def test_keeps_all_finite_se_variants():
     assert result[_ID_COL].tolist() == ["a", "b"]
 
 
-def test_prefers_existing_z_column():
+def test_prefers_existing_z_column() -> None:
     data = pd.DataFrame(
         {
             _ID_COL: ["a", "b", "c"],
@@ -54,7 +54,7 @@ def test_prefers_existing_z_column():
     assert result[_ID_COL].tolist() == ["a"]
 
 
-def test_noop_without_z_or_beta_se_columns():
+def test_noop_without_z_or_beta_se_columns() -> None:
     data = pd.DataFrame({_ID_COL: ["a", "b"], GWASLAB_P_COL: [0.1, 0.2]})
     result = drop_variants_with_degenerate_z(data)
     assert result[_ID_COL].tolist() == ["a", "b"]

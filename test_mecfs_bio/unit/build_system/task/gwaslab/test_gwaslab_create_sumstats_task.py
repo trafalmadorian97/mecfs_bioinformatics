@@ -30,7 +30,7 @@ from mecfs_bio.constants.gwaslab_constants import GWASLAB_STATUS_COL
 
 def test_gwaslab_sumstats(
     tmp_path: Path,
-):
+) -> None:
     scratch_loc = tmp_path / "scratch"
     scratch_loc.mkdir(exist_ok=True, parents=True)
     task = GWASLabCreateSumstatsTask(
@@ -96,7 +96,7 @@ def _regenie_sumstats_with_a1freq(a1freq: list[float]) -> gl.Sumstats:
     return gl.Sumstats(df, fmt="regenie", verbose=False)
 
 
-def test_validate_eaf_in_range_rejects_percentage():
+def test_validate_eaf_in_range_rejects_percentage() -> None:
     """
     EAF supplied as a percentage (0-100) must fail fast, even via a named format where
     gwaslab renames the source column (A1FREQ) to its standard EAF column.
@@ -106,12 +106,12 @@ def test_validate_eaf_in_range_rejects_percentage():
         _validate_eaf_in_range(sumstats)
 
 
-def test_validate_eaf_in_range_accepts_fraction():
+def test_validate_eaf_in_range_accepts_fraction() -> None:
     sumstats = _regenie_sumstats_with_a1freq([0.001, 0.25, 0.5, 0.999])
     _validate_eaf_in_range(sumstats)
 
 
-def test_validate_eaf_in_range_no_eaf_column_is_noop():
+def test_validate_eaf_in_range_no_eaf_column_is_noop() -> None:
     """A sumstats with no EAF column must not raise."""
     df = pd.DataFrame(
         {
@@ -150,7 +150,7 @@ def _sumstats_with_variant_keys(
     return gl.Sumstats(df, fmt="regenie", verbose=False)
 
 
-def test_drop_duplicate_variant_keys_drops_every_colliding_row():
+def test_drop_duplicate_variant_keys_drops_every_colliding_row() -> None:
     # Two rows share (CHR, POS, EA, NEA) with different stats (a liftover collision); both
     # are dropped, not deduplicated to one, because neither can be trusted at that key.
     sumstats = _sumstats_with_variant_keys(
@@ -165,7 +165,7 @@ def test_drop_duplicate_variant_keys_drops_every_colliding_row():
     assert sumstats.data["POS"].tolist() == [200, 300]
 
 
-def test_drop_duplicate_variant_keys_keeps_distinct_variants():
+def test_drop_duplicate_variant_keys_keeps_distinct_variants() -> None:
     # Same position, different alleles is not a collision and is kept.
     sumstats = _sumstats_with_variant_keys([(1, 100, "A", "C"), (1, 100, "A", "G")])
     _drop_duplicate_variant_keys(sumstats)

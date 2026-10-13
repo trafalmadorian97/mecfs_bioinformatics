@@ -3,7 +3,7 @@ Task to combine gene lists from multiple sources
 """
 
 from pathlib import Path
-from typing import Sequence
+from typing import Self, Sequence
 
 import narwhals
 import pandas as pd
@@ -52,7 +52,7 @@ class CombineGeneListsTask(Task):
     out_format: OutFormat = CSVOutFormat(sep=",")
     out_pipe: DataProcessingPipe = IdentityPipe()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert len(self.src_gene_lists) > 0
         names = set([gl.name for gl in self.src_gene_lists])
         assert len(names) == len(self.src_gene_lists)
@@ -102,7 +102,7 @@ class CombineGeneListsTask(Task):
         src_gene_lists: Sequence[SrcGeneList],
         out_format: OutFormat,
         out_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         assert len(src_gene_lists) > 0
         first_gene_list = src_gene_lists[0]
         src_meta = first_gene_list.task.meta
@@ -129,7 +129,9 @@ def _get_gene_dict_from_df(
     return {item: [method_name] for item in df[name_col]}
 
 
-def _combine_gene_dicts(gd1: dict[str, list[str]], gd2: dict[str, list[str]]):
+def _combine_gene_dicts(
+    gd1: dict[str, list[str]], gd2: dict[str, list[str]]
+) -> dict[str, list[str]]:
     gd1 = dict(gd1)
     for name, src_list in gd2.items():
         if name not in gd1:

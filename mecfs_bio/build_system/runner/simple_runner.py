@@ -137,7 +137,7 @@ class SimpleRunner:
         return store
 
 
-def _print_target_locs(store: Mapping[AssetId, Asset], targets: list[Task]):
+def _print_target_locs(store: Mapping[AssetId, Asset], targets: list[Task]) -> None:
     logger.info("Locations of materialized targets:\n")
     target_locs: dict = {}
     for item in targets:

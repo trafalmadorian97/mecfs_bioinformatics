@@ -64,7 +64,7 @@ def _annot_frame(chrom: int) -> pl.DataFrame:
     )
 
 
-def test_extracts_only_annot_parquet_members(tmp_path: Path):
+def test_extracts_only_annot_parquet_members(tmp_path: Path) -> None:
     tarball = tmp_path / "bundle.tar.gz"
     _build_tarball(
         tarball,
@@ -107,7 +107,7 @@ def test_extracts_only_annot_parquet_members(tmp_path: Path):
     assert got[POLYFUN_A2_COL].to_list() == ["C", "T"]
 
 
-def test_raises_when_a_required_chromosome_is_missing(tmp_path: Path):
+def test_raises_when_a_required_chromosome_is_missing(tmp_path: Path) -> None:
     tarball = tmp_path / "bundle.tar.gz"
     _build_tarball(
         tarball,
@@ -138,7 +138,7 @@ def _ldscore_frame(chrom: int) -> pl.DataFrame:
     )
 
 
-def test_extracts_only_ldscore_members(tmp_path: Path):
+def test_extracts_only_ldscore_members(tmp_path: Path) -> None:
     tarball = tmp_path / "bundle.tar.gz"
     _build_tarball(
         tarball,

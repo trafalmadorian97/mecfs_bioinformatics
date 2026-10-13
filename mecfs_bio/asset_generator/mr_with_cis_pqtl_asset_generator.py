@@ -113,7 +113,7 @@ def mr_cis_pqtl_asset_generator(
         True, 0.01
     ),
     significant_alpha: float = 0.01,
-):
+) -> CisMRTasks:
     """
     Asset generator for applying Mendelian Randomization using cis-pQTLs from the UK Biobank
     Pharma Proteomics project

@@ -8,7 +8,7 @@ from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopy
 from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
 
 
-def test_find_tasks_duplicate_ids(tmp_path: Path):
+def test_find_tasks_duplicate_ids(tmp_path: Path) -> None:
     """
     find_tasks should reject duplicate IDs
     """

@@ -86,7 +86,7 @@ def _set_enable_api_autonav() -> None:
 
 # dev tasks
 @task
-def test(c: Context):
+def test(c: Context) -> None:
     print(
         "Running unit and integration tests with pytest, while skipping un-needed tests with testmon..."
     )
@@ -96,7 +96,7 @@ def test(c: Context):
 
 
 @task
-def test_debug(c: Context):
+def test_debug(c: Context) -> None:
     """
     Run tests with extra information printed.  Useful for debugging.
     """
@@ -107,7 +107,7 @@ def test_debug(c: Context):
 
 
 @task
-def format(c: Context):
+def format(c: Context) -> None:
     """
     Format code
     """
@@ -116,7 +116,7 @@ def format(c: Context):
 
 
 @task
-def formatcheck(c: Context):
+def formatcheck(c: Context) -> None:
     """
     Check for format errors
     """
@@ -125,19 +125,19 @@ def formatcheck(c: Context):
 
 
 @task
-def lintfix(c: Context):
+def lintfix(c: Context) -> None:
     print("linting and applying lint auto-fixes using ruff...")
     c.run("  ruff check --fix --unsafe-fixes")
 
 
 @task
-def lintcheck(c: Context):
+def lintcheck(c: Context) -> None:
     print("linting using ruff...")
     c.run("ruff check")
 
 
 @task
-def typecheck(c: Context):
+def typecheck(c: Context) -> None:
     """
     Check for type errors
     """
@@ -148,7 +148,7 @@ def typecheck(c: Context):
 
 
 @task
-def spellcheck_docs(c: Context):
+def spellcheck_docs(c: Context) -> None:
     """
     check docs for spelling errors
     Edit _typos.toml to add exceptions
@@ -160,7 +160,7 @@ def spellcheck_docs(c: Context):
 
 
 @task
-def spellcheck_src(c: Context):
+def spellcheck_src(c: Context) -> None:
     """
     check code for spelling errors
     Edit _typos.toml to add exceptions
@@ -172,7 +172,7 @@ def spellcheck_src(c: Context):
 
 
 @task
-def checkimports(c: Context):
+def checkimports(c: Context) -> None:
     """
     Use import linter to enforce architectural constraints
     """
@@ -189,7 +189,7 @@ def _missing_init_dirs() -> list[Path]:
 
 
 @task
-def check_init_files(c: Context):
+def check_init_files(c: Context) -> None:
     """
     Verify that every directory under mecfs_bio/ contains an __init__.py.
     """
@@ -205,7 +205,7 @@ def check_init_files(c: Context):
 
 
 @task
-def fix_init_files(c: Context):
+def fix_init_files(c: Context) -> None:
     """
     Add a blank __init__.py to any directory under mecfs_bio/ that is missing one.
     """
@@ -231,7 +231,7 @@ def _module_name(path: Path) -> str:
 
 
 @task
-def check_asset_imports(c: Context):
+def check_asset_imports(c: Context) -> None:
     """
     Verify that every module under mecfs_bio/assets/ can be imported.
 
@@ -275,7 +275,7 @@ BARE_ATTRS_DECORATOR_PATTERN = re.compile(
 
 
 @task
-def check_attrs_slots(c: Context):
+def check_attrs_slots(c: Context) -> None:
     """
     Verify that every attrs frozen/define decorator passes slots explicitly.
 
@@ -299,7 +299,7 @@ def check_attrs_slots(c: Context):
 
 
 @task
-def check_all_links(c: Context):
+def check_all_links(c: Context) -> None:
     """
     Check all links with lychee.
 
@@ -313,7 +313,7 @@ def check_all_links(c: Context):
 @task(help={"threshold": "Consecutive failing runs required to fail the task."})
 def check_all_links_with_streak(
     c: Context, threshold: int = LINK_CHECK_DEFAULT_THRESHOLD
-):
+) -> None:
     """
     Run lychee and update the per-URL consecutive-failure streak state.
 
@@ -399,7 +399,7 @@ def check_all_links_with_streak(
 
 
 @task
-def check_table_trailing_newlines(c: Context):
+def check_table_trailing_newlines(c: Context) -> None:
     """
     Added by Claude:
     Check that markdown docs ending with a table have at least one blank line after the table.
@@ -436,7 +436,7 @@ def check_table_trailing_newlines(c: Context):
 
 
 @task
-def fix_table_trailing_newlines(c: Context):
+def fix_table_trailing_newlines(c: Context) -> None:
     """
     Added by Claude:
     Autofix markdown files that end with a table but lack a trailing blank line.
@@ -466,7 +466,7 @@ def fix_table_trailing_newlines(c: Context):
 
 
 @task
-def check_local_links(c: Context):
+def check_local_links(c: Context) -> None:
     """
     Check local links with lychee
     """
@@ -477,7 +477,7 @@ def check_local_links(c: Context):
 
 
 @task
-def lint_actions(c: Context):
+def lint_actions(c: Context) -> None:
     print("Linting github actions...")
     cmd = "actionlint"
     print(f"running {cmd}")
@@ -501,12 +501,12 @@ def lint_actions(c: Context):
         test,
     ]
 )
-def green(c: Context):
+def green(c: Context) -> None:
     pass
 
 
 @task
-def install_r_packages(c: Context):
+def install_r_packages(c: Context) -> None:
     """
     Install R packages such as TwoSampleMR and LAVA
     """
@@ -518,7 +518,7 @@ def install_r_packages(c: Context):
 
 
 @task()
-def pfig(c: Context):
+def pfig(c: Context) -> None:
     """
     Pull figures from github to populate the _figs directory
     """
@@ -526,7 +526,7 @@ def pfig(c: Context):
 
 
 @task()
-def publish_figures(c: Context):
+def publish_figures(c: Context) -> None:
     """
     Run the end-to-end figure-system workflow: generate any missing
     figures from ALL_FIGURE_TASKS, prune orphan manifest entries (after
@@ -543,7 +543,7 @@ def serve_docs(
     include_authors: bool = False,
     enable_api_autonav: bool = False,
     live_reload: bool = False,
-):
+) -> None:
     """
     Use mkdocs to serve documentation
     """
@@ -567,7 +567,9 @@ def serve_docs(
         pfig,
     ]
 )
-def sdocs(c: Context, include_authors: bool = False, enable_api_autonav: bool = False):
+def sdocs(
+    c: Context, include_authors: bool = False, enable_api_autonav: bool = False
+) -> None:
     """
     Retrieve figures, then serve docs
     """
@@ -577,7 +579,7 @@ def sdocs(c: Context, include_authors: bool = False, enable_api_autonav: bool = 
 
 
 @task
-def build_docs(c: Context):
+def build_docs(c: Context) -> None:
     cmd = "mkdocs build --strict"
     print(f"running {cmd}")
     c.run(cmd)
@@ -615,7 +617,7 @@ def _dir_size(path: Path) -> str:
 )
 def migrate_asset_store(
     c: Context, execute: bool = False, reverse: bool = False, only: str | None = None
-):
+) -> None:
     """
     Reconcile the asset store on disk with the path_remap rules in
     default_runner_config.yaml.
@@ -725,7 +727,7 @@ def migrate_asset_store(
 
 # initialization
 @task(pre=[install_r_packages, pfig, green])
-def init(c: Context):
+def init(c: Context) -> None:
     """
     Initial repo setup
     """

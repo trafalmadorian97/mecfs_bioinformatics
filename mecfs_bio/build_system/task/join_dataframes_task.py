@@ -3,7 +3,7 @@ Task to perform a SQL-style join.
 """
 
 from pathlib import Path
-from typing import Sequence
+from typing import Self, Sequence
 
 import structlog
 from attrs import frozen
@@ -117,7 +117,7 @@ class JoinDataFramesTask(Task):
         df_2_pipe: DataProcessingPipe = IdentityPipe(),
         out_pipe: DataProcessingPipe = IdentityPipe(),
         backend: ValidBackend = "polars",
-    ):
+    ) -> Self:
         """
         Join a result dataframe to a reference dataframe.
         """

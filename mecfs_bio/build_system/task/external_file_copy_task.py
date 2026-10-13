@@ -24,7 +24,7 @@ class ExternalFileCopyTask(GeneratingTask):
     meta: SimpleFileMeta
     external_path: Path
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.external_path.is_file()
 
     @property

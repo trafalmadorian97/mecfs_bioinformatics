@@ -4,7 +4,7 @@ from mecfs_bio.util.external_util.bcftools import build_bcftools_index_command
 from mecfs_bio.util.subproc.run_command import execute_command
 
 
-def test_bcftools_indexing_command(tmp_path: Path):
+def test_bcftools_indexing_command(tmp_path: Path) -> None:
     """
     Test that we can construct an index using the bcftools indexing command
     """

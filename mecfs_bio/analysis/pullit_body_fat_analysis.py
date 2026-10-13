@@ -11,7 +11,7 @@ from mecfs_bio.assets.gwas.body_fat_distribution.pullit_et_al_2018.processed_gwa
 )
 
 
-def run_body_fat_distribution_analysis():
+def run_body_fat_distribution_analysis() -> None:
     """
     Analyze body fat distribution GWAS from pullit et al.
     Includes:

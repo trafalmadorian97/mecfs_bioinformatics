@@ -43,7 +43,7 @@ _EXPECTED_LEAD_POS = 173_855_298
 _EXPECTED_LEAD_ALLELES = frozenset({"A", "T"})
 
 
-def test_decode_me_polyfun_susie_lead_variant(tmp_path: Path):
+def test_decode_me_polyfun_susie_lead_variant(tmp_path: Path) -> None:
     """
     Test that we can run the DecodeME chr1 PolyFun-SUSIE explainability workflow for the L=10 run
     config -- the full uniform/polyfun SUSIE pair plus its contrast, explainability plot, and

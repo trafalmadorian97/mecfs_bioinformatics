@@ -1,4 +1,5 @@
 from pathlib import Path, PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -92,7 +93,7 @@ class MixerBivariateSummarizeResultsTask(Task):
         combine_task: MixerBivariateCombine,
         override_trait_1_name: str | None = None,
         override_trait_2_name: str | None = None,
-    ):
+    ) -> Self:
         source_meta = combine_task.meta
         meta: Meta
         if isinstance(source_meta, ResultDirectoryMeta):

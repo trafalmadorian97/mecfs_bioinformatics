@@ -25,7 +25,7 @@ class PanelAlleleFrequencyColumns:
 
     entries: tuple[PanelAncestryColumn, ...]
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         ancestries = self.ancestries
         assert ancestries, "a panel must declare at least one ancestry"
         assert len(set(ancestries)) == len(ancestries), (

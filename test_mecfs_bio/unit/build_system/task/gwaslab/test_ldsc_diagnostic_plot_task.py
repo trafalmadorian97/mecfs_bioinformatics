@@ -44,17 +44,17 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.constants.ldsc_constants import LDSC_Z_COL
 
 
-def test_compute_chi2_prefers_z_column():
+def test_compute_chi2_prefers_z_column() -> None:
     df = pd.DataFrame({LDSC_Z_COL: [2.0, -3.0]})
     assert compute_chi2(df).tolist() == [4.0, 9.0]
 
 
-def test_compute_chi2_falls_back_to_beta_over_se():
+def test_compute_chi2_falls_back_to_beta_over_se() -> None:
     df = pd.DataFrame({GWASLAB_BETA_COL: [2.0, -3.0], GWASLAB_SE_COL: [1.0, 1.0]})
     assert compute_chi2(df).tolist() == [4.0, 9.0]
 
 
-def test_merge_matches_on_rsid_and_aligns_chi2_with_ld():
+def test_merge_matches_on_rsid_and_aligns_chi2_with_ld() -> None:
     sumstats = pd.DataFrame(
         {GWASLAB_RSID_COL: ["rs1", "rs2", "rs3"], LDSC_Z_COL: [1.0, 2.0, 3.0]}
     )
@@ -75,7 +75,7 @@ class _FakeSumstats:
         data: pd.DataFrame | None = None,
         ldsc_h2_summary: pd.DataFrame | None = None,
         build: str = "19",
-    ):
+    ) -> None:
         self.data = data if data is not None else pd.DataFrame()
         self.meta = {"gwaslab": {"genome_build": build}}
         self._summary = ldsc_h2_summary
@@ -99,7 +99,7 @@ class _FakeSumstats:
         self.ldsc_h2 = self._summary
 
 
-def test_gwaslab_observed_fit_reads_intercept_and_observed_h2():
+def test_gwaslab_observed_fit_reads_intercept_and_observed_h2() -> None:
     # gwaslab's parse_ldsc_summary yields string-valued Intercept and h2_obs columns.
     fake = _FakeSumstats(
         ldsc_h2_summary=pd.DataFrame({"Intercept": ["0.93"], "h2_obs": ["0.2"]}),
@@ -110,7 +110,7 @@ def test_gwaslab_observed_fit_reads_intercept_and_observed_h2():
     assert fit.h2_obs == pytest.approx(0.2)
 
 
-def test_gwaslab_observed_fit_requests_observed_scale():
+def test_gwaslab_observed_fit_requests_observed_scale() -> None:
     # Observed scale means None (not NaN) prevalences: gwaslab labels the result "Liability" and
     # renames the h2 column whenever both prevalences are not None, so None is what keeps the plain
     # h2_obs column -- the scale in which the fitted slope is reconstructable.
@@ -123,11 +123,13 @@ def test_gwaslab_observed_fit_requests_observed_scale():
     assert fake.estimate_call["pop_prev"] is None
 
 
-def test_liability_h2_is_none_for_a_quantitative_phenotype():
+def test_liability_h2_is_none_for_a_quantitative_phenotype() -> None:
     assert liability_h2(0.1, QuantPhenotype(total_sample_size=1000)) is None
 
 
-def test_liability_h2_applies_gwaslabs_conversion_with_sample_and_population_prevalence():
+def test_liability_h2_applies_gwaslabs_conversion_with_sample_and_population_prevalence() -> (
+    None
+):
     # P is the sample prevalence, K the population prevalence. Choosing P != K makes the
     # conversion asymmetric, so a swapped-argument regression would not match.
     pheno = BinaryPhenotypeSampleInfo(
@@ -137,7 +139,7 @@ def test_liability_h2_applies_gwaslabs_conversion_with_sample_and_population_pre
     assert liability_h2(0.1, pheno) == pytest.approx(expected)
 
 
-def test_figure_annotation_includes_liability_line_only_when_given():
+def test_figure_annotation_includes_liability_line_only_when_given() -> None:
     bins = bin_by_ld_score(
         np.array([1.0, 2.0, 3.0, 4.0]), np.array([1.0, 2.0, 3.0, 4.0]), n_bins=2
     )
@@ -153,7 +155,7 @@ def test_figure_annotation_includes_liability_line_only_when_given():
     assert "liability" not in without_liab.layout.annotations[0].text.lower()
 
 
-def test_figure_anchors_a_trace_to_the_secondary_axis():
+def test_figure_anchors_a_trace_to_the_secondary_axis() -> None:
     # A secondary y-axis only renders when a trace references it, so guard that one does -- without
     # it the chi^2 * M / N axis silently disappears.
     bins = bin_by_ld_score(
@@ -180,7 +182,7 @@ def _write_ld_dir(ld_dir: Path, rsids: list[str], l2: list[float]) -> None:
     (ld_dir / "LDscore.1.l2.M_5_50").write_text("1000\n")
 
 
-def test_task_execute_writes_a_plot(tmp_path: Path):
+def test_task_execute_writes_a_plot(tmp_path: Path) -> None:
     rsids = [f"rs{i}" for i in range(9)]
     ld_dir = tmp_path / "ldref"
     _write_ld_dir(ld_dir, rsids, l2=[float(i + 1) for i in range(9)])

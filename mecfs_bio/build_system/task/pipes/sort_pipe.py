@@ -11,7 +11,7 @@ class SortPipe(DataProcessingPipe):
     by: Sequence[str]
     desc: Sequence[bool] | bool = False
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if not isinstance(self.desc, bool):
             assert len(self.by) == len(self.desc)
 

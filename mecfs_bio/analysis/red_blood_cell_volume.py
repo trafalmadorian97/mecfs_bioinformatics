@@ -11,7 +11,7 @@ from mecfs_bio.assets.gwas.red_blood_cell_volume.million_veterans.analysis.rbc_v
 )
 
 
-def run_red_blood_cell_volume_analysis():
+def run_red_blood_cell_volume_analysis() -> None:
     """
     Analyze GWAS of red blood cell volume from a million veterans
     Includes:
@@ -21,11 +21,13 @@ def run_red_blood_cell_volume_analysis():
 
 
     """
+    labeled_gene_task = MILLION_VETERANS_EUR_RBC_VOLUME_MAGMA_TASKS.inner.thesaurus_labeled_filtered_gene_analysis_task
+    assert labeled_gene_task is not None
     DEFAULT_RUNNER.run(
         [
             MILLION_VETERANS_EUR_RBC_VOLUME_MAGMA_TASKS.inner.bar_plot_task,
             MILLION_VETERANS_EUR_RBC_VOLUME_MAGMA_TASKS.inner.gene_analysis_task,
-            MILLION_VETERANS_EUR_RBC_VOLUME_MAGMA_TASKS.inner.labeled_filtered_gene_analysis_task,
+            labeled_gene_task,
         ]
         + list(MILLION_VETERANS_EUR_RBC_VOL_S_LDSC_TASKS.get_terminal_tasks()),
         incremental_save=True,

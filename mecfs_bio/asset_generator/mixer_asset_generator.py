@@ -79,7 +79,7 @@ def univariate_mixer_asset_generator(
     reference_data_directory_task: Task,
     reps: Sequence[int] = tuple(range(1, 21)),
     threads: int = 4,
-):
+) -> UnivariateMixerTasks:
     """
     Asset generator to apply univariate MiXeR to GWAS summary statistics.
 

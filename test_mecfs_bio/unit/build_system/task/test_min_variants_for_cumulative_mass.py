@@ -5,7 +5,7 @@ from mecfs_bio.build_system.task.pipes.min_variants_for_cumulative_mass import (
 )
 
 
-def test_keeps_minimal_prefix_per_group_crossing_threshold():
+def test_keeps_minimal_prefix_per_group_crossing_threshold() -> None:
     df = pl.DataFrame(
         {
             "cs": ["L1", "L1", "L1", "L2", "L2"],
@@ -20,7 +20,7 @@ def test_keeps_minimal_prefix_per_group_crossing_threshold():
     assert set(out["v"].to_list()) == {"a", "b", "d"}
 
 
-def test_group_never_reaching_threshold_keeps_all_rows():
+def test_group_never_reaching_threshold_keeps_all_rows() -> None:
     df = pl.DataFrame({"cs": ["L1", "L1"], "pip": [0.2, 0.15], "v": ["a", "b"]})
     out = MinVariantsForCumulativeMass(
         group_col="cs", value_col="pip", threshold=0.5

@@ -5,7 +5,7 @@ See: https://en.wikipedia.org/wiki/UpSet_plot
 
 import array
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import matplotlib.pyplot as plt
 import png
@@ -133,7 +133,7 @@ class UpSetPlotTask(Task):
         return FileAsset(scratch_dir / "upset.png")
 
     @classmethod
-    def create(cls, asset_id: str, set_sources: Sequence[SetSource]):
+    def create(cls, asset_id: str, set_sources: Sequence[SetSource]) -> Self:
         assert len(set_sources) >= 1
         source_meta = set_sources[0].task.meta
         if isinstance(source_meta, ResultDirectoryMeta):
@@ -150,7 +150,7 @@ class UpSetPlotTask(Task):
         raise ValueError(f"Unknown source meta {source_meta}")
 
 
-def write_blank_png(pth: Path):
+def write_blank_png(pth: Path) -> None:
     width = 200
     height = 100
     pixel_data = array.array("B", [255] * (width * height))

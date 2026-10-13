@@ -48,7 +48,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approa
 )
 
 
-def run_decode_me_polyfun_l2_sldsc_prior_fine_mapping():
+def run_decode_me_polyfun_l2_sldsc_prior_fine_mapping() -> None:
     """
     Function to build the DecodeME L2-regularized S-LDSC prior and run the
     explainability fine mapping with it at the selected DecodeME loci.

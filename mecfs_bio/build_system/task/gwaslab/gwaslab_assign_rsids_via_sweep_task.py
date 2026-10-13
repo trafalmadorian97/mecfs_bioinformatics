@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import gwaslab
 from attrs import frozen
@@ -62,7 +63,7 @@ class GWASLabAssignRSIDSViaSweepTask(Task):
         vcf_dir_task: Task,
         vcf_filename: str,
         options: GWASLabRSIDAssignmentOptions = GWASLabRSIDAssignmentOptions(),
-    ):
+    ) -> Self:
         source_meta = sumstats_task.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
         meta = GWASLabSumStatsMeta(

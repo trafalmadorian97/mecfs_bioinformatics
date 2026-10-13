@@ -11,7 +11,7 @@ from mecfs_bio.build_system.tasks.base_tasks import Tasks
 class SimpleTasks(Tasks):
     tasks: Mapping[AssetId, Task]
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         for asset_id, task in self.tasks.items():
             assert task.asset_id == asset_id
 
@@ -32,7 +32,7 @@ def find_tasks(target_tasks: list[Task]) -> SimpleTasks:
     tasks: dict[AssetId, Task] = {}
     visited = set()
 
-    def explore_task(t: Task):
+    def explore_task(t: Task) -> None:
         visited.add(t.asset_id)
         for dep in t.deps:
             if dep.asset_id not in visited:

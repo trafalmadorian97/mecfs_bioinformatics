@@ -38,11 +38,11 @@ def _st3(rows: list[tuple[str, str, str, str]]) -> pl.DataFrame:
         (None, None),
     ],
 )
-def test_parse_chrom(label: str | None, expected: int | None):
+def test_parse_chrom(label: str | None, expected: int | None) -> None:
     assert parse_chrom(label) == expected
 
 
-def test_read_gene_coords():
+def test_read_gene_coords() -> None:
     coords = read_gene_coords(
         _st3(
             [
@@ -58,7 +58,7 @@ def test_read_gene_coords():
     assert coords[Oid("OID20921")].chrom == 23
 
 
-def test_read_gene_coords_skips_proteins_without_a_single_locus():
+def test_read_gene_coords_skips_proteins_without_a_single_locus() -> None:
     """Multi-protein complexes carry semicolon-joined values in every coordinate column; they
     get no cis window rather than a nonsensical one."""
     coords = read_gene_coords(
@@ -72,6 +72,6 @@ def test_read_gene_coords_skips_proteins_without_a_single_locus():
     assert set(coords) == {Oid("OID30771")}
 
 
-def test_read_gene_coords_requires_expected_columns():
+def test_read_gene_coords_requires_expected_columns() -> None:
     with pytest.raises(AssertionError):
         read_gene_coords(pl.DataFrame({ST3_OLINK_ID_COL: ["OID30771"]}))

@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.make_executable_wrapper_task import (
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_extract_from_zip_and_make_executable(tmp_path: Path):
+def test_extract_from_zip_and_make_executable(tmp_path: Path) -> None:
     name_in_archive = "my_compressed_file"
     source_zip_path = tmp_path / "source_zip.zip"
     scratch_dir = tmp_path / "scratch"

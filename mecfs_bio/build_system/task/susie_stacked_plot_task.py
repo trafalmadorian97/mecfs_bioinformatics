@@ -4,7 +4,7 @@ A Task and associated helper methods to plot the results and context of SUSIE fi
 
 import gc
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -207,7 +207,7 @@ class SusieStackPlotTask(Task):
         gene_info_pipe: DataProcessingPipe,
         region_mode: RegionSelect,
         heatmap_options: HeatmapOptions,
-    ):
+    ) -> Self:
         src_meta = susie_task.meta
         assert isinstance(src_meta, ResultDirectoryMeta)
         meta = GWASPlotFileMeta(
@@ -421,7 +421,7 @@ def plot_gene_tracks(
     gene_strand_col: str,
     font_size: int = 9,
     min_dist_between_genes: float = 0.03,  # Slightly increased buffer
-):
+) -> None:
     """
     Generated With Gemini
     Plots gene tracks with smart label centering and collision avoidance.
@@ -550,7 +550,7 @@ def draw_manhattan_track(
     max_break_proportion: float = 0.5,  # Cap the top section at 50% height
     saturation_point: float = 100.0,  # Point where we reach max height proportion
     significance_threshold: float = GWAS_SIGNIFICANCE_MLOG10P,
-):
+) -> Axes:
     """
     Generated with Gemini and then modified.
 
@@ -707,7 +707,7 @@ def plot_susie_track(
     susie_pip_col: str = PIP_COLUMN,
     susie_pos_col: str = GWASLAB_POS_COL,
     cs_label_mode: CredibleSetLabelMode = "positional",
-):
+) -> None:
     """
     Plot SUSIE pip using a bar graph colored by credible set.
 
@@ -754,7 +754,7 @@ def plot_ld_heatmap(
     fig: Figure,
     ld_cax: Axes,
     gwas_pos_col: str = GWASLAB_POS_COL,
-):
+) -> None:
     if options.mode == "ld_abs":
         to_plot: np.ndarray = abs(ld_np)
     elif options.mode == "ld2":

@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.filter_snps_by_frequency import (
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_filter_snps_by_frequency_task(tmp_path: Path):
+def test_filter_snps_by_frequency_task(tmp_path: Path) -> None:
     df_1_loc = tmp_path / "df_1.csv"
     df_1 = pd.DataFrame(
         {
@@ -71,7 +71,9 @@ def test_filter_snps_by_frequency_task(tmp_path: Path):
     )
 
 
-def test_filter_snps_by_frequency_rejects_percentage_frequencies(tmp_path: Path):
+def test_filter_snps_by_frequency_rejects_percentage_frequencies(
+    tmp_path: Path,
+) -> None:
     """A frequency column reported as a percentage (0-100) must fail fast."""
     df_loc = tmp_path / "df.csv"
     pd.DataFrame(

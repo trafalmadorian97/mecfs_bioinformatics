@@ -40,7 +40,7 @@ def _make_gwas_source(asset_id: str, alias: str) -> GenomicSEMSumstatsSource:
     )
 
 
-def test_rejects_duplicate_aliases():
+def test_rejects_duplicate_aliases() -> None:
     """The two traits must have distinct aliases (they key the output columns)."""
     composite = _make_gwas_source("trait_a_data", "same")
     reference = _make_gwas_source("trait_b_data", "same")
@@ -55,7 +55,7 @@ def test_rejects_duplicate_aliases():
         )
 
 
-def test_sumstats_trait_builds_linear_trait():
+def test_sumstats_trait_builds_linear_trait() -> None:
     """sumstats_trait carries name/N through; there is no per-trait method."""
     src = _make_gwas_source("t_data", "t")
     df = pl.DataFrame({"SNP": ["rs1"], "P": [0.5], "effect": [0.1]})

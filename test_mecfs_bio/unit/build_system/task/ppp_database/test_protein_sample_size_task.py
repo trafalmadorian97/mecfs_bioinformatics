@@ -34,22 +34,22 @@ def _make_protein_tar(tmp_path: Path, n: int) -> Path:
     return tar_path
 
 
-def test_first_regular_member_data_offset_skips_directory_stub(tmp_path: Path):
+def test_first_regular_member_data_offset_skips_directory_stub(tmp_path: Path) -> None:
     head = _make_protein_tar(tmp_path, n=33709).read_bytes()[:65536]
     # Directory stub header at 0, data at 512; first regular file's data at 1024.
     assert _first_regular_member_data_offset(head) == 1024
 
 
-def test_extract_regenie_n_from_tar_head(tmp_path: Path):
+def test_extract_regenie_n_from_tar_head(tmp_path: Path) -> None:
     head = _make_protein_tar(tmp_path, n=33709).read_bytes()[:65536]
     assert extract_regenie_n_from_tar_head(head) == 33709
 
 
-def test_extract_regenie_n_from_tar_head_other_value(tmp_path: Path):
+def test_extract_regenie_n_from_tar_head_other_value(tmp_path: Path) -> None:
     head = _make_protein_tar(tmp_path, n=41069).read_bytes()[:65536]
     assert extract_regenie_n_from_tar_head(head) == 41069
 
 
-def test_first_regular_member_data_offset_raises_without_member():
+def test_first_regular_member_data_offset_raises_without_member() -> None:
     with pytest.raises(ValueError, match="no regular-file member"):
         _first_regular_member_data_offset(b"\x00" * 512)

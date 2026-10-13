@@ -138,7 +138,7 @@ LAVA_VIGNETTE_TEST_TASK = LavaTask.create(
 )
 
 
-def test_lava_local_genetic_correlation(tmp_path: Path):
+def test_lava_local_genetic_correlation(tmp_path: Path) -> None:
     """
     Test that the LavaTask can run end-to-end with real data:
     - Downloads g1000 EUR LD reference
@@ -190,7 +190,7 @@ def test_lava_local_genetic_correlation(tmp_path: Path):
             assert "locus" in bivar_df.columns
 
 
-def test_lava_vignette_data(tmp_path: Path):
+def test_lava_vignette_data(tmp_path: Path) -> None:
     """
     Fast system test using the small sample data from the LAVA vignettes.
 

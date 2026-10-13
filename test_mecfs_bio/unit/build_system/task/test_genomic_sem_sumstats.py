@@ -23,7 +23,7 @@ def _ref(
     return pl.DataFrame({"SNP": snps, "A1": a1, "A2": a2, "MAF": maf})
 
 
-def test_linear_standardization():
+def test_linear_standardization() -> None:
     """beta = Z/sqrt(N*varSNP) and se = 1/sqrt(N*varSNP), for any trait."""
     ref = _ref(["rs1"], ["A"], ["G"], [0.3])
     df = pl.DataFrame(
@@ -48,7 +48,7 @@ def test_linear_standardization():
     assert out["se.t"][0] == pytest.approx(expected_se, rel=1e-9)
 
 
-def test_negative_effect_flips_z_sign():
+def test_negative_effect_flips_z_sign() -> None:
     """A negative effect gives a negative standardised beta (sign carried through)."""
     ref = _ref(["rs1"], ["A"], ["G"], [0.3])
     df = pl.DataFrame(
@@ -66,7 +66,7 @@ def test_negative_effect_flips_z_sign():
     assert out["beta.t"][0] < 0
 
 
-def test_odds_ratio_effect_raises():
+def test_odds_ratio_effect_raises() -> None:
     """An effect column whose median rounds to 1 looks like an OR -> raise."""
     ref = _ref(["rs1", "rs2", "rs3"], ["A", "C", "G"], ["G", "T", "A"], [0.3, 0.3, 0.3])
     df = pl.DataFrame(

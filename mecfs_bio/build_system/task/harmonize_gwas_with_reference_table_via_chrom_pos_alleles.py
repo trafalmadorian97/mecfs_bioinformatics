@@ -4,6 +4,7 @@ using chromosome, position, alleles for matching
 """
 
 from pathlib import Path
+from typing import Self
 
 import polars as pl
 import structlog
@@ -254,7 +255,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         gwas_pipe: DataProcessingPipe = IdentityPipe(),
         ref_pipe: DataProcessingPipe = IdentityPipe(),
         chrom_range_filter: ChromRange | None = None,
-    ):
+    ) -> Self:
         source_meta = gwas_data_task.meta
         read_spec = DataFrameReadSpec(DataFrameParquetFormat())
         meta: Meta

@@ -2,6 +2,8 @@
 Metadata describing a miscellaneous file.
 """
 
+from typing import Self
+
 from attrs import field, frozen
 
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -19,7 +21,7 @@ class SimpleFileMeta(FileMeta):
         return self.id
 
     @classmethod
-    def create(cls, asset_id: str):
+    def create(cls, asset_id: str) -> Self:
         return cls(
             id=AssetId(asset_id),
         )

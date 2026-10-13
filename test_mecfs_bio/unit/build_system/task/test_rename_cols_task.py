@@ -32,7 +32,7 @@ def _harmonizable_source(task_id: str) -> FakeTask:
     )
 
 
-def test_create_remaps_harmonization_info():
+def test_create_remaps_harmonization_info() -> None:
     task = RenameColsTask.create(
         source_task=_harmonizable_source("src"),
         asset_id="renamed",
@@ -44,7 +44,7 @@ def test_create_remaps_harmonization_info():
     assert (info.build, info.ref_allele_col, info.pos_col) == ("19", "NEA", "POS")
 
 
-def test_create_rejects_colliding_provenance_columns():
+def test_create_rejects_colliding_provenance_columns() -> None:
     with pytest.raises(AssertionError):
         RenameColsTask.create(
             source_task=_harmonizable_source("src"),

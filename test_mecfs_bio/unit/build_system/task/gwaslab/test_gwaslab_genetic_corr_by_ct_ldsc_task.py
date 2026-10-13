@@ -135,7 +135,7 @@ def _sumstats_from_snps(snps: list[HapmapSNP], study: str = "trait1") -> gl.Sums
     )
 
 
-def test_filter_sumstats_keeps_only_hapmap3():
+def test_filter_sumstats_keeps_only_hapmap3() -> None:
     real = _hapmap3_snps(5)
     fake = [
         HapmapSNP(rsid="rs999999991", a1="A", a2="G", chrom=1, pos=10_000_001),
@@ -149,7 +149,7 @@ def test_filter_sumstats_keeps_only_hapmap3():
     assert set(sumstats.data["rsID"]) == {s.rsid for s in real}
 
 
-def test_filter_sumstats_removes_indels_and_palindromes():
+def test_filter_sumstats_removes_indels_and_palindromes() -> None:
     snps = _hapmap3_snps(4)
 
     # Row 0: leave as a normal SNP (A/G)
@@ -174,7 +174,7 @@ def test_filter_sumstats_removes_indels_and_palindromes():
     assert surviving == {snps[0].rsid, snps[3].rsid}
 
 
-def test_get_compatible_snps_polars():
+def test_get_compatible_snps_polars() -> None:
     # i: rs1 A/G, rs2 A/G,        rs3 C/G,         rs4 A/T,             rs5 A/G
     # j: rs1 A/G (match),
     #    rs2 G/A (flipped match),
@@ -201,7 +201,7 @@ def test_get_compatible_snps_polars():
     assert set(result["rsID"]) == {"rs1", "rs2", "rs3"}
 
 
-def test_load_and_preprocess_sumstats(tmp_path: Path):
+def test_load_and_preprocess_sumstats(tmp_path: Path) -> None:
     real = _hapmap3_snps(5)
     fake = [HapmapSNP(rsid="rs999999991", a1="A", a2="G", chrom=1, pos=10_000_001)]
     sumstats = _sumstats_from_snps(real + fake, study="trait_a")
@@ -230,7 +230,7 @@ def test_load_and_preprocess_sumstats(tmp_path: Path):
     assert set(out_sumstats.data["rsID"]) == {s.rsid for s in real}
 
 
-def test_load_and_preprocess_sumstats_drops_degenerate_z(tmp_path: Path):
+def test_load_and_preprocess_sumstats_drops_degenerate_z(tmp_path: Path) -> None:
     """Variants with SE == 0 give an infinite LDSC Z (BETA/SE) and abort the SVD
     inside the cross-trait regression, so they must not reach LDSC.
 
@@ -331,7 +331,7 @@ def _write_ld_reference(
     (directory / "LDscore.1.l2.M").write_text(f"{_LDSC_M_5_50}\n")
 
 
-def test_execute_runs_ldsc_and_returns_numeric_rg(tmp_path: Path):
+def test_execute_runs_ldsc_and_returns_numeric_rg(tmp_path: Path) -> None:
     snps = _hapmap3_snps(len(_HAPMAP3_SAMPLE))
 
     ld_dir = tmp_path / "ld_ref"

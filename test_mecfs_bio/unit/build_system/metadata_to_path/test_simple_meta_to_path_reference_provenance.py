@@ -17,7 +17,7 @@ from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path impor
 )
 
 
-def test_fasta_meta_resolves_like_reference_directory():
+def test_fasta_meta_resolves_like_reference_directory() -> None:
     fasta = FASTAMeta(
         group="genome_sequence",
         sub_group="ucsc_hg19",
@@ -34,7 +34,7 @@ def test_fasta_meta_resolves_like_reference_directory():
     assert simple_meta_to_relative_path(fasta) == simple_meta_to_relative_path(twin)
 
 
-def test_harmonizable_table_resolves_like_reference_file():
+def test_harmonizable_table_resolves_like_reference_file() -> None:
     table = HarmonizableReferenceTableMeta(
         group="g",
         sub_group="s",

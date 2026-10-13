@@ -94,7 +94,7 @@ def _minimal_row(
     }
 
 
-def test_fixed_effect_meta_analysis_task(tmp_path: Path):
+def test_fixed_effect_meta_analysis_task(tmp_path: Path) -> None:
     """
     Run a meta-analysis in a simple synthetic case
     """
@@ -187,20 +187,20 @@ def test_fixed_effect_meta_analysis_task(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_case_control_effective_sample_size_equal_split():
+def test_case_control_effective_sample_size_equal_split() -> None:
     """Equal cases/controls: ESS = N (equal to total N)."""
     info = CaseControlSampleInfo(cases=100, controls=100)
     assert info.effective_sample_size() == 200
 
 
-def test_case_control_effective_sample_size_unequal_split():
+def test_case_control_effective_sample_size_unequal_split() -> None:
     """ESS < N when cases != controls (harmonic mean penalty)."""
     # 4 / (1/100 + 1/400) = 4 / 0.0125 = 320
     info = CaseControlSampleInfo(cases=100, controls=400)
     assert info.effective_sample_size() == 320
 
 
-def test_case_control_effective_sample_size_extreme_imbalance():
+def test_case_control_effective_sample_size_extreme_imbalance() -> None:
     # 4 / (1/1000 + 1/9000) = 4 / (10/9000) = 3600
     info = CaseControlSampleInfo(cases=1000, controls=9000)
     assert info.effective_sample_size() == 3600
@@ -211,7 +211,7 @@ def test_case_control_effective_sample_size_extreme_imbalance():
 # ---------------------------------------------------------------------------
 
 
-def test_requires_at_least_two_sources():
+def test_requires_at_least_two_sources() -> None:
     """Constructing a task with a single source raises AssertionError."""
     with pytest.raises(AssertionError):
         FixedEffectsMetaAnalysisTask(
@@ -225,7 +225,7 @@ def test_requires_at_least_two_sources():
 # ---------------------------------------------------------------------------
 
 
-def test_beta_equal_se_is_average(tmp_path: Path):
+def test_beta_equal_se_is_average(tmp_path: Path) -> None:
     """When both studies have equal SE, the meta-beta is their simple average."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.2, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.8, se=0.1)])
@@ -235,7 +235,7 @@ def test_beta_equal_se_is_average(tmp_path: Path):
     assert result[GWASLAB_SE_COL].item() == pytest.approx(0.1 / (2**0.5), abs=1e-6)
 
 
-def test_beta_unequal_se_lower_se_dominates(tmp_path: Path):
+def test_beta_unequal_se_lower_se_dominates(tmp_path: Path) -> None:
     """The study with lower SE should pull the meta-beta toward its own beta."""
     # Study 1: beta=0.0, SE=0.1  (precise, should dominate)
     # Study 2: beta=1.0, SE=0.5  (imprecise)
@@ -255,7 +255,7 @@ def test_beta_unequal_se_lower_se_dominates(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_allele_flip_harmonises_beta(tmp_path: Path):
+def test_allele_flip_harmonises_beta(tmp_path: Path) -> None:
     """Study 2 reported with swapped alleles (opposite strand coding) is correctly harmonised."""
     # Study 1: EA=A, NEA=C, BETA=+0.5  → A increases trait
     # Study 2: EA=C, NEA=A, BETA=-0.5  → same biology, opposite coding
@@ -269,7 +269,7 @@ def test_allele_flip_harmonises_beta(tmp_path: Path):
     assert result[GWASLAB_SE_COL].item() == pytest.approx(0.1 / (2**0.5), abs=1e-6)
 
 
-def test_allele_flip_sets_flipped_flag(tmp_path: Path):
+def test_allele_flip_sets_flipped_flag(tmp_path: Path) -> None:
     """The flipped_1 column is True for a variant that needed harmonisation."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.5, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "C", "A", beta=-0.5, se=0.1)])
@@ -277,7 +277,7 @@ def test_allele_flip_sets_flipped_flag(tmp_path: Path):
     assert result["flipped_1"].item() is True
 
 
-def test_no_flip_sets_flipped_flag_false(tmp_path: Path):
+def test_no_flip_sets_flipped_flag_false(tmp_path: Path) -> None:
     """The flipped_1 column is False when alleles already match without flipping."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.5, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.5, se=0.1)])
@@ -290,7 +290,7 @@ def test_no_flip_sets_flipped_flag_false(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_partial_overlap_returns_intersection(tmp_path: Path):
+def test_partial_overlap_returns_intersection(tmp_path: Path) -> None:
     """Only variants shared by both studies appear in the output."""
     df1 = pd.DataFrame(
         [
@@ -305,7 +305,7 @@ def test_partial_overlap_returns_intersection(tmp_path: Path):
     assert result[GWASLAB_POS_COL].item() == 10
 
 
-def test_empty_intersection_produces_empty_output(tmp_path: Path):
+def test_empty_intersection_produces_empty_output(tmp_path: Path) -> None:
     """Studies with no shared variants produce a zero-row result (no error)."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 20, "G", "T", beta=0.5, se=0.2)])
@@ -318,7 +318,7 @@ def test_empty_intersection_produces_empty_output(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_n_eff_column_is_correct(tmp_path: Path):
+def test_n_eff_column_is_correct(tmp_path: Path) -> None:
     """N_EFF equals the sum of effective sample sizes across all sources."""
     # cases=100, controls=400  →  ESS = 320
     # cases=50,  controls=50   →  ESS = 100
@@ -331,7 +331,7 @@ def test_n_eff_column_is_correct(tmp_path: Path):
     assert result[GWASLAB_EFFECTIVE_SAMPLE_SIZE].item() == 420
 
 
-def test_rsid_from_study1_is_preserved(tmp_path: Path):
+def test_rsid_from_study1_is_preserved(tmp_path: Path) -> None:
     """rsID present in study 1 flows through to the output."""
     df1 = pd.DataFrame(
         {
@@ -350,7 +350,7 @@ def test_rsid_from_study1_is_preserved(tmp_path: Path):
     assert result[GWASLAB_RSID_COL].item() == "rs12345"
 
 
-def test_no_rsid_column_when_study1_lacks_it(tmp_path: Path):
+def test_no_rsid_column_when_study1_lacks_it(tmp_path: Path) -> None:
     """When study 1 has no rsID column the output also has no rsID column."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.4, se=0.15)])

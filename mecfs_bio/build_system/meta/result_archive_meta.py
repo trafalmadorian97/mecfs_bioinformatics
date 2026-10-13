@@ -18,7 +18,7 @@ class ResultArchiveMeta(FileMeta):
     extension: str
     sub_dir: PurePath = PurePath("analysis/result_archives")
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.extension.startswith(".")
 
     @property

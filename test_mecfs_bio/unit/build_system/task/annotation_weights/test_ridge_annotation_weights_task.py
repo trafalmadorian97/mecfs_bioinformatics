@@ -128,7 +128,7 @@ def _run_task(
     return result.path
 
 
-def test_recovers_known_linear_weights(tmp_path: Path):
+def test_recovers_known_linear_weights(tmp_path: Path) -> None:
     annot_path, meta_path, truth = _make_inputs(tmp_path)
     out = _run_task(tmp_path, annot_path, meta_path, alphas=(1e-4, 1e-2, 1.0, 100.0))
 
@@ -143,7 +143,7 @@ def test_recovers_known_linear_weights(tmp_path: Path):
     assert diagnostics["n_variants"] == 801
 
 
-def test_noisy_shrunk_fit_is_numerically_pinned(tmp_path: Path):
+def test_noisy_shrunk_fit_is_numerically_pinned(tmp_path: Path) -> None:
     # Regression guard for the ridge arithmetic: a noisy target at a penalty large
     # enough to visibly shrink the coefficients, so the pinned values depend on the
     # standardization, alpha selection, and held-out R^2, not just on the truth.

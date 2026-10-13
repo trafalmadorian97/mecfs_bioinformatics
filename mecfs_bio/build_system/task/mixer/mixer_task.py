@@ -7,7 +7,7 @@ import os
 import shutil
 import tempfile
 from pathlib import Path, PurePath
-from typing import Callable, Sequence
+from typing import Callable, Self, Sequence
 
 import narwhals as nw
 from attrs import frozen
@@ -252,7 +252,7 @@ class MixerTask(Task):
         threads: int = 4,
         reps_to_perform: Sequence[int] = tuple(range(1, 21)),
         chr_args: str | None = None,
-    ):
+    ) -> Self:
         source_meta = trait_1_source.task.meta
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):

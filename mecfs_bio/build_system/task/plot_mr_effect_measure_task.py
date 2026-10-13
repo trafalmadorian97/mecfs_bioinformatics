@@ -3,6 +3,7 @@ Create an effect measure plot using zepid
 """
 
 from pathlib import Path
+from typing import Self
 
 import matplotlib.pyplot as plt
 from attrs import frozen
@@ -106,7 +107,7 @@ class PlotMREffectMeasure(Task):
         source_df_task: Task,
         config: EffectMeasurePlotConfig,
         pre_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         source_meta = source_df_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(

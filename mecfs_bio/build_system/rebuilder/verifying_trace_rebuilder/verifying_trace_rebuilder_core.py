@@ -99,7 +99,7 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
         return new_value, info, True
 
     @classmethod
-    def save_info(cls, info: VerifyingTraceInfo, path: Path):
+    def save_info(cls, info: VerifyingTraceInfo, path: Path) -> None:
         info.serialize(path)
 
 

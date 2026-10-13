@@ -1,4 +1,5 @@
 from pathlib import Path, PurePath
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -93,7 +94,7 @@ class MAGMAPlotGeneSetResult(Task):
         asset_id: str,
         number_of_bars: int = 20,
         label_col: str = "FULL_NAME",
-    ):
+    ) -> Self:
         source_meta = gene_set_analysis_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = GWASPlotDirectoryMeta(

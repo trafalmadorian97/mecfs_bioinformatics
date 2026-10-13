@@ -1,5 +1,6 @@
 import math
 from pathlib import Path, PurePath
+from typing import Self
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -174,7 +175,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         stepwise_cluster_list_task: Task,
         plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
         plot_format: MatplotLibFormat = "png",
-    ):
+    ) -> Self:
         source_meta = result_table_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(

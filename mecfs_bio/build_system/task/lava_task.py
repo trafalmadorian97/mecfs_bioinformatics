@@ -16,7 +16,7 @@ This task wraps the R LAVA package via rpy2.
 import gc
 import tempfile
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import numpy as np
 import pandas as pd
@@ -81,7 +81,7 @@ class LavaBinarySampleInfo:
     prevalence: float | None = None
 
     @classmethod
-    def from_ct_ldsc_sample_info(cls, data: BinaryPhenotypeSampleInfo):
+    def from_ct_ldsc_sample_info(cls, data: BinaryPhenotypeSampleInfo) -> Self:
         assert data.total_sample_size is not None
         return cls(
             cases=int(data.sample_prevalence * data.total_sample_size),

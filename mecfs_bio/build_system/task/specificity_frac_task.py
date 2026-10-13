@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import narwhals
 from attrs import frozen
@@ -93,7 +94,7 @@ class PrepareSpecificityFraction(Task):
         out_format: OutFormat = ParquetOutFormat(),
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         post_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         extension, read_spec = get_extension_and_read_spec_from_format(
             out_format=out_format
         )

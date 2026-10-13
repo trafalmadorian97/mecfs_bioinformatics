@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import narwhals
 from attrs import frozen
@@ -112,7 +113,7 @@ class PrepareSpecificityCepo(Task):
         out_format: OutFormat = ParquetOutFormat(),
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         post_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         extension, read_spec = get_extension_and_read_spec_from_format(
             out_format=out_format
         )
@@ -220,7 +221,7 @@ def _compute_differential_stability(
     )
 
 
-def _check_not_sparse(df: narwhals.LazyFrame, cell_col: str, gene_col: str):
+def _check_not_sparse(df: narwhals.LazyFrame, cell_col: str, gene_col: str) -> None:
     """
     Verify that every cell has every gene
     If I decide to allow sparse dataframes in the future (i.e. if I do include ros for zero expression values), I will need to adjust the calculation of mean, std, and proportion zeros

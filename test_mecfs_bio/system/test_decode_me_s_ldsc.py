@@ -36,7 +36,7 @@ EXPECTED_MULTITISSUE_PVALUES = {
 P_VALUE_REL_TOL = 1e-2
 
 
-def test_run_s_lsdc(tmp_path: Path):
+def test_run_s_lsdc(tmp_path: Path) -> None:
     """
     Test that we can run stratified linkage disequilibrium score regression on the DECODE ME data,
     and that the headline cell-type p-values still match the documented results.

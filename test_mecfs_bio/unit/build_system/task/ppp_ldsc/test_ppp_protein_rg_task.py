@@ -336,7 +336,7 @@ def _run(tmp_path: Path, variant_set: PppVariantSet) -> pl.DataFrame:
     return pl.read_parquet(result.path)
 
 
-def test_rg_task_all_variants(tmp_path: Path):
+def test_rg_task_all_variants(tmp_path: Path) -> None:
     table = _run(tmp_path, PPP_VARIANT_SET_ALL)
 
     # Every protein gets a row, identified from the protein task rather than any table lookup.
@@ -358,7 +358,9 @@ def test_rg_task_all_variants(tmp_path: Path):
     assert (table[PPP_RG_H2_TRAIT_COL] > 0).all()
 
 
-def test_rg_task_cis_excluded_skips_proteins_without_gene_coordinates(tmp_path: Path):
+def test_rg_task_cis_excluded_skips_proteins_without_gene_coordinates(
+    tmp_path: Path,
+) -> None:
     table = _run(tmp_path, PPP_VARIANT_SET_CIS_EXCLUDED)
 
     # The third protein has no ST3 window, so there is nothing to exclude and no row.
@@ -372,7 +374,9 @@ def test_rg_task_cis_excluded_skips_proteins_without_gene_coordinates(tmp_path: 
     assert (table[PPP_RG_N_SNPS_COL] < context_snps).all()
 
 
-def test_rg_task_requires_gene_coordinates_exactly_when_excluding_cis(tmp_path: Path):
+def test_rg_task_requires_gene_coordinates_exactly_when_excluding_cis(
+    tmp_path: Path,
+) -> None:
     """The gene-coordinate dependency and the variant set have to agree: without it a
     cis-excluded run has no windows, and with it an all-variants run declares a dependency it
     never reads."""
@@ -390,7 +394,7 @@ def test_rg_task_requires_gene_coordinates_exactly_when_excluding_cis(tmp_path: 
         )
 
 
-def test_rg_task_deps_include_gene_coordinates_only_when_needed(tmp_path: Path):
+def test_rg_task_deps_include_gene_coordinates_only_when_needed(tmp_path: Path) -> None:
     cis_task, _ = _build_task(tmp_path, PPP_VARIANT_SET_CIS_EXCLUDED)
     all_task, _ = _build_task(tmp_path, PPP_VARIANT_SET_ALL)
     assert cis_task.gene_coords_task in cis_task.deps

@@ -1,4 +1,4 @@
-from typing import Mapping, Sequence
+from typing import Mapping, Self, Sequence
 
 from attrs import frozen
 
@@ -96,7 +96,7 @@ class SLDSCTaskGenerator:
         multiple_testing_alpha: float,
         multiple_testing_method: Method,
         pre_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         cell_analysis_task_groups = {}
         for entry in partitioned_entries:
             cell_task = CellAnalysisByLDSCTask.create(

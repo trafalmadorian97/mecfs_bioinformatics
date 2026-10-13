@@ -6,7 +6,7 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Sequence
+from typing import Self, Sequence
 
 from attrs import frozen
 
@@ -64,7 +64,7 @@ class MixerBivariateCombine(Task):
     def deps(self) -> list["Task"]:
         return [item.task for item in self.mixer_source_runs]
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert len(self.mixer_source_runs) >= 1
         for run in self.mixer_source_runs:
             assert (
@@ -141,7 +141,7 @@ class MixerBivariateCombine(Task):
         cls,
         asset_id: str,
         mixer_source_runs: Sequence[BivariateMixerRunSource],
-    ):
+    ) -> Self:
         assert len(mixer_source_runs) >= 1
         source_meta = mixer_source_runs[0].task.meta
         meta: Meta
@@ -164,7 +164,9 @@ class MixerBivariateCombine(Task):
         )
 
 
-def _edit_json_to_fix_trait_path(json_path: Path, trait_1_name: str, trait_2_name: str):
+def _edit_json_to_fix_trait_path(
+    json_path: Path, trait_1_name: str, trait_2_name: str
+) -> None:
     with open(json_path) as f:
         data = json.load(f)
 

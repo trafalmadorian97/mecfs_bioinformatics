@@ -102,7 +102,7 @@ class _ReferenceBases:
     in_bounds: np.ndarray
     bases: np.ndarray
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.in_bounds.ndim == 1 and self.in_bounds.dtype == np.bool_
         assert self.bases.ndim == 2 and self.bases.dtype == np.uint8
         assert self.bases.shape[0] == len(self.in_bounds)

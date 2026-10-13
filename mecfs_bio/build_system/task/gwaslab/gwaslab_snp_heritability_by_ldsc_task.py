@@ -15,6 +15,7 @@ Chapter authors are S. Burgess, C.N. Foley and V. Zuber
 """
 
 from pathlib import Path, PurePath
+from typing import Self
 
 import pandas as pd
 import structlog
@@ -120,7 +121,7 @@ class SNPHeritabilityByLDSCTask(Task):
         build: GenomeBuild,
         set_sample_size: int | None = None,
         ld_file_filename_pattern: str = "/LDscore.@",
-    ):
+    ) -> Self:
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(

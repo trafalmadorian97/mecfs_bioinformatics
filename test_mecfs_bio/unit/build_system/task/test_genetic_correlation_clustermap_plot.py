@@ -22,7 +22,7 @@ from mecfs_bio.build_system.task.xr_pipes.xr_identity import (
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_genetic_correlation_clustermap(tmp_path: Path):
+def test_genetic_correlation_clustermap(tmp_path: Path) -> None:
     df_loc = tmp_path / "df.csv"
     df = pd.DataFrame(
         {

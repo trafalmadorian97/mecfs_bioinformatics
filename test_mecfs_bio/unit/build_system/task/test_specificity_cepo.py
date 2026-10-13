@@ -42,7 +42,7 @@ _dummy_df = pd.DataFrame(  # X is stable in A.  Y is stable in B
 )
 
 
-def test_prepare_specificity_cepo(tmp_path: Path):
+def test_prepare_specificity_cepo(tmp_path: Path) -> None:
     """
 
     In a synthetic example where X is stable for A and Y is stable for B, verify that the cepo metric confirms this.

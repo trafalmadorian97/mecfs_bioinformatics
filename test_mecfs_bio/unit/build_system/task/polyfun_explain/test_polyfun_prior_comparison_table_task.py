@@ -64,7 +64,7 @@ def _execute_table(
     return task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
 
 
-def test_table_rows_are_credible_set_union_with_lifts(tmp_path: Path):
+def test_table_rows_are_credible_set_union_with_lifts(tmp_path: Path) -> None:
     inputs = build_synthetic_explain_inputs(tmp_path)
     result = _execute_table(
         tmp_path, inputs.uni_task, inputs, assets=dict(inputs.fetch_map)
@@ -89,7 +89,7 @@ def test_table_rows_are_credible_set_union_with_lifts(tmp_path: Path):
     assert table.filter(pl.col(DISP_POS) == 20)[CS_PF_EXT_COL].to_list() == [None]
 
 
-def test_prior_run_with_a_variant_the_uniform_run_lacks_fails(tmp_path: Path):
+def test_prior_run_with_a_variant_the_uniform_run_lacks_fails(tmp_path: Path) -> None:
     inputs = build_synthetic_explain_inputs(tmp_path)
     assets = dict(inputs.fetch_map)
     # Copy the uniform run without its last variant (POS 60, in no credible set),
