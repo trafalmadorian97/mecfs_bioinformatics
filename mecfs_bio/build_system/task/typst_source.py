@@ -21,7 +21,7 @@ class TypstSource:
     path: Path | None = None
     code: str | None = None
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert (self.path is None) != (self.code is None), (
             "TypstSource requires exactly one of path or code"
         )

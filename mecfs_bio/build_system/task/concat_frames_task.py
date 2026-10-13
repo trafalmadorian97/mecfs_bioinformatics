@@ -3,7 +3,7 @@ Task to combine the results of multiple Tasks, each of which produces a datafram
 """
 
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Mapping, Self, Sequence
 
 import narwhals
 from attrs import frozen
@@ -41,7 +41,7 @@ class ConcatFramesTask(Task):
     frames_pipes: Sequence[DataProcessingPipe] | None = None
     column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if self.frames_pipes is not None:
             assert len(self.frames_pipes) == len(self.frames_tasks)
 
@@ -81,7 +81,7 @@ class ConcatFramesTask(Task):
         override_project: str | None = None,
         column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict(),
         frames_pipes: Sequence[DataProcessingPipe] | None = None,
-    ):
+    ) -> Self:
         extension, spec = get_extension_and_read_spec_from_format(out_format)
         assert len(frames_tasks) > 0
         source_meta = frames_tasks[0].meta

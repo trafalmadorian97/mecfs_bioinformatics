@@ -17,7 +17,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_convert_dataframe_to_markdown_task(tmp_path: Path):
+def test_convert_dataframe_to_markdown_task(tmp_path: Path) -> None:
     df_1_loc = tmp_path / "df_1.csv"
     df_1 = pd.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})
     df_1.to_csv(df_1_loc, index=False)

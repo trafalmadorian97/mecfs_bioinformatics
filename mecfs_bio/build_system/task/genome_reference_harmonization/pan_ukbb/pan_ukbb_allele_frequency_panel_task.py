@@ -113,7 +113,7 @@ class PanUkbbAlleleFrequencyPanelTask(Task):
     expected_ref_mismatches: int
     batch_rows: int = DEFAULT_BATCH_ROWS
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.groups, "at least one Pan-UKBB group is required"
         assert len(set(self.groups)) == len(self.groups), (
             f"duplicate groups {self.groups}"

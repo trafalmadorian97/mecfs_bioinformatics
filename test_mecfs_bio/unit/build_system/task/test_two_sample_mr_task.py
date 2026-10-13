@@ -82,7 +82,7 @@ dummy_outcome_B = pd.DataFrame(
 )
 
 
-def test_two_sample_mr_func():
+def test_two_sample_mr_func() -> None:
     """
     Test that we get the correct result in dummy example of performing MR
     """
@@ -94,7 +94,7 @@ def test_two_sample_mr_func():
     assert tsm_result.result[TSM_OUTPUT_B_COL].item() == pytest.approx(2, abs=0.1)
 
 
-def test_two_sample_mr_with_multiple_exposure():
+def test_two_sample_mr_with_multiple_exposure() -> None:
     """
     When we run MR with two input exposures, there should be a separate output for each exposure value
     """
@@ -108,7 +108,7 @@ def test_two_sample_mr_with_multiple_exposure():
     assert len(tsm_result.result[TSM_OUTPUT_EXPOSURE_COL].unique()) == 2
 
 
-def test_two_sample_mr_task(tmp_path: Path):
+def test_two_sample_mr_task(tmp_path: Path) -> None:
     dummy_exposure_path = tmp_path / "dummy_exposure.csv"
     dummy_outcome_path = tmp_path / "dummy_outcome.csv"
     dummy_exposure.to_csv(dummy_exposure_path, index=False)

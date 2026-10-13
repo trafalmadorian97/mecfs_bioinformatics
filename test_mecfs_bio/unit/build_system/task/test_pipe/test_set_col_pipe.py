@@ -4,7 +4,7 @@ import pandas as pd
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 
 
-def test_set_col_pipe():
+def test_set_col_pipe() -> None:
     df = pd.DataFrame({"a": [1, 2, 3]})
     nw_frame = narwhals.from_native(df).lazy()
     pipe = SetColToConstantPipe(col_name="b", constant=5)

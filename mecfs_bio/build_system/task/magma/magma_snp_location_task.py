@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Sequence
+from typing import Self, Sequence
 
 from attrs import frozen
 
@@ -69,7 +69,7 @@ class MagmaSNPFileTask(Task):
         gwas_parquet_with_rsids_task: Task,
         asset_id: str,
         pipes: list[DataProcessingPipe] | None = None,
-    ):
+    ) -> Self:
         if pipes is None:
             pipes = []
         extra_cols = [GWASLAB_CHROM_COL, GWASLAB_POS_COL]
@@ -97,7 +97,7 @@ class MagmaSNPFileTask(Task):
         gwas_parquet_with_rsids_task: Task,
         asset_id: str,
         pipes: list[DataProcessingPipe] | None = None,
-    ):
+    ) -> Self:
         if pipes is None:
             pipes = []
         pipes.append(ComputePPipe())
@@ -125,7 +125,7 @@ class MagmaSNPFileTask(Task):
         cls,
         gwas_parquet_with_rsids_task: Task,
         asset_id: str,
-    ):
+    ) -> Self:
         """
         As above, but assume the data already contains p values.
         """
@@ -155,7 +155,7 @@ class MagmaSNPFileTask(Task):
         asset_id: str,
         pipes: list[DataProcessingPipe] | None = None,
         sample_size_column: str | None = None,
-    ):
+    ) -> Self:
         """Build the MAGMA p-value input file (``rsID P``, headerless).
 
         When ``sample_size_column`` is given that column is appended (``rsID P

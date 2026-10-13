@@ -11,7 +11,7 @@ from mecfs_bio.assets.gwas.me_cfs.multistudy.analysis.genetic_correlation.ct_lds
 )
 
 
-def cfs_genetic_corr():
+def cfs_genetic_corr() -> None:
     """
     Compute genetic correlation between CFS-related GWAS
     Plot the result.

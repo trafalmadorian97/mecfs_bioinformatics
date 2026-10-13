@@ -17,7 +17,7 @@ from mecfs_bio.assets.gwas.migraine.finngen_r13_migraine_with_aura.analysis.finn
 )
 
 
-def run_finngen_r13_migraine_analysis():
+def run_finngen_r13_migraine_analysis() -> None:
     """
     Function to perform standard analysis on the FinnGen R13 migraine endpoints:
     G6_MIGRAINE, MIGRAINE_TRIPTAN, G6_MIGRAINE_NO_AURA, and G6_MIGRAINE_WITH_AURA.

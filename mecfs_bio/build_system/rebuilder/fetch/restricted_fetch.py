@@ -1,3 +1,5 @@
+from typing import Self
+
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -24,5 +26,5 @@ class RestrictedFetch(Fetch):
         return self.inner(asset_id)
 
     @classmethod
-    def from_task(cls, fetch: Fetch, task: Task):
+    def from_task(cls, fetch: Fetch, task: Task) -> Self:
         return cls(fetch, frozenset({dep.meta.asset_id for dep in task.deps}))

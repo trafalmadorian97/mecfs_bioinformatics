@@ -173,7 +173,7 @@ class GWASLabCreateSumstatsTask(Task):
     drop_col_list: Sequence[str] = tuple()
     pre_pipe: DataProcessingPipe = IdentityPipe()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self._source_meta is not None
 
     @property
@@ -232,7 +232,7 @@ class GWASLabCreateSumstatsTask(Task):
         return FileAsset(out_path)
 
 
-def _sumstats_raise_on_error(sumstats: gl.Sumstats):
+def _sumstats_raise_on_error(sumstats: gl.Sumstats) -> None:
     error_status = sumstats.data[GWASLAB_STATUS_COL].astype(str) == "9999999"
     if error_status.any():
         raise ValueError("GWASLAB Error")

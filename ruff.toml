@@ -29,8 +29,23 @@ exclude = [
     "venv",
 ]
 [lint]
-select= ["I","F401","F541","UP", "W605", "ANN001"]
-ignore =["UP007", "UP035"]
+select = [
+    "I",      # isort: sort and group imports
+    "F401",   # unused-import
+    "F541",   # f-string-missing-placeholders: f-string with no {} placeholders
+    "UP",     # pyupgrade: modernize syntax for the target Python version
+    "W605",   # invalid-escape-sequence in a non-raw string, e.g. "\d"
+    "ANN001", # missing-type-function-argument
+    "ANN201", # missing-return-type-undocumented-public-function
+    "ANN202", # missing-return-type-private-function
+    "ANN204", # missing-return-type-special-method, e.g. __init__, __attrs_post_init__
+    "ANN205", # missing-return-type-static-method
+    "ANN206", # missing-return-type-class-method
+]
+ignore = [
+    "UP007", # non-pep604-annotation-union: would rewrite Union[X, Y] / Optional[X] as X | Y
+    "UP035", # deprecated-import: would move imports from typing to collections.abc etc.
+]
 [format]
 docstring-code-format = true
 line-ending = "lf"

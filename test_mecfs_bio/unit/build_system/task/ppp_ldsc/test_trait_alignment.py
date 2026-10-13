@@ -27,7 +27,7 @@ def _context(n: int = 10) -> pl.DataFrame:
     )
 
 
-def test_orientation_match_flip_mismatch_and_absent():
+def test_orientation_match_flip_mismatch_and_absent() -> None:
     ctx = _context(4)
     trait = pl.DataFrame(
         {
@@ -54,7 +54,7 @@ def test_orientation_match_flip_mismatch_and_absent():
     assert np.isnan(aligned.n[2]) and np.isnan(aligned.n[3])
 
 
-def test_constant_n_when_column_absent():
+def test_constant_n_when_column_absent() -> None:
     ctx = _context(3)
     trait = pl.DataFrame(
         {
@@ -74,7 +74,7 @@ def test_constant_n_when_column_absent():
     assert np.all(aligned.n == 50_000.0)
 
 
-def test_missing_n_source_raises():
+def test_missing_n_source_raises() -> None:
     ctx = _context(3)
     trait = pl.DataFrame(
         {
@@ -94,7 +94,7 @@ def test_missing_n_source_raises():
         )
 
 
-def test_min_overlap_guard_raises():
+def test_min_overlap_guard_raises() -> None:
     ctx = _context(10)
     trait = pl.DataFrame(
         {
@@ -138,7 +138,7 @@ def _duplicated_trait(order: list[int]) -> pl.DataFrame:
     return pl.DataFrame([rows[i] for i in order])
 
 
-def test_duplicate_rsids_resolve_independently_of_input_order():
+def test_duplicate_rsids_resolve_independently_of_input_order() -> None:
     """Which duplicate survives must depend on the data, not on the order the rows arrive in:
     a streaming scan makes no promise about that order, and an order-dependent answer would make
     the whole result -- and the asset built from it -- irreproducible."""
@@ -160,7 +160,7 @@ def test_duplicate_rsids_resolve_independently_of_input_order():
     assert first.z[0] == pytest.approx(1.0)
 
 
-def test_alignment_works_on_a_non_polars_backend():
+def test_alignment_works_on_a_non_polars_backend() -> None:
     """The trait reaches alignment through a DataProcessingPipe, which may leave it on any
     narwhals backend, so the function must not assume the frame is polars-backed."""
     ctx = _context(2)

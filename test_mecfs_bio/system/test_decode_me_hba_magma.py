@@ -15,7 +15,7 @@ from mecfs_bio.util.type_related.unwrap import unwrap
 from test_mecfs_bio.system.util import log_on_error
 
 
-def test_run_hba_magma(tmp_path: Path):
+def test_run_hba_magma(tmp_path: Path) -> None:
     """
     Test that we can run MAGMA via the human brain atlas on the DECODE ME data
     """

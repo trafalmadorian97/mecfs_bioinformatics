@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import (
 )
 
 
-def test_block_bounds_partition_is_contiguous_and_complete():
+def test_block_bounds_partition_is_contiguous_and_complete() -> None:
     n, n_blocks = 1000, 50
     bounds = block_bounds(n, n_blocks)
     assert len(bounds) == n_blocks
@@ -29,7 +29,7 @@ def test_block_bounds_partition_is_contiguous_and_complete():
     assert covered == n
 
 
-def test_regress_jackknife_recovers_known_line():
+def test_regress_jackknife_recovers_known_line() -> None:
     rng = np.random.default_rng(0)
     n = 2000
     ld = rng.uniform(1, 100, n)
@@ -44,7 +44,7 @@ def test_regress_jackknife_recovers_known_line():
     np.testing.assert_allclose(pseudo.mean(axis=0), reg, rtol=0.2)
 
 
-def test_liability_conversion_factor():
+def test_liability_conversion_factor() -> None:
     assert _liability_conversion_factor(None, None) == 1.0
     assert _liability_conversion_factor(0.5, float("nan")) == 1.0
     # Known value for a binary trait.

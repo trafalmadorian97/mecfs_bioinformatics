@@ -42,7 +42,7 @@ def _p_value_task_with_n(assign_rsids_task: Task) -> MagmaSNPFileTask:
     )
 
 
-def test_pval_file_includes_n_column(tmp_path: Path, assign_rsids_task: Task):
+def test_pval_file_includes_n_column(tmp_path: Path, assign_rsids_task: Task) -> None:
     """When a per-variant sample size column is requested, the p-value file
     carries it as a third column (rsID, P, N)."""
     p_value_task = _p_value_task_with_n(assign_rsids_task)

@@ -1,5 +1,5 @@
 from pathlib import Path, PurePath
-from typing import Literal, Sequence
+from typing import Literal, Self, Sequence
 
 import pandas as pd
 import structlog
@@ -42,7 +42,7 @@ class ModelParams:
     condition_hide: Sequence[str]
     joint_pairs: bool = False
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert not isinstance(self.condition_hide, str)
 
     def prep_command(self) -> list[str]:
@@ -157,7 +157,7 @@ class MagmaGeneSetAnalysisTask(Task):
         set_or_covar: SetOrCovar,
         model_params: ModelParams | None,
         sub_dir: PurePath = PurePath("analysis_results") / "magma",
-    ):
+    ) -> Self:
         gene_analysis_meta = magma_gene_analysis_task.meta
         assert isinstance(gene_analysis_meta, ProcessedGwasDataDirectoryMeta)
         meta = ProcessedGwasDataDirectoryMeta(

@@ -47,7 +47,7 @@ from test_mecfs_bio.unit.build_system.task.polyfun_explain.test_polyfun_explain_
 )
 
 
-def test_wrap_callout_label_short_unchanged_long_wrapped():
+def test_wrap_callout_label_short_unchanged_long_wrapped() -> None:
     fonts = (10.0, 9.5)
     short = "173855298:A:T (conserved ++, coding +)"
     text, _size = _wrap_callout_label(short, fonts)
@@ -134,7 +134,7 @@ def _execute_plot(
 
 
 @pytest.mark.parametrize("n_prior_runs", [1, 2])
-def test_plot_writes_png_and_svg(tmp_path: Path, n_prior_runs: int):
+def test_plot_writes_png_and_svg(tmp_path: Path, n_prior_runs: int) -> None:
     inputs = build_synthetic_explain_inputs(tmp_path)
     # The fixture has one prior run; drawing it under several labels exercises
     # the one-row-per-prior layout without a second synthetic run.
@@ -158,7 +158,7 @@ def test_plot_writes_png_and_svg(tmp_path: Path, n_prior_runs: int):
     assert svg_path.stat().st_size > 0
 
 
-def test_prior_run_on_another_chromosome_fails(tmp_path: Path):
+def test_prior_run_on_another_chromosome_fails(tmp_path: Path) -> None:
     inputs = build_synthetic_explain_inputs(tmp_path)
     assets = dict(inputs.fetch_map)
     # Copy the prior run's directory with its variants moved to chromosome 2.

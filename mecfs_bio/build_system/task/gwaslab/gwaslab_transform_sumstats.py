@@ -3,6 +3,7 @@ Contains a task for transforming gwaslab Sumstats objefts.
 """
 
 from pathlib import Path
+from typing import Self
 
 import gwaslab as gl
 from attrs import frozen
@@ -68,7 +69,7 @@ class GWASLabTransformSumstatsTask(Task):
         asset_id: str,
         spec: GwasLabTransformSpec,
         post_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
         meta = GWASLabSumStatsMeta(

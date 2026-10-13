@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import structlog
 
@@ -86,7 +87,7 @@ class GwasLabSumstatsToTableTask(Task):
         sub_dir: str,
         pipe: DataProcessingPipe = IdentityPipe(),
         write_options: ParquetWriteOptions | None = None,
-    ):
+    ) -> Self:
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
         meta = FilteredGWASDataMeta(

@@ -8,7 +8,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.tasks.simple_tasks import SimpleTasks
 
 
-def test_info_purge():
+def test_info_purge() -> None:
     task_1 = FakeTask(SimpleFileMeta("asset_1"), [])
 
     task_2 = FakeTask(SimpleFileMeta("asset_2"), [task_1])

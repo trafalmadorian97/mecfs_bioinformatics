@@ -13,7 +13,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explai
 )
 
 
-def run_polyfun_explain_fine_mapping_decode_me_analysis():
+def run_polyfun_explain_fine_mapping_decode_me_analysis() -> None:
     """
     Function to run the polyfun explainability fine mapping across the main
     DecodeME loci: for each locus a matched uniform/polyfun SUSIE pair under

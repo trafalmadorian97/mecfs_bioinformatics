@@ -30,7 +30,7 @@ class FakeDownloader(Downloader):
         return True
 
 
-def test_robust_downloader(tmp_path: Path):
+def test_robust_downloader(tmp_path: Path) -> None:
     """
     test that the retry logic of the robust downloader works
     """

@@ -2,7 +2,7 @@
 Task to make a heatmap plot with genes as rows and tissue/cell types as columns
 """
 
-from typing import Sequence
+from typing import Self, Sequence
 
 import seaborn as sns
 import structlog
@@ -103,7 +103,7 @@ class ExpressionMatrixClusterMapTaskV2(Task):
         gene_specificity_matrix_source: SpecificityMatrixSource,
         gene_thesaurus_source: GeneInfoSource,
         num_genes_to_keep: int = 300,
-    ):
+    ) -> Self:
         """
         Make a heatmap in which genes are selected according to their MAGMA significance.
         Useful for delving deeper into MAGMA results .

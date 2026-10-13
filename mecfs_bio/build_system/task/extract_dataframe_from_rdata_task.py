@@ -1,5 +1,5 @@
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -67,7 +67,7 @@ class ExtractDataFrameFromRDataTask(Task):
         rdata_file_task: Task,
         r_dataframe_name: str,
         r_package_list: Sequence[str],
-    ):
+    ) -> Self:
         source_meta = rdata_file_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(

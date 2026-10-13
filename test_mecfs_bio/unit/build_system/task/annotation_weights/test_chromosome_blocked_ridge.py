@@ -22,14 +22,14 @@ def _chrom_blocks(
     return blocks
 
 
-def test_fit_recovers_known_beta_unweighted():
+def test_fit_recovers_known_beta_unweighted() -> None:
     beta = np.array([2.0, -1.0, 0.5])
     blocks = _chrom_blocks(0, beta)
     result = fit(combine(list(blocks.values())), alpha=1e-6)
     assert np.allclose(result.beta_raw, beta, atol=1e-2)
 
 
-def test_combine_is_additive():
+def test_combine_is_additive() -> None:
     beta = np.array([1.0, 0.0])
     blocks = list(_chrom_blocks(1, beta, n_chrom=2).values())
     merged = combine(blocks)
@@ -37,7 +37,7 @@ def test_combine_is_additive():
     assert np.allclose(merged.swxx, blocks[0].swxx + blocks[1].swxx)
 
 
-def test_select_alpha_loco_prefers_small_alpha_on_clean_signal():
+def test_select_alpha_loco_prefers_small_alpha_on_clean_signal() -> None:
     beta = np.array([3.0, -2.0, 1.0])
     blocks = _chrom_blocks(2, beta)
     sel = select_alpha_loco(blocks, alphas=(1e-6, 1.0, 1e3, 1e6))
@@ -45,7 +45,7 @@ def test_select_alpha_loco_prefers_small_alpha_on_clean_signal():
     assert sel.mean_r2 > 0.999
 
 
-def test_select_alpha_loco_reports_the_cv_curve():
+def test_select_alpha_loco_reports_the_cv_curve() -> None:
     beta = np.array([3.0, -2.0, 1.0])
     alphas = (1e-6, 1.0, 1e3, 1e6)
     sel = select_alpha_loco(_chrom_blocks(2, beta), alphas=alphas)
@@ -56,7 +56,7 @@ def test_select_alpha_loco_reports_the_cv_curve():
     assert sel.mean_r2_by_alpha[1e6] < sel.mean_r2_by_alpha[1e-6]
 
 
-def test_weights_change_the_fit():
+def test_weights_change_the_fit() -> None:
     # Half the points are corrupted; down-weighting them should recover beta
     # better than the unweighted fit does.
     rng = np.random.default_rng(3)

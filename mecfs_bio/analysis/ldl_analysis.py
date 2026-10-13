@@ -17,10 +17,12 @@ def run_ldl_analysis() -> None:
     - Using MAGMA to combine the LDL GWAS summary statistics with tissue-specific expression data from GTEx to identify key tissues involved in control of LDL levels.
     - Using S-LDSC to identify key tissues and cell types via a heritability model
     """
+    labeled_gene_task = MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.thesaurus_labeled_filtered_gene_analysis_task
+    assert labeled_gene_task is not None
     DEFAULT_RUNNER.run(
         [
             MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.bar_plot_task,
-            MILLION_VETERANS_EUR_LDL_MAGMA_TASKS.inner.labeled_filtered_gene_analysis_task,
+            labeled_gene_task,
         ]
         + list(LDL_STANDARD_SLDSC_TASK_GROUP.get_terminal_tasks()),
         incremental_save=True,

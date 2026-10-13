@@ -44,7 +44,7 @@ class PipeDataFrameTask(Task):
     out_format: OutFormat
     backend: ValidBackend = "ibis"
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         source_meta = self._source_meta
         assert isinstance(source_meta, FileMeta)
         read_spec = source_meta.read_spec

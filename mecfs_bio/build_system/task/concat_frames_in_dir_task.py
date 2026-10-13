@@ -3,6 +3,7 @@ Concatenate dataframes in a DirectoryAsset to create a single FileAsset.
 """
 
 from pathlib import Path, PurePath
+from typing import Self
 
 import pandas as pd
 import structlog
@@ -81,7 +82,7 @@ class ConcatFramesInDirTask(Task):
         source_dir_task: Task,
         path_glob: str,
         read_spec_for_frames: DataFrameReadSpec,
-    ):
+    ) -> Self:
         meta: Meta
         source_meta: Meta = source_dir_task.meta
         if isinstance(source_meta, ReferenceDataDirectoryMeta):

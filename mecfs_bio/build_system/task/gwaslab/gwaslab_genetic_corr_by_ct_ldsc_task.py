@@ -14,6 +14,8 @@ Chapter authors are S. Burgess, C.N. Foley and V. Zuber
 
 """
 
+from typing import Self
+
 MULTI_TRAIT = "multi_trait"
 
 from pathlib import Path, PurePath
@@ -75,7 +77,9 @@ class FilterSettings:
     keep_only_hapmap: bool = True
 
 
-def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build: str):
+def filter_sumstats(
+    sumstats: gwaslab.Sumstats, settings: FilterSettings, build: str
+) -> None:
     """
     Performing filtering roughly consistent with the procedure described in the methods section of Bulik-Sullivan et al.
     """
@@ -175,7 +179,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
     build: GenomeBuild
     filter_settings: FilterSettings = FilterSettings()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert len(self.source_sumstats_tasks) > 1
 
     @property
@@ -245,7 +249,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
         ld_ref_task: Task,
         build: GenomeBuild,
         ld_file_filename_pattern: str = "/LDscore.@",
-    ):
+    ) -> Self:
         assert len(sources) > 1
         sumstats_meta = sources[0].task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)

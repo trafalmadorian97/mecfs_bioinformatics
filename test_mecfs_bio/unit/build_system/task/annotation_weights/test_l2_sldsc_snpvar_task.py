@@ -216,7 +216,7 @@ def _run(fixture: _Fixture, tmp_path: Path) -> Path:
     return result.path
 
 
-def test_recovers_enriched_annotation_ranking(tmp_path: Path):
+def test_recovers_enriched_annotation_ranking(tmp_path: Path) -> None:
     fixture = _build_fixture(tmp_path / "in", perturb_chrom=None)
     out = _run(fixture, tmp_path)
     snpvar = pl.read_parquet(out / SNPVAR_PARQUET_FILENAME)
@@ -236,7 +236,7 @@ def _snpvar_by_parity(out: Path, parity: int) -> pl.Series:
     )
 
 
-def test_no_leakage_even_perturbation_does_not_move_even_scores(tmp_path: Path):
+def test_no_leakage_even_perturbation_does_not_move_even_scores(tmp_path: Path) -> None:
     # Even chromosomes are scored by tau_odd, fit on odd chromosomes only.
     # Perturbing an even chromosome's Z may move tau_even (and so the odd
     # chromosomes' snpvar) but must leave tau_odd and every even snpvar untouched.
@@ -250,7 +250,7 @@ def test_no_leakage_even_perturbation_does_not_move_even_scores(tmp_path: Path):
     assert not _snpvar_by_parity(base, 1).equals(_snpvar_by_parity(perturbed, 1))
 
 
-def test_beta_and_se_stand_in_for_missing_z(tmp_path: Path):
+def test_beta_and_se_stand_in_for_missing_z(tmp_path: Path) -> None:
     from_z = _run(_build_fixture(tmp_path / "z_in", perturb_chrom=None), tmp_path / "z")
     from_beta_se = _run(
         _build_fixture(tmp_path / "b_in", perturb_chrom=None, z_as_beta_se=True),
@@ -261,7 +261,7 @@ def test_beta_and_se_stand_in_for_missing_z(tmp_path: Path):
     assert np.allclose(got.to_numpy(), expected.to_numpy(), rtol=1e-9, atol=0)
 
 
-def test_tau_weights_tables_reproduce_snpvar_exactly(tmp_path: Path):
+def test_tau_weights_tables_reproduce_snpvar_exactly(tmp_path: Path) -> None:
     # Each weights table holds one half's tau in the ridge-weights schema. The
     # chromosomes that half scores must have snpvar == sum_c a_ic gamma_raw_c
     # exactly, so a contrast built from these weights explains the prior exactly.
@@ -286,7 +286,7 @@ def test_tau_weights_tables_reproduce_snpvar_exactly(tmp_path: Path):
         assert np.allclose(reconstructed, scored[SNPVAR_COL].to_numpy(), rtol=1e-12)
 
 
-def test_diagnostics_record_each_halfs_cv_curve(tmp_path: Path):
+def test_diagnostics_record_each_halfs_cv_curve(tmp_path: Path) -> None:
     # The whole curve, not just its argmax, shows whether the grid resolves the
     # optimum: a selected alpha at the grid's edge, or a flat curve, both show up.
     fixture = _build_fixture(tmp_path / "in", perturb_chrom=None)

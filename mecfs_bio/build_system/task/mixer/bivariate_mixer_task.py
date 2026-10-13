@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 from pathlib import Path, PurePath
-from typing import Callable, Sequence
+from typing import Callable, Self, Sequence
 
 from attrs import frozen
 from structlog import get_logger
@@ -66,7 +66,7 @@ class BivariateMixerTask(Task):
     apply_extract_to_test: bool = False
     include_test: bool = True
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert len(self.trait_1_univariate_task.reps_to_perform) == 1
         assert len(self.trait_2_univariate_task.reps_to_perform) == 1
         assert (
@@ -226,7 +226,7 @@ class BivariateMixerTask(Task):
         threads: int = 4,
         apply_extract_to_test: bool = False,
         include_test: bool = True,
-    ):
+    ) -> Self:
         source_meta = trait_1_source.task.meta
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):

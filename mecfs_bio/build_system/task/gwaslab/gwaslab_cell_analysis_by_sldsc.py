@@ -12,6 +12,7 @@ https://cloufield.github.io/gwaslab/LDSCinGWASLab/
 import shutil
 from pathlib import Path, PurePath
 from tempfile import TemporaryDirectory
+from typing import Self
 
 import narwhals
 import pandas as pd
@@ -162,7 +163,7 @@ class CellAnalysisByLDSCTask(Task):
         w_ld_chr_task: Task,
         w_ld_chr_inner_dirname: str,
         pre_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         meta = ResultTableMeta(
@@ -192,7 +193,7 @@ class LDCTSFileEntry:
     target_gene_data_path: Path
     control_gene_data_path: Path
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         forbidden_chars = ["\t", " ", ","]
         for char in forbidden_chars:
             assert char not in self.label
@@ -233,7 +234,9 @@ def ldcts_processed_to_raw(processed: list[LDCTSFileEntry]) -> str:
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 
-def prepend_path_to_ldcts_file(input_path: Path, prefix_path: Path, output_path: Path):
+def prepend_path_to_ldcts_file(
+    input_path: Path, prefix_path: Path, output_path: Path
+) -> None:
     with open(input_path) as f:
         contents = f.read()
     structured_contents = ldcts_raw_to_processed(contents)

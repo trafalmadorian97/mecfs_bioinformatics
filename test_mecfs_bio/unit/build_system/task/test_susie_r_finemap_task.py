@@ -1,4 +1,5 @@
 import tempfile
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Iterator
 
@@ -16,6 +17,7 @@ from rpy2.robjects.packages import (
 )
 from scipy.sparse import csr_matrix
 
+from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -76,7 +78,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-def test_align():
+def test_align() -> None:
     """
     Verify we can correctly align GWAS data with an LD reference
     """
@@ -254,7 +256,7 @@ def test_fine_mapping(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_ensmbl_data_task: Task,
-):
+) -> None:
     """
     Test that we can find the causal SNPs in a simple synthetic example
 
@@ -347,7 +349,7 @@ def test_fine_mapping_with_explicit_prior(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_prior_task: Task,
-):
+) -> None:
     """
     Smoke test that the task runs end-to-end when an explicit prior is supplied.
 
@@ -418,7 +420,9 @@ def dummy_prior_task_missing_one(tmp_path: Path) -> Iterator[Task]:
     )
 
 
-def _run_susie_task_to_store(tmp_path: Path, susie_tsk: SusieRFinemapTask):
+def _run_susie_task_to_store(
+    tmp_path: Path, susie_tsk: SusieRFinemapTask
+) -> Mapping[AssetId, Asset]:
     tasks = find_tasks([susie_tsk])
     wf = make_wf()
     info = VerifyingTraceInfo.empty()
@@ -441,7 +445,7 @@ def test_prior_coverage_guard_raises_on_gap(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_prior_task_missing_one: Task,
-):
+) -> None:
     gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
     susie_tsk = SusieRFinemapTask(
         meta=SimpleDirectoryMeta(AssetId("directory")),
@@ -462,7 +466,7 @@ def test_prior_parquet_written_for_polyfun_run(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_prior_task: Task,
-):
+) -> None:
     gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
     susie_tsk = SusieRFinemapTask(
         meta=SimpleDirectoryMeta(AssetId("directory")),
@@ -487,7 +491,7 @@ def test_prior_parquet_written_for_polyfun_run(
 def test_prior_parquet_is_constant_for_uniform_run(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
-):
+) -> None:
     gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
     susie_tsk = SusieRFinemapTask(
         meta=SimpleDirectoryMeta(AssetId("directory")),
@@ -504,7 +508,7 @@ def test_prior_parquet_is_constant_for_uniform_run(
     assert (prior[PRIOR_WEIGHT_COLUMN].to_numpy() == 1.0).all()
 
 
-def test_extract_cs_data_tables():
+def test_extract_cs_data_tables() -> None:
     """
     Test that we can correctly extract SUSIE output
 

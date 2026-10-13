@@ -25,13 +25,13 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def _gzip_file(src: Path, target: Path):
+def _gzip_file(src: Path, target: Path) -> None:
     with open(src, "rb") as f:
         with gzip.open(target, "wb") as g:
             shutil.copyfileobj(f, g)
 
 
-def test_compressed_csv_to_parquet_task(tmp_path: Path):
+def test_compressed_csv_to_parquet_task(tmp_path: Path) -> None:
     gzip_loc = tmp_path / "gzip_loc.tsv.gzip"
     scratch_dir = tmp_path / "scratch"
     scratch_dir.mkdir(exist_ok=True, parents=True)

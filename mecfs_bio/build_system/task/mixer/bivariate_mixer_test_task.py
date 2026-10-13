@@ -2,7 +2,7 @@ import os
 import shutil
 import tempfile
 from pathlib import Path, PurePath
-from typing import Callable, Sequence
+from typing import Callable, Self, Sequence
 
 from attrs import frozen
 
@@ -155,7 +155,7 @@ class BivariateMixerTestTask(Task):
         bim_file_pattern: str = "1000G_EUR_Phase3_plink/1000G.EUR.QC.@.bim",
         threads: int = 4,
         extract_file_pattern_gen: Callable[[int], str] | None = None,
-    ):
+    ) -> Self:
         meta = ResultDirectoryMeta(
             id=asset_id,
             trait="multi_trait",

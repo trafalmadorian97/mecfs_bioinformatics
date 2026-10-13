@@ -4,6 +4,7 @@ Finemap a GWAS locus using SUSIE
 
 import gc
 from pathlib import Path, PurePath
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -320,7 +321,7 @@ class SusieRFinemapTask(Task):
         log_lr_filtering_threshold: float = 2.0,
         z_score_filtering_threshold: float = 2.0,
         prior_info: PriorInfo | None = None,
-    ):
+    ) -> Self:
         assert_gwas_harmonized_to_ld(gwas_data_task, ld_labels_task)
         source_meta = gwas_data_task.meta
         meta: Meta
@@ -498,7 +499,7 @@ def convert_r_named_list_to_python_dict(rdata: ro.ListVector) -> dict:
     return dict(zip(rdata.names, list(rdata)))
 
 
-def r_to_py_recursive(r_obj: object):
+def r_to_py_recursive(r_obj: object) -> object:
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
     if isinstance(r_obj, ro.DataFrame):
         with localconverter(conv):
@@ -524,7 +525,7 @@ def r_to_py_recursive(r_obj: object):
     return r_obj
 
 
-def _check_converged(py_result: dict):
+def _check_converged(py_result: dict) -> None:
     conv = ro.default_converter
     with localconverter(conv):
         converged = ro.conversion.get_conversion().rpy2py(py_result["converged"])
@@ -564,6 +565,7 @@ def write_result(
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
 
     sets = r_to_py_recursive(py_result["sets"])
+    assert isinstance(sets, dict)
     with localconverter(conv):
         alpha = ro.conversion.get_conversion().rpy2py(py_result["alpha"])
         pip = ro.conversion.get_conversion().rpy2py(py_result["pip"])
@@ -661,11 +663,11 @@ def extract_cs_data_tables(
     return cs_data_tables
 
 
-def check_symmetric(array: np.ndarray, tol: float = 1e-6):
+def check_symmetric(array: np.ndarray, tol: float = 1e-6) -> None:
     assert np.max(np.abs(array - array.T)) <= tol
 
 
-def _save_adjustment(adjustment: float, scratch_dir: Path):
+def _save_adjustment(adjustment: float, scratch_dir: Path) -> None:
     adjustment_df = pd.DataFrame(
         {"Adjustment": [float(adjustment)]},
     )

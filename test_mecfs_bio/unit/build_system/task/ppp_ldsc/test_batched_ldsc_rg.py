@@ -20,7 +20,9 @@ _M = 100_000.0
 _N = 10_000.0  # chi^2 filter threshold = max(0.001*N, 80) = 80
 
 
-def _synthetic(seed: int, n_snps: int = 3000, k: int = 3):
+def _synthetic(
+    seed: int, n_snps: int = 3000, k: int = 3
+) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     rng = np.random.default_rng(seed)
     ld = rng.uniform(1.0, 50.0, size=n_snps)
     # Correlated trait/protein z: shared component + independent noise, scaled by sqrt(ld) so
@@ -45,7 +47,7 @@ def _synthetic(seed: int, n_snps: int = 3000, k: int = 3):
     return ld, z_trait, n_trait, z_protein
 
 
-def test_batched_matches_exact_point_estimates():
+def test_batched_matches_exact_point_estimates() -> None:
     ld, z_trait, n_trait, z_protein = _synthetic(seed=0)
     k = z_protein.shape[1]
     n_protein = np.full(k, _N)
@@ -65,7 +67,7 @@ def test_batched_matches_exact_point_estimates():
         assert np.isfinite(res.rg_se[j]) and res.rg_se[j] > 0
 
 
-def test_batched_exclude_mask_matches_exact_with_exclusion():
+def test_batched_exclude_mask_matches_exact_with_exclusion() -> None:
     ld, z_trait, n_trait, z_protein = _synthetic(seed=1)
     k = z_protein.shape[1]
     n_protein = np.full(k, _N)
@@ -93,7 +95,7 @@ def test_batched_exclude_mask_matches_exact_with_exclusion():
     assert res.n_snps[0] < res.n_snps[2]
 
 
-def test_rg_reports_reasonable_diagnostics():
+def test_rg_reports_reasonable_diagnostics() -> None:
     ld, z_trait, n_trait, z_protein = _synthetic(seed=2)
     k = z_protein.shape[1]
     n_protein = np.full(k, _N)

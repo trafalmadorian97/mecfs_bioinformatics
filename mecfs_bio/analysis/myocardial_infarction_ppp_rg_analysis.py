@@ -4,7 +4,7 @@ from mecfs_bio.assets.gwas.myocardial_infarction.analysis.mi_ppp_rg import (
 )
 
 
-def go():
+def go() -> None:
     """
     Run genetic correlation analysis via CT-LDSC correlating the million veterans GWAS of myocardial infarction and
     plasma protein levels from the UK Biobank Pharma Proteomics Project.

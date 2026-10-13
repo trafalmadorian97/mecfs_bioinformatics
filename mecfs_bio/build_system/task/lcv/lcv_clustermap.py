@@ -12,6 +12,7 @@ Partly implemented by asking Claude to mimic the logic of  `genetic_correlation_
 """
 
 from pathlib import Path
+from typing import Self
 
 import numpy as np
 import plotly.graph_objs as go
@@ -256,7 +257,7 @@ class LCVClustermapTask(Task):
         asset_id: str,
         source: LCVSource,
         plot_options: LCVPlotMode,
-    ):
+    ) -> Self:
         src_meta = source.task.meta
         assert isinstance(src_meta, ResultTableMeta)
         meta = GWASPlotFileMeta(

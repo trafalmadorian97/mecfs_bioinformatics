@@ -19,7 +19,7 @@ def generate_new_figures(
     all_figure_tasks: list[Task],
     fig_dir: Path,
     exporter: AbstractFigureExporter,
-):
+) -> None:
     """
     Aim of this function is to only invoke the build system  to build figures that do not
     currently exist in the figure directory.

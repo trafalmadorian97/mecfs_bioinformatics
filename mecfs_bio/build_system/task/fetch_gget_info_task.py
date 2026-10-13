@@ -5,6 +5,7 @@ Task to use gget to annotate gene lists with annotations from genetics databases
 import math
 from functools import partial
 from pathlib import Path
+from typing import Self
 
 import gget
 import narwhals
@@ -144,7 +145,7 @@ class FetchGGetInfoTask(Task):
         genes_to_use: int | None = None,
         post_pipe: DataProcessingPipe = IdentityPipe(),
         out_format: OutFormat = CSVOutFormat(","),
-    ):
+    ) -> Self:
         source_meta = source_df_task.meta
         meta: Meta
         extension, read_spec = get_extension_and_read_spec_from_format(out_format)

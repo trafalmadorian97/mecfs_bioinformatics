@@ -5,7 +5,7 @@ from mecfs_bio.build_system.task.magma.magma_subset_specificity_matrix_using_top
 )
 
 
-def test_magma_subset_spec_matrix():
+def test_magma_subset_spec_matrix() -> None:
     dummy_spec_matrix = pd.DataFrame(
         {
             "GENE": [1, 2, 3],

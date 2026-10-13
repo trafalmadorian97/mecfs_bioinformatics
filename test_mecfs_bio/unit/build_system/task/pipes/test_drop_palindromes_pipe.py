@@ -4,7 +4,7 @@ import polars as pl
 from mecfs_bio.build_system.task.pipes.drop_palindromes_pipe import DropPalindromesPipe
 
 
-def test_drops_only_strand_ambiguous_snvs():
+def test_drops_only_strand_ambiguous_snvs() -> None:
     df = pl.DataFrame(
         {
             "EA": ["A", "C", "A", "G"],

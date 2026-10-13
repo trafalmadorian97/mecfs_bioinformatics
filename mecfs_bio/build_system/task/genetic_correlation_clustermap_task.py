@@ -8,6 +8,7 @@ Bulik-Sullivan, Brendan, et al. "An atlas of genetic correlations across human d
 """
 
 from pathlib import Path
+from typing import Self
 
 import narwhals
 import numpy as np
@@ -258,7 +259,7 @@ class GeneticCorrelationClustermapTask(Task):
         asset_id: str,
         genetic_corr_source: GeneticCorrSource,
         plot_options: GeneticCorrPlotMode,
-    ):
+    ) -> Self:
         src_meta = genetic_corr_source.task.meta
         assert isinstance(src_meta, ResultTableMeta)
         meta = GWASPlotFileMeta(

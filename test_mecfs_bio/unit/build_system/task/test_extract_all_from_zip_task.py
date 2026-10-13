@@ -12,7 +12,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_extract_all_zip(tmp_path: Path):
+def test_extract_all_zip(tmp_path: Path) -> None:
     name_in_archive = "my_compressed_file"
     name_in_archive_2 = "my_compressed_file_2"
     source_zip_path = tmp_path / "source_zip.zip"

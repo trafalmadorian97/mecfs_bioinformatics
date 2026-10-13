@@ -3,7 +3,7 @@ Task to combine GWAS with fixed-effects meta analysis
 """
 
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import narwhals
 import structlog
@@ -81,7 +81,7 @@ class FixedEffectsMetaAnalysisTask(Task):
     meta: Meta
     sources: Sequence[GwasSource]
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert len(self.sources) > 1
 
     @property
@@ -180,7 +180,7 @@ class FixedEffectsMetaAnalysisTask(Task):
     @classmethod
     def create(
         cls, asset_id: str, meta_analysis_name: str, sources: Sequence[GwasSource]
-    ):
+    ) -> Self:
         assert len(sources) > 1
         source_meta = sources[0].task.meta
         assert isinstance(source_meta, FilteredGWASDataMeta)
@@ -246,7 +246,7 @@ def get_reversed(df: narwhals.LazyFrame, beta_col: str) -> narwhals.LazyFrame:
     )
 
 
-def report_flips(df: narwhals.LazyFrame, num_sources: int):
+def report_flips(df: narwhals.LazyFrame, num_sources: int) -> None:
     sum_cols = [
         narwhals.col(f"flipped_{i}").sum().alias(f"num_flipped_{i}")
         for i in range(1, num_sources)
@@ -259,12 +259,12 @@ def report_flips(df: narwhals.LazyFrame, num_sources: int):
 
 def report_output_size(
     df: narwhals.LazyFrame,
-):
+) -> None:
     l = df.select(narwhals.len()).collect().item()
     logger.debug(f"Final meta-analysis has {l} variants")
 
 
-def _check_unique_variants(df: narwhals.LazyFrame):
+def _check_unique_variants(df: narwhals.LazyFrame) -> None:
     assert (
         df.select(
             [
@@ -284,5 +284,5 @@ def _check_unique_variants(df: narwhals.LazyFrame):
 
 def _check_nonzero_se(
     df: narwhals.LazyFrame,
-):
+) -> None:
     assert df.select((narwhals.col(GWASLAB_SE_COL) > 0).all()).collect().item()

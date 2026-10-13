@@ -10,6 +10,7 @@ from causation across 52 diseases and complex traits." Nature genetics 50.12 (20
 """
 
 from pathlib import Path, PurePath
+from typing import Self
 
 import narwhals
 import narwhals as nw
@@ -148,7 +149,7 @@ class LCVTask(Task):
         config: LCVConfig,
         trait_1_pipe: DataProcessingPipe = IdentityPipe(),
         trait_2_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         meta = ResultTableMeta(
             id=AssetId(asset_id),
             trait=MULTI_TRAIT,
@@ -184,7 +185,7 @@ def make_z_score_frame(
     )
 
 
-def _check_required_columns(df: nw.LazyFrame):
+def _check_required_columns(df: nw.LazyFrame) -> None:
     schema = df.collect_schema()
     expected_cols = set(
         [

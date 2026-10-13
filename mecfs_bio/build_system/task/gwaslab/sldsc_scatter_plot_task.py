@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import numpy as np
 import plotly.express as px
@@ -98,7 +99,7 @@ class SLDSCScatterPlotTask(Task):
         return DirectoryAsset(out_dir)
 
     @classmethod
-    def create(cls, asset_id: str, source_task: Task):
+    def create(cls, asset_id: str, source_task: Task) -> Self:
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(

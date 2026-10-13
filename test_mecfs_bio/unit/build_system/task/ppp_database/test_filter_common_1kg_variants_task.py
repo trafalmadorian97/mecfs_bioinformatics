@@ -25,7 +25,7 @@ _VCF = (
 )
 
 
-def test_filter_vcf_to_frame(tmp_path: Path):
+def test_filter_vcf_to_frame(tmp_path: Path) -> None:
     vcf = tmp_path / "mini.vcf"
     vcf.write_text(_VCF)
 

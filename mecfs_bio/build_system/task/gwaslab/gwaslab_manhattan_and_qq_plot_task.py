@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import attrs
 import gwaslab as gl
@@ -98,7 +98,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
         plot_setting: str = "mqq",
         pipe: DataProcessingPipe = IdentityPipe(),
         anno_mode: AnnoMode = "GENENAME",
-    ):
+    ) -> Self:
         input_meta = sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
         meta = GWASLabManhattanQQPlotMeta(

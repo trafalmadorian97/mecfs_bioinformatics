@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import BinaryIO
+from typing import BinaryIO, Self
 
 import xxhash
 from attrs import frozen
@@ -43,11 +43,11 @@ class ImoHasher(Tracer):
     sample_size: int = 16 * 1024
 
     @classmethod
-    def with_xxhash_32(cls):
+    def with_xxhash_32(cls) -> Self:
         return cls(hash_constructor=xxhash.xxh32, hash_name="xxh32")
 
     @classmethod
-    def with_xxhash_128(cls):
+    def with_xxhash_128(cls) -> Self:
         return cls(hash_constructor=xxhash.xxh3_128, hash_name="xxh3_128")
 
     def __call__(self, a: Asset) -> str:

@@ -4,7 +4,7 @@ Can optionally filter rows according to a threshold
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import pandas as pd
 import structlog
@@ -65,7 +65,7 @@ class MultipleTestingTableTask(Task):
     table_in_dir_filename: str | None = None
     table_in_dir_readspec: DataFrameReadSpec | None = None
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if (
             self.table_in_dir_filename is not None
             or self.table_in_dir_readspec is not None
@@ -134,7 +134,7 @@ class MultipleTestingTableTask(Task):
         method: Method,
         asset_id: str,
         source_task: MagmaGeneAnalysisTask,
-    ):
+    ) -> Self:
         source_meta = source_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = ResultTableMeta(
@@ -165,7 +165,7 @@ class MultipleTestingTableTask(Task):
         p_value_column: str,
         source_task: Task,
         apply_filter: bool = True,
-    ):
+    ) -> Self:
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = ResultTableMeta(

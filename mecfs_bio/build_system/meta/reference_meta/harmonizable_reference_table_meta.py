@@ -26,7 +26,7 @@ class HarmonizableReferenceTableMeta(FileMeta):
     # Set by allele-frequency panels: which column holds which ancestry's frequency.
     allele_frequency_columns: PanelAlleleFrequencyColumns | None = None
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.extension.startswith(".") or self.extension == ""
 
     @property

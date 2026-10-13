@@ -44,7 +44,7 @@ def ubbb_ppp_gwas_prep(
     expected_filename: str,
     region_to_plot_chrom: int,
     region_to_plot_37_pos: int,
-):
+) -> UKBBPPPGWASPrep:
     """
     Asset generator to generate tasks to download and preprocess data from one of the UK Biobank Pharma Proteomics Project GWAS
 

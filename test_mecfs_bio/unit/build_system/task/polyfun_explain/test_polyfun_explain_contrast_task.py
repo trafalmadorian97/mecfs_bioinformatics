@@ -318,7 +318,7 @@ def build_synthetic_explain_inputs(tmp_path: Path) -> _ExplainInputs:
     )
 
 
-def test_contrast_closed_form(tmp_path: Path):
+def test_contrast_closed_form(tmp_path: Path) -> None:
     inputs = build_synthetic_explain_inputs(tmp_path)
     result = dict(inputs.fetch_map)["contrast"]
 
@@ -372,7 +372,7 @@ def test_contrast_closed_form(tmp_path: Path):
     )
 
 
-def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
+def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path) -> None:
     # When the uniform run finds no signal (all PIPs 0), abar_c falls back to an
     # unweighted mean, so contrasts are still well-defined (not NaN).
     uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(
@@ -390,7 +390,7 @@ def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
     assert abs(focal_coding - 2.5) < 1e-9
 
 
-def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path):
+def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path) -> None:
     # The annotation matrix is built unique on exact (CHR, BP, A1, A2).
     # A duplicate at the same position AND same alleles would cross-multiply a
     # run's variant rows into doubled/misattributed contrast values, so the task
@@ -407,7 +407,7 @@ def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path):
         _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
 
 
-def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
+def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path) -> None:
     # Two variants at the same (CHR, POS) with different alleles must each pick
     # up their OWN annotation row (allele-aware join), not cross-multiply or
     # mispair. Focal is variant 0 (A/C, coding a=1); a second variant (A/G) at
@@ -470,7 +470,7 @@ def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
     assert abs(ag["family_contrast"][0] - 5.4) < 1e-9
 
 
-def test_secondary_position_from_snpid_adds_pos_column(tmp_path: Path):
+def test_secondary_position_from_snpid_adds_pos_column(tmp_path: Path) -> None:
     # With a SecondaryPositionFromSnpid config, both display tables gain a
     # build-labelled position column parsed from the SNPID's position field,
     # placed immediately after pos, holding POS + the synthetic offset.
@@ -490,7 +490,7 @@ def test_secondary_position_from_snpid_adds_pos_column(tmp_path: Path):
             assert row["pos_hg38"] == row["pos"] + _SECONDARY_POS_OFFSET
 
 
-def test_per_variant_annotation_table(tmp_path: Path):
+def test_per_variant_annotation_table(tmp_path: Path) -> None:
     # The per-variant annotation table characterizes the top variants of each
     # polyfun credible set: rows are the detailed annotations, columns are the
     # selected variants (chr:pos:nea:ea, hg19), cells the raw annotation values.
@@ -579,7 +579,7 @@ def test_per_variant_annotation_table(tmp_path: Path):
     )
 
 
-def test_secondary_position_malformed_snpid_raises(tmp_path: Path):
+def test_secondary_position_malformed_snpid_raises(tmp_path: Path) -> None:
     # A SNPID whose position field is not an integer must fail fast rather than
     # silently produce a null (mislabelled) secondary position.
     uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)

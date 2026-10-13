@@ -3,7 +3,7 @@ Task to extract sheet from excel file.
 """
 
 from pathlib import Path, PurePath
-from typing import Mapping
+from typing import Mapping, Self
 
 import narwhals
 import pandas as pd
@@ -80,7 +80,7 @@ class ExtractSheetFromExelFileTask(Task):
         skiprows: int | None = None,
         col_type_mapping: Mapping[str, type] | None = None,
         post_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         extension, read_spec = get_extension_and_read_spec_from_format(
             out_format=out_format
         )

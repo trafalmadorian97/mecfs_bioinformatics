@@ -45,7 +45,7 @@ def _ld_labels(build: GenomeBuild) -> FakeTask:
     )
 
 
-def test_build_mismatch_raises():
+def test_build_mismatch_raises() -> None:
     with pytest.raises(AssertionError):
         SusieRFinemapTask.create(
             asset_id="s",
@@ -58,7 +58,7 @@ def test_build_mismatch_raises():
         )
 
 
-def test_matching_builds_construct():
+def test_matching_builds_construct() -> None:
     task = SusieRFinemapTask.create(
         asset_id="s",
         gwas_data_task=_gwas("19"),

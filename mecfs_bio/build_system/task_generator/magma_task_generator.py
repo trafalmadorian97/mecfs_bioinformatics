@@ -1,4 +1,5 @@
 from pathlib import PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -110,7 +111,7 @@ class StandardMagmaTaskGenerator:
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sample_size = coerce_sample_size(sample_size)
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
@@ -274,7 +275,7 @@ class MagmaTaskGeneratorFromRaw:
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(50),
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
             target_asset_id=AssetId(base_name + "_sumstats_37"),
@@ -339,7 +340,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
         genome_build: GenomeBuildMode = "infer",
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
             target_asset_id=AssetId(base_name + "_sumstats_37"),

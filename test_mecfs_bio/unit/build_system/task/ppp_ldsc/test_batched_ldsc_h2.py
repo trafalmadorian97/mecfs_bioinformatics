@@ -18,7 +18,9 @@ _M = 100_000.0
 _N = 10_000.0  # chi^2 filter threshold = max(0.001*N, 80) = 80
 
 
-def _synthetic(seed: int, n_snps: int = 3000, k: int = 3):
+def _synthetic(
+    seed: int, n_snps: int = 3000, k: int = 3
+) -> tuple[np.ndarray, np.ndarray]:
     rng = np.random.default_rng(seed)
     ld = rng.uniform(1.0, 50.0, size=n_snps)
     chi2 = 1.0 + 0.02 * ld[:, None] + rng.exponential(1.0, size=(n_snps, k))
@@ -28,7 +30,7 @@ def _synthetic(seed: int, n_snps: int = 3000, k: int = 3):
     return ld, chi2
 
 
-def test_batched_matches_exact_point_estimate_and_close_se():
+def test_batched_matches_exact_point_estimate_and_close_se() -> None:
     ld, chi2 = _synthetic(seed=0)
     n = np.full(chi2.shape[1], _N)
     batched = batched_h2(chi2, ld, n, _M, n_blocks=_N_BLOCKS)
@@ -42,7 +44,7 @@ def test_batched_matches_exact_point_estimate_and_close_se():
         assert np.isclose(batched.h2_se[j], exact.h2_se, rtol=0.1)
 
 
-def test_batched_exclude_mask_matches_exact_with_exclusion():
+def test_batched_exclude_mask_matches_exact_with_exclusion() -> None:
     ld, chi2 = _synthetic(seed=1)
     n = np.full(chi2.shape[1], _N)
     # Exclude a contiguous "cis" block for protein 0 only.
@@ -58,7 +60,7 @@ def test_batched_exclude_mask_matches_exact_with_exclusion():
     assert batched.n_snps[0] < batched.n_snps[1]
 
 
-def test_batched_reports_reasonable_diagnostics():
+def test_batched_reports_reasonable_diagnostics() -> None:
     ld, chi2 = _synthetic(seed=2)
     n = np.full(chi2.shape[1], _N)
     res = batched_h2(chi2, ld, n, _M, n_blocks=_N_BLOCKS)

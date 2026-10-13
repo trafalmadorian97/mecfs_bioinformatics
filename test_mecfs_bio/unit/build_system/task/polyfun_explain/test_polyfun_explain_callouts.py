@@ -32,7 +32,7 @@ def _key(pos: int) -> dict:
     }
 
 
-def test_callout_families_buckets_and_orders_by_z():
+def test_callout_families_buckets_and_orders_by_z() -> None:
     focal = _key(123)
     per_family = pl.DataFrame(
         [
@@ -60,7 +60,7 @@ def test_callout_families_buckets_and_orders_by_z():
     assert result == [("conserved", "++"), ("coding", "+")]
 
 
-def test_callout_families_drops_negligible_runner_up():
+def test_callout_families_drops_negligible_runner_up() -> None:
     # When one family dominates a variant's PIP lift, a runner-up whose per-family
     # contrast is below _CALLOUT_FAMILY_RELATIVE_MIN of the top contrast is dropped
     # even if it clears the background-SD bar on its own.
@@ -79,7 +79,7 @@ def test_callout_families_drops_negligible_runner_up():
     ]
 
 
-def test_callout_families_skips_degenerate_sd():
+def test_callout_families_skips_degenerate_sd() -> None:
     focal = _key(123)
     per_family = pl.DataFrame(
         [{**focal, FAMILY_COL: "conserved", FAMILY_CONTRAST_COL: 3.0}]
@@ -87,7 +87,7 @@ def test_callout_families_skips_degenerate_sd():
     assert _callout_families(per_family, focal, {"conserved": 0.0}, 3) == []
 
 
-def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path):
+def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path) -> None:
     # A SUSIE run that finds no credible set writes an empty combined_cs whose
     # parquet key columns default to Float64. load_cs_numbers must still return
     # canonical Int64 keys (+ a cs_number column) so union_keys/joins line up
@@ -106,7 +106,7 @@ def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path):
     assert CS_NUMBER_COL in out.columns
 
 
-def test_format_label_with_and_without_families():
+def test_format_label_with_and_without_families() -> None:
     focal = _key(174128548)
     assert (
         _format_callout_label(focal, [("conserved", "++"), ("coding", "+")])

@@ -11,7 +11,7 @@ def _round_eff(n_cases: int, n_controls: int) -> int:
     return round(4.0 * n_cases * n_controls / (n_cases + n_controls))
 
 
-def test_effective_n_sums_contributing_cohorts():
+def test_effective_n_sums_contributing_cohorts() -> None:
     # Two cohorts in fixed order; position 0 contributes when char 0 != "?", etc.
     cohorts = [
         CohortCaseControl(name="A", n_cases=1000, n_controls=4000),
@@ -29,6 +29,6 @@ def test_effective_n_sums_contributing_cohorts():
     assert result["N"].tolist() == [eff_a, eff_b, eff_a + eff_b, 0]
 
 
-def test_effective_n_of_cohort_case_control():
+def test_effective_n_of_cohort_case_control() -> None:
     # Balanced 1:1 cohort: effective N equals the total sample size.
     assert CohortCaseControl(name="X", n_cases=100, n_controls=100).effective_n == 200.0

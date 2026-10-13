@@ -17,7 +17,7 @@ class ReferenceFileMeta(FileMeta):
     filename: str | None = None
     read_spec: ReadSpec | None = None
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.extension.startswith(".") or self.extension == ""
 
     @property

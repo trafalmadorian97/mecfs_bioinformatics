@@ -17,5 +17,5 @@ class DirectoryAsset(Asset):
 
     path: Path
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.path.is_dir()

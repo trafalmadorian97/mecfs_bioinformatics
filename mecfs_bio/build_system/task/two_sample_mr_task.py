@@ -4,6 +4,7 @@ Task to apply two sample mendelian randomization to GWAS data, together with ass
 
 import typing
 from pathlib import Path, PurePath
+from typing import Self
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -337,7 +338,7 @@ class TwoSampleMRTask(Task):
         exposure_col_spec: MRInputColSpec,
         outcome_col_spec: MRInputColSpec,
         method_list: list[str] | None = None,
-    ):
+    ) -> Self:
         outcome_meta = outcome_data_task.meta
         assert isinstance(outcome_meta, FilteredGWASDataMeta)
         meta = ResultDirectoryMeta(
@@ -484,7 +485,7 @@ def optionally_clump_exposure_data(
     formatted_exposure: pd.DataFrame,
     clump_options: ClumpOptions | None,
     tsmr: RPackageType,
-):
+) -> pd.DataFrame:
     if clump_options is None:
         return formatted_exposure
     logger.debug(f"shape of exposure df before clumping:{formatted_exposure.shape}")
@@ -561,7 +562,7 @@ def gen_mr_report(
     options: MRReportOptions | None,
     target_dir: Path,
     tsmr: RPackageType,
-):
+) -> None:
     if options is None:
         return
     tsmr.mr_report(harmonized, str(target_dir))
