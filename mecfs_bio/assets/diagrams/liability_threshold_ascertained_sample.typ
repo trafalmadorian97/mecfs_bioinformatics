@@ -82,8 +82,8 @@
   // ---- Liability axis ----
   line((sx(x-min) - 0.25, 0), (sx(x-max) + 0.25, 0), stroke: 1pt + muted)
 
-  // ---- Population density, for reference ----
-  line(..curve-points(pdf, x-min, x-max), stroke: (paint: muted, thickness: 0.9pt, dash: "dotted"))
+//  // ---- Population density, for reference ----
+//  line(..curve-points(pdf, x-min, x-max), stroke: (paint: muted, thickness: 0.9pt, dash: "dotted"))
 
   // ---- Sample density ----
   // Drawn as two pieces joined by a vertical jump at the threshold, since the
@@ -99,7 +99,7 @@
   // ---- Threshold ----
   // Below the jump the dashed line is hidden by the solid density, so it
   // stays visible only where it marks the cut through the empty space above.
-  line((sx(threshold), 0), (sx(threshold), case-peak + 0.3), stroke: (paint: taupe, thickness: 1.2pt, dash: "dashed"))
+//  line((sx(threshold), 0), (sx(threshold), case-peak + 0.3), stroke: (paint: taupe, thickness: 1.2pt, dash: "dashed"))
   content((sx(threshold), -0.32), text(size: 11pt, fill: ink)[$tau$])
 
   // ---- Region labels ----
@@ -115,24 +115,18 @@
     mark: (end: ">", scale: 0.5, fill: taupe),
   )
 
-  // ---- Population curve label ----
-  // Set left of the mode, with a leader to the dotted curve, where the gap
-  // between the population and sample densities is widest.
-  content((sx(-2.4), sy(pdf(0)) * 1.2), text(size: 9pt, fill: muted)[Population])
-  line(
-    (sx(-2.15), sy(pdf(0)) * 1.2 - 0.2),
-    (sx(-0.9), sy(pdf(-0.9)) + 0.06),
-    stroke: 0.7pt + muted,
-    mark: (end: ">", scale: 0.5, fill: muted),
-  )
+//  // ---- Population curve label ----
+//  // Set left of the mode, with a leader to the dotted curve, where the gap
+//  // between the population and sample densities is widest.
+//  content((sx(-2.4), sy(pdf(0)) * 1.2), text(size: 9pt, fill: muted)[Population])
+//  line(
+//    (sx(-2.15), sy(pdf(0)) * 1.2 - 0.2),
+//    (sx(-0.9), sy(pdf(-0.9)) + 0.06),
+//    stroke: 0.7pt + muted,
+//    mark: (end: ">", scale: 0.5, fill: muted),
+//  )
 
   // ---- Axis label ----
   content((0, -0.85), text(size: 10pt, fill: ink)[Liability $L$])
 })
 
-#v(6pt)
-#align(center, {
-  set text(size: 9pt, fill: ink)
-  [In a sample with equal numbers of cases and controls, the density above $tau$ \
-    is scaled up and the density below $tau$ is scaled down, so each side holds half the mass.]
-})
