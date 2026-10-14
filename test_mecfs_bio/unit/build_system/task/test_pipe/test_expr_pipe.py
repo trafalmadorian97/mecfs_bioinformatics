@@ -5,7 +5,7 @@ import polars as pl
 from mecfs_bio.build_system.task.pipes.expr_pipe import ExprPipe
 
 
-def test_expr_pipe():
+def test_expr_pipe() -> None:
     df = pl.DataFrame({"col": [1, 4, 8]})
     result = (
         ExprPipe((2 * narwhals.col("col")).alias("col"))

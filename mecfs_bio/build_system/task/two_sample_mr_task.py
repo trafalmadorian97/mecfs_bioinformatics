@@ -4,6 +4,7 @@ Task to apply two sample mendelian randomization to GWAS data, together with ass
 
 import typing
 from pathlib import Path, PurePath
+from typing import Self
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -65,7 +66,7 @@ from rpy2.robjects.vectors import DataFrame as RDataFrame
 IgnoreOrRaise = typing.Literal["ignore", "raise"]
 
 
-@frozen
+@frozen(slots=True)
 class MRInputColSpec:
     rsid_col: str
     beta_col: str
@@ -158,23 +159,23 @@ REPORT_SUBDIR_PATH = PurePath("reports")
 STEIGER_RESULT_PATH = PurePath("steiger_result.csv")
 
 
-@frozen
+@frozen(slots=True)
 class ClumpOptions:
     pass
 
 
-@frozen
+@frozen(slots=True)
 class MRReportOptions:
     pass
 
 
-@frozen
+@frozen(slots=True)
 class SteigerFilteringOptions:
     drop_failures: bool
     p_value_thresh: float | None = None
 
 
-@frozen
+@frozen(slots=True)
 class TwoSampleMRConfig:
     clump_exposure_data: ClumpOptions | None
     report_options: MRReportOptions | None = None
@@ -191,7 +192,7 @@ class TwoSampleMRConfig:
 NEEDED_COLS = [TSM_RSID_COL, TSM_BETA_COL, TSM_SE_COL, TSM_EFFECT_ALLELE_COL]
 
 
-@frozen
+@frozen(slots=True)
 class TwoSampleMRTask(Task):
     """
     Task to run mendelian randomization using the R package TwoSampleMR.
@@ -337,7 +338,7 @@ class TwoSampleMRTask(Task):
         exposure_col_spec: MRInputColSpec,
         outcome_col_spec: MRInputColSpec,
         method_list: list[str] | None = None,
-    ):
+    ) -> Self:
         outcome_meta = outcome_data_task.meta
         assert isinstance(outcome_meta, FilteredGWASDataMeta)
         meta = ResultDirectoryMeta(
@@ -389,7 +390,7 @@ def steiger_filtering_write_output(
         return harmonized
 
 
-@frozen
+@frozen(slots=True)
 class TwoSampleMRResult:
     result: pd.DataFrame
 
@@ -484,7 +485,7 @@ def optionally_clump_exposure_data(
     formatted_exposure: pd.DataFrame,
     clump_options: ClumpOptions | None,
     tsmr: RPackageType,
-):
+) -> pd.DataFrame:
     if clump_options is None:
         return formatted_exposure
     logger.debug(f"shape of exposure df before clumping:{formatted_exposure.shape}")
@@ -561,7 +562,7 @@ def gen_mr_report(
     options: MRReportOptions | None,
     target_dir: Path,
     tsmr: RPackageType,
-):
+) -> None:
     if options is None:
         return
     tsmr.mr_report(harmonized, str(target_dir))

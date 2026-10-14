@@ -3,6 +3,7 @@ Concatenate dataframes in a DirectoryAsset to create a single FileAsset.
 """
 
 from pathlib import Path, PurePath
+from typing import Self
 
 import pandas as pd
 import structlog
@@ -35,7 +36,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.getLogger()
 
 
-@frozen
+@frozen(slots=True)
 class ConcatFramesInDirTask(Task):
     """
     Task to concatenate dataframes in a directory matching a glob pattern
@@ -81,7 +82,7 @@ class ConcatFramesInDirTask(Task):
         source_dir_task: Task,
         path_glob: str,
         read_spec_for_frames: DataFrameReadSpec,
-    ):
+    ) -> Self:
         meta: Meta
         source_meta: Meta = source_dir_task.meta
         if isinstance(source_meta, ReferenceDataDirectoryMeta):

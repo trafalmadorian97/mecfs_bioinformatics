@@ -54,7 +54,7 @@ def _make_source_task() -> FakeTask:
     )
 
 
-@frozen
+@frozen(slots=True)
 class _FileFetch(Fetch):
     path: Path
 
@@ -62,7 +62,7 @@ class _FileFetch(Fetch):
         return FileAsset(self.path)
 
 
-def test_sqlite_to_parquet_simple_query(tmp_path: Path):
+def test_sqlite_to_parquet_simple_query(tmp_path: Path) -> None:
     db_path = _make_sqlite_db(tmp_path)
     source_task = _make_source_task()
     scratch = tmp_path / "scratch"
@@ -82,7 +82,7 @@ def test_sqlite_to_parquet_simple_query(tmp_path: Path):
     assert set(df["name"]) == {"SET_A", "SET_B"}
 
 
-def test_sqlite_to_parquet_with_list_aggregation(tmp_path: Path):
+def test_sqlite_to_parquet_with_list_aggregation(tmp_path: Path) -> None:
     db_path = _make_sqlite_db(tmp_path)
     source_task = _make_source_task()
     scratch = tmp_path / "scratch"
@@ -116,7 +116,7 @@ def test_sqlite_to_parquet_with_list_aggregation(tmp_path: Path):
     assert list(row_b["gene_symbols"]) == ["EGFR"]
 
 
-def test_sqlite_to_parquet_task_meta(tmp_path: Path):
+def test_sqlite_to_parquet_task_meta(tmp_path: Path) -> None:
     source_task = _make_source_task()
     task = SqliteToParquetTask.create(
         source_task=source_task,
@@ -128,7 +128,7 @@ def test_sqlite_to_parquet_task_meta(tmp_path: Path):
     assert task.meta.asset_id == AssetId("out_parquet")
 
 
-def test_sqlite_to_parquet_task_deps(tmp_path: Path):
+def test_sqlite_to_parquet_task_deps(tmp_path: Path) -> None:
     source_task = _make_source_task()
     task = SqliteToParquetTask.create(
         source_task=source_task,

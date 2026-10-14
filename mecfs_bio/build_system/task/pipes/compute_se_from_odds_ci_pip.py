@@ -9,7 +9,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class ComputeSEFromOddsCiPipe(DataProcessingPipe):
     """
     NOTE: GWASLAB SEEMS TO MESS UP LIFTOVER

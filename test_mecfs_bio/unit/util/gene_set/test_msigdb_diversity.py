@@ -79,13 +79,13 @@ _ROWS = [
 ]
 
 
-def test_returns_target_size(tmp_path: Path):
+def test_returns_target_size(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     result = select_diverse_subset([_A, _B, _C, _D], path, [], target_size=3)
     assert len(result) == 3
 
 
-def test_initial_gene_sets_always_included(tmp_path: Path):
+def test_initial_gene_sets_always_included(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     result = select_diverse_subset([_A, _B, _C, _D], path, [_A, _B], target_size=3)
     names = [s.standard_name for s in result]
@@ -93,21 +93,21 @@ def test_initial_gene_sets_always_included(tmp_path: Path):
     assert "SET_B" in names
 
 
-def test_initial_gene_sets_appear_first(tmp_path: Path):
+def test_initial_gene_sets_appear_first(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     result = select_diverse_subset([_A, _B, _C, _D], path, [_A, _B], target_size=3)
     assert result[0].standard_name == "SET_A"
     assert result[1].standard_name == "SET_B"
 
 
-def test_no_duplicates_in_result(tmp_path: Path):
+def test_no_duplicates_in_result(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     result = select_diverse_subset([_A, _B, _C, _D, _X], path, [], target_size=4)
     names = [s.standard_name for s in result]
     assert len(names) == len(set(names))
 
 
-def test_result_is_subset_of_gene_sets(tmp_path: Path):
+def test_result_is_subset_of_gene_sets(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     all_specs = [_A, _B, _C, _D, _X, _Y]
     result = select_diverse_subset(all_specs, path, [], target_size=3)
@@ -116,33 +116,33 @@ def test_result_is_subset_of_gene_sets(tmp_path: Path):
         assert s.standard_name in all_names
 
 
-def test_target_size_equals_input_returns_all(tmp_path: Path):
+def test_target_size_equals_input_returns_all(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     specs = [_A, _B, _C, _D]
     result = select_diverse_subset(specs, path, [], target_size=4)
     assert {s.standard_name for s in result} == {"SET_A", "SET_B", "SET_C", "SET_D"}
 
 
-def test_target_size_exceeds_available_raises(tmp_path: Path):
+def test_target_size_exceeds_available_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     with pytest.raises(ValueError, match="target_size"):
         select_diverse_subset([_A, _B], path, [], target_size=5)
 
 
-def test_target_size_less_than_initial_raises(tmp_path: Path):
+def test_target_size_less_than_initial_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     with pytest.raises(ValueError, match="target_size"):
         select_diverse_subset([_A, _B, _C, _D], path, [_A, _B, _C], target_size=2)
 
 
-def test_initial_not_in_gene_sets_raises(tmp_path: Path):
+def test_initial_not_in_gene_sets_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     outsider = _spec("SET_OUTSIDER")
     with pytest.raises(ValueError, match="not present in gene_sets"):
         select_diverse_subset([_A, _B, _C], path, [outsider], target_size=2)
 
 
-def test_strategies_differ_on_designed_example(tmp_path: Path):
+def test_strategies_differ_on_designed_example(tmp_path: Path) -> None:
     """
     With selected={A,B,C,D} and candidates={X,Y}:
 
@@ -172,7 +172,7 @@ def test_strategies_differ_on_designed_example(tmp_path: Path):
     )
 
 
-def test_empty_initial_seeds_from_first_gene_set(tmp_path: Path):
+def test_empty_initial_seeds_from_first_gene_set(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     result = select_diverse_subset([_A, _B, _C, _D], path, [], target_size=2)
     assert result[0].standard_name == "SET_A"

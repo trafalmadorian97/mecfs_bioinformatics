@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_stand
 )
 
 
-def run_initial_multisite_pain_analysis():
+def run_initial_multisite_pain_analysis() -> None:
     """
     Function to analyze GWAS of multisite pain phenotype.
     Includes:

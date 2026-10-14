@@ -12,18 +12,18 @@ from mecfs_bio.build_system.task.ppp_ldsc.ppp_protein_heritability_task import (
 )
 
 
-def test_constant_sample_size_ignores_nan_absent_variants():
+def test_constant_sample_size_ignores_nan_absent_variants() -> None:
     n_at_context = np.array([np.nan, 42000.0, 42000.0, np.nan, 42000.0])
     assert constant_sample_size(n_at_context, "PROTEIN") == pytest.approx(42000.0)
 
 
-def test_constant_sample_size_raises_when_not_constant():
+def test_constant_sample_size_raises_when_not_constant() -> None:
     n_at_context = np.array([42000.0, 42001.0, np.nan])
     with pytest.raises(AssertionError, match=NON_CONSTANT_SAMPLE_SIZE_ERR):
         constant_sample_size(n_at_context, "PROTEIN")
 
 
-def test_constant_sample_size_raises_when_all_absent():
+def test_constant_sample_size_raises_when_all_absent() -> None:
     # No finite value -> zero distinct sizes -> fail (cannot recover N).
     n_at_context = np.array([np.nan, np.nan])
     with pytest.raises(AssertionError, match=NON_CONSTANT_SAMPLE_SIZE_ERR):

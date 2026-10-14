@@ -4,6 +4,7 @@ using chromosome, position, alleles for matching
 """
 
 from pathlib import Path
+from typing import Self
 
 import polars as pl
 import structlog
@@ -18,6 +19,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.ppp_database.allele_key import assert_all_snv
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
@@ -54,14 +56,14 @@ _REF_COLS_ALLELE_MATCH = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class ChromRange:
     chrom: int
     start: int
     end: int
 
 
-@frozen
+@frozen(slots=True)
 class HarmonizeGWASWithReferenceViaAlleles(Task):
     """
     Given a table of reference genetic variants, harmonize gwas data with that table of reference variants
@@ -77,6 +79,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
     - drop if we lack frequency information
     - Else, can try to use frequency info to resolve
 
+    This task is valid only for SNVs: its palindrome detection is SNV-only.
     """
 
     meta: Meta
@@ -127,6 +130,14 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
             .to_polars()
         )
         reference = _convert_ea_nea_to_str(reference)
+
+        # This task's palindrome detection and allele matching are only valid for SNVs;
+        assert_all_snv(
+            gwas_data, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+        )
+        assert_all_snv(
+            reference, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+        )
 
         assert len(
             gwas_data.unique(
@@ -244,11 +255,12 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         gwas_pipe: DataProcessingPipe = IdentityPipe(),
         ref_pipe: DataProcessingPipe = IdentityPipe(),
         chrom_range_filter: ChromRange | None = None,
-    ):
+    ) -> Self:
         source_meta = gwas_data_task.meta
         read_spec = DataFrameReadSpec(DataFrameParquetFormat())
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
+            assert isinstance(source_meta.read_spec, DataFrameReadSpec)
             meta = FilteredGWASDataMeta(
                 id=AssetId(asset_id),
                 trait=source_meta.trait,
@@ -257,6 +269,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
                 read_spec=read_spec,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
+            assert isinstance(source_meta.read_spec, DataFrameReadSpec)
             meta = GWASSummaryDataFileMeta(
                 id=AssetId(asset_id),
                 trait=source_meta.trait,
@@ -265,6 +278,8 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
                 project_path=None,
                 read_spec=read_spec,
             )
+        else:
+            raise ValueError(f"Unsupported source meta type: {type(source_meta)}")
         return cls(
             meta=meta,
             gwas_data_task=gwas_data_task,

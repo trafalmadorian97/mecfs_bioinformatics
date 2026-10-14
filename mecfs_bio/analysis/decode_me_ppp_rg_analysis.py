@@ -4,7 +4,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_rg import (
 )
 
 
-def go():
+def go() -> None:
     """
     Compute genetic correlation between DecodeME and proteomic GWAS from
     the UK Biobank Pharma Proteomics Project

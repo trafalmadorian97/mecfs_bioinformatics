@@ -39,7 +39,7 @@ def _acat_combine(p_values: pl.Series) -> float:
     return 0.5 - math.atan(t) / math.pi
 
 
-@frozen
+@frozen(slots=True)
 class AcatTask(Task):
     source_task: Task
     meta: Meta

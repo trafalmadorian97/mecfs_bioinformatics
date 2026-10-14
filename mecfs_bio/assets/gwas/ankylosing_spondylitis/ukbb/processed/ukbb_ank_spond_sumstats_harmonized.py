@@ -1,28 +1,22 @@
-from mecfs_bio.assets.gwas.ankylosing_spondylitis.ukbb.processed.ukbb_ank_spond_sumstats import (
-    UK_BIOBANK_ANKYLOSING_SPONDYLITIS_SUMSTATS,
+"""
+UK Biobank ankylosing spondylitis sumstats, genome-reference harmonized to build 37, loaded as
+gwaslab sumstats for gwaslab-based analyses.
+"""
+
+from mecfs_bio.assets.gwas.ankylosing_spondylitis.ukbb.processed.ukbb_ank_spond_genome_reference_harmonized import (
+    UKBB_ANK_SPOND_GENOME_REFERENCE_HARMONIZED,
 )
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
-    GwasLabTransformSpec,
-    GWASLabVCFRef,
-    HarmonizationOptions,
-)
-from mecfs_bio.build_system.task.gwaslab.gwaslab_transform_sumstats import (
-    GWASLabTransformSumstatsTask,
+    GWASLabCreateSumstatsTask,
 )
 
-UKBB_ANK_SPOND_SUMSTATS_HARMONIZED = (
-    GWASLabTransformSumstatsTask.create_from_source_task(
-        source_tsk=UK_BIOBANK_ANKYLOSING_SPONDYLITIS_SUMSTATS,
-        asset_id="uk_biobank_ank_spond_sumstats_37_harmonized",
-        spec=GwasLabTransformSpec(
-            harmonize_options=HarmonizationOptions(
-                ref_infer=GWASLabVCFRef(name="1kg_eur_hg19", ref_alt_freq="AF"),
-                ref_seq="ucsc_genome_hg19",
-                check_ref_files=True,
-                drop_missing_from_ref_seq=True,
-                drop_missing_from_ref_infer_or_ambiguous=True,
-                cores=1,
-            )
-        ),
-    )
+UKBB_ANK_SPOND_SUMSTATS_HARMONIZED = GWASLabCreateSumstatsTask(
+    df_source_task=UKBB_ANK_SPOND_GENOME_REFERENCE_HARMONIZED,
+    target_asset_id=AssetId(
+        "uk_biobank_ank_spond_genome_reference_harmonized_sumstats"
+    ),
+    basic_check=True,
+    genome_build="19",
+    fmt="gwaslab",
 )

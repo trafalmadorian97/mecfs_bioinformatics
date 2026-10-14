@@ -122,13 +122,13 @@ def _get_progress_list(todo: Sequence[AssetId], done: set[AssetId]) -> str:
 
 def _print_progress(
     todo: Sequence[AssetId], done: set[AssetId], print_progress_list: bool
-):
+) -> None:
     if not print_progress_list:
         return
     logger.info(_get_progress_list(todo=todo, done=done))
 
 
-@frozen
+@frozen(slots=True)
 class TopologicalSchedulerSettings:
     print_progress: bool = False
 

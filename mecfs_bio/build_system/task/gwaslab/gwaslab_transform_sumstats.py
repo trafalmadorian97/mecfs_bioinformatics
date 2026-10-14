@@ -3,6 +3,7 @@ Contains a task for transforming gwaslab Sumstats objefts.
 """
 
 from pathlib import Path
+from typing import Self
 
 import gwaslab as gl
 from attrs import frozen
@@ -26,7 +27,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class GWASLabTransformSumstatsTask(Task):
     """
     Task to read a pickled GWASlab sumstats object, apply transformations to it, write it out as a new GWASLab sumstats object.
@@ -68,7 +69,7 @@ class GWASLabTransformSumstatsTask(Task):
         asset_id: str,
         spec: GwasLabTransformSpec,
         post_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
         meta = GWASLabSumStatsMeta(

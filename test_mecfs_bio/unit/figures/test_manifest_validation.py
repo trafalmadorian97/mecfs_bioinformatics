@@ -46,7 +46,7 @@ def _md_task(asset_id: str) -> FakeTask:
     )
 
 
-def test_validate_accepts_exact_file_match(tmp_path: Path):
+def test_validate_accepts_exact_file_match(tmp_path: Path) -> None:
     tasks = [_file_task("plot_a"), _md_task("md_a")]
     manifest = FigureManifest(
         figures={Path("plot_a.html"): "h1", Path("md_a.mdx"): "h2"}
@@ -54,7 +54,7 @@ def test_validate_accepts_exact_file_match(tmp_path: Path):
     validate_manifest_subset_of_tasks(manifest=manifest, tasks=tasks, fig_dir=tmp_path)
 
 
-def test_validate_accepts_file_under_directory_task(tmp_path: Path):
+def test_validate_accepts_file_under_directory_task(tmp_path: Path) -> None:
     tasks = [_dir_task("plot_dir")]
     manifest = FigureManifest(
         figures={
@@ -65,7 +65,7 @@ def test_validate_accepts_file_under_directory_task(tmp_path: Path):
     validate_manifest_subset_of_tasks(manifest=manifest, tasks=tasks, fig_dir=tmp_path)
 
 
-def test_validate_raises_on_orphan_path(tmp_path: Path):
+def test_validate_raises_on_orphan_path(tmp_path: Path) -> None:
     tasks = [_file_task("plot_a")]
     manifest = FigureManifest(
         figures={Path("plot_a.html"): "h1", Path("ghost.html"): "h2"}
@@ -78,7 +78,7 @@ def test_validate_raises_on_orphan_path(tmp_path: Path):
     assert "plot_a.html" not in str(exc_info.value)
 
 
-def test_validate_does_not_treat_directory_prefix_as_file_match(tmp_path: Path):
+def test_validate_does_not_treat_directory_prefix_as_file_match(tmp_path: Path) -> None:
     # "plot_dir_extra.html" must not be accepted just because a directory
     # task produces "plot_dir/" --- Path.parents only contains true
     # ancestors, so this comes for free with the Path-based check.
@@ -90,7 +90,7 @@ def test_validate_does_not_treat_directory_prefix_as_file_match(tmp_path: Path):
         )
 
 
-def test_validate_accepts_empty_manifest(tmp_path: Path):
+def test_validate_accepts_empty_manifest(tmp_path: Path) -> None:
     validate_manifest_subset_of_tasks(
         manifest=FigureManifest.empty(), tasks=[_file_task("plot_a")], fig_dir=tmp_path
     )

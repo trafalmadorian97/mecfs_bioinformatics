@@ -52,7 +52,7 @@ from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.transpose_pipe import TransposePipe
 
 
-@frozen
+@frozen(slots=True)
 class UnivariateMixerTasks:
     run_tasks: Mapping[int, MixerTask]
     combine_task: Task
@@ -79,7 +79,7 @@ def univariate_mixer_asset_generator(
     reference_data_directory_task: Task,
     reps: Sequence[int] = tuple(range(1, 21)),
     threads: int = 4,
-):
+) -> UnivariateMixerTasks:
     """
     Asset generator to apply univariate MiXeR to GWAS summary statistics.
 
@@ -169,7 +169,7 @@ def univariate_mixer_asset_generator(
     )
 
 
-@frozen
+@frozen(slots=True)
 class BivariateMixerTasks:
     trait_1_tasks: UnivariateMixerTasks
     trait_2_task: UnivariateMixerTasks

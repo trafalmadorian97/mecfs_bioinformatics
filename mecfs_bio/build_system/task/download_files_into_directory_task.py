@@ -3,7 +3,7 @@ Task to download one or more files into a directory, then run command line progr
 """
 
 from pathlib import Path
-from typing import Callable, Sequence
+from typing import Callable, Self, Sequence
 
 import structlog
 from attrs import frozen
@@ -20,7 +20,7 @@ from mecfs_bio.util.subproc.run_command import execute_command
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class DownloadEntry:
     """
     A file to download into the directory,
@@ -33,7 +33,9 @@ class DownloadEntry:
     post_download_command: Callable[[Path], list[str]] | None
 
     @classmethod
-    def create_with_bcftools_index(cls, url: str, filename: str, md5hash: str | None):
+    def create_with_bcftools_index(
+        cls, url: str, filename: str, md5hash: str | None
+    ) -> Self:
         return cls(
             url=url,
             filename=filename,
@@ -42,7 +44,7 @@ class DownloadEntry:
         )
 
 
-@frozen
+@frozen(slots=True)
 class DownloadFilesIntoDirectoryTask(Task):
     """
     A directory consisting of one or more downloaded files

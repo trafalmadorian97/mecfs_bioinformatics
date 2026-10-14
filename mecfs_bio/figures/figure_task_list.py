@@ -2,6 +2,15 @@
 This file contains a list of figures to be exported for use in documentation
 """
 
+from mecfs_bio.assets.diagrams.ld_same_branch_correlation import (
+    LD_SAME_BRANCH_CORRELATION_DIAGRAM,
+)
+from mecfs_bio.assets.diagrams.liability_threshold_ascertained_sample import (
+    LIABILITY_THRESHOLD_ASCERTAINED_SAMPLE_DIAGRAM,
+)
+from mecfs_bio.assets.diagrams.liability_threshold_model import (
+    LIABILITY_THRESHOLD_MODEL_DIAGRAM,
+)
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
 )
@@ -19,6 +28,12 @@ from mecfs_bio.assets.gwas.c_reactive_protein.said_et_al.analysis.said_crp_stand
 )
 from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
     EBV_DNA_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.kerrebeijin_ppp_rg import (
+    KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED,
+)
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.standard_analysis_kerrebijin_fibro import (
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS,
 )
 from mecfs_bio.assets.gwas.height.yengo_2022.analysis.yengo_standard_analysis import (
     YENGO_HEIGHT_STANDARD_ANALYSIS,
@@ -44,6 +59,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_combined_g
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc import (
     DECODE_ME_GWAS_1_HERITABILITY_BY_LDSC_MD,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_ldsc_diagnostic_plot import (
+    DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_variants_markdown import (
     DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
 )
@@ -61,6 +79,42 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_region_plot_rabga
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr1_174_128_548 import (
+    POLYFUN_PRIOR_COMPARISON_CHR1_174,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr15_54_925_638 import (
+    POLYFUN_PRIOR_COMPARISON_CHR15_54,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr17_50_237_377 import (
+    POLYFUN_PRIOR_COMPARISON_CHR17_50,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.prior_comparison_decode_me_37_chr20_47_653_230 import (
+    POLYFUN_PRIOR_COMPARISON_CHR20_47,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr1_174_128_548_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr15_54_925_638_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr17_50_237_377_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR17_50_L2_SLDSC_PRIOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_approach_2_l2_sldsc_prior.susie_explain_decode_me_37_chr20_47_653_230_l2_sldsc_prior import (
+    POLYFUN_EXPLAIN_CHR20_47_L2_SLDSC_PRIOR,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr1_174_128_548 import (
+    POLYFUN_EXPLAIN_CHR1_174,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr15_54_925_638 import (
+    POLYFUN_EXPLAIN_CHR15_54,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr17_50_237_377 import (
+    POLYFUN_EXPLAIN_CHR17_50,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.polyfun_explainability.susie_explain_decode_me_37_chr20_47_653_230 import (
+    POLYFUN_EXPLAIN_CHR20_47,
 )
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindromes.susie_finemap_decode_me_37_chr1_174_128_548_locus_palindromes import (
     DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES,
@@ -131,6 +185,9 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot 
 from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GROUP
 from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import (
     MECFS_PAIN_BIVARIATE_MIXER,
+)
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_ppp_rg import (
+    JOHNSTON_ET_AL_PPP_RG_CIS_EXCLUDED,
 )
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
@@ -234,6 +291,58 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_base_credible_set_markdown_table,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_strict_credible_set_markdown_table,
+    # SUSIE credible-set variant lists as parquet, for filterable/downloadable tables
+    DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.susie_base_credible_set_parquet_table,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_base_credible_set_parquet_table,
+    DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_2_credible_set_parquet_table,
+    DECODE_ME_GWAS_37_CHR_15_54_925_638_FINEMAP_PALINDROMES.susie_base_credible_set_parquet_table,
+    DECODE_ME_GWAS_37_CHR17_50_237_377_FINEMAP_PALINDROMES.susie_base_credible_set_parquet_table,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_base_credible_set_parquet_table,
+    DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_strict_credible_set_parquet_table,
+    # Polyfun SUSIE results (external prior),
+    POLYFUN_EXPLAIN_CHR1_174.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR1_174.upset_cs50_polyfun,
+    POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].plot_svg,
+    POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].detailed_table,
+    POLYFUN_EXPLAIN_CHR1_174.groups_by_label["l10"].per_variant_annotation_table,
+    POLYFUN_EXPLAIN_CHR15_54.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR15_54.upset_cs50_polyfun,
+    POLYFUN_EXPLAIN_CHR15_54.groups_by_label["l10"].plot_svg,
+    POLYFUN_EXPLAIN_CHR15_54.groups_by_label["l10"].detailed_table,
+    POLYFUN_EXPLAIN_CHR15_54.groups_by_label["l10"].per_variant_annotation_table,
+    POLYFUN_EXPLAIN_CHR17_50.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR17_50.upset_cs50_polyfun,
+    POLYFUN_EXPLAIN_CHR17_50.groups_by_label["l10"].plot_svg,
+    POLYFUN_EXPLAIN_CHR17_50.groups_by_label["l10"].detailed_table,
+    POLYFUN_EXPLAIN_CHR17_50.groups_by_label["l10"].per_variant_annotation_table,
+    POLYFUN_EXPLAIN_CHR20_47.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR20_47.upset_cs50_polyfun,
+    POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l10"].plot_svg,
+    POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l10"].detailed_table,
+    POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l10"].per_variant_annotation_table,
+    POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l1"].plot_svg,
+    POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l1"].detailed_table,
+    POLYFUN_EXPLAIN_CHR20_47.groups_by_label["l1"].per_variant_annotation_table,
+    # PolyFun susie results (internal prior),
+    POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR1_174_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR1_174.groups_by_label["l10"].table,
+    POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR15_54_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_PRIOR_COMPARISON_CHR15_54.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR15_54.groups_by_label["l10"].table,
+    POLYFUN_PRIOR_COMPARISON_CHR17_50.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR17_50.groups_by_label["l10"].table,
+    POLYFUN_EXPLAIN_CHR17_50_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR17_50_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_EXPLAIN_CHR20_47_L2_SLDSC_PRIOR.upset_all_polyfun,
+    POLYFUN_EXPLAIN_CHR20_47_L2_SLDSC_PRIOR.upset_cs50_polyfun,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l10"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l10"].table,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l1"].plot_svg,
+    POLYFUN_PRIOR_COMPARISON_CHR20_47.groups_by_label["l1"].table,
+    # H-magma
     DECODE_ME_H_MAGMA_ASSET_GENERATOR.labeled_by_annotation()[
         "adult_brain"
     ].gene_manhattan_plot_task,
@@ -276,6 +385,11 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_MINUS_PAIN_OLS_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
+    DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
+    DECODE_ME_CURATED_GENE_SET_ANALYSIS.bar_plot_task_full,
+    DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT,
     CT_LDSC_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -290,10 +404,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     EBV_DNA_STANDARD_ANALYSIS.tasks.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_CHROMATIN_REF
     ].plot_task_unwrap,
-    DECODE_ME_UNIVARIATE_MIXER.power_plot_task,
-    DECODE_ME_UNIVARIATE_MIXER.qq_plot_task,
-    DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
-    DECODE_ME_CURATED_GENE_SET_ANALYSIS.bar_plot_task_full,
+    # Johnston multsite pain
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.power_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.qq_plot_task,
     JOHNSTON_ET_AL_UNIVARIATE_MIXER.result_markdown_table_task,
@@ -317,6 +428,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks_unwrap.labeled_by_annotation()[
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
+    JOHNSTON_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.independent_clusters_markdown_task_unwrap,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -345,8 +457,10 @@ ALL_FIGURE_TASKS: list[Task] = [
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
     MI_LCV_TASK_GROUP.downstream_trait_tables["MI"],
     YENGO_HEIGHT_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    YENGO_HEIGHT_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
     MILLION_VETERANS_EUR_MIGRAINE_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.heritability_markdown_task_unwrap,
     MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.magma_tasks.inner.bar_plot_task,
@@ -395,6 +509,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap,
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.magma_independent_cluster_plot_unwrap,
     SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
+    SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.ldsc_diagnostic_plot_task_unwrap,
     SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED.display_frame_task,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_gene_manhattan_plot_unwrap,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
@@ -410,6 +525,14 @@ ALL_FIGURE_TASKS: list[Task] = [
     PGC2022_SCH_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # asthma
     ASTHMA_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # Fibro
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
+    KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # schematic diagrams for docs
+    LD_SAME_BRANCH_CORRELATION_DIAGRAM,
+    LIABILITY_THRESHOLD_MODEL_DIAGRAM,
+    LIABILITY_THRESHOLD_ASCERTAINED_SAMPLE_DIAGRAM,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"

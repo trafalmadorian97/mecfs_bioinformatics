@@ -169,7 +169,7 @@ def _column_mean_over_keep(
     )
 
 
-@frozen
+@frozen(slots=True)
 class TraitLdscContext:
     """The trait-only LDSC quantities, computed once and reused for every protein.
 
@@ -202,7 +202,7 @@ class TraitLdscContext:
         assert self.h2_delete.ndim == 1, "h2_delete must be 1-D"
 
 
-@frozen
+@frozen(slots=True)
 class BatchedRgResult:
     """Per-protein cross-trait rg outputs; all arrays are length K (protein order preserved).
     h2_trait and n_bar_trait are trait-level scalars shared by every protein."""
@@ -375,7 +375,7 @@ def batched_rg(
     )
 
 
-@frozen
+@frozen(slots=True)
 class ExactRgResult:
     rg: float
     gcov: float

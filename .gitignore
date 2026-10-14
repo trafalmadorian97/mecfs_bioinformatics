@@ -295,3 +295,12 @@ experiments/claude/pops_standalone/
 
 #  No parquet datafiles
 *.parquet
+
+
+# worktrees
+
+worktrees
+
+# No gzip files or tar files
+*.gz
+*.tar

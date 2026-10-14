@@ -28,7 +28,7 @@ logger = structlog.get_logger()
 import narwhals as nw
 
 
-@frozen
+@frozen(slots=True)
 class FilterSNPsFrequencyTask(Task):
     """
     Task to only keep variants where the minor allele frequency

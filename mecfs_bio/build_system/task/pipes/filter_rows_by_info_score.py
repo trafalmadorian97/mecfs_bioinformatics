@@ -5,7 +5,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_INFO_SCORE_COL
 
 
-@frozen
+@frozen(slots=True)
 class FilterRowsByInfoScorePipe(DataProcessingPipe):
     min_score: float
     info_col: str = GWASLAB_INFO_SCORE_COL

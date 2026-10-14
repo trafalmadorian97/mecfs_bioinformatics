@@ -34,7 +34,7 @@ def apply_spec_mask(df: pd.DataFrame, spec: MSigDBGeneSetSpec) -> pd.Series:
     return mask
 
 
-@frozen
+@frozen(slots=True)
 class _SpecFailure:
     spec: MSigDBGeneSetSpec
     reason: str

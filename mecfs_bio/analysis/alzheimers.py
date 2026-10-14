@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_stand
 )
 
 
-def run_initial_alzheimers_analysis():
+def run_initial_alzheimers_analysis() -> None:
     """
     Function to analyze GWAS of Alzheimer's phenotype.
     Includes:

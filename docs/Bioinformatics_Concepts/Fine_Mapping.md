@@ -11,23 +11,7 @@ The plot below generated from the [DecodeME](../Data_Sources/DecodeME.md)[@genet
 
 A primary purposes of a GWAS is identification of causal genetic variants.  These causal variants can inform us about the biological processes underlying the phenotype we are studying.
 
-The naive approach is to label the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") as causal.  This approach omits a key consideration: linkage disequilibrium.
-
-## Linkage Disequilibrium
-_Linkage disequilibrium_ (LD) refers to statistical dependence between genetic variants. LD is central to statistical genomics.
-
-Some facts about LD:
-
-- LD decays as the distance between variants increases, because the odds of an intervening [recombination event](https://en.wikipedia.org/wiki/Genetic_recombination) correspondingly increase. However, due to the complex structure of Eukaryotic DNA, the odds of recombination events are non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant.
-- Genetic variants that are relatively recent tend to have low frequency in the population, and thus low LD with all other variants, regardless of distance.
-
-
-As an illustrative example, here is a plot of the absolute value of the correlation between genetic variants in a region of chromosome 1.  This plot was generated from the [UK Biobank LD matrices stored on AWS OpenData](https://registry.opendata.aws/ukbb-ld/).
-
-
-![ld_example_plot](https://github.com/user-attachments/assets/a05681d5-91f3-4b89-8023-d3d50a22b8bd)
-
-Consistent with the facts above, we observe irregularly spaced LD blocks. 
+The naive approach is to label the most significant genetic variants  (i.e. the highest points on the Manhattan plot, which are sometimes called "lead variants") as causal.  This approach omits a key consideration: [linkage disequilibrium](Linkage_Disequilibrium.md).
 
 
 ## Effect of LD on Significance
@@ -92,6 +76,7 @@ todo
 
 ## Links
 
-- [Primer on Fine Mapping by Ran Cui](https://www.youtube.com/watch?v=pglYf7wocSI)
-
+- [Primer on Fine Mapping by Ran Cui at the broad institute](https://www.youtube.com/watch?v=pglYf7wocSI)
+- [Talk on Mathematical Background of Fine Mapping by Ran Cui at 
+International Statistical Genetics Workshop](https://www.youtube.com/watch?v=hfRaMvdUFPo)
 - [Talk on SUSIE Fine Mapping Method by Matthew Stephens](https://www.youtube.com/watch?v=QL3YawgTPhc)

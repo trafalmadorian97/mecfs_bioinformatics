@@ -47,7 +47,7 @@ from mecfs_bio.constants.ppp_database_constants import (
 _ROW_POS_COL = "__ctx_row__"
 
 
-@frozen
+@frozen(slots=True)
 class PppLdscContext:
     """The shared regression SNP set, genome-sorted. All arrays are parallel (one entry per
     retained variant, in (chromosome, position) order).

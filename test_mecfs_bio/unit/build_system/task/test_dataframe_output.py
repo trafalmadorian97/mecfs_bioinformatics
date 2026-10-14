@@ -3,12 +3,15 @@ from pathlib import Path
 import narwhals
 import pandas as pd
 import polars as pl
+import pyarrow as pa
 import pyarrow.parquet as pq
 
 from mecfs_bio.build_system.task.dataframe_output import (
     CSVOutFormat,
     ParquetOutFormat,
     ParquetWriteOptions,
+    open_parquet_writer,
+    parquet_encoding,
     write_df_according_to_format,
     write_parquet_table,
 )
@@ -36,7 +39,7 @@ def _encodings(path: Path, column: str) -> set[str]:
     return set(next(c for c in columns if c.path_in_schema == column).encodings)
 
 
-def test_byte_stream_split_is_applied_to_named_columns(tmp_path: Path):
+def test_byte_stream_split_is_applied_to_named_columns(tmp_path: Path) -> None:
     # Dictionary encoding silently wins over BYTE_STREAM_SPLIT if it is left
     # enabled on the split columns, producing a file that looks correct and is
     # byte-identical to one written without the split. Assert the encoding
@@ -52,7 +55,7 @@ def test_byte_stream_split_is_applied_to_named_columns(tmp_path: Path):
     assert "BYTE_STREAM_SPLIT" in _encodings(out_path, "value")
 
 
-def test_empty_split_column_list_disables_the_split(tmp_path: Path):
+def test_empty_split_column_list_disables_the_split(tmp_path: Path) -> None:
     out_path = tmp_path / "plain.parquet"
     write_parquet_table(
         table=_frame().to_arrow(),
@@ -64,7 +67,7 @@ def test_empty_split_column_list_disables_the_split(tmp_path: Path):
     assert "BYTE_STREAM_SPLIT" not in _encodings(out_path, "value")
 
 
-def test_write_options_split_floats_only(tmp_path: Path):
+def test_write_options_split_floats_only(tmp_path: Path) -> None:
     out_path = tmp_path / "opts.parquet"
     write_df_according_to_format(
         df=_lazy("polars"),
@@ -82,7 +85,7 @@ def test_write_options_split_floats_only(tmp_path: Path):
     assert pl.read_parquet(out_path).equals(_frame())
 
 
-def test_parquet_without_options_round_trips(tmp_path: Path):
+def test_parquet_without_options_round_trips(tmp_path: Path) -> None:
     out_path = tmp_path / "default.parquet"
     write_df_according_to_format(
         df=_lazy("polars"), out_path=out_path, out_format=ParquetOutFormat()
@@ -90,7 +93,7 @@ def test_parquet_without_options_round_trips(tmp_path: Path):
     assert pl.read_parquet(out_path).equals(_frame())
 
 
-def test_csv_format_uses_the_requested_separator(tmp_path: Path):
+def test_csv_format_uses_the_requested_separator(tmp_path: Path) -> None:
     out_path = tmp_path / "out.tsv"
     write_df_according_to_format(
         df=_lazy("polars"), out_path=out_path, out_format=CSVOutFormat(sep="\t")
@@ -98,7 +101,7 @@ def test_csv_format_uses_the_requested_separator(tmp_path: Path):
     assert out_path.read_text().splitlines()[0] == "label\tcount\tvalue"
 
 
-def test_pandas_backed_parquet_matches_pandas_own_writer(tmp_path: Path):
+def test_pandas_backed_parquet_matches_pandas_own_writer(tmp_path: Path) -> None:
     # narwhals dispatches to the backend's own writer, so routing a pandas-backed
     # task through the shared helper must not change a single byte of its output.
     via_helper = tmp_path / "helper.parquet"
@@ -110,7 +113,7 @@ def test_pandas_backed_parquet_matches_pandas_own_writer(tmp_path: Path):
     assert via_helper.read_bytes() == via_pandas.read_bytes()
 
 
-def test_pandas_backed_csv_matches_pandas_own_writer(tmp_path: Path):
+def test_pandas_backed_csv_matches_pandas_own_writer(tmp_path: Path) -> None:
     via_helper = tmp_path / "helper.csv"
     via_pandas = tmp_path / "pandas.csv"
     write_df_according_to_format(
@@ -120,7 +123,9 @@ def test_pandas_backed_csv_matches_pandas_own_writer(tmp_path: Path):
     assert via_helper.read_text() == via_pandas.read_text()
 
 
-def test_pandas_backed_frame_with_gap_index_preserves_pandas_behaviour(tmp_path: Path):
+def test_pandas_backed_frame_with_gap_index_preserves_pandas_behaviour(
+    tmp_path: Path,
+) -> None:
     # A filtered pandas frame carries a non-contiguous index, which pandas
     # persists as __index_level_0__. The helper must not silently drop it.
     filtered = _frame().to_pandas().query("count > 2")
@@ -135,7 +140,7 @@ def test_pandas_backed_frame_with_gap_index_preserves_pandas_behaviour(tmp_path:
     assert via_helper.read_bytes() == via_pandas.read_bytes()
 
 
-def test_pandas_frame_is_accepted_via_from_native(tmp_path: Path):
+def test_pandas_frame_is_accepted_via_from_native(tmp_path: Path) -> None:
     out_path = tmp_path / "out.parquet"
     write_df_according_to_format(
         df=narwhals.from_native(pd.DataFrame({"x": [1, 2]})).lazy(),
@@ -143,3 +148,27 @@ def test_pandas_frame_is_accepted_via_from_native(tmp_path: Path):
         out_format=ParquetOutFormat(),
     )
     assert pl.read_parquet(out_path)["x"].to_list() == [1, 2]
+
+
+def test_streaming_writer_splits_named_int_columns_and_keeps_dictionary_elsewhere(
+    tmp_path: Path,
+) -> None:
+    table = pa.table(
+        {
+            "count": pa.array([1, 2, 3, 4], pa.int32()),
+            "label": ["a", "b", "a", "b"],
+        }
+    )
+    encoding = parquet_encoding(
+        table.schema.names,
+        compression="zstd",
+        compression_level=None,
+        byte_stream_split_columns=["count"],
+    )
+    path = tmp_path / "out.parquet"
+    with open_parquet_writer(path, table.schema, encoding) as writer:
+        writer.write_table(table)
+        writer.write_table(table)
+    assert "BYTE_STREAM_SPLIT" in _encodings(path, "count")
+    assert "RLE_DICTIONARY" in _encodings(path, "label")
+    assert pq.read_table(path).num_rows == 8

@@ -4,7 +4,7 @@ A Task and associated helper methods to plot the results and context of SUSIE fi
 
 import gc
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -16,8 +16,10 @@ from attrs import frozen
 
 # import pandas as pd
 from matplotlib import gridspec
+from matplotlib.axes import Axes
 from matplotlib.colors import TABLEAU_COLORS, ListedColormap
 from matplotlib.figure import Figure
+from matplotlib.gridspec import SubplotSpec
 from matplotlib.lines import Line2D
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 from polars import String
@@ -57,7 +59,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
-@frozen
+@frozen(slots=True)
 class BinOptions:
     num_bins: int
 
@@ -70,6 +72,10 @@ GENE_INFO_NAME_COL = "gene_name"
 GENE_INFO_STRAND_COL = "strand"
 GENE_INFO_CHROM_COL = "chrom"
 
+# Default GWAS genome-wide significance threshold in -log10(p) units, drawn as a
+# dashed grey reference line on the Manhattan panel.
+GWAS_SIGNIFICANCE_MLOG10P = 7.8239087
+
 _gwas_pipe = CompositePipe(
     [ComputePFromBetaSEPipeIfNeeded(), ComputeMlog10pIfNeededPipe()]
 )
@@ -79,14 +85,14 @@ seaborn_rocket_cmap = sns.color_palette("rocket", n_colors=256)
 _matplotlib_rocket_cmap = ListedColormap(seaborn_rocket_cmap)
 
 
-@frozen
+@frozen(slots=True)
 class RegionSelectOverride:
     chrom: int
     start: int
     end: int
 
 
-@frozen
+@frozen(slots=True)
 class RegionSelectDefault:
     pass
 
@@ -115,14 +121,14 @@ def get_region(mode: RegionSelect, susie_output_path: Path) -> tuple[int, int, i
 HeatMapPlotMode = Literal["ld2", "ld_abs"]
 
 
-@frozen
+@frozen(slots=True)
 class HeatmapOptions:
     heatmap_bin_options: BinOptions | None
     mode: HeatMapPlotMode
     cmap: str | ListedColormap = "plasma"
 
 
-@frozen
+@frozen(slots=True)
 class SusieStackPlotTask(Task):
     """
     Create a plot to illustrate the results of a SUSIE run on a given locus.
@@ -184,7 +190,9 @@ class SusieStackPlotTask(Task):
         )
         out_path = scratch_dir
         write_plots_to_dir(out_path, {"plot": fig})
-        del fig
+        # plt.figure() registers the figure in pyplot's global manager, so `del fig`
+        # alone would not free it; close it explicitly to bound memory across a run.
+        plt.close(fig)
         del loaded
         del gene_info_df
         gc.collect()
@@ -199,7 +207,7 @@ class SusieStackPlotTask(Task):
         gene_info_pipe: DataProcessingPipe,
         region_mode: RegionSelect,
         heatmap_options: HeatmapOptions,
-    ):
+    ) -> Self:
         src_meta = susie_task.meta
         assert isinstance(src_meta, ResultDirectoryMeta)
         meta = GWASPlotFileMeta(
@@ -403,7 +411,7 @@ def get_array_and_edges_for_ld_heatmap(
 
 
 def plot_gene_tracks(
-    ax,
+    ax: Axes,
     gene_df: pl.DataFrame,
     start_bp: int,
     end_bp: int,
@@ -413,7 +421,7 @@ def plot_gene_tracks(
     gene_strand_col: str,
     font_size: int = 9,
     min_dist_between_genes: float = 0.03,  # Slightly increased buffer
-):
+) -> None:
     """
     Generated With Gemini
     Plots gene tracks with smart label centering and collision avoidance.
@@ -529,9 +537,9 @@ def plot_gene_tracks(
 
 
 def draw_manhattan_track(
-    fig,
-    target_gridspec_cell,  # e.g. gs[0, 0]
-    colorbar_axis,
+    fig: Figure,
+    target_gridspec_cell: SubplotSpec,  # e.g. gs[0, 0]
+    colorbar_axis: Axes,
     gwas_df: pl.DataFrame,
     ld2_colors: np.ndarray,  # Pre-calculated colors for the scatter points
     gwas_pos_col: str,
@@ -541,8 +549,8 @@ def draw_manhattan_track(
     break_at: float = 20.0,
     max_break_proportion: float = 0.5,  # Cap the top section at 50% height
     saturation_point: float = 100.0,  # Point where we reach max height proportion
-    significance_threshold: float = 7.8239087,
-):
+    significance_threshold: float = GWAS_SIGNIFICANCE_MLOG10P,
+) -> Axes:
     """
     Generated with Gemini and then modified.
 
@@ -658,13 +666,9 @@ def draw_manhattan_track(
 
         # Draw Diagonal "Cut" Lines
         d = 0.006
-        kwargs = dict(transform=ax_top.transAxes, color="k", clip_on=False)
-        ax_top.plot((-d, +d), (-d, +d), **kwargs)  # top-left
-        ax_top.plot((1 - d, 1 + d), (-d, +d), **kwargs)  # top-right
-
-        kwargs.update(transform=ax_bottom.transAxes)
-        ax_bottom.plot((-d, +d), (1 - d, 1 + d), **kwargs)  # bottom-left
-        ax_bottom.plot((1 - d, 1 + d), (1 - d, 1 + d), **kwargs)  # bottom-right
+        for ax, y in ((ax_top, (-d, +d)), (ax_bottom, (1 - d, 1 + d))):
+            for x in ((-d, +d), (1 - d, 1 + d)):  # left, right
+                ax.plot(x, y, transform=ax.transAxes, color="k", clip_on=False)
 
         # Label: Center it on the "entire" side using figure coords is best,
         # or just place it on the top axis to be safe.
@@ -679,16 +683,37 @@ def draw_manhattan_track(
     return ax  # Return the single axis for x-linking later
 
 
+CredibleSetLabelMode = Literal["positional", "susie_index"]
+
+
+def _credible_set_label(cs_key: object, index: int, mode: CredibleSetLabelMode) -> str:
+    """Legend label for one credible set. "positional" numbers the sets 1..N in
+    plotting order (the original behavior). "susie_index" uses SUSIE's own
+    credible-set index parsed from the group's cs label (L2 -> "CS 2"), so the
+    legend agrees with tables that report that index (e.g. the polyfun-explain
+    detailed table's cs_pf/cs_u columns, which strip the same L prefix). Falls
+    back to the raw label if it does not start with L."""
+    if mode == "positional":
+        return f"CS {index + 1}"
+    cs_value = cs_key[0] if isinstance(cs_key, tuple) else cs_key
+    return f"CS {str(cs_value).removeprefix('L')}"
+
+
 def plot_susie_track(
     susie_cs_df: pl.DataFrame | None,
-    ax_pip,
-    pip_legend_ax,
+    ax_pip: Axes,
+    pip_legend_ax: Axes,
     susie_cs_col: str = CS_COLUMN,
     susie_pip_col: str = PIP_COLUMN,
     susie_pos_col: str = GWASLAB_POS_COL,
-):
+    cs_label_mode: CredibleSetLabelMode = "positional",
+) -> None:
     """
-    Plot SUSIE pip using a bar graph colored by credible set
+    Plot SUSIE pip using a bar graph colored by credible set.
+
+    cs_label_mode selects how the legend numbers credible sets: "positional"
+    (default) numbers them 1..N in plotting order; "susie_index" uses SUSIE's own
+    L-index (see _credible_set_label).
     """
     if susie_cs_df is None:
         return
@@ -699,17 +724,17 @@ def plot_susie_track(
             susie_cs_df.group_by(susie_cs_col, maintain_order=True)
         ):
             color = palette[i % len(palette)]
+            label = _credible_set_label(cs, i, cs_label_mode)
             ax_pip.vlines(
                 sub[susie_pos_col].to_numpy(),
                 0.0,
                 sub[susie_pip_col].to_numpy(),
                 linewidth=1.5,
-                label=f"CS {i + 1}",
+                label=label,
                 color=color,
             )
-            handle = Line2D([0], [0], color=color, lw=2, label=f"CS {i + 1}")
+            handle = Line2D([0], [0], color=color, lw=2, label=label)
             pip_traces.append(handle)
-            # pip_trace_labels.append(f"CS {i+1}")
         # ax_pip.legend(loc="upper right", fontsize=8, frameon=False, ncols=2)
         pip_legend_ax.legend(
             handles=pip_traces,
@@ -725,11 +750,11 @@ def plot_ld_heatmap(
     ld_np: np.ndarray,
     gwas_df: pl.DataFrame,
     options: HeatmapOptions,
-    ax_ld,
-    fig,
-    ld_cax,
+    ax_ld: Axes,
+    fig: Figure,
+    ld_cax: Axes,
     gwas_pos_col: str = GWASLAB_POS_COL,
-):
+) -> None:
     if options.mode == "ld_abs":
         to_plot: np.ndarray = abs(ld_np)
     elif options.mode == "ld2":

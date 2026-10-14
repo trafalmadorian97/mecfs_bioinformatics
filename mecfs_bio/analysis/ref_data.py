@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.ukbb_ppp.btn1a1.generator.retrieve_and_process import
 )
 
 
-def run_initial_analysis():
+def run_initial_analysis() -> None:
     DEFAULT_RUNNER.run(
         [
             # UKBB_PPP_RABGAP1L,

@@ -1,5 +1,5 @@
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import pandas as pd
 import rpy2.robjects as ro
@@ -27,7 +27,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExtractDataFrameFromRDataTask(Task):
     """
     RData files can bundle together many R objects.  This is a Task to extract a single dataframe from such a file.
@@ -67,7 +67,7 @@ class ExtractDataFrameFromRDataTask(Task):
         rdata_file_task: Task,
         r_dataframe_name: str,
         r_package_list: Sequence[str],
-    ):
+    ) -> Self:
         source_meta = rdata_file_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(

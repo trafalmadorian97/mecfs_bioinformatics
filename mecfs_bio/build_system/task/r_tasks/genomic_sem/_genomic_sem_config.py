@@ -66,7 +66,7 @@ SUBTRACTION_N_EFF_COL = "N_eff"
 SUBTRACTION_FAIL_COL = "fail"
 
 
-@frozen
+@frozen(slots=True)
 class GenomicSEMSumstatsSource:
     """
     A single trait sumstats source for GWAS-by-subtraction.

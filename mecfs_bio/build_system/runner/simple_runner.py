@@ -54,7 +54,7 @@ from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.build_system.wf.wf_downloader import RobustWFDownloader
 
 
-@frozen
+@frozen(slots=True)
 class SimpleRunner:
     """
     Simple wrapper class that orchestrates
@@ -137,7 +137,7 @@ class SimpleRunner:
         return store
 
 
-def _print_target_locs(store: Mapping[AssetId, Asset], targets: list[Task]):
+def _print_target_locs(store: Mapping[AssetId, Asset], targets: list[Task]) -> None:
     logger.info("Locations of materialized targets:\n")
     target_locs: dict = {}
     for item in targets:

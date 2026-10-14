@@ -1,3 +1,4 @@
+from collections.abc import Mapping
 from pathlib import Path
 
 import pandas as pd
@@ -6,7 +7,9 @@ import pytest
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
     DECODE_ME_S_LDSC,
 )
+from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
     ImoHasher,
 )
@@ -33,7 +36,7 @@ EXPECTED_MULTITISSUE_PVALUES = {
 P_VALUE_REL_TOL = 1e-2
 
 
-def test_run_s_lsdc(tmp_path: Path):
+def test_run_s_lsdc(tmp_path: Path) -> None:
     """
     Test that we can run stratified linkage disequilibrium score regression on the DECODE ME data,
     and that the headline cell-type p-values still match the documented results.
@@ -66,7 +69,7 @@ def test_run_s_lsdc(tmp_path: Path):
         _assert_documented_multitissue_pvalues(store)
 
 
-def _assert_documented_multitissue_pvalues(store) -> None:
+def _assert_documented_multitissue_pvalues(store: Mapping[AssetId, Asset]) -> None:
     """
     Check the GTEx/Franke cell-type coefficient p-values against the documented values.
 

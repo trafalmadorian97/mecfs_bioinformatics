@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import structlog
 
@@ -34,7 +35,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabSumstatsToTableTask(Task):
     """
     Task to write a sumstats object to a plain table for further processing.
@@ -62,6 +63,9 @@ class GwasLabSumstatsToTableTask(Task):
         sumstats = read_sumstats(asset)
         df: pd.DataFrame = sumstats.data
         logger.debug(f"Post sumstats df has shape {df.shape}")
+        # Drop the pandas index so it is not serialized as an __index_level_0__ column
+        # (the original writer passed index=False; the narwhals rewrite must keep that).
+        df = df.reset_index(drop=True)
         n_df = narwhals.from_native(df).lazy()
         df_nw = self.pipe.process(n_df)
         # logger.debug(f"Post pipe df has shape {df.shape}")
@@ -83,7 +87,7 @@ class GwasLabSumstatsToTableTask(Task):
         sub_dir: str,
         pipe: DataProcessingPipe = IdentityPipe(),
         write_options: ParquetWriteOptions | None = None,
-    ):
+    ) -> Self:
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
         meta = FilteredGWASDataMeta(

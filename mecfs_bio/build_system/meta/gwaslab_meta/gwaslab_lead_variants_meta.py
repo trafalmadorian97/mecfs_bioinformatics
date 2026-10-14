@@ -10,7 +10,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 
-@frozen
+@frozen(slots=True)
 class GWASLabLeadVariantsMeta(FileMeta):
     """
     Metadata describing a file that lists the lead variants from a GWAS.

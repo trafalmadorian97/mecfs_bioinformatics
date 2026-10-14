@@ -18,10 +18,11 @@ from scipy.stats import t
 from tqdm import tqdm
 
 FloatArray = npt.NDArray[np.float64]
+IntArray = npt.NDArray[np.intp]
 ArrayLike1D = npt.ArrayLike
 
 
-@frozen
+@frozen(slots=True)
 class CrossTraitLDScoreResult:
     """
     Result of the cross-trait LDSC-style regression.
@@ -31,7 +32,7 @@ class CrossTraitLDScoreResult:
     intercept: float
 
 
-@frozen
+@frozen(slots=True)
 class TraitLDScoreResult:
     """
     Result of the univariate LDSC-style regression for a single trait.
@@ -41,7 +42,7 @@ class TraitLDScoreResult:
     intercept: float
 
 
-@frozen
+@frozen(slots=True)
 class MomentEstimate:
     """
     Quantities estimated from one dataset (or one jackknife leave-block-out subset).
@@ -71,7 +72,7 @@ class MomentEstimate:
         )
 
 
-@frozen
+@frozen(slots=True)
 class JackknifeSummary:
     """
     Block jackknife matrix and the summary quantities derived from it.
@@ -88,7 +89,7 @@ LCV_PVAL_ZERO_COL = "pvalue_gcp_zero_two_sides"
 LCV_MEAN_GCP_COL = "posterior_mean_gcp"
 
 
-@frozen
+@frozen(slots=True)
 class LCVResult:
     """
     Final LCV output.
@@ -182,7 +183,7 @@ def weighted_least_squares(
     WX = X * w[:, None]
     lhs = X.T @ WX
     rhs = X.T @ (w * y)
-    return np.linalg.solve(lhs, rhs)
+    return np.asarray(np.linalg.solve(lhs, rhs), dtype=np.float64)
 
 
 def default_ld_weights(ld_scores: ArrayLike1D) -> FloatArray:
@@ -423,7 +424,7 @@ def estimate_lcv_moments(
     )
 
 
-def leave_one_block_out_indices(n_snps: int, n_blocks: int) -> Iterable[FloatArray]:
+def leave_one_block_out_indices(n_snps: int, n_blocks: int) -> Iterable[IntArray]:
     """
     Yield index arrays corresponding to leave-one-block-out subsets.
 

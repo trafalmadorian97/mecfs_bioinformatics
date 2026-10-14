@@ -1,11 +1,13 @@
-import random
 import subprocess
 import sys
 import time
 from collections.abc import Callable
+from functools import partial
 from subprocess import CalledProcessError
 
 import structlog
+
+from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 logger = structlog.get_logger()
 
@@ -63,21 +65,11 @@ def execute_command_with_retries(
     broken command. The sleep and executor functions are injectable so tests
     can supply their own implementations without real delays or subprocesses.
     """
-    assert max_attempts >= 1, f"max_attempts must be >= 1, got {max_attempts}"
-    last_error: CalledProcessError | None = None
-    for attempt in range(max_attempts):
-        try:
-            return executor(cmd)
-        except CalledProcessError as e:
-            last_error = e
-            if attempt >= max_attempts - 1:
-                break
-            capped = min(base_backoff_seconds * 2**attempt, max_backoff_seconds)
-            backoff = random.uniform(0, capped)
-            logger.debug(
-                f"Command failed (attempt {attempt + 1}/{max_attempts}, "
-                f"exit {e.returncode}). Backing off {backoff:.1f}s before retry."
-            )
-            sleep(backoff)
-    assert last_error is not None
-    raise last_error
+    return call_with_retries(
+        partial(executor, cmd),
+        retry_on=(CalledProcessError,),
+        max_attempts=max_attempts,
+        base_backoff_seconds=base_backoff_seconds,
+        max_backoff_seconds=max_backoff_seconds,
+        sleep=sleep,
+    )

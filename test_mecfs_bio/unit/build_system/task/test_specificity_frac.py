@@ -29,7 +29,7 @@ _dummy_df = pd.DataFrame(  # According to the fractional metric, Y is specific f
 )
 
 
-def test_prepare_specificity_frac(tmp_path: Path):
+def test_prepare_specificity_frac(tmp_path: Path) -> None:
     """
     Test computing the specificity of genes for cell types using the fractional approach
     """

@@ -6,7 +6,7 @@ from attrs import frozen
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
-@frozen
+@frozen(slots=True)
 class ReplaceStrictPipe(DataProcessingPipe):
     target_column: str
     new_column_name: str

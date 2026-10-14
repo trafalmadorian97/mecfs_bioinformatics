@@ -5,6 +5,7 @@ Task to extract a file from a gzip.
 import gzip
 import shutil
 from pathlib import Path, PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -23,7 +24,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExtractGzipTextFileTask(Task):
     meta: Meta
     source_file_task: Task
@@ -44,7 +45,7 @@ class ExtractGzipTextFileTask(Task):
         return FileAsset(out_path)
 
     @classmethod
-    def create_for_reference_file(cls, source_file_task: Task, asset_id: str):
+    def create_for_reference_file(cls, source_file_task: Task, asset_id: str) -> Self:
         src_meta = source_file_task.meta
         assert isinstance(src_meta, ReferenceFileMeta)
         meta = ReferenceFileMeta(
@@ -66,7 +67,7 @@ class ExtractGzipTextFileTask(Task):
         source_file_task: Task,
         asset_id: str,
         readspec: DataFrameReadSpec | None = None,
-    ):
+    ) -> Self:
         src_meta = source_file_task.meta
         assert isinstance(src_meta, GWASSummaryDataFileMeta)
         if readspec is None:
@@ -86,7 +87,7 @@ class ExtractGzipTextFileTask(Task):
         )
 
 
-def apply_gzip(src: Path, dst: Path):
+def apply_gzip(src: Path, dst: Path) -> None:
     with gzip.open(src, "rb") as f_in:
         with open(dst, "wb") as f_out:
             shutil.copyfileobj(f_in, f_out)

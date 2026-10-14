@@ -3,6 +3,7 @@ Task to take the results of a MiXeR run and produce tables and plots.
 """
 
 from pathlib import Path, PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -28,7 +29,7 @@ TEST_OUTPUT_PREFIX = "trait_plot_test"
 FIT_OUTPUT_PREFIX = "trait_plot_fit"
 
 
-@frozen
+@frozen(slots=True)
 class MixerUnivariateSummarizeResultsTask(Task):
     """
     Task to take the results of a MiXeR run and produce tables and plots.
@@ -89,7 +90,7 @@ class MixerUnivariateSummarizeResultsTask(Task):
         return DirectoryAsset(scratch_dir)
 
     @classmethod
-    def create(cls, asset_id: str, combine_task: Task, trait_name: str):
+    def create(cls, asset_id: str, combine_task: Task, trait_name: str) -> Self:
         source_meta = combine_task.meta
         meta: Meta
         if isinstance(source_meta, ResultDirectoryMeta):

@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verwe
 )
 
 
-def run_heart_rate_recovery_analysis():
+def run_heart_rate_recovery_analysis() -> None:
     """
     Analyze GWAS of heart rate recovery ( Verweiji et al. (2018))
     Analysis includes:

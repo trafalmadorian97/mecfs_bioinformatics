@@ -94,7 +94,7 @@ logger = structlog.get_logger()
 _MUNGED_SUFFIX = ".sumstats"
 
 
-@frozen
+@frozen(slots=True)
 class GWASBySubtractionFullPythonConfig:
     """
     Configuration for GenomicSEMGWASBySubtractionFullPythonTask.
@@ -126,7 +126,7 @@ class GWASBySubtractionFullPythonConfig:
     exclude_ambig: bool = False
 
 
-@frozen
+@frozen(slots=True)
 class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     """
     GWAS-by-subtraction with munge, LDSC, sumstats, and the Cholesky kernel all
@@ -158,7 +158,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
     sumstats_ref_task: Task
     config: GWASBySubtractionFullPythonConfig = GWASBySubtractionFullPythonConfig()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.composite_trait_source.alias != self.reference_trait_source.alias, (
             "composite and reference trait aliases must differ"
         )
@@ -243,7 +243,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         )
 
 
-@frozen
+@frozen(slots=True)
 class _PythonGWASInputs:
     """Everything the kernel needs, produced by the Python munge/ldsc/sumstats."""
 

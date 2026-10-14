@@ -4,6 +4,7 @@ Finemap a GWAS locus using SUSIE
 
 import gc
 from pathlib import Path, PurePath
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -13,6 +14,8 @@ import scipy.sparse
 import structlog
 import yaml
 from attrs import frozen
+from rpy2.rinterface import FloatSexpVector
+from rpy2.rinterface_lib.sexp import SexpVector
 from rpy2.robjects import numpy2ri, pandas2ri
 from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import (
@@ -27,6 +30,9 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -42,11 +48,17 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.constants.polyfun_constants import (
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_CHR_COL,
+)
 
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class BroadInstituteFormatLDMatrix:
     """
     Wraps a task to recovery an LD matrix stored in Broad Institute Format.
@@ -74,6 +86,9 @@ COMBINED_CS_FILENAME = "combined_cs.parquet"
 FILTERED_GWAS_FILENAME = "filtered_gwas.parquet"
 FILTERED_LD_FILENAME = "filtered_ld.npy"
 
+PRIOR_FILENAME = "prior.parquet"
+PRIOR_WEIGHT_COLUMN = "prior_weight"
+
 NO_CS_FOUND_FILENAME = "no_credible_sets_foun.txt"
 
 CS_DATA_SUBDIR = "credible_set_data"
@@ -85,11 +100,53 @@ MU2_COLUMN_NAME = "mu2"
 CS_COLUMN = "cs"
 
 
-@frozen
+_PRIOR_COL = "prior_col"
+
+
+@frozen(slots=True)
+class PriorInfo:
+    prior_task: Task
+    prior_col: str
+    prior_chr_col: str = POLYFUN_CHR_COL
+    prior_bp_cp: str = POLYFUN_BP_COL
+    prior_a1_col: str = POLYFUN_A1_COL
+    prior_a2_col: str = POLYFUN_A2_COL
+    prior_pipe: DataProcessingPipe = IdentityPipe()
+
+
+def assert_gwas_harmonized_to_ld(gwas_task: Task, ld_labels_task: Task) -> None:
+    """Fail fast at construction if the gwas and the LD panel are not both harmonized to
+    the same genome build. Both must carry harmonization_info (threaded through the metadata
+    by the harmonization-provenance layer); a build mismatch means SUSIE would be aligning
+    positions across genome builds."""
+    gwas_meta = gwas_task.meta
+    ld_meta = ld_labels_task.meta
+    assert (
+        isinstance(gwas_meta, FilteredGWASDataMeta)
+        and gwas_meta.harmonization_info is not None
+    ), (
+        "SUSIE gwas input must be a harmonized FilteredGWASDataMeta (run genome-reference harmonization)"
+    )
+    assert (
+        isinstance(ld_meta, HarmonizableReferenceTableMeta)
+        and ld_meta.harmonization_info is not None
+    ), (
+        "SUSIE ld_labels must be a HarmonizableReferenceTableMeta with harmonization_info"
+    )
+    assert gwas_meta.harmonization_info.build == ld_meta.harmonization_info.build, (
+        f"gwas harmonized to build {gwas_meta.harmonization_info.build} but LD panel is "
+        f"build {ld_meta.harmonization_info.build}"
+    )
+
+
+@frozen(slots=True)
 class SusieRFinemapTask(Task):
     """
     This task uses susie_rss function from the R library susieR to fine map a GWAS at a locus.
     It requires an LD matrix from a closely matched reference panel
+
+    Assumes the gwas data has already been harmonized to have same orientation as the ld reference
+    Using HarmonizeGWASWithReferenceViaAlleles for example
     """
 
     meta: Meta
@@ -103,10 +160,18 @@ class SusieRFinemapTask(Task):
     max_credible_sets: int = 10
     log_lr_filtering_threshold: float = 2.0
     z_score_filtering_threshold: float = 2.0
+    prior_info: PriorInfo | None = None
 
     @property
     def deps(self) -> list["Task"]:
-        return [self.gwas_data_task, self.ld_labels_task, self.ld_matrix_source.task]
+        dep_results = [
+            self.gwas_data_task,
+            self.ld_labels_task,
+            self.ld_matrix_source.task,
+        ]
+        if self.prior_info is not None:
+            dep_results.append(self.prior_info.prior_task)
+        return dep_results
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         susie_package = importr("susieR")
@@ -135,14 +200,24 @@ class SusieRFinemapTask(Task):
         assert isinstance(ld_matrix_asset, FileAsset)
         partial_ld_matrix_sparse = _load_partial_ld_matrix(path=ld_matrix_asset.path)
 
-        gwas_table, ld_labels_table, ld_matrix = align_gwas_and_ld(
+        prior_table = load_prior(
+            self.prior_info,
+            fetch=fetch,
+        )
+        gwas_table, ld_labels_table, ld_matrix, prior = align_data(
             gwas=gwas_table,
             ld_labels=ld_labels_table,
             partial_ld_matrix_sparse=partial_ld_matrix_sparse,
+            prior=prior_table,
         )
         del partial_ld_matrix_sparse
-        gwas_table, ld_labels_table, ld_matrix = apply_subsample(
-            gwas_table, ld_labels_table, ld_matrix, subsample=self.subsample
+        del prior_table
+        gwas_table, ld_labels_table, ld_matrix, prior = apply_subsample(
+            gwas_table,
+            ld_labels_table,
+            ld_matrix,
+            subsample=self.subsample,
+            prior=prior,
         )
         assert len(gwas_table) == len(ld_labels_table) == len(ld_matrix)
         logger.debug(f"Dimensions of LD matrix to use: {ld_matrix.shape}")
@@ -170,12 +245,13 @@ class SusieRFinemapTask(Task):
             scratch_dir=scratch_dir,
         )
 
-        gwas_table, ld_matrix = filter_variants_based_on_diagnostics(
+        gwas_table, ld_matrix, prior = filter_variants_based_on_diagnostics(
             gwas_table=gwas_table,
             ld_matrix=ld_matrix,
             diagnostic_table=diagnostic_table,
             log_lr_threshold=self.log_lr_filtering_threshold,
             z_score_threshold=self.z_score_filtering_threshold,
+            prior=prior,
         )
 
         ld_matrix = (1 - adjustment) * ld_matrix + adjustment * np.eye(
@@ -188,17 +264,29 @@ class SusieRFinemapTask(Task):
             ).to_pandas()
             zscores_r = ro.conversion.get_conversion().py2rpy(zscores_pandas)
             ld_matrix_r = ro.conversion.get_conversion().py2rpy(ld_matrix)
-        _save_adjustment(adjustment=float(adjustment), scratch_dir=scratch_dir)
+            # Convert the prior via a pandas Series rather than the numpy array
+            # directly: numpy2ri maps a 1-D array to an R *array* carrying a dim
+            # attribute, which makes susie_rss fail with "non-conformable arrays"
+            # when it evaluates lbf + log(prior_weights). A Series yields a plain
+            # R numeric vector, matching how susieR builds prior_weights itself.
+            prior_r = ro.conversion.get_conversion().py2rpy(pd.Series(prior))
+        # estimate_s_rss returns a length-1 array; numpy 2 forbids float() on a
+        # non-0-d array, so extract the scalar with .item() first.
+        _save_adjustment(
+            adjustment=float(np.asarray(adjustment).item()), scratch_dir=scratch_dir
+        )
 
         logger.debug("Running SUSIE")
         susie_result = susie_package.susie_rss(
             zscores_r,
             ld_matrix_r,
+            prior_weights=prior_r,
             n=int(self.effective_sample_size),
             L=self.max_credible_sets,
         )
         py_result = convert_r_named_list_to_python_dict(susie_result)
         _check_converged(py_result)
+        _save_prior(scratch_dir, gwas_table=gwas_table, prior=prior)
         write_result(
             scratch_dir,
             py_result=py_result,
@@ -232,7 +320,9 @@ class SusieRFinemapTask(Task):
         max_credible_sets: int = 10,
         log_lr_filtering_threshold: float = 2.0,
         z_score_filtering_threshold: float = 2.0,
-    ):
+        prior_info: PriorInfo | None = None,
+    ) -> Self:
+        assert_gwas_harmonized_to_ld(gwas_data_task, ld_labels_task)
         source_meta = gwas_data_task.meta
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
@@ -256,12 +346,16 @@ class SusieRFinemapTask(Task):
             subsample=subsample,
             log_lr_filtering_threshold=log_lr_filtering_threshold,
             z_score_filtering_threshold=z_score_filtering_threshold,
+            prior_info=prior_info,
         )
 
 
-def align_gwas_and_ld(
-    gwas: pl.DataFrame, ld_labels: pl.DataFrame, partial_ld_matrix_sparse: csr_matrix
-) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
+def align_data(
+    gwas: pl.DataFrame,
+    ld_labels: pl.DataFrame,
+    partial_ld_matrix_sparse: csr_matrix,
+    prior: pl.DataFrame | None,
+) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray, np.ndarray]:
     """
     Slice the reference LD matrix and the GWAS data so that they only include genetic variants in their intersection
     """
@@ -278,6 +372,36 @@ def align_gwas_and_ld(
         ],
         maintain_order="left",
     )
+    if prior is not None:
+        n_before = len(joined)
+        # The prior is reference-oriented (its A1 == REF, renamed to NEA in
+        # load_prior) exactly like the gwas, so the join is exact on the 4-tuple;
+        joined = joined.join(
+            prior,
+            on=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
+            how="left",
+        )
+        missing = joined.filter(pl.col(_PRIOR_COL).is_null())
+        if missing.height > 0:
+            examples = missing.select(
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ).head(5)
+            raise ValueError(
+                f"polyfun prior does not cover {missing.height} of {n_before} "
+                f"(gwas intersect ld) variants; first missing:\n{examples}"
+            )
+        prior_out = joined[_PRIOR_COL].to_numpy()
+    else:
+        prior_out = np.ones(len(joined))
+
     keep_ld_index = joined["ld_index"].to_numpy()
     partial_ld_matrix_sparse = partial_ld_matrix_sparse[keep_ld_index, :][
         :, keep_ld_index
@@ -293,6 +417,40 @@ def align_gwas_and_ld(
         gwas[joined["gwas_index"]].drop("gwas_index"),
         ld_labels,
         ld_matrix,
+        prior_out,
+    )
+
+
+def load_prior(
+    prior_info: PriorInfo | None,
+    fetch: Fetch,
+) -> pl.DataFrame | None:
+    if prior_info is None:
+        return None
+    prior_table_asset = fetch(prior_info.prior_task.asset_id)
+    prior_table = (
+        prior_info.prior_pipe.process(
+            scan_dataframe_asset(
+                prior_table_asset,
+                meta=prior_info.prior_task.meta,
+            )
+        )
+        .collect()
+        .to_polars()
+        .with_columns(
+            pl.col(prior_info.prior_a1_col).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
+            pl.col(prior_info.prior_a2_col).alias(GWASLAB_EFFECT_ALLELE_COL),
+            pl.col(prior_info.prior_chr_col).alias(GWASLAB_CHROM_COL),
+            pl.col(prior_info.prior_bp_cp).alias(GWASLAB_POS_COL),
+            pl.col(prior_info.prior_col).alias(_PRIOR_COL),
+        )
+    )
+    return prior_table.select(
+        GWASLAB_CHROM_COL,
+        GWASLAB_POS_COL,
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+        _PRIOR_COL,
     )
 
 
@@ -320,26 +478,28 @@ def apply_subsample(
     gwas_table: pl.DataFrame,
     ld_labels: pl.DataFrame,
     ld_matrix: np.ndarray,
+    prior: np.ndarray,
     subsample: int | None,
-) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray]:
+) -> tuple[pl.DataFrame, pl.DataFrame, np.ndarray, np.ndarray]:
     """
     Subsample gwasdata
     """
     if subsample is None:
-        return gwas_table, ld_labels, ld_matrix
+        return gwas_table, ld_labels, ld_matrix, prior
     logger.debug("Subsampling...")
     return (
         gwas_table[::subsample],
         ld_labels[::subsample],
         ld_matrix[::subsample, ::subsample],
+        prior[::subsample],
     )
 
 
-def convert_r_named_list_to_python_dict(rdata) -> dict:
+def convert_r_named_list_to_python_dict(rdata: ro.ListVector) -> dict:
     return dict(zip(rdata.names, list(rdata)))
 
 
-def r_to_py_recursive(r_obj):
+def r_to_py_recursive(r_obj: object) -> object:
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
     if isinstance(r_obj, ro.DataFrame):
         with localconverter(conv):
@@ -355,7 +515,7 @@ def r_to_py_recursive(r_obj):
         return {name: r_to_py_recursive(r_obj.rx2(name)) for name in names}
 
     try:
-        if hasattr(r_obj, "__len__"):
+        if isinstance(r_obj, SexpVector):
             if len(r_obj) == 1:
                 return r_obj[0]
             return list(r_obj)
@@ -365,7 +525,7 @@ def r_to_py_recursive(r_obj):
     return r_obj
 
 
-def _check_converged(py_result: dict):
+def _check_converged(py_result: dict) -> None:
     conv = ro.default_converter
     with localconverter(conv):
         converged = ro.conversion.get_conversion().rpy2py(py_result["converged"])
@@ -405,6 +565,7 @@ def write_result(
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
 
     sets = r_to_py_recursive(py_result["sets"])
+    assert isinstance(sets, dict)
     with localconverter(conv):
         alpha = ro.conversion.get_conversion().rpy2py(py_result["alpha"])
         pip = ro.conversion.get_conversion().rpy2py(py_result["pip"])
@@ -502,15 +663,28 @@ def extract_cs_data_tables(
     return cs_data_tables
 
 
-def check_symmetric(array: np.ndarray, tol=1e-6):
+def check_symmetric(array: np.ndarray, tol: float = 1e-6) -> None:
     assert np.max(np.abs(array - array.T)) <= tol
 
 
-def _save_adjustment(adjustment: float, scratch_dir: Path):
+def _save_adjustment(adjustment: float, scratch_dir: Path) -> None:
     adjustment_df = pd.DataFrame(
         {"Adjustment": [float(adjustment)]},
     )
     adjustment_df.to_parquet(scratch_dir / ADJUSTMENT_VALUE_FILENAME)
+
+
+def _save_prior(scratch_dir: Path, gwas_table: pl.DataFrame, prior: np.ndarray) -> None:
+    """Write the per-variant prior actually passed to susie_rss, aligned to the
+    filtered gwas variants. For a uniform run the values are all ones."""
+    gwas_table.select(
+        GWASLAB_CHROM_COL,
+        GWASLAB_POS_COL,
+        GWASLAB_EFFECT_ALLELE_COL,
+        GWASLAB_NON_EFFECT_ALLELE_COL,
+    ).with_columns(pl.Series(name=PRIOR_WEIGHT_COLUMN, values=prior)).write_parquet(
+        scratch_dir / PRIOR_FILENAME
+    )
 
 
 def _load_partial_ld_matrix(path: Path) -> csr_matrix:
@@ -522,8 +696,8 @@ def _load_partial_ld_matrix(path: Path) -> csr_matrix:
 
 
 def _make_diagnostic_plot_and_table(
-    zscores_r,
-    ld_matrix_r,
+    zscores_r: FloatSexpVector,
+    ld_matrix_r: FloatSexpVector,
     effective_sample_size: int,
     susie_package: RPackageType,
     ggplot2_package: RPackageType,
@@ -555,9 +729,10 @@ def filter_variants_based_on_diagnostics(
     gwas_table: pl.DataFrame,
     ld_matrix: np.ndarray,
     diagnostic_table: pl.DataFrame,
+    prior: np.ndarray,
     log_lr_threshold: float = 2.0,
     z_score_threshold: float = 2.0,
-) -> tuple[pl.DataFrame, np.ndarray]:
+) -> tuple[pl.DataFrame, np.ndarray, np.ndarray]:
     """
     Filter out variants that show evidence of inconsistency between the GWAS and LD matrix
 
@@ -581,7 +756,7 @@ def filter_variants_based_on_diagnostics(
 
     if n_removed == 0:
         logger.debug("Diagnostics passed: No inconsistent variants found.")
-        return gwas_table, ld_matrix
+        return gwas_table, ld_matrix, prior
 
     logger.warning(
         f"Diagnostics failed for {n_removed} variants. "
@@ -598,5 +773,6 @@ def filter_variants_based_on_diagnostics(
     gwas_table_filtered = gwas_table[keep_indices]
 
     ld_matrix_filtered = ld_matrix[keep_indices][:, keep_indices]
+    prior_filtered = prior[keep_indices]
 
-    return gwas_table_filtered, ld_matrix_filtered
+    return gwas_table_filtered, ld_matrix_filtered, prior_filtered

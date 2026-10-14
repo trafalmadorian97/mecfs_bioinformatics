@@ -4,7 +4,7 @@ from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg
 )
 
 
-def go():
+def go() -> None:
     DEFAULT_RUNNER.run(BELLENGUEZ_PPP_RG_CIS_EXCLUDED.get_terminal_tasks())
 
 

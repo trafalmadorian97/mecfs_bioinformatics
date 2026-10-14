@@ -36,7 +36,7 @@ from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 
-@frozen
+@frozen(slots=True)
 class GeneticCorrTasks:
     corr_tasks: Mapping[str, Task]
     aggregation_task: Task

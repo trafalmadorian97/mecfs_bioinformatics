@@ -21,7 +21,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 Backend = Literal["polars"]
 
 
-@frozen
+@frozen(slots=True)
 class ComputeSEPipe(DataProcessingPipe):
     """
     Pipe to compute standard error in GWAS summary statistics using p-value and beta

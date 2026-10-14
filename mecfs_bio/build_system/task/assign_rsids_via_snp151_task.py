@@ -3,7 +3,7 @@ Assign RSIDs to variants via joining a database file.  Only works for single-nuc
 """
 
 from pathlib import Path
-from typing import Mapping
+from typing import Mapping, Self
 
 import ibis
 import narwhals as nw
@@ -34,7 +34,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class AssignRSIDSToSNPsViaSNP151Task(Task):
     """
     Assigns RSIDS to the SNP genetic variants in a file of Gwas summary statistics
@@ -52,7 +52,7 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
     valid_chroms: list[str]
     chrom_replace_rules: Mapping[str, int]
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         db_meta = self.database_meta
         assert isinstance(db_meta, FileMeta)
         db_readspec = db_meta.read_spec
@@ -134,7 +134,7 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
         asset_id: str,
         valid_chroms: list[str],
         chrom_replace_rules: Mapping[str, int],
-    ):
+    ) -> Self:
         source_meta = raw_snp_data_task.meta
         meta = create_new_meta(source_meta, asset_id=asset_id)
         return cls(
@@ -150,7 +150,7 @@ def create_new_meta(
     source_meta: Meta,
     asset_id: str,
     format: DataFrameFormat = DataFrameParquetFormat(),
-    extension=".parquet",
+    extension: str = ".parquet",
 ) -> Meta:
     meta: Meta
     if isinstance(source_meta, SimpleFileMeta):

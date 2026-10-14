@@ -2,6 +2,7 @@
 Meta objects are uniquely identifying metadata describing either an asset that currently exists, or an asset that can be created by a build system.
 """
 
+from mecfs_bio.build_system.meta.diagram_file_meta import DiagramFileMeta
 from mecfs_bio.build_system.meta.executable_meta import ExecutableMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
@@ -22,6 +23,10 @@ from mecfs_bio.build_system.meta.plot_file_meta import GWASPlotFileMeta
 from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
+)
+from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
 )
 from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta import (
     ReferenceDataDirectoryMeta,
@@ -44,8 +49,10 @@ Meta = (
     | GWASLabLeadVariantsMeta
     | GWASLabRegionPlotsMeta
     | ReferenceFileMeta
+    | HarmonizableReferenceTableMeta
     | GWASLabManhattanQQPlotMeta
     | ReferenceDataDirectoryMeta
+    | FASTAMeta
     | ExecutableMeta
     | ProcessedGwasDataDirectoryMeta
     | GWASPlotDirectoryMeta
@@ -54,4 +61,5 @@ Meta = (
     | ResultDirectoryMeta
     | MarkdownFileMeta
     | ResultArchiveMeta
+    | DiagramFileMeta
 )

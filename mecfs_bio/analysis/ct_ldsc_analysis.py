@@ -12,7 +12,7 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot 
 )
 
 
-def initial_ct_ldsc_analysis():
+def initial_ct_ldsc_analysis() -> None:
     DEFAULT_RUNNER.run([CT_LDSC_INITIAL_PLOT], incremental_save=True)
 
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import pandas as pd
 from attrs import frozen
@@ -30,7 +31,7 @@ from mecfs_bio.build_system.task.magma.magma_gene_set_analysis_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
     """
     Task to prune a gene specificity matrix to include only the gene-property/gene-covariates that
@@ -106,7 +107,7 @@ class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
         specificity_matrix_task: Task,
         magma_gene_covar_analysis_task: MagmaGeneSetAnalysisTask,
         nominal_sig_level: float = 0.05,
-    ):
+    ) -> Self:
         source_meta = magma_gene_covar_analysis_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = ResultTableMeta(

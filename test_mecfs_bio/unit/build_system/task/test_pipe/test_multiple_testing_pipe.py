@@ -6,7 +6,7 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import REJECT_NULL_
 from mecfs_bio.build_system.task.pipes.multiple_testing_pipe import MultipleTestingPipe
 
 
-def test_multiple_testing_pipe():
+def test_multiple_testing_pipe() -> None:
     df = pl.DataFrame({"p": [0.000001, 0.05, 1]})
     result = (
         MultipleTestingPipe("p")

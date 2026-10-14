@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class FilterSNPsTask(Task):
     raw_gwas_task: Task
     snp_list_task: Task

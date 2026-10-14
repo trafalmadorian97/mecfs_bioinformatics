@@ -3,7 +3,7 @@ Task to perform a SQL-style join.
 """
 
 from pathlib import Path
-from typing import Sequence
+from typing import Self, Sequence
 
 import structlog
 from attrs import frozen
@@ -41,7 +41,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class JoinDataFramesTask(Task):
     """
     Task to load to dataframes, join them, and then write out the resulting dataframe.
@@ -108,7 +108,7 @@ class JoinDataFramesTask(Task):
         cls,
         asset_id: str,
         result_df_task: Task,
-        reference_df_task,
+        reference_df_task: Task,
         how: JoinStrategy,
         left_on: Sequence[str],
         right_on: Sequence[str],
@@ -117,7 +117,7 @@ class JoinDataFramesTask(Task):
         df_2_pipe: DataProcessingPipe = IdentityPipe(),
         out_pipe: DataProcessingPipe = IdentityPipe(),
         backend: ValidBackend = "polars",
-    ):
+    ) -> Self:
         """
         Join a result dataframe to a reference dataframe.
         """
@@ -142,6 +142,7 @@ class JoinDataFramesTask(Task):
                 extension=extension,
                 read_spec=read_spec,
                 sub_dir=source_meta.sub_dir,
+                harmonization_info=source_meta.harmonization_info,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
             meta = GWASSummaryDataFileMeta(

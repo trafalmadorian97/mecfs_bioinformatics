@@ -4,7 +4,7 @@ tags:
 hide:
 - toc
 ---
-# MAGMA HBA Analysis
+# MAGMA HBA
 I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to the GWAS of whole brainstem volume of Xue et al.[@xue2025genetic] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] as a reference.
 
 

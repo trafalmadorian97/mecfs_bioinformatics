@@ -16,7 +16,7 @@ This task wraps the R LAVA package via rpy2.
 import gc
 import tempfile
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import numpy as np
 import pandas as pd
@@ -67,7 +67,7 @@ UNIV_RESULTS_FILENAME = "lava_univariate.csv"
 BIVAR_RESULTS_FILENAME = "lava_bivariate.csv"
 
 
-@frozen
+@frozen(slots=True)
 class LavaBinarySampleInfo:
     """
     Sample information for a binary (case/control) phenotype.
@@ -81,7 +81,7 @@ class LavaBinarySampleInfo:
     prevalence: float | None = None
 
     @classmethod
-    def from_ct_ldsc_sample_info(cls, data: BinaryPhenotypeSampleInfo):
+    def from_ct_ldsc_sample_info(cls, data: BinaryPhenotypeSampleInfo) -> Self:
         assert data.total_sample_size is not None
         return cls(
             cases=int(data.sample_prevalence * data.total_sample_size),
@@ -90,7 +90,7 @@ class LavaBinarySampleInfo:
         )
 
 
-@frozen
+@frozen(slots=True)
 class LavaContinuousSampleInfo:
     """Marker indicating a continuous (quantitative) phenotype."""
 
@@ -100,7 +100,7 @@ class LavaContinuousSampleInfo:
 LavaSampleInfo = LavaBinarySampleInfo | LavaContinuousSampleInfo
 
 
-@frozen
+@frozen(slots=True)
 class LavaPhenotypeDataSource:
     """
     A source Task providing tabular GWAS summary statistics for a phenotype.
@@ -120,7 +120,7 @@ class LavaPhenotypeDataSource:
         return self.task.asset_id
 
 
-@frozen
+@frozen(slots=True)
 class LDReferenceInfo:
     """
     Reference LD data for LAVA.
@@ -133,7 +133,7 @@ class LDReferenceInfo:
     filename_prefix: str
 
 
-@frozen
+@frozen(slots=True)
 class LavaTask(Task):
     """
     Given a locus definition file, does the following for each locus:

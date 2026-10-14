@@ -14,6 +14,8 @@ Chapter authors are S. Burgess, C.N. Foley and V. Zuber
 
 """
 
+from typing import Self
+
 MULTI_TRAIT = "multi_trait"
 
 from pathlib import Path, PurePath
@@ -41,6 +43,9 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.gwaslab.ldsc_degenerate_z import (
+    drop_variants_with_degenerate_z,
+)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     complement_reverse_expr,
     match_flipped_reference_expr,
@@ -60,7 +65,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class FilterSettings:
     """
     Options for SNP filtering for CT-LDSC
@@ -72,7 +77,9 @@ class FilterSettings:
     keep_only_hapmap: bool = True
 
 
-def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build: str):
+def filter_sumstats(
+    sumstats: gwaslab.Sumstats, settings: FilterSettings, build: str
+) -> None:
     """
     Performing filtering roughly consistent with the procedure described in the methods section of Bulik-Sullivan et al.
     """
@@ -94,7 +101,7 @@ def filter_sumstats(sumstats: gwaslab.Sumstats, settings: FilterSettings, build:
     logger.debug(f"dropped {len_before - len_after} variants with identical rsids")
 
 
-@frozen
+@frozen(slots=True)
 class BinaryPhenotypeSampleInfo:
     """
     For binary phenotypes, sample prevalence and population prevalence are required to convert heritability from the observed scale to the liability scale.
@@ -120,7 +127,7 @@ class BinaryPhenotypeSampleInfo:
         return int(4 / (1 / self.ncases + 1 / self.ncontrols))
 
 
-@frozen
+@frozen(slots=True)
 class QuantPhenotype:
     """
     Marker class to indicate that a phenotype is quantitative, not binary, and so does not need to be converted to the liability scale.
@@ -132,7 +139,7 @@ class QuantPhenotype:
 PhenotypeInfo = BinaryPhenotypeSampleInfo | QuantPhenotype
 
 
-@frozen
+@frozen(slots=True)
 class SumstatsSource:
     """
     A source of GWASlab sumstats to use for computing genetic correlation
@@ -148,7 +155,7 @@ class SumstatsSource:
         return self.task.asset_id
 
 
-@frozen
+@frozen(slots=True)
 class GeneticCorrelationByCTLDSCTask(Task):
     """
     Estimate genetic correlation by cross-trait linkage disequilibrium score regression.
@@ -172,7 +179,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
     build: GenomeBuild
     filter_settings: FilterSettings = FilterSettings()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert len(self.source_sumstats_tasks) > 1
 
     @property
@@ -242,7 +249,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
         ld_ref_task: Task,
         build: GenomeBuild,
         ld_file_filename_pattern: str = "/LDscore.@",
-    ):
+    ) -> Self:
         assert len(sources) > 1
         sumstats_meta = sources[0].task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
@@ -308,6 +315,7 @@ def load_and_preprocess_sumstats(
     assert sumstats.build == build
     assert GWASLAB_RSID_COL in sumstats.data.columns
     sumstats.data = source.pipe.process_pandas(sumstats.data)
+    sumstats.data = drop_variants_with_degenerate_z(sumstats.data)
     filter_sumstats(sumstats, settings, build=build)
     _add_N_column_if_missing(sumstats, source=source)
     return sumstats, name, source.sample_info

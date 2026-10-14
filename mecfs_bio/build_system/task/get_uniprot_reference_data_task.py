@@ -3,6 +3,7 @@ Task to download reference data about proteins from UniProt
 """
 
 from pathlib import Path, PurePath
+from typing import Self
 
 from attrs import frozen
 from UniProtMapper import ProtKB
@@ -43,7 +44,7 @@ DEFAULT_FIELDS = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class GetUniProtReferenceDataTask(Task):
     """
     Task to download reference data about proteins from UniProt
@@ -66,7 +67,7 @@ class GetUniProtReferenceDataTask(Task):
         return FileAsset(out_path)
 
     @classmethod
-    def create(cls, asset_id: str):
+    def create(cls, asset_id: str) -> Self:
         meta = ReferenceFileMeta(
             group="protein_lookup",
             sub_group="uniprot",

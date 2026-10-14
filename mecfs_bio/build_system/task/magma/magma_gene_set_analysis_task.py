@@ -1,5 +1,5 @@
 from pathlib import Path, PurePath
-from typing import Literal, Sequence
+from typing import Literal, Self, Sequence
 
 import pandas as pd
 import structlog
@@ -27,7 +27,7 @@ logger = structlog.get_logger()
 GENE_SET_ANALYSIS_OUTPUT_STEM_NAME = "gene_set_analysis_output"
 
 
-@frozen
+@frozen(slots=True)
 class DirectoryGeneSetSpec:
     gene_set_task: Task
     path_in_dir: PurePath
@@ -36,13 +36,13 @@ class DirectoryGeneSetSpec:
 SetOrCovar = Literal["set", "covar"]
 
 
-@frozen()
+@frozen(slots=True)
 class ModelParams:
     direction_covar: str | None
     condition_hide: Sequence[str]
     joint_pairs: bool = False
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert not isinstance(self.condition_hide, str)
 
     def prep_command(self) -> list[str]:
@@ -57,7 +57,7 @@ class ModelParams:
         return result
 
 
-@frozen
+@frozen(slots=True)
 class MagmaGeneSetAnalysisTask(Task):
     """
     The final step in the canonical MAGMA pipeline.
@@ -157,7 +157,7 @@ class MagmaGeneSetAnalysisTask(Task):
         set_or_covar: SetOrCovar,
         model_params: ModelParams | None,
         sub_dir: PurePath = PurePath("analysis_results") / "magma",
-    ):
+    ) -> Self:
         gene_analysis_meta = magma_gene_analysis_task.meta
         assert isinstance(gene_analysis_meta, ProcessedGwasDataDirectoryMeta)
         meta = ProcessedGwasDataDirectoryMeta(

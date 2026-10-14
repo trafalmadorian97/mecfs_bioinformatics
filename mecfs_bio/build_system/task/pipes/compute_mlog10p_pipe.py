@@ -5,7 +5,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_MLOG10P_COL, GWASLAB_P_COL
 
 
-@frozen
+@frozen(slots=True)
 class ComputeMlog10pIfNeededPipe(DataProcessingPipe):
     """
     Pipe to compute -log10(p).  There may be a narwhals bug when the underlying implementation is pandas

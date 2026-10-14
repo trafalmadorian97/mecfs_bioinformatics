@@ -8,13 +8,14 @@ Note that when running tasks this way, underscores (_) in task names should be r
 
 import datetime as _dt
 import os
+import re
 import shutil
 import subprocess
 import sys
 from pathlib import Path
 
 import yaml
-from invoke import task
+from invoke import Context, task
 
 from mecfs_bio.util.link_check_streak import (
     dump_state,
@@ -25,6 +26,7 @@ from mecfs_bio.util.link_check_streak import (
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
+TEST_PATH = Path("test_mecfs_bio")
 DOCS_PATH = Path("docs")
 
 USER_AGENT = '"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"'
@@ -84,7 +86,7 @@ def _set_enable_api_autonav() -> None:
 
 # dev tasks
 @task
-def test(c):
+def test(c: Context) -> None:
     print(
         "Running unit and integration tests with pytest, while skipping un-needed tests with testmon..."
     )
@@ -94,7 +96,7 @@ def test(c):
 
 
 @task
-def test_debug(c):
+def test_debug(c: Context) -> None:
     """
     Run tests with extra information printed.  Useful for debugging.
     """
@@ -105,7 +107,7 @@ def test_debug(c):
 
 
 @task
-def format(c):
+def format(c: Context) -> None:
     """
     Format code
     """
@@ -114,7 +116,7 @@ def format(c):
 
 
 @task
-def formatcheck(c):
+def formatcheck(c: Context) -> None:
     """
     Check for format errors
     """
@@ -123,28 +125,30 @@ def formatcheck(c):
 
 
 @task
-def lintfix(c):
+def lintfix(c: Context) -> None:
     print("linting and applying lint auto-fixes using ruff...")
     c.run("  ruff check --fix --unsafe-fixes")
 
 
 @task
-def lintcheck(c):
+def lintcheck(c: Context) -> None:
     print("linting using ruff...")
     c.run("ruff check")
 
 
 @task
-def typecheck(c):
+def typecheck(c: Context) -> None:
     """
     Check for type errors
     """
     print("Typechecking with ty...")
-    c.run(f"ty check {SRC_PATH} {NEW_UNIT_TEST_PATH}", pty=True)
+    c.run(
+        f"ty check {SRC_PATH} {TEST_PATH} tasks.py docs_macros docs_hooks.py", pty=True
+    )
 
 
 @task
-def spellcheck_docs(c):
+def spellcheck_docs(c: Context) -> None:
     """
     check docs for spelling errors
     Edit _typos.toml to add exceptions
@@ -156,7 +160,7 @@ def spellcheck_docs(c):
 
 
 @task
-def spellcheck_src(c):
+def spellcheck_src(c: Context) -> None:
     """
     check code for spelling errors
     Edit _typos.toml to add exceptions
@@ -168,7 +172,7 @@ def spellcheck_src(c):
 
 
 @task
-def checkimports(c):
+def checkimports(c: Context) -> None:
     """
     Use import linter to enforce architectural constraints
     """
@@ -185,7 +189,7 @@ def _missing_init_dirs() -> list[Path]:
 
 
 @task
-def check_init_files(c):
+def check_init_files(c: Context) -> None:
     """
     Verify that every directory under mecfs_bio/ contains an __init__.py.
     """
@@ -201,7 +205,7 @@ def check_init_files(c):
 
 
 @task
-def fix_init_files(c):
+def fix_init_files(c: Context) -> None:
     """
     Add a blank __init__.py to any directory under mecfs_bio/ that is missing one.
     """
@@ -216,8 +220,86 @@ def fix_init_files(c):
         print("Nothing to fix.")
 
 
+ASSETS_PATH = SRC_PATH / "assets"
+
+
+def _module_name(path: Path) -> str:
+    parts = path.with_suffix("").parts
+    if parts[-1] == "__init__":
+        parts = parts[:-1]
+    return ".".join(parts)
+
+
 @task
-def check_all_links(c):
+def check_asset_imports(c: Context) -> None:
+    """
+    Verify that every module under mecfs_bio/assets/ can be imported.
+
+    Many Tasks assert their preconditions on construction, and asset modules construct
+    Tasks at import time.  A refactoring that invalidates one of those preconditions
+    surfaces here, rather than only when someone happens to import the affected module.
+    """
+    import importlib
+    import time
+    import traceback
+
+    print(f"Checking that every module under {ASSETS_PATH}/ imports cleanly...")
+    start = time.perf_counter()
+    module_names = [_module_name(path) for path in sorted(ASSETS_PATH.rglob("*.py"))]
+    failures: list[tuple[str, str]] = []
+    for name in module_names:
+        try:
+            importlib.import_module(name)
+        except Exception:
+            failures.append((name, traceback.format_exc()))
+    elapsed = time.perf_counter() - start
+    print(f"Imported {len(module_names)} module(s) in {elapsed:.1f}s.")
+    if failures:
+        for name, formatted in failures:
+            print(f"\n=== {name} ===\n{formatted}")
+        print(f"ERROR: {len(failures)} module(s) failed to import:")
+        for name, _ in failures:
+            print(f"  {name}")
+        sys.exit(1)
+    else:
+        print("OK: all asset modules import cleanly.")
+
+
+# ty learns about attrs classes through dataclass_transform (PEP 681), which cannot
+# express attrs' slots=True default.  Without an explicit slots=True, ty does not
+# see that a field overrides an abstract property, and reports the class as abstract.
+ATTRS_SLOTS_CHECK_PATHS = (SRC_PATH, Path("test_mecfs_bio"), Path("experiments"))
+BARE_ATTRS_DECORATOR_PATTERN = re.compile(
+    r"^\s*@(attrs\.)?(frozen|define|mutable)\b(?!\(.*\bslots=)", re.MULTILINE
+)
+
+
+@task
+def check_attrs_slots(c: Context) -> None:
+    """
+    Verify that every attrs frozen/define decorator passes slots explicitly.
+
+    Works around https://github.com/astral-sh/ty/issues/4591
+    """
+    print("Checking that attrs decorators pass slots explicitly...")
+    offenders = [
+        f"{path}:{text.count(chr(10), 0, match.start()) + 1}"
+        for root in ATTRS_SLOTS_CHECK_PATHS
+        for path in sorted(root.rglob("*.py"))
+        for text in [path.read_text()]
+        for match in BARE_ATTRS_DECORATOR_PATTERN.finditer(text)
+    ]
+    if offenders:
+        print("ERROR: use @frozen(slots=True) / @define(slots=True) at:")
+        for offender in offenders:
+            print(f"  {offender}")
+        sys.exit(1)
+    else:
+        print("OK: all attrs decorators pass slots explicitly.")
+
+
+@task
+def check_all_links(c: Context) -> None:
     """
     Check all links with lychee.
 
@@ -229,7 +311,9 @@ def check_all_links(c):
 
 
 @task(help={"threshold": "Consecutive failing runs required to fail the task."})
-def check_all_links_with_streak(c, threshold=LINK_CHECK_DEFAULT_THRESHOLD):
+def check_all_links_with_streak(
+    c: Context, threshold: int = LINK_CHECK_DEFAULT_THRESHOLD
+) -> None:
     """
     Run lychee and update the per-URL consecutive-failure streak state.
 
@@ -315,7 +399,7 @@ def check_all_links_with_streak(c, threshold=LINK_CHECK_DEFAULT_THRESHOLD):
 
 
 @task
-def check_table_trailing_newlines(c):
+def check_table_trailing_newlines(c: Context) -> None:
     """
     Added by Claude:
     Check that markdown docs ending with a table have at least one blank line after the table.
@@ -352,7 +436,7 @@ def check_table_trailing_newlines(c):
 
 
 @task
-def fix_table_trailing_newlines(c):
+def fix_table_trailing_newlines(c: Context) -> None:
     """
     Added by Claude:
     Autofix markdown files that end with a table but lack a trailing blank line.
@@ -382,7 +466,7 @@ def fix_table_trailing_newlines(c):
 
 
 @task
-def check_local_links(c):
+def check_local_links(c: Context) -> None:
     """
     Check local links with lychee
     """
@@ -393,7 +477,7 @@ def check_local_links(c):
 
 
 @task
-def lint_actions(c):
+def lint_actions(c: Context) -> None:
     print("Linting github actions...")
     cmd = "actionlint"
     print(f"running {cmd}")
@@ -409,18 +493,20 @@ def lint_actions(c):
         check_local_links,
         fix_table_trailing_newlines,
         checkimports,
+        check_attrs_slots,
+        # check_asset_imports, # skip: too slow to run in dev loop.  Can still run in CI
         # fix_init_files,
         typecheck,
         lint_actions,
         test,
     ]
 )
-def green(c):
+def green(c: Context) -> None:
     pass
 
 
 @task
-def install_r_packages(c):
+def install_r_packages(c: Context) -> None:
     """
     Install R packages such as TwoSampleMR and LAVA
     """
@@ -432,7 +518,7 @@ def install_r_packages(c):
 
 
 @task()
-def pfig(c):
+def pfig(c: Context) -> None:
     """
     Pull figures from github to populate the _figs directory
     """
@@ -440,7 +526,7 @@ def pfig(c):
 
 
 @task()
-def publish_figures(c):
+def publish_figures(c: Context) -> None:
     """
     Run the end-to-end figure-system workflow: generate any missing
     figures from ALL_FIGURE_TASKS, prune orphan manifest entries (after
@@ -452,11 +538,12 @@ def publish_figures(c):
 
 @task
 def serve_docs(
-    c,
+    c: Context,
     strict: bool = True,
     include_authors: bool = False,
     enable_api_autonav: bool = False,
-):
+    live_reload: bool = False,
+) -> None:
     """
     Use mkdocs to serve documentation
     """
@@ -465,9 +552,11 @@ def serve_docs(
         _set_use_gh_token()
     if enable_api_autonav:
         _set_enable_api_autonav()
-    cmd = " mkdocs serve"
+    cmd = " mkdocs serve "
     if strict:
         cmd += " --strict"
+    if not live_reload:
+        cmd += " --no-livereload"
     print("Serving documentation...")
     print(f"running {cmd}")
     c.run(cmd, pty=True)
@@ -478,7 +567,9 @@ def serve_docs(
         pfig,
     ]
 )
-def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
+def sdocs(
+    c: Context, include_authors: bool = False, enable_api_autonav: bool = False
+) -> None:
     """
     Retrieve figures, then serve docs
     """
@@ -488,7 +579,7 @@ def sdocs(c, include_authors: bool = False, enable_api_autonav: bool = False):
 
 
 @task
-def build_docs(c):
+def build_docs(c: Context) -> None:
     cmd = "mkdocs build --strict"
     print(f"running {cmd}")
     c.run(cmd)
@@ -525,8 +616,8 @@ def _dir_size(path: Path) -> str:
     }
 )
 def migrate_asset_store(
-    c, execute: bool = False, reverse: bool = False, only: str | None = None
-):
+    c: Context, execute: bool = False, reverse: bool = False, only: str | None = None
+) -> None:
     """
     Reconcile the asset store on disk with the path_remap rules in
     default_runner_config.yaml.
@@ -636,7 +727,7 @@ def migrate_asset_store(
 
 # initialization
 @task(pre=[install_r_packages, pfig, green])
-def init(c):
+def init(c: Context) -> None:
     """
     Initial repo setup
     """

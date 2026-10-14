@@ -8,7 +8,7 @@ from mecfs_bio.util.download.verify import calc_md5_checksum
 _TRUE_FILE_CONTENTS = "ABC"
 
 
-@attrs.define
+@attrs.define(slots=True)
 class FakeDownloader(Downloader):
     """
     Simulate a download that fails outright once,
@@ -30,7 +30,7 @@ class FakeDownloader(Downloader):
         return True
 
 
-def test_robust_downloader(tmp_path: Path):
+def test_robust_downloader(tmp_path: Path) -> None:
     """
     test that the retry logic of the robust downloader works
     """

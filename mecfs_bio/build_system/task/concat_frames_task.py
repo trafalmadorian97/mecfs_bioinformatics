@@ -3,7 +3,7 @@ Task to combine the results of multiple Tasks, each of which produces a datafram
 """
 
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Mapping, Self, Sequence
 
 import narwhals
 from attrs import frozen
@@ -14,6 +14,9 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
+    ReferenceFileMeta,
+)
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
@@ -26,7 +29,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ConcatFramesTask(Task):
     """
     Task to concatenate multiple DataFrames, each produces by a separate task.
@@ -38,7 +41,7 @@ class ConcatFramesTask(Task):
     frames_pipes: Sequence[DataProcessingPipe] | None = None
     column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if self.frames_pipes is not None:
             assert len(self.frames_pipes) == len(self.frames_tasks)
 
@@ -78,7 +81,7 @@ class ConcatFramesTask(Task):
         override_project: str | None = None,
         column_type_override: Mapping[str, narwhals.dtypes.DType] = frozendict(),
         frames_pipes: Sequence[DataProcessingPipe] | None = None,
-    ):
+    ) -> Self:
         extension, spec = get_extension_and_read_spec_from_format(out_format)
         assert len(frames_tasks) > 0
         source_meta = frames_tasks[0].meta
@@ -96,6 +99,15 @@ class ConcatFramesTask(Task):
                 extension=extension,
                 read_spec=spec,
                 sub_dir=source_meta.sub_dir,
+            )
+        elif isinstance(source_meta, ReferenceFileMeta):
+            meta = ReferenceFileMeta(
+                group=source_meta.group,
+                sub_group=source_meta.sub_group,
+                sub_folder=source_meta.sub_folder,
+                id=AssetId(asset_id),
+                read_spec=spec,
+                extension=extension,
             )
         else:
             raise ValueError(f"Unknown meta: {source_meta}")

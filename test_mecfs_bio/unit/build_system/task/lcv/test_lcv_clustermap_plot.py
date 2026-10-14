@@ -29,7 +29,7 @@ from mecfs_bio.build_system.task.xr_pipes.xr_identity import XRIdentityPipe
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_lcv_clustermap(tmp_path: Path):
+def test_lcv_clustermap(tmp_path: Path) -> None:
     df_loc = tmp_path / "lcv_agg.parquet"
     df = pd.DataFrame(
         {

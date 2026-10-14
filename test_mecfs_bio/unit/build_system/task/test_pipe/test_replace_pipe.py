@@ -5,7 +5,7 @@ import polars as pl
 from mecfs_bio.build_system.task.pipes.replace_pipe import ReplaceStrictPipe
 
 
-def test_replace_pipe():
+def test_replace_pipe() -> None:
     df = pl.DataFrame({"col": [float("nan"), 1.5]})
     result = (
         ReplaceStrictPipe(

@@ -10,7 +10,7 @@ import seaborn as sns
 
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
-from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import align_gwas_and_ld
+from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import align_data
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_NON_EFFECT_ALLELE_COL, GWASLAB_EFFECT_ALLELE_COL, \
     GWASLAB_POS_COL, GWASLAB_CHROM_COL, GWASLAB_RSID_COL
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir

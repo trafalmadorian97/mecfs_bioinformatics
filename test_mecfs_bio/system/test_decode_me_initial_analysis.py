@@ -35,7 +35,7 @@ expected_vars = {
 }
 
 
-def test_run_initial_analysis(tmp_path: Path):
+def test_run_initial_analysis(tmp_path: Path) -> None:
     """
     Test that we can run the initial DecodeME analysis:
     - Download data

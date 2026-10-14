@@ -50,7 +50,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabRegionPlotsFromLeadVariantsTask(Task):
     """
     A task to generate region plots near the lead variants described by GWAS summary statistics
@@ -66,7 +66,7 @@ class GwasLabRegionPlotsFromLeadVariantsTask(Task):
     short_id: AssetId = field(converter=AssetId)
     plot_top: int | None = None
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         # might remove these checks if we end up wanting to explore lead variants from one project in the data of another
         assert self._lead_variants_task_meta.trait == self._sumstats_meta.trait
         assert self._lead_variants_task_meta.project == self._sumstats_meta.project
