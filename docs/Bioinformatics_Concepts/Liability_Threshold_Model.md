@@ -56,24 +56,3 @@ This oversampling, however, interacts with the liability threshold model.  If li
 static_img_embed("docs/_figs/liability_threshold_ascertained_sample_diagram.svg",width="100%")
 }}
 
-
-[//]: # ()
-[//]: # (Often, participants in binary-trait GWAS are selected not by sampling the general population uniformly at random, but through special ascertainment procedures.   At minimum )
-
-[//]: # ()
-[//]: # ()
-[//]: # ()
-[//]: # ()
-[//]: # (Cases are recruited from doctor's offices, hospitals, patient advocacy groups, etc., while controls are selected from large scale biobanks so that they are good match for controls in their ancestry, age, gender, etc[^matching].  )
-
-[//]: # ()
-[//]: # (The above-described ascertainment interacts with the liability threshold model. Even if we assume that cases)
-
-[//]: # ()
-[//]: # ()
-[//]: # (If liability $L$ is normally distributed in the general population, it will not be normally distributed in the ascertained GWAS sample.  )
-
-[//]: # ()
-[//]: # ()
-[//]: # ()
-[//]: # ([^matching]: This matching reduces, but does not eliminate, the need to control for confounders.)
