@@ -20,7 +20,7 @@ Comparing $\pi \approx 0.0019$ to the values in Table 2 from the original MiXeR 
 
 MiXeR also produces a power plot.
 
-{{ png_embed("docs/_figs/decode_me_univariate_mixer_power_plot.png", alt="decode_me_mixer_power") }}
+{{ static_img_embed("docs/_figs/decode_me_univariate_mixer_power_plot.png", alt="decode_me_mixer_power") }}
 
 MiXeR predicts that an effective sample size of one million would be required to explain slightly more than 20 percent of ME/CFS's heritability with genome-wide significant SNPs.  This conclusion is consistent with ME/CFS being a polygenic trait: since ME/CFS risk is conferred by a large number of weak genetic effects, large statistical power is required to make these weak genetic effects statistically significant.
 
@@ -28,7 +28,7 @@ MiXeR predicts that an effective sample size of one million would be required to
 
 To assess the goodness of fit of the MiXeR model, we can use a Q-Q plot.
 
-{{ png_embed("docs/_figs/decode_me_univariate_mixer_qq_plot.png", alt="decode_me_qq") }}
+{{ static_img_embed("docs/_figs/decode_me_univariate_mixer_qq_plot.png", alt="decode_me_qq") }}
 
 
 /// caption

@@ -11,7 +11,7 @@ from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 
-@frozen
+@frozen(slots=True)
 class GWASSummaryDataFileMeta(FileMeta):
     @property
     def asset_id(self) -> AssetId:
@@ -24,7 +24,3 @@ class GWASSummaryDataFileMeta(FileMeta):
     project_path: PurePath | None
     read_spec: ReadSpec | None = None
     extension: str | None = None
-
-    def __attrs_post_init__(self):
-        if self.project_path is None:
-            assert len(str(self.project_path)) > 0

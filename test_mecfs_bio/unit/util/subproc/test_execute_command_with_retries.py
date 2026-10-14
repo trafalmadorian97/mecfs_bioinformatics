@@ -5,7 +5,7 @@ import pytest
 from mecfs_bio.util.subproc.run_command import execute_command_with_retries
 
 
-def test_retries_then_succeeds():
+def test_retries_then_succeeds() -> None:
     """A command that fails twice then succeeds is retried to success."""
     calls = {"n": 0}
     slept: list[float] = []
@@ -28,7 +28,7 @@ def test_retries_then_succeeds():
     assert len(slept) == 2
 
 
-def test_reraises_after_exhausting_attempts():
+def test_reraises_after_exhausting_attempts() -> None:
     """After max_attempts failures the last error is re-raised."""
 
     def always_fail(cmd: list[str]) -> str:

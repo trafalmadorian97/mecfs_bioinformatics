@@ -6,7 +6,7 @@ from mecfs_bio.build_system.task.pipes.cast_to_float32_pipe import (
 )
 
 
-def test_cast_to_float32():
+def test_cast_to_float32() -> None:
     df = pl.DataFrame({"col": [1.4, 2.5]}, schema={"col": pl.Float64()})
     result = CastFloatsToFloat32Pipe().process(narwhals.from_native(df).lazy())
     assert result.collect_schema()["col"] == narwhals.dtypes.Float32()

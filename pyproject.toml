@@ -2,11 +2,25 @@
 name = "biostatistics"
 version = "0.1.0"
 readme = "README.md"
-requires-python = "==3.12"
+requires-python = "~=3.13.0"
 
-## pyproject.toml
-#[tool.pixi.pypi-options.dependency-overrides]
-#numpy = ">=2.0.0"
+# gwaslab 4.2.2 caps numpy<2, matplotlib<3.9, and pins pysam==0.22.1.  Those exact
+# versions have no cp313 wheels on PyPI, so on Python 3.13 they would each build from
+# sdist (and pysam 0.22.1's sdist fails to build under Cython 3).  Override the caps to
+# versions that ship cp313 wheels.  matplotlib: gwaslab's get_cmap calls are guarded (the
+# one unguarded path, viz_plot_arc, is not exercised by this repo).
+#
+# numpy is capped <2.4: gwaslab's vendored LDSC rg estimator calls float() on size-1
+# arrays of ndim>0 (extension/ldsc/ldsc_regressions.py, RG.__init__).  numpy 1.25
+# deprecated that conversion and 2.4.0 turned it into a hard TypeError, which crashes the
+# CT-LDSC genetic-correlation path (system_test_genetic_corr_by_ct_ldsc).  On 2.1-2.3 it
+# still works (only a DeprecationWarning; we don't run warnings-as-errors).  Lift this
+# ceiling once gwaslab extracts the scalar with .item() upstream.  The renovate.json
+# packageRule for numpy enforces the same cap.
+[tool.pixi.pypi-options.dependency-overrides]
+numpy = ">=2.1,<2.4"
+matplotlib = ">=3.9.2"
+pysam = ">=0.24,<0.25"
 
 [tool.pixi.workspace]
 channels = [
@@ -38,7 +52,7 @@ mkdir -p r-libs && \
 Rscript -e "if (!require('remotes', quietly=TRUE)) install.packages('remotes', repos='https://cloud.r-project.org'); if (!requireNamespace('LAVA', quietly=TRUE)) remotes::install_github('josefin-werme/LAVA')"
 """
 [tool.setuptools]
-packages = ["mecfs_bio"]
+packages = ["mecfs_bio", "vendored"]
 
 [tool.pixi.activation]
 env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1" }
@@ -47,7 +61,7 @@ env = { R_LIBS_USER = "r-libs", NO_MKDOCS_2_WARNING="1" }
 pysam = ">=0.24,<0.25" #pysam is used by gwaslab
 pixi-pycharm = ">=0.0.12,<0.0.13"
 pyarrow = ">=25,<26"
-rust = ">=1.97,<1.98"
+rust = ">=1.99,<1.100"
 duckdb = ">=1.4.1,<2"
 # Required by mkdocs-bibtex: its PandocRegistry shells out to pandoc via pypandoc.
 # Currently dormant (we use SimpleRegistry), but it activates as soon as `csl_file`
@@ -57,6 +71,7 @@ bcftools = ">=1.22,<2"
 # Used by the migrate-asset-store task to move asset store subtrees between disks.
 rsync = ">=3.4.4,<4"
 typos = ">=1.41.0,<2"
+typst = ">=0.15,<0.16"
 r-base = ">=4.0,<4.6"
 bioconductor-celldex = ">=1.16.0,<2"
 pixi = "*"
@@ -75,7 +90,7 @@ r-stringr = ">=1.6.0,<2"
 r-xml2 = ">=1.5.1,<2"
 r-magrittr = ">=2.0.4,<3"
 r-ieugwasr = ">=1.1.0,<2"
-r-glmnet = ">=4.1.10,<5"
+r-glmnet = ">=5,<6"
 r-mass = ">=7.3.65,<8"
 r-mendelianrandomization = ">=0.10.0,<0.11"
 gh = ">=2.86.0,<3"
@@ -85,7 +100,7 @@ tomli-w = ">=1.2.0,<2"
 r-rfast = ">=2.1.5.2,<3"
 r-seurat = ">=5.4.0,<6"
 r-cpp11 = ">=0.5,<1"
-ty = ">=0.0.64,<0.0.65"
+ty = ">=0.0.86,<0.0.87"
 actionlint = ">=1.7.12,<2"
 shellcheck = ">=0.11.0,<0.12"
 
@@ -93,21 +108,21 @@ shellcheck = ">=0.11.0,<0.12"
 attrs = ">=25.3.0"
 cattrs = ">=25.2.0"
 emoji = ">=2.15.0"
-gwaslab = "==4.2.1"
+gwaslab = "==4.2.3"
 invoke = ">=3.0.3,<3.1.0"
 loguru = ">=0.7.3"
 matplotlib = ">=3.8"
-narwhals = ">=2.24.0, <2.25.0"
+narwhals = ">=2.27.1, <2.28.0"
 networkx = ">=3.5"
 numpy = "*"
 osfclient = ">=0.0.5"
 pandas = ">=2.3.3"
 plotly = ">=6.5.2"
-polars = ">=1.43.0,<1.44.0"
+polars = ">=2.0.0,<2.1.0"
 py3-wget = ">=1.0.13"
 pytest = ">=8.4.2"
 requests = ">=2.32.5"
-ruff = ">=0.16,<0.17"
+ruff = ">=0.17,<0.18"
 structlog = ">=26.1.0,<26.2.0"
 tqdm = ">=4.70.0,<4.71.0"
 typeguard = ">=4.6.0,<4.7.0"
@@ -118,10 +133,10 @@ xarray = ">=2026.4,<2027"
 xxhash = ">=3.6.0"
 ibis-framework = { version = ">=12,<13", extras = ["duckdb"] }
 scikit-learn = ">=1.7.2,<2"
-gdown = ">=5.2.0,<6"
+gdown = ">=6.1,<7"
 mkdocs-api-autonav = ">=0.4.0,<0.5"
 mkdocs-material = ">=9.7.1,<10"
-mkdocstrings = ">=0.30.1,<0.31"
+mkdocstrings = ">=1.0.6,<1.1"
 tabulate = ">=0.10,<0.11"
 mkdocs-bibtex = ">=4.4.0,<5"
 statsmodels = ">=0.14.5"
@@ -139,7 +154,6 @@ zepid = ">=0.9.1,<0.10"
 synapseclient = ">=4.11.0,<5"
 import-linter = ">=2.9,<3"
 pyreadr = ">=0.5.4,<0.6"
-upsetplot = ">=0.9.0,<0.10"
 pypng = ">=0.20220715.0,<0.20220716"
 mkdocs-glightbox = ">=0.5.2,<0.6"
 mkdocs-macros-plugin = ">=1.3.0,<2"
@@ -148,6 +162,7 @@ mkdocs-git-committers-plugin-2 = ">=2.5.0,<3"
 pytest-testmon = ">=2.2.0,<3"
 mkdocs-awesome-nav = ">=3.3.0, <4"
 mkdocs-exclude-search = ">=0.6.6, <0.7"
+backports-zstd = ">=1.7.0, <2"
 
 [tool.ty.environment]
 python = ".pixi/envs/default"

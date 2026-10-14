@@ -3,7 +3,7 @@ tags:
   - LDSC
 ---
 
-# LDSC Analysis
+# LDSC
 
 I applied [Linkage Disequilibrium Score Regression](../../../Bioinformatics_Concepts/LDSC.md)[@bulik2015ld] to the [Million Veterans](../../../Data_Sources/Million_Veterans_Program.md) LDL GWAS of Verma et al.[@bulik2015ld] to estimate [heritability](../../../Bioinformatics_Concepts/Heritability.md) and look for signs of population stratification or confounding.
 

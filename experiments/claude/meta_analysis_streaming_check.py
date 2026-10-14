@@ -2,7 +2,7 @@
 Does the union meta-analysis pipeline stay out-of-core?
 
 FixedEffectsMetaAnalysisTask replaces an iterative chain of pairwise joins with
-canonicalise -> vertical concat -> single group_by -> sort -> sink_parquet.
+prepare -> vertical concat -> single group_by -> sort -> sink_parquet.
 The requirement is that peak memory be O(output size) rather than O(sum of input
 sizes), so that a meta analysis whose constituent studies do not collectively fit in
 RAM still runs.
@@ -38,8 +38,8 @@ import polars as pl
 
 from mecfs_bio.build_system.task.fixed_effect_meta_analysis_task import (
     CaseControlSampleInfo,
-    canonicalize_source,
-    combine_canonicalized_sources,
+    combine_prepared_sources,
+    prepare_source,
 )
 
 VARIANTS_PER_STUDY = 4_000_000
@@ -62,16 +62,13 @@ def write_study(path: Path, num_variants: int, pos_offset: int, study_index: int
     ).alias(POS_COL)
     # A cheap deterministic scramble, so beta/se vary per variant without an RNG buffer.
     scramble = (pl.col(POS_COL) * 2654435761 + study_index * 97) % 1000
-    # Half the variants in studies after the first are written in the opposite allele
-    # orientation, so the canonicalisation path is exercised.
-    reversed_coding = (pl.col(POS_COL) % 2 == 0) & (study_index > 0)
     lf = (
         pl.LazyFrame({"_seed": [0]})
         .select(pos)
         .with_columns(
             (pl.col(POS_COL) % 22 + 1).cast(pl.Int32).alias(CHR_COL),
-            pl.when(reversed_coding).then(pl.lit("C")).otherwise(pl.lit("A")).alias(EA_COL),
-            pl.when(reversed_coding).then(pl.lit("A")).otherwise(pl.lit("C")).alias(NEA_COL),
+            pl.lit("A").alias(EA_COL),
+            pl.lit("C").alias(NEA_COL),
             ((scramble - 500) / 1000).cast(pl.Float64).alias(BETA_COL),
             ((scramble + 1) / 10000).cast(pl.Float64).alias(SE_COL),
         )
@@ -83,19 +80,18 @@ def write_study(path: Path, num_variants: int, pos_offset: int, study_index: int
 def run_pipeline(study_paths: list[Path], out_path: Path):
     """The shipped pipeline, end to end, all lazy.
 
-    This calls the production canonicalisation and combination directly, so the numbers
+    This calls the production preparation and combination directly, so the numbers
     describe the task rather than a stand-in for it.
     """
     frames = [
-        canonicalize_source(
+        prepare_source(
             narwhals.scan_parquet(path, backend="polars"),
-            source_index=i,
             sample_info=CaseControlSampleInfo(cases=1000 * (i + 1), controls=1000 * (i + 1)),
             keep_rsid=False,
         )
         for i, path in enumerate(study_paths)
     ]
-    combine_canonicalized_sources(frames, keep_rsid=False).sink_parquet(out_path)
+    combine_prepared_sources(frames, keep_rsid=False).sink_parquet(out_path)
 
 
 def peak_rss_gib() -> float:

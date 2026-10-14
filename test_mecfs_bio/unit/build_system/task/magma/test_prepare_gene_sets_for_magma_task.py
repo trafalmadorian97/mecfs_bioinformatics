@@ -49,7 +49,7 @@ def _make_db_task() -> FakeTask:
 
 
 class _FileFetch(Fetch):
-    def __init__(self, path: Path):
+    def __init__(self, path: Path) -> None:
         self._path = path
 
     def __call__(self, asset_id: AssetId) -> Asset:
@@ -78,7 +78,7 @@ _ROWS = [
 ]
 
 
-def test_output_is_tab_separated_with_gene_column(tmp_path: Path):
+def test_output_is_tab_separated_with_gene_column(tmp_path: Path) -> None:
     db_path = _write_parquet(tmp_path, _ROWS)
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out",
@@ -96,7 +96,7 @@ def test_output_is_tab_separated_with_gene_column(tmp_path: Path):
     assert "SET_B" in df.columns
 
 
-def test_gene_column_contains_entrez_ids(tmp_path: Path):
+def test_gene_column_contains_entrez_ids(tmp_path: Path) -> None:
     db_path = _write_parquet(tmp_path, _ROWS)
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out",
@@ -113,7 +113,7 @@ def test_gene_column_contains_entrez_ids(tmp_path: Path):
     assert set(df[MAGMA_GENE_COL]) == {1, 2, 3, 4, 5, 6}
 
 
-def test_binary_indicators_are_correct(tmp_path: Path):
+def test_binary_indicators_are_correct(tmp_path: Path) -> None:
     db_path = _write_parquet(tmp_path, _ROWS)
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out",
@@ -137,7 +137,7 @@ def test_binary_indicators_are_correct(tmp_path: Path):
     assert df.loc[2, "SET_B"] == 1
 
 
-def test_genes_are_union_across_all_sets(tmp_path: Path):
+def test_genes_are_union_across_all_sets(tmp_path: Path) -> None:
     db_path = _write_parquet(tmp_path, _ROWS)
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out",
@@ -153,7 +153,7 @@ def test_genes_are_union_across_all_sets(tmp_path: Path):
     assert set(df[MAGMA_GENE_COL]) == {1, 2, 3, 4, 5, 6}
 
 
-def test_values_are_only_zero_or_one(tmp_path: Path):
+def test_values_are_only_zero_or_one(tmp_path: Path) -> None:
     db_path = _write_parquet(tmp_path, _ROWS)
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out",
@@ -170,7 +170,7 @@ def test_values_are_only_zero_or_one(tmp_path: Path):
         assert set(df[col].unique()).issubset({0, 1})
 
 
-def test_meta_simple_file_meta_when_dep_is_simple(tmp_path: Path):
+def test_meta_simple_file_meta_when_dep_is_simple(tmp_path: Path) -> None:
     db_task = FakeTask(meta=SimpleFileMeta(AssetId("db")))
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="my_gene_sets",
@@ -181,7 +181,7 @@ def test_meta_simple_file_meta_when_dep_is_simple(tmp_path: Path):
     assert task.meta.asset_id == AssetId("my_gene_sets")
 
 
-def test_deps_is_parquet_db_task(tmp_path: Path):
+def test_deps_is_parquet_db_task(tmp_path: Path) -> None:
     db_task = _make_db_task()
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out", gene_sets=[_spec("SET_A")], parquet_db_task=db_task
@@ -189,7 +189,7 @@ def test_deps_is_parquet_db_task(tmp_path: Path):
     assert task.deps == [db_task]
 
 
-def test_unknown_gene_set_raises(tmp_path: Path):
+def test_unknown_gene_set_raises(tmp_path: Path) -> None:
     db_path = _write_parquet(tmp_path, _ROWS)
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out",
@@ -202,7 +202,7 @@ def test_unknown_gene_set_raises(tmp_path: Path):
         task.execute(scratch, _FileFetch(db_path), make_wf())
 
 
-def test_none_ncbi_ids_are_dropped(tmp_path: Path):
+def test_none_ncbi_ids_are_dropped(tmp_path: Path) -> None:
     rows_only_null = [
         {
             STANDARD_NAME: "SET_NULL",
@@ -224,7 +224,7 @@ def test_none_ncbi_ids_are_dropped(tmp_path: Path):
     assert set(df[MAGMA_GENE_COL]) == {99}
 
 
-def test_genes_outside_selected_sets_are_included(tmp_path: Path):
+def test_genes_outside_selected_sets_are_included(tmp_path: Path) -> None:
     db_path = _write_parquet(tmp_path, _ROWS)
     task = PrepareGeneSetsForMagmaTask.create(
         asset_id="out", gene_sets=[_spec("SET_A")], parquet_db_task=_make_db_task()

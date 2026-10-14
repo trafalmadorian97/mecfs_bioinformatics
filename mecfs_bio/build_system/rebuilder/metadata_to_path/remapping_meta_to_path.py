@@ -62,7 +62,7 @@ _ALLOWED_RULE_KEYS = frozenset({_ROOT_KEY, _PREFIXES_KEY})
 MIGRATE_COMMAND = "pixi r invoke migrate-asset-store"
 
 
-@frozen
+@frozen(slots=True)
 class PathRemapRule:
     """
     Send every asset whose store-relative path starts with one of prefixes to root
@@ -133,7 +133,7 @@ class PathRemapRule:
         return tuple(rules)
 
 
-@frozen
+@frozen(slots=True)
 class RemappingMetaToPath(MetaToPath):
     """
     Place assets under default_root, except for those selected by a rule in rules, which

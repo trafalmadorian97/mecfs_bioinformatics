@@ -4,7 +4,7 @@ tags:
 hide:
 - toc
 ---
-# HBA MAGMA
+# MAGMA HBA
 
 
 I applied MAGMA to the heart rate recovery GWAS of Verweiji et al.[@verweij2018genetic] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md) as a reference.

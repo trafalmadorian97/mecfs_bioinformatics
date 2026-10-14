@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import BinaryIO, Self
 
 import xxhash
 from attrs import frozen
@@ -17,7 +18,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.simple_ha
 
 
 # Reads exactly sample_size bytes from file object f, erroring if EOF is reached before that.
-def _read_sample_size(f, sample_size: int) -> bytes:
+def _read_sample_size(f: BinaryIO, sample_size: int) -> bytes:
     data = b""
     while len(data) < sample_size:
         chunk = f.read(sample_size - len(data))
@@ -29,7 +30,7 @@ def _read_sample_size(f, sample_size: int) -> bytes:
     return data
 
 
-@frozen
+@frozen(slots=True)
 class ImoHasher(Tracer):
     """
     Based on : https://github.com/kalafut/py-imohash/blob/master/imohash/imohash.py
@@ -42,11 +43,11 @@ class ImoHasher(Tracer):
     sample_size: int = 16 * 1024
 
     @classmethod
-    def with_xxhash_32(cls):
+    def with_xxhash_32(cls) -> Self:
         return cls(hash_constructor=xxhash.xxh32, hash_name="xxh32")
 
     @classmethod
-    def with_xxhash_128(cls):
+    def with_xxhash_128(cls) -> Self:
         return cls(hash_constructor=xxhash.xxh3_128, hash_name="xxh3_128")
 
     def __call__(self, a: Asset) -> str:

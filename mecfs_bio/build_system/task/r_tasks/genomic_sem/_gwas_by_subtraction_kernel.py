@@ -112,7 +112,7 @@ from attrs import frozen
 from scipy.stats import norm
 
 
-@frozen
+@frozen(slots=True)
 class SubtractionLoadings:
     """
     Cholesky factor loadings (constant across SNPs).
@@ -138,7 +138,7 @@ class SubtractionLoadings:
     a_F: float
     a_R: float
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.b >= 0, (
             f"b is equal to the variance of trait 2, and so must be positive.  Got b={self.b}"
         )
@@ -147,14 +147,14 @@ class SubtractionLoadings:
         )
 
 
-@frozen
+@frozen(slots=True)
 class FactorBetas:
     """Per-SNP factor effects (each shape (N,))."""
 
     beta_F: np.ndarray  # effect on the common factor F
     beta_R: np.ndarray  # effect on the remainder factor R
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.beta_F.ndim == 1
         assert self.beta_F.shape == self.beta_R.shape
 
@@ -178,7 +178,7 @@ class GWASBySubtractionResult:
     n_eff_R: np.ndarray  # effective sample size for beta_R
     fail: np.ndarray  # bool, True if SE was non-finite/non-positive for this SNP
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.beta_F.ndim == 1
         assert (
             self.beta_F.shape

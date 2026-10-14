@@ -1,5 +1,6 @@
 import math
 from pathlib import Path, PurePath
+from typing import Self
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -24,15 +25,15 @@ from mecfs_bio.build_system.task.magma.plot_magma_brain_atlas_result import (
     get_condensed_hba_cluster_label,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
+from mecfs_bio.util.plotting.save_fig import MatplotLibFormat, write_plots_to_dir
 
 
-@frozen
+@frozen(slots=True)
 class HBAIndepPlotOptions:
     annotation_text_size: int | None = None
 
 
-@frozen
+@frozen(slots=True)
 class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
     """
     Create a plot of the results of applying MAGMA to a GWAS using HBA reference data
@@ -47,6 +48,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
     stepwise_cluster_list_task: Task
     meta: Meta
     plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions()
+    plot_format: MatplotLibFormat = "png"
 
     @property
     def stepwise_clusters_id(
@@ -111,6 +113,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         )
         sns.move_legend(ax, "upper left", bbox_to_anchor=(1.0, 1), fontsize="small")
         leg1 = ax.get_legend()
+        assert leg1 is not None  # move_legend above guarantees a legend exists
         significance_line = ax.axhline(
             y=sig_level,
             color="black",
@@ -156,7 +159,11 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             )
 
         figs = {"hba_magma_fig": fig}
-        write_plots_to_dir(scratch_dir, figs)
+        write_plots_to_dir(scratch_dir, figs, matplotlib_format=self.plot_format)
+        # plt.subplots() registers the figure in pyplot's global manager; close it so
+        # memory does not accumulate across a run.
+        for written_fig in figs.values():
+            plt.close(written_fig)
 
         return DirectoryAsset(scratch_dir)
 
@@ -167,7 +174,8 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
         asset_id: str,
         stepwise_cluster_list_task: Task,
         plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
-    ):
+        plot_format: MatplotLibFormat = "png",
+    ) -> Self:
         source_meta = result_table_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(
@@ -181,6 +189,7 @@ class MAGMAPlotBrainAtlasResultWithStepwiseLabels(Task):
             result_table_task=result_table_task,
             stepwise_cluster_list_task=stepwise_cluster_list_task,
             plot_options=plot_options,
+            plot_format=plot_format,
         )
 
 

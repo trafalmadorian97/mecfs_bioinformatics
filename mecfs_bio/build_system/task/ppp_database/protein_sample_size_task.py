@@ -44,7 +44,7 @@ from mecfs_bio.constants.regenie_constants import REGENIE_N_COL
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class PppProteinRef:
     """Identity of one UKB-PPP protein needed to fetch its sample size: the OID primary
     key, gene symbol, and Synapse entity id of the raw tar. The manifest-reading that
@@ -112,7 +112,7 @@ def extract_regenie_n_from_tar_head(head: bytes) -> int:
     return int(float(first_row[n_index]))
 
 
-@frozen
+@frozen(slots=True)
 class PppProteinSampleSizeTask(GeneratingTask):
     """One table of per-protein GWAS sample sizes, recovered by ranged reads from Synapse.
 

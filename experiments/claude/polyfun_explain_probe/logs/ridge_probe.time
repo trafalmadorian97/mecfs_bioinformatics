@@ -1,0 +1,23 @@
+	Command being timed: "pixi r python -u experiments/claude/polyfun_explain_probe/ridge_probe.py"
+	User time (seconds): 377.47
+	System time (seconds): 52.31
+	Percent of CPU this job got: 335%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 2:07.94
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 8953536
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 4113
+	Minor (reclaiming a frame) page faults: 4979848
+	Voluntary context switches: 25581
+	Involuntary context switches: 7255
+	Swaps: 0
+	File system inputs: 1217952
+	File system outputs: 56
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

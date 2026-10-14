@@ -15,6 +15,11 @@ from mecfs_bio.asset_generator.ukbb_broad_ld_matrix_generator import (
 from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import (
     MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
 )
+from mecfs_bio.assets.reference_data.polyfun.precomputed_prior.polyfun_precomputed_prior import (
+    COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
+    POLYFUN_PRIOR_COL,
+    create_prior_col_pipe,
+)
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
@@ -26,34 +31,32 @@ from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
-from mecfs_bio.build_system.task.dataframe_output import (
-    ParquetOutFormat,
-)
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
     ChromRange,
-    HarmonizeGWASWithReferenceViaAlleles,
 )
 from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid import (
     PalindromeStrategy,
 )
-from mecfs_bio.build_system.task.pipe_dataframe_task import (
-    PipeDataFrameTask,
+from mecfs_bio.build_system.task.pipes.chrom_range_filter_pipe import (
+    ChromRangeFilterPipe,
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.concat_str_pipe import ConcatStrPipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.drop_palindromes_pipe import DropPalindromesPipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_min_in_col import (
     FilterRowsByMinInCol,
 )
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
-from mecfs_bio.build_system.task.pipes.rename_col_pipe import RenameColPipe
 from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
     PIP_COLUMN,
     BroadInstituteFormatLDMatrix,
+    PriorInfo,
     SusieRFinemapTask,
 )
+from mecfs_bio.build_system.task.rename_cols_task import RenameColsTask
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     HeatmapOptions,
     RegionSelectDefault,
@@ -71,12 +74,11 @@ from mecfs_bio.constants.gwaslab_constants import (
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class BroadFineMapTaskGroup:
     ld_labels_task: Task
     ld_matrix_task: Task
     renamed_ld_labels_task: Task
-    harmonized_sumstats_task: Task
     susie_finemap_task: Task
     susie_stackplot_task: Task
     susie_finemap_strict_task: Task
@@ -93,6 +95,12 @@ class BroadFineMapTaskGroup:
     susie_strict_credible_set_markdown_table: Task
     susie_1_credible_set_markdown_table: Task
     susie_2_credible_set_markdown_table: Task
+    # The same credible-set tables as standalone parquet FileAssets, so docs can
+    # render them as filterable, downloadable tables.
+    susie_base_credible_set_parquet_table: Task
+    susie_strict_credible_set_parquet_table: Task
+    susie_1_credible_set_parquet_table: Task
+    susie_2_credible_set_parquet_table: Task
     upset_plot_task: Task
     upset_plot_task_pip001: Task
 
@@ -112,7 +120,16 @@ class BroadFineMapTaskGroup:
             self.susie_strict_credible_set_markdown_table,
             self.susie_1_credible_set_markdown_table,
             self.susie_2_credible_set_markdown_table,
+            self.susie_base_credible_set_parquet_table,
+            self.susie_strict_credible_set_parquet_table,
+            self.susie_1_credible_set_parquet_table,
+            self.susie_2_credible_set_parquet_table,
         ]
+
+
+@frozen(slots=True)
+class PriorSpec:
+    q_factor: int = 100
 
 
 def generate_assets_broad_ukbb_fine_map(
@@ -124,6 +141,7 @@ def generate_assets_broad_ukbb_fine_map(
     sample_size_or_effect_sample_size: int,
     chrom_range: ChromRange | None = None,
     palindrome_strategy: PalindromeStrategy = "drop",
+    prior_spec: PriorSpec | None = None,
 ) -> BroadFineMapTaskGroup:
     """
     Asset generator for fine mapping using SUSIE.
@@ -148,6 +166,8 @@ def generate_assets_broad_ukbb_fine_map(
         base_name = base_name + "_" + stem
     if palindrome_strategy != "drop":
         base_name = base_name + "_palindromes_" + palindrome_strategy
+    if prior_spec is not None:
+        base_name = base_name + "_precomputed_prior_" + str(prior_spec.q_factor)
 
     logger.debug(
         f"To finemap position {pos} on chromosome {chrom}, interval {interval} was selected."
@@ -158,57 +178,72 @@ def generate_assets_broad_ukbb_fine_map(
         )
     )
 
-    ld_labels_task_renamed = PipeDataFrameTask.create(
+    ld_labels_task_renamed = RenameColsTask.create(
         source_task=ld_labels_task,
         asset_id=ld_labels_task.asset_id + "_renamed",
-        out_format=ParquetOutFormat(),
-        pipes=[
-            RenameColPipe(old_name="rsid", new_name=GWASLAB_RSID_COL),
-            RenameColPipe(old_name="chromosome", new_name=GWASLAB_CHROM_COL),
-            RenameColPipe(old_name="position", new_name=GWASLAB_POS_COL),
-            RenameColPipe(
-                old_name="allele1",
-                new_name=GWASLAB_NON_EFFECT_ALLELE_COL,
-                # See: https://github.com/omerwe/polyfun/issues/208#issuecomment-2563832487
-            ),
-            RenameColPipe(old_name="allele2", new_name=GWASLAB_EFFECT_ALLELE_COL),
-        ],
-        backend="polars",
+        renames={
+            "rsid": GWASLAB_RSID_COL,
+            "chromosome": GWASLAB_CHROM_COL,
+            "position": GWASLAB_POS_COL,
+            # https://github.com/omerwe/polyfun/issues/208#issuecomment-2563832487
+            "allele1": GWASLAB_NON_EFFECT_ALLELE_COL,
+            "allele2": GWASLAB_EFFECT_ALLELE_COL,
+        },
     )
 
-    harmonized_sumstats_task = HarmonizeGWASWithReferenceViaAlleles.create(
-        asset_id=base_name + "_gwas_harmonized_with_ref",
-        gwas_data_task=build_37_sumstats_task,
-        reference_task=ld_labels_task_renamed,
-        palindrome_strategy=palindrome_strategy,
-        gwas_pipe=CompositePipe(
-            [
-                sumstats_pipe,
-                UniquePipe(
-                    by=[
-                        GWASLAB_CHROM_COL,
-                        GWASLAB_POS_COL,
-                        GWASLAB_EFFECT_ALLELE_COL,
-                        GWASLAB_NON_EFFECT_ALLELE_COL,
-                    ],
-                    keep="none",
-                    order_by=[
-                        GWASLAB_CHROM_COL,
-                        GWASLAB_POS_COL,
-                        GWASLAB_EFFECT_ALLELE_COL,
-                        GWASLAB_NON_EFFECT_ALLELE_COL,
-                    ],
-                ),
-            ]
+    gwas_pipe_steps: list[DataProcessingPipe] = [
+        sumstats_pipe,
+        UniquePipe(
+            by=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
+            keep="none",
+            order_by=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
         ),
-        chrom_range_filter=chrom_range,
-    )
+    ]
+    if palindrome_strategy == "drop":
+        gwas_pipe_steps.append(
+            DropPalindromesPipe(
+                ea_col=GWASLAB_EFFECT_ALLELE_COL, nea_col=GWASLAB_NON_EFFECT_ALLELE_COL
+            )
+        )
+    if chrom_range is not None:
+        gwas_pipe_steps.append(
+            ChromRangeFilterPipe(
+                chrom=chrom_range.chrom,
+                start=chrom_range.start,
+                end=chrom_range.end,
+                chrom_col=GWASLAB_CHROM_COL,
+                pos_col=GWASLAB_POS_COL,
+            )
+        )
+    finemap_gwas_pipe = CompositePipe(gwas_pipe_steps)
+
+    if prior_spec is not None:
+        prior_info = PriorInfo(
+            prior_task=COMBINED_POLYFUN_PRECOMPUTED_HERITABILITY_WEIGHTS,
+            prior_pipe=create_prior_col_pipe(prior_spec.q_factor),
+            prior_col=POLYFUN_PRIOR_COL,
+        )
+    else:
+        prior_info = None
+
     susie_finemap_task = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
+        prior_info=prior_info,
     )
     susie_stack_plot_task = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot",
@@ -220,17 +255,23 @@ def generate_assets_broad_ukbb_fine_map(
             heatmap_bin_options=None, mode="ld2", cmap="plasma"
         ),
     )
-    susie_base_credible_set_markdown_table = markdown_cs_table_task(
+    susie_base_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task, base_name=base_name + "_susie_base"
+    )
+    susie_base_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_base_credible_set_parquet_table,
+        base_name=base_name + "_susie_base",
     )
 
     susie_finemap_task_strict = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap_strict_threshold",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
         z_score_filtering_threshold=1.0,
+        prior_info=prior_info,
     )
     strict_plot = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_strict",
@@ -243,18 +284,24 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    susie_strict_credible_set_markdown_table = markdown_cs_table_task(
+    susie_strict_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task_strict,
+        base_name=base_name + "_susie_strict",
+    )
+    susie_strict_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_strict_credible_set_parquet_table,
         base_name=base_name + "_susie_strict",
     )
 
     susie_finemap_task_1_credible_set = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap_1_credible_set",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
         max_credible_sets=1,
+        prior_info=prior_info,
     )
     susie_plot_1_credible_set = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_1_credible_set",
@@ -267,18 +314,24 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    susie_1_credible_set_markdown_table = markdown_cs_table_task(
+    susie_1_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task_1_credible_set,
+        base_name=base_name + "_susie_1",
+    )
+    susie_1_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_1_credible_set_parquet_table,
         base_name=base_name + "_susie_1",
     )
 
     susie_finemap_task_2_credible_set = SusieRFinemapTask.create(
         asset_id=base_name + "_susie_finemap_2_credible_set",
-        gwas_data_task=harmonized_sumstats_task,
+        gwas_data_task=build_37_sumstats_task,
+        gwas_data_pipe=finemap_gwas_pipe,
         ld_labels_task=ld_labels_task_renamed,
         ld_matrix_source=BroadInstituteFormatLDMatrix(ld_matrix_task),
         effective_sample_size=sample_size_or_effect_sample_size,
         max_credible_sets=2,
+        prior_info=prior_info,
     )
     susie_plot_2_credible_set = SusieStackPlotTask.create(
         asset_id=base_name + "_susie_stackplot_2_credible_set",
@@ -291,8 +344,12 @@ def generate_assets_broad_ukbb_fine_map(
         ),
     )
 
-    susie_2_credible_set_markdown_table = markdown_cs_table_task(
+    susie_2_credible_set_parquet_table = parquet_cs_table_task(
         susie_finemap_task=susie_finemap_task_2_credible_set,
+        base_name=base_name + "_susie_2",
+    )
+    susie_2_credible_set_markdown_table = markdown_cs_table_task(
+        cs_parquet_table_task=susie_2_credible_set_parquet_table,
         base_name=base_name + "_susie_2",
     )
     variant_id = "__variant_id"
@@ -305,14 +362,6 @@ def generate_assets_broad_ukbb_fine_map(
         ],
         sep="__",
         new_col_name=variant_id,
-    )
-
-    filtered_id_variant_pipe_005 = CompositePipe(
-        [id_variant_pipe, FilterRowsByMinInCol(min_value=0.05, col=PIP_COLUMN)]
-    )
-
-    filtered_id_variant_pipe_0025 = CompositePipe(
-        [id_variant_pipe, FilterRowsByMinInCol(min_value=0.025, col=PIP_COLUMN)]
     )
 
     filtered_id_variant_pipe_001 = CompositePipe(
@@ -399,7 +448,6 @@ def generate_assets_broad_ukbb_fine_map(
         ld_labels_task=ld_labels_task,
         ld_matrix_task=ld_matrix_task,
         renamed_ld_labels_task=ld_labels_task_renamed,
-        harmonized_sumstats_task=harmonized_sumstats_task,
         susie_finemap_task=susie_finemap_task,
         susie_stackplot_task=susie_stack_plot_task,
         susie_finemap_strict_task=susie_finemap_task_strict,
@@ -412,24 +460,31 @@ def generate_assets_broad_ukbb_fine_map(
         susie_strict_credible_set_markdown_table=susie_strict_credible_set_markdown_table,
         susie_1_credible_set_markdown_table=susie_1_credible_set_markdown_table,
         susie_2_credible_set_markdown_table=susie_2_credible_set_markdown_table,
+        susie_base_credible_set_parquet_table=susie_base_credible_set_parquet_table,
+        susie_strict_credible_set_parquet_table=susie_strict_credible_set_parquet_table,
+        susie_1_credible_set_parquet_table=susie_1_credible_set_parquet_table,
+        susie_2_credible_set_parquet_table=susie_2_credible_set_parquet_table,
         upset_plot_task=upset_plot,
         upset_plot_task_pip001=upset_plot_pip001,
     )
 
 
-def markdown_cs_table_task(
+def parquet_cs_table_task(
     susie_finemap_task: SusieRFinemapTask, base_name: str
 ) -> Task:
-    copy_cs = CopyFileFromDirectoryTask.create_result_table(
-        asset_id=base_name + "_copy_cs_from_directory",
+    """Copy a SUSIE run's combined credible-set table out of its directory as a
+    standalone parquet FileAsset."""
+    return CopyFileFromDirectoryTask.create_result_table(
+        asset_id=base_name + "_parquet_result_table",
         source_directory_task=susie_finemap_task,
         path_inside_directory=Path(COMBINED_CS_FILENAME),
         extension=".parquet",
         read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
     )
 
-    cs_markdown = ConvertDataFrameToMarkdownTask.create_from_result_table_task(
+
+def markdown_cs_table_task(cs_parquet_table_task: Task, base_name: str) -> Task:
+    return ConvertDataFrameToMarkdownTask.create_from_result_table_task(
         asset_id=base_name + "_convert_cs_to_markdown",
-        source_task=copy_cs,
+        source_task=cs_parquet_table_task,
     )
-    return cs_markdown

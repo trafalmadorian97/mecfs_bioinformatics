@@ -4,7 +4,7 @@ tags:
 hide:
 - toc
 ---
-# MAGMA HBA Analysis
+# MAGMA HBA
 
 
 I applied MAGMA to the educational attainment GWAS of Lee et al.[@lee2018gene] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md) as a reference.

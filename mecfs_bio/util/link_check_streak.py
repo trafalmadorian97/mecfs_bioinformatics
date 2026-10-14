@@ -53,7 +53,7 @@ class LycheeReportSchemaError(ValueError):
     """
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class UrlState:
     """Tracked state for a single URL."""
 
@@ -77,7 +77,7 @@ class UrlState:
         )
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class UrlStreak:
     """A URL paired with its current consecutive-failure streak."""
 
@@ -85,7 +85,7 @@ class UrlStreak:
     streak: int
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class StreakResult:
     """Outcome of merging a lychee report into the prior streak state."""
 
@@ -96,7 +96,7 @@ class StreakResult:
     all_failing: list[UrlStreak]
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class LycheeReport:
     """
     A parsed lychee ``--format json --verbose`` report.

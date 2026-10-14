@@ -7,7 +7,7 @@ from mecfs_bio.build_system.task.xr_pipes.xr_data_pipe import (
 from mecfs_bio.constants.xr_constants import XR_GENE_DIMENSION
 
 
-@frozen
+@frozen(slots=True)
 class XRSignificanceFilter(XRDataPipe):
     """
     Filter out rows that either do not have a positive z score or do not meet a p-value threshold along a given dimension

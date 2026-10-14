@@ -4,7 +4,7 @@ tags:
 hide:
   - toc
 ---
-# MAGMA HBA Analysis
+# MAGMA HBA
 I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@de2015magma] to Nyeo et al.'s GWAS of Epstein-Barr Virus (EBV) DNA[@nyeo2026population] using scRNAseq data from the [Human Brain Atlas](../../../Data_Sources/HBA_scRNAseq.md)[@siletti2023transcriptomic] (HBA) as a reference.
 
 

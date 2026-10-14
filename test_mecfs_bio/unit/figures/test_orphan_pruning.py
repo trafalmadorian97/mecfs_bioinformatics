@@ -28,7 +28,7 @@ def _write_manifest(manifest_path: Path, entries: dict[PurePath, str]) -> None:
     FigureManifest(figures=entries).save(manifest_path)
 
 
-def test_find_doc_references_picks_up_md(tmp_path: Path):
+def test_find_doc_references_picks_up_md(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "a.md").write_text("![foo](../_figs/my_plot.png)\n")
@@ -46,7 +46,7 @@ def test_find_doc_references_picks_up_md(tmp_path: Path):
 
 def test_find_doc_references_does_not_match_bare_filename_inside_longer_path(
     tmp_path: Path,
-):
+) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "page.md").write_text(
@@ -59,7 +59,7 @@ def test_find_doc_references_does_not_match_bare_filename_inside_longer_path(
     assert hits == []
 
 
-def test_find_doc_references_ignores_mdx_files(tmp_path: Path):
+def test_find_doc_references_ignores_mdx_files(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "table.mdx").write_text("_figs/my_plot.png\n")
@@ -72,7 +72,7 @@ def test_find_doc_references_ignores_mdx_files(tmp_path: Path):
     )
 
 
-def test_find_doc_references_ignores_non_doc_files(tmp_path: Path):
+def test_find_doc_references_ignores_non_doc_files(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "notes.txt").write_text("_figs/my_plot.png\n")
@@ -85,7 +85,7 @@ def test_find_doc_references_ignores_non_doc_files(tmp_path: Path):
     )
 
 
-def test_find_doc_references_raises_on_non_utf8_doc(tmp_path: Path):
+def test_find_doc_references_raises_on_non_utf8_doc(tmp_path: Path) -> None:
     docs = tmp_path / "docs"
     docs.mkdir()
     (docs / "bad.md").write_bytes(b"\xff\xfe not utf8")
@@ -96,7 +96,9 @@ def test_find_doc_references_raises_on_non_utf8_doc(tmp_path: Path):
         )
 
 
-def test_prune_drops_orphan_with_no_doc_reference_and_present_file(tmp_path: Path):
+def test_prune_drops_orphan_with_no_doc_reference_and_present_file(
+    tmp_path: Path,
+) -> None:
     fig_dir = tmp_path / "_figs"
     fig_dir.mkdir()
     docs = tmp_path / "docs"
@@ -119,7 +121,7 @@ def test_prune_drops_orphan_with_no_doc_reference_and_present_file(tmp_path: Pat
     assert FigureManifest.load(manifest_path).figures == {Path("kept.png"): "h1"}
 
 
-def test_prune_drops_orphan_when_local_file_already_missing(tmp_path: Path):
+def test_prune_drops_orphan_when_local_file_already_missing(tmp_path: Path) -> None:
     fig_dir = tmp_path / "_figs"
     fig_dir.mkdir()
     docs = tmp_path / "docs"
@@ -138,7 +140,7 @@ def test_prune_drops_orphan_when_local_file_already_missing(tmp_path: Path):
     assert FigureManifest.load(manifest_path).figures == {}
 
 
-def test_prune_errors_when_orphan_referenced_with_present_file(tmp_path: Path):
+def test_prune_errors_when_orphan_referenced_with_present_file(tmp_path: Path) -> None:
     fig_dir = tmp_path / "_figs"
     fig_dir.mkdir()
     docs = tmp_path / "docs"
@@ -168,7 +170,7 @@ def test_prune_errors_when_orphan_referenced_with_present_file(tmp_path: Path):
 
 def test_prune_errors_with_missing_file_note_when_orphan_referenced_and_absent(
     tmp_path: Path,
-):
+) -> None:
     fig_dir = tmp_path / "_figs"
     fig_dir.mkdir()
     docs = tmp_path / "docs"
@@ -192,7 +194,7 @@ def test_prune_errors_with_missing_file_note_when_orphan_referenced_and_absent(
     assert "local file is also missing" in msg
 
 
-def test_prune_detects_orphan_file_not_yet_in_manifest(tmp_path: Path):
+def test_prune_detects_orphan_file_not_yet_in_manifest(tmp_path: Path) -> None:
     # A leftover file under fig_dir whose task was removed from
     # ALL_FIGURE_TASKS may never have been written to the manifest. The
     # manifest-merge inside push_figures would still pick it up via its
@@ -217,7 +219,9 @@ def test_prune_detects_orphan_file_not_yet_in_manifest(tmp_path: Path):
     assert FigureManifest.load(manifest_path).figures == {}
 
 
-def test_prune_errors_on_referenced_leftover_file_not_in_manifest(tmp_path: Path):
+def test_prune_errors_on_referenced_leftover_file_not_in_manifest(
+    tmp_path: Path,
+) -> None:
     fig_dir = tmp_path / "_figs"
     fig_dir.mkdir()
     docs = tmp_path / "docs"
@@ -239,7 +243,7 @@ def test_prune_errors_on_referenced_leftover_file_not_in_manifest(tmp_path: Path
     assert (fig_dir / "leftover.png").exists()
 
 
-def test_prune_is_noop_when_no_orphans(tmp_path: Path):
+def test_prune_is_noop_when_no_orphans(tmp_path: Path) -> None:
     fig_dir = tmp_path / "_figs"
     fig_dir.mkdir()
     docs = tmp_path / "docs"

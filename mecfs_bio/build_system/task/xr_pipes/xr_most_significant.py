@@ -6,7 +6,7 @@ from mecfs_bio.build_system.task.xr_pipes.xr_data_pipe import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class XRMostSignificant(XRDataPipe):
     """
     Sort a dataset by a datarray, and take the highest ranking rows.

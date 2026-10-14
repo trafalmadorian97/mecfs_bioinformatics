@@ -15,7 +15,7 @@ Consider a [Euclidian space](https://en.wikipedia.org/wiki/Euclidean_space) in w
 
 - GWAS traits are vectors.
 - The [inner product](https://en.wikipedia.org/wiki/Inner_product_space) of two traits is their [genetic covariance](Genetic_Correlation.md#genetic-covariance).  Denote the inner product of traits $u$ and $v$ as $\langle u,v \rangle$.
-- We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, a trait's squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) is its heritability: $\lVert v \rVert^2=h^2_v$ where $h^2_v$ is the heritability of trait $v$.
+- We assume all phenotypes have been normalized to have variance of 1.  Under this assumption, a trait's squared [Euclidian norm](https://en.wikipedia.org/wiki/Inner_product_space#Norm_properties) is its [heritability](Heritability.md): $\lVert v \rVert^2=\langle v,v \rangle=\text{Genetic Variance}=\frac{\text{Genetic Variance}}{\text{Phenotypic Variance}}=h^2_v$ where $h^2_v$ is the heritability of trait $v$.
 
 
 
@@ -58,7 +58,7 @@ $$
 The primary output of GWAS by subtraction is $R'$, the component of $T_1$ genetically uncorrelated with $T_2$. Studying $R'$ with standard post-GWAS analysis techniques like [MAGMA](MAGMA_Overview.md)[@de2015magma] and [S-LDSC](S_LDSC_For_Cell_And_Tissue_ID.md)[@finucane2018heritability] can shed light on the biological processes important to $T_1$ but absent from $T_2$.
 
 
-Note that as a linear-algebraic operation, GWAS by subtraction is valid insofar as trait genetics can be approximated by a simple linear model.  While the experience of the last decate and a half of genetics suggest that linear models are very useful, they are necessarily approximations of true biology, which is nonlinear.
+Note that as a linear-algebraic operation, GWAS by subtraction is valid insofar as trait genetics can be approximated by a simple linear model.  While the experience of the last decate and a half of genetics suggest that linear models are very useful, they necessarily approximate true biology, which is nonlinear.
 
 
 
@@ -105,9 +105,9 @@ Define
 $$
 \begin{align}
 \hat\beta_{F,i}&= \frac{\mathrm{Cov}(F, x_i)}{\mathrm{Var}(x_i)}\\
-\zeta_{F,i}&=F-\beta_{F,i} x_i\\
+\zeta_{F,i}&=F-\hat\beta_{F,i} x_i\\
 \hat\beta_{R,i}&= \frac{\mathrm{Cov}(R, x_i)}{\mathrm{Var}(x_i)}\\
-\zeta_{R,i}&=R-\beta_{R,i} x_i\\
+\zeta_{R,i}&=R-\hat\beta_{R,i} x_i.\\
 \end{align}
 $$
 
@@ -122,11 +122,11 @@ F &= \hat\beta_{F,i}x_i+\zeta_{F,i}\\
 R &= \hat\beta_{R,i}x_i+\zeta_{R,i}\\
 \mathrm{Cov}(F,R)&=0\\
 \mathrm{Cov}(F)&=1\\
-\mathrm{Cov}(R)&=1
+\mathrm{Cov}(R)&=1.
 \end{align}
 $$
 
-We assume $\zeta_{F,i},\zeta_{R_i}$ are approximately independent of $x_i$.  While not strictly true, this is a good approximation so long as individual variant effects ($\beta_{R,i},\beta_{R,i}$) are small, as is the case for polygenic traits.
+We make the approximation of treating $\zeta_{F,i},\zeta_{R_i}$ as if they were independent of $x_i$.  While not strictly true[^independence_note], this is a good approximation so long as individual variant effects ($\beta_{R,i},\beta_{R,i}$) are small, as is the case for polygenic traits.
 
 ### Theoretical covariance
 
@@ -376,4 +376,7 @@ Of the components of $\theta_i$ and $Q_i$, the most interesting is $\hat\beta_{R
 
 [^covnote]: Because of our earlier assumption that phenotype variance has been normalized to 1, genetic variance equals heritability.
 
-[^projector_note]: Perpendicular projectors are described in most textbooks on linear algebra.  Halmos[@halmos1958finite] is a classic
+[^projector_note]: Perpendicular projectors are described in most textbooks on linear algebra.  Halmos[@halmos1958finite] is a classic.
+
+[^independence_note]:Recall that $\zeta_{F,i}=F-\hat\beta_{F,i} x_i$
+and $\zeta_{R,i}=R-\hat\beta_{R,i} x_i$, so we should expect dependence.

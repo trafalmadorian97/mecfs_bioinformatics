@@ -3,6 +3,7 @@ Metadata describing an executable file
 """
 
 from pathlib import PurePath
+from typing import Self
 
 from attrs import field, frozen
 
@@ -10,7 +11,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 
 
-@frozen
+@frozen(slots=True)
 class ExecutableMeta(FileMeta):
     """
     Metadata for executable files
@@ -34,7 +35,7 @@ class ExecutableMeta(FileMeta):
         asset_id: str,
         filename: str | None = None,
         extension: str | None = None,
-    ):
+    ) -> Self:
         return cls(
             group=group,
             sub_folder=sub_folder,

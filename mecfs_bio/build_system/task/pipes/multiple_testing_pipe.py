@@ -10,7 +10,7 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
-@frozen
+@frozen(slots=True)
 class MultipleTestingPipe(DataProcessingPipe):
     p_col: str
     alpha: float = 0.05

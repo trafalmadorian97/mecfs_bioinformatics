@@ -7,6 +7,8 @@ import pytest
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
@@ -20,6 +22,7 @@ from mecfs_bio.build_system.task.fixed_effect_meta_analysis_task import (
     GwasSource,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -46,6 +49,38 @@ _PARQUET_READ_SPEC = DataFrameReadSpec(DataFrameParquetFormat())
 
 _DEFAULT_SAMPLE_INFO = CaseControlSampleInfo(cases=10, controls=10)
 
+_TRAIT = "trait"
+
+
+def _harmonization_info(
+    build: GenomeBuild = "19",
+    ref_allele_col: str = GWASLAB_NON_EFFECT_ALLELE_COL,
+) -> HarmonizationInfo:
+    return HarmonizationInfo(
+        build=build, ref_allele_col=ref_allele_col, pos_col=GWASLAB_POS_COL
+    )
+
+
+def _source(
+    asset_id: str,
+    sample_info: CaseControlSampleInfo = _DEFAULT_SAMPLE_INFO,
+    harmonization_info: HarmonizationInfo | None = _harmonization_info(),
+) -> GwasSource:
+    """A source whose metadata records harmonization to a reference genome."""
+    return GwasSource(
+        task=FakeTask(
+            FilteredGWASDataMeta(
+                id=AssetId(asset_id),
+                trait=_TRAIT,
+                project="project",
+                sub_dir="processed",
+                read_spec=_PARQUET_READ_SPEC,
+                harmonization_info=harmonization_info,
+            )
+        ),
+        sample_info=sample_info,
+    )
+
 
 def _run_task(
     tmp_path: Path,
@@ -64,12 +99,7 @@ def _run_task(
         path = tmp_path / f"{asset_id}.parquet"
         df.to_parquet(path)
         paths[asset_id] = path
-        sources.append(
-            GwasSource(
-                task=FakeTask(SimpleFileMeta(asset_id, read_spec=_PARQUET_READ_SPEC)),
-                sample_info=sample_info,
-            )
-        )
+        sources.append(_source(asset_id, sample_info=sample_info))
 
     scratch = tmp_path / "scratch"
     scratch.mkdir(exist_ok=True)
@@ -108,7 +138,7 @@ def _row_at(df: pd.DataFrame, pos: int) -> pd.Series:
 # ---------------------------------------------------------------------------
 
 
-def test_fixed_effect_meta_analysis_task(tmp_path: Path):
+def test_fixed_effect_meta_analysis_task(tmp_path: Path) -> None:
     """
     Run a meta-analysis in a simple synthetic case
     """
@@ -119,17 +149,12 @@ def test_fixed_effect_meta_analysis_task(tmp_path: Path):
     assert result[GWASLAB_SE_COL].item() == pytest.approx(0.2235, abs=0.01)
 
 
-def test_requires_at_least_two_sources():
+def test_requires_at_least_two_sources() -> None:
     """Constructing a task with a single source raises AssertionError."""
     with pytest.raises(AssertionError):
         FixedEffectsMetaAnalysisTask(
             meta=SimpleFileMeta("meta"),
-            sources=[
-                GwasSource(
-                    task=FakeTask(SimpleFileMeta("s0", read_spec=_PARQUET_READ_SPEC)),
-                    sample_info=_DEFAULT_SAMPLE_INFO,
-                )
-            ],
+            sources=[_source("s0")],
         )
 
 
@@ -138,7 +163,7 @@ def test_requires_at_least_two_sources():
 # ---------------------------------------------------------------------------
 
 
-def test_beta_equal_se_is_average(tmp_path: Path):
+def test_beta_equal_se_is_average(tmp_path: Path) -> None:
     """When both studies have equal SE, the meta-beta is their simple average."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.2, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.8, se=0.1)])
@@ -148,7 +173,7 @@ def test_beta_equal_se_is_average(tmp_path: Path):
     assert result[GWASLAB_SE_COL].item() == pytest.approx(0.1 / (2**0.5), abs=1e-6)
 
 
-def test_beta_unequal_se_lower_se_dominates(tmp_path: Path):
+def test_beta_unequal_se_lower_se_dominates(tmp_path: Path) -> None:
     """The study with lower SE should pull the meta-beta toward its own beta."""
     # Study 1: beta=0.0, SE=0.1  (precise, should dominate)
     # Study 2: beta=1.0, SE=0.5  (imprecise)
@@ -164,51 +189,33 @@ def test_beta_unequal_se_lower_se_dominates(tmp_path: Path):
 
 
 # ---------------------------------------------------------------------------
-# Allele coding
+# Allele coding: sources are reference-harmonized, so alleles are never flipped
 # ---------------------------------------------------------------------------
 
 
-def test_allele_flip_harmonises_beta(tmp_path: Path):
-    """Study 2 reported with swapped alleles (opposite strand coding) is correctly harmonised."""
-    # Study 1: EA=A, NEA=C, BETA=+0.5  → A increases trait
-    # Study 2: EA=C, NEA=A, BETA=-0.5  → same biology, opposite coding
-    # After flip study 2 contributes BETA=+0.5 with SE=0.1
-    # Meta-beta should equal 0.5, meta-SE = 0.1/sqrt(2)
-    df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.5, se=0.1)])
-    df2 = pd.DataFrame([_minimal_row(1, 10, "C", "A", beta=-0.5, se=0.1)])
-    result = _run_task(tmp_path, [df1, df2])
-    assert len(result) == 1
-    assert result[GWASLAB_BETA_COL].item() == pytest.approx(0.5, abs=1e-6)
-    assert result[GWASLAB_SE_COL].item() == pytest.approx(0.1 / (2**0.5), abs=1e-6)
-
-
-def test_output_uses_first_source_allele_coding(tmp_path: Path):
-    """Output EA/NEA and the sign of BETA follow the first source that has the variant."""
-    # Source 0 codes the variant C-relative, source 1 codes it A-relative.
+def test_output_keeps_input_allele_coding(tmp_path: Path) -> None:
+    """Output EA/NEA and the sign of BETA are those of the harmonized inputs."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "C", "A", beta=0.5, se=0.1)])
-    df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=-0.5, se=0.1)])
-    result = _run_task(tmp_path, [df1, df2])
-    row = _row_at(result, 10)
+    df2 = pd.DataFrame([_minimal_row(1, 10, "C", "A", beta=0.3, se=0.1)])
+    row = _row_at(_run_task(tmp_path, [df1, df2]), 10)
     assert row[GWASLAB_EFFECT_ALLELE_COL] == "C"
     assert row[GWASLAB_NON_EFFECT_ALLELE_COL] == "A"
-    assert row[GWASLAB_BETA_COL] == pytest.approx(0.5, abs=1e-6)
+    assert row[GWASLAB_BETA_COL] == pytest.approx(0.4, abs=1e-6)
 
 
-def test_variant_absent_from_first_source_uses_its_own_source_coding(tmp_path: Path):
-    """A variant only source 1 has keeps source 1's orientation and beta sign."""
-    df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
-    df2 = pd.DataFrame(
-        [
-            _minimal_row(1, 10, "A", "C", beta=0.4, se=0.15),
-            _minimal_row(1, 20, "T", "G", beta=-0.7, se=0.2),
-        ]
-    )
+def test_mirrored_indels_are_not_combined(tmp_path: Path) -> None:
+    """An insertion and the mirrored deletion at one position are distinct variants.
+
+    With reference GTCA at position 10, T->TCA (ref T) and TCA->T (ref TCA) are both
+    consistent with the reference, and they share an unordered allele pair. Matching on
+    that pair would combine the insertion's effect with the negated deletion's effect.
+    """
+    df1 = pd.DataFrame([_minimal_row(1, 10, "TCA", "T", beta=0.5, se=0.1)])
+    df2 = pd.DataFrame([_minimal_row(1, 10, "T", "TCA", beta=0.5, se=0.1)])
     result = _run_task(tmp_path, [df1, df2])
-    row = _row_at(result, 20)
-    assert row[GWASLAB_EFFECT_ALLELE_COL] == "T"
-    assert row[GWASLAB_NON_EFFECT_ALLELE_COL] == "G"
-    assert row[GWASLAB_BETA_COL] == pytest.approx(-0.7, abs=1e-6)
-    assert row[GWASLAB_SE_COL] == pytest.approx(0.2, abs=1e-6)
+    assert len(result) == 2
+    assert set(result[META_ANALYSIS_NUM_STUDIES_COL]) == {1}
+    assert list(result[GWASLAB_BETA_COL]) == pytest.approx([0.5, 0.5], abs=1e-6)
 
 
 # ---------------------------------------------------------------------------
@@ -216,7 +223,7 @@ def test_variant_absent_from_first_source_uses_its_own_source_coding(tmp_path: P
 # ---------------------------------------------------------------------------
 
 
-def test_partial_overlap_returns_union(tmp_path: Path):
+def test_partial_overlap_returns_union(tmp_path: Path) -> None:
     """Variants present in either study appear in the output."""
     df1 = pd.DataFrame(
         [
@@ -234,7 +241,7 @@ def test_partial_overlap_returns_union(tmp_path: Path):
     assert row[GWASLAB_SE_COL] == pytest.approx(0.2, abs=1e-6)
 
 
-def test_disjoint_studies_produce_all_variants(tmp_path: Path):
+def test_disjoint_studies_produce_all_variants(tmp_path: Path) -> None:
     """Studies with no shared variants contribute all of their variants to the union."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 20, "G", "T", beta=0.5, se=0.2)])
@@ -243,7 +250,7 @@ def test_disjoint_studies_produce_all_variants(tmp_path: Path):
     assert set(result[META_ANALYSIS_NUM_STUDIES_COL]) == {1}
 
 
-def test_three_sources_with_mixed_membership(tmp_path: Path):
+def test_three_sources_with_mixed_membership(tmp_path: Path) -> None:
     """Union across three studies, with each variant backed by a different subset."""
     # pos 10: all three; pos 20: sources 0 and 2; pos 30: source 2 only.
     df1 = pd.DataFrame(
@@ -256,8 +263,7 @@ def test_three_sources_with_mixed_membership(tmp_path: Path):
     df3 = pd.DataFrame(
         [
             _minimal_row(1, 10, "A", "C", beta=0.2, se=0.1),
-            # source 2 codes pos 20 the other way round
-            _minimal_row(1, 20, "T", "G", beta=-0.4, se=0.1),
+            _minimal_row(1, 20, "G", "T", beta=0.4, se=0.1),
             _minimal_row(1, 30, "C", "A", beta=0.9, se=0.3),
         ]
     )
@@ -269,7 +275,6 @@ def test_three_sources_with_mixed_membership(tmp_path: Path):
     assert all_three[GWASLAB_BETA_COL] == pytest.approx(0.2, abs=1e-6)
     assert all_three[GWASLAB_SE_COL] == pytest.approx(0.1 / (3**0.5), abs=1e-6)
 
-    # Backed by sources 0 and 2, coded oppositely; source 0 wins the orientation.
     first_and_last = _row_at(result, 20)
     assert first_and_last[META_ANALYSIS_NUM_STUDIES_COL] == 2
     assert first_and_last[GWASLAB_EFFECT_ALLELE_COL] == "G"
@@ -282,7 +287,7 @@ def test_three_sources_with_mixed_membership(tmp_path: Path):
     assert last_only[GWASLAB_BETA_COL] == pytest.approx(0.9, abs=1e-6)
 
 
-def test_output_is_sorted_by_chromosome_and_position(tmp_path: Path):
+def test_output_is_sorted_by_chromosome_and_position(tmp_path: Path) -> None:
     """Output row order is deterministic, so the build cache is stable across rebuilds."""
     df1 = pd.DataFrame(
         [
@@ -306,7 +311,7 @@ def test_output_is_sorted_by_chromosome_and_position(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_sample_size_sums_over_all_contributing_studies(tmp_path: Path):
+def test_sample_size_sums_over_all_contributing_studies(tmp_path: Path) -> None:
     """N equals the sum of effective sample sizes of the studies backing the variant."""
     # cases=100, controls=400  →  ESS = 320
     # cases=50,  controls=50   →  ESS = 100
@@ -325,7 +330,7 @@ def test_sample_size_sums_over_all_contributing_studies(tmp_path: Path):
     assert result[META_ANALYSIS_NUM_STUDIES_COL].item() == 2
 
 
-def test_sample_size_counts_only_contributing_studies(tmp_path: Path):
+def test_sample_size_counts_only_contributing_studies(tmp_path: Path) -> None:
     """A variant missing from a study does not inherit that study's sample size."""
     df1 = pd.DataFrame(
         [
@@ -361,7 +366,7 @@ def test_sample_size_counts_only_contributing_studies(tmp_path: Path):
 )
 def test_effective_sample_size_of_a_single_study(
     tmp_path: Path, cases: int, controls: int, expected_n: int
-):
+) -> None:
     """The effective sample size of a case/control study, seen through a variant only
     that study has."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
@@ -388,7 +393,7 @@ def _row_with_rsid(
     return _minimal_row(chrom, pos, ea, nea, beta, se) | {GWASLAB_RSID_COL: rsid}
 
 
-def test_rsid_from_study1_is_preserved(tmp_path: Path):
+def test_rsid_from_study1_is_preserved(tmp_path: Path) -> None:
     """rsID present in study 1 flows through to the output."""
     df1 = pd.DataFrame(
         [_row_with_rsid(1, 10, "A", "C", beta=0.3, se=0.1, rsid="rs12345")]
@@ -399,7 +404,7 @@ def test_rsid_from_study1_is_preserved(tmp_path: Path):
     assert result[GWASLAB_RSID_COL].item() == "rs12345"
 
 
-def test_rsid_recovered_from_later_study(tmp_path: Path):
+def test_rsid_recovered_from_later_study(tmp_path: Path) -> None:
     """A variant absent from study 1 still gets its rsID from a study that has it."""
     df1 = pd.DataFrame(
         [_row_with_rsid(1, 10, "A", "C", beta=0.3, se=0.1, rsid="rs12345")]
@@ -411,7 +416,7 @@ def test_rsid_recovered_from_later_study(tmp_path: Path):
     assert _row_at(result, 20)[GWASLAB_RSID_COL] == "rs67890"
 
 
-def test_no_rsid_column_when_no_study_has_it(tmp_path: Path):
+def test_no_rsid_column_when_no_study_has_it(tmp_path: Path) -> None:
     """When no study carries an rsID column the output has none either."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.4, se=0.15)])
@@ -424,7 +429,7 @@ def test_no_rsid_column_when_no_study_has_it(tmp_path: Path):
 # ---------------------------------------------------------------------------
 
 
-def test_duplicate_variant_within_a_study_is_rejected(tmp_path: Path):
+def test_duplicate_variant_within_a_study_is_rejected(tmp_path: Path) -> None:
     """The same variant twice in one study would double-count its weight."""
     df1 = pd.DataFrame(
         [
@@ -437,27 +442,14 @@ def test_duplicate_variant_within_a_study_is_rejected(tmp_path: Path):
         _run_task(tmp_path, [df1, df2])
 
 
-def test_both_allele_orientations_within_a_study_are_rejected(tmp_path: Path):
-    """One study carrying a variant in both orientations is also a duplicate."""
-    df1 = pd.DataFrame(
-        [
-            _minimal_row(1, 10, "A", "C", beta=0.3, se=0.1),
-            _minimal_row(1, 10, "C", "A", beta=-0.3, se=0.1),
-        ]
-    )
-    df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.4, se=0.15)])
-    with pytest.raises(AssertionError):
-        _run_task(tmp_path, [df1, df2])
-
-
-def test_zero_standard_error_is_rejected(tmp_path: Path):
+def test_zero_standard_error_is_rejected(tmp_path: Path) -> None:
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.0)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.4, se=0.15)])
     with pytest.raises(AssertionError):
         _run_task(tmp_path, [df1, df2])
 
 
-def test_null_standard_error_is_rejected(tmp_path: Path):
+def test_null_standard_error_is_rejected(tmp_path: Path) -> None:
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
     df1[GWASLAB_SE_COL] = pd.array([None], dtype="Float64")
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.4, se=0.15)])
@@ -465,7 +457,7 @@ def test_null_standard_error_is_rejected(tmp_path: Path):
         _run_task(tmp_path, [df1, df2])
 
 
-def test_null_beta_is_rejected(tmp_path: Path):
+def test_null_beta_is_rejected(tmp_path: Path) -> None:
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.3, se=0.1)])
     df1[GWASLAB_BETA_COL] = pd.array([None], dtype="Float64")
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.4, se=0.15)])
@@ -473,9 +465,66 @@ def test_null_beta_is_rejected(tmp_path: Path):
         _run_task(tmp_path, [df1, df2])
 
 
-def test_effect_allele_equal_to_non_effect_allele_is_rejected(tmp_path: Path):
+def test_effect_allele_equal_to_non_effect_allele_is_rejected(tmp_path: Path) -> None:
     """A variant whose two alleles are identical has no well-defined orientation."""
     df1 = pd.DataFrame([_minimal_row(1, 10, "A", "A", beta=0.3, se=0.1)])
     df2 = pd.DataFrame([_minimal_row(1, 10, "A", "C", beta=0.4, se=0.15)])
     with pytest.raises(AssertionError):
         _run_task(tmp_path, [df1, df2])
+
+
+# ---------------------------------------------------------------------------
+# Harmonization requirements
+# ---------------------------------------------------------------------------
+
+
+def test_unharmonized_source_is_rejected() -> None:
+    with pytest.raises(AssertionError):
+        FixedEffectsMetaAnalysisTask.create(
+            asset_id="meta",
+            meta_analysis_name="meta",
+            sources=[_source("s0"), _source("s1", harmonization_info=None)],
+        )
+
+
+def test_sources_harmonized_to_different_builds_are_rejected() -> None:
+    with pytest.raises(AssertionError):
+        FixedEffectsMetaAnalysisTask.create(
+            asset_id="meta",
+            meta_analysis_name="meta",
+            sources=[
+                _source("s0", harmonization_info=_harmonization_info(build="19")),
+                _source("s1", harmonization_info=_harmonization_info(build="38")),
+            ],
+        )
+
+
+def test_source_with_reference_allele_in_effect_allele_column_is_rejected() -> None:
+    with pytest.raises(AssertionError):
+        FixedEffectsMetaAnalysisTask.create(
+            asset_id="meta",
+            meta_analysis_name="meta",
+            sources=[
+                _source("s0"),
+                _source(
+                    "s1",
+                    harmonization_info=_harmonization_info(
+                        ref_allele_col=GWASLAB_EFFECT_ALLELE_COL
+                    ),
+                ),
+            ],
+        )
+
+
+def test_output_is_harmonized_to_the_sources_build() -> None:
+    """The output can feed tasks that require harmonized input, such as fine-mapping."""
+    task = FixedEffectsMetaAnalysisTask.create(
+        asset_id="meta",
+        meta_analysis_name="meta",
+        sources=[
+            _source("s0", harmonization_info=_harmonization_info(build="38")),
+            _source("s1", harmonization_info=_harmonization_info(build="38")),
+        ],
+    )
+    assert isinstance(task.meta, FilteredGWASDataMeta)
+    assert task.meta.harmonization_info == _harmonization_info(build="38")

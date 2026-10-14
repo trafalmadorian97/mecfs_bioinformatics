@@ -5,13 +5,12 @@ See: https://en.wikipedia.org/wiki/UpSet_plot
 
 import array
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import matplotlib.pyplot as plt
 import png
 import structlog
 from attrs import frozen
-from upsetplot import UpSet, from_contents
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -31,11 +30,12 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
+from vendored.upsetplot import UpSet, from_contents
 
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class FileSetSource:
     name: str
     task: Task
@@ -43,7 +43,7 @@ class FileSetSource:
     pipe: DataProcessingPipe = IdentityPipe()
 
 
-@frozen
+@frozen(slots=True)
 class DirSetSource:
     name: str
     task: Task
@@ -56,6 +56,14 @@ class DirSetSource:
 SetSource = FileSetSource | DirSetSource
 
 
+def _distinct_preserving_order(ids: list[str]) -> list[str]:
+    """Collapse an id column to its distinct values in first-seen order. A single
+    source can list the same member more than once (e.g. a variant that belongs
+    to two of a SUSIE run's credible sets), but an UpSet set is defined by
+    membership, so each member must appear at most once."""
+    return list(dict.fromkeys(ids))
+
+
 def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
     if isinstance(set_source, FileSetSource):
         asset = fetch(set_source.task.asset_id)
@@ -66,7 +74,7 @@ def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
             .collect()
             .to_pandas()
         )
-        return df[set_source.col_name].tolist()
+        return _distinct_preserving_order(df[set_source.col_name].tolist())
     elif isinstance(set_source, DirSetSource):
         asset = fetch(set_source.task.asset_id)
         assert isinstance(asset, DirectoryAsset)
@@ -79,12 +87,12 @@ def load_contents(set_source: SetSource, fetch: Fetch) -> list[str]:
             .collect()
             .to_pandas()
         )
-        return df[set_source.col_name].tolist()
+        return _distinct_preserving_order(df[set_source.col_name].tolist())
     else:
         raise ValueError("Unknown set source")
 
 
-@frozen
+@frozen(slots=True)
 class UpSetPlotTask(Task):
     """
     Create an upset plot to describe the intersection of sets represented as dataframe columns
@@ -125,7 +133,7 @@ class UpSetPlotTask(Task):
         return FileAsset(scratch_dir / "upset.png")
 
     @classmethod
-    def create(cls, asset_id: str, set_sources: Sequence[SetSource]):
+    def create(cls, asset_id: str, set_sources: Sequence[SetSource]) -> Self:
         assert len(set_sources) >= 1
         source_meta = set_sources[0].task.meta
         if isinstance(source_meta, ResultDirectoryMeta):
@@ -142,7 +150,7 @@ class UpSetPlotTask(Task):
         raise ValueError(f"Unknown source meta {source_meta}")
 
 
-def write_blank_png(pth: Path):
+def write_blank_png(pth: Path) -> None:
     width = 200
     height = 100
     pixel_data = array.array("B", [255] * (width * height))

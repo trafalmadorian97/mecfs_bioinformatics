@@ -3,7 +3,7 @@ Task to combine GWAS with fixed-effects meta analysis
 """
 
 from pathlib import Path, PurePath
-from typing import Sequence
+from typing import Self, Sequence
 
 import narwhals
 import structlog
@@ -13,6 +13,7 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.harmonization_info import HarmonizationInfo
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
@@ -24,6 +25,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -41,13 +43,10 @@ logger = structlog.get_logger()
 # lives here rather than in the gwaslab constants.
 META_ANALYSIS_NUM_STUDIES_COL = "N_STUDIES"
 
-# Columns that exist only between canonicalisation and aggregation, never in the output.
-_SMALLER_ALLELE_COL = "_smaller_allele"
-_LARGER_ALLELE_COL = "_larger_allele"
+# Columns that exist only between preparation and aggregation, never in the output.
 _WEIGHT_COL = "_weight"
 _WEIGHTED_BETA_COL = "_weighted_beta"
 _SOURCE_SAMPLE_SIZE_COL = "_source_sample_size"
-_ORIENTATION_RANK_COL = "_orientation_rank"
 
 # Names of the per-source validation counts.
 _NUM_ROWS = "_num_rows"
@@ -56,15 +55,17 @@ _NUM_USABLE_SE = "_num_usable_se"
 _NUM_USABLE_BETA = "_num_usable_beta"
 _NUM_SELF_REFERENTIAL = "_num_self_referential"
 
+# Every source is harmonized so that its non-effect allele is the reference allele, so a
+# variant is identified exactly by these columns, with no allele reordering.
 _VARIANT_KEY_COLS = [
     GWASLAB_CHROM_COL,
     GWASLAB_POS_COL,
-    _SMALLER_ALLELE_COL,
-    _LARGER_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
 ]
 
 
-@frozen
+@frozen(slots=True)
 class CaseControlSampleInfo:
     """
     Specifies the number of cases and controls in a case control study
@@ -80,10 +81,13 @@ class CaseControlSampleInfo:
 SampleInfo = CaseControlSampleInfo  # add other types of sample info later
 
 
-@frozen
+@frozen(slots=True)
 class GwasSource:
     """
     Describes a source from which to draw GWAS data in order to perform a meta analysis
+
+    The pipe is applied after reading and must not change allele orientation, since the
+    meta analysis relies on the task's harmonization to the reference genome.
     """
 
     task: Task
@@ -91,11 +95,19 @@ class GwasSource:
     pipe: DataProcessingPipe = IdentityPipe()
 
 
-@frozen
+@frozen(slots=True)
 class FixedEffectsMetaAnalysisTask(Task):
     """
     Task to perform a fixed effects meta analysis on non-overlapping GWAS of the same trait
-    Assumes all alleles are expressed with respect to the forward strand
+
+    Every source must be harmonized to the same reference genome build, so that its
+    non-effect allele is the reference allele (as produced by
+    GenomeReferenceHarmonizationTask). This is checked from the sources' metadata at
+    construction. A variant is then identified exactly by chromosome, position, reference
+    allele and effect allele, and no allele flipping is performed. Identifying variants
+    by their unordered allele pair instead would be unsafe: an insertion and the mirrored
+    deletion at the same position (for example T/TCA and TCA/T) share an allele pair but
+    are distinct variants.
 
     The variants present in the output dataframe are the union of the variants in the
     studies, so a variant genotyped by only some of the studies is kept and is combined
@@ -107,13 +119,6 @@ class FixedEffectsMetaAnalysisTask(Task):
     varies per variant, downstream analyses should consume it with a PerVariantSampleSize
     rather than a scalar.
 
-    A variant is identified by chromosome, position and its unordered pair of alleles, so
-    a study that codes it with the effect and non-effect alleles the other way round is
-    still recognised and has the sign of its effect size reversed before combination. The
-    effect allele of the output is the one used by the earliest source in the sources
-    list that has the variant, which leaves the coding of any variant shared with the
-    first source unchanged.
-
     Output rows are ordered by chromosome and position.
 
     For more information on fixed effects meta analysis, see:
@@ -124,8 +129,9 @@ class FixedEffectsMetaAnalysisTask(Task):
     meta: Meta
     sources: Sequence[GwasSource]
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert len(self.sources) > 1
+        common_harmonized_build(self.sources)
 
     @property
     def deps(self) -> list["Task"]:
@@ -137,17 +143,12 @@ class FixedEffectsMetaAnalysisTask(Task):
             check_source(df, source_index=source_index)
 
         keep_rsid = any(GWASLAB_RSID_COL in df.collect_schema() for df in source_dfs)
-        canonical_dfs = [
-            canonicalize_source(
-                df,
-                source_index=source_index,
-                sample_info=source.sample_info,
-                keep_rsid=keep_rsid,
-            )
-            for source_index, (df, source) in enumerate(zip(source_dfs, self.sources))
+        prepared_dfs = [
+            prepare_source(df, sample_info=source.sample_info, keep_rsid=keep_rsid)
+            for df, source in zip(source_dfs, self.sources)
         ]
 
-        combined = combine_canonicalized_sources(canonical_dfs, keep_rsid=keep_rsid)
+        combined = combine_prepared_sources(prepared_dfs, keep_rsid=keep_rsid)
         out_path = scratch_dir / (self.asset_id + ".parquet")
         combined.sink_parquet(out_path)
 
@@ -159,7 +160,7 @@ class FixedEffectsMetaAnalysisTask(Task):
     @classmethod
     def create(
         cls, asset_id: str, meta_analysis_name: str, sources: Sequence[GwasSource]
-    ):
+    ) -> Self:
         assert len(sources) > 1
         source_meta = sources[0].task.meta
         assert isinstance(source_meta, FilteredGWASDataMeta)
@@ -172,6 +173,11 @@ class FixedEffectsMetaAnalysisTask(Task):
             project=meta_analysis_name,
             sub_dir=PurePath("processed"),
             read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+            harmonization_info=HarmonizationInfo(
+                build=common_harmonized_build(sources),
+                ref_allele_col=GWASLAB_NON_EFFECT_ALLELE_COL,
+                pos_col=GWASLAB_POS_COL,
+            ),
         )
         return cls(
             meta=meta,
@@ -179,36 +185,46 @@ class FixedEffectsMetaAnalysisTask(Task):
         )
 
 
+def common_harmonized_build(sources: Sequence[GwasSource]) -> GenomeBuild:
+    """The genome build that every source is harmonized to.
+
+    Asserts that each source's metadata records harmonization with the non-effect allele
+    as the reference allele, and that all sources share one build.
+    """
+    builds: set[GenomeBuild] = set()
+    for source_index, source in enumerate(sources):
+        source_meta = source.task.meta
+        assert (
+            isinstance(source_meta, FilteredGWASDataMeta)
+            and source_meta.harmonization_info is not None
+        ), (
+            f"Source {source_index} ({source.task.asset_id}) must be a "
+            "FilteredGWASDataMeta with harmonization_info; harmonize it with "
+            "GenomeReferenceHarmonizationTask first."
+        )
+        info = source_meta.harmonization_info
+        assert (
+            info.ref_allele_col == GWASLAB_NON_EFFECT_ALLELE_COL
+            and info.pos_col == GWASLAB_POS_COL
+        ), (
+            f"Source {source_index} ({source.task.asset_id}) is harmonized with "
+            f"reference allele column {info.ref_allele_col} and position column "
+            f"{info.pos_col}, but the meta analysis requires {GWASLAB_NON_EFFECT_ALLELE_COL} "
+            f"and {GWASLAB_POS_COL}."
+        )
+        builds.add(info.build)
+    assert len(builds) == 1, (
+        f"Sources are harmonized to different genome builds: {sorted(builds)}"
+    )
+    return builds.pop()
+
+
 def read_source(source: GwasSource, fetch: Fetch) -> narwhals.LazyFrame:
     asset = fetch(source.task.asset_id)
     return source.pipe.process(scan_dataframe_asset(asset, source.task.meta))
 
 
-def is_reverse_coded() -> narwhals.Expr:
-    """Whether a row states its alleles in the opposite order to the canonical one, in
-    which the effect allele is the lexicographically smaller of the two."""
-    return narwhals.col(GWASLAB_EFFECT_ALLELE_COL) > narwhals.col(
-        GWASLAB_NON_EFFECT_ALLELE_COL
-    )
-
-
-def smaller_allele() -> narwhals.Expr:
-    return (
-        narwhals.when(is_reverse_coded())
-        .then(narwhals.col(GWASLAB_NON_EFFECT_ALLELE_COL))
-        .otherwise(narwhals.col(GWASLAB_EFFECT_ALLELE_COL))
-    )
-
-
-def larger_allele() -> narwhals.Expr:
-    return (
-        narwhals.when(is_reverse_coded())
-        .then(narwhals.col(GWASLAB_EFFECT_ALLELE_COL))
-        .otherwise(narwhals.col(GWASLAB_NON_EFFECT_ALLELE_COL))
-    )
-
-
-def check_source(df: narwhals.LazyFrame, source_index: int):
+def check_source(df: narwhals.LazyFrame, source_index: int) -> None:
     """Fail fast on input that a fixed effects meta analysis cannot combine.
 
     Every check is gathered in one streaming pass, so validating a study costs one scan
@@ -217,12 +233,7 @@ def check_source(df: narwhals.LazyFrame, source_index: int):
     counts = df.select(
         narwhals.len().alias(_NUM_ROWS),
         narwhals.concat_str(
-            [
-                narwhals.col(GWASLAB_CHROM_COL).cast(narwhals.String()),
-                narwhals.col(GWASLAB_POS_COL).cast(narwhals.String()),
-                smaller_allele(),
-                larger_allele(),
-            ],
+            [narwhals.col(c).cast(narwhals.String()) for c in _VARIANT_KEY_COLS],
             separator=":",
         )
         .n_unique()
@@ -250,9 +261,8 @@ def check_source(df: narwhals.LazyFrame, source_index: int):
 
     num_rows = counts.item(0, _NUM_ROWS)
     assert counts.item(0, _NUM_DISTINCT_VARIANTS) == num_rows, (
-        f"Source {source_index} states some variant more than once, counting a variant "
-        "and the same variant with its alleles the other way round as one. Its effect "
-        "size would be counted more than once by the meta analysis."
+        f"Source {source_index} states some variant more than once. Its effect size "
+        "would be counted more than once by the meta analysis."
     )
     assert counts.item(0, _NUM_USABLE_SE) == num_rows, (
         f"Source {source_index} has standard errors that are not finite and positive. "
@@ -264,7 +274,7 @@ def check_source(df: narwhals.LazyFrame, source_index: int):
     )
     assert counts.item(0, _NUM_SELF_REFERENTIAL) == 0, (
         f"Source {source_index} has variants whose effect and non-effect alleles are "
-        "the same, so which way round they are stated is undefined."
+        "the same."
     )
 
 
@@ -276,37 +286,20 @@ def rsid_column(df: narwhals.LazyFrame) -> narwhals.Expr:
     return narwhals.lit(None, dtype=narwhals.String()).alias(GWASLAB_RSID_COL)
 
 
-def canonicalize_source(
+def prepare_source(
     df: narwhals.LazyFrame,
-    source_index: int,
     sample_info: SampleInfo,
     keep_rsid: bool,
 ) -> narwhals.LazyFrame:
-    """Restate a study against the canonical allele order and reduce it to the quantities
-    the meta analysis sums.
-
-    The orientation rank encodes both which study a row came from and whether that study
-    stated the variant in the reverse order, as 2 * source_index + reverse_coded. Since
-    the reverse coded term is smaller than the gap between consecutive source indices,
-    the minimum of the rank over the studies holding a variant identifies the earliest of
-    them and, in its parity, the order that study used.
-    """
-    reverse_coded = is_reverse_coded()
+    """Reduce a study to its variant key and the quantities the meta analysis sums."""
     beta = narwhals.col(GWASLAB_BETA_COL).cast(narwhals.Float64())
-    canonical_beta = narwhals.when(reverse_coded).then(-beta).otherwise(beta)
     weight = 1 / narwhals.col(GWASLAB_SE_COL).cast(narwhals.Float64()) ** 2
     columns = [
-        narwhals.col(GWASLAB_CHROM_COL),
-        narwhals.col(GWASLAB_POS_COL),
-        smaller_allele().alias(_SMALLER_ALLELE_COL),
-        larger_allele().alias(_LARGER_ALLELE_COL),
+        *[narwhals.col(c) for c in _VARIANT_KEY_COLS],
         weight.alias(_WEIGHT_COL),
-        (canonical_beta * weight).alias(_WEIGHTED_BETA_COL),
+        (beta * weight).alias(_WEIGHTED_BETA_COL),
         narwhals.lit(sample_info.effective_sample_size()).alias(
             _SOURCE_SAMPLE_SIZE_COL
-        ),
-        (narwhals.lit(2 * source_index) + reverse_coded.cast(narwhals.Int64())).alias(
-            _ORIENTATION_RANK_COL
         ),
     ]
     if keep_rsid:
@@ -314,10 +307,10 @@ def canonicalize_source(
     return df.select(columns)
 
 
-def combine_canonicalized_sources(
+def combine_prepared_sources(
     dfs: Sequence[narwhals.LazyFrame], keep_rsid: bool
 ) -> narwhals.LazyFrame:
-    """Combine canonicalized studies into the meta analysis by inverse variance weighting.
+    """Combine prepared studies into the meta analysis by inverse variance weighting.
 
     Stacking the studies and grouping by variant, rather than joining them pairwise,
     keeps this to a single streaming pass whose memory is set by the number of distinct
@@ -328,7 +321,6 @@ def combine_canonicalized_sources(
         narwhals.col(_WEIGHTED_BETA_COL).sum().alias(_WEIGHTED_BETA_COL),
         narwhals.col(_SOURCE_SAMPLE_SIZE_COL).sum().alias(GWASLAB_SAMPLE_SIZE_COLUMN),
         narwhals.col(_WEIGHT_COL).count().alias(META_ANALYSIS_NUM_STUDIES_COL),
-        narwhals.col(_ORIENTATION_RANK_COL).min().alias(_ORIENTATION_RANK_COL),
     ]
     if keep_rsid:
         # Any study reporting the variant gives the same rsID, so take whichever of them
@@ -342,46 +334,38 @@ def combine_canonicalized_sources(
         .agg(aggregations)
     )
 
-    reverse_output = (narwhals.col(_ORIENTATION_RANK_COL) % 2) == 1
-    meta_beta = narwhals.col(_WEIGHTED_BETA_COL) / narwhals.col(_WEIGHT_COL)
     columns = [
         narwhals.col(GWASLAB_CHROM_COL),
         narwhals.col(GWASLAB_POS_COL),
-        narwhals.when(reverse_output)
-        .then(narwhals.col(_LARGER_ALLELE_COL))
-        .otherwise(narwhals.col(_SMALLER_ALLELE_COL))
-        .alias(GWASLAB_EFFECT_ALLELE_COL),
-        narwhals.when(reverse_output)
-        .then(narwhals.col(_SMALLER_ALLELE_COL))
-        .otherwise(narwhals.col(_LARGER_ALLELE_COL))
-        .alias(GWASLAB_NON_EFFECT_ALLELE_COL),
+        narwhals.col(GWASLAB_EFFECT_ALLELE_COL),
+        narwhals.col(GWASLAB_NON_EFFECT_ALLELE_COL),
     ]
     if keep_rsid:
         columns.append(narwhals.col(GWASLAB_RSID_COL))
     columns.extend(
         [
-            narwhals.when(reverse_output)
-            .then(-meta_beta)
-            .otherwise(meta_beta)
-            .alias(GWASLAB_BETA_COL),
+            (narwhals.col(_WEIGHTED_BETA_COL) / narwhals.col(_WEIGHT_COL)).alias(
+                GWASLAB_BETA_COL
+            ),
             (1 / narwhals.col(_WEIGHT_COL)).sqrt().alias(GWASLAB_SE_COL),
             narwhals.col(GWASLAB_SAMPLE_SIZE_COLUMN).cast(narwhals.Int64()),
             narwhals.col(META_ANALYSIS_NUM_STUDIES_COL).cast(narwhals.Int64()),
         ]
     )
     # Grouping does not preserve any particular row order, and the build system's traces
-    # hash the produced file, so sort to keep rebuilds of unchanged inputs identical.
-    return aggregated.select(columns).sort([GWASLAB_CHROM_COL, GWASLAB_POS_COL])
+    # hash the produced file, so sort on the full variant key to keep rebuilds of
+    # unchanged inputs identical.
+    return aggregated.select(columns).sort(_VARIANT_KEY_COLS)
 
 
 def report_output_size(
     df: narwhals.LazyFrame,
-):
+) -> None:
     l = df.select(narwhals.len()).collect(engine="streaming").item()
     logger.debug(f"Final meta-analysis has {l} variants")
 
 
-def report_study_count_distribution(df: narwhals.LazyFrame):
+def report_study_count_distribution(df: narwhals.LazyFrame) -> None:
     """How many variants each number of contributing studies accounts for. Variants
     backed by a single study are the lowest powered part of a union meta analysis, so
     their share is worth seeing."""

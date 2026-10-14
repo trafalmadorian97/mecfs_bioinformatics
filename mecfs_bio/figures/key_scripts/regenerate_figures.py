@@ -32,14 +32,14 @@ def _runner_func(tasks: Sequence[Task]) -> Mapping[AssetId, Asset]:
         else:
             to_rebuild.append(task)
     return DEFAULT_RUNNER.run(
-        targets=list(tasks), incremental_save=True, must_rebuild_transitive=to_rebuild
+        targets=list(tasks), incremental_save=False, must_rebuild_transitive=to_rebuild
     )
 
 
 FIGURE_EXPORTER = FigureExporter(runner=_runner_func, tracer=_imo_hasher_128)
 
 
-def regenerate_figures(tasks: list[Task]):
+def regenerate_figures(tasks: list[Task]) -> None:
     """
     Use the build system to generate the figure assets, then copy them to the figure directory.
     """

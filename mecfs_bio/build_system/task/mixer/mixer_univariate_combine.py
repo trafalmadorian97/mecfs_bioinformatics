@@ -6,7 +6,7 @@ import json
 import shutil
 import tempfile
 from pathlib import Path
-from typing import Sequence
+from typing import Self, Sequence
 
 from attrs import frozen
 
@@ -31,13 +31,13 @@ COMBINED_FIT_FILENAME_PREFIX = "trait1.fit"
 COMBINED_TEST_FILENAME_PREFIX = "trait1.test"
 
 
-@frozen
+@frozen(slots=True)
 class MixerRunSource:
     task: Task
     rep: int
 
 
-@frozen
+@frozen(slots=True)
 class MixerUnivariateCombine(Task):
     """
     Task to combine MiXeR run outputs to produce a single result.
@@ -106,7 +106,7 @@ class MixerUnivariateCombine(Task):
     @classmethod
     def create(
         cls, asset_id: str, mixer_source_runs: Sequence[MixerRunSource], trait_name: str
-    ):
+    ) -> Self:
         assert len(mixer_source_runs) >= 1
         source_meta = mixer_source_runs[0].task.meta
         meta: Meta
@@ -130,7 +130,7 @@ class MixerUnivariateCombine(Task):
         )
 
 
-def _edit_json_to_fix_trait_path(json_path: Path, trait_name: str):
+def _edit_json_to_fix_trait_path(json_path: Path, trait_name: str) -> None:
     with open(json_path) as f:
         data = json.load(f)
 

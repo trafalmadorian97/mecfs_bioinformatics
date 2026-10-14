@@ -14,7 +14,7 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExternalFileCopyTask(GeneratingTask):
     """
     Copies a file from an external source.
@@ -24,7 +24,7 @@ class ExternalFileCopyTask(GeneratingTask):
     meta: SimpleFileMeta
     external_path: Path
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.external_path.is_file()
 
     @property

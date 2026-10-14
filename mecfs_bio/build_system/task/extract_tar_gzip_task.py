@@ -31,7 +31,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 ReadMode = Literal["r", "r:gz"]
 
 
-@frozen
+@frozen(slots=True)
 class ExtractTarGzipTask(Task):
     """
     Task to extract the contents of a (possibly gzipped) tar file to a target directory

@@ -11,7 +11,7 @@ I applied MAGMA to the DecodeME GWAS[@genetics2025initial] using scRNAseq data f
 The results are plotted below, first as a static image, then as an interactive plot:
 
 
-{{ png_embed("docs/_figs/decode_me_hba_magma_tasks_hba_magma_independent_cluster_plot/hba_magma_fig.png", alt="decode-me-hba-magma-static") }}
+{{ static_img_embed("docs/_figs/decode_me_hba_magma_tasks_hba_magma_independent_cluster_plot/hba_magma_fig.png", alt="decode-me-hba-magma-static") }}
 
 
 {{ plotly_embed("docs/_figs/decode_me_hba_magma_tasks_hba_magma_plot_extracted.html", id="decode-me-hba-magma") }}

@@ -79,7 +79,7 @@ _BETA_OUT_COL = "beta"
 _SE_OUT_COL = "se"
 
 
-@frozen
+@frozen(slots=True)
 class SumstatsTrait:
     """One trait's inputs for :func:`run_sumstats`."""
 

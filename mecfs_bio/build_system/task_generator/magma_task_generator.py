@@ -1,4 +1,5 @@
 from pathlib import PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -64,12 +65,12 @@ from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.constants.gwaslab_constants import GwaslabKnownFormat
 
 
-@frozen
+@frozen(slots=True)
 class GGetSettings:
     limit_genes: int | None = None
 
 
-@frozen
+@frozen(slots=True)
 class StandardMagmaTaskGenerator:
     """
     A Task Generator that generates all the Tasks required to perform the main steps of the MAGMA workflow, up to plotting the results of tissue-specific gene-set analysis
@@ -110,7 +111,7 @@ class StandardMagmaTaskGenerator:
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sample_size = coerce_sample_size(sample_size)
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
@@ -245,7 +246,7 @@ class StandardMagmaTaskGenerator:
         )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaTaskGeneratorFromRaw:
     """
     As above, but starts from raw data.
@@ -274,7 +275,7 @@ class MagmaTaskGeneratorFromRaw:
         gene_thesaurus_task: Task | None = None,
         gget_settings: GGetSettings | None = GGetSettings(50),
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
             target_asset_id=AssetId(base_name + "_sumstats_37"),
@@ -309,7 +310,7 @@ class MagmaTaskGeneratorFromRaw:
         )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaTaskGeneratorFromRawCompute37RSIDs:
     """
     As above, but assumes RSIDs are either not present,
@@ -339,7 +340,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
         genome_build: GenomeBuildMode = "infer",
         gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
             target_asset_id=AssetId(base_name + "_sumstats_37"),

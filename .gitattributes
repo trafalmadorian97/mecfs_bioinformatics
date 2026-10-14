@@ -1,2 +1,5 @@
+# Store all text files with LF line endings, whatever the editor writes
+* text=auto eol=lf
+
 # SCM syntax highlighting & preventing 3-way merges
 pixi.lock merge=binary linguist-language=YAML linguist-generated=true

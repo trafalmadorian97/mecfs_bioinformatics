@@ -24,7 +24,7 @@ from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 # from test_mecfs_bio.unit.build_system.task.conftest import parquet_snp151, dummy_processed_gwas_parquet
 
 
-def test_assign_rsids_via_snp_task(tmp_path: Path, assign_rsids_task: Task):
+def test_assign_rsids_via_snp_task(tmp_path: Path, assign_rsids_task: Task) -> None:
     task3 = assign_rsids_task
 
     tasks = find_tasks([task3])

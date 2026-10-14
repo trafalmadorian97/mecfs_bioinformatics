@@ -1,0 +1,36 @@
+"""Demonstrator: polyfun-vs-uniform explainability at the DecodeME chr15:54.9Mb
+locus.
+
+Same locus, sumstats, sample size, palindrome strategy, and chrom range as the
+with_palindromes chr15_54 fine-mapping module, so the eight SUSIE runs here
+operate on the same harmonized inputs.
+"""
+
+from mecfs_bio.asset_generator.polyfun_explain_fine_mapping_asset_generator import (
+    generate_assets_polyfun_explain_fine_map,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
+    DECODE_ME_PREVALENCE_INFO,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_annovar_37_rsids_assignment import (
+    DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED,
+)
+from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_chrom_pos_alleles import (
+    ChromRange,
+)
+from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
+from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
+    SecondaryPositionFromSnpid,
+)
+
+POLYFUN_EXPLAIN_CHR15_54 = generate_assets_polyfun_explain_fine_map(
+    chrom=15,
+    pos=54_925_638,
+    build_37_sumstats_task=DECODE_ME_GWAS_1_37_ANNOVAR_DBSNP150_RSID_ASSIGNED.join_task,
+    base_name="decode_me_polyfun_explain",
+    sumstats_pipe=IdentityPipe(),
+    sample_size_or_effect_sample_size=DECODE_ME_PREVALENCE_INFO.effective_sample_size,
+    palindrome_strategy="keep",
+    chrom_range=ChromRange(15, 54_500_000, 55_500_000),
+    secondary_position_from_snpid=SecondaryPositionFromSnpid(build_label="hg38"),
+)

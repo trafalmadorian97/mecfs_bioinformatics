@@ -16,7 +16,7 @@ from mecfs_bio.build_system.wf.wf_downloader import WFDownloader
 from mecfs_bio.util.download.verify import calc_md5_checksum, head_file, verify_hash
 
 
-@frozen
+@frozen(slots=True)
 class FakeWFDownloader(WFDownloader):
     source_file: Path
 
@@ -28,7 +28,7 @@ class FakeWFDownloader(WFDownloader):
         )
 
 
-def test_md5_check_passes_fails_appropriately(tmp_path: Path):
+def test_md5_check_passes_fails_appropriately(tmp_path: Path) -> None:
     """
     Check that a mismatched md5 hash raises an error, while a matching hash does not
     """
@@ -55,7 +55,7 @@ def test_md5_check_passes_fails_appropriately(tmp_path: Path):
         tsk_2.execute(scratch_dir=scratch, fetch=fake_fetch, wf=wf)
 
 
-def test_head(tmp_path: Path):
+def test_head(tmp_path: Path) -> None:
     """
     Verify that we do not get an error when attempting to print the head of a non text file.
     """

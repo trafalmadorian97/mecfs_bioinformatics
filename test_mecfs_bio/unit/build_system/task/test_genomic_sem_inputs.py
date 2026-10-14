@@ -19,6 +19,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameTextFormat,
 )
 from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_config import (
     MUNGE_A1_COL,
@@ -66,7 +67,7 @@ def _make_dummy_sumstats(n_rows: int = 5) -> pl.DataFrame:
 def _make_source(
     asset_id: str,
     alias: str,
-    sample_size,
+    sample_size: float | None,
 ) -> GenomicSEMSumstatsSource:
     task = FakeTask(
         SimpleFileMeta(
@@ -77,7 +78,9 @@ def _make_source(
     return GenomicSEMSumstatsSource(task=task, alias=alias, sample_size=sample_size)
 
 
-def _csv_source(df: pl.DataFrame, tmp_path: Path, alias: str = "trait"):
+def _csv_source(
+    df: pl.DataFrame, tmp_path: Path, alias: str = "trait"
+) -> tuple[GenomicSEMSumstatsSource, Fetch]:
     """Write df as CSV and return (source, fetch) reading it back."""
     source_path = tmp_path / f"{alias}.csv"
     df.write_csv(source_path)
@@ -89,36 +92,36 @@ def _csv_source(df: pl.DataFrame, tmp_path: Path, alias: str = "trait"):
     return source, fetch
 
 
-def test_get_sample_size():
+def test_get_sample_size() -> None:
     src = _make_source("x", "x", 12345)
     assert get_sample_size(src) == pytest.approx(12345.0)
 
 
-def test_get_sample_size_none_returns_nan():
+def test_get_sample_size_none_returns_nan() -> None:
     src = _make_source("x", "x", None)
     sz = get_sample_size(src)
     assert sz != sz  # NaN ("not provided" -> the file's N column stands)
 
 
-def test_add_sample_size_if_missing_uses_scalar():
+def test_add_sample_size_if_missing_uses_scalar() -> None:
     df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_SAMPLE_SIZE_COLUMN)
     out = add_sample_size_if_missing(df, sample_size=999)
     assert (out[GWASLAB_SAMPLE_SIZE_COLUMN] == 999).all()
 
 
-def test_add_sample_size_if_missing_keeps_existing_column():
+def test_add_sample_size_if_missing_keeps_existing_column() -> None:
     df = _make_dummy_sumstats(n_rows=3)
     out = add_sample_size_if_missing(df, sample_size=1)
     pl.testing.assert_frame_equal(out, df)
 
 
-def test_add_sample_size_if_missing_raises_when_missing_total():
+def test_add_sample_size_if_missing_raises_when_missing_total() -> None:
     df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_SAMPLE_SIZE_COLUMN)
     with pytest.raises(ValueError):
         add_sample_size_if_missing(df, sample_size=None)
 
 
-def test_build_munge_input_df_renames_to_canonical_columns(tmp_path: Path):
+def test_build_munge_input_df_renames_to_canonical_columns(tmp_path: Path) -> None:
     """gwaslab columns are mapped to the canonical munge names munge/sumstats use."""
     source, fetch = _csv_source(_make_dummy_sumstats(n_rows=4), tmp_path)
 
@@ -139,7 +142,7 @@ def test_build_munge_input_df_renames_to_canonical_columns(tmp_path: Path):
     assert (out[MUNGE_N_COL] == 10000).all()
 
 
-def test_build_munge_input_df_omits_maf_when_freq_missing(tmp_path: Path):
+def test_build_munge_input_df_omits_maf_when_freq_missing(tmp_path: Path) -> None:
     """EAF is optional; absent it, MAF is omitted rather than filled with NaN."""
     df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_EFFECT_ALLELE_FREQ_COL)
     source, fetch = _csv_source(df, tmp_path)
@@ -148,7 +151,9 @@ def test_build_munge_input_df_omits_maf_when_freq_missing(tmp_path: Path):
     assert MUNGE_MAF_COL not in out.columns
 
 
-def test_build_munge_input_df_raises_when_required_column_missing(tmp_path: Path):
+def test_build_munge_input_df_raises_when_required_column_missing(
+    tmp_path: Path,
+) -> None:
     df = _make_dummy_sumstats(n_rows=3).drop(GWASLAB_BETA_COL)
     source, fetch = _csv_source(df, tmp_path)
 
@@ -156,7 +161,9 @@ def test_build_munge_input_df_raises_when_required_column_missing(tmp_path: Path
         build_munge_input_df(source, fetch)
 
 
-def test_build_munge_input_df_casts_categorical_alleles_to_string(tmp_path: Path):
+def test_build_munge_input_df_casts_categorical_alleles_to_string(
+    tmp_path: Path,
+) -> None:
     """
     Parquet sources deliver SNP/allele columns as Categorical (dictionary-
     encoded), which breaks the `.str` ops and SNP joins in munge/sumstats.

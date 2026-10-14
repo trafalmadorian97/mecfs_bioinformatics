@@ -132,7 +132,7 @@ def filter_vcf_to_frame(
     )
 
 
-@frozen
+@frozen(slots=True)
 class FilterCommon1kgVariantsTask(GeneratingTask):
     """
     Filter a 1000 Genomes EUR reference VCF to common biallelic SNVs.

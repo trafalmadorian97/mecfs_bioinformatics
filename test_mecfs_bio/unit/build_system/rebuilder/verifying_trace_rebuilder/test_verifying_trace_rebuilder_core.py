@@ -7,7 +7,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_
 )
 
 
-def test_serialization(tmp_path: Path):
+def test_serialization(tmp_path: Path) -> None:
     target_path = tmp_path / "dump_loc.yml"
     info = VerifyingTraceInfo(
         trace_store={

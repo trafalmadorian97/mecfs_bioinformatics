@@ -4,7 +4,7 @@ using rsid for matching
 """
 
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import polars as pl
 import structlog
@@ -67,7 +67,7 @@ _REF_COLS = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class HarmonizeGWASWithReferenceViaRSIDTask(Task):
     """
     Given a table of reference genetic variants, harmonize gwas data with that table of reference variants using rsid for matching
@@ -208,7 +208,7 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
         mismatched_alleles_strategy: MismatchedAllelesStrategy,
         gwas_pipe: DataProcessingPipe = IdentityPipe(),
         ref_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         source_meta = gwas_data_task.meta
         read_spec = DataFrameReadSpec(DataFrameParquetFormat())
         meta: Meta

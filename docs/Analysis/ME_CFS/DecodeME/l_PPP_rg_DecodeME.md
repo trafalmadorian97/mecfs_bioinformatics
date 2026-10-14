@@ -8,7 +8,7 @@ I applied [Cross Trait Linkage Disequilibrium Score Regression](../../../Bioinfo
 
 ## Results
 
-As is standard for LDSC analysis, I restricted the summary statistics to Hapmap 3 variants, and excluded the MHC region.  I used the standard thousand genomes linkage disequilibrium scores provided by the authors of LDSC. To focus on trans effects, I excluded the cis regions from the proteomic GWAS.
+As is standard for LDSC analysis, I restricted the summary statistics to Hapmap[@international2005haplotype] 3 variants, and excluded the MHC region.  I used the standard thousand genomes linkage disequilibrium scores provided by the authors of LDSC. To focus on trans effects, I excluded the cis regions from the proteomic GWAS.
 
 
 
@@ -24,7 +24,7 @@ The results are below:
 There are no significant genetic correlations.  Thoughts:
 
 - This could simply be a power issue.  In the future, when we have ME/CFS GWAS with large sample sizes, we may be able to detect genetic correlations with plasma proteins.
-- Our [MAGMA](g_MAGMA_DecodeME_Analysis.md) and [S-LDSC](j_S-LDSC_DecodeME_Analysis.md)  analyses suggest that ME/CFS heritability is enriched in neural tissue. Thus, instead of looking for genetic correlations between ME/CFS and plasma protein levels, it could be more fruitful to look for genetic correlations between ME/CFS and cerebro-spinal fluid protein levels.
+- Our [MAGMA](g_MAGMA_DecodeME_Analysis.md) and [S-LDSC](j_S-LDSC_DecodeME_Analysis.md)  analyses suggest that ME/CFS heritability is enriched in neural tissue. Thus, instead of studying genetic correlations between ME/CFS and plasma protein levels, it could be more fruitful to look for genetic correlations between ME/CFS and cerebro-spinal fluid (CSF) protein levels.  Public summary statistics of CSF proteomic GWAS are available[@western2024proteogenomic].
 - CT-LDSC is a robust but generic technique.  It could be productive to apply a technique specifically designed to detect genetic associations between diseases traits and proteomic traits.  PolyPWAS[@hou2026functionally] is an example of such a technique.
 
 ## How to reproduce this

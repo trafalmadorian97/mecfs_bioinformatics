@@ -1,9 +1,10 @@
+from collections.abc import Generator
 from contextlib import contextmanager
 from pathlib import Path
 
 
 @contextmanager
-def log_on_error(filepath: Path):
+def log_on_error(filepath: Path) -> Generator[None]:
     """
 
     Main use case:

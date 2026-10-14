@@ -11,7 +11,7 @@ from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.analysis.ma
 )
 
 
-def run_ibd_analysis():
+def run_ibd_analysis() -> None:
     """
     This script runs a basic analysis of the IBD GWAS from Liu et al.
     It includes:

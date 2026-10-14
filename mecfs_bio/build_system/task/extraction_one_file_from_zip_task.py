@@ -1,5 +1,6 @@
 import zipfile
 from pathlib import Path, PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -21,7 +22,7 @@ from mecfs_bio.build_system.task.make_executable_wrapper_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExtractFromZipTask(Task):
     """
     Task to extract a single file from a zip archive
@@ -78,7 +79,7 @@ class ExtractFromZipTask(Task):
         file_to_extract: str,
         sub_dir: str,
         read_spec: DataFrameReadSpec,
-    ):
+    ) -> Self:
         src_meta = source_task.meta
         assert isinstance(src_meta, GWASSummaryDataFileMeta)
         return cls(
@@ -112,7 +113,7 @@ class ExtractFromZipTask(Task):
 
 def extract_single_file_from_zip(
     zip_path: Path, file_to_extract: str, destination_dir: Path
-):
+) -> None:
     destination_dir.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(zip_path, "r") as zip_ref:
         if file_to_extract in zip_ref.namelist():

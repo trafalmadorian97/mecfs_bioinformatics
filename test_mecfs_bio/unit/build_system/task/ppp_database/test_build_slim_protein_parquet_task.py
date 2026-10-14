@@ -30,7 +30,7 @@ _REGENIE_HEADER = (
 )
 
 
-def test_ppp_protein_file_tar_filename():
+def test_ppp_protein_file_tar_filename() -> None:
     # The tar name is derived from the structured fields, not stored; panels may contain an
     # underscore (Inflammation_II) and it must round-trip the manifest's filename column.
     protein = PppProteinFile(
@@ -50,7 +50,7 @@ def _write_chr_gz(path: Path, rows: list[str]) -> None:
         handle.write("\n".join(rows) + "\n")
 
 
-def test_align_protein_to_index():
+def test_align_protein_to_index() -> None:
     # Index deliberately NOT position-sorted, to prove output follows index row order.
     index = pl.DataFrame(
         {
@@ -80,7 +80,7 @@ def test_align_protein_to_index():
     assert beta[2] == pytest.approx(-0.3, abs=1e-6)  # swapped -> flipped
 
 
-def test_align_protein_to_index_with_sample_size():
+def test_align_protein_to_index_with_sample_size() -> None:
     # N is allele-independent: present variants carry the (constant) protein N, absent
     # variants NaN, regardless of orientation.
     index = pl.DataFrame(
@@ -112,7 +112,7 @@ def test_align_protein_to_index_with_sample_size():
     assert n[2] == pytest.approx(42000.0)  # flipped orientation, N unaffected
 
 
-def test_write_slim_aligned_parquet(tmp_path: Path):
+def test_write_slim_aligned_parquet(tmp_path: Path) -> None:
     extracted = tmp_path / "extracted" / "PROTEIN"
     extracted.mkdir(parents=True)
     # chr1: two variants (one same orientation, one swapped); chr2: one variant.
@@ -158,7 +158,7 @@ def test_write_slim_aligned_parquet(tmp_path: Path):
     assert "BYTE_STREAM_SPLIT" in encodings
 
 
-def test_write_slim_aligned_parquet_finds_x_chromosome_file(tmp_path: Path):
+def test_write_slim_aligned_parquet_finds_x_chromosome_file(tmp_path: Path) -> None:
     # PPP names the X file with the letter (discovery_chrX_...) but codes the
     # chromosome numerically inside it (CHROM=23), and the index follows the numeric
     # coding. Globbing for chr23 would therefore find nothing and, before this was
@@ -189,7 +189,7 @@ def test_write_slim_aligned_parquet_finds_x_chromosome_file(tmp_path: Path):
     assert out[GWASLAB_SE_COL][0] == pytest.approx(0.2, abs=1e-6)
 
 
-def test_write_slim_aligned_parquet_with_sample_size(tmp_path: Path):
+def test_write_slim_aligned_parquet_with_sample_size(tmp_path: Path) -> None:
     # With include_sample_size, the slim file gains a constant-per-protein N column
     # (float32, NaN where the protein lacks a variant) and still uses byte-stream-split.
     extracted = tmp_path / "extracted" / "PROTEIN"
@@ -225,7 +225,9 @@ def test_write_slim_aligned_parquet_with_sample_size(tmp_path: Path):
     assert "BYTE_STREAM_SPLIT" in encodings
 
 
-def test_write_slim_aligned_parquet_index_not_chromosome_sorted_raises(tmp_path: Path):
+def test_write_slim_aligned_parquet_index_not_chromosome_sorted_raises(
+    tmp_path: Path,
+) -> None:
     # Processing a chromosome at a time only reproduces index row order because the
     # index is chromosome-sorted. Nothing about an index makes that true by
     # construction, so if the index sort order ever changes, this must fail loudly
@@ -260,7 +262,9 @@ def test_write_slim_aligned_parquet_index_not_chromosome_sorted_raises(tmp_path:
         )
 
 
-def test_write_slim_aligned_parquet_missing_chromosome_file_raises(tmp_path: Path):
+def test_write_slim_aligned_parquet_missing_chromosome_file_raises(
+    tmp_path: Path,
+) -> None:
     # An index chromosome with no regenie file must fail loudly rather than write a
     # whole block of NaNs: the download is far too expensive to discover afterwards
     # that the output is silently useless.

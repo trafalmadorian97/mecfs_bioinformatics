@@ -23,7 +23,7 @@ class Downloader(ABC):
         pass
 
 
-@frozen
+@frozen(slots=True)
 class AriaDownloader(Downloader):
     """
     Downloader that uses aria2
@@ -73,7 +73,7 @@ def robust_download(
     downloader: Downloader,
     max_outer_retries: int = 10,
     max_backoff_time: int = 60,
-):
+) -> None:
     """
     Call a downloader in a loop, to add robustness
     """
@@ -112,7 +112,7 @@ def robust_download_with_aria(
     max_outer_retries: int = 10,
     num_simil: int = 1,
     summary_interval: int = 10,
-):
+) -> None:
     """
     Use aria2 to robustly download file.
     If aria2 fails, call it again in a loop

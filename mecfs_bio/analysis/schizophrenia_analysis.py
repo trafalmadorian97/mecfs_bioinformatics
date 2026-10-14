@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_
 )
 
 
-def run_initial_schizophrenia_analysis():
+def run_initial_schizophrenia_analysis() -> None:
     """
     Function to analyze GWAS of Schizophrenia phenotype.
     Includes:

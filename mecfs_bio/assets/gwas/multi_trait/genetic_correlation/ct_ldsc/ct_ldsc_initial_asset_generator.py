@@ -21,6 +21,9 @@ from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis
 from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
     LEE_ET_AL_2018_COMBINED_MAGMA_TASKS,
 )
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.standard_analysis_kerrebijin_fibro import (
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_standard_analysis import (
     VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS,
 )
@@ -195,6 +198,14 @@ CT_LDSC_INITIAL_ASSET_GENERATOR = genetic_corr_by_ct_ldsc_asset_generator(
                 sample_prevalence=25393 / 458440,  # from gwas catalog page
                 estimated_population_prevalence=0.104,  # UK prevalence from https://pmc.ncbi.nlm.nih.gov/articles/PMC11753071/
                 total_sample_size=458440,  # 25393 cases + 433047 controls; the UK Biobank migraine sumstats carry no per-SNP N column
+            ),
+        ),
+        SumstatsSource(
+            KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+            alias="Fibromyalgia",
+            sample_info=BinaryPhenotypeSampleInfo(
+                sample_prevalence=0.5,
+                estimated_population_prevalence=0.027,  # https://www.nature.com/articles/s41467-026-75256-6
             ),
         ),
         # SumstatsSource(

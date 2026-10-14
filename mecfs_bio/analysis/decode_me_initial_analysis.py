@@ -26,7 +26,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.magma.magma_specific_tissue
 )
 
 
-def run_initial_decode_me_analysis():
+def run_initial_decode_me_analysis() -> None:
     """
     Function to run initial analysis on DecodeME data.
 

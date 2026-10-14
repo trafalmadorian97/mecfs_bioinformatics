@@ -4,7 +4,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.h_magma.decode_me_h_magma_a
 )
 
 
-def run_decode_me_h_magma():
+def run_decode_me_h_magma() -> None:
     """
     Function to run H-MAGMA analysis of DecodeME data
 

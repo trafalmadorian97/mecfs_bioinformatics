@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Literal
+from typing import Literal, Self
 
 import attrs
 import gwaslab as gl
@@ -25,7 +25,7 @@ from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 AnnoMode = Literal["GENENAME"] | None
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class GWASLabManhattanAndQQPlotTask(Task):
     """
     A task to generate a manhattan plot and/or a qq plot.
@@ -83,6 +83,10 @@ class GWASLabManhattanAndQQPlotTask(Task):
         )
         figs[plot_name] = fig
         write_plots_to_dir(scratch_dir, figs)
+        # plt.subplots() registers the figure in pyplot's global manager; close it so
+        # memory does not accumulate across a run.
+        for written_fig in figs.values():
+            plt.close(written_fig)
         return FileAsset(scratch_dir / str(plot_name + ".png"))
 
     @classmethod
@@ -94,7 +98,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
         plot_setting: str = "mqq",
         pipe: DataProcessingPipe = IdentityPipe(),
         anno_mode: AnnoMode = "GENENAME",
-    ):
+    ) -> Self:
         input_meta = sumstats_task.meta
         assert isinstance(input_meta, GWASLabSumStatsMeta)
         meta = GWASLabManhattanQQPlotMeta(

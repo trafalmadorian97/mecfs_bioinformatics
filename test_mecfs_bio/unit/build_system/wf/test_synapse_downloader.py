@@ -20,7 +20,7 @@ class _RecordingDownloader(SynapseDownloader):
         return b"header-bytes"[:n_bytes]
 
 
-def test_wf_delegates_download_from_synapse(tmp_path: Path):
+def test_wf_delegates_download_from_synapse(tmp_path: Path) -> None:
     fake = _RecordingDownloader()
     wf = make_wf(synapse_downloader=fake)
 
@@ -31,7 +31,7 @@ def test_wf_delegates_download_from_synapse(tmp_path: Path):
     assert fake.calls == [("syn123", tmp_path, "protein.tar")]
 
 
-def test_wf_delegates_fetch_synapse_file_head():
+def test_wf_delegates_fetch_synapse_file_head() -> None:
     fake = _RecordingDownloader()
     wf = make_wf(synapse_downloader=fake)
 

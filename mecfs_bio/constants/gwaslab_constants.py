@@ -59,3 +59,19 @@ GWASLAB_CHROM_CODE_FOR_NAME: Mapping[str, int] = {"X": 23, "Y": 24, "MT": 25}
 GWASLAB_CHROM_NAME_FOR_CODE: Mapping[int, str] = {
     code: name for name, code in GWASLAB_CHROM_CODE_FOR_NAME.items()
 }
+
+# Further gwaslab standard column names, from the "gwaslab" entry of
+# https://github.com/Cloufield/formatbook/blob/main/formatbook.json
+GWASLAB_Z_COL = "Z"
+GWASLAB_T_STATISTIC_COL = "T"
+GWASLAB_F_STATISTIC_COL = "F"
+GWASLAB_HAZARD_RATIO_COL = "HR"
+GWASLAB_ODDS_RATIO_95L_COL = "OR_95L"
+GWASLAB_ODDS_RATIO_95U_COL = "OR_95U"
+GWASLAB_HAZARD_RATIO_95L_COL = "HR_95L"
+GWASLAB_HAZARD_RATIO_95U_COL = "HR_95U"
+GWASLAB_P_HET_COL = "P_HET"
+GWASLAB_I2_COL = "I2"
+GWASLAB_SNPR2_COL = "SNPR2"
+GWASLAB_DOF_COL = "DOF"
+GWASLAB_MAF_COL = "MAF"

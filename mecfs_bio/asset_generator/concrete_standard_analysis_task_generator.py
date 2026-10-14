@@ -34,6 +34,7 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.sample_size_spec import (
     SampleSizeSpec,
     ScalarSampleSize,
@@ -57,6 +58,10 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_manhattan_and_qq_plot_task impo
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_snp_heritability_by_ldsc_task import (
     SNPHeritabilityByLDSCTask,
+)
+from mecfs_bio.build_system.task.gwaslab.ldsc_diagnostic_plot_task import (
+    LdscDiagnosticPlotConfig,
+    LdscDiagnosticPlotTask,
 )
 from mecfs_bio.build_system.task.magma.magma_plot_brain_atlas_result_with_stepwise_labels import (
     HBAIndepPlotOptions,
@@ -87,18 +92,19 @@ from mecfs_bio.build_system.task_generator.master_gene_list_task_generator impor
 from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     SLDSCTaskGenerator,
 )
+from mecfs_bio.constants.allele_frequency_panel_constants import GnomadV2Group
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 
-@frozen
+@frozen(slots=True)
 class ManhattanPlotSettings:
     anno_mode: AnnoMode = None
 
 
-@frozen
+@frozen(slots=True)
 class StandardAnalysisTaskGroup:
     """
     Collection of standard analysis tasks for GWAS summary statistics.
@@ -113,6 +119,11 @@ class StandardAnalysisTaskGroup:
     heritability_task: Task | None = None
     gene_set_analysis_tasks: CuratedGeneSetAnalysisTasks | None = None
     h_magma_tasks: HMagmaTasks | None = None
+    ldsc_diagnostic_plot_task: Task | None = None
+
+    @property
+    def ldsc_diagnostic_plot_task_unwrap(self) -> Task:
+        return unwrap(self.ldsc_diagnostic_plot_task)
 
     @property
     def h_magma_tasks_unwrap(self) -> HMagmaTasks:
@@ -156,6 +167,8 @@ class StandardAnalysisTaskGroup:
             result.extend(self.gene_set_analysis_tasks.terminal_tasks())
         if self.h_magma_tasks is not None:
             result.extend(self.h_magma_tasks.terminal_tasks())
+        if self.ldsc_diagnostic_plot_task is not None:
+            result.append(self.ldsc_diagnostic_plot_task)
         return result
 
 
@@ -286,8 +299,19 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
                 ),
             )
         )
+        assert isinstance(ldsc_task.meta, ResultTableMeta)
+        ldsc_diagnostic_plot_task: Task | None = LdscDiagnosticPlotTask.create(
+            asset_id=base_name + "_ldsc_diagnostic_plot",
+            ldsc_task=ldsc_task,
+            config=LdscDiagnosticPlotConfig(
+                n_bins=25,
+                show_error_bars=True,
+                title=None,
+            ),
+        )
     else:
         heritability_md_task = None
+        ldsc_diagnostic_plot_task = None
     if include_hba_magma_tasks:
         hba_magma = generate_human_brain_atlas_magma_tasks(
             base_name=base_name,
@@ -329,10 +353,11 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         heritability_task=heritability_md_task,
         gene_set_analysis_tasks=gene_set_analysis,
         h_magma_tasks=h_magma_tasks,
+        ldsc_diagnostic_plot_task=ldsc_diagnostic_plot_task,
     )
 
 
-@frozen
+@frozen(slots=True)
 class StandardAnalysisTaskGroupAddRSIDS:
     """
     Collection to tasks to assign rsids to GWAS data, then apply standard analysis techniques.
@@ -351,6 +376,7 @@ def concrete_standard_analysis_generator_no_rsid(
     raw_gwas_data_task: Task,
     fmt: ValidGwaslabFormat,
     sample_size: int | SampleSizeSpec,
+    gnomad_ancestry_for_harmonization: GnomadV2Group,
     sample_size_for_sldsc: int | SampleSizeSpec | None = None,
     pre_pipe_after_rsid_assignment: DataProcessingPipe = IdentityPipe(),
     pre_pipe_before_rsid_assignment: DataProcessingPipe = IdentityPipe(),
@@ -368,6 +394,10 @@ def concrete_standard_analysis_generator_no_rsid(
     Generate standard MAGMA and S-LDSC analysis tasks for given GWAS data,
     Assume that the GWAS data does not contain rsids,and so these need to be assigned.
 
+    gnomad_ancestry_for_harmonization is the gnomAD v2.1.1 group used to orient palindromes
+    and ambiguous indels during rsID assignment; see annovar_37_basic_rsid_assignment. It has
+    no default, so each caller picks the group that matches its cohort.
+
     """
     sumstats_37_task = GWASLabCreateSumstatsTask(
         df_source_task=raw_gwas_data_task,
@@ -381,6 +411,7 @@ def concrete_standard_analysis_generator_no_rsid(
     rsids_assigned_task_group = annovar_37_basic_rsid_assignment(
         sumstats_task=sumstats_37_task,
         base_name=base_name,
+        panel_ancestry=gnomad_ancestry_for_harmonization,
         use_gwaslab_rsids_convention=True,
         drop_palindromic_ambiguous=drop_palindromic_in_harmonized,
         filter_indels_in_harmonized=filter_indels_in_harmonized,

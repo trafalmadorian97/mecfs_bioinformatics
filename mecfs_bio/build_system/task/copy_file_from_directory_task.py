@@ -4,6 +4,7 @@ Copy a file within a DirectoryAsset to create a FileAsset.  Useful when downstre
 
 import shutil
 from pathlib import Path, PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -26,7 +27,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class CopyFileFromDirectoryTask(Task):
     """
     Copy a file within a DirectoryAsset to create a FileAsset.  Useful when downstream tasks require FileAssets.
@@ -56,7 +57,7 @@ class CopyFileFromDirectoryTask(Task):
         path_inside_directory: PurePath,
         extension: str,
         subdir: PurePath = PurePath("analysis/plots"),
-    ):
+    ) -> Self:
         source_meta: Meta = source_directory_task.meta
         meta: Meta
         if isinstance(source_meta, ResultDirectoryMeta):
@@ -83,7 +84,7 @@ class CopyFileFromDirectoryTask(Task):
         path_inside_directory: PurePath,
         extension: str,
         read_spec: DataFrameReadSpec | None,
-    ):
+    ) -> Self:
         source_meta: Meta = source_directory_task.meta
         meta: Meta
         if isinstance(source_meta, ProcessedGwasDataDirectoryMeta):
@@ -128,7 +129,7 @@ class CopyFileFromDirectoryTask(Task):
         project: str,
         sub_dir: str,
         extension: str,
-    ):
+    ) -> Self:
         meta = GWASSummaryDataFileMeta(
             id=AssetId(asset_id),
             trait=trait,

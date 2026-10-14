@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_extract_sheet_from_excel_file_task(tmp_path: Path):
+def test_extract_sheet_from_excel_file_task(tmp_path: Path) -> None:
     scratch_dir = tmp_path / "scratch"
     scratch_dir.mkdir()
     source_excel_file_path = tmp_path / "my_excel_file.xlsx"

@@ -48,7 +48,7 @@ def _ld() -> pl.DataFrame:
     )
 
 
-def test_context_sorts_filters_and_maps_row_positions():
+def test_context_sorts_filters_and_maps_row_positions() -> None:
     ctx = build_ppp_ldsc_context(
         _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
@@ -65,14 +65,14 @@ def test_context_sorts_filters_and_maps_row_positions():
     assert ctx.m == 1000.0
 
 
-def test_context_can_keep_strand_ambiguous_and_mhc():
+def test_context_can_keep_strand_ambiguous_and_mhc() -> None:
     ctx = build_ppp_ldsc_context(
         _index(), _ld(), drop_strand_ambiguous=False, exclude_mhc=False
     )
     assert ctx.n_snps == 5  # nothing dropped (rs4 still absent from the index)
 
 
-def test_build_cis_mask():
+def test_build_cis_mask() -> None:
     ctx = build_ppp_ldsc_context(
         _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
