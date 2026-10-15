@@ -1,0 +1,1 @@
+The experiments directory is for rough experimental code. See [documentation](docs/Getting_Started/e_experiments_directory.md).
