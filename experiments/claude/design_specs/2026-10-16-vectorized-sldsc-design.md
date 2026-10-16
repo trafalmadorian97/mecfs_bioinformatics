@@ -48,7 +48,13 @@ branch) + `LstsqJackknifeFast`:
 
 Sumstats preprocessing (gwaslab `_estimate_h2_cts_by_ldsc` wrapper):
 
-- N missing → filled with the median N, then cast to int64.
+- gwaslab fills missing N with the median N and then casts every variant's N to int64
+  (`.apply("int64")`, truncation toward zero, so a non-integer effective N such as 41,236.8 becomes
+  41,236). The new Task reproduces the cast exactly. It deliberately does NOT reproduce the median fill:
+  a missing N on any regression SNP (after alignment to the baseline SNP set) raises an error, because a
+  HapMap3 SNP without a sample size indicates an upstream data-processing problem that should not be
+  glossed over. This is the one intentional divergence from gwaslab; it never changes numbers on inputs
+  where both succeed.
 - Z = BETA/SE if Z absent; rsID renamed to SNP.
 - dropna on required columns.
 
@@ -195,7 +201,7 @@ Switching the 10 existing call sites is a follow-up after real-data validation.
    Frisch–Waugh/Schur path): vs a direct dense WLS + jackknife using the same shared weights and blocks,
    to floating-point tolerance.
 4. Fail-fast: an annotation set not covering the regression SNPs raises; a model table referencing a
-   missing column raises at construction.
+   missing column raises at construction; a regression SNP with missing N raises.
 
 ### 7.2 Real-data experiment (`experiments/claude/vectorized_sldsc/`)
 
