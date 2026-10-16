@@ -20,6 +20,9 @@ from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_ppp_rg import (
 from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_ppp_rg import (
     KEATON_DBP_PPP_RG_CIS_EXCLUDED,
 )
+from mecfs_bio.assets.gwas.bmi.pulit_et_al_2018.analysis.pulit_bmi_standard_analysis import (
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.brainstem.whole_brainstem.xue_et_al.analysis.xue_whole_brainstem_standard_analysis import (
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS,
 )
@@ -529,6 +532,9 @@ ALL_FIGURE_TASKS: list[Task] = [
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    # BMI
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
     # schematic diagrams for docs
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
