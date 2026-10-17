@@ -535,6 +535,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     # BMI
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.magma_gene_manhattan_plot_unwrap,
     # schematic diagrams for docs
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
