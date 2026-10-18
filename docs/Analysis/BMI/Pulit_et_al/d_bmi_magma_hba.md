@@ -19,3 +19,4 @@ plotly_embed("docs/_figs/pulit_et_al_2018_bmi_hba_magma_plot_extracted.html",id=
 }}
 
 
+Unlike some of the other neural traits I have previously analyzed, BMI appears to be associated with a very broad range of different central nervous system cell types.
