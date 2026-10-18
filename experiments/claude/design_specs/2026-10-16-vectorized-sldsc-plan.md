@@ -21,8 +21,11 @@
 - Use polars (not pandas) for new dataframe code; narwhals → polars via `.to_polars()`.
 - Use column-name constants (`GWASLAB_*` from `mecfs_bio/constants/gwaslab_constants.py`, new constants defined below), not repeated literals.
 - Use `Path`/`PurePath` objects; str only at text boundaries.
+- Pass arguments by keyword whenever a call has several parameters of the same type (e.g. several np.ndarray or pl.DataFrame parameters), to prevent transpositions.
+- Docstrings and comments: define every dimension symbol (S, q, k, ...) near the object or function that uses it; define acronyms and short ldsc names (e.g. Hsq) in each file that uses them; explain M_5_50 and its role in the LDSC model in each file that references it.
 - Do not use pytest `match=` with a duplicated error string (omit match).
 - Exact mode must reproduce gwaslab to: |Δcoef|/se and |Δz| < 1e-4 on real data; unit-test oracle rtol 1e-5.
+- Fewer than min_hapmap3_snps (default 100,000; small values in tests) sumstats SNPs in the baseline's HapMap3 regression-SNP set raises.
 - Missing N on any regression SNP raises (intentional divergence from gwaslab's median fill). N is cast to int64 with truncation toward zero, as gwaslab does.
 - New generated asset ids carry a `_vec` suffix; the old `CellAnalysisByLDSCTask` and `SLDSCTaskGenerator` ids/behaviour are unchanged.
 - Never `find` over the asset store; locate assets via Task.meta + `simple_meta_to_relative_path` + `default_runner_config.yaml`.
@@ -35,7 +38,8 @@
 2. Degenerate Z rows (SE = 0 giving NaN or ±inf Z): must be dropped (NaN) or removed by the χ² filter (inf), with results identical to running without those rows (test in Task 4).
 3. Fewer than 200 regression SNPs: n_blocks must become min(n_snp, 200) exactly as ldsc does (test in Task 3).
 4. Models spread over multiple control groups and over several chunks: results must not depend on grouping or chunk_size (test in Task 3).
-5. Sumstats without an N column: must fail fast with a clear assertion, not a polars ColumnNotFoundError deep in alignment (test in Task 4).
+5. Weight LD scores missing for some baseline SNPs (real weights omit the MHC region): those SNPs must be dropped exactly as ldsc's inner join does (fixture omits 30 weight SNPs; covered by Task 2's prepare test and Task 4's oracle test).
+6. Sumstats without an N column: must fail fast with a clear assertion, not a polars ColumnNotFoundError deep in alignment (test in Task 4).
 
 ---
 
@@ -81,8 +85,8 @@ Modify:
 - Test: `test_mecfs_bio/unit/build_system/task/sldsc/test_prepared_sldsc_reference.py`
 
 **Interfaces:**
-- Produces (constants): `SLDSCWeighting = Literal["exact", "shared_controls"]`; `SLDSC_CTS_NAME_COL = "Name"`, `SLDSC_CTS_COEF_COL = "Coefficient"`, `SLDSC_CTS_COEF_SE_COL = "Coefficient_std_error"`, `SLDSC_CTS_P_COL = "Coefficient_P_value"`.
-- Produces (contract): column constants `SNP_COL="SNP"`, `CHR_COL="CHR"`, `BP_COL="BP"`, `W_LD_COL="w_ld"`; `LdScoreTable(snps: pl.DataFrame, column_ids: tuple[str, ...], sources: tuple[str, ...], matrix: np.ndarray, m_5_50: np.ndarray)`; `SLDSCAnnotationModel(label: str, target_column: str, control_columns: tuple[str, ...])`; `PreparedAnnotationSet(ld: LdScoreTable, models: tuple[SLDSCAnnotationModel, ...])`; `PreparedBaseline(ld: LdScoreTable, w_ld: pl.DataFrame)`; `write_prepared_annotation_set(directory: Path, annotation_set: PreparedAnnotationSet) -> None`; `read_prepared_annotation_set(directory: Path) -> PreparedAnnotationSet`; `write_prepared_baseline(directory: Path, baseline: PreparedBaseline) -> None`; `read_prepared_baseline(directory: Path) -> PreparedBaseline`.
+- Produces (constants): `SLDSCWeighting = Literal["exact", "shared_controls"]`; `SLDSC_CTS_NAME_COL = "Name"`, `SLDSC_CTS_COEF_COL = "Coefficient"`, `SLDSC_CTS_COEF_SE_COL = "Coefficient_std_error"`, `SLDSC_CTS_P_COL = "Coefficient_P_value"`; `SLDSC_DEFAULT_MIN_HAPMAP3_SNPS = 100_000`.
+- Produces (contract): column constants `SNP_COL="SNP"`, `CHR_COL="CHR"`, `BP_COL="BP"`, `W_LD_COL="w_ld"`; `LdScoreTable(snps: pl.DataFrame, column_ids: tuple[str, ...], sources: tuple[str, ...], matrix: np.ndarray, m_5_50: np.ndarray)`; `SLDSCAnnotationModel(label: str, target_column: str, control_columns: tuple[str, ...])`; `PreparedAnnotationSet(ld: LdScoreTable, models: tuple[SLDSCAnnotationModel, ...])`; `LdScoreTable.take_rows(rows: np.ndarray) -> LdScoreTable`; `PreparedBaseline(ld: LdScoreTable, w_ld: pl.DataFrame)` (invariant: w_ld's SNP column equals ld.snps's SNP column, same order); `write_prepared_annotation_set(directory: Path, annotation_set: PreparedAnnotationSet) -> None`; `read_prepared_annotation_set(directory: Path) -> PreparedAnnotationSet`; `write_prepared_baseline(directory: Path, baseline: PreparedBaseline) -> None`; `read_prepared_baseline(directory: Path) -> PreparedBaseline`.
 
 - [ ] **Step 1: Write the constants module**
 
@@ -103,6 +107,10 @@ SLDSC_CTS_NAME_COL = "Name"
 SLDSC_CTS_COEF_COL = "Coefficient"
 SLDSC_CTS_COEF_SE_COL = "Coefficient_std_error"
 SLDSC_CTS_P_COL = "Coefficient_P_value"
+
+# Minimum number of sumstats SNPs in the HapMap3 regression-SNP set for S-LDSC to run. Fewer
+# usually indicates an upstream processing problem (for example, lost rsIDs).
+SLDSC_DEFAULT_MIN_HAPMAP3_SNPS = 100_000
 ```
 
 - [ ] **Step 2: Write the failing tests**
@@ -171,6 +179,12 @@ def test_baseline_round_trips(tmp_path: Path) -> None:
     np.testing.assert_array_equal(loaded.ld.matrix, original.ld.matrix)
 
 
+def test_baseline_with_misaligned_w_ld_is_rejected() -> None:
+    w_ld = pl.DataFrame({SNP_COL: ["rs2", "rs1", "rs3"], W_LD_COL: [1.0, 2.0, 3.0]})
+    with pytest.raises(AssertionError):
+        PreparedBaseline(ld=_table(2), w_ld=w_ld)
+
+
 def test_model_referencing_missing_column_is_rejected() -> None:
     with pytest.raises(AssertionError):
         PreparedAnnotationSet(
@@ -205,7 +219,16 @@ A prepared annotation set is a directory holding:
     models.parquet: one row per analysis label: label, target column id, control column ids.
 
 A prepared baseline holds ld_scores.parquet and m_5_50.parquet for the baseline annotations
-plus w_ld.parquet (SNP and the regression-weight LD score).
+plus w_ld.parquet (SNP and the regression-weight LD score). Its rows are restricted to SNPs that
+have a weight LD score (the HapMap3 weights exclude the MHC region), so w_ld and the baseline LD
+scores share one SNP column.
+
+M_5_50: for each annotation, the sum of its values over reference-panel SNPs with minor allele
+frequency above 5% (for a binary annotation, the number of common SNPs it contains). In the LDSC
+model E[chi2_j] = N_j * sum_c tau_c * l(j, c) + N_j * a + 1, with l(j, c) the LD score of SNP j
+with annotation c and tau_c the per-SNP heritability contributed by annotation c, M_5_50
+converts per-SNP effects into the heritability attributed to an annotation
+(h2_c = tau_c * M_5_50_c).
 
 Adapter Tasks (one per source format) write this contract; the vectorized S-LDSC Task reads it
 and knows nothing about the source format.
@@ -275,6 +298,16 @@ class LdScoreTable:
     def column_index(self, column_id: str) -> int:
         return self.column_ids.index(column_id)
 
+    def take_rows(self, rows: np.ndarray) -> "LdScoreTable":
+        """The table restricted to the given row indices, in that order."""
+        return LdScoreTable(
+            snps=self.snps.select(pl.all().gather(rows)),
+            column_ids=self.column_ids,
+            sources=self.sources,
+            matrix=self.matrix[rows],
+            m_5_50=self.m_5_50,
+        )
+
 
 @frozen(slots=True)
 class SLDSCAnnotationModel:
@@ -309,7 +342,11 @@ class PreparedAnnotationSet:
 
 @frozen(slots=True)
 class PreparedBaseline:
-    """Baseline LD scores plus the regression-weight LD score (w_ld: SNP, w_ld; SNP unique)."""
+    """
+    Baseline LD scores plus the regression-weight LD score.
+
+    w_ld: columns SNP and w_ld, row-aligned with ld.snps (same SNPs in the same order).
+    """
 
     ld: LdScoreTable
     w_ld: pl.DataFrame
@@ -318,7 +355,9 @@ class PreparedBaseline:
         assert self.w_ld.columns == [SNP_COL, W_LD_COL], (
             f"w_ld must have columns {[SNP_COL, W_LD_COL]}, got {self.w_ld.columns}"
         )
-        assert self.w_ld[SNP_COL].is_unique().all(), "w_ld SNP ids must be unique"
+        assert self.w_ld[SNP_COL].equals(self.ld.snps[SNP_COL]), (
+            "w_ld SNPs must match the baseline LD-score SNPs row for row"
+        )
 
 
 def write_prepared_annotation_set(
@@ -397,7 +436,7 @@ def _read_ld_score_table(directory: Path) -> LdScoreTable:
 - [ ] **Step 5: Run tests to verify they pass**
 
 Run: `pixi r pytest test_mecfs_bio/unit/build_system/task/sldsc/test_prepared_sldsc_reference.py -v`
-Expected: 4 passed.
+Expected: 5 passed.
 
 - [ ] **Step 6: Green and commit**
 
@@ -422,7 +461,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: Task 1 contract.
-- Produces: `read_ld_score_sources(root: Path, prefixes: Sequence[str], *, drop_zero_variance: bool) -> LdScoreTable`; `PrepareLdctsAnnotationSetTask.create(asset_id: str, source_directory_task: Task, ldcts_filename: str) -> PrepareLdctsAnnotationSetTask`; `PrepareSLDSCBaselineTask.create(asset_id: str, baseline_directory_task: Task, baseline_pattern: str, weights_directory_task: Task, weights_pattern: str) -> PrepareSLDSCBaselineTask`. Both return a `DirectoryAsset` holding the Task 1 contract.
+- Produces: `read_ld_score_sources(root: Path, prefixes: Sequence[str], *, drop_zero_variance: bool) -> LdScoreTable`; the prepared baseline is restricted to SNPs that have a weight LD score; `PrepareLdctsAnnotationSetTask.create(asset_id: str, source_directory_task: Task, ldcts_filename: str) -> PrepareLdctsAnnotationSetTask`; `PrepareSLDSCBaselineTask.create(asset_id: str, baseline_directory_task: Task, baseline_pattern: str, weights_directory_task: Task, weights_pattern: str) -> PrepareSLDSCBaselineTask`. Both return a `DirectoryAsset` holding the Task 1 contract.
 - Produces (test helper): `write_sldsc_fixture(root: Path, *, seed: int = 0) -> SLDSCFixture` with fields `baseline_dir: Path`, `weights_dir: Path`, `cts_dir: Path`, `sumstats_frame: pd.DataFrame`; constants `FIXTURE_BASELINE_PATTERN = "baseline/baseline.@"`, `FIXTURE_WEIGHTS_PATTERN = "weights/weights.@"`, `FIXTURE_LDCTS_FILENAME = "Set.ldcts"`, `FIXTURE_LABELS = ("Cell_A", "Cell_B", "Cell_C")`; `sumstats_from_frame(frame: pd.DataFrame) -> gl.Sumstats`.
 
 Reproduction notes (from gwaslab/extension/ldsc/ldsc_parse.py):
@@ -432,6 +471,7 @@ Reproduction notes (from gwaslab/extension/ldsc/ldsc_parse.py):
 - `M()`: first line of `<prefix><chr>.l2.M_5_50`, whitespace-split floats, summed over present chromosomes.
 - `_check_variance` drops baseline columns with zero (pandas, ddof=1) variance over the full reference, and their M. Only the baseline, never cts columns.
 - Files are tab-separated with header `CHR SNP BP <cols...>`; parse value columns as Float64.
+- The real HapMap3 weights omit the MHC region (chr6: 75,359 baseline SNPs vs 72,387 weight SNPs). ldsc inner-joins the weights, so the prepare Task restricts the baseline to SNPs with a weight LD score; this makes the PreparedBaseline row-alignment invariant hold without changing results.
 
 - [ ] **Step 1: Write the fixture helper**
 
@@ -443,7 +483,8 @@ Synthetic LDSC-SEG-format reference data and sumstats for S-LDSC unit tests.
 
 Three chromosomes, 1,000 reference SNPs each. The baseline has a total-LD column, two
 annotations, and an all-zero annotation (exercises ldsc's zero-variance drop). One shared
-control plus three cell-type targets; Cell_A carries a planted enrichment. Values are printed
+control plus three cell-type targets; the weight LD scores omit 30 SNPs on chromosome 2 (as the
+real weights omit the MHC region); Cell_A carries a planted enrichment. Values are printed
 with 3 decimals, like the real files. The sumstats omit some reference SNPs, add SNPs absent
 from the reference (so gwaslab's smart_merge takes its pd.merge path, as in production), and
 include a few chi-square outliers removed by the max(0.001 N, 80) filter.
@@ -469,6 +510,8 @@ _BASELINE_COLS = ("baseL2", "AnnotAL2", "AnnotBL2", "ZeroL2")
 _BASELINE_M = (5000.0, 1000.0, 500.0, 0.0)
 _CONTROL_M = 2000.0
 _TARGET_M = (300.0, 400.0, 500.0)
+_WEIGHTLESS_CHROM = 2
+_WEIGHTLESS_ROWS = slice(100, 130)
 
 
 @frozen(slots=True)
@@ -504,20 +547,36 @@ def write_sldsc_fixture(root: Path, *, seed: int = 0) -> SLDSCFixture:
             "AnnotBL2": rng.uniform(0, 5, _SNPS_PER_CHROM),
             "ZeroL2": np.zeros(_SNPS_PER_CHROM),
         }
-        _write_ld_file(baseline_dir / f"baseline/baseline.{chrom}.l2.ldscore.gz", chrom, rsids, bps, base)
+        _write_ld_file(
+            path=baseline_dir / f"baseline/baseline.{chrom}.l2.ldscore.gz",
+            chrom=chrom, rsids=rsids, bps=bps, cols=base,
+        )
         (baseline_dir / f"baseline/baseline.{chrom}.l2.M_5_50").write_text(
             "\t".join(str(m / len(_CHROMS)) for m in _BASELINE_M) + "\n"
         )
+        weight_ld = rng.uniform(1, 40, _SNPS_PER_CHROM)
+        has_weight = np.ones(_SNPS_PER_CHROM, dtype=bool)
+        if chrom == _WEIGHTLESS_CHROM:
+            has_weight[_WEIGHTLESS_ROWS] = False
         _write_ld_file(
-            weights_dir / f"weights/weights.{chrom}.l2.ldscore.gz", chrom, rsids, bps,
-            {"L2": rng.uniform(1, 40, _SNPS_PER_CHROM)},
+            path=weights_dir / f"weights/weights.{chrom}.l2.ldscore.gz",
+            chrom=chrom,
+            rsids=[r for r, keep in zip(rsids, has_weight) if keep],
+            bps=bps[has_weight],
+            cols={"L2": weight_ld[has_weight]},
         )
         control = rng.uniform(0, 20, _SNPS_PER_CHROM)
-        _write_ld_file(cts_dir / f"cts/Set.control.{chrom}.l2.ldscore.gz", chrom, rsids, bps, {"L2": control})
+        _write_ld_file(
+            path=cts_dir / f"cts/Set.control.{chrom}.l2.ldscore.gz",
+            chrom=chrom, rsids=rsids, bps=bps, cols={"L2": control},
+        )
         (cts_dir / f"cts/Set.control.{chrom}.l2.M_5_50").write_text(f"{_CONTROL_M / len(_CHROMS)}\n")
         targets = [rng.uniform(0, 10, _SNPS_PER_CHROM) for _ in FIXTURE_LABELS]
         for j, target in enumerate(targets, start=1):
-            _write_ld_file(cts_dir / f"cts/Set.{j}.{chrom}.l2.ldscore.gz", chrom, rsids, bps, {"L2": target})
+            _write_ld_file(
+                path=cts_dir / f"cts/Set.{j}.{chrom}.l2.ldscore.gz",
+                chrom=chrom, rsids=rsids, bps=bps, cols={"L2": target},
+            )
             (cts_dir / f"cts/Set.{j}.{chrom}.l2.M_5_50").write_text(f"{_TARGET_M[j - 1] / len(_CHROMS)}\n")
         expected_chi2 = 1.0 + 0.02 * base["baseL2"] + 0.08 * targets[0]
         z = rng.normal(0.0, 1.0, _SNPS_PER_CHROM) * np.sqrt(expected_chi2)
@@ -620,7 +679,7 @@ def test_prepare_annotation_set_stores_shared_control_once(tmp_path: Path) -> No
     np.testing.assert_allclose(prepared.ld.m_5_50.sum(), 2000.0 + 300.0 + 400.0 + 500.0)
 
 
-def test_prepare_baseline_drops_zero_variance_column(tmp_path: Path) -> None:
+def test_prepare_baseline_drops_zero_variance_column_and_unweighted_snps(tmp_path: Path) -> None:
     fixture = write_sldsc_fixture(tmp_path)
     task = PrepareSLDSCBaselineTask.create(
         asset_id="prepared_baseline",
@@ -639,8 +698,8 @@ def test_prepare_baseline_drops_zero_variance_column(tmp_path: Path) -> None:
     assert isinstance(result, DirectoryAsset)
     prepared = read_prepared_baseline(result.path)
     assert not any("ZeroL2" in s for s in prepared.ld.sources)
-    assert prepared.ld.matrix.shape == (3_000, 3)
-    assert prepared.w_ld.height == 3_000
+    assert prepared.ld.matrix.shape == (2_970, 3)  # 30 SNPs without a weight LD score dropped
+    assert prepared.w_ld.height == 2_970
 ```
 
 - [ ] **Step 3: Run tests to verify they fail**
@@ -658,6 +717,13 @@ Readers for ldsc's chromosome-split LD-score files (<prefix><chr>.l2.ldscore.gz 
 <prefix><chr>.l2.M_5_50), reproducing the parsing in ldsc's ldsc_parse module: chromosome
 substitution, CHR/BP sort, first-occurrence SNP de-duplication, identical SNP columns across
 files, and M_5_50 summed over the chromosomes present.
+
+M_5_50: for each annotation, the sum of its values over reference-panel SNPs with minor allele
+frequency above 5% (for a binary annotation, the number of common SNPs it contains). In the LDSC
+model E[chi2_j] = N_j * sum_c tau_c * l(j, c) + N_j * a + 1, with l(j, c) the LD score of SNP j
+with annotation c and tau_c the per-SNP heritability contributed by annotation c, M_5_50
+converts per-SNP effects into the heritability attributed to an annotation
+(h2_c = tau_c * M_5_50_c).
 """
 
 from pathlib import Path
@@ -837,7 +903,7 @@ class PrepareLdctsAnnotationSetTask(Task):
         assert isinstance(source, DirectoryAsset)
         entries = _read_ldcts_entries(source.path / self.ldcts_filename)
         prefixes = _unique_prefixes(entries)
-        ld = read_ld_score_sources(source.path, prefixes, drop_zero_variance=False)
+        ld = read_ld_score_sources(root=source.path, prefixes=prefixes, drop_zero_variance=False)
         assert len(ld.column_ids) == len(prefixes), "each cts prefix must hold exactly one LD column"
         column_of = dict(zip(prefixes, ld.column_ids))
         annotation_set = PreparedAnnotationSet(
@@ -873,11 +939,13 @@ def _read_ldcts_entries(path: Path) -> list[LDCTSFileEntry]:
 
 
 def _unique_prefixes(entries: list[LDCTSFileEntry]) -> list[str]:
-    seen: dict[str, None] = {}
+    """Every target and control prefix in the index, each listed once, in order of first appearance."""
+    prefixes: list[str] = []
     for entry in entries:
-        seen.setdefault(str(entry.target_gene_data_path), None)
-        seen.setdefault(str(entry.control_gene_data_path), None)
-    return list(seen)
+        for prefix in (str(entry.target_gene_data_path), str(entry.control_gene_data_path)):
+            if prefix not in prefixes:
+                prefixes.append(prefix)
+    return prefixes
 
 
 def _model_from_entry(entry: LDCTSFileEntry, column_of: dict[str, str]) -> SLDSCAnnotationModel:
@@ -896,7 +964,9 @@ Check while implementing: `str(Path("cts/Set.1."))` must keep the trailing dot (
 """
 Adapter Task: convert ldsc baseline LD scores (chromosome-split, @ pattern) and regression-weight
 LD scores into a prepared S-LDSC baseline (see prepared_sldsc_reference). Zero-variance baseline
-columns are dropped here, as ldsc's _check_variance does on the full reference.
+columns are dropped here, as ldsc's _check_variance does on the full reference, and the baseline
+is restricted to SNPs that have a weight LD score (ldsc inner-joins the weights; the HapMap3
+weights omit the MHC region).
 """
 
 from pathlib import Path
@@ -925,10 +995,13 @@ from mecfs_bio.build_system.task.sldsc.prepared_sldsc_reference import (
     CHR_COL,
     SNP_COL,
     W_LD_COL,
+    LdScoreTable,
     PreparedBaseline,
     write_prepared_baseline,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+
+_ROW_COL = "_row"
 
 
 @frozen(slots=True)
@@ -952,9 +1025,11 @@ class PrepareSLDSCBaselineTask(Task):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         baseline_dir = _fetch_directory(fetch, self.baseline_directory_task.asset_id)
         weights_dir = _fetch_directory(fetch, self.weights_directory_task.asset_id)
-        baseline = PreparedBaseline(
-            ld=read_ld_score_sources(baseline_dir, [self.baseline_pattern], drop_zero_variance=True),
-            w_ld=_read_weight_ld(weights_dir, self.weights_pattern),
+        baseline = _restrict_to_weighted_snps(
+            ld=read_ld_score_sources(
+                root=baseline_dir, prefixes=[self.baseline_pattern], drop_zero_variance=True
+            ),
+            w_ld=_read_weight_ld(root=weights_dir, pattern=self.weights_pattern),
         )
         out_dir = scratch_dir / "prepared_baseline"
         write_prepared_baseline(out_dir, baseline)
@@ -996,6 +1071,20 @@ def _read_weight_ld(root: Path, pattern: str) -> pl.DataFrame:
     value_cols = [c for c in frame.columns if c not in (SNP_COL, CHR_COL, BP_COL)]
     assert len(value_cols) == 1, f"weight LD scores must have one column, got {value_cols}"
     return frame.select(pl.col(SNP_COL), pl.col(value_cols[0]).alias(W_LD_COL))
+
+
+def _restrict_to_weighted_snps(ld: LdScoreTable, w_ld: pl.DataFrame) -> PreparedBaseline:
+    """Baseline rows that have a weight LD score, in baseline order, with w_ld aligned to them."""
+    aligned = (
+        ld.snps.select(SNP_COL)
+        .with_row_index(_ROW_COL)
+        .join(w_ld, on=SNP_COL, how="inner")
+        .sort(_ROW_COL)
+    )
+    return PreparedBaseline(
+        ld=ld.take_rows(aligned[_ROW_COL].to_numpy()),
+        w_ld=aligned.select(SNP_COL, W_LD_COL),
+    )
 ```
 
 - [ ] **Step 6: Run tests to verify they pass**
@@ -1034,6 +1123,12 @@ Batched exact Gram per block (A = shared scaled design [controls, baseline, 1], 
 `test_batched_sldsc_cts.py`:
 
 ```python
+"""
+Tests for the batched S-LDSC kernel. The exact-mode oracle is ldsc's Hsq class
+(Hsq = "h-squared", ldsc's heritability estimator in gwaslab/extension/ldsc/ldsc_regressions.py),
+called the way cell_type_specific calls it.
+"""
+
 import numpy as np
 import pytest
 from gwaslab.extension.ldsc.ldsc_regressions import Hsq
@@ -1079,7 +1174,11 @@ def _gwaslab_oracle(inputs: SLDSCRegressionInputs, model: SLDSCModel, n_blocks: 
     m = np.concatenate([inputs.annotation_m[cols], inputs.baseline_m]).reshape(1, -1)
     s = inputs.chi2.shape[0]
     hsq = Hsq(
-        inputs.chi2.reshape(s, 1), ref_ld, inputs.w_ld.reshape(s, 1), inputs.n.reshape(s, 1), m,
+        y=inputs.chi2.reshape(s, 1),
+        x=ref_ld,
+        w=inputs.w_ld.reshape(s, 1),
+        N=inputs.n.reshape(s, 1),
+        M=m,
         n_blocks=min(s, n_blocks), intercept=None, twostep=None, old_weights=True,
     )
     return float(hsq.coef[0]), float(hsq.coef_se[0])
@@ -1117,22 +1216,44 @@ Expected: FAIL with ModuleNotFoundError for batched_sldsc_cts.
 """
 Batched cell-type-specific stratified LD score regression.
 
-Reproduces ldsc's cell_type_specific (Hsq with old_weights=True: a single weighted least
-squares, no IRWLS, no two-step) for many models at once. Each model regresses chi-square on
-[target, controls, baseline] LD scores scaled by N / mean(N), plus an intercept, and reports the
-target coefficient with a 200-block jackknife standard error.
+Reproduces ldsc's cell_type_specific for many models at once. ldsc fits each model with its Hsq
+class (Hsq = "h-squared", ldsc's heritability estimator in gwaslab/extension/ldsc/ldsc_regressions.py,
+which fits LD score regression with a block-jackknife standard error); cell_type_specific calls it
+with old_weights=True, meaning a single weighted least squares with no iterative reweighting and
+no two-step intercept estimate. Each model regresses chi-square on [target, controls, baseline]
+LD scores scaled by N / mean(N), plus an intercept, and reports the target coefficient with a
+200-block jackknife standard error.
+
+M_5_50: for each annotation, the sum of its values over reference-panel SNPs with minor allele
+frequency above 5% (for a binary annotation, the number of common SNPs it contains). In the LDSC
+model E[chi2_j] = N_j * sum_c tau_c * l(j, c) + N_j * a + 1, where l(j, c) is the LD score of SNP j
+with annotation c and tau_c is the per-SNP heritability contributed by annotation c, M_5_50
+converts per-SNP effects into the heritability attributed to an annotation
+(h2_c = tau_c * M_5_50_c). Here the total M_5_50 over a model's annotations scales the aggregate
+heritability estimate that shapes the regression weights.
 
 Models sharing a control set share the design apart from the target column, so they are
-processed together. In exact mode each model keeps its own regression weights (the weights
-depend on the model's total LD and total M, which include the target); the per-block normal
-equations of a chunk of models are formed with a few large matrix products rather than one
-regression at a time. ldsc normalizes the square-root weights to sum to one before weighting
-the design and response; that scalar cancels in every solve, so the effective weight here is
-the raw ldsc weight.
+processed together as a control group. In exact mode each model keeps its own regression weights
+(the weights depend on the model's total LD and total M_5_50, which include the target); the
+per-block normal equations of a chunk of models are formed with a few large matrix products
+rather than one regression at a time. ldsc normalizes the square-root weights to sum to one before
+weighting the design and response; that scalar cancels in every solve, so the effective weight
+here is the raw ldsc weight.
 
 In shared_controls mode every model in a control group uses the weight of the model without a
-target column, so the shared Gram matrix is formed once and only the target's border changes;
-the target coefficient follows from the Frisch-Waugh-Lovell identity.
+target column, so the shared Gram matrix is formed once and only the target's border changes; the
+target coefficient follows from the Frisch-Waugh-Lovell identity.
+
+Dimension names used throughout this module:
+    S: number of regression SNPs (rows of every per-SNP array).
+    B: number of baseline LD-score columns.
+    U: number of LD-score columns in the annotation set (targets and controls).
+    K: number of models (one reported target column each).
+    k: number of models in the chunk currently being processed (k <= chunk_size).
+    q: number of shared design columns of a control group: its controls, the baseline columns,
+       and the intercept (q = number of controls + B + 1).
+    p: number of design columns of one model: its target plus the shared columns (p = q + 1).
+    n_blocks: number of jackknife blocks, min(S, 200).
 """
 
 from collections import defaultdict
@@ -1152,11 +1273,13 @@ _NULL_INTERCEPT = 1.0
 @frozen(slots=True)
 class SLDSCRegressionInputs:
     """
-    Regression SNPs in ldsc row order (the jackknife blocks depend on it).
+    Regression SNPs in ldsc row order (the jackknife blocks depend on it). Dimensions S, B, U
+    are defined in the module docstring.
 
     chi2, n, w_ld: (S,) chi-square, integer-valued sample size, weight LD score.
-    baseline_ld: (S, B) baseline LD scores; baseline_m: (B,) M_5_50.
-    annotation_ld: (S, U) target/control LD scores (float32 allowed); annotation_m: (U,).
+    baseline_ld: (S, B) baseline LD scores; baseline_m: (B,) baseline M_5_50.
+    annotation_ld: (S, U) target and control LD scores (float32 allowed); annotation_m: (U,)
+        their M_5_50.
     """
 
     chi2: np.ndarray
@@ -1170,13 +1293,17 @@ class SLDSCRegressionInputs:
     def __attrs_post_init__(self) -> None:
         s = self.chi2.shape[0]
         for name, arr in (("chi2", self.chi2), ("n", self.n), ("w_ld", self.w_ld)):
-            assert arr.ndim == 1 and arr.shape[0] == s, f"{name} must have shape ({s},), got {arr.shape}"
+            assert arr.ndim == 1 and arr.shape[0] == s, (
+                f"{name} must have shape ({s},), got {arr.shape}"
+            )
             assert arr.dtype.kind == "f", f"{name} must be float, got {arr.dtype}"
         for name, ld, m in (
             ("baseline", self.baseline_ld, self.baseline_m),
             ("annotation", self.annotation_ld, self.annotation_m),
         ):
-            assert ld.ndim == 2 and ld.shape[0] == s, f"{name}_ld must be (S={s}, k), got {ld.shape}"
+            assert ld.ndim == 2 and ld.shape[0] == s, (
+                f"{name}_ld must have shape ({s}, columns), got {ld.shape}"
+            )
             assert ld.dtype.kind == "f", f"{name}_ld must be float, got {ld.dtype}"
             assert m.ndim == 1 and m.shape[0] == ld.shape[1], (
                 f"{name}_m must have shape ({ld.shape[1]},), got {m.shape}"
@@ -1193,12 +1320,17 @@ class SLDSCModel:
     control_indices: tuple[int, ...]
 
     def __attrs_post_init__(self) -> None:
-        assert self.target_index not in self.control_indices, f"{self.label}: target among controls"
+        assert self.target_index not in self.control_indices, (
+            f"{self.label}: target among controls"
+        )
 
 
 @frozen(slots=True)
 class BatchedSLDSCResult:
-    """Per-model target coefficient, jackknife SE, and one-sided p-value, in input model order."""
+    """
+    Per-model target coefficient, jackknife SE, and one-sided p-value, each (K,), in input model
+    order (K = number of models).
+    """
 
     labels: tuple[str, ...]
     coef: np.ndarray
@@ -1208,33 +1340,75 @@ class BatchedSLDSCResult:
     def __attrs_post_init__(self) -> None:
         k = len(self.labels)
         for name, arr in (("coef", self.coef), ("coef_se", self.coef_se), ("p", self.p)):
-            assert arr.ndim == 1 and arr.shape[0] == k, f"{name} must have shape ({k},), got {arr.shape}"
+            assert arr.ndim == 1 and arr.shape[0] == k, (
+                f"{name} must have shape ({k},), got {arr.shape}"
+            )
             assert arr.dtype.kind == "f", f"{name} must be float, got {arr.dtype}"
 
 
 @frozen(slots=True)
 class _SharedDesign:
-    """Columns common to a control group: unscaled LD row-sum, M total, scaled design with intercept."""
+    """
+    Columns common to every model of one control group.
 
-    ld_sum: np.ndarray  # (S,)
+    ld_sum: (S,) row-sum of the unscaled control and baseline LD scores (S = regression SNPs).
+    m_sum: total M_5_50 of the controls and baseline columns.
+    design: (S, q) scaled design: controls and baseline LD scores times N / mean(N), then a final
+        intercept column of ones (q = number of controls + number of baseline columns + 1).
+    """
+
+    ld_sum: np.ndarray
     m_sum: float
-    design: np.ndarray  # (S, q), last column is the intercept
+    design: np.ndarray
+
+    def __attrs_post_init__(self) -> None:
+        assert self.ld_sum.ndim == 1, f"ld_sum must be 1-D, got {self.ld_sum.shape}"
+        assert self.design.ndim == 2 and self.design.shape[0] == self.ld_sum.shape[0], (
+            f"design must have shape ({self.ld_sum.shape[0]}, q), got {self.design.shape}"
+        )
+        assert self.ld_sum.dtype.kind == "f" and self.design.dtype.kind == "f", (
+            "shared design arrays must be float"
+        )
 
 
 @frozen(slots=True)
 class _BlockNormalEquations:
-    """Per-block weighted normal equations: gram (n_blocks, k, p, p), rhs (n_blocks, k, p), target first."""
+    """
+    Per-block weighted normal equations of k models with p design columns each, target first.
+
+    gram: (n_blocks, k, p, p) per-block X'WX.
+    rhs: (n_blocks, k, p) per-block X'Wy.
+    """
 
     gram: np.ndarray
     rhs: np.ndarray
 
+    def __attrs_post_init__(self) -> None:
+        assert self.gram.ndim == 4 and self.gram.shape[2] == self.gram.shape[3], (
+            f"gram must have shape (n_blocks, k, p, p), got {self.gram.shape}"
+        )
+        assert self.rhs.shape == self.gram.shape[:3], (
+            f"rhs must have shape {self.gram.shape[:3]}, got {self.rhs.shape}"
+        )
+
 
 @frozen(slots=True)
 class _TargetEstimates:
-    """Target coefficient on the full data (k,) and with each block deleted (n_blocks, k), unscaled."""
+    """
+    Target coefficient of k models, before division by mean(N).
+
+    est: (k,) estimate on all regression SNPs.
+    delete: (n_blocks, k) estimate with each jackknife block left out.
+    """
 
     est: np.ndarray
     delete: np.ndarray
+
+    def __attrs_post_init__(self) -> None:
+        assert self.est.ndim == 1, f"est must be 1-D, got {self.est.shape}"
+        assert self.delete.ndim == 2 and self.delete.shape[1] == self.est.shape[0], (
+            f"delete must have shape (n_blocks, {self.est.shape[0]}), got {self.delete.shape}"
+        )
 
 
 def ldsc_block_separators(n_snps: int, n_blocks: int) -> np.ndarray:
@@ -1246,10 +1420,16 @@ def ldsc_hsq_weights(
     ld_tot: np.ndarray, w_ld: np.ndarray, n: np.ndarray, m_tot: np.ndarray, chi2: np.ndarray
 ) -> np.ndarray:
     """
-    ldsc's Hsq regression weights (old_weights=True path), for k models at once.
+    Regression weights of ldsc's Hsq estimator (old_weights=True path), for k models at once.
 
-    ld_tot: (S, k) unscaled total LD per model; m_tot: (k,) total M per model.
-    Returns (S, k) weights het * oc (the square-root weighting in ldsc squares back to this).
+    ld_tot: (S, k) unscaled total LD score of each model (sum over its annotations).
+    w_ld: (S,) weight LD score; n: (S,) sample size; chi2: (S,) chi-square.
+    m_tot: (k,) total M_5_50 of each model.
+
+    Returns (S, k) weights het * oc, where het = 1 / (2 (1 + h2_agg N max(ld_tot, 1) / m_tot)^2)
+    corrects for heteroskedasticity, oc = 1 / max(w_ld, 1) for over-counting of correlated SNPs,
+    and h2_agg = clip(m_tot (mean chi2 - 1) / mean(ld_tot N), 0, 1). ldsc weights the design and
+    response by the square root of this, so it is the effective least-squares weight.
     """
     h2_agg = np.clip(
         m_tot * (chi2.mean() - _NULL_INTERCEPT) / (ld_tot * n[:, None]).mean(axis=0), 0.0, 1.0
@@ -1275,13 +1455,15 @@ def batched_sldsc_cts(
     scale = inputs.n / n_bar
     est = np.empty(len(models))
     delete = np.empty((n_blocks, len(models)))
+    fit_group = _exact_group if weighting == "exact" else _shared_controls_group
     for controls, positions in _group_by_controls(models).items():
-        shared = _shared_design(inputs, controls, scale)
-        targets = [models[i].target_index for i in positions]
-        group = (
-            _exact_group(inputs, shared, targets, scale, separators, chunk_size)
-            if weighting == "exact"
-            else _shared_controls_group(inputs, shared, targets, scale, separators, chunk_size)
+        group = fit_group(
+            inputs=inputs,
+            shared=_shared_design(inputs=inputs, controls=controls, scale=scale),
+            targets=[models[i].target_index for i in positions],
+            scale=scale,
+            separators=separators,
+            chunk_size=chunk_size,
         )
         est[positions] = group.est
         delete[:, positions] = group.delete
@@ -1289,18 +1471,24 @@ def batched_sldsc_cts(
     coef = est / n_bar
     coef_se = np.sqrt(np.var(pseudo, axis=0, ddof=1) / n_blocks) / n_bar
     return BatchedSLDSCResult(
-        labels=tuple(m.label for m in models), coef=coef, coef_se=coef_se, p=norm.sf(coef / coef_se)
+        labels=tuple(m.label for m in models),
+        coef=coef,
+        coef_se=coef_se,
+        p=norm.sf(coef / coef_se),
     )
 
 
 def _group_by_controls(models: Sequence[SLDSCModel]) -> dict[tuple[int, ...], list[int]]:
+    """Positions of the models in each control group, keyed by the group's control columns."""
     groups: dict[tuple[int, ...], list[int]] = defaultdict(list)
     for i, model in enumerate(models):
         groups[model.control_indices].append(i)
     return dict(groups)
 
 
-def _shared_design(inputs: SLDSCRegressionInputs, controls: tuple[int, ...], scale: np.ndarray) -> _SharedDesign:
+def _shared_design(
+    inputs: SLDSCRegressionInputs, controls: tuple[int, ...], scale: np.ndarray
+) -> _SharedDesign:
     control_ld = inputs.annotation_ld[:, list(controls)].astype(np.float64)
     unscaled = np.hstack([control_ld, inputs.baseline_ld])
     return _SharedDesign(
@@ -1318,68 +1506,107 @@ def _exact_group(
     separators: np.ndarray,
     chunk_size: int,
 ) -> _TargetEstimates:
-    q = shared.design.shape[1]
-    tri = np.triu_indices(q)
+    """Exact-weight target estimates of one control group, chunk_size models at a time."""
+    upper_triangle = np.triu_indices(shared.design.shape[1])
     ests, deletes = [], []
     for start in range(0, len(targets), chunk_size):
         chunk = targets[start : start + chunk_size]
-        t = inputs.annotation_ld[:, chunk].astype(np.float64)
-        w = ldsc_hsq_weights(
-            ld_tot=shared.ld_sum[:, None] + t,
+        unscaled_targets = inputs.annotation_ld[:, chunk].astype(np.float64)
+        weights = ldsc_hsq_weights(
+            ld_tot=shared.ld_sum[:, None] + unscaled_targets,
             w_ld=inputs.w_ld,
             n=inputs.n,
             m_tot=shared.m_sum + inputs.annotation_m[chunk],
             chi2=inputs.chi2,
         )
-        blocks = _exact_block_normal_equations(shared.design, w, t * scale[:, None], inputs.chi2, separators, tri)
-        gram_tot, rhs_tot = blocks.gram.sum(axis=0), blocks.rhs.sum(axis=0)
-        est = _solve_first(gram_tot, rhs_tot)
-        delete = _solve_first(gram_tot[None] - blocks.gram, rhs_tot[None] - blocks.rhs)
-        ests.append(est)
-        deletes.append(delete)
+        blocks = _exact_block_normal_equations(
+            shared_design=shared.design,
+            weights=weights,
+            scaled_targets=unscaled_targets * scale[:, None],
+            chi2=inputs.chi2,
+            separators=separators,
+            upper_triangle=upper_triangle,
+        )
+        gram_tot = blocks.gram.sum(axis=0)
+        rhs_tot = blocks.rhs.sum(axis=0)
+        ests.append(_solve_first(gram=gram_tot, rhs=rhs_tot))
+        deletes.append(_solve_first(gram=gram_tot[None] - blocks.gram, rhs=rhs_tot[None] - blocks.rhs))
     return _TargetEstimates(est=np.concatenate(ests), delete=np.concatenate(deletes, axis=1))
 
 
 def _exact_block_normal_equations(
-    a: np.ndarray,
-    w: np.ndarray,
-    t: np.ndarray,
-    y: np.ndarray,
+    shared_design: np.ndarray,
+    weights: np.ndarray,
+    scaled_targets: np.ndarray,
+    chi2: np.ndarray,
     separators: np.ndarray,
-    tri: tuple[np.ndarray, np.ndarray],
+    upper_triangle: tuple[np.ndarray, np.ndarray],
 ) -> _BlockNormalEquations:
     """
-    Per-block weighted normal equations for designs [t_c, a] with per-model weights.
+    Per-block weighted least-squares normal equations for a chunk of k models of one control
+    group, each with its own weights.
 
-    a: (S, q) shared scaled design; w, t: (S, k); y: (S,).
-    Returns gram (n_blocks, k, p, p) and rhs (n_blocks, k, p) with p = q + 1, target first.
+    Parameters (S regression SNPs, q shared columns, k models; see the module docstring):
+        shared_design: (S, q) matrix A of scaled control and baseline LD scores plus the
+            intercept column, common to all k models.
+        weights: (S, k); column c is the weight vector w_c of model c (W_c = diag(w_c)).
+        scaled_targets: (S, k); column c is the scaled target LD score t_c of model c.
+        chi2: (S,) response y.
+        separators: (n_blocks + 1,) jackknife block boundaries; block b is rows
+            separators[b]:separators[b + 1].
+        upper_triangle: row and column indices of the upper triangle of a q x q matrix
+            (np.triu_indices(q)).
+
+    Model c has design X_c = [t_c, A] (S x p, p = q + 1) and weighted least-squares estimate
+    beta_c solving the normal equations (X_c' W_c X_c) beta_c = X_c' W_c y. In blocks, with the
+    target coefficient first:
+
+        [ t_c' W_c t_c    t_c' W_c A ] [ beta_t ]   [ t_c' W_c y ]
+        [ A' W_c t_c      A' W_c A   ] [ beta_A ] = [ A' W_c y   ]
+
+    Every entry is a sum over SNPs, so it splits into per-block sums. For each block b this
+    returns gram[b, c] = X_c' W_c X_c and rhs[b, c] = X_c' W_c y restricted to block b's SNPs,
+    computed for all k models together:
+        A' W_c A for every c: one product of the (s_b, q(q+1)/2) matrix of pairwise column
+            products of A (upper triangle only) with the (s_b, k) weights, then mirrored.
+        A' W_c t_c for every c: A' (weights * scaled_targets), one (q, s_b) x (s_b, k) product.
+        t_c' W_c t_c, t_c' W_c y: column sums of weights * scaled_targets * scaled_targets and
+            weights * scaled_targets * y.
+        A' W_c y for every c: A' (weights * y), one (q, s_b) x (s_b, k) product.
     """
-    q = a.shape[1]
-    k = w.shape[1]
+    q = shared_design.shape[1]
+    k = weights.shape[1]
     n_blocks = len(separators) - 1
     gram = np.empty((n_blocks, k, q + 1, q + 1))
     rhs = np.empty((n_blocks, k, q + 1))
-    diag = np.arange(q)
+    diagonal = np.arange(q)
+    rows_i, rows_j = upper_triangle
     for b in range(n_blocks):
-        lo, hi = separators[b], separators[b + 1]
-        a_b, w_b, t_b, y_b = a[lo:hi], w[lo:hi], t[lo:hi], y[lo:hi]
-        wt = w_b * t_b
+        block = slice(separators[b], separators[b + 1])
+        a_b = shared_design[block]
+        w_b = weights[block]
+        t_b = scaled_targets[block]
+        y_b = chi2[block]
+        weighted_targets = w_b * t_b
         upper = np.zeros((k, q, q))
-        upper[:, tri[0], tri[1]] = ((a_b[:, tri[0]] * a_b[:, tri[1]]).T @ w_b).T
-        shared = upper + np.transpose(upper, (0, 2, 1))
-        shared[:, diag, diag] /= 2.0
-        cross = (a_b.T @ wt).T  # (k, q)
-        gram[b, :, 1:, 1:] = shared
-        gram[b, :, 0, 1:] = cross
-        gram[b, :, 1:, 0] = cross
-        gram[b, :, 0, 0] = (wt * t_b).sum(axis=0)
-        rhs[b, :, 0] = (wt * y_b[:, None]).sum(axis=0)
+        upper[:, rows_i, rows_j] = ((a_b[:, rows_i] * a_b[:, rows_j]).T @ w_b).T
+        a_w_a = upper + np.transpose(upper, (0, 2, 1))
+        a_w_a[:, diagonal, diagonal] /= 2.0
+        a_w_t = (a_b.T @ weighted_targets).T  # (k, q)
+        gram[b, :, 1:, 1:] = a_w_a
+        gram[b, :, 0, 1:] = a_w_t
+        gram[b, :, 1:, 0] = a_w_t
+        gram[b, :, 0, 0] = (weighted_targets * t_b).sum(axis=0)
+        rhs[b, :, 0] = (weighted_targets * y_b[:, None]).sum(axis=0)
         rhs[b, :, 1:] = (a_b.T @ (w_b * y_b[:, None])).T
     return _BlockNormalEquations(gram=gram, rhs=rhs)
 
 
 def _solve_first(gram: np.ndarray, rhs: np.ndarray) -> np.ndarray:
-    """First (target) coefficient of batched solves; gram (..., p, p), rhs (..., p)."""
+    """
+    First (target) coefficient of batched linear solves gram @ beta = rhs.
+    gram: (..., p, p); rhs: (..., p); returns (...).
+    """
     return np.linalg.solve(gram, rhs[..., None])[..., 0, 0]
 
 
@@ -1421,11 +1648,12 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: Task 1 contract, Task 2 prepare Tasks + fixture, Task 3 kernel.
-- Produces: `load_sldsc_sumstats(asset: Asset, pre_pipe: DataProcessingPipe) -> pl.DataFrame` (columns SNP, Z, N); `build_regression_inputs(sumstats: pl.DataFrame, baseline: PreparedBaseline, annotation_set: PreparedAnnotationSet) -> AlignedSLDSCRegression` with fields `inputs: SLDSCRegressionInputs`, `models: tuple[SLDSCModel, ...]`; `VectorizedCellAnalysisBySLDSCTask.create(asset_id: str, source_sumstats_task: Task, baseline_task: Task, annotation_set_task: Task, weighting: SLDSCWeighting = "exact", pre_pipe: DataProcessingPipe = IdentityPipe()) -> VectorizedCellAnalysisBySLDSCTask`. Output: CSV FileAsset with columns Name, Coefficient, Coefficient_std_error, Coefficient_P_value sorted by p ascending; meta is `ResultTableMeta` identical in shape to `CellAnalysisByLDSCTask.create`.
+- Produces: `load_sldsc_sumstats(asset: Asset, pre_pipe: DataProcessingPipe) -> pl.DataFrame` (columns SNP, Z, N); `build_regression_inputs(sumstats: pl.DataFrame, baseline: PreparedBaseline, annotation_set: PreparedAnnotationSet, min_hapmap3_snps: int) -> AlignedSLDSCRegression` with fields `inputs: SLDSCRegressionInputs`, `models: tuple[SLDSCModel, ...]`; `VectorizedCellAnalysisBySLDSCTask.create(asset_id: str, source_sumstats_task: Task, baseline_task: Task, annotation_set_task: Task, weighting: SLDSCWeighting = "exact", pre_pipe: DataProcessingPipe = IdentityPipe(), min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS) -> VectorizedCellAnalysisBySLDSCTask`. Output: CSV FileAsset with columns Name, Coefficient, Coefficient_std_error, Coefficient_P_value sorted by p ascending; meta is `ResultTableMeta` identical in shape to `CellAnalysisByLDSCTask.create`.
 
 Reproduction notes (gwaslab util_ex_ldsc._estimate_h2_cts_by_ldsc, ldsc_sumstats._read_ld_sumstats / cell_type_specific):
 - Z = BETA/SE when no Z column; rsID → SNP; drop rows with null/NaN SNP, Z, EA, NEA.
-- Inner join baseline (left, baseline row order) with sumstats, then inner join w_ld.
+- Inner join baseline (left, baseline row order) with sumstats; the prepared baseline is already restricted to SNPs with a weight LD score, so no separate w_ld join.
+- Fewer than min_hapmap3_snps joined SNPs (counted before the χ² filter) raises.
 - N: gwaslab median-fills then casts to int64; here missing N on any joined row raises, then cast Float64 → Int64 (truncation).
 - Duplicate SNP among joined rows raises (gwaslab would duplicate rows).
 - χ² filter: keep Z² < max(0.001 · max(N), 80), N max over the joined rows.
@@ -1474,6 +1702,7 @@ from mecfs_bio.constants.sldsc_constants import (
     SLDSC_CTS_COEF_SE_COL,
     SLDSC_CTS_NAME_COL,
     SLDSC_CTS_P_COL,
+    SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
 )
 from test_mecfs_bio.unit.build_system.task.sldsc.sldsc_fixture import (
     FIXTURE_BASELINE_PATTERN,
@@ -1544,9 +1773,19 @@ def _store(tmp_path: Path, fixture: SLDSCFixture, sumstats_frame: pd.DataFrame) 
     return store
 
 
-def _vectorized(asset_id: str = "vec") -> VectorizedCellAnalysisBySLDSCTask:
+# The fixture has ~2,950 HapMap3-style regression SNPs, far below the production default.
+_TEST_MIN_HAPMAP3_SNPS = 1_000
+
+
+def _vectorized(
+    asset_id: str = "vec", min_hapmap3_snps: int = _TEST_MIN_HAPMAP3_SNPS
+) -> VectorizedCellAnalysisBySLDSCTask:
     return VectorizedCellAnalysisBySLDSCTask.create(
-        asset_id=asset_id, source_sumstats_task=_SUMSTATS, baseline_task=_PREP_BASELINE, annotation_set_task=_PREP_SET
+        asset_id=asset_id,
+        source_sumstats_task=_SUMSTATS,
+        baseline_task=_PREP_BASELINE,
+        annotation_set_task=_PREP_SET,
+        min_hapmap3_snps=min_hapmap3_snps,
     )
 
 
@@ -1616,10 +1855,21 @@ def test_annotation_set_missing_regression_snps_fails(tmp_path: Path) -> None:
     )
     store.run(small_set)
     task = VectorizedCellAnalysisBySLDSCTask.create(
-        asset_id="vec_small", source_sumstats_task=_SUMSTATS, baseline_task=_PREP_BASELINE, annotation_set_task=small_set
+        asset_id="vec_small",
+        source_sumstats_task=_SUMSTATS,
+        baseline_task=_PREP_BASELINE,
+        annotation_set_task=small_set,
+        min_hapmap3_snps=_TEST_MIN_HAPMAP3_SNPS,
     )
     with pytest.raises(AssertionError):
         store.run(task)
+
+
+def test_too_few_hapmap3_snps_fails(tmp_path: Path) -> None:
+    fixture = write_sldsc_fixture(tmp_path)
+    store = _store(tmp_path, fixture, fixture.sumstats_frame)
+    with pytest.raises(AssertionError):
+        store.run(_vectorized(min_hapmap3_snps=SLDSC_DEFAULT_MIN_HAPMAP3_SNPS))
 ```
 
 Notes for the implementer:
@@ -1640,12 +1890,21 @@ Expected: FAIL with ModuleNotFoundError for vectorized_cell_analysis_by_sldsc_ta
 """
 Turn gwaslab sumstats plus prepared S-LDSC references into kernel inputs, reproducing the
 preprocessing of ldsc's cell_type_specific as wrapped by gwaslab: Z from BETA/SE, rows with
-missing SNP/Z/alleles dropped, inner joins onto the baseline SNP order and the weight LD score,
+missing SNP/Z/alleles dropped, an inner join onto the baseline SNP order (the prepared baseline
+is already restricted to SNPs with a weight LD score, matching ldsc's inner join with w_ld),
 N cast to int64 by truncation, and the chi-square filter Z^2 < max(0.001 * max(N), 80).
 
-Deliberate divergences from gwaslab, both fail-fast: a regression SNP with missing N raises
-(gwaslab fills with the median N), and a SNP appearing more than once raises (gwaslab's merge
-would duplicate the row).
+Fail-fast checks with no gwaslab counterpart: fewer than min_hapmap3_snps sumstats SNPs in the
+baseline's HapMap3 regression-SNP universe raises; a regression SNP with missing N raises
+(gwaslab fills with the median N); a SNP appearing more than once raises (gwaslab's merge would
+duplicate the row).
+
+M_5_50 (passed through to the kernel with each LD-score column): for each annotation, the sum of
+its values over reference-panel SNPs with minor allele frequency above 5% (for a binary
+annotation, the number of common SNPs it contains). In the LDSC model
+E[chi2_j] = N_j * sum_c tau_c * l(j, c) + N_j * a + 1, with l(j, c) the LD score of SNP j with
+annotation c and tau_c the per-SNP heritability contributed by annotation c, M_5_50 converts
+per-SNP effects into the heritability attributed to an annotation (h2_c = tau_c * M_5_50_c).
 """
 
 import narwhals
@@ -1680,6 +1939,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 _CHISQ_FILTER_N_COEF = 0.001
 _CHISQ_FILTER_FLOOR = 80.0
 _ROW_COL = "_row"
+_ORDER_COL = "_order"
 
 
 @frozen(slots=True)
@@ -1690,10 +1950,20 @@ class AlignedSLDSCRegression:
 
 def load_sldsc_sumstats(asset: Asset, pre_pipe: DataProcessingPipe) -> pl.DataFrame:
     """SNP, Z, N (Float64, possibly null) for every usable row of the sumstats."""
-    data = pre_pipe.process(narwhals.from_native(read_sumstats(asset).data).lazy()).collect().to_polars()
+    data = (
+        pre_pipe.process(narwhals.from_native(read_sumstats(asset).data).lazy())
+        .collect()
+        .to_polars()
+    )
     assert GWASLAB_SAMPLE_SIZE_COLUMN in data.columns, "sumstats need an N column for S-LDSC"
-    z = pl.col(GWASLAB_Z_COL) if GWASLAB_Z_COL in data.columns else pl.col(GWASLAB_BETA_COL) / pl.col(GWASLAB_SE_COL)
-    alleles = [c for c in (GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL) if c in data.columns]
+    z = (
+        pl.col(GWASLAB_Z_COL)
+        if GWASLAB_Z_COL in data.columns
+        else pl.col(GWASLAB_BETA_COL) / pl.col(GWASLAB_SE_COL)
+    )
+    alleles = [
+        c for c in (GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL) if c in data.columns
+    ]
     return (
         data.select(
             pl.col(GWASLAB_RSID_COL).cast(pl.String).alias(SNP_COL),
@@ -1708,17 +1978,22 @@ def load_sldsc_sumstats(asset: Asset, pre_pipe: DataProcessingPipe) -> pl.DataFr
 
 
 def build_regression_inputs(
-    sumstats: pl.DataFrame, baseline: PreparedBaseline, annotation_set: PreparedAnnotationSet
+    sumstats: pl.DataFrame,
+    baseline: PreparedBaseline,
+    annotation_set: PreparedAnnotationSet,
+    min_hapmap3_snps: int,
 ) -> AlignedSLDSCRegression:
-    regression = _filter_chisq(_cast_n(_join_baseline(sumstats, baseline)))
+    joined = _join_baseline(sumstats=sumstats, baseline=baseline)
+    _require_min_snps(joined=joined, min_hapmap3_snps=min_hapmap3_snps)
+    regression = _filter_chisq(joined=_cast_n(joined=joined))
     baseline_rows = regression[_ROW_COL].to_numpy()
-    annotation_rows = _annotation_rows(regression, annotation_set.ld)
+    annotation_rows = _annotation_rows(regression=regression, ld=annotation_set.ld)
     z = regression[GWASLAB_Z_COL].to_numpy()
     return AlignedSLDSCRegression(
         inputs=SLDSCRegressionInputs(
             chi2=z * z,
             n=regression[GWASLAB_SAMPLE_SIZE_COLUMN].to_numpy().astype(np.float64),
-            w_ld=regression[W_LD_COL].to_numpy().astype(np.float64),
+            w_ld=baseline.w_ld[W_LD_COL].to_numpy()[baseline_rows].astype(np.float64),
             baseline_ld=baseline.ld.matrix[baseline_rows].astype(np.float64),
             baseline_m=baseline.ld.m_5_50,
             annotation_ld=annotation_set.ld.matrix[annotation_rows],
@@ -1728,7 +2003,9 @@ def build_regression_inputs(
             SLDSCModel(
                 label=m.label,
                 target_index=annotation_set.ld.column_index(m.target_column),
-                control_indices=tuple(annotation_set.ld.column_index(c) for c in m.control_columns),
+                control_indices=tuple(
+                    annotation_set.ld.column_index(c) for c in m.control_columns
+                ),
             )
             for m in annotation_set.models
         ),
@@ -1736,16 +2013,24 @@ def build_regression_inputs(
 
 
 def _join_baseline(sumstats: pl.DataFrame, baseline: PreparedBaseline) -> pl.DataFrame:
+    """Sumstats rows in the baseline SNP universe, in baseline row order, with that row index."""
     joined = (
         baseline.ld.snps.select(SNP_COL)
         .with_row_index(_ROW_COL)
         .join(sumstats, on=SNP_COL, how="inner")
-        .join(baseline.w_ld, on=SNP_COL, how="inner")
         .sort(_ROW_COL)
     )
-    assert joined.height > 0, "no sumstats SNPs overlap the S-LDSC baseline"
-    assert joined[SNP_COL].is_unique().all(), "sumstats contain duplicate rsIDs among S-LDSC regression SNPs"
+    assert joined[SNP_COL].is_unique().all(), (
+        "sumstats contain duplicate rsIDs among S-LDSC regression SNPs"
+    )
     return joined
+
+
+def _require_min_snps(joined: pl.DataFrame, min_hapmap3_snps: int) -> None:
+    assert joined.height >= min_hapmap3_snps, (
+        f"only {joined.height} sumstats SNPs are in the S-LDSC HapMap3 regression-SNP set; "
+        f"at least {min_hapmap3_snps} are required"
+    )
 
 
 def _cast_n(joined: pl.DataFrame) -> pl.DataFrame:
@@ -1766,11 +2051,12 @@ def _filter_chisq(joined: pl.DataFrame) -> pl.DataFrame:
 
 
 def _annotation_rows(regression: pl.DataFrame, ld: LdScoreTable) -> np.ndarray:
+    """Row of each regression SNP in the annotation set's LD matrix, in regression order."""
     rows = (
         regression.select(SNP_COL)
-        .with_row_index("_order")
+        .with_row_index(_ORDER_COL)
         .join(ld.snps.select(SNP_COL).with_row_index(_ROW_COL), on=SNP_COL, how="left")
-        .sort("_order")[_ROW_COL]
+        .sort(_ORDER_COL)[_ROW_COL]
     )
     assert rows.null_count() == 0, (
         f"{rows.null_count()} regression SNPs are missing from the S-LDSC annotation set"
@@ -1832,6 +2118,7 @@ from mecfs_bio.constants.sldsc_constants import (
     SLDSC_CTS_COEF_SE_COL,
     SLDSC_CTS_NAME_COL,
     SLDSC_CTS_P_COL,
+    SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
     SLDSCWeighting,
 )
 
@@ -1846,6 +2133,8 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
     annotation_set_task: prepared S-LDSC annotation set (e.g. PrepareLdctsAnnotationSetTask).
     weighting: exact (default) or shared_controls.
     pre_pipe: applied to the sumstats before analysis.
+    min_hapmap3_snps: minimum number of sumstats SNPs in the baseline's HapMap3 regression-SNP
+        set; fewer raises, since it usually means an upstream processing problem.
     """
 
     meta: Meta
@@ -1854,17 +2143,27 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
     annotation_set_task: Task
     weighting: SLDSCWeighting = "exact"
     pre_pipe: DataProcessingPipe = IdentityPipe()
+    min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS
 
     @property
     def deps(self) -> list[Task]:
         return [self.source_sumstats_task, self.baseline_task, self.annotation_set_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        sumstats = load_sldsc_sumstats(fetch(self.source_sumstats_task.asset_id), self.pre_pipe)
+        sumstats = load_sldsc_sumstats(
+            asset=fetch(self.source_sumstats_task.asset_id), pre_pipe=self.pre_pipe
+        )
         baseline = read_prepared_baseline(_directory(fetch, self.baseline_task))
         annotation_set = read_prepared_annotation_set(_directory(fetch, self.annotation_set_task))
-        aligned = build_regression_inputs(sumstats, baseline, annotation_set)
-        result = batched_sldsc_cts(aligned.inputs, aligned.models, weighting=self.weighting)
+        aligned = build_regression_inputs(
+            sumstats=sumstats,
+            baseline=baseline,
+            annotation_set=annotation_set,
+            min_hapmap3_snps=self.min_hapmap3_snps,
+        )
+        result = batched_sldsc_cts(
+            inputs=aligned.inputs, models=aligned.models, weighting=self.weighting
+        )
         out_path = scratch_dir / _RESULT_FILENAME
         _result_frame(result).write_csv(out_path)
         return FileAsset(out_path)
@@ -1878,6 +2177,7 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
         annotation_set_task: Task,
         weighting: SLDSCWeighting = "exact",
         pre_pipe: DataProcessingPipe = IdentityPipe(),
+        min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
     ) -> "VectorizedCellAnalysisBySLDSCTask":
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
@@ -1895,6 +2195,7 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
             annotation_set_task=annotation_set_task,
             weighting=weighting,
             pre_pipe=pre_pipe,
+            min_hapmap3_snps=min_hapmap3_snps,
         )
 
 
@@ -1942,7 +2243,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 - Consumes: Task 3 internals (`_SharedDesign`, `_TargetEstimates`, `ldsc_hsq_weights`, `ldsc_block_separators`).
 - Produces: `batched_sldsc_cts(..., weighting="shared_controls")` working; no signature change.
 
-Math: per control group, w = ldsc_hsq_weights(ld_tot = shared.ld_sum[:, None], m_tot = [shared.m_sum])[:, 0]. Per block b: G_b = A_bᵀ diag(w_b) A_b, a_y,b = A_bᵀ(w_b y_b); per target chunk: AT_b = A_bᵀ(w_b ∘ T_b) (q, k), tt_b = Σ w T², ty_b = Σ w T y. For any summed (G, a_y, AT, tt, ty): solve G X = [a_y | AT]; β_t = (ty − Σ_q AT·X[:, 0]) / (tt − Σ_q AT ∘ X[:, 1:]). Delete values use totals minus block.
+Math (S regression SNPs, q shared columns, k targets per chunk): per control group, w = ldsc_hsq_weights(ld_tot = shared.ld_sum[:, None], m_tot = [shared.m_sum])[:, 0]. Per block b: A_bᵀ diag(w_b) A_b (q, q) and A_bᵀ(w_b y_b) (q,); per target chunk: A_bᵀ(w_b ∘ T_b) (q, k), Σ w T² (k,), Σ w T y (k,). For any summed set: solve (AᵀWA) X = [AᵀWy | AᵀWT]; β_t = (tᵀWy − Σ_q AᵀWT ∘ X[:, 0]) / (tᵀWt − Σ_q AᵀWT ∘ X[:, 1:]). Delete values use totals minus block.
 
 - [ ] **Step 1: Write the failing tests** (append to `test_batched_sldsc_cts.py`; add `ldsc_block_separators, ldsc_hsq_weights` to the kernel import)
 
@@ -2013,6 +2314,12 @@ def _shared_controls_group(
     separators: np.ndarray,
     chunk_size: int,
 ) -> _TargetEstimates:
+    """
+    Shared-weight target estimates of one control group. Every model uses the weight w of the
+    model without a target column, so W = diag(w) is common to the group: the per-block
+    A' W A (q x q) and A' W y (q,) are formed once, and each chunk of k targets only adds
+    A' W t_c, t_c' W t_c and t_c' W y (dimensions as in the module docstring).
+    """
     w = ldsc_hsq_weights(
         ld_tot=shared.ld_sum[:, None],
         w_ld=inputs.w_ld,
@@ -2020,41 +2327,59 @@ def _shared_controls_group(
         m_tot=np.array([shared.m_sum]),
         chi2=inputs.chi2,
     )[:, 0]
-    a, y = shared.design, inputs.chi2
+    a = shared.design
+    y = inputs.chi2
     blocks = [slice(separators[b], separators[b + 1]) for b in range(len(separators) - 1)]
-    gram = np.stack([a[r].T @ (w[r, None] * a[r]) for r in blocks])  # (nb, q, q)
-    a_y = np.stack([a[r].T @ (w[r] * y[r]) for r in blocks])  # (nb, q)
+    a_w_a = np.stack([a[r].T @ (w[r, None] * a[r]) for r in blocks])  # (n_blocks, q, q)
+    a_w_y = np.stack([a[r].T @ (w[r] * y[r]) for r in blocks])  # (n_blocks, q)
     ests, deletes = [], []
     for start in range(0, len(targets), chunk_size):
         chunk = targets[start : start + chunk_size]
-        t = inputs.annotation_ld[:, chunk].astype(np.float64) * scale[:, None]
-        wt = w[:, None] * t
-        a_t = np.stack([a[r].T @ wt[r] for r in blocks])  # (nb, q, k)
-        t_t = np.stack([(wt[r] * t[r]).sum(axis=0) for r in blocks])  # (nb, k)
-        t_y = np.stack([(wt[r] * y[r, None]).sum(axis=0) for r in blocks])  # (nb, k)
-        ests.append(_fwl_target_coef(gram.sum(0), a_y.sum(0), a_t.sum(0), t_t.sum(0), t_y.sum(0)))
+        t = inputs.annotation_ld[:, chunk].astype(np.float64) * scale[:, None]  # (S, k)
+        w_t = w[:, None] * t
+        a_w_t = np.stack([a[r].T @ w_t[r] for r in blocks])  # (n_blocks, q, k)
+        t_w_t = np.stack([(w_t[r] * t[r]).sum(axis=0) for r in blocks])  # (n_blocks, k)
+        t_w_y = np.stack([(w_t[r] * y[r, None]).sum(axis=0) for r in blocks])  # (n_blocks, k)
+        ests.append(
+            _fwl_target_coef(
+                a_w_a=a_w_a.sum(axis=0),
+                a_w_y=a_w_y.sum(axis=0),
+                a_w_t=a_w_t.sum(axis=0),
+                t_w_t=t_w_t.sum(axis=0),
+                t_w_y=t_w_y.sum(axis=0),
+            )
+        )
         deletes.append(
             _fwl_target_coef(
-                gram.sum(0)[None] - gram,
-                a_y.sum(0)[None] - a_y,
-                a_t.sum(0)[None] - a_t,
-                t_t.sum(0)[None] - t_t,
-                t_y.sum(0)[None] - t_y,
+                a_w_a=a_w_a.sum(axis=0)[None] - a_w_a,
+                a_w_y=a_w_y.sum(axis=0)[None] - a_w_y,
+                a_w_t=a_w_t.sum(axis=0)[None] - a_w_t,
+                t_w_t=t_w_t.sum(axis=0)[None] - t_w_t,
+                t_w_y=t_w_y.sum(axis=0)[None] - t_w_y,
             )
         )
     return _TargetEstimates(est=np.concatenate(ests), delete=np.concatenate(deletes, axis=1))
 
 
 def _fwl_target_coef(
-    gram: np.ndarray, a_y: np.ndarray, a_t: np.ndarray, t_t: np.ndarray, t_y: np.ndarray
+    a_w_a: np.ndarray, a_w_y: np.ndarray, a_w_t: np.ndarray, t_w_t: np.ndarray, t_w_y: np.ndarray
 ) -> np.ndarray:
     """
-    Target coefficient of [t, A] regressions by Frisch-Waugh-Lovell, broadcasting over leading
-    axes: gram (..., q, q) = A'WA, a_y (..., q) = A'Wy, a_t (..., q, k) = A'Wt, t_t and t_y (..., k).
+    Target coefficient of the regressions y ~ [t_c, A] with a common weight matrix W, by the
+    Frisch-Waugh-Lovell identity: residualize t_c and y on A, then regress residual on residual,
+
+        beta_t = (t_c' W y - t_c' W A (A' W A)^-1 A' W y) / (t_c' W t_c - t_c' W A (A' W A)^-1 A' W t_c).
+
+    Broadcasts over leading axes (none for the full-data estimate, n_blocks for delete values):
+        a_w_a: (..., q, q) A' W A.
+        a_w_y: (..., q) A' W y.
+        a_w_t: (..., q, k) A' W t_c for each of k targets.
+        t_w_t, t_w_y: (..., k) t_c' W t_c and t_c' W y.
+    Returns (..., k).
     """
-    sol = np.linalg.solve(gram, np.concatenate([a_y[..., None], a_t], axis=-1))
-    numerator = t_y - (a_t * sol[..., :1]).sum(axis=-2)
-    denominator = t_t - (a_t * sol[..., 1:]).sum(axis=-2)
+    solution = np.linalg.solve(a_w_a, np.concatenate([a_w_y[..., None], a_w_t], axis=-1))
+    numerator = t_w_y - (a_w_t * solution[..., :1]).sum(axis=-2)
+    denominator = t_w_t - (a_w_t * solution[..., 1:]).sum(axis=-2)
     return numerator / denominator
 ```
 
@@ -2089,7 +2414,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
 
 **Interfaces:**
 - Consumes: Tasks 2 and 4.
-- Produces: `build_cell_analysis_task_group(base_name: str, entry_name: str, cell_task: Task, labels: CellOrTissueLabelRecord | None, multiple_testing_alpha: float, multiple_testing_method: Method, id_suffix: str) -> CellAnalysisTaskGroup` (free function in sldsc_task_generator.py); `PreparedAnnotationSetRecord(entry_name: str, annotation_set_task: Task, cell_or_tissue_labels_task: CellOrTissueLabelRecord | None)`; `VectorizedSLDSCTaskGenerator.create(base_name, source_sumstats_task, baseline_task, entries, multiple_testing_alpha, multiple_testing_method, weighting="exact", pre_pipe=IdentityPipe())` with `partitioned_tasks: Mapping[str, CellAnalysisTaskGroup]` and `get_terminal_tasks()`; `standard_vectorized_sldsc_task_generator(sumstats_task: Task, base_name: str, pre_pipe: DataProcessingPipe = IdentityPipe(), weighting: SLDSCWeighting = "exact") -> VectorizedSLDSCTaskGenerator`; label constants `IMMGEN_LABELS`, `MULTI_TISSUE_CHROMATIN_LABELS`, `MULTI_TISSUE_GENE_EXPR_LABELS` in concrete_sldsc_generator.py.
+- Produces: `build_cell_analysis_task_group(base_name: str, entry_name: str, cell_task: Task, labels: CellOrTissueLabelRecord | None, multiple_testing_alpha: float, multiple_testing_method: Method, id_suffix: str) -> CellAnalysisTaskGroup` (free function in sldsc_task_generator.py); `PreparedAnnotationSetRecord(entry_name: str, annotation_set_task: Task, cell_or_tissue_labels_task: CellOrTissueLabelRecord | None)`; `VectorizedSLDSCTaskGenerator.create(base_name, source_sumstats_task, baseline_task, entries, multiple_testing_alpha, multiple_testing_method, weighting="exact", pre_pipe=IdentityPipe(), min_hapmap3_snps=SLDSC_DEFAULT_MIN_HAPMAP3_SNPS)` with `partitioned_tasks: Mapping[str, CellAnalysisTaskGroup]` and `get_terminal_tasks()`; `standard_vectorized_sldsc_task_generator(sumstats_task: Task, base_name: str, pre_pipe: DataProcessingPipe = IdentityPipe(), weighting: SLDSCWeighting = "exact") -> VectorizedSLDSCTaskGenerator`; label constants `IMMGEN_LABELS`, `MULTI_TISSUE_CHROMATIN_LABELS`, `MULTI_TISSUE_GENE_EXPR_LABELS` in concrete_sldsc_generator.py.
 
 No unit tests for these wiring-only builders (repo convention); import-time construction plus `invoke green` (typecheck, import-linter) is the check.
 
@@ -2285,7 +2610,10 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     CellOrTissueLabelRecord,
     build_cell_analysis_task_group,
 )
-from mecfs_bio.constants.sldsc_constants import SLDSCWeighting
+from mecfs_bio.constants.sldsc_constants import (
+    SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
+    SLDSCWeighting,
+)
 
 
 @frozen(slots=True)
@@ -2316,6 +2644,7 @@ class VectorizedSLDSCTaskGenerator:
         multiple_testing_method: Method,
         weighting: SLDSCWeighting = "exact",
         pre_pipe: DataProcessingPipe = IdentityPipe(),
+        min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
     ) -> "VectorizedSLDSCTaskGenerator":
         return cls(
             {
@@ -2329,6 +2658,7 @@ class VectorizedSLDSCTaskGenerator:
                         annotation_set_task=entry.annotation_set_task,
                         weighting=weighting,
                         pre_pipe=pre_pipe,
+                        min_hapmap3_snps=min_hapmap3_snps,
                     ),
                     labels=entry.cell_or_tissue_labels_task,
                     multiple_testing_alpha=multiple_testing_alpha,
@@ -2434,7 +2764,9 @@ If `DECODE_ME_GWAS_1_37_ANNOVAR_RSIDS_SUMSTATS` is not importable from that modu
 Vectorized S-LDSC validation on DecodeME.
 
 Modes (one per process so peak RSS is per configuration):
-    profile-old   cProfile the existing CellAnalysisByLDSCTask on GTEx_brain (13 models).
+    profile-old   cProfile the existing CellAnalysisByLDSCTask on GTEx_brain (13 models), to see
+                  whether time goes to file parsing or to Hsq (ldsc's "h-squared" heritability
+                  regression class).
     run-exact     build prepared references (first run only) and vectorized exact results.
     run-shared    vectorized shared_controls results.
     compare       compare old vs exact vs shared for all six sets.
@@ -2566,7 +2898,7 @@ Run `profile-old` in the background (it may take tens of minutes for 13 models);
 
 - exact: max |dz| < 1e-4 and FDR changes = 0 for all six sets.
 - run-exact per-set times in minutes; peak RSS well below 16 GB.
-- profile-old: confirm whether most cumulative time sits in ldsc_parse reading (`_read_chr_split_files`, `read_csv`, merges) versus `Hsq`.
+- profile-old: confirm whether most cumulative time sits in ldsc_parse reading (`_read_chr_split_files`, `read_csv`, merges) versus `Hsq` (ldsc's "h-squared" heritability-regression class).
 - shared: report max/median |dz| and FDR changes; no pass/fail.
 
 If exact fails on real data while unit tests pass, likely causes are row order (pandas vs polars sort ties at identical CHR/BP) or SNP de-duplication; investigate with the superpowers:systematic-debugging skill before changing code.

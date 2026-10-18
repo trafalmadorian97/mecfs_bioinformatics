@@ -63,6 +63,10 @@ Merging and filtering:
 - `smart_merge(ref_ld, sumstats)` then merge with w_ld: rows follow the baseline LD-score order
   (sorted by CHR, BP). The exact row order is pinned down empirically in validation and reproduced.
 - Zero-variance baseline LD columns are dropped (`novar_cols`); reproduce this.
+- Minimum SNP count (no gwaslab counterpart, fail-fast): if fewer than `min_hapmap3_snps` sumstats SNPs
+  fall in the baseline's HapMap3 regression-SNP set (counted after the baseline/weights join, before the
+  χ² filter), the Task raises. Default 100,000; tests pass a small value. Too few HapMap3 SNPs usually
+  indicates an upstream processing problem (for example, lost rsIDs).
 - χ² filter: keep Z² < max(0.001·max(N), 80) (strict inequality).
 - Every regression SNP must have cts LD scores (ldsc raises ValueError otherwise).
 - n_blocks = min(n_snp, 200); separators floor(linspace(0, n_snp, n_blocks + 1)).
@@ -101,6 +105,9 @@ Defined once in `mecfs_bio/build_system/task/sldsc/prepared_sldsc_reference.py`:
 - `ld_scores.parquet`: SNP, CHR, BP + baseline LD columns (~53 for baseline_v1.2), float32.
 - `m_5_50.parquet`: per-column M_5_50.
 - `w_ld.parquet`: SNP + weight LD score from weights.hm3_noMHC.@.
+- The HapMap3 weights omit the MHC region (chr6: 75,359 baseline SNPs vs 72,387 weight SNPs). Because
+  ldsc inner-joins the weights, the prepare Task restricts the baseline to SNPs with a weight LD score;
+  `PreparedBaseline` then asserts that w_ld and the baseline LD scores share one SNP column, row for row.
 
 ### 4.3 Consumer-side alignment
 
@@ -151,7 +158,7 @@ shape/dtype invariants asserted in `__attrs_post_init__`.
 | prepare_ldcts_annotation_set_task.py | `PrepareLdctsAnnotationSetTask`: LDSC-SEG adapter. Fields: meta, source directory Task, `.ldcts` filename. Parses the index with the existing `LDCTSFileEntry` parser, reads each unique LD-score file once with polars, asserts identical SNP columns across files, writes the three parquets. `ReferenceDataDirectoryMeta`. |
 | prepare_sldsc_baseline_task.py | `PrepareSLDSCBaselineTask`: baseline directory + `@` pattern, weights directory + `@` pattern → prepared baseline. |
 | batched_sldsc_cts.py | §5 kernel. |
-| vectorized_cell_analysis_by_sldsc_task.py | `VectorizedCellAnalysisBySLDSCTask`. Fields: meta, source_sumstats_task, baseline_task, annotation_set_task, weighting = "exact", pre_pipe = IdentityPipe(). execute() reads as a high-level spec: load sumstats + pipe → gwaslab-equivalent χ²/N prep → align to baseline → attach annotation set (assert coverage) → kernel → write CSV. `.create()` derives trait/project from the sumstats meta; output `ResultTableMeta` CSV with the same schema as `CellAnalysisByLDSCTask`. |
+| vectorized_cell_analysis_by_sldsc_task.py | `VectorizedCellAnalysisBySLDSCTask`. Fields: meta, source_sumstats_task, baseline_task, annotation_set_task, weighting = "exact", pre_pipe = IdentityPipe(), min_hapmap3_snps = 100,000. execute() reads as a high-level spec: load sumstats + pipe → gwaslab-equivalent χ²/N prep → align to baseline → attach annotation set (assert coverage) → kernel → write CSV. `.create()` derives trait/project from the sumstats meta; output `ResultTableMeta` CSV with the same schema as `CellAnalysisByLDSCTask`. |
 
 `LDCTSFileEntry` and its parser are reused in place from gwaslab_cell_analysis_by_sldsc.py (same
 build_system layer, so no layering issue).
@@ -201,7 +208,8 @@ Switching the 10 existing call sites is a follow-up after real-data validation.
    Frisch–Waugh/Schur path): vs a direct dense WLS + jackknife using the same shared weights and blocks,
    to floating-point tolerance.
 4. Fail-fast: an annotation set not covering the regression SNPs raises; a model table referencing a
-   missing column raises at construction; a regression SNP with missing N raises.
+   missing column raises at construction; a regression SNP with missing N raises; fewer than
+   min_hapmap3_snps HapMap3 SNPs raises.
 
 ### 7.2 Real-data experiment (`experiments/claude/vectorized_sldsc/`)
 
