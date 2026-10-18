@@ -101,6 +101,11 @@
       "matchPackageNames": ["numpy"],
       "allowedVersions": "<2.4"
     },
+    {
+      "description": "selectolax 1.0.1 deletes a node replaced by a parent containing it, which makes mkdocs-glightbox 0.5.2 strip every <img> from the built docs. See the comment above the selectolax pin in pyproject.toml. Lift once mkdocs-glightbox clones the node upstream.",
+      "matchPackageNames": ["selectolax"],
+      "allowedVersions": "<1.0.1"
+    },
 
     {
       "description": "r-base>=4.6 seems currently incompatible with r-cpp11",
