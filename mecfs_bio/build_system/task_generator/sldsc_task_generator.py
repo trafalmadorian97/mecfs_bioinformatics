@@ -6,6 +6,10 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
 )
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+    ParquetWriteOptions,
+)
 from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_sldsc import (
     CellAnalysisByLDSCTask,
 )
@@ -17,10 +21,22 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
     Method,
     MultipleTestingTableTask,
 )
+from mecfs_bio.build_system.task.pipe_dataframe_task import PipeDataFrameTask
+from mecfs_bio.build_system.task.pipes.cast_to_int32pipe import CastIntsToInt32Pipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.util.type_related.unwrap import unwrap
+
+# Encoding for tables shown on the documentation site via the data_table macro.
+# Int32 rather than Int64 because parquet INT64 decodes to JavaScript BigInt.
+_DOCS_PARQUET_FORMAT = ParquetOutFormat(
+    write_options=ParquetWriteOptions(
+        compression="zstd",
+        compression_level=22,
+        byte_stream_split_floats=True,
+    )
+)
 
 
 @frozen(slots=True)
@@ -45,6 +61,7 @@ class CellAnalysisTaskGroup:
     cell_analysis_task: CellAnalysisByLDSCTask
     multiple_testing_task: Task
     multiple_testing_task_markdown: Task
+    multiple_testing_task_parquet: Task
     add_categories_task: Task | None
     plot_task: Task | None
 
@@ -57,7 +74,10 @@ class CellAnalysisTaskGroup:
         return unwrap(self.add_categories_task)
 
     def terminal_tasks(self) -> list[Task]:
-        result = [self.multiple_testing_task_markdown]
+        result = [
+            self.multiple_testing_task_markdown,
+            self.multiple_testing_task_parquet,
+        ]
         if self.plot_task is not None:
             result.append(self.plot_task)
         return result
@@ -126,6 +146,9 @@ class SLDSCTaskGenerator:
                     method=multiple_testing_method,
                 )
             )
+            presentation_drop_cols = DropColPipe(
+                ["_Corrected P Value_", "Coefficient_std_error"]
+            )
             multiple_testing_markdown = (
                 ConvertDataFrameToMarkdownTask.create_from_result_table_task(
                     source_task=multiple_testing_task,
@@ -133,8 +156,18 @@ class SLDSCTaskGenerator:
                     + "_"
                     + entry.entry_name
                     + "_s_ldsc_cell_analysis_md_table",
-                    pipe=DropColPipe(["_Corrected P Value_", "Coefficient_std_error"]),
+                    pipe=presentation_drop_cols,
                 )
+            )
+            multiple_testing_parquet = PipeDataFrameTask.create(
+                source_task=multiple_testing_task,
+                asset_id=base_name
+                + "_"
+                + entry.entry_name
+                + "_s_ldsc_cell_analysis_parquet_table",
+                pipes=[presentation_drop_cols, CastIntsToInt32Pipe()],
+                out_format=_DOCS_PARQUET_FORMAT,
+                backend="polars",
             )
             if entry.cell_or_tissue_labels_task is not None:
                 add_labels_task = JoinDataFramesTask.create_from_result_df(
@@ -163,5 +196,6 @@ class SLDSCTaskGenerator:
                 add_categories_task=add_labels_task,
                 plot_task=plot_task,
                 multiple_testing_task_markdown=multiple_testing_markdown,
+                multiple_testing_task_parquet=multiple_testing_parquet,
             )
         return cls(cell_analysis_task_groups)
