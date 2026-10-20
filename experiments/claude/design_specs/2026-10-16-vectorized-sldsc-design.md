@@ -48,6 +48,11 @@ branch) + `LstsqJackknifeFast`:
 
 Sumstats preprocessing (gwaslab `_estimate_h2_cts_by_ldsc` wrapper):
 
+- HapMap3 restriction (gwaslab `Sumstats.estimate_h2_cts_by_ldsc` → `_get_hapmap3`, added during
+  implementation): keep rows whose rsID is in gwaslab's bundled HapMap3 list for the sumstats' build and
+  whose EA/NEA equal the HapMap3 A1/A2 in either orientation. The new Task reproduces this with
+  gwaslab's own `_get_hapmap_full_polars(build, include_alleles=True)`; sumstats without an rsID column
+  are rejected (gwaslab's CHR/POS fallback is not reproduced).
 - gwaslab fills missing N with the median N and then casts every variant's N to int64
   (`.apply("int64")`, truncation toward zero, so a non-integer effective N such as 41,236.8 becomes
   41,236). The new Task reproduces the cast exactly. It deliberately does NOT reproduce the median fill:

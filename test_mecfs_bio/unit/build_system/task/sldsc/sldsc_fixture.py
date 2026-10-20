@@ -8,6 +8,11 @@ real weights omit the MHC region); Cell_A carries a planted enrichment. Values a
 with 3 decimals, like the real files. The sumstats omit some reference SNPs, add SNPs absent
 from the reference (so gwaslab's smart_merge takes its pd.merge path, as in production), and
 include a few chi-square outliers removed by the max(0.001 N, 80) filter.
+
+Reference SNPs are real HapMap3 SNPs (rsID, position, alleles from gwaslab's bundled build-19
+HapMap3 list), because gwaslab's estimate_h2_cts_by_ldsc keeps only sumstats rows whose rsID is
+in that list with matching alleles. Every third SNP reports its alleles swapped (kept), and every
+25th SNP from the eighth reports an allele absent from HapMap3 (dropped).
 """
 
 import gzip
@@ -16,7 +21,9 @@ from pathlib import Path
 import gwaslab as gl
 import numpy as np
 import pandas as pd
+import polars as pl
 from attrs import frozen
+from gwaslab.bd.bd_get_hapmap3 import _get_hapmap_full_polars
 
 FIXTURE_BASELINE_PATTERN = "baseline/baseline.@"
 FIXTURE_WEIGHTS_PATTERN = "weights/weights.@"
@@ -32,6 +39,30 @@ _CONTROL_M = 2000.0
 _TARGET_M = (300.0, 400.0, 500.0)
 _WEIGHTLESS_CHROM = 2
 _WEIGHTLESS_ROWS = slice(100, 130)
+_HAPMAP3_BUILD = "19"
+_SWAPPED_ALLELE_PERIOD = 3
+_MISMATCHED_ALLELE_PERIOD = 25
+_MISMATCHED_ALLELE_OFFSET = 7
+_NUCLEOTIDES = ("A", "C", "G", "T")
+
+
+def _hapmap3_snps(chrom: int) -> pl.DataFrame:
+    """The first _SNPS_PER_CHROM HapMap3 SNPs of a chromosome with a unique position."""
+    return (
+        _get_hapmap_full_polars(_HAPMAP3_BUILD, include_alleles=True)
+        .filter(pl.col("CHR") == chrom)
+        .filter(pl.col("POS").is_unique())
+        .sort("POS")
+        .head(_SNPS_PER_CHROM)
+    )
+
+
+def _reported_alleles(index: int, a1: str, a2: str) -> tuple[str, str]:
+    if index % _MISMATCHED_ALLELE_PERIOD == _MISMATCHED_ALLELE_OFFSET:
+        return next(n for n in _NUCLEOTIDES if n not in (a1, a2)), a2
+    if index % _SWAPPED_ALLELE_PERIOD == 0:
+        return a2, a1
+    return a1, a2
 
 
 @frozen(slots=True)
@@ -65,8 +96,13 @@ def write_sldsc_fixture(root: Path, *, seed: int = 0) -> SLDSCFixture:
         d.mkdir(parents=True)
     rows = []
     for chrom in _CHROMS:
-        rsids = [f"rs{chrom}{i:05d}" for i in range(_SNPS_PER_CHROM)]
-        bps = 10_000 + 100 * np.arange(_SNPS_PER_CHROM)
+        hapmap3 = _hapmap3_snps(chrom)
+        rsids = hapmap3["rsid"].to_list()
+        bps = hapmap3["POS"].to_numpy()
+        alleles = [
+            _reported_alleles(i, a1, a2)
+            for i, (a1, a2) in enumerate(zip(hapmap3["A1"], hapmap3["A2"]))
+        ]
         base = {
             "baseL2": rng.uniform(1, 50, _SNPS_PER_CHROM),
             "AnnotAL2": rng.uniform(0, 10, _SNPS_PER_CHROM),
@@ -120,8 +156,15 @@ def write_sldsc_fixture(root: Path, *, seed: int = 0) -> SLDSCFixture:
         expected_chi2 = 1.0 + 0.02 * base["baseL2"] + 0.08 * targets[0]
         z = rng.normal(0.0, 1.0, _SNPS_PER_CHROM) * np.sqrt(expected_chi2)
         rows.extend(
-            {"rsID": r, "CHR": chrom, "POS": int(bp), "Z": float(zz)}
-            for r, bp, zz in zip(rsids, bps, z)
+            {
+                "rsID": r,
+                "CHR": chrom,
+                "POS": int(bp),
+                "Z": float(zz),
+                "EA": ea,
+                "NEA": nea,
+            }
+            for r, bp, zz, (ea, nea) in zip(rsids, bps, z, alleles)
         )
     (cts_dir / FIXTURE_LDCTS_FILENAME).write_text(
         "\n".join(
@@ -140,14 +183,16 @@ def write_sldsc_fixture(root: Path, *, seed: int = 0) -> SLDSCFixture:
             "CHR": 1,
             "POS": 9_000_000 + np.arange(20),
             "Z": rng.normal(0, 1, 20),
+            "EA": "A",
+            "NEA": "G",
         }
     )
     frame = pd.concat([frame, extra], ignore_index=True)
     frame.loc[[100, 200, 300], "Z"] = 12.0  # chi2 = 144 > max(0.001 * N, 80)
     se = np.full(len(frame), 0.01)
-    frame = frame.assign(
-        BETA=frame["Z"] * se, SE=se, EA="A", NEA="G", P=0.5, N=FIXTURE_N
-    ).drop(columns="Z")
+    frame = frame.assign(BETA=frame["Z"] * se, SE=se, P=0.5, N=FIXTURE_N).drop(
+        columns="Z"
+    )
     return SLDSCFixture(
         baseline_dir=baseline_dir,
         weights_dir=weights_dir,
