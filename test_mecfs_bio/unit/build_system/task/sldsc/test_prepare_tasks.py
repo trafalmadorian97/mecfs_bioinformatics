@@ -56,9 +56,14 @@ def test_prepare_annotation_set_stores_shared_control_once(tmp_path: Path) -> No
     prepared = read_prepared_annotation_set(result.path)
     assert [m.label for m in prepared.models] == list(FIXTURE_LABELS)
     controls = {m.control_columns for m in prepared.models}
-    assert len(controls) == 1  # one shared control column, referenced by every model
-    assert prepared.ld.matrix.shape == (3_000, len(FIXTURE_LABELS) + 1)
-    np.testing.assert_allclose(prepared.ld.m_5_50.sum(), 2000.0 + 300.0 + 400.0 + 500.0)
+    assert len(controls) == 1  # one shared control set, referenced by every model
+    assert (
+        len(next(iter(controls))) == 2
+    )  # every column of the control prefix is a control
+    assert prepared.ld.matrix.shape == (3_000, len(FIXTURE_LABELS) + 2)
+    np.testing.assert_allclose(
+        prepared.ld.m_5_50.sum(), 2000.0 + 1500.0 + 300.0 + 400.0 + 500.0
+    )
 
 
 def test_prepare_baseline_drops_zero_variance_column_and_unweighted_snps(

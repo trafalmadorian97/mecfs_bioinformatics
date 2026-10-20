@@ -3,7 +3,8 @@ Synthetic LDSC-SEG-format reference data and sumstats for S-LDSC unit tests.
 
 Three chromosomes, 1,000 reference SNPs each. The baseline has a total-LD column, two
 annotations, and an all-zero annotation (exercises ldsc's zero-variance drop). One shared
-control plus three cell-type targets; the weight LD scores omit 30 SNPs on chromosome 2 (as the
+control (two LD columns, like the 12-column Roadmap control of Corces_ATAC) plus three
+cell-type targets; the weight LD scores omit 30 SNPs on chromosome 2 (as the
 real weights omit the MHC region); Cell_A carries a planted enrichment. Values are printed
 with 3 decimals, like the real files. The sumstats omit some reference SNPs, add SNPs absent
 from the reference (so gwaslab's smart_merge takes its pd.merge path, as in production), and
@@ -35,7 +36,7 @@ _CHROMS = (1, 2, 3)
 _SNPS_PER_CHROM = 1_000
 _BASELINE_COLS = ("baseL2", "AnnotAL2", "AnnotBL2", "ZeroL2")
 _BASELINE_M = (5000.0, 1000.0, 500.0, 0.0)
-_CONTROL_M = 2000.0
+_CONTROL_M = (2000.0, 1500.0)
 _TARGET_M = (300.0, 400.0, 500.0)
 _WEIGHTLESS_CHROM = 2
 _WEIGHTLESS_ROWS = slice(100, 130)
@@ -130,16 +131,19 @@ def write_sldsc_fixture(root: Path, *, seed: int = 0) -> SLDSCFixture:
             bps=bps[has_weight],
             cols={"L2": weight_ld[has_weight]},
         )
-        control = rng.uniform(0, 20, _SNPS_PER_CHROM)
+        control = {
+            "DNase.union": rng.uniform(0, 20, _SNPS_PER_CHROM),
+            "DNase.sum": rng.uniform(0, 60, _SNPS_PER_CHROM),
+        }
         _write_ld_file(
             path=cts_dir / f"cts/Set.control.{chrom}.l2.ldscore.gz",
             chrom=chrom,
             rsids=rsids,
             bps=bps,
-            cols={"L2": control},
+            cols=control,
         )
         (cts_dir / f"cts/Set.control.{chrom}.l2.M_5_50").write_text(
-            f"{_CONTROL_M / len(_CHROMS)}\n"
+            "\t".join(str(m / len(_CHROMS)) for m in _CONTROL_M) + "\n"
         )
         targets = [rng.uniform(0, 10, _SNPS_PER_CHROM) for _ in FIXTURE_LABELS]
         for j, target in enumerate(targets, start=1):

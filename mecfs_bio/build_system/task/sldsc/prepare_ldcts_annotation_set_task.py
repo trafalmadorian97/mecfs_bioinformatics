@@ -4,6 +4,11 @@ files) into a prepared S-LDSC annotation set (see prepared_sldsc_reference).
 
 Each .ldcts row is "label<TAB>target_prefix,control_prefix". Every unique prefix is read once,
 so a control shared by every row is stored once and referenced by every model.
+
+A prefix may hold several LD columns (the Roadmap control of Corces_ATAC holds 12). As in ldsc's
+cell_type_specific, a model's design is the target prefix's columns followed by the control
+prefix's columns, and the reported coefficient is the first column's; so the target is the first
+column of the target prefix and every other column is a control.
 """
 
 from pathlib import Path, PurePath
@@ -25,6 +30,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_cell_analysis_by_sldsc import (
 )
 from mecfs_bio.build_system.task.sldsc.ld_score_files import read_ld_score_sources
 from mecfs_bio.build_system.task.sldsc.prepared_sldsc_reference import (
+    LdScoreTable,
     PreparedAnnotationSet,
     SLDSCAnnotationModel,
     write_prepared_annotation_set,
@@ -58,12 +64,9 @@ class PrepareLdctsAnnotationSetTask(Task):
         ld = read_ld_score_sources(
             root=source.path, prefixes=prefixes, drop_zero_variance=False
         )
-        assert len(ld.column_ids) == len(prefixes), (
-            "each cts prefix must hold exactly one LD column"
-        )
-        column_of = dict(zip(prefixes, ld.column_ids))
+        columns_of = _columns_by_prefix(ld=ld, prefixes=prefixes)
         annotation_set = PreparedAnnotationSet(
-            ld=ld, models=tuple(_model_from_entry(e, column_of) for e in entries)
+            ld=ld, models=tuple(_model_from_entry(e, columns_of) for e in entries)
         )
         out_dir = scratch_dir / "prepared_annotation_set"
         write_prepared_annotation_set(out_dir, annotation_set)
@@ -107,11 +110,24 @@ def _unique_prefixes(entries: list[LDCTSFileEntry]) -> list[str]:
     return prefixes
 
 
+def _columns_by_prefix(ld: LdScoreTable, prefixes: list[str]) -> dict[str, list[str]]:
+    """Column ids of each prefix, in file column order (sources are "prefix:column")."""
+    columns_of: dict[str, list[str]] = {prefix: [] for prefix in prefixes}
+    for column_id, source in zip(ld.column_ids, ld.sources):
+        columns_of[source.rpartition(":")[0]].append(column_id)
+    assert all(columns_of.values()), "every cts prefix must hold at least one LD column"
+    return columns_of
+
+
 def _model_from_entry(
-    entry: LDCTSFileEntry, column_of: dict[str, str]
+    entry: LDCTSFileEntry, columns_of: dict[str, list[str]]
 ) -> SLDSCAnnotationModel:
+    target, *extra_targets = columns_of[str(entry.target_gene_data_path)]
     return SLDSCAnnotationModel(
         label=entry.label,
-        target_column=column_of[str(entry.target_gene_data_path)],
-        control_columns=(column_of[str(entry.control_gene_data_path)],),
+        target_column=target,
+        control_columns=(
+            *extra_targets,
+            *columns_of[str(entry.control_gene_data_path)],
+        ),
     )
