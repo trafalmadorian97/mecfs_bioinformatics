@@ -425,6 +425,82 @@ def _shared_controls_group(
     separators: np.ndarray,
     chunk_size: int,
 ) -> _TargetEstimates:
-    raise NotImplementedError(
-        "shared_controls weighting is implemented in a later step"
+    """
+    Shared-weight target estimates of one control group. Every model uses the weight w of the
+    model without a target column, so W = diag(w) is common to the group: the per-block
+    A' W A (q x q) and A' W y (q,) are formed once, and each chunk of k targets only adds
+    A' W t_c, t_c' W t_c and t_c' W y (dimensions as in the module docstring).
+    """
+    w = ldsc_hsq_weights(
+        ld_tot=shared.ld_sum[:, None],
+        w_ld=inputs.w_ld,
+        n=inputs.n,
+        m_tot=np.array([shared.m_sum]),
+        chi2=inputs.chi2,
+    )[:, 0]
+    a = shared.design  # (S, q)
+    y = inputs.chi2  # (S)
+    blocks = [
+        slice(separators[b], separators[b + 1]) for b in range(len(separators) - 1)
+    ]
+    a_w_a = np.stack([a[r].T @ (w[r, None] * a[r]) for r in blocks])  # (n_blocks, q, q)
+    a_w_y = np.stack([a[r].T @ (w[r] * y[r]) for r in blocks])  # (n_blocks, q)
+    ests, deletes = [], []
+    for start in range(0, len(targets), chunk_size):
+        chunk = targets[start : start + chunk_size]
+        t = inputs.annotation_ld[:, chunk].astype(np.float64) * scale[:, None]  # (S, k)
+        w_t = w[:, None] * t  # (S, k)
+        a_w_t = np.stack([a[r].T @ w_t[r] for r in blocks])  # (n_blocks, q, k)
+        t_w_t = np.stack([(w_t[r] * t[r]).sum(axis=0) for r in blocks])  # (n_blocks, k)
+        t_w_y = np.stack(
+            [(w_t[r] * y[r, None]).sum(axis=0) for r in blocks]
+        )  # (n_blocks, k)
+        ests.append(
+            _fwl_target_coef(
+                a_w_a=a_w_a.sum(axis=0),
+                a_w_y=a_w_y.sum(axis=0),
+                a_w_t=a_w_t.sum(axis=0),
+                t_w_t=t_w_t.sum(axis=0),
+                t_w_y=t_w_y.sum(axis=0),
+            )
+        )
+        deletes.append(
+            _fwl_target_coef(
+                a_w_a=a_w_a.sum(axis=0)[None] - a_w_a,
+                a_w_y=a_w_y.sum(axis=0)[None] - a_w_y,
+                a_w_t=a_w_t.sum(axis=0)[None] - a_w_t,
+                t_w_t=t_w_t.sum(axis=0)[None] - t_w_t,
+                t_w_y=t_w_y.sum(axis=0)[None] - t_w_y,
+            )
+        )
+    return _TargetEstimates(
+        est=np.concatenate(ests), delete=np.concatenate(deletes, axis=1)
     )
+
+
+def _fwl_target_coef(
+    a_w_a: np.ndarray,
+    a_w_y: np.ndarray,
+    a_w_t: np.ndarray,
+    t_w_t: np.ndarray,
+    t_w_y: np.ndarray,
+) -> np.ndarray:
+    """
+    Target coefficient of the regressions y ~ [t_c, A] with a common weight matrix W, by the
+    Frisch-Waugh-Lovell identity: residualize t_c and y on A, then regress residual on residual,
+
+        beta_t = (t_c' W y - t_c' W A (A' W A)^-1 A' W y) / (t_c' W t_c - t_c' W A (A' W A)^-1 A' W t_c).
+
+    Broadcasts over leading axes (none for the full-data estimate, n_blocks for delete values):
+        a_w_a: (..., q, q) A' W A.
+        a_w_y: (..., q) A' W y.
+        a_w_t: (..., q, k) A' W t_c for each of k targets.
+        t_w_t, t_w_y: (..., k) t_c' W t_c and t_c' W y.
+    Returns (..., k).
+    """
+    solution = np.linalg.solve(
+        a_w_a, np.concatenate([a_w_y[..., None], a_w_t], axis=-1)
+    )
+    numerator = t_w_y - (a_w_t * solution[..., :1]).sum(axis=-2)
+    denominator = t_w_t - (a_w_t * solution[..., 1:]).sum(axis=-2)
+    return numerator / denominator
