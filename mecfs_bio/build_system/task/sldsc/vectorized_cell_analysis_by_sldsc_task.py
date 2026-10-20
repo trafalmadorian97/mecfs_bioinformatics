@@ -8,6 +8,7 @@ floating-point tolerance; "shared_controls" is a faster approximation (see batch
 The annotation set may come from any source with an adapter to the prepared S-LDSC contract.
 """
 
+import gc
 from pathlib import Path, PurePath
 
 import polars as pl
@@ -38,6 +39,7 @@ from mecfs_bio.build_system.task.sldsc.prepared_sldsc_reference import (
     read_prepared_baseline,
 )
 from mecfs_bio.build_system.task.sldsc.sldsc_regression_inputs import (
+    AlignedSLDSCRegression,
     build_regression_inputs,
     load_sldsc_sumstats,
 )
@@ -79,17 +81,11 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
         return [self.source_sumstats_task, self.baseline_task, self.annotation_set_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        sumstats = load_sldsc_sumstats(
-            asset=fetch(self.source_sumstats_task.asset_id), pre_pipe=self.pre_pipe
-        )
-        baseline = read_prepared_baseline(_directory(fetch, self.baseline_task))
-        annotation_set = read_prepared_annotation_set(
-            _directory(fetch, self.annotation_set_task)
-        )
-        aligned = build_regression_inputs(
-            sumstats=sumstats,
-            baseline=baseline,
-            annotation_set=annotation_set,
+        aligned = _load_aligned_regression(
+            sumstats_asset=fetch(self.source_sumstats_task.asset_id),
+            pre_pipe=self.pre_pipe,
+            baseline_dir=_directory(fetch, self.baseline_task),
+            annotation_set_dir=_directory(fetch, self.annotation_set_task),
             min_hapmap3_snps=self.min_hapmap3_snps,
         )
         result = batched_sldsc_cts(
@@ -128,6 +124,30 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
             pre_pipe=pre_pipe,
             min_hapmap3_snps=min_hapmap3_snps,
         )
+
+
+def _load_aligned_regression(
+    sumstats_asset: Asset,
+    pre_pipe: DataProcessingPipe,
+    baseline_dir: Path,
+    annotation_set_dir: Path,
+    min_hapmap3_snps: int,
+) -> AlignedSLDSCRegression:
+    """
+    Kernel inputs aligned to the regression SNPs. The full prepared references (the annotation
+    LD matrix alone is ~2.3 GB for Multi_tissue_chromatin) are local to this function, so they
+    are freed before the kernel runs rather than held alongside its row-aligned copies.
+    """
+    aligned = build_regression_inputs(
+        sumstats=load_sldsc_sumstats(asset=sumstats_asset, pre_pipe=pre_pipe),
+        baseline=read_prepared_baseline(baseline_dir),
+        annotation_set=read_prepared_annotation_set(annotation_set_dir),
+        min_hapmap3_snps=min_hapmap3_snps,
+    )
+    # The loaded gwaslab Sumstats object sits in reference cycles, so its full dataframe is
+    # only freed by the cyclic garbage collector.
+    gc.collect()
+    return aligned
 
 
 def _directory(fetch: Fetch, task: Task) -> Path:
