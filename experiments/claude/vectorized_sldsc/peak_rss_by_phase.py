@@ -17,6 +17,10 @@ import threading
 import time
 from pathlib import Path
 
+from experiments.claude.vectorized_sldsc.vectorized_sldsc_experiment import (
+    _EXACT,
+    _SHARED,
+)
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.task.sldsc.batched_sldsc_cts import batched_sldsc_cts
@@ -32,10 +36,6 @@ from mecfs_bio.build_system.task.sldsc.vectorized_cell_analysis_by_sldsc_task im
     VectorizedCellAnalysisBySLDSCTask,
 )
 from mecfs_bio.constants.sldsc_constants import SLDSCWeighting
-from experiments.claude.vectorized_sldsc.vectorized_sldsc_experiment import (
-    _EXACT,
-    _SHARED,
-)
 
 _SAMPLE_SECONDS = 0.02
 
