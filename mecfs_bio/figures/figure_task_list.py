@@ -20,8 +20,9 @@ from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_ppp_rg import (
 from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_ppp_rg import (
     KEATON_DBP_PPP_RG_CIS_EXCLUDED,
 )
-from mecfs_bio.assets.gwas.bmi.pulit_et_al_2018.analysis.pulit_bmi_ppp_rg import \
-    PULIT_ET_AL_2018_BMI_PPP_RG_CIS_EXCLUDED
+from mecfs_bio.assets.gwas.bmi.pulit_et_al_2018.analysis.pulit_bmi_ppp_rg import (
+    PULIT_ET_AL_2018_BMI_PPP_RG_CIS_EXCLUDED,
+)
 from mecfs_bio.assets.gwas.bmi.pulit_et_al_2018.analysis.pulit_bmi_standard_analysis import (
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS,
 )

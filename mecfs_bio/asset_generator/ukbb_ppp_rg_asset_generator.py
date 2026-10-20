@@ -146,7 +146,9 @@ def generate_ppp_rg_assets(
                     PPP_RG_N_ASSAYS_COL,  # PPP_RG_N_SNPS_COL
                 ]
             ),
-            CastFloatsToFloat32Pipe(),
+            CastFloatsToFloat32Pipe(
+                cols_to_exclude=[PPP_RG_RG_P_COL]
+            ),  # Same space, while keeping extra precision for p values to avoid 0 p values
             CastIntsToInt32Pipe(),
             RenameColPipe(
                 PPP_RG_GCOV_INTERCEPT_COL, PPP_RG_DISPLAY_GCOV_INTERCEPT_COL

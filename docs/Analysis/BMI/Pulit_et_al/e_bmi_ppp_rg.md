@@ -19,8 +19,11 @@ The results are below:
 
 ## Interpretation
 
-There are large number of significantly genetically correlated proteins, many of which are consistent with the existing literature
+Many pharma proteomics project proteins are significantly genetically correlated with BMI.  Moreover, the most strongly correlated proteins appear to be consistent with the existing literature
 
-The most strongly genetically correlated protein is leptin (LEP).  This protein is known to produced by fat cells in proportion to fat mass[@yeo2018gene], so its presence make sense
+For instance, the most strongly genetically correlated protein is leptin (LEP), which is known to produced by fat cells in proportion to fat mass[@yeo2018gene]. It is also interesting to observe the strong correlation with complement-pathway-related proteins like complement factor B (CFB).
+
+
+Recall that a significant genetic correlation tells us that there is a shared genetic architecture between BMI and the plasma level of a protein of interest. However, genetic correlation does not inform us about the causal relationship between the protein and BMI. To draw causal conclusions, we would need a causal inference technique like Mendelian Randomization[@hartwig2016two] or LCV[@o2018distinguishing].
 
 
