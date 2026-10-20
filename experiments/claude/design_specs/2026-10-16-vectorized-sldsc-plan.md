@@ -2327,8 +2327,8 @@ def _shared_controls_group(
         m_tot=np.array([shared.m_sum]),
         chi2=inputs.chi2,
     )[:, 0]
-    a = shared.design
-    y = inputs.chi2
+    a = shared.design # (S,q) [snps] shared controls]
+    y = inputs.chi2  # (S)
     blocks = [slice(separators[b], separators[b + 1]) for b in range(len(separators) - 1)]
     a_w_a = np.stack([a[r].T @ (w[r, None] * a[r]) for r in blocks])  # (n_blocks, q, q)
     a_w_y = np.stack([a[r].T @ (w[r] * y[r]) for r in blocks])  # (n_blocks, q)
@@ -2336,7 +2336,7 @@ def _shared_controls_group(
     for start in range(0, len(targets), chunk_size):
         chunk = targets[start : start + chunk_size]
         t = inputs.annotation_ld[:, chunk].astype(np.float64) * scale[:, None]  # (S, k)
-        w_t = w[:, None] * t
+        w_t = w[:, None] * t # (S, k)
         a_w_t = np.stack([a[r].T @ w_t[r] for r in blocks])  # (n_blocks, q, k)
         t_w_t = np.stack([(w_t[r] * t[r]).sum(axis=0) for r in blocks])  # (n_blocks, k)
         t_w_y = np.stack([(w_t[r] * y[r, None]).sum(axis=0) for r in blocks])  # (n_blocks, k)
