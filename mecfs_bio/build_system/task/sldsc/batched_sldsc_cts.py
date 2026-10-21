@@ -46,6 +46,7 @@ from typing import Sequence
 
 import numpy as np
 from attrs import frozen
+from scipy.linalg import lu_factor, lu_solve
 from scipy.stats import norm
 
 from mecfs_bio.constants.sldsc_constants import SLDSCWeighting
@@ -428,7 +429,8 @@ def _shared_controls_group(
     """
     Shared-weight target estimates of one control group. Every model uses the weight w of the
     model without a target column, so W = diag(w) is common to the group: the per-block
-    A' W A (q x q) and A' W y (q,) are formed once, and each chunk of k targets only adds
+    A' W A (q x q) and A' W y (q,) are formed once, the full-data and delete-block A' W A are
+    factored once, and each chunk of k targets only adds
     A' W t_c, t_c' W t_c and t_c' W y (dimensions as in the module docstring).
     """
     w = ldsc_hsq_weights(
@@ -445,6 +447,10 @@ def _shared_controls_group(
     ]
     a_w_a = np.stack([a[r].T @ (w[r, None] * a[r]) for r in blocks])  # (n_blocks, q, q)
     a_w_y = np.stack([a[r].T @ (w[r] * y[r]) for r in blocks])  # (n_blocks, q)
+    full_gram = _factor_shared_gram(a_w_a=a_w_a.sum(axis=0), a_w_y=a_w_y.sum(axis=0))
+    delete_gram = _factor_shared_gram(
+        a_w_a=a_w_a.sum(axis=0)[None] - a_w_a, a_w_y=a_w_y.sum(axis=0)[None] - a_w_y
+    )
     ests, deletes = [], []
     for start in range(0, len(targets), chunk_size):
         chunk = targets[start : start + chunk_size]
@@ -457,8 +463,7 @@ def _shared_controls_group(
         )  # (n_blocks, k)
         ests.append(
             _fwl_target_coef(
-                a_w_a=a_w_a.sum(axis=0),
-                a_w_y=a_w_y.sum(axis=0),
+                gram=full_gram,
                 a_w_t=a_w_t.sum(axis=0),
                 t_w_t=t_w_t.sum(axis=0),
                 t_w_y=t_w_y.sum(axis=0),
@@ -466,8 +471,7 @@ def _shared_controls_group(
         )
         deletes.append(
             _fwl_target_coef(
-                a_w_a=a_w_a.sum(axis=0)[None] - a_w_a,
-                a_w_y=a_w_y.sum(axis=0)[None] - a_w_y,
+                gram=delete_gram,
                 a_w_t=a_w_t.sum(axis=0)[None] - a_w_t,
                 t_w_t=t_w_t.sum(axis=0)[None] - t_w_t,
                 t_w_y=t_w_y.sum(axis=0)[None] - t_w_y,
@@ -478,9 +482,47 @@ def _shared_controls_group(
     )
 
 
+@frozen(slots=True)
+class _FactoredSharedGram:
+    """
+    The shared Gram matrix A' W A of a control group, LU-factored once and reused by every chunk
+    of targets, together with the coefficients of y regressed on A, which do not depend on the
+    target either.
+
+    Leading axes as in _fwl_target_coef (none for the full data, n_blocks for delete values):
+        lu, piv: LU factorization of A' W A, as returned by scipy.linalg.lu_factor:
+            lu (..., q, q), piv (..., q).
+        y_coef: (..., q) (A' W A)^-1 A' W y.
+    """
+
+    lu: np.ndarray
+    piv: np.ndarray
+    y_coef: np.ndarray
+
+    def __attrs_post_init__(self) -> None:
+        assert self.lu.ndim >= 2 and self.lu.shape[-1] == self.lu.shape[-2], (
+            f"lu must be (..., q, q), got {self.lu.shape}"
+        )
+        assert self.piv.shape == self.lu.shape[:-1], (
+            f"piv shape {self.piv.shape} does not match lu shape {self.lu.shape}"
+        )
+        assert self.y_coef.shape == self.lu.shape[:-1], (
+            f"y_coef shape {self.y_coef.shape} does not match lu shape {self.lu.shape}"
+        )
+
+
+def _factor_shared_gram(a_w_a: np.ndarray, a_w_y: np.ndarray) -> _FactoredSharedGram:
+    """
+    a_w_a: (..., q, q) A' W A; a_w_y: (..., q) A' W y.
+    """
+    lu, piv = lu_factor(a_w_a)
+    return _FactoredSharedGram(
+        lu=lu, piv=piv, y_coef=lu_solve((lu, piv), a_w_y[..., None])[..., 0]
+    )
+
+
 def _fwl_target_coef(
-    a_w_a: np.ndarray,
-    a_w_y: np.ndarray,
+    gram: _FactoredSharedGram,
     a_w_t: np.ndarray,
     t_w_t: np.ndarray,
     t_w_y: np.ndarray,
@@ -492,15 +534,12 @@ def _fwl_target_coef(
         beta_t = (t_c' W y - t_c' W A (A' W A)^-1 A' W y) / (t_c' W t_c - t_c' W A (A' W A)^-1 A' W t_c).
 
     Broadcasts over leading axes (none for the full-data estimate, n_blocks for delete values):
-        a_w_a: (..., q, q) A' W A.
-        a_w_y: (..., q) A' W y.
+        gram: factored A' W A and (A' W A)^-1 A' W y.
         a_w_t: (..., q, k) A' W t_c for each of k targets.
         t_w_t, t_w_y: (..., k) t_c' W t_c and t_c' W y.
     Returns (..., k).
     """
-    solution = np.linalg.solve(
-        a_w_a, np.concatenate([a_w_y[..., None], a_w_t], axis=-1)
-    )
-    numerator = t_w_y - (a_w_t * solution[..., :1]).sum(axis=-2)
-    denominator = t_w_t - (a_w_t * solution[..., 1:]).sum(axis=-2)
+    t_coef = lu_solve((gram.lu, gram.piv), a_w_t)  # (..., q, k)
+    numerator = t_w_y - (a_w_t * gram.y_coef[..., None]).sum(axis=-2)
+    denominator = t_w_t - (a_w_t * t_coef).sum(axis=-2)
     return numerator / denominator
