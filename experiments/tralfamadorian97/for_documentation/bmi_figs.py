@@ -3,7 +3,7 @@ from mecfs_bio.assets.gwas.bmi.pulit_et_al_2018.analysis.pulit_bmi_ppp_rg import
     PULIT_ET_AL_2018_BMI_PPP_RG_CIS_EXCLUDED
 from mecfs_bio.assets.gwas.bmi.pulit_et_al_2018.analysis.pulit_bmi_standard_analysis import \
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS
-from mecfs_bio.figures.figure_task_list import MULTI_TISSUE_GENE_EXPRESSION_REF, MULTI_TISSUE_CHROMATIN_REF
+from mecfs_bio.figures.figure_task_list import MULTI_TISSUE_GENE_EXPRESSION_REF, MULTI_TISSUE_CHROMATIN_REF, IMMGEN_REF
 from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
 
 
@@ -19,9 +19,11 @@ def go():
             # PULIT_ET_AL_2018_BMI_PPP_RG_CIS_EXCLUDED.display_frame_task
             # PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[MULTI_TISSUE_GENE_EXPRESSION_REF].plot_task_unwrap,
             # PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[MULTI_TISSUE_GENE_EXPRESSION_REF].multiple_testing_task_parquet,
-            PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[MULTI_TISSUE_CHROMATIN_REF].plot_task_unwrap,
-            PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[MULTI_TISSUE_CHROMATIN_REF].multiple_testing_task_parquet,
-    ]
+            # PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[MULTI_TISSUE_CHROMATIN_REF].plot_task_unwrap,
+            # PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[MULTI_TISSUE_CHROMATIN_REF].multiple_testing_task_parquet,
+            PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+                IMMGEN_REF  ].multiple_testing_task_parquet,
+        ]
     )
     # DEFAULT_RUNNER.run(PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.get_terminal_tasks())
 

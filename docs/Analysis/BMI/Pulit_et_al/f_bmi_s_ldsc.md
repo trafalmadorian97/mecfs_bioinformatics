@@ -51,3 +51,14 @@ id="multi-tissue-chromatin-bmi-table""
 
 
 Again, by far the significant tissues are CNS-related, consistent with known biology.  There are also some miscellaneous significant tissue categories, like foreskin, mammary, and fetal stomach.  Whether these miscellaneous tissue results are biologically meaningful is unclear.
+
+### ImmGen data
+
+
+Next, I applied S-LDSC using the ImmGen project reference dataset.
+
+The results are below
+
+{{
+data_table("",id="bmi-immgen-table")
+}}

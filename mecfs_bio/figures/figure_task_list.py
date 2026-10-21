@@ -543,6 +543,13 @@ ALL_FIGURE_TASKS: list[Task] = [
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     PULIT_ET_AL_2018_BMI_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF].plot_task_unwrap,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF].multiple_testing_task_parquet,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[MULTI_TISSUE_CHROMATIN_REF].plot_task_unwrap,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF].multiple_testing_task_parquet,
     # schematic diagrams for docs
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
