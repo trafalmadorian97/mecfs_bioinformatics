@@ -9,13 +9,6 @@ no two-step intercept estimate. Each model regresses chi-square on [target, cont
 LD scores scaled by N / mean(N), plus an intercept, and reports the target coefficient with a
 200-block jackknife standard error.
 
-M_5_50: for each annotation, the sum of its values over reference-panel SNPs with minor allele
-frequency above 5% (for a binary annotation, the number of common SNPs it contains). In the LDSC
-model E[chi2_j] = N_j * sum_c tau_c * l(j, c) + N_j * a + 1, where l(j, c) is the LD score of SNP j
-with annotation c and tau_c is the per-SNP heritability contributed by annotation c, M_5_50
-converts per-SNP effects into the heritability attributed to an annotation
-(h2_c = tau_c * M_5_50_c). Here the total M_5_50 over a model's annotations scales the aggregate
-heritability estimate that shapes the regression weights.
 
 Models sharing a control set share the design apart from the target column, so they are
 processed together as a control group. In exact mode each model keeps its own regression weights
@@ -39,6 +32,15 @@ Dimension names used throughout this module:
        and the intercept (q = number of controls + B + 1).
     p: number of design columns of one model: its target plus the shared columns (p = q + 1).
     n_blocks: number of jackknife blocks, min(S, 200).
+
+
+M_5_50: for each annotation, the sum of its values over reference-panel SNPs with minor allele
+frequency above 5% (for a binary annotation, the number of common SNPs it contains). In the LDSC
+model E[chi2_j] = N_j * sum_c tau_c * l(j, c) + N_j * a + 1, where l(j, c) is the LD score of SNP j
+with annotation c and tau_c is the per-SNP heritability contributed by annotation c, M_5_50
+converts per-SNP effects into the heritability attributed to an annotation
+(h2_c = tau_c * M_5_50_c). Here the total M_5_50 over a model's annotations scales the aggregate
+heritability estimate that shapes the regression weights.
 """
 
 from collections import defaultdict
