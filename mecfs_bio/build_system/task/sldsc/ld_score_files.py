@@ -4,12 +4,6 @@ Readers for ldsc's chromosome-split LD-score files (<prefix><chr>.l2.ldscore.gz 
 substitution, CHR/BP sort, first-occurrence SNP de-duplication, identical SNP columns across
 files, and M_5_50 summed over the chromosomes present.
 
-M_5_50: for each annotation, the sum of its values over reference-panel SNPs with minor allele
-frequency above 5% (for a binary annotation, the number of common SNPs it contains). In the LDSC
-model E[chi2_j] = N_j * sum_c tau_c * l(j, c) + N_j * a + 1, with l(j, c) the LD score of SNP j
-with annotation c and tau_c the per-SNP heritability contributed by annotation c, M_5_50
-converts per-SNP effects into the heritability attributed to an annotation
-(h2_c = tau_c * M_5_50_c).
 """
 
 from pathlib import Path
