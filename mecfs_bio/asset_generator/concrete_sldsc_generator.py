@@ -48,6 +48,85 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
     SLDSCTaskGenerator,
 )
 
+IMMGEN_LABELS = CellOrTissueLabelRecord(
+    FICUANE_2018_IMMGEN_CATEGORIES,
+    pipe_left=CompositePipe(
+        [
+            StrLowercasePipe(
+                target_column="Name",
+                new_column_name="lower case name",
+            ),
+        ],
+    ),
+    pipe_right=CompositePipe(
+        [
+            StrLowercasePipe(
+                target_column="Cell Type",
+                new_column_name="lower case name",
+            )
+        ]
+    ),
+    left_join_on="lower case name",
+    right_join_on="lower case name",
+)
+
+MULTI_TISSUE_CHROMATIN_LABELS = CellOrTissueLabelRecord(
+    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC,
+    pipe_left=CompositePipe(
+        [
+            SplitExactColPipe(
+                col_to_split="Name",
+                split_by="__",
+                new_col_names=("Cell", "Epigenetic_Assay"),
+            ),
+            StrReplacePipe(
+                target_column="Cell",
+                new_column_name="Cell",
+                replace_what="_ENTEX",
+                replace_with="",
+            ),
+            StrLowercasePipe(
+                target_column="Cell",
+                new_column_name="Cell",
+            ),
+        ],
+    ),
+    pipe_right=CompositePipe(
+        [StrLowercasePipe(target_column="Cell Type", new_column_name="Cell type")]
+    ),
+    left_join_on="Cell",
+    right_join_on="Cell type",
+)
+
+MULTI_TISSUE_GENE_EXPR_LABELS = CellOrTissueLabelRecord(
+    FICUANE_2018_FRANKE_GTEX_CATEGORIES,
+    pipe_left=CompositePipe(
+        [
+            StrLowercasePipe(target_column="Name", new_column_name="Name"),
+            StrReplacePipe(
+                target_column="Name",
+                new_column_name="Name",
+                replace_what=" ",
+                replace_with="_",
+            ),
+        ]
+    ),
+    pipe_right=CompositePipe(
+        [
+            StrLowercasePipe(
+                target_column="Tissue_Or_Cell",
+                new_column_name="Tissue_Or_Cell",
+            ),
+            StrReplacePipe(
+                target_column="Tissue_Or_Cell",
+                new_column_name="Tissue_Or_Cell",
+                replace_what=" ",
+                replace_with="_",
+            ),
+        ]
+    ),
+)
+
 
 def standard_sldsc_task_generator(
     sumstats_task: Task,
@@ -86,27 +165,7 @@ def standard_sldsc_task_generator(
             PartitionedLDScoresRecord(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_IMMGEN_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="ImmGen.ldcts",
-                cell_or_tissue_labels_task=CellOrTissueLabelRecord(
-                    FICUANE_2018_IMMGEN_CATEGORIES,
-                    pipe_left=CompositePipe(
-                        [
-                            StrLowercasePipe(
-                                target_column="Name",
-                                new_column_name="lower case name",
-                            ),
-                        ],
-                    ),
-                    pipe_right=CompositePipe(
-                        [
-                            StrLowercasePipe(
-                                target_column="Cell Type",
-                                new_column_name="lower case name",
-                            )
-                        ]
-                    ),
-                    left_join_on="lower case name",
-                    right_join_on="lower case name",
-                ),
+                cell_or_tissue_labels_task=IMMGEN_LABELS,
                 entry_name="immgen",
             ),
             PartitionedLDScoresRecord(
@@ -119,71 +178,12 @@ def standard_sldsc_task_generator(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="Multi_tissue_chromatin.ldcts",
                 entry_name="multi_tissue_chromatin",
-                cell_or_tissue_labels_task=CellOrTissueLabelRecord(
-                    ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC,
-                    pipe_left=CompositePipe(
-                        [
-                            SplitExactColPipe(
-                                col_to_split="Name",
-                                split_by="__",
-                                new_col_names=("Cell", "Epigenetic_Assay"),
-                            ),
-                            StrReplacePipe(
-                                target_column="Cell",
-                                new_column_name="Cell",
-                                replace_what="_ENTEX",
-                                replace_with="",
-                            ),
-                            StrLowercasePipe(
-                                target_column="Cell",
-                                new_column_name="Cell",
-                            ),
-                        ],
-                    ),
-                    pipe_right=CompositePipe(
-                        [
-                            StrLowercasePipe(
-                                target_column="Cell Type", new_column_name="Cell type"
-                            )
-                        ]
-                    ),
-                    left_join_on="Cell",
-                    right_join_on="Cell type",
-                ),
+                cell_or_tissue_labels_task=MULTI_TISSUE_CHROMATIN_LABELS,
             ),
             PartitionedLDScoresRecord(
                 ref_ld_chr_cts_task=PARTITIONED_MODEL_MULTI_TISSUE_GENE_EXPR_LD_SCORES_EXTRACTED_RD,
                 ref_ld_chr_cts_filename="Multi_tissue_gene_expr.ldcts",
-                cell_or_tissue_labels_task=CellOrTissueLabelRecord(
-                    FICUANE_2018_FRANKE_GTEX_CATEGORIES,
-                    pipe_left=CompositePipe(
-                        [
-                            StrLowercasePipe(
-                                target_column="Name", new_column_name="Name"
-                            ),
-                            StrReplacePipe(
-                                target_column="Name",
-                                new_column_name="Name",
-                                replace_what=" ",
-                                replace_with="_",
-                            ),
-                        ]
-                    ),
-                    pipe_right=CompositePipe(
-                        [
-                            StrLowercasePipe(
-                                target_column="Tissue_Or_Cell",
-                                new_column_name="Tissue_Or_Cell",
-                            ),
-                            StrReplacePipe(
-                                target_column="Tissue_Or_Cell",
-                                new_column_name="Tissue_Or_Cell",
-                                replace_what=" ",
-                                replace_with="_",
-                            ),
-                        ]
-                    ),
-                ),
+                cell_or_tissue_labels_task=MULTI_TISSUE_GENE_EXPR_LABELS,
                 entry_name="multi_tissue_gene_expression",
             ),
         ],
