@@ -14,6 +14,7 @@ from mecfs_bio.asset_generator.concrete_magma_asset_generator import (
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
     standard_sldsc_task_generator,
 )
+from mecfs_bio.asset_generator.concrete_vectorized_sldsc_generator import standard_vectorized_sldsc_task_generator
 from mecfs_bio.asset_generator.h_magma_asset_generator import (
     HMagmaTasks,
     generate_h_magma_tasks,
@@ -236,7 +237,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             ]
         )
 
-    sldsc_tasks = standard_sldsc_task_generator(
+    sldsc_tasks = standard_vectorized_sldsc_task_generator(
         sumstats_task=magma_tasks.sumstats_task,
         base_name=base_name,
         pre_pipe=pre_sldsc_pipe,
