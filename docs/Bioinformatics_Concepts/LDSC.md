@@ -766,6 +766,11 @@ $$
 This equation relates that the average sampling error of $\hat\beta$ to the LDSC intercept, a relationship that is used in Genomic SEM.
 
 
+## Links
+
+[Short talk by Hilary Finucane on LDSC at International Statistical Genetics Workshop](https://www.youtube.com/watch?v=-R130cCKd2A&t=6s)
+
+
 
 \bibliography
 
