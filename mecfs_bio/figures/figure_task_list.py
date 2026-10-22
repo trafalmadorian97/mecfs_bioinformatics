@@ -273,7 +273,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_2_credible_set_plot,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.susie_finemap_strict_plot,
     DECODE_ME_GWAS_37_CHR20_47_653_000_FINEMAP_PALNDROMES.upset_plot_task,
-    # DecodeME programmatic markdown tables (replacing hand-pasted docs tables)
+    # DecodeME programmatic Markdown tables (replacing hand-pasted docs tables)
     DECODE_ME_GWAS_1_LEAD_VARIANTS_MARKDOWN,
     DECODE_ME_MASTER_GENE_LIST_AS_MARKDOWN,
     DECODE_ME_GWAS_1_MAGMA_GENE_TABLE_MARKDOWN,
@@ -543,6 +543,30 @@ ALL_FIGURE_TASKS: list[Task] = [
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     PULIT_ET_AL_2018_BMI_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].plot_task_unwrap,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_GENE_EXPRESSION_REF
+    ].multiple_testing_task_parquet,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF
+    ].plot_task_unwrap,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        MULTI_TISSUE_CHROMATIN_REF
+    ].multiple_testing_task_parquet,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        IMMGEN_REF
+    ].multiple_testing_task_parquet,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        CORCES_ATAC_REF
+    ].multiple_testing_task_parquet,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        CAHOY_CNS_REF
+    ].multiple_testing_task_parquet,
+    PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
+        GTEX_BRAIN_REF
+    ].multiple_testing_task_parquet,
     # schematic diagrams for docs
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
