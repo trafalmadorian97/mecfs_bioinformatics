@@ -50,6 +50,7 @@ from mecfs_bio.constants.sldsc_constants import (
     SLDSC_CTS_NAME_COL,
     SLDSC_CTS_P_COL,
     SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
+    SLDSCDuplicateRsidPolicy,
     SLDSCWeighting,
 )
 
@@ -66,6 +67,9 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
     pre_pipe: applied to the sumstats before analysis.
     min_hapmap3_snps: minimum number of sumstats SNPs in the baseline's HapMap3 regression-SNP
         set; fewer raises, since it usually means an upstream processing problem.
+    duplicate_rsids: raise (default) or drop when an rsID occurs more than once among the
+        regression SNPs (after the HapMap3 allele filter, so rows that filter removes, such as
+        multi-allelic siblings of a HapMap3 SNP, do not count). drop removes every such row.
     """
 
     meta: Meta
@@ -75,6 +79,7 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
     weighting: SLDSCWeighting = "exact"
     pre_pipe: DataProcessingPipe = IdentityPipe()
     min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS
+    duplicate_rsids: SLDSCDuplicateRsidPolicy = "raise"
 
     @property
     def deps(self) -> list[Task]:
@@ -87,6 +92,7 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
             baseline_dir=_directory(fetch, self.baseline_task),
             annotation_set_dir=_directory(fetch, self.annotation_set_task),
             min_hapmap3_snps=self.min_hapmap3_snps,
+            duplicate_rsids=self.duplicate_rsids,
         )
         result = batched_sldsc_cts(
             inputs=aligned.inputs, models=aligned.models, weighting=self.weighting
@@ -105,6 +111,7 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
         weighting: SLDSCWeighting = "exact",
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
+        duplicate_rsids: SLDSCDuplicateRsidPolicy = "raise",
     ) -> "VectorizedCellAnalysisBySLDSCTask":
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
@@ -123,6 +130,7 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
             weighting=weighting,
             pre_pipe=pre_pipe,
             min_hapmap3_snps=min_hapmap3_snps,
+            duplicate_rsids=duplicate_rsids,
         )
 
 
@@ -132,6 +140,7 @@ def _load_aligned_regression(
     baseline_dir: Path,
     annotation_set_dir: Path,
     min_hapmap3_snps: int,
+    duplicate_rsids: SLDSCDuplicateRsidPolicy,
 ) -> AlignedSLDSCRegression:
     """
     Kernel inputs aligned to the regression SNPs. The full prepared references (the annotation
@@ -143,6 +152,7 @@ def _load_aligned_regression(
         baseline=read_prepared_baseline(baseline_dir),
         annotation_set=read_prepared_annotation_set(annotation_set_dir),
         min_hapmap3_snps=min_hapmap3_snps,
+        duplicate_rsids=duplicate_rsids,
     )
     # The loaded gwaslab Sumstats object sits in reference cycles, so its full dataframe is
     # only freed by the cyclic garbage collector.

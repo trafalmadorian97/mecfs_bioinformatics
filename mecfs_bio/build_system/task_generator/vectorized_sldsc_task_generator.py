@@ -23,6 +23,7 @@ from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
 )
 from mecfs_bio.constants.sldsc_constants import (
     SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
+    SLDSCDuplicateRsidPolicy,
     SLDSCWeighting,
 )
 
@@ -56,6 +57,7 @@ class VectorizedSLDSCTaskGenerator:
         weighting: SLDSCWeighting = "exact",
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
+        duplicate_rsids: SLDSCDuplicateRsidPolicy = "raise",
     ) -> "VectorizedSLDSCTaskGenerator":
         return cls(
             {
@@ -74,6 +76,7 @@ class VectorizedSLDSCTaskGenerator:
                         weighting=weighting,
                         pre_pipe=pre_pipe,
                         min_hapmap3_snps=min_hapmap3_snps,
+                        duplicate_rsids=duplicate_rsids,
                     ),
                     labels=entry.cell_or_tissue_labels_task,
                     multiple_testing_alpha=multiple_testing_alpha,

@@ -2,9 +2,8 @@
 Asset generator applying vectorized S-LDSC with the six standard LDSC-SEG annotation sets
 (Finucane et al. 2018), mirroring standard_sldsc_task_generator.
 
-The vectorized S-LDSC Task rejects sumstats with duplicate rsIDs among its regression SNPs.
-Since which of two rows sharing an rsID is correct cannot be told, every row whose rsID
-repeats is dropped before the Task sees the sumstats.
+Rows whose rsID repeats among the S-LDSC regression SNPs are dropped (duplicate_rsids="drop"),
+since which of them is correct cannot be told.
 """
 
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
@@ -22,15 +21,12 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
     PREPARED_MULTI_TISSUE_GENE_EXPR_ANNOTATION_SET,
 )
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
-from mecfs_bio.build_system.task.pipes.uniquepipe import UniquePipe
 from mecfs_bio.build_system.task_generator.vectorized_sldsc_task_generator import (
     PreparedAnnotationSetRecord,
     VectorizedSLDSCTaskGenerator,
 )
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_RSID_COL
 from mecfs_bio.constants.sldsc_constants import SLDSCWeighting
 
 
@@ -79,7 +75,6 @@ def standard_vectorized_sldsc_task_generator(
         multiple_testing_alpha=0.01,
         multiple_testing_method="fdr_bh",
         weighting=weighting,
-        pre_pipe=CompositePipe(
-            [pre_pipe, UniquePipe(by=[GWASLAB_RSID_COL], keep="none")]
-        ),
+        pre_pipe=pre_pipe,
+        duplicate_rsids="drop",
     )

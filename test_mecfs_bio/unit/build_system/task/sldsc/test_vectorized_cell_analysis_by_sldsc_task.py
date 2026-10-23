@@ -39,6 +39,7 @@ from mecfs_bio.constants.sldsc_constants import (
     SLDSC_CTS_NAME_COL,
     SLDSC_CTS_P_COL,
     SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
+    SLDSCDuplicateRsidPolicy,
 )
 from test_mecfs_bio.unit.build_system.task.sldsc.sldsc_fixture import (
     FIXTURE_BASELINE_PATTERN,
@@ -122,7 +123,9 @@ _TEST_MIN_HAPMAP3_SNPS = 1_000
 
 
 def _vectorized(
-    asset_id: str = "vec", min_hapmap3_snps: int = _TEST_MIN_HAPMAP3_SNPS
+    asset_id: str = "vec",
+    min_hapmap3_snps: int = _TEST_MIN_HAPMAP3_SNPS,
+    duplicate_rsids: SLDSCDuplicateRsidPolicy = "raise",
 ) -> VectorizedCellAnalysisBySLDSCTask:
     return VectorizedCellAnalysisBySLDSCTask.create(
         asset_id=asset_id,
@@ -130,6 +133,7 @@ def _vectorized(
         baseline_task=_PREP_BASELINE,
         annotation_set_task=_PREP_SET,
         min_hapmap3_snps=min_hapmap3_snps,
+        duplicate_rsids=duplicate_rsids,
     )
 
 
@@ -207,6 +211,56 @@ def test_invalid_sumstats_fail_fast(tmp_path: Path, corrupt: _FrameCorruption) -
     store = _store(tmp_path, fixture, corrupt(fixture.sumstats_frame))
     with pytest.raises(AssertionError):
         store.run(_vectorized())
+
+
+def _assert_same_coefficients(actual: pl.DataFrame, expected: pl.DataFrame) -> None:
+    for col in (SLDSC_CTS_COEF_COL, SLDSC_CTS_COEF_SE_COL):
+        np.testing.assert_allclose(
+            actual[col].to_numpy(), expected[col].to_numpy(), rtol=1e-12
+        )
+
+
+def test_drop_duplicate_rsids_drops_every_copy(tmp_path: Path) -> None:
+    fixture = write_sldsc_fixture(tmp_path)
+    frame = fixture.sumstats_frame
+    conflicting = frame.iloc[[400]].assign(BETA=-frame["BETA"].iloc[400])
+    duplicated = pd.concat([frame, conflicting], ignore_index=True)
+    actual = _read_result(
+        _store(tmp_path / "duplicated", fixture, duplicated).run(
+            _vectorized(duplicate_rsids="drop")
+        )
+    )
+    expected = _read_result(
+        _store(tmp_path / "removed", fixture, frame.drop(index=[400])).run(
+            _vectorized()
+        )
+    )
+    _assert_same_coefficients(actual, expected)
+
+
+def test_drop_duplicate_rsids_keeps_snp_whose_duplicate_fails_allele_filter(
+    tmp_path: Path,
+) -> None:
+    """
+    A row sharing a regression SNP's rsID but carrying alleles that do not match HapMap3 (for
+    example a multi-allelic sibling) is removed by the HapMap3 allele filter, so the regression
+    SNP itself is not a duplicate and is kept.
+    """
+    fixture = write_sldsc_fixture(tmp_path)
+    frame = fixture.sumstats_frame
+    alleles = {frame["EA"].iloc[400], frame["NEA"].iloc[400]}
+    other = next(b for b in "ACGT" if b not in alleles)
+    sibling = frame.iloc[[400]].assign(EA=other)
+    with_sibling = pd.concat([frame, sibling], ignore_index=True)
+    actual = _read_result(
+        _store(tmp_path / "sibling", fixture, with_sibling).run(
+            _vectorized(duplicate_rsids="drop")
+        )
+    )
+    expected = _read_result(
+        _store(tmp_path / "clean", fixture, frame).run(_vectorized())
+    )
+    _assert_same_coefficients(actual, expected)
 
 
 def test_annotation_set_missing_regression_snps_fails(tmp_path: Path) -> None:

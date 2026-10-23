@@ -10,7 +10,8 @@ N cast to int64 by truncation, and the chi-square filter Z^2 < max(0.001 * max(N
 Fail-fast checks with no gwaslab counterpart: fewer than min_hapmap3_snps sumstats SNPs in the
 baseline's HapMap3 regression-SNP universe raises; a regression SNP with missing N raises
 (gwaslab fills with the median N); a SNP appearing more than once raises (gwaslab's merge would
-duplicate the row).
+duplicate the row), unless the duplicate-rsID policy is drop, in which case every row of such a
+SNP is removed.
 
 M_5_50 (passed through to the kernel with each LD-score column): for each annotation, the sum of
 its values over reference-panel SNPs with minor allele frequency above 5% (for a binary
@@ -23,6 +24,7 @@ per-SNP effects into the heritability attributed to an annotation (h2_c = tau_c 
 import narwhals
 import numpy as np
 import polars as pl
+import structlog
 from attrs import frozen
 from gwaslab.bd.bd_get_hapmap3 import _get_hapmap_full_polars
 
@@ -49,6 +51,9 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
     GWASLAB_Z_COL,
 )
+from mecfs_bio.constants.sldsc_constants import SLDSCDuplicateRsidPolicy
+
+logger = structlog.get_logger()
 
 _CHISQ_FILTER_N_COEF = 0.001
 _CHISQ_FILTER_FLOOR = 80.0
@@ -135,7 +140,10 @@ def build_regression_inputs(
     baseline: PreparedBaseline,
     annotation_set: PreparedAnnotationSet,
     min_hapmap3_snps: int,
+    duplicate_rsids: SLDSCDuplicateRsidPolicy,
 ) -> AlignedSLDSCRegression:
+    if duplicate_rsids == "drop":
+        sumstats = _drop_duplicate_rsids(sumstats)
     joined = _join_baseline(sumstats=sumstats, baseline=baseline)
     _require_min_snps(joined=joined, min_hapmap3_snps=min_hapmap3_snps)
     regression = _filter_chisq(joined=_cast_n(joined=joined))
@@ -163,6 +171,17 @@ def build_regression_inputs(
             for m in annotation_set.models
         ),
     )
+
+
+def _drop_duplicate_rsids(sumstats: pl.DataFrame) -> pl.DataFrame:
+    """Remove every row whose rsID occurs more than once."""
+    duplicated = pl.col(SNP_COL).is_duplicated()
+    count = sumstats.select(duplicated.sum()).item()
+    if count:
+        logger.warning(
+            "dropping rows with duplicate S-LDSC regression rsIDs", count=count
+        )
+    return sumstats.filter(~duplicated)
 
 
 def _join_baseline(sumstats: pl.DataFrame, baseline: PreparedBaseline) -> pl.DataFrame:

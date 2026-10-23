@@ -108,6 +108,7 @@ def main(
         baseline=baseline,
         annotation_set=annotation_set,
         min_hapmap3_snps=task.min_hapmap3_snps,
+        duplicate_rsids=task.duplicate_rsids,
     )
     print(
         f"  aligned annotation_ld {aligned.inputs.annotation_ld.shape} "

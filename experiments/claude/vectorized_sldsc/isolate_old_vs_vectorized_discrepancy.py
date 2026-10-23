@@ -3,9 +3,9 @@ Isolate why a vectorized S-LDSC result differs from the stored original (gwaslab
 standard-analysis trait and annotation set.
 
 Recomputes, in a temporary directory (nothing is written to the asset store), the original
-gwaslab Task and the vectorized Task, each with and without the duplicate-rsID drop that the
-vectorized standard generator adds, and compares every variant with the stored original and
-stored vectorized results (max relative difference in coefficient and p-value).
+gwaslab Task on the current inputs and the vectorized Task, and compares both with the stored
+original and stored vectorized results (max relative difference in coefficient and p-value).
+A stored original that differs from the fresh one was computed from older inputs.
 
 Usage:
     pixi r python experiments/claude/vectorized_sldsc/isolate_old_vs_vectorized_discrepancy.py <base_name> <entry> 2>&1 | tee experiments/claude/vectorized_sldsc/isolate_<base_name>_<entry>.log
@@ -15,7 +15,6 @@ import sys
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-import attrs
 import polars as pl
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
@@ -24,7 +23,6 @@ from mecfs_bio.asset_generator.concrete_sldsc_generator import (
 )
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.task.base_task import Task
-from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.sldsc.vectorized_cell_analysis_by_sldsc_task import (
     VectorizedCellAnalysisBySLDSCTask,
 )
@@ -80,25 +78,17 @@ def main() -> None:
     vectorized = _find_vectorized_cell_task(
         f"{base_name}_{entry}_cell_analysis_by_s_ldsc{VEC_ID_SUFFIX}"
     )
-    with_dedup = vectorized.pre_pipe
-    assert isinstance(with_dedup, CompositePipe)
-    without_dedup = with_dedup.pipes[0]
     original = standard_sldsc_task_generator(
         sumstats_task=vectorized.source_sumstats_task,
         base_name=base_name,
-        pre_pipe=without_dedup,
+        pre_pipe=vectorized.pre_pipe,
     ).partitioned_tasks[entry].cell_analysis_task
 
     results = {
         "stored original": _stored(original),
         "stored vectorized": _stored(vectorized),
     }
-    runs = {
-        "fresh original": original,
-        "fresh original + dedup": attrs.evolve(original, pre_pipe=with_dedup),
-        "fresh vectorized - dedup": attrs.evolve(vectorized, pre_pipe=without_dedup),
-        "fresh vectorized": vectorized,
-    }
+    runs = {"fresh original": original, "fresh vectorized": vectorized}
     for label, task in runs.items():
         print(f"running {label}...", flush=True)
         results[label] = _execute(task)

@@ -9,6 +9,11 @@ from typing import Literal
 # weight formula), enabling a Frisch-Waugh shortcut; faster but approximate.
 SLDSCWeighting = Literal["exact", "shared_controls"]
 
+# What to do with sumstats rsIDs that occur more than once among the S-LDSC regression SNPs
+# (after the HapMap3 allele filter). raise: fail fast. drop: remove every row of each such rsID,
+# since which row is correct cannot be told. gwaslab instead keeps them all, double-counting.
+SLDSCDuplicateRsidPolicy = Literal["raise", "drop"]
+
 # Result-table columns written by ldsc's cell_type_specific and by the vectorized Task.
 SLDSC_CTS_NAME_COL = "Name"
 SLDSC_CTS_COEF_COL = "Coefficient"
