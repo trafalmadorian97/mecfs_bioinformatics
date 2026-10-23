@@ -1,6 +1,9 @@
 """
 Asset generator applying vectorized S-LDSC with the six standard LDSC-SEG annotation sets
 (Finucane et al. 2018), mirroring standard_sldsc_task_generator.
+
+Rows whose rsID repeats among the S-LDSC regression SNPs are dropped (duplicate_rsids="drop"),
+since which of them is correct cannot be told.
 """
 
 from mecfs_bio.asset_generator.concrete_sldsc_generator import (
@@ -73,4 +76,5 @@ def standard_vectorized_sldsc_task_generator(
         multiple_testing_method="fdr_bh",
         weighting=weighting,
         pre_pipe=pre_pipe,
+        duplicate_rsids="drop",
     )

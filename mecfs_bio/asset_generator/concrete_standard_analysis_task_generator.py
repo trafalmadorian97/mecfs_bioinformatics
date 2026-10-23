@@ -11,8 +11,8 @@ from mecfs_bio.asset_generator.annovar_37_basic_rsid_assignment import (
 from mecfs_bio.asset_generator.concrete_magma_asset_generator import (
     concrete_magma_assets_generate,
 )
-from mecfs_bio.asset_generator.concrete_sldsc_generator import (
-    standard_sldsc_task_generator,
+from mecfs_bio.asset_generator.concrete_vectorized_sldsc_generator import (
+    standard_vectorized_sldsc_task_generator,
 )
 from mecfs_bio.asset_generator.h_magma_asset_generator import (
     HMagmaTasks,
@@ -89,8 +89,8 @@ from mecfs_bio.build_system.task_generator.master_gene_list_task_generator impor
     MasterGeneListTasks,
     generate_master_gene_list_tasks,
 )
-from mecfs_bio.build_system.task_generator.sldsc_task_generator import (
-    SLDSCTaskGenerator,
+from mecfs_bio.build_system.task_generator.vectorized_sldsc_task_generator import (
+    VectorizedSLDSCTaskGenerator,
 )
 from mecfs_bio.constants.allele_frequency_panel_constants import GnomadV2Group
 from mecfs_bio.constants.gwaslab_constants import (
@@ -110,7 +110,7 @@ class StandardAnalysisTaskGroup:
     Collection of standard analysis tasks for GWAS summary statistics.
     """
 
-    sldsc_tasks: SLDSCTaskGenerator
+    sldsc_tasks: VectorizedSLDSCTaskGenerator
     magma_tasks: MagmaTaskGeneratorFromRaw
     labeled_lead_variant_tasks: LabelLeadVariantsTasks
     master_gene_list_tasks: MasterGeneListTasks | None
@@ -236,7 +236,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
             ]
         )
 
-    sldsc_tasks = standard_sldsc_task_generator(
+    sldsc_tasks = standard_vectorized_sldsc_task_generator(
         sumstats_task=magma_tasks.sumstats_task,
         base_name=base_name,
         pre_pipe=pre_sldsc_pipe,
