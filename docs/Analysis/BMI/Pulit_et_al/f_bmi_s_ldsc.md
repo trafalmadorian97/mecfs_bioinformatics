@@ -29,11 +29,11 @@ I used the standard reference datasets prepared by the authors of the S-LDSC met
 
 The plot and table below show the results of S-LDSC applied to the BMI GWAS using the GTEx and Franke lab gene expression reference datasets. In the plot, the x-axis corresponds to cell type, while the y-axis corresponds to $-\log_{10}(p)$.  Points are colored according to tissue category.  Large points indicate cell/tissue types deemed significant by the Benjamini-Hochberg procedure at an FDR of 0.01[@benjamini1995controlling].
 
-{{ plotly_embed("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="bmi-sldsc-gene-expression") }}
+{{ plotly_embed("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot_vec/sldsc_scatter.html", id="bmi-sldsc-gene-expression") }}
 
 
 {{
-data_table("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_gene_expression_s_ldsc_cell_analysis_parquet_table.parquet", id="bmi-gene-expression-table")
+data_table("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_gene_expression_s_ldsc_cell_analysis_parquet_table_vec.parquet", id="bmi-gene-expression-table")
 }}
 
 Consistent with the known biology of obesity and our previous [MAGMA results](c_bmi_magma_gtex.md), all significant associations are in the central nervous system category.
@@ -43,9 +43,9 @@ Consistent with the known biology of obesity and our previous [MAGMA results](c_
 
 I next applied S-LDSC using the Roadmap/ ENCODE epigenetic reference dataset.  The results are in the plot and expandable table below:
 
-{{ plotly_embed("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_chromatin_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="decode-bmi-sldsc-chromatin") }}
+{{ plotly_embed("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_chromatin_cell_analysis_s_ldsc_plot_vec/sldsc_scatter.html", id="decode-bmi-sldsc-chromatin") }}
 
-{{data_table("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_chromatin_s_ldsc_cell_analysis_parquet_table.parquet",
+{{data_table("docs/_figs/pulit_et_al_2018_bmi_multi_tissue_chromatin_s_ldsc_cell_analysis_parquet_table_vec.parquet",
 id="multi-tissue-chromatin-bmi-table"
 )}}
 
@@ -60,7 +60,7 @@ Next, I applied S-LDSC using the ImmGen project reference dataset.
 The results are below
 
 {{
-data_table("docs/_figs/pulit_et_al_2018_bmi_immgen_s_ldsc_cell_analysis_parquet_table.parquet",id="bmi-immgen-table")
+data_table("docs/_figs/pulit_et_al_2018_bmi_immgen_s_ldsc_cell_analysis_parquet_table_vec.parquet",id="bmi-immgen-table")
 }}
 
 There are no significant immune cell types.  This is consistent with BMI being primarily neural rather than immune.
@@ -72,7 +72,7 @@ The results of applying S-LDSC using the epigenetic reference data from the Corc
 
 
 {{
-data_table("docs/_figs/pulit_et_al_2018_bmi_corces_atac_s_ldsc_cell_analysis_parquet_table.parquet",id="bmi-corces-table")
+data_table("docs/_figs/pulit_et_al_2018_bmi_corces_atac_s_ldsc_cell_analysis_parquet_table_vec.parquet",id="bmi-corces-table")
 }}
 
 
@@ -87,12 +87,12 @@ The next two reference datasets pertain to the nervous system.
 
 
 {{
-data_table("docs/_figs/pulit_et_al_2018_bmi_cahoy_cns_s_ldsc_cell_analysis_parquet_table.parquet",id="bmi-cahoy-table")
+data_table("docs/_figs/pulit_et_al_2018_bmi_cahoy_cns_s_ldsc_cell_analysis_parquet_table_vec.parquet",id="bmi-cahoy-table")
 }}
 
 
 {{
-data_table("docs/_figs/pulit_et_al_2018_bmi_gtex_brain_s_ldsc_cell_analysis_parquet_table.parquet",id="bmi-gtex-brain-table")
+data_table("docs/_figs/pulit_et_al_2018_bmi_gtex_brain_s_ldsc_cell_analysis_parquet_table_vec.parquet",id="bmi-gtex-brain-table")
 }}
 
 

@@ -32,6 +32,7 @@ from mecfs_bio.build_system.task.lcv.lcv_task import (
 )
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
+from mecfs_bio.build_system.task.pipes.drop_indels_pipe import DropIndelsPipe
 from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
@@ -122,12 +123,14 @@ def lcv_generate(
                 gwas_pipe=CompositePipe(
                     [
                         us.pipe,
+                        DropIndelsPipe(),
                         unique_pipe,
                     ]
                 ),
                 ref_pipe=CompositePipe(
                     [
                         ds.pipe,
+                        DropIndelsPipe(),
                         unique_pipe,
                     ]
                 ),

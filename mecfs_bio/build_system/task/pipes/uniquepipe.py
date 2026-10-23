@@ -14,7 +14,7 @@ class UniquePipe(DataProcessingPipe):
     order_by: str | Sequence[str] | None = None
 
     def __attrs_post_init__(self) -> None:
-        if self.keep != "any":
+        if self.keep not in ("any", "none"):
             assert (
                 self.order_by is not None
             )  # if we have a rule for deduplication based on ordering, we need to define an order
