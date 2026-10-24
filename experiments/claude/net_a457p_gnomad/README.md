@@ -69,6 +69,79 @@ Population / clinical:
 - Qu 2025 Clin Auton Res (PMID 39964606): pediatric POTS GWAS (207 cases) + WES (87 cases); no genome-wide
   significant loci; A457P cited only as prior work.
 
+Full text read (user-supplied PDF): Bayles et al. 2012 ATVB. Genetics arm was 20 POTS vs 65 controls: none of 16 known
+NET coding variants (incl. A457P) in the POTS patients; synonymous rs5564 (exon 5 splice consensus) nominally associated
+(P=0.0014), unreplicated. Epigenetic arm: leukocyte ChIP in only 6 vs 6 women (more H3K9me3/H3K27me3/MeCP2, less
+H3K9/14ac/H3K4me3 at the SLC6A2 promoter in POTS); leukocyte NET protein 0.66x controls by Western blot; NET mRNA
+in leukocytes was too low to quantify, which undercuts leukocytes as a proxy for sympathetic neurons.
+
+## PheWAS-style survey (phewas_slc6a2.py, phewas_lookups.py; summaries via summarize_phewas.py, summarize_lookups.py)
+
+Queried 2026-10-24. Outputs: phewas_slc6a2.json (committed) and genebass_slc6a2.parquet, finngen_slc6a2_lookups.parquet,
+ot_gwas_credible_sets_containing_lookups.parquet (gitignored; regenerate with phewas_lookups.py).
+
+### a) Variants that change the protein
+
+- Genebass (UKB 394k exomes, SAIGE-GENE SKAT-O, ~4,500 phenotypes): no Bonferroni-significant phenotype for
+  pLoF (16 variants; top: M99 biomechanical lesions p=2.7e-5, plateletcrit 1.6e-4, essential hypertension 2.2e-4 with
+  carriers at higher risk, "trouble concentrating" 2.4e-4, "irritability" 2.1e-4) or missense|LC (280 variants; top
+  MCV 1.9e-4). Counts of p<1e-3 (9 and 12 vs ~4.5 expected) are similar to the synonymous negative control (20),
+  so no excess. Open Targets gene_burden (Genebass / AZ PheWAS / Regeneron) has no SLC6A2 entries, consistent.
+- Common coding variants (gnomAD v4 AF >= 0.1%): T99I rs1805065 (1.7%), V245I rs1805066 (0.9%), C27Y rs11568343 (0.8%),
+  start-lost p.Met1? rs552629380 (0.13%), T283R rs45564432 (0.1%, absent from FinnGen). FinnGen R12 PheWAS
+  (2,470 endpoints, Bonferroni 2e-5): nothing significant; all top hits p >= 1.5e-4 and look like noise.
+- MVP PheWAS (Verma 2024, via Open Targets credible sets L2G -> SLC6A2): a cluster of very rare (EAF ~0.04-0.1%) imputed
+  variants with huge effects (log-OR 2-3.7) for unrelated phecodes: hyperaldosteronism/adrenal hyperfunction
+  (rs564420311, p=2.8e-12), spinal cord injury, anaphylaxis, amputation stump, chondromalacia. The pattern (rare,
+  imputed, implausible ORs, unrelated traits, PICS sets) looks artefactual; hyperaldosteronism is biologically curious but
+  unconfirmed.
+
+### b) Variants that change expression
+
+- SLC6A2 cis-eQTLs exist (GTEx v8/v10, TwinsUK): strongest in skin (rs17841327 / rs9937434, alt lowers expression,
+  p~1e-71..1e-94), adrenal gland (rs9937434, NES -0.45, p=6e-18), testis (rs187714), esophagus (rs55830311), plus
+  sQTL/tuQTL. Caveat: the tissues where NET matters (sympathetic ganglia, locus coeruleus, adrenal medulla) are absent
+  or diluted in GTEx (adrenal samples are mostly cortex), so these eQTLs are uncertain proxies for neuronal NET.
+- Colocalisation with GWAS (Open Targets, COLOC/eCAVIAR, h4 >= 0.8):
+  - testis eQTL (rs187714) <-> birth weight (Warrington 2019, lead p=3e-10; UKB p~2e-6), h4 0.99, L2G top gene SLC6A2.
+  - testis/placenta tuQTL (rs42460, rs36007) <-> placental weight (Beaumont, p=7.6e-10; L2G top gene CES1).
+  - esophagus eQTL (rs55830311) <-> height (Yengo), appendicular lean mass, plasma MMP-2 levels (h4 0.83-0.93; MMP2 is
+    a neighbouring gene, so likely a shared regulatory region rather than NET biology).
+  - The adrenal and skin eQTLs do not colocalise with any GWAS trait.
+  None of these is an autonomic, cardiovascular or psychiatric trait.
+- FinnGen R12 PheWAS of the eQTL leads: nothing significant. Sub-threshold: expression-lowering alleles of the
+  skin/adrenal eQTL associate with otosclerosis (beta +0.11-0.12, p 5e-5 / 1e-4) and, weakly, with less essential
+  hypertension (p~0.01); rs42460 with "other menopausal disorders" (p=4.5e-6, passes per-variant Bonferroni but not
+  across the 11 variants looked up).
+- rs3785151 (MVP sensorineural hearing loss, p=3.8e-9, PIP 0.63, L2G SLC6A2 0.83; only a weak skin eQTL) does not
+  replicate in FinnGen hearing-loss endpoints (p>0.05).
+- FinnGen note: its variant API returns statistics only for nominally associated endpoints (~5%) and nulls otherwise;
+  Bonferroni/expected counts above use all 2,470 endpoints. FinnGen has no POTS/orthostatic intolerance endpoint, and
+  ICD-coded biobanks capture POTS poorly in general.
+- Mouse (MGI/IMPC via Open Targets): Slc6a2 knockouts show raised plasma noradrenaline/adrenaline and dopamine, raised
+  heart rate (A457P knock-in het), lower body temperature and weight, anxiety/despair-like behaviour, enhanced
+  cocaine/psychostimulant responses, increased antinociception, and in IMPC homozygotes small heart, abnormal gait and
+  incomplete preweaning lethality.
+
+### Context: other ways NET function has been changed in humans
+
+- Pharmacological NET blockade reproduces the POTS phenotype: reboxetine in healthy volunteers (Schroeder 2002
+  Circulation) raised tilt heart rate to 119 vs 84 bpm on placebo, with fewer vasovagal reactions.
+- Common NET promoter/synonymous variants (rs28386840 -3081A/T, rs2242446 -182T/C, rs5569 G1287A) have a long, inconsistent
+  candidate-gene literature for ADHD risk; a 2021 meta-analysis found rs28386840 T carriers responded better to
+  methylphenidate (OR ~2), still needing replication. Open Targets has no ADHD (or any psychiatric) GWAS credible set
+assigned to SLC6A2.
+
+### Interpretation
+
+Human population genetics has little to say about NET dosage beyond the A457P family: protein-altering variation is
+too rare for gene-level tests to be well powered (no signal in UKB exomes), and the eQTLs that exist are in tissues of
+doubtful relevance and colocalise only with growth traits (birth weight, placental weight, height). Most of the
+phenotype evidence for reduced NET comes from pharmacology (NET inhibitors) and mouse models. Possible next steps:
+look up the SLC6A2 region in DecodeME (ME/CFS) and POTS-adjacent GWAS available in this repo, and test
+quantitative autonomic traits (resting/standing heart rate, BP) in Pan-UKBB summary statistics, which ICD-based
+FinnGen endpoints cannot capture.
+
 ## Bottom line
 
 - Effect on the protein is well established: strongly damaging by every modern predictor except PrimateAI,
