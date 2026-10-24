@@ -25,9 +25,24 @@ class WF:
     synapse_downloader: SynapseDownloader
 
     def download_from_url(
-        self, url: str, local_path: Path, md5_hash: str | None
+        self,
+        url: str,
+        local_path: Path,
+        md5_hash: str | None,
+        requested_connections: int | None = None,
     ) -> None:
-        self.downloader.download(url, local_path, md5_hash)
+        """
+        Download the file at url into local_path and verify its md5 hash.
+
+        requested_connections is a hint for the number of simultaneous connections to use.
+        Not all downloaders honor it.
+        """
+        self.downloader.download(
+            url=url,
+            local_path=local_path,
+            md5_hash=md5_hash,
+            requested_connections=requested_connections,
+        )
 
     def download_from_synapse(
         self, synid: str, dest_dir: Path, expected_name: str
