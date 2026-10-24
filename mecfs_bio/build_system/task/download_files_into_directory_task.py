@@ -24,13 +24,20 @@ logger = structlog.get_logger()
 class DownloadEntry:
     """
     A file to download into the directory,
-    possibly including a command line operation to call on the downloaded file
+    possibly including a command line operation to call on the downloaded file.
+    connections optionally requests a number of simultaneous connections for the download.
     """
 
     url: str
     filename: str
     md5hash: str | None
     post_download_command: Callable[[Path], list[str]] | None
+    connections: int | None = None
+
+    def __attrs_post_init__(self) -> None:
+        assert self.connections is None or self.connections >= 1, (
+            f"connections must be positive, got {self.connections}"
+        )
 
     @classmethod
     def create_with_bcftools_index(
@@ -61,7 +68,12 @@ class DownloadFilesIntoDirectoryTask(Task):
         for entry in self.entries:
             target = scratch_dir / entry.filename
             logger.debug(f"Downloading {entry}")
-            wf.download_from_url(entry.url, target, md5_hash=entry.md5hash)
+            wf.download_from_url(
+                url=entry.url,
+                local_path=target,
+                md5_hash=entry.md5hash,
+                requested_connections=entry.connections,
+            )
             if entry.post_download_command is not None:
                 post_download_command = entry.post_download_command(target)
                 logger.debug(
