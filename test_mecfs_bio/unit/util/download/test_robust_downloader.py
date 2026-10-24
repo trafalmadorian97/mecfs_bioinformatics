@@ -1,8 +1,14 @@
 from pathlib import Path
 
 import attrs
+import pytest
 
-from mecfs_bio.util.download.robust_download import Downloader, robust_download
+from mecfs_bio.util.download.robust_download import (
+    ARIA2_MAX_CONNECTIONS_PER_SERVER,
+    AriaDownloader,
+    Downloader,
+    robust_download,
+)
 from mecfs_bio.util.download.verify import calc_md5_checksum
 
 _TRUE_FILE_CONTENTS = "ABC"
@@ -48,3 +54,30 @@ def test_robust_downloader(tmp_path: Path) -> None:
     )
     assert calc_md5_checksum(out_path) == expected_hash
     assert dl.num_calls == 3
+
+
+def _flag_value(cmd: list[str], flag: str) -> str:
+    return cmd[cmd.index(flag) + 1]
+
+
+def test_aria_downloader_sets_connections_and_split(tmp_path: Path) -> None:
+    """
+    aria2 opens min(-x, -s) connections to a server, so both must be set to the requested count.
+    """
+    commands: list[list[str]] = []
+
+    def recording_executor(cmd: list[str]) -> str:
+        commands.append(cmd)
+        return ""
+
+    num_connections = 8
+    dl = AriaDownloader(num_simil=num_connections, executor=recording_executor)
+    assert dl.download("fake_url", local_path=tmp_path / "out")
+    (cmd,) = commands
+    assert _flag_value(cmd, "-x") == str(num_connections)
+    assert _flag_value(cmd, "-s") == str(num_connections)
+
+
+def test_aria_downloader_rejects_too_many_connections() -> None:
+    with pytest.raises(AssertionError):
+        AriaDownloader(num_simil=ARIA2_MAX_CONNECTIONS_PER_SERVER + 1)

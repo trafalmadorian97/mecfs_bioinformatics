@@ -1,6 +1,7 @@
 import tempfile
 import time
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from pathlib import Path
 from subprocess import CalledProcessError
 
@@ -11,6 +12,8 @@ from mecfs_bio.util.download.verify import hash_matches
 from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
+
+ARIA2_MAX_CONNECTIONS_PER_SERVER = 16
 
 
 class Downloader(ABC):
@@ -23,43 +26,72 @@ class Downloader(ABC):
         pass
 
 
+def build_aria2c_command(
+    url: str, local_path: Path, summary_interval: int, num_connections: int
+) -> list[str]:
+    """
+    Build the aria2c command line that downloads url to local_path.
+
+    num_connections is passed as both -x (max connections per server) and -s (split count),
+    since aria2 opens min(-x, -s) connections to a single server.
+    """
+    return [
+        "pixi",
+        "r",
+        "--environment",
+        "download-env",
+        "aria2c",
+        f"--summary-interval={summary_interval}",
+        "-x",
+        str(num_connections),
+        "-s",
+        str(num_connections),
+        "--continue=true",
+        "--allow-overwrite=true",
+        "--user-agent=Wget/1.21.4",  # This is needed, otherwise Dropbox rejects download attempts
+        "--auto-file-renaming=false",
+        "--max-tries=8",
+        "--retry-wait=5",
+        "--timeout=30",
+        "--connect-timeout=30",
+        "--file-allocation=none",
+        "--dir",
+        str(local_path.parent),
+        "--out",
+        local_path.name,
+        url,
+    ]
+
+
 @frozen(slots=True)
 class AriaDownloader(Downloader):
     """
     Downloader that uses aria2
     https://aria2.github.io/manual/en/html/aria2c.html
+
+    num_simil is the number of simultaneous connections to the server, between 1 and
+    ARIA2_MAX_CONNECTIONS_PER_SERVER.
     """
 
     summary_interval: int = 10
     num_simil: int = 1
+    executor: Callable[[list[str]], str] = execute_command
+
+    def __attrs_post_init__(self) -> None:
+        assert 1 <= self.num_simil <= ARIA2_MAX_CONNECTIONS_PER_SERVER, (
+            f"num_simil must be between 1 and {ARIA2_MAX_CONNECTIONS_PER_SERVER}, got {self.num_simil}"
+        )
 
     def download(self, url: str, local_path: Path) -> bool:
         try:
-            cmd = [
-                "pixi",
-                "r",
-                "--environment",
-                "download-env",
-                "aria2c",
-                f"--summary-interval={self.summary_interval}",
-                "-x",
-                str(self.num_simil),
-                "--continue=true",
-                "--allow-overwrite=true",
-                "--user-agent=Wget/1.21.4",  # This is needed, otherwise Dropbox rejects download attempts
-                "--auto-file-renaming=false",
-                "--max-tries=8",
-                "--retry-wait=5",
-                "--timeout=30",
-                "--connect-timeout=30",
-                "--file-allocation=none",
-                "--dir",
-                str(local_path.parent),
-                "--out",
-                local_path.name,
-                url,
-            ]
-            execute_command(cmd=cmd)
+            self.executor(
+                build_aria2c_command(
+                    url=url,
+                    local_path=local_path,
+                    summary_interval=self.summary_interval,
+                    num_connections=self.num_simil,
+                )
+            )
             return True
         except CalledProcessError as e:
             logger.error(f"Failed to download {url}: {e}")
