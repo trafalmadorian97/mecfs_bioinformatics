@@ -2,6 +2,7 @@
 Region plot of DecodeME GWAS-1 around SLC6A2, the gene encoding the norepinephrine transporter (NET).
 
 Centered on the midpoint of the SLC6A2 gene body (GRCh37 chr16:55,689,516-55,740,102).
+Almost no variant in this window reaches P < 0.01, so all variants are drawn (skip=0) rather than only those with P < 0.01.
 """
 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_gwas_1_annovar_37_sumstats import (
@@ -18,4 +19,5 @@ DECODE_ME_SLC6A2_REGION_PLOT_37 = GwasLabRegionPlotTargetLocusTask.create(
     chrom=16,
     pos=55_714_809,
     buffer=250_000,
+    skip=0,
 )

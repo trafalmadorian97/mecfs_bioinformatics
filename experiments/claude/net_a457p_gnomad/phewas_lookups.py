@@ -30,7 +30,7 @@ GENEBASS_PHENO_KEY = ["trait_type", "phenocode", "pheno_sex", "coding", "modifie
 TIMEOUT_SECONDS = 900
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class LookupVariant:
     variant_id: str
     """GRCh38 chrom-pos-ref-alt."""

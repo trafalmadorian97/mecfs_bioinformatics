@@ -87,7 +87,7 @@ SLC6A2_GENE_IDS = ("6530", "ENSG00000103546")
 """MAGMA gene ids: Entrez and Ensembl, depending on the gene-location file used."""
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class NamedVariant:
     rsid: str
     pos_37: int
@@ -119,7 +119,7 @@ NAMED_VARIANTS = (
 )
 
 
-@attrs.frozen
+@attrs.frozen(slots=True)
 class GwasSource:
     label: str
     snp_table_task: Task
