@@ -24,4 +24,5 @@ KEATON_DBP_SLC6A2_REGION_PLOT_37 = GwasLabRegionPlotTargetLocusTask.create(
     chrom=16,
     pos=55_714_809,
     buffer=250_000,
+    title="Diastolic blood pressure (Keaton et al. 2024): SLC6A2 (norepinephrine transporter) region",
 )

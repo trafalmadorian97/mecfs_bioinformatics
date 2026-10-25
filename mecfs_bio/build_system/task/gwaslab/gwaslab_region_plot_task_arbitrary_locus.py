@@ -46,6 +46,7 @@ class GwasLabRegionPlotTargetLocusTask(Task):
 
     skip: variants with -log10(P) below this value are not drawn.  Lower it (e.g. to 0) to show every variant
     in a region without strong associations.
+    title: figure title; None draws no title.
     """
 
     meta: Meta
@@ -54,7 +55,8 @@ class GwasLabRegionPlotTargetLocusTask(Task):
     chrom: int
     pos: int
     buffer: int = 500_000
-    skip: float = DEFAULT_REGION_PLOT_SKIP
+    skip: int = DEFAULT_REGION_PLOT_SKIP
+    title: str | None = None
 
     def __attrs_post_init__(self) -> None:
         assert self.skip >= 0, f"skip must be a non-negative -log10(P), got {self.skip}"
@@ -86,6 +88,7 @@ class GwasLabRegionPlotTargetLocusTask(Task):
             buffer=self.buffer,
             output_path=target_path / "region_plot.png",
             skip=self.skip,
+            title=self.title,
         )
         return DirectoryAsset(
             path=target_path,
@@ -100,7 +103,8 @@ class GwasLabRegionPlotTargetLocusTask(Task):
         chrom: int,
         pos: int,
         buffer: int = 500_000,
-        skip: float = DEFAULT_REGION_PLOT_SKIP,
+        skip: int = DEFAULT_REGION_PLOT_SKIP,
+        title: str | None = None,
     ) -> Self:
         reference_meta = sumstats_task.meta
         assert isinstance(reference_meta, GWASLabSumStatsMeta)
@@ -118,4 +122,5 @@ class GwasLabRegionPlotTargetLocusTask(Task):
             pos=pos,
             buffer=buffer,
             skip=skip,
+            title=title,
         )

@@ -20,4 +20,5 @@ DECODE_ME_SLC6A2_REGION_PLOT_37 = GwasLabRegionPlotTargetLocusTask.create(
     pos=55_714_809,
     buffer=250_000,
     skip=0,
+    title="DecodeME GWAS-1 (ME/CFS): SLC6A2 (norepinephrine transporter) region",
 )
