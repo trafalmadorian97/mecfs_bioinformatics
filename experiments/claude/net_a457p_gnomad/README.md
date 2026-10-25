@@ -142,6 +142,46 @@ look up the SLC6A2 region in DecodeME (ME/CFS) and POTS-adjacent GWAS available 
 quantitative autonomic traits (resting/standing heart rate, BP) in Pan-UKBB summary statistics, which ICD-based
 FinnGen endpoints cannot capture.
 
+## SLC6A2 region in GWAS already in this repo (slc6a2_region_lookup_repo_gwas.py, slc6a2_dbp_signal.py)
+
+Run 2026-10-24 against the main checkout's asset store (read-only; unmaterialized assets are reported, not built).
+Output: slc6a2_region_lookup_repo_gwas.tsv, slc6a2_dbp_signal.json. Windows are GRCh37; "near" = SLC6A2 +/- 50 kb,
+MAGMA = gene-level P for SLC6A2 from each GWAS's materialized MAGMA gene analysis (~19k genes).
+
+| GWAS | MAGMA P (Z) | near: min P / n SNPs | comment |
+|---|---|---|---|
+| DecodeME GWAS-1 (ME/CFS) | 0.53 (-0.08) | 0.0075 / 567 | null |
+| Million Veterans CFS | 0.41 | 0.0023 / 1310 | null |
+| Neale lab UKB CFS | 0.11 | 2.1e-4 / 615 | null |
+| Heart rate recovery (Verweij 2018) | 0.073 (1.46) | 0.0013 / 1051 | null |
+| Syncope (Aegisdottir) | 0.60 | 8.9e-5 / 849 (rs12935076, 17 kb past 3' end) | null |
+| **Diastolic BP (Keaton, N=1.03M)** | **2.4e-5 (4.07)** | **2.1e-7 / 531 (rs12920735, intronic)** | **signal** |
+| Multisite chronic pain (Johnston) | 0.84 | 0.029 / 609 | null |
+| Fibromyalgia (Kerrebijn) | not materialized | 0.016 / 610 | null |
+| Migraine (UKB 2025 EUR) | 0.93 | 0.017 / 576 | null |
+| Schizophrenia (PGC 2022) | 0.047 (1.67) | 0.0042 / 537 | nominal only |
+| Whole brainstem volume (Xue) | 0.76 | 0.0081 / 657 | null |
+
+Not materialized, skipped: DecodeME GWAS-2, female, male, infectious onset.
+Prespecified-gene threshold across these 11 GWAS: 0.05/11 = 4.5e-3. Only DBP passes (exome-wide 2.7e-6 it does not).
+
+Named SLC6A2 variants (eQTL leads, coding T99I/V245I/C27Y/start-lost, promoter rs28386840/rs2242446, Bayles rs5564,
+rs5569): nothing below P=1e-3 in any trait except the DBP haplotype. In DecodeME the smallest is P=0.10.
+
+### The DBP signal
+
+- A block of common intronic SNPs in the 3' half of SLC6A2 (b37 55.718-55.731 Mb, EAF ~0.38): lead rs12920735
+  T allele +0.081 mmHg DBP (SE 0.0155, P=2.1e-7). The regional (+/- 500 kb) peak is this SNP, so it is not spill-over
+  from neighbouring genes (MMP2, CES1). Just short of genome-wide significance.
+- rs5569 (G1287A, the classic candidate-gene SNP) tags the same haplotype: r2=0.81 with the lead (1000G EUR), DBP P=1.5e-5.
+- rs5569 is itself the lead of a genome-wide significant HDL cholesterol credible set (GLGC, Graham 2021, P=7e-10,
+  L2G -> SLC6A2 0.81), which also contains rs12920735. So the haplotype has two lipid/BP associations.
+- None of the top 15 DBP SNPs is an SLC6A2 eQTL in GTEx v8, and Ensembl returned no LD value with any eQTL lead
+  (consistent with low LD). The haplotype's mechanism, and therefore the direction with respect to NET dosage, is unknown.
+  GTEx lacks sympathetic neurons, so a neuron-specific eQTL cannot be excluded.
+- The haplotype is null in every other trait looked at (all P>0.2), including DecodeME (P=0.91), heart rate recovery
+  (P=0.68) and syncope (P=0.89).
+
 ## Bottom line
 
 - Effect on the protein is well established: strongly damaging by every modern predictor except PrimateAI,
