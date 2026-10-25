@@ -5,6 +5,7 @@ import structlog
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.task.gwaslab.gwaslab_region_plots_task import (
+    DEFAULT_REGION_PLOT_SKIP,
     plot_region_around_variant,
 )
 
@@ -42,6 +43,10 @@ class GwasLabRegionPlotTargetLocusTask(Task):
      see https://cloufield.github.io/gwaslab/tutorial_3.4/#quick-regional-plot-without-ld-information
     Gwaslab can also use a vcf reference file to plot the linkage disequilibrium structure around the lead variants
     (vcf_name_for_lead_variants).  Doing this at a reasonable speed requires the installation of the "tabix" binary.
+
+    skip: variants with -log10(P) below this value are not drawn.  Lower it (e.g. to 0) to show every variant
+    in a region without strong associations.
+    title: figure title; None draws no title.
     """
 
     meta: Meta
@@ -50,6 +55,11 @@ class GwasLabRegionPlotTargetLocusTask(Task):
     chrom: int
     pos: int
     buffer: int = 500_000
+    skip: int = DEFAULT_REGION_PLOT_SKIP
+    title: str | None = None
+
+    def __attrs_post_init__(self) -> None:
+        assert self.skip >= 0, f"skip must be a non-negative -log10(P), got {self.skip}"
 
     @property
     def _sumstats_meta(self) -> GWASLabSumStatsMeta:
@@ -77,6 +87,8 @@ class GwasLabRegionPlotTargetLocusTask(Task):
             pos=self.pos,
             buffer=self.buffer,
             output_path=target_path / "region_plot.png",
+            skip=self.skip,
+            title=self.title,
         )
         return DirectoryAsset(
             path=target_path,
@@ -91,6 +103,8 @@ class GwasLabRegionPlotTargetLocusTask(Task):
         chrom: int,
         pos: int,
         buffer: int = 500_000,
+        skip: int = DEFAULT_REGION_PLOT_SKIP,
+        title: str | None = None,
     ) -> Self:
         reference_meta = sumstats_task.meta
         assert isinstance(reference_meta, GWASLabSumStatsMeta)
@@ -107,4 +121,6 @@ class GwasLabRegionPlotTargetLocusTask(Task):
             chrom=chrom,
             pos=pos,
             buffer=buffer,
+            skip=skip,
+            title=title,
         )

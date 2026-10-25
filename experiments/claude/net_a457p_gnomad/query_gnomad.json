@@ -1,0 +1,1403 @@
+{
+  "gnomad_r4": {
+    "canonical": "ENST00000568943",
+    "mane": {
+      "ensembl_id": "ENST00000568943",
+      "refseq_id": "NM_001172501"
+    },
+    "constraint": {
+      "exp_lof": 71.65192645402823,
+      "obs_lof": 26,
+      "oe_lof": 0.36286533086701533,
+      "oe_lof_lower": 0.26598180920463277,
+      "oe_lof_upper": 0.5034980895685791,
+      "pLI": 0.9608751083583688,
+      "lof_z": 4.575196009312933,
+      "exp_mis": 803.9214300144773,
+      "obs_mis": 581,
+      "oe_mis": 0.7227074416831221,
+      "oe_mis_lower": 0.6753085720581723,
+      "oe_mis_upper": 0.774008338477936,
+      "mis_z": 3.353147732117959,
+      "syn_z": -0.815177724471511
+    },
+    "n_variants": 3499,
+    "codon_457_variants": [
+      {
+        "variant_id": "16-55698005-G-A",
+        "rsids": [
+          "rs121918126"
+        ],
+        "hgvsp": "p.Ala457Thr",
+        "hgvsc": "c.1369G>A",
+        "consequence": "missense_variant",
+        "transcript_id": "ENST00000568943",
+        "exome": {
+          "ac": 4,
+          "an": 1461874,
+          "homozygote_count": 0
+        },
+        "genome": {
+          "ac": 2,
+          "an": 152066,
+          "homozygote_count": 0
+        }
+      },
+      {
+        "variant_id": "16-55698005-G-T",
+        "rsids": [
+          "rs121918126"
+        ],
+        "hgvsp": "p.Ala457Ser",
+        "hgvsc": "c.1369G>T",
+        "consequence": "missense_variant",
+        "transcript_id": "ENST00000568943",
+        "exome": {
+          "ac": 2,
+          "an": 1461874,
+          "homozygote_count": 0
+        },
+        "genome": null
+      },
+      {
+        "variant_id": "16-55698007-C-A",
+        "rsids": [
+          "rs781684750"
+        ],
+        "hgvsp": "p.Ala457Ala",
+        "hgvsc": "c.1371C>A",
+        "consequence": "synonymous_variant",
+        "transcript_id": "ENST00000568943",
+        "exome": {
+          "ac": 5,
+          "an": 1461882,
+          "homozygote_count": 0
+        },
+        "genome": {
+          "ac": 1,
+          "an": 152166,
+          "homozygote_count": 0
+        }
+      },
+      {
+        "variant_id": "16-55698007-C-T",
+        "rsids": [
+          "rs781684750"
+        ],
+        "hgvsp": "p.Ala457Ala",
+        "hgvsc": "c.1371C>T",
+        "consequence": "synonymous_variant",
+        "transcript_id": "ENST00000568943",
+        "exome": {
+          "ac": 5,
+          "an": 1461882,
+          "homozygote_count": 0
+        },
+        "genome": null
+      }
+    ]
+  },
+  "gnomad_r2_1": {
+    "canonical": "ENST00000219833",
+    "mane": null,
+    "constraint": {
+      "exp_lof": 30.350109360351926,
+      "obs_lof": 8,
+      "oe_lof": 0.263590483481119,
+      "oe_lof_lower": 0.154,
+      "oe_lof_upper": 0.476,
+      "pLI": 0.08152415777454225,
+      "lof_z": 3.7594036330332887,
+      "exp_mis": 362.13365690496926,
+      "obs_mis": 254,
+      "oe_mis": 0.7013984896373617,
+      "oe_mis_lower": 0.632,
+      "oe_mis_upper": 0.778,
+      "mis_z": 2.0192594861569235,
+      "syn_z": -1.5632836906089762
+    },
+    "n_variants": 1125,
+    "codon_457_variants": [
+      {
+        "variant_id": "16-55731917-G-T",
+        "rsids": [
+          "rs121918126"
+        ],
+        "hgvsp": "p.Ala457Ser",
+        "hgvsc": "c.1369G>T",
+        "consequence": "missense_variant",
+        "transcript_id": "ENST00000219833",
+        "exome": {
+          "ac": 1,
+          "an": 251400,
+          "homozygote_count": 0
+        },
+        "genome": null
+      },
+      {
+        "variant_id": "16-55731917-G-A",
+        "rsids": [
+          "rs121918126"
+        ],
+        "hgvsp": "p.Ala457Thr",
+        "hgvsc": "c.1369G>A",
+        "consequence": "missense_variant",
+        "transcript_id": "ENST00000219833",
+        "exome": {
+          "ac": 2,
+          "an": 251400,
+          "homozygote_count": 0
+        },
+        "genome": null
+      },
+      {
+        "variant_id": "16-55731919-C-T",
+        "rsids": [
+          "rs781684750"
+        ],
+        "hgvsp": "p.Ala457Ala",
+        "hgvsc": "c.1371C>T",
+        "consequence": "synonymous_variant",
+        "transcript_id": "ENST00000219833",
+        "exome": {
+          "ac": 1,
+          "an": 251424,
+          "homozygote_count": 0
+        },
+        "genome": null
+      }
+    ]
+  },
+  "a457p_in_gnomad_r4": false,
+  "codon_457_detail_r4": {
+    "16-55698005-G-A": {
+      "variant": {
+        "variant_id": "16-55698005-G-A",
+        "rsids": [
+          "rs121918126"
+        ],
+        "caid": "CA8061734",
+        "exome": {
+          "ac": 4,
+          "an": 1461874,
+          "homozygote_count": 0,
+          "hemizygote_count": 0,
+          "filters": [],
+          "populations": [
+            {
+              "id": "remaining",
+              "ac": 0,
+              "an": 60396,
+              "homozygote_count": 0
+            },
+            {
+              "id": "remaining_XX",
+              "ac": 0,
+              "an": 31800,
+              "homozygote_count": 0
+            },
+            {
+              "id": "remaining_XY",
+              "ac": 0,
+              "an": 28596,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr",
+              "ac": 0,
+              "an": 44724,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr_XX",
+              "ac": 0,
+              "an": 25690,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr_XY",
+              "ac": 0,
+              "an": 19034,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin",
+              "ac": 0,
+              "an": 53418,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin_XX",
+              "ac": 0,
+              "an": 27646,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin_XY",
+              "ac": 0,
+              "an": 25772,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid",
+              "ac": 0,
+              "an": 5768,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid_XX",
+              "ac": 0,
+              "an": 2506,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid_XY",
+              "ac": 0,
+              "an": 3262,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe",
+              "ac": 4,
+              "an": 1111994,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe_XX",
+              "ac": 4,
+              "an": 572282,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe_XY",
+              "ac": 0,
+              "an": 539712,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas",
+              "ac": 0,
+              "an": 86258,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas_XX",
+              "ac": 0,
+              "an": 22040,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas_XY",
+              "ac": 0,
+              "an": 64218,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj",
+              "ac": 0,
+              "an": 26136,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj_XX",
+              "ac": 0,
+              "an": 12636,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj_XY",
+              "ac": 0,
+              "an": 13500,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas",
+              "ac": 0,
+              "an": 39700,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas_XX",
+              "ac": 0,
+              "an": 20712,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas_XY",
+              "ac": 0,
+              "an": 18988,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr",
+              "ac": 0,
+              "an": 33480,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr_XX",
+              "ac": 0,
+              "an": 19326,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr_XY",
+              "ac": 0,
+              "an": 14154,
+              "homozygote_count": 0
+            },
+            {
+              "id": "XX",
+              "ac": 4,
+              "an": 734638,
+              "homozygote_count": 0
+            },
+            {
+              "id": "XY",
+              "ac": 0,
+              "an": 727236,
+              "homozygote_count": 0
+            }
+          ]
+        },
+        "genome": {
+          "ac": 2,
+          "an": 152066,
+          "homozygote_count": 0,
+          "filters": [],
+          "populations": [
+            {
+              "id": "remaining",
+              "ac": 0,
+              "an": 2088,
+              "homozygote_count": 0
+            },
+            {
+              "id": "remaining_XX",
+              "ac": 0,
+              "an": 1032,
+              "homozygote_count": 0
+            },
+            {
+              "id": "remaining_XY",
+              "ac": 0,
+              "an": 1056,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr",
+              "ac": 0,
+              "an": 15248,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr_XX",
+              "ac": 0,
+              "an": 6776,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr_XY",
+              "ac": 0,
+              "an": 8472,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin",
+              "ac": 0,
+              "an": 10578,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin_XX",
+              "ac": 0,
+              "an": 2572,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin_XY",
+              "ac": 0,
+              "an": 8006,
+              "homozygote_count": 0
+            },
+            {
+              "id": "ami",
+              "ac": 0,
+              "an": 912,
+              "homozygote_count": 0
+            },
+            {
+              "id": "ami_XX",
+              "ac": 0,
+              "an": 470,
+              "homozygote_count": 0
+            },
+            {
+              "id": "ami_XY",
+              "ac": 0,
+              "an": 442,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas",
+              "ac": 0,
+              "an": 5184,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas_XX",
+              "ac": 0,
+              "an": 2280,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas_XY",
+              "ac": 0,
+              "an": 2904,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid",
+              "ac": 0,
+              "an": 316,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid_XX",
+              "ac": 0,
+              "an": 164,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid_XY",
+              "ac": 0,
+              "an": 152,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas",
+              "ac": 0,
+              "an": 4810,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas_XX",
+              "ac": 0,
+              "an": 1160,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas_XY",
+              "ac": 0,
+              "an": 3650,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj",
+              "ac": 0,
+              "an": 3472,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj_XX",
+              "ac": 0,
+              "an": 1868,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj_XY",
+              "ac": 0,
+              "an": 1604,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr",
+              "ac": 1,
+              "an": 41434,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr_XX",
+              "ac": 0,
+              "an": 22154,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr_XY",
+              "ac": 1,
+              "an": 19280,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe",
+              "ac": 1,
+              "an": 68024,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe_XX",
+              "ac": 0,
+              "an": 39358,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe_XY",
+              "ac": 1,
+              "an": 28666,
+              "homozygote_count": 0
+            },
+            {
+              "id": "XX",
+              "ac": 0,
+              "an": 77834,
+              "homozygote_count": 0
+            },
+            {
+              "id": "XY",
+              "ac": 2,
+              "an": 74232,
+              "homozygote_count": 0
+            }
+          ]
+        },
+        "joint": {
+          "ac": 6,
+          "an": 1613940,
+          "homozygote_count": 0,
+          "filters": []
+        },
+        "in_silico_predictors": [
+          {
+            "id": "cadd",
+            "value": "23.8",
+            "flags": []
+          },
+          {
+            "id": "spliceai_ds_max",
+            "value": "0.00",
+            "flags": []
+          },
+          {
+            "id": "pangolin_largest_ds",
+            "value": "0.00",
+            "flags": []
+          },
+          {
+            "id": "phylop",
+            "value": "8.75",
+            "flags": []
+          },
+          {
+            "id": "sift_max",
+            "value": "0.0100",
+            "flags": []
+          },
+          {
+            "id": "polyphen_max",
+            "value": "0.212",
+            "flags": []
+          }
+        ],
+        "transcript_consequences": [
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000568943",
+            "hgvsc": "c.1369G>A",
+            "hgvsp": "p.Ala457Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": true,
+            "is_mane_select": true,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000219833",
+            "hgvsc": "c.1369G>A",
+            "hgvsp": "p.Ala457Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000379906",
+            "hgvsc": "c.1369G>A",
+            "hgvsp": "p.Ala457Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000414754",
+            "hgvsc": "c.1369G>A",
+            "hgvsp": "p.Ala457Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000561820",
+            "hgvsc": "c.1369G>A",
+            "hgvsp": "p.Ala457Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000566163",
+            "hgvsc": "c.1234G>A",
+            "hgvsp": "p.Ala412Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000567238",
+            "hgvsc": "c.1054G>A",
+            "hgvsp": "p.Ala352Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000574918",
+            "hgvsc": "c.1234G>A",
+            "hgvsp": "p.Ala412Thr",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000682050",
+            "hgvsc": "c.*68G>A",
+            "hgvsp": null,
+            "major_consequence": "3_prime_UTR_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          }
+        ]
+      },
+      "clinvar_variant": null
+    },
+    "16-55698005-G-T": {
+      "variant": {
+        "variant_id": "16-55698005-G-T",
+        "rsids": [
+          "rs121918126"
+        ],
+        "caid": null,
+        "exome": {
+          "ac": 2,
+          "an": 1461874,
+          "homozygote_count": 0,
+          "hemizygote_count": 0,
+          "filters": [],
+          "populations": [
+            {
+              "id": "remaining",
+              "ac": 0,
+              "an": 60396,
+              "homozygote_count": 0
+            },
+            {
+              "id": "remaining_XX",
+              "ac": 0,
+              "an": 31800,
+              "homozygote_count": 0
+            },
+            {
+              "id": "remaining_XY",
+              "ac": 0,
+              "an": 28596,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr",
+              "ac": 0,
+              "an": 44724,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr_XX",
+              "ac": 0,
+              "an": 25690,
+              "homozygote_count": 0
+            },
+            {
+              "id": "amr_XY",
+              "ac": 0,
+              "an": 19034,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin",
+              "ac": 0,
+              "an": 53418,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin_XX",
+              "ac": 0,
+              "an": 27646,
+              "homozygote_count": 0
+            },
+            {
+              "id": "fin_XY",
+              "ac": 0,
+              "an": 25772,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid",
+              "ac": 0,
+              "an": 5768,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid_XX",
+              "ac": 0,
+              "an": 2506,
+              "homozygote_count": 0
+            },
+            {
+              "id": "mid_XY",
+              "ac": 0,
+              "an": 3262,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe",
+              "ac": 0,
+              "an": 1111994,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe_XX",
+              "ac": 0,
+              "an": 572282,
+              "homozygote_count": 0
+            },
+            {
+              "id": "nfe_XY",
+              "ac": 0,
+              "an": 539712,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas",
+              "ac": 0,
+              "an": 86258,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas_XX",
+              "ac": 0,
+              "an": 22040,
+              "homozygote_count": 0
+            },
+            {
+              "id": "sas_XY",
+              "ac": 0,
+              "an": 64218,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj",
+              "ac": 0,
+              "an": 26136,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj_XX",
+              "ac": 0,
+              "an": 12636,
+              "homozygote_count": 0
+            },
+            {
+              "id": "asj_XY",
+              "ac": 0,
+              "an": 13500,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas",
+              "ac": 2,
+              "an": 39700,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas_XX",
+              "ac": 1,
+              "an": 20712,
+              "homozygote_count": 0
+            },
+            {
+              "id": "eas_XY",
+              "ac": 1,
+              "an": 18988,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr",
+              "ac": 0,
+              "an": 33480,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr_XX",
+              "ac": 0,
+              "an": 19326,
+              "homozygote_count": 0
+            },
+            {
+              "id": "afr_XY",
+              "ac": 0,
+              "an": 14154,
+              "homozygote_count": 0
+            },
+            {
+              "id": "XX",
+              "ac": 1,
+              "an": 734638,
+              "homozygote_count": 0
+            },
+            {
+              "id": "XY",
+              "ac": 1,
+              "an": 727236,
+              "homozygote_count": 0
+            }
+          ]
+        },
+        "genome": null,
+        "joint": {
+          "ac": 2,
+          "an": 1614058,
+          "homozygote_count": 0,
+          "filters": []
+        },
+        "in_silico_predictors": [
+          {
+            "id": "cadd",
+            "value": "17.8",
+            "flags": []
+          },
+          {
+            "id": "spliceai_ds_max",
+            "value": "0.00",
+            "flags": []
+          },
+          {
+            "id": "pangolin_largest_ds",
+            "value": "-0.0100",
+            "flags": []
+          },
+          {
+            "id": "phylop",
+            "value": "8.75",
+            "flags": []
+          },
+          {
+            "id": "sift_max",
+            "value": "1.00",
+            "flags": []
+          },
+          {
+            "id": "polyphen_max",
+            "value": "0.0770",
+            "flags": []
+          }
+        ],
+        "transcript_consequences": [
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000568943",
+            "hgvsc": "c.1369G>T",
+            "hgvsp": "p.Ala457Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": true,
+            "is_mane_select": true,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000219833",
+            "hgvsc": "c.1369G>T",
+            "hgvsp": "p.Ala457Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000379906",
+            "hgvsc": "c.1369G>T",
+            "hgvsp": "p.Ala457Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000414754",
+            "hgvsc": "c.1369G>T",
+            "hgvsp": "p.Ala457Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000561820",
+            "hgvsc": "c.1369G>T",
+            "hgvsp": "p.Ala457Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000566163",
+            "hgvsc": "c.1234G>T",
+            "hgvsp": "p.Ala412Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000567238",
+            "hgvsc": "c.1054G>T",
+            "hgvsp": "p.Ala352Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000574918",
+            "hgvsc": "c.1234G>T",
+            "hgvsp": "p.Ala412Ser",
+            "major_consequence": "missense_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          },
+          {
+            "gene_symbol": "SLC6A2",
+            "transcript_id": "ENST00000682050",
+            "hgvsc": "c.*68G>T",
+            "hgvsp": null,
+            "major_consequence": "3_prime_UTR_variant",
+            "is_canonical": null,
+            "is_mane_select": false,
+            "polyphen_prediction": null,
+            "sift_prediction": null
+          }
+        ]
+      },
+      "clinvar_variant": null
+    }
+  },
+  "a457p_dbnsfp": {
+    "_id": "chr16:g.55698005G>C",
+    "_version": 2,
+    "clinvar": {
+      "_license": "http://bit.ly/2SQdcI0",
+      "allele_id": 29045,
+      "alt": "C",
+      "chrom": "16",
+      "cytogenic": "16q12.2",
+      "gene": {
+        "id": "6530",
+        "symbol": "SLC6A2"
+      },
+      "hg19": {
+        "end": 55731917,
+        "start": 55731917
+      },
+      "hg38": {
+        "end": 55698005,
+        "start": 55698005
+      },
+      "hgvs": {
+        "coding": [
+          "NM_001043.3:c.1369G>C",
+          "NM_001172501.3:c.1369G>C",
+          "NM_001172502.1:c.1054G>C",
+          "NM_001172504.1:c.1369G>C"
+        ],
+        "genomic": [
+          "NC_000016.10:g.55698005G>C",
+          "NC_000016.9:g.55731917G>C",
+          "NG_016969.1:g.47376G>C"
+        ],
+        "protein": [
+          "NP_001034.1:p.Ala457Pro",
+          "NP_001165972.1:p.Ala457Pro",
+          "NP_001165973.1:p.Ala352Pro",
+          "NP_001165975.1:p.Ala457Pro",
+          "P23975:p.Ala457Pro"
+        ]
+      },
+      "omim": "163970.0001",
+      "rcv": {
+        "accession": "RCV000015043",
+        "clinical_significance": "Pathogenic",
+        "conditions": {
+          "identifiers": {
+            "medgen": "C1535893",
+            "mondo": "MONDO:0001315",
+            "omim": "604715"
+          },
+          "name": "Neurocirculatory asthenia (ORSTI)",
+          "synonyms": [
+            "IRRITABLE HEART",
+            "MITRAL VALVE PROLAPSE SYNDROME",
+            "SOLDIERS HEART",
+            "Orthostatic intolerance"
+          ]
+        },
+        "last_evaluated": "2002-03-01",
+        "number_submitters": 1,
+        "origin": "germline",
+        "preferred_name": "NM_001172501.3(SLC6A2):c.1369G>C (p.Ala457Pro)",
+        "review_status": "no assertion criteria provided"
+      },
+      "ref": "G",
+      "rsid": "rs121918126",
+      "type": "single nucleotide variant",
+      "variant_id": 14006
+    },
+    "dbnsfp": {
+      "_license": "http://bit.ly/2VLnQBz",
+      "aa": {
+        "alt": "P",
+        "codon_degeneracy": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "codonpos": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "pos": [
+          457,
+          457,
+          457,
+          457,
+          457,
+          412,
+          352
+        ],
+        "ref": "A",
+        "refcodon": [
+          "GCC",
+          "GCC",
+          "GCC",
+          "GCC",
+          "GCC",
+          "GCC",
+          "GCC"
+        ]
+      },
+      "alphamissense": {
+        "pred": [
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P",
+          "P"
+        ],
+        "rankscore": 0.89696,
+        "score": [
+          0.945,
+          0.9718,
+          0.9428,
+          0.9455,
+          0.9522,
+          0.9398,
+          0.9364
+        ]
+      },
+      "bayesdel": {
+        "add_af": {
+          "pred": "D",
+          "rankscore": 0.85803,
+          "score": 0.339518
+        },
+        "no_af": {
+          "pred": "D",
+          "rankscore": 0.85616,
+          "score": 0.249917
+        }
+      },
+      "cadd": {
+        "phred": 28.1,
+        "raw_rankscore": 0.83793,
+        "raw_score": 5.036323
+      },
+      "clinpred": {
+        "pred": "D",
+        "rankscore": 0.80152,
+        "score": 0.989937424659729
+      },
+      "esm1b": {
+        "pred": [
+          "D",
+          "D",
+          "D",
+          "D"
+        ],
+        "rankscore": 0.91917,
+        "score": [
+          -13.406,
+          -13.406,
+          -13.386,
+          -13.665
+        ]
+      },
+      "metarnn": {
+        "pred": [
+          "D",
+          "D",
+          "D",
+          "D",
+          "D",
+          "D",
+          "D"
+        ],
+        "rankscore": 0.97701,
+        "score": [
+          0.9783043,
+          0.9783043,
+          0.9783043,
+          0.9783043,
+          0.9783043,
+          0.9783043,
+          0.9783044
+        ]
+      },
+      "mutationtaster": {
+        "aae": [
+          "A457P",
+          "A457P",
+          "A457P",
+          "A457P",
+          "A412P",
+          "A352P",
+          "A457P"
+        ],
+        "converted_rankscore": 0.81001,
+        "model": [
+          "simple_aae",
+          "simple_aae",
+          "simple_aae",
+          "simple_aae",
+          "simple_aae",
+          "simple_aae",
+          "simple_aae"
+        ],
+        "pred": [
+          "D",
+          "D",
+          "D",
+          "D",
+          "D",
+          "D",
+          "D"
+        ],
+        "score": [
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "mvp": {
+        "rankscore": 0.91257,
+        "score": [
+          0.913439751665,
+          0.913439751665,
+          0.913439751665,
+          0.913439751665,
+          0.913439751665,
+          0.913439751665,
+          0.913439751665
+        ]
+      },
+      "phastcons": {
+        "100way_vertebrate": {
+          "rankscore": 0.71638,
+          "score": 1.0
+        },
+        "17way_primate": {
+          "rankscore": 0.42908,
+          "score": 0.891
+        },
+        "470way_mammalian": {
+          "rankscore": 0.68203,
+          "score": 1.0
+        }
+      },
+      "phylop": {
+        "100way_vertebrate": {
+          "rankscore": 0.64817,
+          "score": 5.168
+        },
+        "17way_primate": {
+          "rankscore": 0.7674,
+          "score": 0.676
+        },
+        "470way_mammalian": {
+          "rankscore": 0.95519,
+          "score": 11.756
+        }
+      },
+      "polyphen2": {
+        "hdiv": {
+          "pred": [
+            "D",
+            "D"
+          ],
+          "rankscore": 0.57405,
+          "score": [
+            0.972,
+            0.972
+          ]
+        },
+        "hvar": {
+          "pred": [
+            "D",
+            "D"
+          ],
+          "rankscore": 0.65913,
+          "score": [
+            0.924,
+            0.924
+          ]
+        }
+      },
+      "primateai": {
+        "pred": "T",
+        "rankscore": 0.77628,
+        "score": 0.771361112595
+      },
+      "revel": {
+        "rankscore": 0.92988,
+        "score": [
+          0.788,
+          0.788,
+          0.788
+        ]
+      },
+      "sift": {
+        "converted_rankscore": 0.65419,
+        "pred": [
+          "D",
+          "D",
+          "D",
+          "D",
+          "D",
+          "D",
+          "D"
+        ],
+        "score": [
+          0.004,
+          0.005,
+          0.004,
+          0.004,
+          0.004,
+          0.004,
+          0.005
+        ]
+      },
+      "varity": {
+        "er": {
+          "rankscore": 0.97708,
+          "score": [
+            0.9391011,
+            0.9391011
+          ]
+        },
+        "er_loo": {
+          "rankscore": 0.9719,
+          "score": [
+            0.9313798,
+            0.9313798
+          ]
+        },
+        "r": {
+          "rankscore": 0.96826,
+          "score": [
+            0.95552003,
+            0.95552003
+          ]
+        },
+        "r_loo": {
+          "rankscore": 0.98219,
+          "score": [
+            0.9695538,
+            0.9695538
+          ]
+        }
+      }
+    },
+    "dbsnp": {
+      "_license": "http://bit.ly/2AqoLOc",
+      "rsid": "rs121918126"
+    }
+  }
+}

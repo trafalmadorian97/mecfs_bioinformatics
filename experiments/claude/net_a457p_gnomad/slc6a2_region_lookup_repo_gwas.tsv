@@ -1,0 +1,165 @@
+gwas	status	is_build_37	near_n_snps	near_min_p	near_top_snp	near_top_pos	near_top_beta	wide_n_snps	wide_min_p	wide_top_snp	wide_top_pos	wide_top_beta	magma_p	magma_z	magma_n_genes	variant	variant_note	EA	NEA	EAF	BETA	SE	P
+DecodeME GWAS-1 (ME/CFS)	ok		567	0.007496007285874622	16:55670130:T:C	55704042	-0.0785708	3831	0.0046411969695357965	16:55261767:T:A	55295679	-0.0809901	0.53125	-0.078418	18726								
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	C	A	0.02283399924635887	-0.0687565	0.0420709	0.1021953181444014
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	A	T	0.70380699634552	0.0158905	0.0139559	0.25486018850921205
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	T	C	0.7204959988594055	0.0104207	0.0142174	0.46358886922460274
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	C	G	0.6677600145339966	0.00248118	0.0135563	0.8547765515940536
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	C	A	0.6728129982948303	0.00266433	0.0136153	0.8448556251391699
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs1805065	T99I	T	C	0.022623499855399132	0.00486478	0.0434677	0.9108890891042074
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	G	A	0.41113799810409546	0.00542313	0.0129894	0.6763102974329015
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G	0.13911999762058258	-0.0144977	0.0183348	0.42910739599936343
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs1805066	V245I	A	G	0.011044000275433064	0.0262098	0.0613049	0.6689921164862938
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	T	A	0.38443100452423096	-0.00152721	0.0130964	0.9071671179927757
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	G	A	0.06836050003767014	-0.0402009	0.0253975	0.11345065301485674
+DecodeME GWAS-1 (ME/CFS)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G	0.35102999210357666	-0.00445828	0.0133655	0.738706635281495
+DecodeME GWAS-2 (ME/CFS)	not materialized																						
+DecodeME female (ME/CFS)	not materialized																						
+DecodeME male (ME/CFS)	not materialized																						
+DecodeME infectious onset (ME/CFS)	not materialized																						
+Million Veterans CFS	ok	true	1310	0.002298	rs544125968	55712556		8579	0.00005995	rs75101734	55458469		0.40631	0.23706	19088								
+Million Veterans CFS	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	C	A	0.026100000366568565			0.3481
+Million Veterans CFS	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	A	T	0.704800009727478			0.4976
+Million Veterans CFS	named_variant															rs2242446	-182T/C promoter, ADHD candidate	T	C	0.7081000208854675			0.4917
+Million Veterans CFS	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	C	G	0.6539999842643738			0.3354
+Million Veterans CFS	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	C	A	0.6607000231742859			0.3766
+Million Veterans CFS	named_variant															rs1805065	T99I	T	C	0.018300000578165054			0.06382
+Million Veterans CFS	named_variant															rs552629380	start lost	G	T	0.00139999995008111			0.4257
+Million Veterans CFS	named_variant															rs11568343	C27Y	A	G	0.00930000003427267			0.5024
+Million Veterans CFS	named_variant															rs187714	eQTL lead testis; birth-weight coloc	G	A	0.41510000824928284			0.2396
+Million Veterans CFS	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G	0.14980000257492065			0.3538
+Million Veterans CFS	named_variant															rs1805066	V245I	A	G	0.009399999864399433			0.8089
+Million Veterans CFS	named_variant															rs12920735	Keaton DBP lead in SLC6A2	T	A	0.37040001153945923			0.3461
+Million Veterans CFS	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	G	A	0.06629999727010727			0.4368
+Million Veterans CFS	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G	0.335999995470047			0.339
+Million Veterans CFS	named_variant															rs42460	tuQTL testis; placental-weight coloc	A	G	0.9112600088119507			0.8719
+Neale lab UKB CFS	ok	true	615	0.00021365	rs75608280	55698521	0.00140509	4379	0.0000695067	rs72812723	55622155	0.00129091	0.10559	1.2503	19665								
+Neale lab UKB CFS	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	C	A		-0.00156119	0.000541384	0.00393065
+Neale lab UKB CFS	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	A	T		-0.000237312	0.000179471	0.186074
+Neale lab UKB CFS	named_variant															rs2242446	-182T/C promoter, ADHD candidate	T	C		-0.00024288	0.000178053	0.17254
+Neale lab UKB CFS	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	C	G		-0.000162719	0.000169392	0.336753
+Neale lab UKB CFS	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	C	A		-0.000199498	0.000170024	0.240657
+Neale lab UKB CFS	named_variant															rs1805065	T99I	T	C		-0.000100335	0.000529104	0.849597
+Neale lab UKB CFS	named_variant															rs11568343	C27Y	A	G		0.000024101	0.00081726	0.976474
+Neale lab UKB CFS	named_variant															rs187714	eQTL lead testis; birth-weight coloc	G	A		0.000177134	0.000162171	0.274714
+Neale lab UKB CFS	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G		-0.000288186	0.000230908	0.212011
+Neale lab UKB CFS	named_variant															rs1805066	V245I	A	G		-0.00168691	0.000752179	0.0249167
+Neale lab UKB CFS	named_variant															rs12920735	Keaton DBP lead in SLC6A2	T	A		-3.64783e-6	0.000163649	0.982216
+Neale lab UKB CFS	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	G	A		0.000139708	0.00031627	0.658681
+Neale lab UKB CFS	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G		0.0000773799	0.000167084	0.64328
+Neale lab UKB CFS	named_variant															rs42460	tuQTL testis; placental-weight coloc	A	G		-0.000142596	0.00028002	0.610589
+Heart rate recovery (Verweij 2018)	ok	true	1051	0.0013	rs168924	55689544	-0.0264545	6517	0.00012	rs12932384	56143009	0.160088	0.072813	1.4552	19074								
+Heart rate recovery (Verweij 2018)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	A	C		-0.00977001	0.0162786	0.55
+Heart rate recovery (Verweij 2018)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	C	T		0.00372688	0.00649825	0.57
+Heart rate recovery (Verweij 2018)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	G	C		0.00652096	0.00614288	0.29
+Heart rate recovery (Verweij 2018)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	A	C		0.00576957	0.00616271	0.35
+Heart rate recovery (Verweij 2018)	named_variant															rs1805065	T99I	C	T		-0.0168503	0.020404	0.41
+Heart rate recovery (Verweij 2018)	named_variant															rs11568343	C27Y	G	A		0.00446393	0.0307615	0.88
+Heart rate recovery (Verweij 2018)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	A	G		0.0109077	0.00590201	0.065
+Heart rate recovery (Verweij 2018)	named_variant															rs3785151	MVP sensorineural hearing loss lead	G	C		-0.00525822	0.00817692	0.52
+Heart rate recovery (Verweij 2018)	named_variant															rs1805066	V245I	G	A		-0.0597953	0.0291539	0.04
+Heart rate recovery (Verweij 2018)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	A	T		-0.00250079	0.00604967	0.68
+Heart rate recovery (Verweij 2018)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	A	G		-0.0323272	0.0115235	0.005
+Heart rate recovery (Verweij 2018)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	G	A		-0.00394218	0.00617377	0.52
+Heart rate recovery (Verweij 2018)	named_variant															rs42460	tuQTL testis; placental-weight coloc	G	A		0.0322307	0.0102183	0.0016
+Heart rate recovery (Verweij 2018)	named_variant															rs42460	tuQTL testis; placental-weight coloc	G	C		-0.00017622	0.0256049	0.99
+Syncope (Aegisdottir)	ok	true	849	0.0000889	rs12935076	55756724	0.060398713948232596	5688	2.31e-6	rs11865204	56193426	-0.03190354901300828	0.59903	-0.25083	19599								
+Syncope (Aegisdottir)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	C	A	0.009399999864399433	-0.021601644557760903	0.0237	0.361
+Syncope (Aegisdottir)	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	T	A	0.2531000077724457	-0.00510299817590334	0.0075	0.499
+Syncope (Aegisdottir)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	C	T	0.24879999458789825	-0.0060985584618694685	0.0076	0.422
+Syncope (Aegisdottir)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	G	C	0.3230000138282776	0.0003999200213268913	0.0072	0.954
+Syncope (Aegisdottir)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	A	C	0.3174000084400177	0.0017983819413793973	0.0072	0.806
+Syncope (Aegisdottir)	named_variant															rs1805065	T99I	T	C	0.026399999856948853	-0.05849813439430994	0.0238	0.0139
+Syncope (Aegisdottir)	named_variant															rs552629380	start lost	G	T	0.0007999999797903001	0.19209860530787257	0.091	0.0347
+Syncope (Aegisdottir)	named_variant															rs11568343	C27Y	A	G	0.0210999995470047	-0.004399664344687097	0.028	0.874
+Syncope (Aegisdottir)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	G	A	0.45399999618530273	-0.008495988921264316	0.0068	0.209
+Syncope (Aegisdottir)	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G	0.1151999980211258	-0.008001930219058533	0.0099	0.418
+Syncope (Aegisdottir)	named_variant															rs1805066	V245I	A	G	0.010999999940395355	-0.009999832078333527	0.032	0.755
+Syncope (Aegisdottir)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	T	A	0.37439998984336853	0.0008995952428359939	0.0066	0.89
+Syncope (Aegisdottir)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	G	A	0.08370000123977661	-0.010201862484596723	0.0131	0.435
+Syncope (Aegisdottir)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G	0.3522000014781952	-0.002402884616310315	0.007	0.729
+Syncope (Aegisdottir)	named_variant															rs42460	tuQTL testis; placental-weight coloc	G	A	0.09549999982118607	0.006399479580567827	0.0116	0.58
+Diastolic blood pressure (Keaton)	ok	true	531	2.08e-7	rs12920735	55725394	0.0807	3417	2.08e-7	rs12920735	55725394	0.0807	0.000023668	4.0684	18805								
+Diastolic blood pressure (Keaton)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	C	A	0.026399999856948853	0.0546	0.0555	0.3248
+Diastolic blood pressure (Keaton)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	T	C	0.7206000089645386	0.0092	0.0168	0.5827
+Diastolic blood pressure (Keaton)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	C	G	0.6678000092506409	0.0223	0.0159	0.1614
+Diastolic blood pressure (Keaton)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	C	A	0.6729999780654907	0.0241	0.0161	0.1338
+Diastolic blood pressure (Keaton)	named_variant															rs1805065	T99I	T	C	0.020800000056624413	-0.1059	0.0566	0.0615
+Diastolic blood pressure (Keaton)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	G	A	0.41690000891685486	-0.0011	0.0152	0.9412
+Diastolic blood pressure (Keaton)	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G	0.1453000009059906	0.0241	0.0217	0.2679
+Diastolic blood pressure (Keaton)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	T	A	0.38019999861717224	0.0807	0.0155	2.08e-7
+Diastolic blood pressure (Keaton)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	G	A	0.0697999969124794	-0.0629	0.0304	0.03881
+Diastolic blood pressure (Keaton)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G	0.34630000591278076	0.0685	0.0158	0.00001503
+Diastolic blood pressure (Keaton)	named_variant															rs42460	tuQTL testis; placental-weight coloc	A	G	0.9107999801635742	0.0445	0.0265	0.09286
+Multisite chronic pain (Johnston)	ok	true	609	0.029	rs149779402	55665921	-0.0275719	4435	4.6e-7	16:56012292_CTTT_C	56012292	0.0125017	0.84376	-1.01	19085								
+Multisite chronic pain (Johnston)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	A	C	0.9778059720993042	0.00112164	0.0082455	0.89
+Multisite chronic pain (Johnston)	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	T	A	0.2792760133743286	0.000418746	0.00274281	0.88
+Multisite chronic pain (Johnston)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	C	T	0.27855199575424194	-0.000831524	0.00272012	0.76
+Multisite chronic pain (Johnston)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	G	C	0.33070600032806396	0.000447158	0.00258843	0.86
+Multisite chronic pain (Johnston)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	A	C	0.3255540132522583	0.000246525	0.00259767	0.92
+Multisite chronic pain (Johnston)	named_variant															rs1805065	T99I	C	T	0.9772589802742004	0.00475407	0.0081514	0.56
+Multisite chronic pain (Johnston)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	A	G	0.5906410217285156	-0.000946411	0.00247698	0.7
+Multisite chronic pain (Johnston)	named_variant															rs3785151	MVP sensorineural hearing loss lead	G	C	0.8620799779891968	0.00354471	0.00352683	0.31
+Multisite chronic pain (Johnston)	named_variant															rs1805066	V245I	G	A	0.988677978515625	0.0133196	0.011484	0.25
+Multisite chronic pain (Johnston)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	A	T	0.6133949756622314	-0.00293618	0.00249842	0.24
+Multisite chronic pain (Johnston)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	A	G	0.9326210021972656	0.00059594	0.00484674	0.9
+Multisite chronic pain (Johnston)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	G	A	0.6462439894676208	-0.00245227	0.00255088	0.34
+Multisite chronic pain (Johnston)	named_variant															rs42460	tuQTL testis; placental-weight coloc	G	A	0.08833760023117065	-0.000796596	0.00428247	0.85
+Multisite chronic pain (Johnston)	named_variant															rs42460	tuQTL testis; placental-weight coloc	G	C	0.9836580157279968	0.00722022	0.0113827	0.53
+Fibromyalgia (Kerrebijn)	ok	true	610	0.01576	rs4784561	55772802	-0.04019718975141304	4730	0.005164	rs11860456	55880480	0.023325825303496757	not materialized										
+Fibromyalgia (Kerrebijn)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	C	A	0.020961685106158257	0.001199280575482187	0.024844570763471522	0.9615
+Fibromyalgia (Kerrebijn)	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	A	T	0.721464991569519	-0.0022024235552000394	0.009315380151406724	0.8131
+Fibromyalgia (Kerrebijn)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	T	C	0.7283977270126343	0.0010993954433010642	0.007813267640621357	0.8881
+Fibromyalgia (Kerrebijn)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	C	G	0.6794178485870361	0.008860628432196467	0.007493014170484751	0.237
+Fibromyalgia (Kerrebijn)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	C	A	0.6841583847999573	0.008959741371471801	0.007559067998314539	0.2359
+Fibromyalgia (Kerrebijn)	named_variant															rs1805065	T99I	T	C	0.015162641182541847	0.01064316009847976	0.0274963112021494	0.6987
+Fibromyalgia (Kerrebijn)	named_variant															rs11568343	C27Y	A	G	0.013287270441651344	0.013014937077494544	0.03141900313858681	0.6787
+Fibromyalgia (Kerrebijn)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	G	A	0.4301837384700775	0.005982071677547469	0.007121387093185914	0.4009
+Fibromyalgia (Kerrebijn)	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G	0.13294866681098938	0.0004998750416509929	0.011199724610391811	0.9644
+Fibromyalgia (Kerrebijn)	named_variant															rs1805066	V245I	A	G	0.010426169261336327	-0.023370986323240202	0.03556546496515044	0.5111
+Fibromyalgia (Kerrebijn)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	T	A	0.37758293747901917	0.0018981972830802655	0.007461977978020708	0.7992
+Fibromyalgia (Kerrebijn)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	G	A	0.07710911333560944	0.013705647056111967	0.013353039578465536	0.3047
+Fibromyalgia (Kerrebijn)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G	0.3481573164463043	0.005783244755727361	0.007466495211550422	0.4386
+Fibromyalgia (Kerrebijn)	named_variant															rs42460	tuQTL testis; placental-weight coloc	A	G	0.9048182368278503	-0.016739324004297996	0.012130326193912836	0.1676
+Migraine (UKB 2025 EUR)	ok	true	576	0.017330456397182184	rs56094519	55688129	-0.0760447	3878	0.0020496513833455333	rs145876331	55414219	0.102571	0.92972	-1.4737	18944								
+Migraine (UKB 2025 EUR)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	C	A	0.022484900429844856	-0.061337	0.0311999	0.04930602595627947
+Migraine (UKB 2025 EUR)	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	A	T	0.7037580013275146	0.00154357	0.010131	0.8789022980183154
+Migraine (UKB 2025 EUR)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	T	C	0.7203099727630615	-0.00459249	0.0103045	0.6558295787351986
+Migraine (UKB 2025 EUR)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	C	G	0.6675800085067749	-0.00268709	0.00981818	0.7843267009263403
+Migraine (UKB 2025 EUR)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	C	A	0.6727579832077026	-0.00214904	0.00986195	0.827497327795556
+Migraine (UKB 2025 EUR)	named_variant															rs1805065	T99I	T	C	0.022746700793504715	0.0255485	0.0311993	0.4128535278389715
+Migraine (UKB 2025 EUR)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	G	A	0.41066300868988037	0.000686893	0.0094019	0.9417592618065116
+Migraine (UKB 2025 EUR)	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G	0.138823002576828	-0.0177398	0.013396	0.18541591130051255
+Migraine (UKB 2025 EUR)	named_variant															rs1805066	V245I	A	G	0.011135599575936794	-0.0149648	0.0442365	0.7351449868358659
+Migraine (UKB 2025 EUR)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	T	A	0.38452398777008057	0.00067944	0.00949099	0.9429298841674499
+Migraine (UKB 2025 EUR)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	G	A	0.06820850074291229	-0.00660435	0.0183713	0.7192270288523489
+Migraine (UKB 2025 EUR)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G	0.3511039912700653	0.00372766	0.00968051	0.7001869303690058
+Migraine (UKB 2025 EUR)	named_variant															rs42460	tuQTL testis; placental-weight coloc	A	G	0.9116719961166382	0.0112518	0.0163206	0.49055759046580383
+Schizophrenia (PGC 2022)	ok	true	537	0.004212	rs36011	55731044	-0.0821975276313988	3463	0.00005171	rs78212562	56085179	-0.145303267195873	0.04739	1.6707	18863								
+Schizophrenia (PGC 2022)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	A	C		-0.0112025145079934	0.0265	0.6734
+Schizophrenia (PGC 2022)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	C	T		0.0	0.0097	0.9999
+Schizophrenia (PGC 2022)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	G	C		0.00059982007196755	0.0092	0.9525
+Schizophrenia (PGC 2022)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	A	C		0.000799680170564244	0.0093	0.9304
+Schizophrenia (PGC 2022)	named_variant															rs1805065	T99I	C	T		-0.0332982854015147	0.0372	0.3702
+Schizophrenia (PGC 2022)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	A	G		0.0183015011699126	0.0088	0.03631
+Schizophrenia (PGC 2022)	named_variant															rs3785151	MVP sensorineural hearing loss lead	G	C		-0.00739729263047472	0.0128	0.5595
+Schizophrenia (PGC 2022)	named_variant															rs1805066	V245I	G	A		-0.0295009039176847	0.0591	0.6174
+Schizophrenia (PGC 2022)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	A	T		0.0111970780932162	0.009	0.2105
+Schizophrenia (PGC 2022)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	A	G		0.00829549702410696	0.0172	0.6307
+Schizophrenia (PGC 2022)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	G	A		0.00129915573162013	0.0092	0.8895
+Schizophrenia (PGC 2022)	named_variant															rs42460	tuQTL testis; placental-weight coloc	G	C		-0.0271040176920589	0.0459	0.5546
+Schizophrenia (PGC 2022)	named_variant															rs42460	tuQTL testis; placental-weight coloc	G	A		-0.0138048499765589	0.0153	0.3668
+Whole brainstem volume (Xue)	ok	true	657	0.008138	rs148624899	55690127	0.0817	4202	0.002649	rs79024039	56105539	-0.215	0.76225	-0.71357	19692								
+Whole brainstem volume (Xue)	named_variant															rs55830311	eQTL lead esophagus; height/lean-mass coloc	A	C	0.9760000109672546	-0.00186692697299	0.0170269352746	0.912690517807
+Whole brainstem volume (Xue)	named_variant															rs28386840	-3081A/T promoter, ADHD/MPH candidate	A	T	0.723800003528595	0.0001	0.0047	0.9843
+Whole brainstem volume (Xue)	named_variant															rs2242446	-182T/C promoter, ADHD candidate	T	C	0.7229999899864197	0.0021	0.0045	0.6364
+Whole brainstem volume (Xue)	named_variant															rs9937434	eQTL lead adrenal/skin; alt C lowers expression	C	G	0.6711999773979187	0.0039	0.0043	0.3626
+Whole brainstem volume (Xue)	named_variant															rs17841327	eQTL lead skin; alt C lowers expression	A	C	0.3230000138282776	-0.0041	0.0043	0.338
+Whole brainstem volume (Xue)	named_variant															rs1805065	T99I	T	C	0.02199999988079071	-0.0079	0.0148	0.5942
+Whole brainstem volume (Xue)	named_variant															rs11568343	C27Y	A	G	0.010300000198185444	-0.0082	0.0215	0.7021
+Whole brainstem volume (Xue)	named_variant															rs187714	eQTL lead testis; birth-weight coloc	A	G	0.5842000246047974	-0.00566266449053	0.00534772537065	0.289648893333
+Whole brainstem volume (Xue)	named_variant															rs3785151	MVP sensorineural hearing loss lead	C	G	0.14110000431537628	-0.0028	0.0055	0.6148
+Whole brainstem volume (Xue)	named_variant															rs1805066	V245I	A	G	0.010900000110268593	-0.0349	0.0209	0.09451
+Whole brainstem volume (Xue)	named_variant															rs12920735	Keaton DBP lead in SLC6A2	A	T	0.6182000041007996	-0.0035	0.004	0.3823
+Whole brainstem volume (Xue)	named_variant															rs5564	Bayles 2012 POTS-associated synonymous SNP	A	G	0.932699978351593	0.00077527467812	0.0103905732337	0.940522413174
+Whole brainstem volume (Xue)	named_variant															rs5569	G1287A, ADHD/MPH candidate; GLGC HDL lead	A	G	0.34689998626708984	-0.000947214664832	0.00558076586029	0.865223709315
+Whole brainstem volume (Xue)	named_variant															rs42460	tuQTL testis; placental-weight coloc	A	G	0.9138000011444092	-0.0018	0.0148	0.9015
