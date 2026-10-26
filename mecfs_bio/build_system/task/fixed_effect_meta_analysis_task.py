@@ -167,14 +167,16 @@ class FixedEffectsMetaAnalysisTask(Task):
         for item in sources[1:]:
             assert isinstance(item.task.meta, FilteredGWASDataMeta)
             assert item.task.meta.trait == source_meta.trait
+        build = common_harmonized_build(sources)
         meta = FilteredGWASDataMeta(
             id=AssetId(asset_id),
             trait=source_meta.trait,
             project=meta_analysis_name,
             sub_dir=PurePath("processed"),
             read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+            genome_build=build,
             harmonization_info=HarmonizationInfo(
-                build=common_harmonized_build(sources),
+                build=build,
                 ref_allele_col=GWASLAB_NON_EFFECT_ALLELE_COL,
                 pos_col=GWASLAB_POS_COL,
             ),

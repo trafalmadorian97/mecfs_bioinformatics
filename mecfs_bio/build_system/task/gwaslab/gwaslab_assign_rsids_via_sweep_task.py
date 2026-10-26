@@ -71,6 +71,7 @@ class GWASLabAssignRSIDSViaSweepTask(Task):
             trait=source_meta.trait,
             project=source_meta.project,
             sub_dir=source_meta.sub_dir,
+            genome_build=source_meta.genome_build,
         )
         return cls(
             sumstats_task=sumstats_task,

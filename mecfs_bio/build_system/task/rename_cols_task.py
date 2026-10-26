@@ -113,6 +113,7 @@ class RenameColsTask(Task):
                     if source_meta.harmonization_info is not None
                     else None
                 ),
+                genome_build=source_meta.genome_build,
             )
         elif isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(

@@ -143,6 +143,7 @@ class JoinDataFramesTask(Task):
                 read_spec=read_spec,
                 sub_dir=source_meta.sub_dir,
                 harmonization_info=source_meta.harmonization_info,
+                genome_build=source_meta.genome_build,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
             meta = GWASSummaryDataFileMeta(
@@ -153,6 +154,7 @@ class JoinDataFramesTask(Task):
                 read_spec=read_spec,
                 sub_dir="processed",
                 project_path=None,
+                genome_build=source_meta.genome_build,
             )
         elif isinstance(source_meta, GWASLabLeadVariantsMeta):
             meta = ResultTableMeta(

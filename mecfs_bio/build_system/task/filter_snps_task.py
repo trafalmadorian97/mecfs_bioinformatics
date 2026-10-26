@@ -67,6 +67,7 @@ class FilterSNPsTask(Task):
             sub_dir=PurePath("processed"),
             extension=".parquet",
             read_spec=DataFrameReadSpec(format=DataFrameParquetFormat()),
+            genome_build=source_meta.genome_build,
         )
         return cls(
             raw_gwas_task=raw_gwas_task,

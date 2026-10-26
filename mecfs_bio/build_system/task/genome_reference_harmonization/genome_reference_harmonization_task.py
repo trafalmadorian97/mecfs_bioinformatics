@@ -453,6 +453,7 @@ class GenomeReferenceHarmonizationTask(Task):
                     ref_allele_col=GWASLAB_NON_EFFECT_ALLELE_COL,
                     pos_col=GWASLAB_POS_COL,
                 ),
+                genome_build=build,
             ),
             sumstats_task=sumstats_task,
             fasta_task=fasta_task,

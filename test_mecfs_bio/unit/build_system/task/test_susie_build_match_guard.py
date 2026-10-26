@@ -26,6 +26,7 @@ def _gwas(build: GenomeBuild) -> FakeTask:
             harmonization_info=HarmonizationInfo(
                 build=build, ref_allele_col="NEA", pos_col="POS"
             ),
+            genome_build=build,
         )
     )
 

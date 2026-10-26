@@ -175,6 +175,7 @@ class GWASLabCreateSumstatsTask(Task):
 
     def __attrs_post_init__(self) -> None:
         assert self._source_meta is not None
+        assert self.meta is not None
 
     @property
     def _source_id(self) -> AssetId:
@@ -197,12 +198,22 @@ class GWASLabCreateSumstatsTask(Task):
                 id=self.target_asset_id,
                 trait="reference_data_gwas",
                 project=self._source_meta.group,
+                genome_build=resolve_output_genome_build(
+                    source_build=None,
+                    genome_build=self.genome_build,
+                    liftover_to=self.liftover_to,
+                ),
             )
         return GWASLabSumStatsMeta(
             id=self.target_asset_id,
             trait=self._source_meta.trait,
             project=self._source_meta.project,
             sub_dir="gwaslab_sumstats",
+            genome_build=resolve_output_genome_build(
+                source_build=self._source_meta.genome_build,
+                genome_build=self.genome_build,
+                liftover_to=self.liftover_to,
+            ),
         )
 
     @property
@@ -250,6 +261,32 @@ class GwasLabTransformSpec:
     exclude_hla: bool = False
     exclude_sexchr: bool = False
     liftover_to: GenomeBuild | None = None
+
+
+def resolve_output_genome_build(
+    source_build: GenomeBuild | None,
+    genome_build: GenomeBuildMode,
+    liftover_to: GenomeBuild | None,
+) -> GenomeBuild | None:
+    """
+    Genome build of sumstats after the gwaslab transformation, as known from metadata.
+
+    source_build is the build recorded in the source meta (None if unrecorded).
+    genome_build is the build gwaslab is told the source has ("infer" lets gwaslab infer it
+    at execution time, which metadata cannot see). A liftover target determines the
+    output build; otherwise a forced build does; otherwise the source build carries over.
+    A forced build that contradicts the source build is an error.
+    """
+    if genome_build != "infer" and source_build is not None:
+        assert genome_build == source_build, (
+            f"gwaslab genome_build={genome_build!r} contradicts the source meta's "
+            f"genome_build={source_build!r}"
+        )
+    if liftover_to is not None:
+        return liftover_to
+    if genome_build != "infer":
+        return genome_build
+    return source_build
 
 
 def _drop_duplicate_variant_keys(sumstats: gl.Sumstats) -> None:

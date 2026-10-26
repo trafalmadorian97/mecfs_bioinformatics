@@ -76,6 +76,9 @@ def _source(
                 sub_dir="processed",
                 read_spec=_PARQUET_READ_SPEC,
                 harmonization_info=harmonization_info,
+                genome_build=(
+                    harmonization_info.build if harmonization_info is not None else None
+                ),
             )
         ),
         sample_info=sample_info,

@@ -267,6 +267,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
                 project=source_meta.project,
                 sub_dir=source_meta.sub_dir,
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
             assert isinstance(source_meta.read_spec, DataFrameReadSpec)
@@ -277,6 +278,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
                 sub_dir=source_meta.sub_dir,
                 project_path=None,
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         else:
             raise ValueError(f"Unsupported source meta type: {type(source_meta)}")
