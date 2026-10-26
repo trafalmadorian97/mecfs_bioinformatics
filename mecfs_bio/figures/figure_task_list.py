@@ -219,6 +219,9 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_s
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.pgc2022_ppp_rg import (
     PGC2022_SCH_PPP_RG_CIS_EXCLUDED,
 )
+from mecfs_bio.assets.gwas.sleep.portas_et_al_2026.analysis.portas_sleep_standard_analysis import (
+    PORTAS_SLEEP_DURATION_STANDARD_ANALYSIS,
+)
 from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
     BENTHAM_LUPUS_STANDARD_ANALYSIS,
 )
@@ -567,6 +570,9 @@ ALL_FIGURE_TASKS: list[Task] = [
     PULIT_ET_AL_2018_BMI_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
         GTEX_BRAIN_REF
     ].multiple_testing_task_parquet,
+    # portas sleep duration
+    PORTAS_SLEEP_DURATION_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
+    PORTAS_SLEEP_DURATION_STANDARD_ANALYSIS.ldsc_diagnostic_plot_task_unwrap,
     # schematic diagrams for docs
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
