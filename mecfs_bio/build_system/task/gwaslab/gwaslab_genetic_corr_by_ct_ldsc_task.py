@@ -43,6 +43,7 @@ from mecfs_bio.build_system.meta.read_spec.read_sumstats import read_sumstats
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.fast_ct_ldsc.alignment_guards import AlignmentGuards
 from mecfs_bio.build_system.task.gwaslab.ldsc_degenerate_z import (
     drop_variants_with_degenerate_z,
 )
@@ -149,6 +150,8 @@ class SumstatsSource:
     alias: str
     sample_info: PhenotypeInfo
     pipe: DataProcessingPipe = IdentityPipe()
+    # Per-source override of the fast CT-LDSC alignment guards; the gwaslab task ignores it.
+    alignment_guards: AlignmentGuards | None = None
 
     @property
     def asset_id(self) -> AssetId:
