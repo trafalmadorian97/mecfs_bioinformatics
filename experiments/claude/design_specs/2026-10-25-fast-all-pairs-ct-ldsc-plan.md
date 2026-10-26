@@ -31,7 +31,14 @@
 
 ## Interface note: where position-guard "declared build" comes from
 
-Metas generally do not carry a build, so the spec's "source meta declares build 19" resolves as follows (the builder's call, recorded here). For a gwaslab pickle, use `sumstats.build` when it is "19" or "38", else None. For a dataframe input, use `meta.harmonization_info.build` when the meta is a `FilteredGWASDataMeta` with harmonization_info, else None. The position guard applies only when the declared build is "19".
+Since the merge of genome-build-meta-field, `GWASLabSumStatsMeta`, `FilteredGWASDataMeta` and `GWASSummaryDataFileMeta` all carry an optional `genome_build: GenomeBuild | None`. (`FilteredGWASDataMeta` asserts that it equals `harmonization_info.build` when that is set, so harmonization_info needs no separate handling.) The declared build is resolved as follows:
+
+- `meta.genome_build` when it is set.
+- Otherwise, for a gwaslab pickle only, the pickle's own `sumstats.build` when it is "19" or "38". gwaslab tasks run with genome_build="infer" leave the meta build None, but the pickle records the inferred build.
+- Otherwise None.
+- If a gwaslab pickle has both, and they disagree, fail fast. That is itself an upstream-bug signal.
+
+The position guard applies only when the declared build is "19".
 
 ---
 
@@ -227,7 +234,11 @@ def test_gwaslab_pickle_matches_parquet_input() -> None:      # Review Focus 2
 def test_shuffled_rsids_trip_mismatch_guard() -> None:         # pytest.raises(AssertionError)
 def test_sparse_trait_trips_coverage_guard() -> None:
 def test_shifted_positions_trip_concordance_guard_when_declared_build_19() -> None:
-    # dataframe meta = FilteredGWASDataMeta(harmonization_info=HarmonizationInfo(build="19", ...))
+    # dataframe meta = FilteredGWASDataMeta(..., genome_build="19")
+def test_gwaslab_pickle_without_meta_build_uses_pickle_build() -> None:
+    # GWASLabSumStatsMeta(genome_build=None), pickle with sumstats.build == "19", shifted positions -> AssertionError
+def test_gwaslab_meta_build_contradicting_pickle_build_fails() -> None:
+    # GWASLabSumStatsMeta(genome_build="38"), pickle sumstats.build == "19" -> AssertionError
 def test_shifted_positions_pass_without_declared_build() -> None:   # Review Focus 4
 def test_per_source_override_lets_a_tripping_trait_through() -> None:
 def test_null_n_with_finite_z_fails() -> None:                 # Review Focus 1
@@ -310,7 +321,7 @@ def test_duplicate_aliases_rejected() -> None:                 # Review Focus 5
 
 **Setup:** The asset-store config `default_runner_config.yaml` is gitignored and lives at the repo root. Symlink it into the worktree before running. The user has a run going in the repo root, so **ask the user before starting real-data builds**: they share the asset store, and two runners writing the same assets could collide.
 
-- [ ] **Step 1:** Build the aligned-trait tasks only, with the guards temporarily permissive (`AlignmentGuards(0, 1, 0)` passed via the generator in the script). Tabulate coverage, allele_mismatch_fraction, position_concordance and declared_build per trait.
+- [ ] **Step 1:** Build the aligned-trait tasks only, with the guards temporarily permissive (`AlignmentGuards(0, 1, 0)` passed via the generator in the script). Tabulate coverage, allele_mismatch_fraction, position_concordance and declared_build per trait, and note where declared_build came from (meta vs pickle vs none). Report to the user any of the 13 sources whose meta lacks genome_build; they may want to set it upstream.
 - [ ] **Step 2:** Set the defaults in AlignmentGuards with comfortable margin around the observed clean values. Add per-source overrides only for documented outliers. Update the Task 4 tests if any literal default appears there.
 - [ ] **Step 3:** Run the fast generator end to end, recording wall time. Load the existing gwaslab aggregation and heritability outputs (build them if they're absent, which is slow). Tabulate per pair rg_fast, rg_gwaslab, Δrg, Δrg/se_gwaslab; per trait h2 and Δh2; and Bonferroni calls under each.
 - [ ] **Step 4:** `pixi r invoke green > <scratchpad>/green.log 2>&1; echo $?`. Expected: 0.
