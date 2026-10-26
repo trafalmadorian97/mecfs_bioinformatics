@@ -137,8 +137,10 @@ def _delete_jackknife_se(delete: np.ndarray) -> np.ndarray:
     pseudo-value form sqrt(var(pseudo, ddof=1) / B) used by ldsc."""
     n_blocks = delete.shape[0]
     delete_mean = delete.mean(0)
-    return np.sqrt(
-        (n_blocks - 1) / n_blocks * ((delete - delete_mean[None, ...]) ** 2).sum(0)
+    return np.asarray(
+        np.sqrt(
+            (n_blocks - 1) / n_blocks * ((delete - delete_mean[None, ...]) ** 2).sum(0)
+        )
     )
 
 

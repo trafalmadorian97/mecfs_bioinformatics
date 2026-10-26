@@ -138,7 +138,9 @@ def test_rg_reports_finite_gcov_and_intercept_ses() -> None:
     assert np.all(res.gcov_intercept_se > 0)
 
 
-def _per_snp_n_traits(seed: int, n_snps: int = 3000) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def _per_snp_n_traits(
+    seed: int, n_snps: int = 3000
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Three correlated traits with per-SNP N and about 5% missing variants per column."""
     rng = np.random.default_rng(seed)
     ld = rng.uniform(1.0, 50.0, size=n_snps)
