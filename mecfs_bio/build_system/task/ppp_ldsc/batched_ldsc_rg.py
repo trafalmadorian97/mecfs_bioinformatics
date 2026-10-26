@@ -362,8 +362,9 @@ def batched_rg(
     trait_ctx: the once-computed trait LDSC context (estimate_trait_context).
     z_protein: (S, K) signed protein z-score (= BETA/SE, index-effect-allele oriented), NaN where
         a protein lacks the variant.
-    ld: (S,) LD score, genome-sorted. n_protein: (K,) per-protein sample size. m: total
-        reference-SNP count. exclude: optional (S, K) boolean; True drops that variant for that
+    ld: (S,) LD score, genome-sorted. n_protein: (K,) per-protein sample size, or (S, K)
+        per-SNP sample size (NaN allowed where z_protein is NaN); in the (S, K) case each
+        column's chi-square filter uses that column's max N. m: total reference-SNP count. exclude: optional (S, K) boolean; True drops that variant for that
         protein (e.g. cis).
     """
     s, k = z_protein.shape
@@ -373,8 +374,18 @@ def batched_rg(
     finite_p = np.isfinite(z_protein)
     z_p = np.where(finite_p, z_protein, 0.0)
     chi_p = z_p * z_p
-    n_p = np.broadcast_to(n_protein.astype(float), (s, k))
-    keep_p = finite_p & (chi_p <= _chisq_threshold(n_protein)[None, :])
+    if n_protein.ndim == 1:
+        n_p = np.broadcast_to(n_protein.astype(float), (s, k))
+        keep_p = finite_p & (chi_p <= _chisq_threshold(n_protein)[None, :])
+    else:
+        # Per-SNP N: zero off the finite set and filter on each column's max N, exactly as
+        # estimate_trait_context does for the first side.
+        assert n_protein.shape == z_protein.shape, (
+            f"n_protein shape {n_protein.shape} must match z_protein shape {z_protein.shape}"
+        )
+        n_p = np.where(finite_p, n_protein.astype(float), 0.0)
+        threshold = _chisq_threshold(np.nanmax(n_protein, axis=0))
+        keep_p = finite_p & (chi_p <= threshold[None, :])
     if exclude is not None:
         keep_p = keep_p & ~exclude
 

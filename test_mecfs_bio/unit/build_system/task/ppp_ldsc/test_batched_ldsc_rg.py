@@ -136,3 +136,49 @@ def test_rg_reports_finite_gcov_and_intercept_ses() -> None:
     assert np.all(np.isfinite(res.gcov_se)) and np.all(res.gcov_se > 0)
     assert np.all(np.isfinite(res.gcov_intercept_se))
     assert np.all(res.gcov_intercept_se > 0)
+
+
+def _per_snp_n_traits(seed: int, n_snps: int = 3000) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """Three correlated traits with per-SNP N and about 5% missing variants per column."""
+    rng = np.random.default_rng(seed)
+    ld = rng.uniform(1.0, 50.0, size=n_snps)
+    shared = rng.standard_normal(n_snps) * np.sqrt(0.02 * ld)
+    z = np.empty((n_snps, 3))
+    for j in range(3):
+        z[:, j] = (
+            shared
+            + rng.standard_normal(n_snps) * np.sqrt(0.02 * ld)
+            + rng.standard_normal(n_snps)
+        )
+    n = rng.uniform(8_000.0, 12_000.0, size=(n_snps, 3))
+    missing = rng.random((n_snps, 3)) < 0.05
+    z[missing] = np.nan
+    n[missing] = np.nan
+    return ld, z, n
+
+
+def test_per_snp_n_second_side_matches_its_own_trait_context() -> None:
+    ld, z, n = _per_snp_n_traits(seed=5)
+    ctx0 = estimate_trait_context(z[:, 0], n[:, 0], ld, _M, n_blocks=_N_BLOCKS)
+    res = batched_rg(ctx0, z[:, 1:], ld, n[:, 1:], _M, n_blocks=_N_BLOCKS)
+    for j in (1, 2):
+        own = estimate_trait_context(z[:, j], n[:, j], ld, _M, n_blocks=_N_BLOCKS)
+        assert res.h2_protein[j - 1] == pytest.approx(own.h2, rel=1e-10)
+        assert res.n_bar_protein[j - 1] == pytest.approx(own.n_bar, rel=1e-12)
+
+
+def test_constant_matrix_n_equals_vector_n() -> None:
+    ld, z_trait, n_trait, z_protein = _synthetic(seed=6)
+    ctx = estimate_trait_context(z_trait, n_trait, ld, _M, n_blocks=_N_BLOCKS)
+    k = z_protein.shape[1]
+    vec = batched_rg(ctx, z_protein, ld, np.full(k, _N), _M, n_blocks=_N_BLOCKS)
+    mat = batched_rg(
+        ctx,
+        z_protein,
+        ld,
+        np.where(np.isfinite(z_protein), _N, np.nan),
+        _M,
+        n_blocks=_N_BLOCKS,
+    )
+    np.testing.assert_allclose(mat.rg, vec.rg, rtol=1e-12)
+    np.testing.assert_allclose(mat.rg_se, vec.rg_se, rtol=1e-12)
