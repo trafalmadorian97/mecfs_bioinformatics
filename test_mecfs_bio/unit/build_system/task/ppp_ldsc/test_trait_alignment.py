@@ -9,8 +9,10 @@ import pytest
 from mecfs_bio.build_system.task.ppp_ldsc.trait_alignment import align_trait_to_context
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
+    GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
@@ -187,3 +189,52 @@ def test_alignment_works_on_a_non_polars_backend() -> None:
     assert from_pandas.z == pytest.approx([2.0, -2.0])
     assert from_pandas.z == pytest.approx(from_polars.z)
     assert from_pandas.n == pytest.approx(from_polars.n)
+
+
+def test_alignment_counts_found_and_matched() -> None:
+    ctx = _context(4)
+    trait = pl.DataFrame(
+        {
+            GWASLAB_RSID_COL: ["rs0", "rs1", "rs2"],  # rs3 absent
+            GWASLAB_EFFECT_ALLELE_COL: ["A", "G", "C"],  # match, flipped, mismatch
+            GWASLAB_NON_EFFECT_ALLELE_COL: ["G", "A", "T"],
+            GWASLAB_BETA_COL: [2.0, 2.0, 2.0],
+            GWASLAB_SE_COL: [1.0, 1.0, 1.0],
+            GWASLAB_SAMPLE_SIZE_COLUMN: [100.0, 100.0, 100.0],
+        }
+    )
+    aligned = align_trait_to_context(
+        narwhals.from_native(trait.lazy()),
+        ctx,
+        trait_total_sample_size=None,
+        min_trait_snps=0,
+    )
+    assert (aligned.n_found, aligned.n_matched) == (3, 2)
+    assert aligned.n_position_compared is None
+    assert aligned.n_position_concordant is None
+
+
+def test_alignment_position_concordance() -> None:
+    ctx = _context(3).with_columns(
+        pl.Series(GWASLAB_CHROM_COL, [1, 1, 1]),
+        pl.Series(GWASLAB_POS_COL, [100, 200, 300]),
+    )
+    trait = pl.DataFrame(
+        {
+            GWASLAB_RSID_COL: ["rs0", "rs1", "rs2"],
+            GWASLAB_EFFECT_ALLELE_COL: ["A", "A", "C"],  # rs2 mismatched: not compared
+            GWASLAB_NON_EFFECT_ALLELE_COL: ["G", "G", "T"],
+            GWASLAB_BETA_COL: [1.0, 1.0, 1.0],
+            GWASLAB_SE_COL: [1.0, 1.0, 1.0],
+            GWASLAB_SAMPLE_SIZE_COLUMN: [100.0, 100.0, 100.0],
+            GWASLAB_CHROM_COL: [1, 1, 1],
+            GWASLAB_POS_COL: [100, 205, 300],  # rs1 shifted
+        }
+    )
+    aligned = align_trait_to_context(
+        narwhals.from_native(trait.lazy()),
+        ctx,
+        trait_total_sample_size=None,
+        min_trait_snps=0,
+    )
+    assert (aligned.n_position_compared, aligned.n_position_concordant) == (2, 1)

@@ -89,3 +89,27 @@ def test_build_cis_mask() -> None:
         build_cis_mask(ctx, gene_chrom=2, gene_start=150, gene_end=160, window_bp=60)
     ) == [False, False, False]
     assert isinstance(mask, np.ndarray) and mask.dtype == bool
+
+
+def test_context_excludes_mhc_of_the_requested_build() -> None:
+    # 33_390_000 lies inside the hg38 extended MHC but beyond the hg19 one's end.
+    index = pl.DataFrame(
+        {
+            GWASLAB_CHROM_COL: [1, 6, 6],
+            GWASLAB_POS_COL: [100, _MHC_POS, 33_390_000],
+            GWASLAB_RSID_COL: ["rs1", "rs_mhc", "rs_mhc38_only"],
+            PPP_INDEX_IS_STRAND_AMBIGUOUS_COL: [False, False, False],
+        }
+    )
+    ld = pl.DataFrame(
+        {
+            LD_SCORE_RSID_COL: ["rs1", "rs_mhc", "rs_mhc38_only"],
+            LD_SCORE_CHROM_COL: [1, 6, 6],
+            LD_SCORE_LD_SCORE_COL: [1.0, 2.0, 3.0],
+            LD_SCORE_M_5_50_COL: [600.0, 100.0, 100.0],
+        }
+    )
+    ctx19 = build_ppp_ldsc_context(index, ld, build="19")
+    assert list(ctx19.pos) == [100, 33_390_000]
+    ctx38 = build_ppp_ldsc_context(index, ld, build="38")
+    assert list(ctx38.pos) == [100]
