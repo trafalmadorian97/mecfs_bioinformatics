@@ -173,27 +173,28 @@ def compare() -> None:
     )
     fast_h2 = _read_table(fast.heritability_task, built)
     old_h2 = _read_table(old.heritability_aggregation_task, built)
+    # The gwaslab heritability task always passes prevalences, so its table reports only the
+    # h2_liab columns; compare against the fast liability h2 (observed h2 for quantitative traits).
     h2 = fast_h2.select(
         "p",
-        pl.col("h2_obs").alias("h2_obs_fast"),
-        pl.col("h2_obs_se").alias("h2_obs_se_fast"),
+        pl.coalesce("h2_liab", "h2_obs").alias("h2_fast"),
+        pl.coalesce("h2_liab_se", "h2_obs_se").alias("h2_se_fast"),
         pl.col("Intercept").alias("intercept_fast"),
     ).join(
         old_h2.select(
             pl.col("p").cast(pl.String),
-            pl.col("h2_obs").cast(pl.Float64).alias("h2_obs_gwaslab"),
-            pl.col("h2_obs_se").cast(pl.Float64).alias("h2_obs_se_gwaslab"),
+            pl.col("h2_liab").cast(pl.Float64).alias("h2_gwaslab"),
+            pl.col("h2_liab_se").cast(pl.Float64).alias("h2_se_gwaslab"),
             pl.col("Intercept").cast(pl.Float64).alias("intercept_gwaslab"),
         ),
         on="p",
         how="full",
         coalesce=True,
     ).with_columns(
-        (pl.col("h2_obs_fast") - pl.col("h2_obs_gwaslab")).alias("d_h2"),
-        (
-            (pl.col("h2_obs_fast") - pl.col("h2_obs_gwaslab"))
-            / pl.col("h2_obs_se_gwaslab")
-        ).alias("d_h2_over_se"),
+        (pl.col("h2_fast") - pl.col("h2_gwaslab")).alias("d_h2"),
+        ((pl.col("h2_fast") - pl.col("h2_gwaslab")) / pl.col("h2_se_gwaslab")).alias(
+            "d_h2_over_se"
+        ),
     )
     with pl.Config(tbl_rows=-1, tbl_cols=-1, tbl_width_chars=250, float_precision=4):
         print(pairs)

@@ -25,11 +25,16 @@ from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 @frozen(slots=True)
 class AlignmentGuards:
-    """Thresholds for the alignment diagnostics; each lies in [0, 1]."""
+    """Thresholds for the alignment diagnostics; each lies in [0, 1].
 
-    min_coverage: float = 0.5
-    max_allele_mismatch_fraction: float = 0.02
-    min_position_concordance: float = 0.95
+    The defaults leave wide margin around the values observed on the 13 traits of the initial
+    genetic correlation study (experiments/claude/fast_ct_ldsc_vs_gwaslab): coverage 0.954 to
+    0.999, allele_mismatch_fraction at most 0.0007, and position_concordance at least 0.99999.
+    """
+
+    min_coverage: float = 0.8
+    max_allele_mismatch_fraction: float = 0.01
+    min_position_concordance: float = 0.99
 
     def __attrs_post_init__(self) -> None:
         for name, value in (
