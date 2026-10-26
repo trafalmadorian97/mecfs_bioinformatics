@@ -80,8 +80,9 @@ def _reference_meta(asset_id: str) -> ReferenceFileMeta:
 
 
 def build_synthetic_index(tmp_path: Path, n_snps: int, seed: int) -> SyntheticIndex:
-    """n_snps variants split over chromosomes 1 and 2 (far from the MHC), with LD scores drawn
-    uniformly on [1, 50]. The index task is executed so its asset is in the returned assets."""
+    """n_snps (even) variants split over chromosomes 1 and 2 (far from the MHC), with LD scores
+    drawn uniformly on [1, 50] and total reference count M = n_snps. The index task is executed so its asset is in the returned assets."""
+    assert n_snps % 2 == 0
     rng = np.random.default_rng(seed)
     half = n_snps // 2
     chrom = np.where(np.arange(n_snps) < half, 1, 2)
@@ -107,7 +108,8 @@ def build_synthetic_index(tmp_path: Path, n_snps: int, seed: int) -> SyntheticIn
         pl.col(GWASLAB_RSID_COL).alias(LD_SCORE_RSID_COL),
         pl.col(GWASLAB_POS_COL).alias(LD_SCORE_POS_COL),
         pl.col(LD_SCORE_LD_SCORE_COL),
-        pl.lit(float(n_snps)).alias(LD_SCORE_M_5_50_COL),
+        # Constant per chromosome; the two chromosomes sum to M = n_snps.
+        pl.lit(n_snps / 2.0).alias(LD_SCORE_M_5_50_COL),
     )
     hapmap3_task = FakeTask(meta=_reference_meta("hapmap3"))
     ld_task = FakeTask(meta=_reference_meta("ld_scores"))
