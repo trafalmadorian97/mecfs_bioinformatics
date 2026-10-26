@@ -20,6 +20,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GwasLabTransformSpec,
+    resolve_output_genome_build,
     transform_gwaslab_sumstats,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
@@ -77,6 +78,11 @@ class GWASLabTransformSumstatsTask(Task):
             trait=source_meta.trait,
             project=source_meta.project,
             sub_dir=source_meta.sub_dir,
+            genome_build=resolve_output_genome_build(
+                source_build=source_meta.genome_build,
+                genome_build=spec.genome_build,
+                liftover_to=spec.liftover_to,
+            ),
         )
         return cls(
             meta=meta,

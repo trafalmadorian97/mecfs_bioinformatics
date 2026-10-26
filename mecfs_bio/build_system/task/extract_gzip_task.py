@@ -79,6 +79,7 @@ class ExtractGzipTextFileTask(Task):
             sub_dir=src_meta.sub_dir,
             project_path=None,
             read_spec=readspec,
+            genome_build=src_meta.genome_build,
         )
 
         return cls(
