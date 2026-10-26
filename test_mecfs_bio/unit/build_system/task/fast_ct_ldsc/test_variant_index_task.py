@@ -59,7 +59,13 @@ def _snplist() -> pl.DataFrame:
     # rs_snplist_only is absent from the LD scores; rs_pal is strand-ambiguous (A/T).
     return pl.DataFrame(
         {
-            HAPMAP3_SNPLIST_RSID_COL: ["rs3", "rs1", "rs_mhc", "rs_pal", "rs_snplist_only"],
+            HAPMAP3_SNPLIST_RSID_COL: [
+                "rs3",
+                "rs1",
+                "rs_mhc",
+                "rs_pal",
+                "rs_snplist_only",
+            ],
             HAPMAP3_SNPLIST_A1_COL: ["C", "A", "G", "A", "C"],
             HAPMAP3_SNPLIST_A2_COL: ["T", "G", "A", "T", "G"],
         }
@@ -93,7 +99,7 @@ def _setup(tmp_path: Path) -> tuple[FastCtLdscVariantIndexTask, dict[AssetId, As
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     index_asset = index_task.execute(
-        scratch_dir=scratch, fetch=lambda a: assets[a], wf=make_wf()
+        scratch_dir=scratch, fetch=lambda asset_id: assets[asset_id], wf=make_wf()
     )
     assets[index_task.asset_id] = index_asset
     return index_task, assets
@@ -116,7 +122,7 @@ def test_index_joins_snplist_to_ld_scores_with_a1_as_effect_allele(
 
 def test_loaded_context_drops_hg19_mhc_and_strand_ambiguous(tmp_path: Path) -> None:
     index_task, assets = _setup(tmp_path)
-    ictx = load_indexed_ldsc_context(index_task, lambda a: assets[a])
+    ictx = load_indexed_ldsc_context(index_task, lambda asset_id: assets[asset_id])
     assert ictx.variants[GWASLAB_RSID_COL].to_list() == ["rs1", "rs3"]
     assert ictx.context.ld.tolist() == [1.0, 3.0]
     # M counts every reference variant, before the join.

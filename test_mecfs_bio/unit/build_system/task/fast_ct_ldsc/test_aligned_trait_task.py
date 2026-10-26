@@ -89,7 +89,7 @@ def _align(
         "aligned_t", source=source, index_task=idx.index_task, guards=guards
     )
     idx.assets[task.asset_id] = run_task(tmp_path, task, idx.assets)
-    return read_aligned_trait(task, lambda a: idx.assets[a])
+    return read_aligned_trait(task, lambda asset_id: idx.assets[asset_id])
 
 
 def _variants(tmp_path: Path) -> pl.DataFrame:

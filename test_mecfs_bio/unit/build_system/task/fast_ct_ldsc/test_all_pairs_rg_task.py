@@ -127,7 +127,9 @@ def _build(tmp_path: Path) -> _Run:
     aligned: dict[str, FastCtLdscAlignedTraitTask] = {}
     for alias, (z, n) in _simulate(ld).items():
         trait_task = FakeTask(meta=parquet_trait_meta(f"trait_{alias}", "19"))
-        register_frame(tmp_path, idx.assets, trait_task, trait_frame(idx.variants, z, n=n))
+        register_frame(
+            tmp_path, idx.assets, trait_task, trait_frame(idx.variants, z, n=n)
+        )
         source = SumstatsSource(
             task=trait_task, alias=alias, sample_info=_sample_info(alias)
         )
@@ -141,10 +143,17 @@ def _build(tmp_path: Path) -> _Run:
         aligned[alias] = task
     tasks = tuple(aligned.values())
     pairs_task = FastCtLdscAllPairsRgTask.create(
-        "pairs", index_task=idx.index_task, aligned_tasks=tasks, n_blocks=_N_BLOCKS, batch_size=2
+        "pairs",
+        index_task=idx.index_task,
+        aligned_tasks=tasks,
+        n_blocks=_N_BLOCKS,
+        batch_size=2,
     )
     heritability_task = FastCtLdscHeritabilityTask.create(
-        "heritability", index_task=idx.index_task, aligned_tasks=tasks, n_blocks=_N_BLOCKS
+        "heritability",
+        index_task=idx.index_task,
+        aligned_tasks=tasks,
+        n_blocks=_N_BLOCKS,
     )
     tables = {}
     for task in (pairs_task, heritability_task):
@@ -270,7 +279,9 @@ def test_aligned_trait_from_a_different_index_rejected(
     assets = dict(run.idx.assets)
     assets[bad.asset_id] = DirectoryAsset(bad_dir)
     with pytest.raises(AssertionError):
-        load_trait_matrix(run.idx.index_task, (good, bad), lambda a: assets[a])
+        load_trait_matrix(
+            run.idx.index_task, (good, bad), lambda asset_id: assets[asset_id]
+        )
 
 
 def test_duplicate_aliases_rejected(run: _Run) -> None:

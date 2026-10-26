@@ -48,12 +48,12 @@ from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
 )
 from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.fast_ct_ldsc_constants import (
     HAPMAP3_SNPLIST_A1_COL,
     HAPMAP3_SNPLIST_A2_COL,
     HAPMAP3_SNPLIST_RSID_COL,
 )
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
@@ -100,9 +100,7 @@ class FastCtLdscVariantIndexTask(Task):
         return FileAsset(out_path)
 
     @classmethod
-    def create(
-        cls, asset_id: str, *, hapmap3_task: Task, ld_scores_task: Task
-    ) -> Self:
+    def create(cls, asset_id: str, *, hapmap3_task: Task, ld_scores_task: Task) -> Self:
         assert produces_dataframe(hapmap3_task), "hapmap3_task must produce a dataframe"
         assert produces_dataframe(ld_scores_task), (
             "ld_scores_task must produce a dataframe"

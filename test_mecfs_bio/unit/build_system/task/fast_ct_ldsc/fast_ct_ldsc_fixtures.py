@@ -142,7 +142,9 @@ def register_pickle(
 def run_task(tmp_path: Path, task: Task, assets: dict[AssetId, Asset]) -> Asset:
     scratch = tmp_path / f"scratch_{task.asset_id}"
     scratch.mkdir()
-    return task.execute(scratch_dir=scratch, fetch=lambda a: assets[a], wf=make_wf())
+    return task.execute(
+        scratch_dir=scratch, fetch=lambda asset_id: assets[asset_id], wf=make_wf()
+    )
 
 
 def trait_frame(
