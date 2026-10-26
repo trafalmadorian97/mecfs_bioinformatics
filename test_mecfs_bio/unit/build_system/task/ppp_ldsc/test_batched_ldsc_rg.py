@@ -8,7 +8,9 @@ plausibility rather than machine equality. Mirrors test_batched_ldsc_h2.
 """
 
 import numpy as np
+import pytest
 
+from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import exact_h2_single
 from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_rg import (
     batched_rg,
     estimate_trait_context,
@@ -107,3 +109,30 @@ def test_rg_reports_reasonable_diagnostics() -> None:
     # The proteins share a positive component with the trait, so rg is positive and bounded.
     assert np.all(res.rg > 0)
     assert np.all(np.abs(res.rg) < 1.5)
+
+
+def test_trait_context_reports_h2_se_and_intercept_matching_exact() -> None:
+    rng = np.random.default_rng(3)
+    s = 3000
+    ld = rng.uniform(1.0, 50.0, size=s)
+    z = rng.standard_normal(s) * np.sqrt(0.02 * ld) + rng.standard_normal(s)
+    ctx = estimate_trait_context(z, np.full(s, _N), ld, _M, n_blocks=_N_BLOCKS)
+    exact = exact_h2_single(z**2, ld, _N, _M, n_blocks=_N_BLOCKS)
+    assert ctx.h2 == pytest.approx(exact.h2, rel=1e-8)
+    assert ctx.intercept == pytest.approx(exact.intercept, rel=1e-8)
+    # Block membership differs slightly between the shared-block and exact jackknives.
+    assert ctx.h2_se == pytest.approx(exact.h2_se, rel=0.05)
+    assert ctx.intercept_se > 0
+    assert ctx.n_snps == int(ctx.keep.sum())
+    assert ctx.mean_chi2 > 1.0
+    assert ctx.lambda_gc > 1.0
+
+
+def test_rg_reports_finite_gcov_and_intercept_ses() -> None:
+    ld, z_trait, n_trait, z_protein = _synthetic(seed=4)
+    n_protein = np.full(z_protein.shape[1], _N)
+    ctx = estimate_trait_context(z_trait, n_trait, ld, _M, n_blocks=_N_BLOCKS)
+    res = batched_rg(ctx, z_protein, ld, n_protein, _M, n_blocks=_N_BLOCKS)
+    assert np.all(np.isfinite(res.gcov_se)) and np.all(res.gcov_se > 0)
+    assert np.all(np.isfinite(res.gcov_intercept_se))
+    assert np.all(res.gcov_intercept_se > 0)
