@@ -104,7 +104,7 @@ class AlignmentDiagnostics:
         )
 
 
-def _as_optional_build(value: int | str | None) -> GenomeBuild | None:
+def _as_optional_build(value: object) -> GenomeBuild | None:
     if value == "19":
         return "19"
     if value == "38":
@@ -113,12 +113,12 @@ def _as_optional_build(value: int | str | None) -> GenomeBuild | None:
     return None
 
 
-def _as_int(value: int | str | None) -> int:
+def _as_int(value: object) -> int:
     assert isinstance(value, int), f"expected an int, got {value!r}"
     return value
 
 
-def _as_optional_int(value: int | str | None) -> int | None:
+def _as_optional_int(value: object) -> int | None:
     return None if value is None else _as_int(value)
 
 
