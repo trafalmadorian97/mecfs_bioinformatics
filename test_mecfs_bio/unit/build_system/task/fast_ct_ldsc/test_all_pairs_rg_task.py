@@ -104,15 +104,15 @@ def _simulate(ld: np.ndarray) -> dict[str, tuple[np.ndarray, np.ndarray]]:
     g_c = rng.standard_normal(s)
     n_b = rng.uniform(8_000.0, 12_000.0, size=s)
 
-    def z(g: np.ndarray, n: np.ndarray | float) -> np.ndarray:
+    def z(*, g: np.ndarray, n: np.ndarray | float) -> np.ndarray:
         return np.sqrt(n * _H2 * ld / m) * g + rng.standard_normal(s)
 
     n_const = np.full(s, _N)
     z_d = rng.standard_normal(s) * np.sqrt(np.maximum(0.2, 1.5 - 0.02 * ld))
     return {
-        "A": (z(g_a, _N), n_const),
-        "B": (z(g_b, n_b), n_b),
-        "C": (z(g_c, _N), n_const),
+        "A": (z(g=g_a, n=_N), n_const),
+        "B": (z(g=g_b, n=n_b), n_b),
+        "C": (z(g=g_c, n=_N), n_const),
         "D": (z_d, n_const),
     }
 
@@ -126,7 +126,9 @@ def _build(tmp_path: Path) -> _Run:
     ld = idx.variants["L2"].to_numpy()
     aligned: dict[str, FastCtLdscAlignedTraitTask] = {}
     for alias, (z, n) in _simulate(ld).items():
-        trait_task = FakeTask(meta=parquet_trait_meta(f"trait_{alias}", "19"))
+        trait_task = FakeTask(
+            meta=parquet_trait_meta(asset_id=f"trait_{alias}", genome_build="19")
+        )
         register_frame(
             tmp_path, idx.assets, trait_task, trait_frame(idx.variants, z, n=n)
         )
@@ -177,7 +179,7 @@ def run(tmp_path_factory: pytest.TempPathFactory) -> _Run:
     return _build(tmp_path_factory.mktemp("all_pairs"))
 
 
-def _row(df: pl.DataFrame, p1: str, p2: str) -> dict:
+def _row(df: pl.DataFrame, *, p1: str, p2: str) -> dict:
     rows = df.filter(
         (pl.col(FAST_CT_LDSC_P1_COL) == p1) & (pl.col(FAST_CT_LDSC_P2_COL) == p2)
     ).to_dicts()
@@ -204,17 +206,17 @@ def test_all_pairs_outputs_each_unordered_pair_once(run: _Run) -> None:
 
 
 def test_correlated_pair_recovers_rg(run: _Run) -> None:
-    ab = _row(run.pairs, "A", "B")
+    ab = _row(run.pairs, p1="A", p2="B")
     assert ab[FAST_CT_LDSC_RG_COL] == pytest.approx(_RG_AB, abs=0.15)
     assert ab[FAST_CT_LDSC_RG_P_COL] < 1e-6
-    assert abs(_row(run.pairs, "A", "C")[FAST_CT_LDSC_RG_COL]) < 0.2
+    assert abs(_row(run.pairs, p1="A", p2="C")[FAST_CT_LDSC_RG_COL]) < 0.2
     assert _herit(run, "A")[FAST_CT_LDSC_H2_OBS_COL] == pytest.approx(_H2, abs=0.1)
 
 
 def test_nonpositive_h2_trait_gives_nan_rg_without_crash(run: _Run) -> None:
     assert _herit(run, "D")[FAST_CT_LDSC_H2_OBS_COL] <= 0.0
     for p1, p2 in (("A", "D"), ("B", "D"), ("C", "D")):
-        row = _row(run.pairs, p1, p2)
+        row = _row(run.pairs, p1=p1, p2=p2)
         assert np.isnan(row[FAST_CT_LDSC_RG_COL])
         assert np.isnan(row[FAST_CT_LDSC_RG_SE_COL])
 
@@ -255,7 +257,11 @@ def test_outputs_feed_clustermap_and_lava_overlap_readers(
     ds = load_xr_corr_dataset(GeneticCorrSource(task=run.pairs_task), run.fetch)
     assert ds[XR_GENETIC_CORR_ARRAY].shape == (4, 4)
     path = _get_sample_overlap_path(
-        run.pairs_task, run.heritability_task, run.fetch, ["A", "B", "C"], tmp_path
+        ct_ldsc_task=run.pairs_task,
+        heritability_task=run.heritability_task,
+        fetch=run.fetch,
+        pheno_names=["A", "B", "C"],
+        tmp_dir=tmp_path,
     )
     assert path is not None
 

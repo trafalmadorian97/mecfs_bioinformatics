@@ -94,7 +94,7 @@ class FastCtLdscVariantIndexTask(Task):
         ld_positions = read_dataframe_task(self.ld_scores_task, fetch).select(
             LD_SCORE_CHROM_COL, LD_SCORE_RSID_COL, LD_SCORE_POS_COL
         )
-        index = _join_index(snplist, ld_positions)
+        index = _join_index(snplist=snplist, ld_positions=ld_positions)
         out_path = scratch_dir / "variant_index.parquet"
         index.write_parquet(out_path)
         return FileAsset(out_path)
@@ -116,7 +116,7 @@ class FastCtLdscVariantIndexTask(Task):
         return cls(meta=meta, hapmap3_task=hapmap3_task, ld_scores_task=ld_scores_task)
 
 
-def _join_index(snplist: pl.DataFrame, ld_positions: pl.DataFrame) -> pl.DataFrame:
+def _join_index(*, snplist: pl.DataFrame, ld_positions: pl.DataFrame) -> pl.DataFrame:
     return (
         snplist.select(
             pl.col(HAPMAP3_SNPLIST_RSID_COL).alias(GWASLAB_RSID_COL),
@@ -178,8 +178,8 @@ def load_indexed_ldsc_context(
 ) -> IndexedLdscContext:
     index_df = read_dataframe_task(index_task, fetch)
     context = build_ppp_ldsc_context(
-        index_df,
-        read_dataframe_task(index_task.ld_scores_task, fetch),
+        index_df=index_df,
+        ld_df=read_dataframe_task(index_task.ld_scores_task, fetch),
         build=FAST_CT_LDSC_INDEX_BUILD,
     )
     variants = index_df.select(_CONTEXT_VARIANT_COLUMNS).gather(

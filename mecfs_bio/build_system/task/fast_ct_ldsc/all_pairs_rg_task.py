@@ -133,10 +133,10 @@ def all_pairs_table(
             cols = list(range(start, min(start + batch_size, n_traits)))
             result = batched_rg(
                 contexts[i],
-                matrix.z[:, cols],
-                matrix.context.ld,
-                matrix.n[:, cols],
-                matrix.context.m,
+                z_protein=matrix.z[:, cols],
+                ld=matrix.context.ld,
+                n_protein=matrix.n[:, cols],
+                m=matrix.context.m,
                 n_blocks=n_blocks,
             )
             rows.extend(_pair_rows(matrix, contexts, i, cols, result))

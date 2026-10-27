@@ -89,9 +89,9 @@ class PppLdscContext:
 
 
 def build_ppp_ldsc_context(
+    *,
     index_df: pl.DataFrame,
     ld_df: pl.DataFrame,
-    *,
     drop_strand_ambiguous: bool = True,
     exclude_mhc: bool = True,
     build: GenomeBuild = "38",

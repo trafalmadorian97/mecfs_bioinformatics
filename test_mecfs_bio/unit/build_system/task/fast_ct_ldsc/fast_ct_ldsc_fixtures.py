@@ -202,7 +202,7 @@ def trait_sumstats(frame: pl.DataFrame, build: GenomeBuild | None) -> gl.Sumstat
 
 
 def parquet_trait_meta(
-    asset_id: str, genome_build: GenomeBuild | None
+    *, asset_id: str, genome_build: GenomeBuild | None
 ) -> FilteredGWASDataMeta:
     return FilteredGWASDataMeta(
         id=AssetId(asset_id),
@@ -215,7 +215,7 @@ def parquet_trait_meta(
 
 
 def pickle_trait_meta(
-    asset_id: str, genome_build: GenomeBuild | None
+    *, asset_id: str, genome_build: GenomeBuild | None
 ) -> GWASLabSumStatsMeta:
     return GWASLabSumStatsMeta(
         id=AssetId(asset_id), trait=asset_id, project="test", genome_build=genome_build

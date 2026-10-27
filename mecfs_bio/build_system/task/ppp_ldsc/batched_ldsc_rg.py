@@ -145,7 +145,7 @@ def _delete_jackknife_se(delete: np.ndarray) -> np.ndarray:
 
 
 def _blocked_wls(
-    w: np.ndarray, y: np.ndarray, ld: np.ndarray, n_blocks: int
+    *, w: np.ndarray, y: np.ndarray, ld: np.ndarray, n_blocks: int
 ) -> BlockedWlsResult:
     """Weighted LD-score regression of y on [ld, 1] with a contiguous block jackknife, for a
     stack of K columns sharing the row set. w, y are (S, K); ld is (S,)."""
@@ -295,11 +295,11 @@ class BatchedRgResult:
 
 
 def estimate_trait_context(
+    *,
     z_trait: np.ndarray,
     n_trait: np.ndarray,
     ld: np.ndarray,
     m: float,
-    *,
     n_blocks: int = DEFAULT_N_BLOCKS,
 ) -> TraitLdscContext:
     """Estimate the trait heritability once over the shared SNP set and package the trait-only
@@ -324,7 +324,7 @@ def estimate_trait_context(
     tot_agg = _aggregate_h2(chi[:, None], ld, n_sk, keep_col, m)
     sqrt_het = _sqrt_het(tot_agg, ldm, n_sk, m)
     w = sqrt_het**2 * oc[:, None] * keep_col
-    fit = _blocked_wls(w, chi[:, None], ld, n_blocks)
+    fit = _blocked_wls(w=w, y=chi[:, None], ld=ld, n_blocks=n_blocks)
 
     cnt = float(keep.sum())
     n_bar = float(np.where(keep, n_col, 0.0).sum() / max(cnt, 1.0))
@@ -351,11 +351,11 @@ def estimate_trait_context(
 
 def batched_rg(
     trait_ctx: TraitLdscContext,
+    *,
     z_protein: np.ndarray,
     ld: np.ndarray,
     n_protein: np.ndarray,
     m: float,
-    *,
     n_blocks: int = DEFAULT_N_BLOCKS,
     exclude: np.ndarray | None = None,
 ) -> BatchedRgResult:
@@ -394,7 +394,7 @@ def batched_rg(
     # Protein heritability: own-set aggregate-h2, weight het*oc (the univariate PRODUCT).
     tot_agg_p = _aggregate_h2(chi_p, ld, n_p, keep_p, m)
     w_p = _sqrt_het(tot_agg_p, ldm, n_p, m) ** 2 * oc[:, None] * keep_p
-    fit_p = _blocked_wls(w_p, chi_p, ld, n_blocks)
+    fit_p = _blocked_wls(w=w_p, y=chi_p, ld=ld, n_blocks=n_blocks)
     cnt_p = keep_p.sum(0).astype(float)
     n_bar_p = _column_mean_over_keep(n_p, keep_p, cnt_p)
     h2_p = fit_p.slope / n_bar_p * m
@@ -412,7 +412,7 @@ def batched_rg(
     sqrt_het_t = _sqrt_het(tot_agg_t_cov, ldm, np.broadcast_to(n_t, (s, k)), m)
     sqrt_het_p = _sqrt_het(tot_agg_p_cov, ldm, n_p, m)
     w_cov = oc[:, None] * (sqrt_het_t + sqrt_het_p) ** 2 * keep_cov
-    fit_cov = _blocked_wls(w_cov, zz, ld, n_blocks)
+    fit_cov = _blocked_wls(w=w_cov, y=zz, ld=ld, n_blocks=n_blocks)
 
     cnt_cov = keep_cov.sum(0).astype(float)
     mean_n_t = _column_mean_over_keep(np.broadcast_to(n_t, (s, k)), keep_cov, cnt_cov)

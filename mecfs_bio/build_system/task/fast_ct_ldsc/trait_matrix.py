@@ -95,10 +95,10 @@ def estimate_trait_contexts(
     """Each trait's own-set LDSC heritability fit (estimate_trait_context), in column order."""
     return [
         estimate_trait_context(
-            matrix.z[:, t],
-            matrix.n[:, t],
-            matrix.context.ld,
-            matrix.context.m,
+            z_trait=matrix.z[:, t],
+            n_trait=matrix.n[:, t],
+            ld=matrix.context.ld,
+            m=matrix.context.m,
             n_blocks=n_blocks,
         )
         for t in range(len(matrix.aliases))

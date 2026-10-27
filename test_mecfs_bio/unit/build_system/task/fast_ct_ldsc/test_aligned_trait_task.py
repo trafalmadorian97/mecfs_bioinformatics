@@ -52,9 +52,11 @@ def _run_parquet(
     source_guards: AlignmentGuards | None = None,
 ) -> AlignedTraitArrays:
     idx = build_synthetic_index(tmp_path, _N_SNPS, seed=0)
-    trait_task = FakeTask(meta=parquet_trait_meta("trait", genome_build))
+    trait_task = FakeTask(
+        meta=parquet_trait_meta(asset_id="trait", genome_build=genome_build)
+    )
     register_frame(tmp_path, idx.assets, trait_task, frame)
-    return _align(tmp_path, idx, trait_task, guards, source_guards)
+    return _align(tmp_path, idx, trait_task, guards=guards, source_guards=source_guards)
 
 
 def _run_pickle(
@@ -65,17 +67,22 @@ def _run_pickle(
     pickle_build: GenomeBuild | None,
 ) -> AlignedTraitArrays:
     idx = build_synthetic_index(tmp_path, _N_SNPS, seed=0)
-    trait_task = FakeTask(meta=pickle_trait_meta("trait", meta_build))
+    trait_task = FakeTask(
+        meta=pickle_trait_meta(asset_id="trait", genome_build=meta_build)
+    )
     register_pickle(
         tmp_path, idx.assets, trait_task, trait_sumstats(frame, pickle_build)
     )
-    return _align(tmp_path, idx, trait_task, AlignmentGuards(), None)
+    return _align(
+        tmp_path, idx, trait_task, guards=AlignmentGuards(), source_guards=None
+    )
 
 
 def _align(
     tmp_path: Path,
     idx: SyntheticIndex,
     trait_task: FakeTask,
+    *,
     guards: AlignmentGuards,
     source_guards: AlignmentGuards | None,
 ) -> AlignedTraitArrays:
