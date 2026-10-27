@@ -107,6 +107,7 @@ class PipeDataFrameTask(Task):
                 project=source_meta.project,
                 sub_dir=PurePath("processed"),
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         elif isinstance(source_meta, ResultTableMeta):
             meta = ResultTableMeta(
@@ -123,6 +124,7 @@ class PipeDataFrameTask(Task):
                 project=source_meta.project,
                 sub_dir=source_meta.sub_dir,
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         else:
             raise ValueError("unknown source meta")

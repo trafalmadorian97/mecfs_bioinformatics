@@ -90,6 +90,7 @@ class ExtractFromZipTask(Task):
                 sub_dir=sub_dir,
                 read_spec=read_spec,
                 project_path=PurePath(file_to_extract),
+                genome_build=src_meta.genome_build,
             ),
             source_file_task=source_task,
             file_to_extract=file_to_extract,

@@ -160,6 +160,7 @@ class WhitespaceSepTextToParquetTask(Task):
             project=source_meta.project,
             sub_dir=sub_dir,
             read_spec=DataFrameReadSpec(format=DataFrameParquetFormat()),
+            genome_build=source_meta.genome_build,
         )
         return cls(
             meta=meta,

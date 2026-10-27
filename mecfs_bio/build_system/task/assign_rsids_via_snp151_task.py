@@ -166,6 +166,7 @@ def create_new_meta(
             sub_dir=source_meta.sub_dir,
             read_spec=DataFrameReadSpec(format=format),
             extension=extension,
+            genome_build=source_meta.genome_build,
         )
     else:
         raise ValueError("unknown source meta")

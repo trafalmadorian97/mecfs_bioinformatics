@@ -10,6 +10,9 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
+    GWASLabSumStatsMeta,
+)
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameTextFormat,
@@ -25,6 +28,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_STATUS_COL
 
 
@@ -170,3 +174,53 @@ def test_drop_duplicate_variant_keys_keeps_distinct_variants() -> None:
     sumstats = _sumstats_with_variant_keys([(1, 100, "A", "C"), (1, 100, "A", "G")])
     _drop_duplicate_variant_keys(sumstats)
     assert sumstats.data["POS"].tolist() == [100, 100]
+
+
+def _source_with_build(genome_build: GenomeBuild | None) -> FakeTask:
+    return FakeTask(
+        meta=FilteredGWASDataMeta(
+            id=AssetId("input"),
+            trait="dummy_trait",
+            project="dummy_project",
+            sub_dir="processed",
+            genome_build=genome_build,
+        )
+    )
+
+
+def test_liftover_target_determines_output_genome_build() -> None:
+    task = GWASLabCreateSumstatsTask(
+        df_source_task=_source_with_build("38"),
+        target_asset_id=AssetId("sumstats"),
+        basic_check=True,
+        genome_build="infer",
+        liftover_to="19",
+    )
+    assert isinstance(task.meta, GWASLabSumStatsMeta)
+    assert task.meta.genome_build == "19"
+
+
+def test_source_genome_build_carries_over_when_inferred() -> None:
+    task = GWASLabCreateSumstatsTask(
+        df_source_task=_source_with_build("38"),
+        target_asset_id=AssetId("sumstats"),
+        basic_check=True,
+        genome_build="infer",
+    )
+    assert isinstance(task.meta, GWASLabSumStatsMeta)
+    assert task.meta.genome_build == "38"
+    table_task = GwasLabSumstatsToTableTask.create_from_source_task(
+        source_tsk=task, asset_id="table", sub_dir="processed"
+    )
+    assert isinstance(table_task.meta, FilteredGWASDataMeta)
+    assert table_task.meta.genome_build == "38"
+
+
+def test_forced_genome_build_contradicting_source_raises() -> None:
+    with pytest.raises(AssertionError):
+        GWASLabCreateSumstatsTask(
+            df_source_task=_source_with_build("38"),
+            target_asset_id=AssetId("sumstats"),
+            basic_check=True,
+            genome_build="19",
+        )

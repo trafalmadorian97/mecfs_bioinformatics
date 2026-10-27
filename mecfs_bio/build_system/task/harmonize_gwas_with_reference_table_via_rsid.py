@@ -219,6 +219,7 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
                 project=source_meta.project,
                 sub_dir=source_meta.sub_dir,
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         elif isinstance(source_meta, GWASSummaryDataFileMeta):
             meta = GWASSummaryDataFileMeta(
@@ -228,6 +229,7 @@ class HarmonizeGWASWithReferenceViaRSIDTask(Task):
                 sub_dir=source_meta.sub_dir,
                 project_path=None,
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         return cls(
             meta=meta,
