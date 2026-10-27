@@ -9,6 +9,7 @@ trait and reruns the cheap all-pairs step.
 
 from typing import Mapping, Sequence
 
+import narwhals
 from attrs import frozen
 from frozendict import frozendict
 
@@ -18,6 +19,10 @@ from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
     ConvertDataFrameToMarkdownTask,
+)
+from mecfs_bio.build_system.task.dataframe_output import (
+    ParquetOutFormat,
+    ParquetWriteOptions,
 )
 from mecfs_bio.build_system.task.fast_ct_ldsc.aligned_trait_task import (
     FastCtLdscAlignedTraitTask,
@@ -36,6 +41,8 @@ from mecfs_bio.build_system.task.fast_ct_ldsc.variant_index_task import (
 from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
     SumstatsSource,
 )
+from mecfs_bio.build_system.task.pipe_dataframe_task import PipeDataFrameTask
+from mecfs_bio.build_system.task.pipes.cast_pipe import CastPipe
 from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
 from mecfs_bio.build_system.task.pipes.drop_col_pipe import DropColPipe
 from mecfs_bio.build_system.task.pipes.format_numbers_pipe import FormatFloatNumbersPipe
@@ -48,6 +55,7 @@ from mecfs_bio.constants.fast_ct_ldsc_constants import (
     FAST_CT_LDSC_H2_INT_COL,
     FAST_CT_LDSC_H2_OBS_P1_COL,
     FAST_CT_LDSC_H2_OBS_P2_COL,
+    FAST_CT_LDSC_N_SNPS_COL,
     FAST_CT_LDSC_RG_COL,
     FAST_CT_LDSC_RG_P_COL,
     FAST_CT_LDSC_RG_SE_COL,
@@ -61,9 +69,25 @@ class FastGeneticCorrTasks:
     pairs_task: FastCtLdscAllPairsRgTask
     heritability_task: FastCtLdscHeritabilityTask
     pairs_markdown_task: Task
+    pairs_display_parquet_task: PipeDataFrameTask
 
     def terminal_tasks(self) -> list[Task]:
-        return [self.pairs_task, self.heritability_task, self.pairs_markdown_task]
+        return [
+            self.pairs_task,
+            self.heritability_task,
+            self.pairs_markdown_task,
+            self.pairs_display_parquet_task,
+        ]
+
+
+# Columns of the pairs table left out of the human-facing displays (markdown and display parquet).
+_DISPLAY_DROPPED_COLUMNS = [
+    FAST_CT_LDSC_GCOV_COL,
+    FAST_CT_LDSC_GCOV_SE_COL,
+    FAST_CT_LDSC_H2_OBS_P1_COL,
+    FAST_CT_LDSC_H2_OBS_P2_COL,
+    FAST_CT_LDSC_H2_INT_COL,
+]
 
 
 def fast_genetic_corr_by_ct_ldsc_asset_generator(
@@ -74,8 +98,9 @@ def fast_genetic_corr_by_ct_ldsc_asset_generator(
     n_blocks: int = DEFAULT_N_BLOCKS,
     batch_size: int = DEFAULT_RG_BATCH_SIZE,
 ) -> FastGeneticCorrTasks:
-    """Create one aligned-trait Task per source, plus the all-pairs rg, heritability and
-    pairs-markdown Tasks. Traits are ordered by lower-cased alias, so p1 < p2 in every pair."""
+    """Create one aligned-trait Task per source, plus the all-pairs rg, heritability,
+    pairs-markdown and pairs display-parquet Tasks. The display parquet holds the same columns as
+    the markdown table, unformatted, for the data_table documentation macro. Traits are ordered by lower-cased alias, so p1 < p2 in every pair."""
     ordered = sorted(sources, key=lambda source: source.alias.lower())
     aligned = {
         source.alias: FastCtLdscAlignedTraitTask.create(
@@ -104,17 +129,7 @@ def fast_genetic_corr_by_ct_ldsc_asset_generator(
         asset_id=f"{base_name}_fast_ct_ldsc_pairs_markdown",
         source_task=pairs,
         pipe=CompositePipe(
-            [
-                DropColPipe(
-                    [
-                        FAST_CT_LDSC_GCOV_COL,
-                        FAST_CT_LDSC_GCOV_SE_COL,
-                        FAST_CT_LDSC_H2_OBS_P1_COL,
-                        FAST_CT_LDSC_H2_OBS_P2_COL,
-                        FAST_CT_LDSC_H2_INT_COL,
-                    ]
-                )
-            ]
+            [DropColPipe(_DISPLAY_DROPPED_COLUMNS)]
             + [
                 FormatFloatNumbersPipe(col=col, format_str=".4g")
                 for col in [
@@ -128,9 +143,32 @@ def fast_genetic_corr_by_ct_ldsc_asset_generator(
             ]
         ),
     )
+    pairs_display_parquet = PipeDataFrameTask.create(
+        source_task=pairs,
+        asset_id=f"{base_name}_fast_ct_ldsc_pairs_display_parquet",
+        pipes=[
+            DropColPipe(_DISPLAY_DROPPED_COLUMNS),
+            # The data_table macro's parquet reader decodes INT64 as BigInt, which it cannot
+            # format.
+            CastPipe(
+                target_column=FAST_CT_LDSC_N_SNPS_COL,
+                type=narwhals.Int32(),
+                new_col_name=FAST_CT_LDSC_N_SNPS_COL,
+            ),
+        ],
+        out_format=ParquetOutFormat(
+            write_options=ParquetWriteOptions(
+                compression="zstd",
+                compression_level=22,
+                byte_stream_split_floats=True,
+            )
+        ),
+        backend="polars",
+    )
     return FastGeneticCorrTasks(
         aligned_trait_tasks=frozendict(aligned),
         pairs_task=pairs,
         heritability_task=heritability,
         pairs_markdown_task=pairs_markdown,
+        pairs_display_parquet_task=pairs_display_parquet,
     )
