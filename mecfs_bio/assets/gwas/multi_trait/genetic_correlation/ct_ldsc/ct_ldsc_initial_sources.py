@@ -1,0 +1,207 @@
+"""
+The traits of the initial cross-trait genetic correlation study, shared by the gwaslab CT-LDSC
+generator and the fast all-pairs CT-LDSC generator so both run on the identical source list.
+"""
+
+from mecfs_bio.assets.gwas.asthma.han_et_al_2022.analysis.asthma_standard_analysis import (
+    HAN_ASTHMA_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.asthma.han_et_al_2022.auxiliary.prevalence_info import (
+    HAN_ET_AL_ASTHMA_PREVALENCE_INFO,
+)
+from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.analysis.keaton_dbp_standard_analysis import (
+    KEATON_DBP_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis import (
+    EBV_DNA_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_data.lee_et_al_magma_task_generator import (
+    LEE_ET_AL_2018_COMBINED_MAGMA_TASKS,
+)
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.standard_analysis_kerrebijin_fibro import (
+    KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.heart_rate_recovery.verweij_et_al_2018.analysis.verweiji_standard_analysis import (
+    VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.auxiliary.prevalence_nfo import (
+    LIU_ET_AL_IBD_PREVALENCE_INFO,
+)
+from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_gwas_data.liu_et_al_2023_eur_37_harmonized_with_rsid_sumstats import (
+    LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
+    DECODE_ME_PREVALENCE_INFO,
+)
+from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_with_annovar_37_rsids_sumstats import (
+    DECODEME_ME_SUMSTATS_37_WITH_ANNOVAR_RSID,
+)
+from mecfs_bio.assets.gwas.migraine.uk_biobank_2025.analysis.uk_biobank_2025_migraine_standard_analysis import (
+    UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_standard_analysis import (
+    JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.auxiliary.prevalance_info import (
+    PGC_2022_PREVALENCE_INFO,
+)
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.processed.standard_analysis_sc_pgc_2022 import (
+    SCH_PGC_2022_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.auxiliary.prevelnce_info import (
+    AEGISDOTTIR_SYNCOPE_PREVALENCE_INFO,
+)
+from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.processed.syncope_sumstats_liftover_hapmap3_dedup import (
+    AEGISDOTTIR_SYNCOPE_LIFTOVER_SUMSTATS_HAPMAP3_DEDUP,
+)
+from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analysis_results.bentham_2015_standard_analysis import (
+    BENTHAM_LUPUS_STANDARD_ANALYSIS,
+)
+from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.auxiliary.prevalence_info import (
+    BENTHAM_LUPUS_PREVALENCE_INFO,
+)
+from mecfs_bio.build_system.task.gwaslab.gwaslab_genetic_corr_by_ct_ldsc_task import (
+    BinaryPhenotypeSampleInfo,
+    QuantPhenotype,
+    SumstatsSource,
+)
+from mecfs_bio.build_system.task.pipes.composite_pipe import CompositePipe
+from mecfs_bio.build_system.task.pipes.compute_beta_pipe import (
+    ComputeBetaIfNeededPipe,
+    ComputeBetaPipe,
+)
+from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
+from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
+from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
+
+CT_LDSC_INITIAL_SOURCES: list[SumstatsSource] = [
+    SumstatsSource(
+        DECODEME_ME_SUMSTATS_37_WITH_ANNOVAR_RSID,
+        alias="DecodeME",
+        pipe=SetColToConstantPipe(
+            GWASLAB_SAMPLE_SIZE_COLUMN,
+            constant=275488,
+        ),  # true total sample size. From preprint
+        sample_info=DECODE_ME_PREVALENCE_INFO,
+    ),
+    SumstatsSource(
+        VERWEIJI_ET_AL_HRR_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="HR_recovery",
+        pipe=SetColToConstantPipe(
+            GWASLAB_SAMPLE_SIZE_COLUMN,
+            58_818,  # from abstract
+        ),
+        sample_info=QuantPhenotype(),
+    ),
+    SumstatsSource(
+        JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="Multisite_pain",
+        pipe=SetColToConstantPipe(
+            GWASLAB_SAMPLE_SIZE_COLUMN, constant=387649
+        ),  # True total sample size. From Gwas catalog
+        sample_info=QuantPhenotype(),
+    ),
+    SumstatsSource(
+        SCH_PGC_2022_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="Schizophrenia",
+        pipe=SetColToConstantPipe(
+            GWASLAB_SAMPLE_SIZE_COLUMN,
+            constant=130644,  # from summary statistics file (130644=53386+77258)
+        ),  # True total sample size. From Gwas catalog
+        sample_info=PGC_2022_PREVALENCE_INFO,
+    ),
+    SumstatsSource(
+        HAN_ASTHMA_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="Asthma",
+        pipe=CompositePipe(
+            [
+                SetColToConstantPipe(
+                    GWASLAB_SAMPLE_SIZE_COLUMN,
+                    constant=393859,  # from summary statistics file,
+                ),  # True total sample size. From Gwas catalog
+                ComputeBetaPipe(),
+                ComputeSEPipe(),
+            ]
+        ),
+        sample_info=HAN_ET_AL_ASTHMA_PREVALENCE_INFO,
+    ),
+    # https://www.nature.com/articles/s41467-020-15649-3#Sec28:~:text=The%20GWAS%20analysis%20in%20the%20UK%20Biobank%20included%2064%2C538%20cases%20and%20329%2C321%20controls
+    SumstatsSource(
+        KEATON_DBP_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="DBP",
+        pipe=SetColToConstantPipe(
+            GWASLAB_SAMPLE_SIZE_COLUMN,
+            729882,  # from summary statistics file
+        ),
+        sample_info=QuantPhenotype(),
+    ),
+    SumstatsSource(
+        LEE_ET_AL_2018_COMBINED_MAGMA_TASKS.sumstats_task,
+        alias="Educational_attainment",
+        pipe=SetColToConstantPipe(
+            GWASLAB_SAMPLE_SIZE_COLUMN,
+            257841,  # source: GWASLAB metadata
+        ),
+        sample_info=QuantPhenotype(),
+    ),
+    SumstatsSource(
+        LIU_ET_AL_SUMSTATS_WITH_RSID_FROM_SNP150,
+        alias="Inflammatory_bowel_disease",
+        pipe=SetColToConstantPipe(
+            GWASLAB_SAMPLE_SIZE_COLUMN,
+            59957,  # 25,042 + 34,915
+        ),
+        sample_info=LIU_ET_AL_IBD_PREVALENCE_INFO,
+    ),
+    SumstatsSource(
+        AEGISDOTTIR_SYNCOPE_LIFTOVER_SUMSTATS_HAPMAP3_DEDUP,
+        alias="Syncope",
+        pipe=CompositePipe(
+            [
+                SetColToConstantPipe(
+                    GWASLAB_SAMPLE_SIZE_COLUMN,
+                    946_861,
+                ),
+                ComputeBetaIfNeededPipe(),
+            ]
+        ),
+        sample_info=AEGISDOTTIR_SYNCOPE_PREVALENCE_INFO,
+    ),
+    SumstatsSource(
+        BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="Lupus",
+        pipe=CompositePipe([SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN, 14267)]),
+        sample_info=BENTHAM_LUPUS_PREVALENCE_INFO,
+    ),
+    SumstatsSource(
+        EBV_DNA_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+        alias="EBV_DNA",
+        sample_info=QuantPhenotype(),
+        pipe=CompositePipe([SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN, 490_560)]),
+    ),
+    SumstatsSource(
+        UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="Migraine",
+        sample_info=BinaryPhenotypeSampleInfo(
+            sample_prevalence=25393 / 458440,  # from gwas catalog page
+            estimated_population_prevalence=0.104,  # UK prevalence from https://pmc.ncbi.nlm.nih.gov/articles/PMC11753071/
+            total_sample_size=458440,  # 25393 cases + 433047 controls; the UK Biobank migraine sumstats carry no per-SNP N column
+        ),
+    ),
+    SumstatsSource(
+        KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.magma_tasks.sumstats_task,
+        alias="Fibromyalgia",
+        sample_info=BinaryPhenotypeSampleInfo(
+            sample_prevalence=0.5,
+            estimated_population_prevalence=0.027,  # https://www.nature.com/articles/s41467-026-75256-6
+        ),
+    ),
+    # SumstatsSource(
+    #     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.sumstats_task,
+    #     alias="HHV7_DNA",
+    #     sample_info=QuantPhenotype(),
+    #     pipe=CompositePipe(
+    #         [SetColToConstantPipe(GWASLAB_SAMPLE_SIZE_COLUMN,  490_401)]
+    #     ),
+    # ),
+]

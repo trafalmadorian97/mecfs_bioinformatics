@@ -50,7 +50,7 @@ def _ld() -> pl.DataFrame:
 
 def test_context_sorts_filters_and_maps_row_positions() -> None:
     ctx = build_ppp_ldsc_context(
-        _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
+        index_df=_index(), ld_df=_ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
     # rs_ambig (strand-ambiguous) and rs_mhc (MHC) dropped -> rs1, rs3, rs2 remain,
     # sorted by (CHR, POS): chr1:100 (rs1), chr1:200 (rs3), chr2:300 (rs2).
@@ -67,14 +67,14 @@ def test_context_sorts_filters_and_maps_row_positions() -> None:
 
 def test_context_can_keep_strand_ambiguous_and_mhc() -> None:
     ctx = build_ppp_ldsc_context(
-        _index(), _ld(), drop_strand_ambiguous=False, exclude_mhc=False
+        index_df=_index(), ld_df=_ld(), drop_strand_ambiguous=False, exclude_mhc=False
     )
     assert ctx.n_snps == 5  # nothing dropped (rs4 still absent from the index)
 
 
 def test_build_cis_mask() -> None:
     ctx = build_ppp_ldsc_context(
-        _index(), _ld(), drop_strand_ambiguous=True, exclude_mhc=True
+        index_df=_index(), ld_df=_ld(), drop_strand_ambiguous=True, exclude_mhc=True
     )
     # Gene on chr1 at [150, 160]; window 60 -> cis covers [90, 220]: rs1(100), rs3(200).
     mask = build_cis_mask(ctx, gene_chrom=1, gene_start=150, gene_end=160, window_bp=60)
@@ -89,3 +89,27 @@ def test_build_cis_mask() -> None:
         build_cis_mask(ctx, gene_chrom=2, gene_start=150, gene_end=160, window_bp=60)
     ) == [False, False, False]
     assert isinstance(mask, np.ndarray) and mask.dtype == bool
+
+
+def test_context_excludes_mhc_of_the_requested_build() -> None:
+    # 33_390_000 lies inside the hg38 extended MHC but beyond the hg19 one's end.
+    index = pl.DataFrame(
+        {
+            GWASLAB_CHROM_COL: [1, 6, 6],
+            GWASLAB_POS_COL: [100, _MHC_POS, 33_390_000],
+            GWASLAB_RSID_COL: ["rs1", "rs_mhc", "rs_mhc38_only"],
+            PPP_INDEX_IS_STRAND_AMBIGUOUS_COL: [False, False, False],
+        }
+    )
+    ld = pl.DataFrame(
+        {
+            LD_SCORE_RSID_COL: ["rs1", "rs_mhc", "rs_mhc38_only"],
+            LD_SCORE_CHROM_COL: [1, 6, 6],
+            LD_SCORE_LD_SCORE_COL: [1.0, 2.0, 3.0],
+            LD_SCORE_M_5_50_COL: [600.0, 100.0, 100.0],
+        }
+    )
+    ctx19 = build_ppp_ldsc_context(index_df=index, ld_df=ld, build="19")
+    assert list(ctx19.pos) == [100, 33_390_000]
+    ctx38 = build_ppp_ldsc_context(index_df=index, ld_df=ld, build="38")
+    assert list(ctx38.pos) == [100]

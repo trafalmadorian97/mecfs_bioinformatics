@@ -28,6 +28,8 @@ for a diagonal h2, the pair intersection for the covariance.
 The rg standard error is a delete-block jackknife on the ratio: leave-one-block-out slopes for
 gcov and h2_protein are combined with the once-computed h2_trait deletes at the same block index
 to form per-block rg values, and rg_se is their jackknife spread. This is the classic ldsc rg SE.
+The same leave-one-block-out solves also yield intercept deletes, so the h2/gcov intercepts and
+the h2/gcov slopes all get delete-block jackknife standard errors.
 """
 
 from __future__ import annotations
@@ -36,7 +38,10 @@ import numpy as np
 from attrs import frozen
 from scipy.stats import norm
 
-from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import DEFAULT_N_BLOCKS
+from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import (
+    _CHI2_1DF_MEDIAN,
+    DEFAULT_N_BLOCKS,
+)
 from mecfs_bio.build_system.task.r_tasks.genomic_sem.genomic_sem_ldsc import (
     block_bounds,
     estimate_cov,
@@ -108,13 +113,42 @@ def _solve(sums: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return slope, intercept
 
 
+@frozen(slots=True)
+class BlockedWlsResult:
+    """Full-data and leave-one-block-out fits of a blocked WLS over K columns. slope and
+    intercept are (K,); slope_delete and intercept_delete are (n_blocks, K), where row i is the
+    fit with block i left out."""
+
+    slope: np.ndarray
+    intercept: np.ndarray
+    slope_delete: np.ndarray
+    intercept_delete: np.ndarray
+
+    def __attrs_post_init__(self) -> None:
+        k = self.slope.shape[0]
+        assert self.slope.ndim == 1 and self.intercept.shape == (k,)
+        assert self.slope_delete.ndim == 2 and self.slope_delete.shape[1] == k
+        assert self.intercept_delete.shape == self.slope_delete.shape
+
+
+def _delete_jackknife_se(delete: np.ndarray) -> np.ndarray:
+    """Delete-block jackknife standard error over axis 0 of the (n_blocks, ...) leave-one-out
+    estimates d: sqrt((B - 1) / B * sum_i (d_i - mean(d))^2), with B = n_blocks. This equals the
+    pseudo-value form sqrt(var(pseudo, ddof=1) / B) used by ldsc."""
+    n_blocks = delete.shape[0]
+    delete_mean = delete.mean(0)
+    return np.asarray(
+        np.sqrt(
+            (n_blocks - 1) / n_blocks * ((delete - delete_mean[None, ...]) ** 2).sum(0)
+        )
+    )
+
+
 def _blocked_wls(
-    w: np.ndarray, y: np.ndarray, ld: np.ndarray, n_blocks: int
-) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    *, w: np.ndarray, y: np.ndarray, ld: np.ndarray, n_blocks: int
+) -> BlockedWlsResult:
     """Weighted LD-score regression of y on [ld, 1] with a contiguous block jackknife, for a
-    stack of K columns sharing the row set. w, y are (S, K); ld is (S,). Returns
-    (slope_full (K,), intercept_full (K,), slope_delete (n_blocks, K)) where slope_delete[i] is
-    the leave-block-i-out slope."""
+    stack of K columns sharing the row set. w, y are (S, K); ld is (S,)."""
     s, k = w.shape
     ld_col = ld[:, None]
     ld2 = (ld * ld)[:, None]
@@ -129,8 +163,13 @@ def _blocked_wls(
         blk[i, :, 4] = (wb * yb).sum(0)
     tot = blk.sum(0)
     slope_full, intercept_full = _solve(tot)
-    slope_delete, _ = _solve(tot[None, :, :] - blk)
-    return slope_full, intercept_full, slope_delete
+    slope_delete, intercept_delete = _solve(tot[None, :, :] - blk)
+    return BlockedWlsResult(
+        slope=slope_full,
+        intercept=intercept_full,
+        slope_delete=slope_delete,
+        intercept_delete=intercept_delete,
+    )
 
 
 def _aggregate_h2(
@@ -178,6 +217,11 @@ class TraitLdscContext:
     kept SNPs (present and passing the chi-square filter), and n is the per-SNP trait sample size.
     h2 / n_bar are the trait heritability and its N_bar; h2_delete holds the (n_blocks,) per-block
     leave-one-out h2_trait values used by the rg jackknife.
+
+    Diagnostics: h2_se and intercept_se are delete-block jackknife SEs; intercept is the free
+    LDSC intercept; mean_chi2 is the mean chi-square over kept SNPs; lambda_gc is the genomic
+    control factor median(kept chi-square) / 0.4549 (the 1-df chi-square median); n_snps is the
+    kept SNP count.
     """
 
     z: np.ndarray
@@ -186,6 +230,12 @@ class TraitLdscContext:
     h2: float
     n_bar: float
     h2_delete: np.ndarray
+    h2_se: float
+    intercept: float
+    intercept_se: float
+    mean_chi2: float
+    lambda_gc: float
+    n_snps: int
 
     def __attrs_post_init__(self) -> None:
         s = self.z.shape[0]
@@ -200,6 +250,7 @@ class TraitLdscContext:
                 f"{name} must be {kind!r}-kind, got dtype {arr.dtype}"
             )
         assert self.h2_delete.ndim == 1, "h2_delete must be 1-D"
+        assert self.n_snps == int(self.keep.sum()), "n_snps must equal the kept count"
 
 
 @frozen(slots=True)
@@ -212,7 +263,9 @@ class BatchedRgResult:
     rg_z: np.ndarray
     rg_p: np.ndarray
     gcov: np.ndarray
+    gcov_se: np.ndarray
     gcov_intercept: np.ndarray
+    gcov_intercept_se: np.ndarray
     h2_protein: np.ndarray
     n_snps: np.ndarray  # SNPs entering the covariance (trait-protein intersection)
     n_bar_protein: np.ndarray
@@ -227,7 +280,9 @@ class BatchedRgResult:
             ("rg_z", self.rg_z, "f"),
             ("rg_p", self.rg_p, "f"),
             ("gcov", self.gcov, "f"),
+            ("gcov_se", self.gcov_se, "f"),
             ("gcov_intercept", self.gcov_intercept, "f"),
+            ("gcov_intercept_se", self.gcov_intercept_se, "f"),
             ("h2_protein", self.h2_protein, "f"),
             ("n_snps", self.n_snps, "i"),
             ("n_bar_protein", self.n_bar_protein, "f"),
@@ -240,11 +295,11 @@ class BatchedRgResult:
 
 
 def estimate_trait_context(
+    *,
     z_trait: np.ndarray,
     n_trait: np.ndarray,
     ld: np.ndarray,
     m: float,
-    *,
     n_blocks: int = DEFAULT_N_BLOCKS,
 ) -> TraitLdscContext:
     """Estimate the trait heritability once over the shared SNP set and package the trait-only
@@ -269,12 +324,13 @@ def estimate_trait_context(
     tot_agg = _aggregate_h2(chi[:, None], ld, n_sk, keep_col, m)
     sqrt_het = _sqrt_het(tot_agg, ldm, n_sk, m)
     w = sqrt_het**2 * oc[:, None] * keep_col
-    slope, _intercept, slope_delete = _blocked_wls(w, chi[:, None], ld, n_blocks)
+    fit = _blocked_wls(w=w, y=chi[:, None], ld=ld, n_blocks=n_blocks)
 
     cnt = float(keep.sum())
     n_bar = float(np.where(keep, n_col, 0.0).sum() / max(cnt, 1.0))
-    h2 = float(slope[0] / n_bar * m)
-    h2_delete = slope_delete[:, 0] / n_bar * m
+    h2 = float(fit.slope[0] / n_bar * m)
+    h2_delete = fit.slope_delete[:, 0] / n_bar * m
+    kept_chi = chi[keep]
     return TraitLdscContext(
         z=z.astype(float),
         keep=keep,
@@ -282,16 +338,24 @@ def estimate_trait_context(
         h2=h2,
         n_bar=n_bar,
         h2_delete=h2_delete,
+        h2_se=float(_delete_jackknife_se(h2_delete)),
+        intercept=float(fit.intercept[0]),
+        intercept_se=float(_delete_jackknife_se(fit.intercept_delete[:, 0])),
+        mean_chi2=float(kept_chi.mean()) if kept_chi.size else float("nan"),
+        lambda_gc=float(np.median(kept_chi) / _CHI2_1DF_MEDIAN)
+        if kept_chi.size
+        else float("nan"),
+        n_snps=int(keep.sum()),
     )
 
 
 def batched_rg(
     trait_ctx: TraitLdscContext,
+    *,
     z_protein: np.ndarray,
     ld: np.ndarray,
     n_protein: np.ndarray,
     m: float,
-    *,
     n_blocks: int = DEFAULT_N_BLOCKS,
     exclude: np.ndarray | None = None,
 ) -> BatchedRgResult:
@@ -300,8 +364,9 @@ def batched_rg(
     trait_ctx: the once-computed trait LDSC context (estimate_trait_context).
     z_protein: (S, K) signed protein z-score (= BETA/SE, index-effect-allele oriented), NaN where
         a protein lacks the variant.
-    ld: (S,) LD score, genome-sorted. n_protein: (K,) per-protein sample size. m: total
-        reference-SNP count. exclude: optional (S, K) boolean; True drops that variant for that
+    ld: (S,) LD score, genome-sorted. n_protein: (K,) per-protein sample size, or (S, K)
+        per-SNP sample size (NaN allowed where z_protein is NaN); in the (S, K) case each
+        column's chi-square filter uses that column's max N. m: total reference-SNP count. exclude: optional (S, K) boolean; True drops that variant for that
         protein (e.g. cis).
     """
     s, k = z_protein.shape
@@ -311,19 +376,29 @@ def batched_rg(
     finite_p = np.isfinite(z_protein)
     z_p = np.where(finite_p, z_protein, 0.0)
     chi_p = z_p * z_p
-    n_p = np.broadcast_to(n_protein.astype(float), (s, k))
-    keep_p = finite_p & (chi_p <= _chisq_threshold(n_protein)[None, :])
+    if n_protein.ndim == 1:
+        n_p = np.broadcast_to(n_protein.astype(float), (s, k))
+        keep_p = finite_p & (chi_p <= _chisq_threshold(n_protein)[None, :])
+    else:
+        # Per-SNP N: zero off the finite set and filter on each column's max N, exactly as
+        # estimate_trait_context does for the first side.
+        assert n_protein.shape == z_protein.shape, (
+            f"n_protein shape {n_protein.shape} must match z_protein shape {z_protein.shape}"
+        )
+        n_p = np.where(finite_p, n_protein.astype(float), 0.0)
+        threshold = _chisq_threshold(np.nanmax(n_protein, axis=0))
+        keep_p = finite_p & (chi_p <= threshold[None, :])
     if exclude is not None:
         keep_p = keep_p & ~exclude
 
     # Protein heritability: own-set aggregate-h2, weight het*oc (the univariate PRODUCT).
     tot_agg_p = _aggregate_h2(chi_p, ld, n_p, keep_p, m)
     w_p = _sqrt_het(tot_agg_p, ldm, n_p, m) ** 2 * oc[:, None] * keep_p
-    slope_p, _intc_p, slope_p_del = _blocked_wls(w_p, chi_p, ld, n_blocks)
+    fit_p = _blocked_wls(w=w_p, y=chi_p, ld=ld, n_blocks=n_blocks)
     cnt_p = keep_p.sum(0).astype(float)
     n_bar_p = _column_mean_over_keep(n_p, keep_p, cnt_p)
-    h2_p = slope_p / n_bar_p * m
-    h2_p_del = slope_p_del / n_bar_p[None, :] * m
+    h2_p = fit_p.slope / n_bar_p * m
+    h2_p_del = fit_p.slope_delete / n_bar_p[None, :] * m
 
     # Trait-protein covariance on the intersection: het weights use intersection aggregate-h2.
     keep_cov = trait_ctx.keep[:, None] & keep_p
@@ -337,14 +412,14 @@ def batched_rg(
     sqrt_het_t = _sqrt_het(tot_agg_t_cov, ldm, np.broadcast_to(n_t, (s, k)), m)
     sqrt_het_p = _sqrt_het(tot_agg_p_cov, ldm, n_p, m)
     w_cov = oc[:, None] * (sqrt_het_t + sqrt_het_p) ** 2 * keep_cov
-    slope_cov, intercept_cov, slope_cov_del = _blocked_wls(w_cov, zz, ld, n_blocks)
+    fit_cov = _blocked_wls(w=w_cov, y=zz, ld=ld, n_blocks=n_blocks)
 
     cnt_cov = keep_cov.sum(0).astype(float)
     mean_n_t = _column_mean_over_keep(np.broadcast_to(n_t, (s, k)), keep_cov, cnt_cov)
     mean_n_p = _column_mean_over_keep(n_p, keep_cov, cnt_cov)
     n_bar_cov = np.sqrt(mean_n_t * mean_n_p)
-    gcov = slope_cov / n_bar_cov * m
-    gcov_del = slope_cov_del / n_bar_cov[None, :] * m
+    gcov = fit_cov.slope / n_bar_cov * m
+    gcov_del = fit_cov.slope_delete / n_bar_cov[None, :] * m
 
     # rg and its delete-block jackknife SE on the ratio.
     invalid = (h2_p <= 0.0) | (trait_ctx.h2 <= 0.0)
@@ -352,11 +427,7 @@ def batched_rg(
         rg = np.where(invalid, np.nan, gcov / np.sqrt(trait_ctx.h2 * h2_p))
         denom_del = np.sqrt(trait_ctx.h2_delete[:, None] * h2_p_del)
         rg_del = gcov_del / denom_del
-        rg_del_mean = rg_del.mean(0)
-        rg_se = np.sqrt(
-            (n_blocks - 1) / n_blocks * ((rg_del - rg_del_mean[None, :]) ** 2).sum(0)
-        )
-        rg_se = np.where(invalid, np.nan, rg_se)
+        rg_se = np.where(invalid, np.nan, _delete_jackknife_se(rg_del))
         rg_z = rg / rg_se
     rg_p = 2.0 * norm.sf(np.abs(rg_z))
 
@@ -366,7 +437,9 @@ def batched_rg(
         rg_z=rg_z,
         rg_p=rg_p,
         gcov=gcov,
-        gcov_intercept=intercept_cov,
+        gcov_se=_delete_jackknife_se(gcov_del),
+        gcov_intercept=fit_cov.intercept,
+        gcov_intercept_se=_delete_jackknife_se(fit_cov.intercept_delete),
         h2_protein=h2_p,
         n_snps=cnt_cov.astype(np.int64),
         n_bar_protein=n_bar_p,
