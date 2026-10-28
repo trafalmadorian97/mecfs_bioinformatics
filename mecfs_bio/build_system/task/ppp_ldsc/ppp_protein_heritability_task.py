@@ -242,8 +242,8 @@ def _build_context(
         .collect()
     )
     return build_ppp_ldsc_context(
-        index_df,
-        _read_table(ld_scores_task, fetch),
+        index_df=index_df,
+        ld_df=_read_table(ld_scores_task, fetch),
         drop_strand_ambiguous=config.drop_strand_ambiguous,
         exclude_mhc=config.exclude_mhc,
     )

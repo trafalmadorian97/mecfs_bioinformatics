@@ -211,8 +211,8 @@ class PppProteinCrossTraitRgTask(GeneratingTask):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         index_df = _read_index(self.index_task, fetch)
         context = build_ppp_ldsc_context(
-            index_df,
-            _read_table(self.ld_scores_task, fetch),
+            index_df=index_df,
+            ld_df=_read_table(self.ld_scores_task, fetch),
             drop_strand_ambiguous=self.config.drop_strand_ambiguous,
             exclude_mhc=self.config.exclude_mhc,
         )
@@ -381,7 +381,11 @@ def _build_trait_context(
         min_trait_snps=config.min_trait_snps,
     )
     return estimate_trait_context(
-        aligned.z, aligned.n, context.ld, context.m, n_blocks=config.n_blocks
+        z_trait=aligned.z,
+        n_trait=aligned.n,
+        ld=context.ld,
+        m=context.m,
+        n_blocks=config.n_blocks,
     )
 
 
@@ -423,10 +427,10 @@ def _process_batch(
     )
     res = batched_rg(
         trait_ctx,
-        z_protein,
-        context.ld,
-        n_arr,
-        context.m,
+        z_protein=z_protein,
+        ld=context.ld,
+        n_protein=n_arr,
+        m=context.m,
         n_blocks=config.n_blocks,
         exclude=exclude,
     )

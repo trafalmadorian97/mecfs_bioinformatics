@@ -14,6 +14,12 @@ caller-supplied constant. A collapsed trait/context overlap almost always means 
 failure upstream (wrong genome build, malformed rsIDs, or systematic allele mismatch), so we fail
 fast when fewer than min_trait_snps context variants match.
 
+Alignment also reports counts for callers' own upstream-bug checks: how many context rsIDs the
+trait carries (n_found), how many of those have alleles matching the index directly or swapped
+(n_matched), and, when both the context variants and the trait carry CHR and POS, how many matched
+variants have a usable trait position (n_position_compared) and how many of those equal the
+context's (n_position_concordant).
+
 The trait arrives lazily and is narrowed to the context variants before anything is materialized.
 Only a small fraction of a trait's variants are HapMap3 ones, and a GWAS on whole-genome sequencing
 data can carry hundreds of millions of rows, so restricting to the context first is what keeps that
@@ -40,8 +46,10 @@ from mecfs_bio.build_system.task.harmonize_gwas_with_reference_table_via_rsid im
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
+    GWASLAB_CHROM_COL,
     GWASLAB_EFFECT_ALLELE_COL,
     GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
     GWASLAB_RSID_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
@@ -53,6 +61,11 @@ _REF_EA = "__ref_ea__"
 _REF_NEA = "__ref_nea__"
 _TRAIT_Z = "__trait_z__"
 _TRAIT_N = "__trait_n__"
+_TRAIT_CHR = "__trait_chr__"
+_TRAIT_POS = "__trait_pos__"
+_REF_CHR = "__ref_chr__"
+_REF_POS = "__ref_pos__"
+_FOUND = "__found__"
 
 
 @frozen(slots=True)
@@ -61,10 +74,19 @@ class TraitAligned:
 
     z: signed trait z-score oriented to the index effect allele, NaN where the trait lacks the
     variant or its alleles do not match. n: trait sample size per SNP, NaN where z is NaN.
+
+    n_found: context variants whose rsID the trait carries. n_matched: those whose alleles
+    match the index directly or swapped. n_position_compared / n_position_concordant: matched
+    variants with a usable trait (CHR, POS), and those whose (CHR, POS) equals the context's;
+    both None when positions were not available on both sides.
     """
 
     z: np.ndarray
     n: np.ndarray
+    n_found: int
+    n_matched: int
+    n_position_compared: int | None
+    n_position_concordant: int | None
 
     def __attrs_post_init__(self) -> None:
         s = self.z.shape[0]
@@ -72,6 +94,22 @@ class TraitAligned:
             assert arr.ndim == 1, f"{name} must be 1-D, got shape {arr.shape}"
             assert arr.shape[0] == s, f"{name} has length {arr.shape[0]}, expected {s}"
             assert arr.dtype.kind == "f", f"{name} must be float, got dtype {arr.dtype}"
+        assert 0 <= self.n_matched <= self.n_found <= s, (
+            f"need 0 <= n_matched ({self.n_matched}) <= n_found ({self.n_found}) <= {s}"
+        )
+        assert (self.n_position_compared is None) == (
+            self.n_position_concordant is None
+        ), "position counts must be both set or both None"
+        if (
+            self.n_position_compared is not None
+            and self.n_position_concordant is not None
+        ):
+            assert (
+                0
+                <= self.n_position_concordant
+                <= self.n_position_compared
+                <= self.n_matched
+            ), "position counts must satisfy concordant <= compared <= n_matched"
 
 
 def align_trait_to_context(
@@ -86,10 +124,16 @@ def align_trait_to_context(
     trait_df: a LAZY narwhals frame with gwaslab-standard columns rsID, EA, NEA, BETA, SE, and
         optionally N. Kept lazy so the filter down to the context variants happens during the scan,
         and backend-agnostic because a DataProcessingPipe may have produced it.
-    context_variants: the context SNPs in row order, with rsID and the index EA/NEA.
+    context_variants: the context SNPs in row order, with rsID and the index EA/NEA, and
+        optionally CHR and POS (needed for the position counts).
     trait_total_sample_size: constant N to use when trait_df has no N column (else None).
     """
-    has_n = GWASLAB_SAMPLE_SIZE_COLUMN in trait_df.collect_schema().names()
+    trait_cols = trait_df.collect_schema().names()
+    has_n = GWASLAB_SAMPLE_SIZE_COLUMN in trait_cols
+    position_cols = (GWASLAB_CHROM_COL, GWASLAB_POS_COL)
+    compare_positions = all(c in trait_cols for c in position_cols) and all(
+        c in context_variants.columns for c in position_cols
+    )
     if has_n:
         n_expr = pl.col(GWASLAB_SAMPLE_SIZE_COLUMN).cast(pl.Float64)
     else:
@@ -104,6 +148,14 @@ def align_trait_to_context(
         _TRAIT_Z,
         _TRAIT_N,
     ]
+    position_exprs: list[pl.Expr] = []
+    if compare_positions:
+        # strict=False: non-numeric chromosomes (X, Y) become null and are simply not compared.
+        position_exprs = [
+            pl.col(GWASLAB_CHROM_COL).cast(pl.Int64, strict=False).alias(_TRAIT_CHR),
+            pl.col(GWASLAB_POS_COL).cast(pl.Int64, strict=False).alias(_TRAIT_POS),
+        ]
+        projected += [_TRAIT_CHR, _TRAIT_POS]
     trait = (
         trait_df
         # Applied while lazy, so a polars-backed scan evaluates it as a parquet SELECTION and only
@@ -126,6 +178,8 @@ def align_trait_to_context(
             pl.col(GWASLAB_NON_EFFECT_ALLELE_COL),
             (pl.col(GWASLAB_BETA_COL) / pl.col(GWASLAB_SE_COL)).alias(_TRAIT_Z),
             n_expr.alias(_TRAIT_N),
+            *position_exprs,
+            pl.lit(True).alias(_FOUND),
         )
         # Sorting on every projected column before dropping duplicate rsIDs makes the survivor a
         # function of the data alone. Taking whichever row the scan happened to emit first would
@@ -134,11 +188,18 @@ def align_trait_to_context(
         .unique(subset=[GWASLAB_RSID_COL], keep="first", maintain_order=True)
     )
 
+    ref_position_exprs: list[pl.Expr] = []
+    if compare_positions:
+        ref_position_exprs = [
+            pl.col(GWASLAB_CHROM_COL).cast(pl.Int64).alias(_REF_CHR),
+            pl.col(GWASLAB_POS_COL).cast(pl.Int64).alias(_REF_POS),
+        ]
     joined = (
         context_variants.select(
             pl.col(GWASLAB_RSID_COL),
             pl.col(GWASLAB_EFFECT_ALLELE_COL).alias(_REF_EA),
             pl.col(GWASLAB_NON_EFFECT_ALLELE_COL).alias(_REF_NEA),
+            *ref_position_exprs,
         )
         .with_row_index(_CTX_ROW)
         .join(trait, on=GWASLAB_RSID_COL, how="left")
@@ -167,6 +228,23 @@ def align_trait_to_context(
         pl.when(match | flipped).then(pl.col(_TRAIT_N)).otherwise(None).alias(_TRAIT_N),
     )
 
+    matched = joined.select((match | flipped).fill_null(False)).to_series()
+    n_found = int(joined[_FOUND].fill_null(False).sum())
+    n_matched = int(matched.sum())
+    n_position_compared: int | None = None
+    n_position_concordant: int | None = None
+    if compare_positions:
+        comparable = joined.filter(
+            matched
+            & pl.col(_TRAIT_CHR).is_not_null()
+            & pl.col(_TRAIT_POS).is_not_null()
+        )
+        n_position_compared = comparable.height
+        n_position_concordant = comparable.filter(
+            (pl.col(_TRAIT_CHR) == pl.col(_REF_CHR))
+            & (pl.col(_TRAIT_POS) == pl.col(_REF_POS))
+        ).height
+
     z = aligned[_TRAIT_Z].to_numpy().astype(float)
     n = aligned[_TRAIT_N].to_numpy().astype(float)
     present = int(np.isfinite(z).sum())
@@ -176,4 +254,11 @@ def align_trait_to_context(
         "in the trait input (wrong genome build, malformed rsIDs, or systematic allele mismatch)"
     )
     logger.debug(f"Trait matched {present} of {context_variants.height} context SNPs")
-    return TraitAligned(z=z, n=n)
+    return TraitAligned(
+        z=z,
+        n=n,
+        n_found=n_found,
+        n_matched=n_matched,
+        n_position_compared=n_position_compared,
+        n_position_concordant=n_position_concordant,
+    )

@@ -7,14 +7,14 @@ reference-SNP count M, and the genome-sorted order used for contiguous jackknife
 all identical across proteins. We therefore build them ONCE and reuse them for every
 protein (and, later, for cross-trait rg and LCV).
 
-The context also carries each retained variant's chromosome and hg38 position so a per-
-protein cis mask (variants within +/- a window of the protein's gene) can be computed, and
+The context also carries each retained variant's chromosome and position (in the index's genome
+build, hg38 for UKB-PPP) so a per-protein cis mask (variants within +/- a window of the protein's gene) can be computed, and
 its row position in the slim files so a protein's beta/se can be gathered by positional
 index.
 
 Built by intersecting the variant index (rsID) with the reference LD scores (SNP), then
-optionally dropping strand-ambiguous variants and the extended MHC region (on the index's
-primary hg38 POS), and sorting by (chromosome, position).
+optionally dropping strand-ambiguous variants and the extended MHC region (on the index's POS,
+in the build the caller names), and sorting by (chromosome, position).
 
 The reference LD scores arrive as a consolidated dataframe (ConsolidateLDScoresTask), which also
 carries the common-variant count M_5_50 the regression normalizes by, so this module reads
@@ -33,7 +33,10 @@ from mecfs_bio.build_system.task.consolidate_ld_scores_task import (
     LD_SCORE_RSID_COL,
     total_m_5_50,
 )
-from mecfs_bio.constants.genomic_coordinate_constants import extended_mhc_interval
+from mecfs_bio.constants.genomic_coordinate_constants import (
+    GenomeBuild,
+    extended_mhc_interval,
+)
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
     GWASLAB_POS_COL,
@@ -43,7 +46,6 @@ from mecfs_bio.constants.ppp_database_constants import (
     PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
 )
 
-# The reference LD scores are hg19-coordinate; the index (and thus our exclusions) use hg38.
 _ROW_POS_COL = "__ctx_row__"
 
 
@@ -62,7 +64,7 @@ class PppLdscContext:
     )  # (S,) int64: position of each variant in the slim-file row order
     ld: np.ndarray  # (S,) float: LD score (L2)
     chrom: np.ndarray  # (S,) int64: chromosome
-    pos: np.ndarray  # (S,) int64: hg38 position (for cis masks)
+    pos: np.ndarray  # (S,) int64: position in the index's build (for cis masks)
     m: float  # total reference-SNP count (sum of M_5_50)
 
     def __attrs_post_init__(self) -> None:
@@ -87,18 +89,20 @@ class PppLdscContext:
 
 
 def build_ppp_ldsc_context(
+    *,
     index_df: pl.DataFrame,
     ld_df: pl.DataFrame,
-    *,
     drop_strand_ambiguous: bool = True,
     exclude_mhc: bool = True,
+    build: GenomeBuild = "38",
 ) -> PppLdscContext:
     """Intersect the variant index with the LD scores and assemble the shared context.
 
-    index_df: the variant index, with columns CHR, POS (hg38), rsID, and
+    index_df: the variant index, with columns CHR, POS (in genome build build), rsID, and
         is_strand_ambiguous, in its canonical row order (row i aligns to row i of every
         slim file).
     ld_df: consolidated reference LD scores with columns CHR, SNP (rsID), L2 and M_5_50.
+    build: genome build of the index POS column, which selects the extended MHC interval.
 
     M is taken from the LD scores BEFORE the join, since it counts reference variants and must
     not shrink to the subset the index happens to cover.
@@ -117,7 +121,7 @@ def build_ppp_ldsc_context(
     if drop_strand_ambiguous:
         joined = joined.filter(~pl.col(PPP_INDEX_IS_STRAND_AMBIGUOUS_COL))
     if exclude_mhc:
-        mhc = extended_mhc_interval("38")
+        mhc = extended_mhc_interval(build)
         in_mhc = (
             (pl.col(GWASLAB_CHROM_COL) == mhc.chrom)
             & (pl.col(GWASLAB_POS_COL) >= mhc.start)
