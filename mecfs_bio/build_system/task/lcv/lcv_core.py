@@ -620,7 +620,7 @@ def estimate_gcp_posterior(
 
     for i, gcp in tqdm(enumerate(grid)):
         statistic, _ = gcp_score_for_value(
-            gcp,
+            float(gcp),
             rho=rho,
             kappa1=kappa1,
             kappa2=kappa2,
