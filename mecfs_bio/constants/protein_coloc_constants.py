@@ -92,3 +92,31 @@ STATUS_SELECTED: Final[ColocStatus] = "selected"
 STATUS_NOT_SELECTED_BUDGET: Final[ColocStatus] = "not_selected_budget"
 STATUS_TESTED: Final[ColocStatus] = "tested"
 STATUS_FAILED: Final[ColocStatus] = "failed"
+
+# Raw colocalization results: candidate columns plus these per tested pair.
+N_TRAIT_VARIANTS_COL: Final = "N_TRAIT_VARIANTS"
+N_PROTEIN_VARIANTS_COL: Final = "N_PROTEIN_VARIANTS"
+N_ALIGNED_COL: Final = "N_ALIGNED"
+N_DUPLICATE_KEYS_DROPPED_COL: Final = "N_DUPLICATE_KEYS_DROPPED"
+N_DROPPED_PREFIX: Final = "N_DROPPED_"
+PROTEIN_LEAD_POS_COL: Final = "PROTEIN_LEAD_POS"
+PROTEIN_LEAD_MLOG10P_COL: Final = "PROTEIN_LEAD_MLOG10P"
+PP_H0_COL: Final = "PP_H0"
+PP_H1_COL: Final = "PP_H1"
+PP_H2_COL: Final = "PP_H2"
+PP_H3_COL: Final = "PP_H3"
+PP_H4_COL: Final = "PP_H4"
+PRIOR_P1_COL: Final = "P1"
+PRIOR_P2_COL: Final = "P2"
+PRIOR_P12_COL: Final = "P12"
+METHOD_COL: Final = "METHOD"
+FAILURE_REASON_COL: Final = "FAILURE_REASON"
+
+# Files inside a colocalization result directory.
+RAW_RESULTS_FILENAME: Final = "raw_results.parquet"
+WINDOWS_DIRNAME: Final = "windows"
+
+
+def pair_file_stem(locus_id: str, protein_id: str) -> str:
+    """File stem for one (locus, protein) pair, free of characters Windows filesystems reject."""
+    return f"{locus_id}__{protein_id}".replace(":", "_")

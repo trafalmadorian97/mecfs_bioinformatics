@@ -143,6 +143,9 @@ class ColocMethod(Protocol):
     @property
     def name(self) -> str: ...
 
+    @property
+    def priors(self) -> ColocPriors: ...
+
     def run(self, data: ColocInput) -> ColocPosteriors: ...
 
 
