@@ -201,7 +201,7 @@ def test_alignment_is_exact_on_ordered_alleles():
 
 ---
 
-### Task 4: Protein hit table Task (configurable threshold)
+### Task 4: Protein hit-segment table Task (configurable threshold and merge gap)
 
 **Files:**
 - Create: `mecfs_bio/build_system/task/protein_coloc/protein_hit_table_task.py`, `mecfs_bio/assets/gwas/ukbb_ppp/ppp_database/hapmap3/eur_discovery_hapmap3_ppp_hit_table.py`
@@ -210,16 +210,22 @@ def test_alignment_is_exact_on_ordered_alleles():
 **Interfaces:**
 - Consumes: `BuildSlimProteinParquetTask` (`.protein.oid`, `.protein.gene`, slim columns BETA, SE in index row order); `HAPMAP_3_PPP_DATABASE_INDEX` (CHR, POS hg38).
 - Produces: `PppProteinHitTableTask(GeneratingTask)` with
-  `create(asset_id: str, protein_tasks: tuple[BuildSlimProteinParquetTask, ...], index_task: Task, p_threshold: float = 5e-8) -> PppProteinHitTableTask`
-  (assert 0 < p_threshold < 1). Output `ResultTableMeta` parquet, one row per significant (protein, variant): PROTEIN_ID (OID), GENE, CHR, POS, MLOG10P (Float64). P computed from two-sided normal on BETA/SE in log space (avoid underflow: use `scipy.stats.norm.logsf`). Reads one protein at a time.
-  Asset: `HAPMAP_3_PPP_HIT_TABLE_5E8 = PppProteinHitTableTask.create(asset_id="ppp_hit_table_hapmap_3_p5e-8", protein_tasks=HAPMAP_3_PPP_DATABASE.protein_tasks, index_task=HAPMAP_3_PPP_DATABASE_INDEX)`.
+  `create(asset_id: str, protein_tasks: tuple[BuildSlimProteinParquetTask, ...], index_task: Task, p_threshold: float = 5e-8, merge_gap_bp: int = 250_000) -> PppProteinHitTableTask`
+  (assert 0 < p_threshold < 1 and merge_gap_bp ≥ 0). Output `ResultTableMeta` parquet, one row per **hit segment**: per protein and chromosome, sort its significant HapMap3 variants by POS and start a new segment whenever the gap to the previous significant variant exceeds merge_gap_bp. Columns: PROTEIN_ID (OID), GENE, CHR, SEG_START, SEG_END (positions of the first/last significant variant, hg38), LEAD_POS, LEAD_MLOG10P (Float64), N_SIG_VARIANTS (Int32). This is a distance merge, not LD clumping: segment bounds are exact, so overlap with a trait window is exact. P from two-sided normal on BETA/SE in log space (`scipy.stats.norm.logsf`, avoids underflow). Reads one protein at a time.
+  Asset: `HAPMAP_3_PPP_HIT_TABLE_5E8 = PppProteinHitTableTask.create(asset_id="ppp_hit_segments_hapmap_3_p5e-8_gap250kb", protein_tasks=HAPMAP_3_PPP_DATABASE.protein_tasks, index_task=HAPMAP_3_PPP_DATABASE_INDEX)`.
 
 - [ ] **Step 1: failing Task-level tests** (fetch from file assets the way `test_ppp_protein_heritability_task.py` does):
 
 ```python
-def test_hit_table_keeps_only_variants_below_threshold(tmp_path):   # 2 proteins, known z's
-def test_threshold_is_configurable(tmp_path):                       # 1e-5 keeps more rows than 5e-8
-def test_extreme_z_does_not_underflow(tmp_path):                     # z=40 → finite MLOG10P > 300
+def test_significant_variants_within_gap_form_one_segment(tmp_path):
+    # hits at 1_000_000, 1_200_000, 1_400_000 (gaps 200kb ≤ 250kb) → 1 segment, SEG_START 1_000_000, SEG_END 1_400_000, N_SIG_VARIANTS 3
+def test_gap_larger_than_merge_gap_splits_segments(tmp_path):    # hits 300kb apart → 2 segments
+def test_segments_do_not_span_chromosomes(tmp_path):
+def test_lead_is_the_min_p_variant_of_the_segment(tmp_path):
+def test_nonsignificant_variants_do_not_extend_segments(tmp_path):
+def test_threshold_and_gap_are_configurable(tmp_path):           # 1e-5 yields ≥ rows of 5e-8; gap 0 yields one segment per variant
+def test_extreme_z_does_not_underflow(tmp_path):                  # z=40 → finite LEAD_MLOG10P > 300
+def test_protein_without_hits_contributes_no_rows(tmp_path):
 ```
 
 - [ ] **Steps 2–4: fail, implement, pass.**
@@ -234,11 +240,11 @@ def test_extreme_z_does_not_underflow(tmp_path):                     # z=40 → 
 - Test: `test_mecfs_bio/unit/build_system/task/protein_coloc/test_trait_loci.py`, `test_candidate_selection.py`
 
 **Interfaces:**
-- Consumes: `GenomicInterval`, `extended_mhc_interval`; `read_gene_coords` output `dict[Oid, GenomicInterval]`; hit table from Task 4.
+- Consumes: `GenomicInterval`, `extended_mhc_interval`; `read_gene_coords` output `dict[Oid, GenomicInterval]`; hit-segment table from Task 4.
 - Produces:
   - `find_trait_loci(trait: pl.DataFrame, p_threshold: float, half_window_bp: int, exclude: Sequence[GenomicInterval]) -> pl.DataFrame` — greedy: take min-p variant below threshold, window = lead ± half_window, remove variants inside, repeat; then merge overlapping windows (merged locus keeps the min-p lead). Columns: LOCUS_ID ("chr{c}:{start}-{end}"), CHR, START, END, LEAD_POS, LEAD_EA, LEAD_NEA, LEAD_MLOG10P, STATUS (`"candidate"` or `"excluded_mhc"` when the window overlaps any `exclude` interval).
   - `@frozen class SelectionConfig: max_pairs: int = 30; max_per_locus: int = 5; mlog10p_clip: float = 50.0; trans_penalty_weight: float = 2.0; cis_window_bp: int = 1_000_000`
-  - `build_candidates(loci: pl.DataFrame, hit_table: pl.DataFrame, gene_coords: Mapping[Oid, GenomicInterval], cis_window_bp: int) -> pl.DataFrame` — one row per (non-excluded locus, protein with ≥1 hit in window): PROTEIN_ID, GENE, PROTEIN_MLOG10P (max in window), CIS_STATUS (`Literal["cis","trans","unknown"]`; unknown = no ST3 coordinates), N_OTHER_PROTEINS (distinct other proteins with hits in the window).
+  - `build_candidates(loci: pl.DataFrame, hit_segments: pl.DataFrame, gene_coords: Mapping[Oid, GenomicInterval], cis_window_bp: int) -> pl.DataFrame` — one row per (non-excluded locus, protein with ≥1 segment overlapping the window, interval overlap on the same CHR): PROTEIN_ID, GENE, PROTEIN_MLOG10P (max LEAD_MLOG10P over the protein's overlapping segments; may come from a lead just outside the window, which is acceptable because the score only ranks), CIS_STATUS (`Literal["cis","trans","unknown"]`; unknown = no ST3 coordinates), N_OTHER_PROTEINS (distinct other proteins with a segment overlapping the window).
   - `select_candidates(candidates: pl.DataFrame, loci: pl.DataFrame, config: SelectionConfig) -> pl.DataFrame` — adds SCORE, SCORE_TRAIT, SCORE_PROTEIN, SCORE_PENALTY and STATUS (`"selected"` / `"not_selected_budget"`). Score = min(trait mlog10p, clip) + min(protein mlog10p, clip) − (w·log2(1 + N_OTHER) if CIS_STATUS ≠ "cis" else 0). Walk the ranking (score desc, then PROTEIN_ID, LOCUS_ID asc) taking a pair while selected < max_pairs and that locus has < max_per_locus.
   - Status values as a `ColocStatus` Literal + constants in `protein_coloc_constants.py`: candidate, excluded_mhc, selected, not_selected_budget, tested, failed.
 
@@ -246,6 +252,7 @@ def test_extreme_z_does_not_underflow(tmp_path):                     # z=40 → 
 
 ```python
 def test_nearby_hits_merge_into_one_locus():
+def test_segment_overlapping_window_edge_is_a_candidate():   # segment 400kb–700kb outside a window ending at 450kb still counts; lead outside window
 def test_mhc_window_marked_excluded():
 def test_cis_pair_not_penalized_at_hotspot():      # cis protein with 50 other proteins outranks a trans one with equal p's
 def test_unknown_gene_coords_treated_like_trans():
