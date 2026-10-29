@@ -252,7 +252,7 @@ def test_protein_without_hits_contributes_no_rows(tmp_path):
 
 ```python
 def test_nearby_hits_merge_into_one_locus():
-def test_segment_overlapping_window_edge_is_a_candidate():   # segment 400kb–700kb outside a window ending at 450kb still counts; lead outside window
+def test_segment_overlapping_window_edge_is_a_candidate():   # window ends at 450kb; segment spans 400kb–700kb with its lead at 650kb (outside the window) → still a candidate
 def test_mhc_window_marked_excluded():
 def test_cis_pair_not_penalized_at_hotspot():      # cis protein with 50 other proteins outranks a trans one with equal p's
 def test_unknown_gene_coords_treated_like_trans():
