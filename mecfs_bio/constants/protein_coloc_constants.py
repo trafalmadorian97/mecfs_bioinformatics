@@ -47,3 +47,13 @@ BETA_PROTEIN_COL: Final = "BETA_PROTEIN"
 SE_PROTEIN_COL: Final = "SE_PROTEIN"
 EAF_PROTEIN_COL: Final = "EAF_PROTEIN"
 N_PROTEIN_COL: Final = "N_PROTEIN"
+
+# Protein hit-segment table: one row per (protein, chromosome, segment of significant variants).
+HIT_PROTEIN_ID_COL: Final = "PROTEIN_ID"
+HIT_GENE_COL: Final = "GENE"
+HIT_CHR_COL: Final = "CHR"
+HIT_SEG_START_COL: Final = "SEG_START"
+HIT_SEG_END_COL: Final = "SEG_END"
+HIT_LEAD_POS_COL: Final = "LEAD_POS"
+HIT_LEAD_MLOG10P_COL: Final = "LEAD_MLOG10P"
+HIT_N_SIG_VARIANTS_COL: Final = "N_SIG_VARIANTS"
