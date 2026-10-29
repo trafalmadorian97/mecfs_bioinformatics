@@ -5,7 +5,7 @@ The dense per-locus window frames use gwaslab column names (CHR, POS, EA, NEA, B
 N); the constants below name everything else.
 """
 
-from typing import Final
+from typing import Final, Literal
 
 import polars as pl
 
@@ -20,8 +20,9 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 
-LOCUS_ID_COL: Final = "locus_id"
-PROTEIN_ID_COL: Final = "protein_id"
+LOCUS_ID_COL: Final = "LOCUS_ID"
+PROTEIN_ID_COL: Final = "PROTEIN_ID"
+GENE_COL: Final = "GENE"
 
 # Schema of a dense summary-statistics window (trait or protein), positions in GRCh38.
 WINDOW_SCHEMA: Final = pl.Schema(
@@ -49,11 +50,45 @@ EAF_PROTEIN_COL: Final = "EAF_PROTEIN"
 N_PROTEIN_COL: Final = "N_PROTEIN"
 
 # Protein hit-segment table: one row per (protein, chromosome, segment of significant variants).
-HIT_PROTEIN_ID_COL: Final = "PROTEIN_ID"
-HIT_GENE_COL: Final = "GENE"
+HIT_PROTEIN_ID_COL: Final = PROTEIN_ID_COL
+HIT_GENE_COL: Final = GENE_COL
 HIT_CHR_COL: Final = "CHR"
 HIT_SEG_START_COL: Final = "SEG_START"
 HIT_SEG_END_COL: Final = "SEG_END"
 HIT_LEAD_POS_COL: Final = "LEAD_POS"
 HIT_LEAD_MLOG10P_COL: Final = "LEAD_MLOG10P"
 HIT_N_SIG_VARIANTS_COL: Final = "N_SIG_VARIANTS"
+
+# Trait loci: one row per (merged) window around a genome-wide significant trait lead variant.
+LOCUS_CHR_COL: Final = "CHR"
+LOCUS_START_COL: Final = "START"
+LOCUS_END_COL: Final = "END"
+LOCUS_LEAD_POS_COL: Final = "LEAD_POS"
+LOCUS_LEAD_EA_COL: Final = "LEAD_EA"
+LOCUS_LEAD_NEA_COL: Final = "LEAD_NEA"
+LOCUS_LEAD_MLOG10P_COL: Final = "LEAD_MLOG10P"
+STATUS_COL: Final = "STATUS"
+
+# Candidate (locus, protein) pairs and their selection scores.
+PROTEIN_MLOG10P_COL: Final = "PROTEIN_MLOG10P"
+CIS_STATUS_COL: Final = "CIS_STATUS"
+N_OTHER_PROTEINS_COL: Final = "N_OTHER_PROTEINS"
+SCORE_COL: Final = "SCORE"
+SCORE_TRAIT_COL: Final = "SCORE_TRAIT"
+SCORE_PROTEIN_COL: Final = "SCORE_PROTEIN"
+SCORE_PENALTY_COL: Final = "SCORE_PENALTY"
+
+CisStatus = Literal["cis", "trans", "unknown"]
+CIS_STATUS_CIS: Final[CisStatus] = "cis"
+CIS_STATUS_TRANS: Final[CisStatus] = "trans"
+CIS_STATUS_UNKNOWN: Final[CisStatus] = "unknown"
+
+ColocStatus = Literal[
+    "candidate", "excluded_mhc", "selected", "not_selected_budget", "tested", "failed"
+]
+STATUS_CANDIDATE: Final[ColocStatus] = "candidate"
+STATUS_EXCLUDED_MHC: Final[ColocStatus] = "excluded_mhc"
+STATUS_SELECTED: Final[ColocStatus] = "selected"
+STATUS_NOT_SELECTED_BUDGET: Final[ColocStatus] = "not_selected_budget"
+STATUS_TESTED: Final[ColocStatus] = "tested"
+STATUS_FAILED: Final[ColocStatus] = "failed"
