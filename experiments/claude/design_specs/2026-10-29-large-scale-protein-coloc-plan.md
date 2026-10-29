@@ -57,7 +57,9 @@ mecfs_bio/build_system/task/protein_coloc/
     coloc_locus_plot_task.py   # Task 7
 mecfs_bio/assets/reference_data/magma_gene_locations/processed/magma_entrez_gene_locations_data_build_38_unzipped.py  # Task 7
 mecfs_bio/assets/gwas/ukbb_ppp/ppp_database/hapmap3/eur_discovery_hapmap3_ppp_hit_table.py                         # Task 4
-mecfs_bio/assets/gwas/<trait>/.../coloc/   (four trait-prep + coloc modules)                                        # Tasks 8, 9
+mecfs_bio/asset_generator/ppp_coloc_asset_generator.py                                                              # Task 9
+mecfs_bio/assets/gwas/<trait>/.../processed*/ *_build_38_harmonized.py   (four trait-prep modules)                # Task 8
+mecfs_bio/assets/gwas/<trait>/.../analysis/*_ppp_coloc.py               (four generator calls)                      # Task 9
 mecfs_bio/analysis/ppp_coloc_analysis.py                                                                           # Task 9
 test_mecfs_bio/unit/build_system/task/protein_coloc/test_*.py
 ```
@@ -338,13 +340,21 @@ runs in Task 9. Each trait: GRCh38 gwaslab sumstats (no liftover, `genome_build=
 
 ---
 
-### Task 9: Coloc assets per trait, analysis runner, and real-run validation
+### Task 9: Coloc asset generator, per-trait coloc assets, analysis runner, and real-run validation
 
 **Files:**
-- Create: `mecfs_bio/assets/gwas/ukbb_ppp/ppp_database/hapmap3/ppp_coloc_runs.py` (one `TraitProteinColocTask` + display + plot task per trait, `fetcher=PppWindowFetcher(proteins=<from EUR discovery manifest via the existing manifest-row helper in ukbb_ppp_slim_protein_asset_generator.py>)`, `gene_coords_task=SUN_ET_AL_2023_ST3_EXTRACTED`, `gene_info_task=` Task 7's build-38 gene locations), `mecfs_bio/analysis/ppp_coloc_analysis.py` (runs all terminal tasks).
+- Create: `mecfs_bio/asset_generator/ppp_coloc_asset_generator.py` — the asset generator every trait calls:
+  - `@frozen class PppColocTaskGroup: coloc_task: TraitProteinColocTask; display_task: ColocDisplayTableTask; plot_task: ColocLocusPlotTask` with `terminal_tasks() -> list[Task]` (display + plot).
+  - `generate_ppp_coloc_tasks(base_name: str, trait_task: Task, trait_model: TraitModel, config: ColocRunConfig = ColocRunConfig(), h4_threshold: float = 0.8, hit_table_task: PppProteinHitTableTask = HAPMAP_3_PPP_HIT_TABLE_5E8, manifest_path: Path = EUR_DISCOVERY_PPP_MANIFEST_PATH) -> PppColocTaskGroup` — asset ids `f"{base_name}_ppp_coloc"`, `f"{base_name}_ppp_coloc_display"`, `f"{base_name}_ppp_coloc_plots"`. Shared deps are defaulted inside, not repeated per trait: `fetcher=PppWindowFetcher(proteins=<manifest rows via the existing _protein_file_from_row helper in ukbb_ppp_slim_protein_asset_generator.py>)`, `gene_coords_task=SUN_ET_AL_2023_ST3_EXTRACTED`, `fasta_task=UCSC_HG38_INDEXED_FASTA`, `panel_task=GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES`, `panel_ancestry="nfe"`, `gene_info_task=` Task 7's build-38 gene locations.
+- Create one module per trait, in that trait's own `analysis/` directory, each a single `generate_ppp_coloc_tasks(...)` call on the Task 8 harmonized input:
+  - `mecfs_bio/assets/gwas/me_cfs/decode_me/analysis/decode_me_ppp_coloc.py` → `DECODE_ME_PPP_COLOC`
+  - `mecfs_bio/assets/gwas/rheumtoid_arthritis/decode_seropositive/analysis/ra_seropositive_ppp_coloc.py` → `RA_SEROPOSITIVE_PPP_COLOC`
+  - `mecfs_bio/assets/gwas/ldl/willer_et_al/analysis/willer_ldl_ppp_coloc.py` → `WILLER_LDL_PPP_COLOC`
+  - `mecfs_bio/assets/gwas/inflammatory_bowel_disease/liu_et_al_2023/analysis/liu_et_al_2023_ibd_ppp_coloc.py` → `LIU_ET_AL_2023_IBD_PPP_COLOC`
+- Create: `mecfs_bio/analysis/ppp_coloc_analysis.py` — one function per trait (`run_willer_ldl_ppp_coloc()`, ...) calling `DEFAULT_RUNNER.run(<GROUP>.terminal_tasks(), incremental_save=True, must_rebuild_transitive=[])`, plus a `main` running all four.
 
 - [ ] **Step 1:** Write modules; green (logged).
-- [ ] **Step 2:** Run Willer LDL end to end (`pixi r python mecfs_bio/analysis/ppp_coloc_analysis.py` restricted to LDL, or a scratch runner). Tee the log under `experiments/claude/logs/` (uncommitted).
+- [ ] **Step 2:** Run Willer LDL end to end via `run_willer_ldl_ppp_coloc()`. Tee the log under `experiments/claude/logs/` (uncommitted).
 - [ ] **Step 3: Positive-control check.** At least one tested pair with PP.H4 > 0.8, CIS_STATUS "cis", at a classic lipid locus (e.g. PCSK9). If none, investigate the pipeline (orientation drop counts, n_aligned, sign agreement of lead betas) before blaming biology; report findings.
 - [ ] **Step 4:** Run the other three traits; record per-trait counts (loci, candidates, selected, tested, failed, displayed) in the PR description or `experiments/claude/` notes.
-- [ ] **Step 5: commit** `"Wire PPP coloc runs for four traits and add analysis runner"`, then hand back the suggested docs snippets (`{{ data_table(...) }}` per trait and the plot paths) to the user instead of editing `docs/`.
+- [ ] **Step 5: commit** `"Add PPP coloc asset generator, per-trait coloc assets and analysis runner"`, then hand back the suggested docs snippets (`{{ data_table(...) }}` per trait and the plot paths) to the user instead of editing `docs/`.
