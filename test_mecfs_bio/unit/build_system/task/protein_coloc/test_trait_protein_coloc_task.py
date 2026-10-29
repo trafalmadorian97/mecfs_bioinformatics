@@ -2,7 +2,7 @@
 Task-level tests of TraitProteinColocTask on a synthetic genome.
 
 The world: two 4 kb chromosomes with a non-palindromic SNV every 10 bp. The trait has strong
-signals at chr1:1000, chr2:2000 and chr1:3000, plus one in the MHC (chr6, never fetched).
+signals at chr1:1000, chr2:2000, chr1:3000 and chr2:3500, plus one in the MHC (chr6, never fetched).
 Protein OID1 shares the chr1:1000 and chr2:2000 signals and is served with half its rows
 stored swapped, so orientation has to fix them. OID2 is served with too few rows to test.
 OID3 is a weak candidate that the pair budget leaves out.
@@ -84,6 +84,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     STATUS_COL,
     STATUS_EXCLUDED_MHC,
     STATUS_FAILED,
+    STATUS_NO_CANDIDATES,
     STATUS_NOT_SELECTED_BUDGET,
     STATUS_TESTED,
     WINDOW_SCHEMA,
@@ -100,7 +101,8 @@ _STEP = 10
 _SE = 0.02
 _TRAIT_N = 50_000.0
 _PROTEIN_N = 30_000.0
-_SIGNALS = {(1, 1000): 12.0, (2, 2000): 12.0, (1, 3000): 12.0}
+# chr2:3500 has no protein hit, so its locus has no candidates.
+_SIGNALS = {(1, 1000): 12.0, (2, 2000): 12.0, (1, 3000): 12.0, (2, 3500): 12.0}
 _PROTEIN_SIGNALS = {(1, 1000): 15.0, (2, 2000): 15.0}
 _MHC_POS = 30_000_000
 _TRANSITION = {"A": "G", "G": "A", "C": "T", "T": "C"}
@@ -455,3 +457,10 @@ def test_window_parquet_written_for_each_tested_pair(tmp_path: Path) -> None:
 def test_create_rejects_unharmonized_trait() -> None:
     with pytest.raises(AssertionError):
         _create(_FakeFetcher({}), FakeTask(_trait_meta(harmonized=False)))
+
+
+def test_locus_without_candidates_is_reported(tmp_path: Path) -> None:
+    _, out_dir = _run(tmp_path)
+    rows = _results(out_dir).filter(pl.col(STATUS_COL) == STATUS_NO_CANDIDATES)
+    assert rows[LOCUS_ID_COL].to_list() == ["chr2:3200-3800"]
+    assert rows[PROTEIN_ID_COL].item() is None

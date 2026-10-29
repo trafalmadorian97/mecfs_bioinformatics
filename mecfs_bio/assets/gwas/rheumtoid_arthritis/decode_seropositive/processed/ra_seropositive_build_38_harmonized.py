@@ -2,8 +2,10 @@
 Genome-reference harmonization of deCODE's seropositive RA meta-GWAS at its GRCh38 positions
 (PosB38), against the UCSC hg38 genome and the 1000 Genomes EUR (30x, GRCh38) allele-frequency panel.
 
-Starts from the EAF-rescaled table without the MAF filter, since colocalization wants every
-variant. As in the standard analysis: only SNVs are kept, the per-variant effective N comes
+Starts from the EAF-rescaled table restricted to MAF >= 0.01: the full table has 61M variants,
+which gwaslab cannot hold on a 16 GB machine, while MAF >= 0.01 keeps 14.2M, a density
+comparable to the UKB-PPP imputed set. (The standard analysis's MAF >= 0.05 filter would drop
+variants colocalization wants.) As in the standard analysis: only SNVs are kept, the per-variant effective N comes
 from the Cohorts string, and BETA and SE are computed from OR and P (after gwaslab, on its
 column names).
 """
@@ -21,6 +23,7 @@ from mecfs_bio.assets.reference_data.thousand_genomes.eur_panel_allele_frequenci
     THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.task.filter_snps_by_frequency import FilterSNPsFrequencyTask
 from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference_harmonization_task import (
     GenomeReferenceHarmonizationTask,
 )
@@ -42,8 +45,15 @@ from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
 
 _ACGT = ["A", "C", "G", "T"]
 
+SEROPOS_RA_FILTERED_FOR_FREQ_0_01 = FilterSNPsFrequencyTask.create(
+    id="ra_seropos_filter_for_freq_0_01",
+    raw_gwas_task=SEROPOS_RA_EAF_SCALED,
+    allele_freq_col="EAFrq",
+    freq_thresh=0.01,
+)
+
 SEROPOS_RA_BUILD_38_SUMSTATS = GWASLabCreateSumstatsTask(
-    df_source_task=SEROPOS_RA_EAF_SCALED,
+    df_source_task=SEROPOS_RA_FILTERED_FOR_FREQ_0_01,
     target_asset_id=AssetId("ra_seropositive_build_38_sumstats"),
     basic_check=True,
     genome_build="38",

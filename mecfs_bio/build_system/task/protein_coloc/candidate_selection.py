@@ -16,8 +16,10 @@ Each pair gets a score, and pairs are taken in order of decreasing score:
     SCORE_PENALTY = w * log2(1 + N_OTHER_PROTEINS) when the pair is not cis, else 0
 N_OTHER_PROTEINS is the number of other proteins with a segment overlapping the same window. The
 penalty demotes trans pairs at pleiotropic hotspots, where many proteins share a pQTL; cis pairs
-are never penalized. Unknown is penalized like trans. Ties are broken by PROTEIN_ID, then
-LOCUS_ID. A pair is selected while fewer than max_pairs are selected and its locus has fewer
+are never penalized. Unknown is penalized like trans. Strong pairs often tie once both terms
+are clipped, so ties are broken by GENE_LEAD_DISTANCE_BP (distance from the trait lead to the
+protein's gene, nearest first, genes on other chromosomes or without coordinates last), then by
+the unclipped protein -log10 p, then by PROTEIN_ID and LOCUS_ID. A pair is selected while fewer than max_pairs are selected and its locus has fewer
 than max_per_locus selected pairs.
 """
 
@@ -32,6 +34,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     CIS_STATUS_COL,
     CIS_STATUS_TRANS,
     CIS_STATUS_UNKNOWN,
+    GENE_LEAD_DISTANCE_COL,
     HIT_CHR_COL,
     HIT_GENE_COL,
     HIT_LEAD_MLOG10P_COL,
@@ -41,6 +44,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     LOCUS_END_COL,
     LOCUS_ID_COL,
     LOCUS_LEAD_MLOG10P_COL,
+    LOCUS_LEAD_POS_COL,
     LOCUS_START_COL,
     N_OTHER_PROTEINS_COL,
     PROTEIN_ID_COL,
@@ -68,6 +72,7 @@ CANDIDATE_SCHEMA = pl.Schema(
         PROTEIN_MLOG10P_COL: pl.Float64,
         CIS_STATUS_COL: pl.String,
         N_OTHER_PROTEINS_COL: pl.Int64,
+        GENE_LEAD_DISTANCE_COL: pl.Int64,
     }
 )
 
@@ -119,6 +124,19 @@ def _cis_status_expr(cis_window_bp: int) -> pl.Expr:
     )
 
 
+def _gene_lead_distance_expr() -> pl.Expr:
+    lead = pl.col(LOCUS_LEAD_POS_COL)
+    gap = pl.max_horizontal(
+        pl.col(_GENE_START) - lead, lead - pl.col(_GENE_END), pl.lit(0)
+    )
+    return (
+        pl.when(pl.col(_GENE_CHR) == pl.col(LOCUS_CHR_COL))
+        .then(gap)
+        .otherwise(pl.lit(None, dtype=pl.Int64))
+        .alias(GENE_LEAD_DISTANCE_COL)
+    )
+
+
 def build_candidates(
     loci: pl.DataFrame,
     hit_segments: pl.DataFrame,
@@ -131,6 +149,7 @@ def build_candidates(
         pl.col(LOCUS_CHR_COL).cast(pl.Int64),
         LOCUS_START_COL,
         LOCUS_END_COL,
+        LOCUS_LEAD_POS_COL,
     )
     segments = hit_segments.select(
         PROTEIN_ID_COL,
@@ -145,7 +164,12 @@ def build_candidates(
         pl.col(HIT_SEG_END_COL) >= pl.col(LOCUS_START_COL),
     )
     pairs = overlapping.group_by(
-        LOCUS_ID_COL, LOCUS_CHR_COL, LOCUS_START_COL, LOCUS_END_COL, PROTEIN_ID_COL
+        LOCUS_ID_COL,
+        LOCUS_CHR_COL,
+        LOCUS_START_COL,
+        LOCUS_END_COL,
+        LOCUS_LEAD_POS_COL,
+        PROTEIN_ID_COL,
     ).agg(
         pl.col(HIT_GENE_COL).first(),
         pl.col(HIT_LEAD_MLOG10P_COL).max().alias(PROTEIN_MLOG10P_COL),
@@ -155,7 +179,7 @@ def build_candidates(
             (pl.len().over(LOCUS_ID_COL) - 1).cast(pl.Int64).alias(N_OTHER_PROTEINS_COL)
         )
         .join(_gene_coords_frame(gene_coords), on=PROTEIN_ID_COL, how="left")
-        .with_columns(_cis_status_expr(cis_window_bp))
+        .with_columns(_cis_status_expr(cis_window_bp), _gene_lead_distance_expr())
         .select(CANDIDATE_SCHEMA.names())
         .cast(CANDIDATE_SCHEMA)
         .sort(LOCUS_ID_COL, PROTEIN_ID_COL)
@@ -217,8 +241,15 @@ def select_candidates(
         )
         .drop(LOCUS_LEAD_MLOG10P_COL)
         .sort(
-            [SCORE_COL, PROTEIN_ID_COL, LOCUS_ID_COL],
-            descending=[True, False, False],
+            [
+                SCORE_COL,
+                GENE_LEAD_DISTANCE_COL,
+                PROTEIN_MLOG10P_COL,
+                PROTEIN_ID_COL,
+                LOCUS_ID_COL,
+            ],
+            descending=[True, False, True, False, False],
+            nulls_last=True,
         )
     )
     return ranked.with_columns(

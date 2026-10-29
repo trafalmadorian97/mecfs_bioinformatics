@@ -21,7 +21,7 @@ failed with a reason instead of posteriors.
 
 Output directory:
 - raw_results.parquet: one row per candidate pair (tested, failed or not selected) plus one row
-  per excluded locus, integers as Int32.
+  per excluded locus and per locus without candidate proteins, integers as Int32.
 - windows/{pair}.parquet: the aligned trait x protein window of every tested pair.
 """
 
@@ -129,9 +129,11 @@ from mecfs_bio.constants.protein_coloc_constants import (
     RAW_RESULTS_FILENAME,
     SE_PROTEIN_COL,
     SE_TRAIT_COL,
+    STATUS_CANDIDATE,
     STATUS_COL,
     STATUS_EXCLUDED_MHC,
     STATUS_FAILED,
+    STATUS_NO_CANDIDATES,
     STATUS_SELECTED,
     STATUS_TESTED,
     WINDOW_SCHEMA,
@@ -497,7 +499,8 @@ def _assemble_results(
     outcomes: Sequence[_PairOutcome],
     method: ColocMethod,
 ) -> pl.DataFrame:
-    """Candidates with their test outcomes and locus fields, plus the excluded loci."""
+    """Candidates with their test outcomes and locus fields, plus one row per excluded locus
+    and per locus without any candidate protein."""
     outcome_table = pl.DataFrame(
         [_outcome_row(outcome, method) for outcome in outcomes], schema=_OUTCOME_SCHEMA
     )
@@ -509,7 +512,11 @@ def _assemble_results(
         .join(locus_fields, on=LOCUS_ID_COL, how="left")
     )
     excluded = loci.filter(pl.col(STATUS_COL) == STATUS_EXCLUDED_MHC)
-    results = pl.concat([pairs, excluded], how="diagonal_relaxed")
+    without_candidates = loci.filter(
+        pl.col(STATUS_COL) == STATUS_CANDIDATE,
+        ~pl.col(LOCUS_ID_COL).is_in(ranked[LOCUS_ID_COL].implode()),
+    ).with_columns(pl.lit(STATUS_NO_CANDIDATES).alias(STATUS_COL))
+    results = pl.concat([pairs, excluded, without_candidates], how="diagonal_relaxed")
     return _int_columns_as_int32(results)
 
 

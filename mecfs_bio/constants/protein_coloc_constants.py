@@ -73,6 +73,8 @@ STATUS_COL: Final = "STATUS"
 PROTEIN_MLOG10P_COL: Final = "PROTEIN_MLOG10P"
 CIS_STATUS_COL: Final = "CIS_STATUS"
 N_OTHER_PROTEINS_COL: Final = "N_OTHER_PROTEINS"
+# Distance from the trait lead to the protein's gene (0 inside it); null when not on its chromosome.
+GENE_LEAD_DISTANCE_COL: Final = "GENE_LEAD_DISTANCE_BP"
 SCORE_COL: Final = "SCORE"
 SCORE_TRAIT_COL: Final = "SCORE_TRAIT"
 SCORE_PROTEIN_COL: Final = "SCORE_PROTEIN"
@@ -84,10 +86,17 @@ CIS_STATUS_TRANS: Final[CisStatus] = "trans"
 CIS_STATUS_UNKNOWN: Final[CisStatus] = "unknown"
 
 ColocStatus = Literal[
-    "candidate", "excluded_mhc", "selected", "not_selected_budget", "tested", "failed"
+    "candidate",
+    "excluded_mhc",
+    "no_candidates",
+    "selected",
+    "not_selected_budget",
+    "tested",
+    "failed",
 ]
 STATUS_CANDIDATE: Final[ColocStatus] = "candidate"
 STATUS_EXCLUDED_MHC: Final[ColocStatus] = "excluded_mhc"
+STATUS_NO_CANDIDATES: Final[ColocStatus] = "no_candidates"
 STATUS_SELECTED: Final[ColocStatus] = "selected"
 STATUS_NOT_SELECTED_BUDGET: Final[ColocStatus] = "not_selected_budget"
 STATUS_TESTED: Final[ColocStatus] = "tested"

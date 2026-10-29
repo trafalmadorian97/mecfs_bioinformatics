@@ -13,6 +13,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     CIS_STATUS_COL,
     CIS_STATUS_TRANS,
     CIS_STATUS_UNKNOWN,
+    GENE_LEAD_DISTANCE_COL,
     HIT_CHR_COL,
     HIT_GENE_COL,
     HIT_LEAD_MLOG10P_COL,
@@ -86,6 +87,7 @@ def _candidates(
             PROTEIN_MLOG10P_COL: [r[2] for r in rows],
             CIS_STATUS_COL: [r[3] for r in rows],
             N_OTHER_PROTEINS_COL: [r[4] for r in rows],
+            GENE_LEAD_DISTANCE_COL: pl.Series([None] * len(rows), dtype=pl.Int64),
         }
     )
 
@@ -247,3 +249,58 @@ def test_selection_is_deterministic_under_ties() -> None:
         "OID2": STATUS_SELECTED,
         "OID3": STATUS_NOT_SELECTED_BUDGET,
     }
+
+
+def test_gene_distance_to_trait_lead_is_recorded() -> None:
+    # _ONE_LOCUS's lead sits at 225_000 (the window midpoint).
+    candidates = build_candidates(
+        _ONE_LOCUS,
+        _segments(
+            [
+                ("OID1", 1, 100_000, 200_000, 150_000, 20.0),
+                ("OID2", 1, 100_000, 200_000, 150_000, 20.0),
+                ("OID3", 1, 100_000, 200_000, 150_000, 20.0),
+                ("OID4", 1, 100_000, 200_000, 150_000, 20.0),
+            ]
+        ),
+        gene_coords={
+            Oid("OID1"): GenomicInterval(chrom=1, start=200_000, end=300_000),
+            Oid("OID2"): GenomicInterval(chrom=1, start=325_000, end=400_000),
+            Oid("OID3"): GenomicInterval(chrom=2, start=200_000, end=300_000),
+        },
+        cis_window_bp=1_000_000,
+    ).sort(PROTEIN_ID_COL)
+    assert candidates[GENE_LEAD_DISTANCE_COL].to_list() == [0, 100_000, None, None]
+
+
+def _candidates_with_distance(
+    rows: Sequence[tuple[str, float, int | None]],
+) -> pl.DataFrame:
+    """Cis candidates at L1 of (PROTEIN_ID, PROTEIN_MLOG10P, GENE_LEAD_DISTANCE)."""
+    return _candidates(
+        [("L1", r[0], r[1], CIS_STATUS_CIS, 3) for r in rows]
+    ).with_columns(
+        pl.Series(GENE_LEAD_DISTANCE_COL, [r[2] for r in rows], dtype=pl.Int64)
+    )
+
+
+def test_clipped_ties_prefer_the_gene_nearest_the_trait_lead() -> None:
+    # Both protein terms clip to 50; without a tie-breaker OID order would pick OID_A.
+    selected = select_candidates(
+        _candidates_with_distance([("OID_A", 300.0, 400_000), ("OID_B", 60.0, 0)]),
+        _ONE_LOCUS,
+        SelectionConfig(max_pairs=1),
+    )
+    assert _status_by_protein(selected) == {
+        "OID_B": STATUS_SELECTED,
+        "OID_A": STATUS_NOT_SELECTED_BUDGET,
+    }
+
+
+def test_clipped_ties_at_equal_distance_prefer_the_stronger_pqtl() -> None:
+    selected = select_candidates(
+        _candidates_with_distance([("OID_A", 60.0, None), ("OID_B", 300.0, None)]),
+        _ONE_LOCUS,
+        SelectionConfig(max_pairs=1),
+    )
+    assert _status_by_protein(selected)["OID_B"] == STATUS_SELECTED
