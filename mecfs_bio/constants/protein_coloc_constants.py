@@ -120,3 +120,10 @@ WINDOWS_DIRNAME: Final = "windows"
 def pair_file_stem(locus_id: str, protein_id: str) -> str:
     """File stem for one (locus, protein) pair, free of characters Windows filesystems reject."""
     return f"{locus_id}__{protein_id}".replace(":", "_")
+
+
+# Docs-facing display table and plot index.
+DISPLAY_LOCUS_COL: Final = "LOCUS"
+DISPLAY_LEAD_VARIANT_COL: Final = "LEAD_VARIANT"
+PLOT_PNG_FILENAME_COL: Final = "PNG_FILENAME"
+PLOT_SVG_FILENAME_COL: Final = "SVG_FILENAME"
