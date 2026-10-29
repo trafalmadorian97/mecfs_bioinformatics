@@ -36,3 +36,14 @@ WINDOW_SCHEMA: Final = pl.Schema(
         GWASLAB_SAMPLE_SIZE_COLUMN: pl.Float64,
     }
 )
+
+# Columns of an aligned trait x protein window: the variant key (CHR, POS, EA, NEA) followed by
+# each side's statistics.
+BETA_TRAIT_COL: Final = "BETA_TRAIT"
+SE_TRAIT_COL: Final = "SE_TRAIT"
+EAF_TRAIT_COL: Final = "EAF_TRAIT"
+N_TRAIT_COL: Final = "N_TRAIT"
+BETA_PROTEIN_COL: Final = "BETA_PROTEIN"
+SE_PROTEIN_COL: Final = "SE_PROTEIN"
+EAF_PROTEIN_COL: Final = "EAF_PROTEIN"
+N_PROTEIN_COL: Final = "N_PROTEIN"
