@@ -98,6 +98,11 @@
     },
 
     {
+      "description": "ibis 12 is only partly compatible with duckdb 2.0: sqlglot still emits the removed x -> ... lambda syntax, and to_pyarrow_batches calls the removed fetch_record_batch. Lift this ceiling once an ibis release includes https://github.com/ibis-project/ibis/pull/12205 (sqlglot bump), https://github.com/ibis-project/ibis/pull/12206 (duckdb 2.0 support), and the fix for https://github.com/ibis-project/ibis/issues/12196 (to_pyarrow_batches). ",
+      "matchPackageNames": ["duckdb"],
+      "allowedVersions": "<2"
+    },
+    {
       "description": "r-base>=4.6 seems currently incompatible with r-cpp11",
       "matchPackageNames": ["r-base"],
       "allowedVersions": "<4.6"
