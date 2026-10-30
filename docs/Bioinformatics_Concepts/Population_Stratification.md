@@ -253,7 +253,7 @@ y &= \hat\beta_j x_j + \alpha + \epsilon\\
 \end{align}
 $$
 
-Where $K:=XX^T\in\mathbb{R}^{n\times n}$ is called the "genetic relatedness matrix" whose $(i,j)$ entry measures genetic similarity between study participants $i$ and $j$.  This standard is usually used in presentations of LMMs. 
+Where $K:=XX^T\in\mathbb{R}^{n\times n}$ is called the "genetic relatedness matrix" whose $(i,j)$ entry measures genetic similarity between study participants $i$ and $j$.  This standard form is usually used in presentations of LMMs. 
 
 
 
@@ -266,7 +266,7 @@ We begin with proximal contamination. Consider again the equation $(\ref{gamma_f
 
 $$
 \begin{align}
-\mathrm{span}(x_j) \approx \mathrm{Range}(R)
+\mathrm{span}(x_j) \subset \mathrm{Range}(R)
 \end{align}
 $$
 
@@ -287,7 +287,7 @@ y&= \hat\beta_j x_j R_{-\mathrm{chr}(j)}\gamma + \epsilon\\
 \end{align}
 $$
 
-Thus the LMM term $R_{-\mathrm{chr}(j)}\gamma $ is different for variants on different chromosomes.  Simulations and theoretical analysis[@yang2014advantages] suggest that this approach recovers the power lost by the standard LMM method.  Moreover, since population stratification produced multi-chromosme effects, the exclusion of one chromosome does not affect the ability of the LMM to control for population stratification
+Thus the LMM term $R_{-\mathrm{chr}(j)}\gamma$ is different for variants on different chromosomes.  Simulations and theoretical analysis[@yang2014advantages] suggest that this approach recovers the power lost by the standard LMM method. 
 
 
 ### Nonlinearly controlling for PCs
