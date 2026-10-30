@@ -4,21 +4,12 @@ version = "0.1.0"
 readme = "README.md"
 requires-python = "~=3.13.0"
 
-# gwaslab 4.2.2 caps numpy<2, matplotlib<3.9, and pins pysam==0.22.1.  Those exact
-# versions have no cp313 wheels on PyPI, so on Python 3.13 they would each build from
-# sdist (and pysam 0.22.1's sdist fails to build under Cython 3).  Override the caps to
-# versions that ship cp313 wheels.  matplotlib: gwaslab's get_cmap calls are guarded (the
-# one unguarded path, viz_plot_arc, is not exercised by this repo).
-#
-# numpy is capped <2.4: gwaslab's vendored LDSC rg estimator calls float() on size-1
-# arrays of ndim>0 (extension/ldsc/ldsc_regressions.py, RG.__init__).  numpy 1.25
-# deprecated that conversion and 2.4.0 turned it into a hard TypeError, which crashes the
-# CT-LDSC genetic-correlation path (system_test_genetic_corr_by_ct_ldsc).  On 2.1-2.3 it
-# still works (only a DeprecationWarning; we don't run warnings-as-errors).  Lift this
-# ceiling once gwaslab extracts the scalar with .item() upstream.  The renovate.json
-# packageRule for numpy enforces the same cap.
+# gwaslab 4.2.3 caps matplotlib<3.9 and pins pysam==0.22.1.  Those exact versions have
+# no cp313 wheels on PyPI, so on Python 3.13 they would each build from sdist (and pysam
+# 0.22.1's sdist fails to build under Cython 3).  Override the caps to versions that ship
+# cp313 wheels.  matplotlib: gwaslab's get_cmap calls are guarded (the one unguarded path,
+# viz_plot_arc, is not exercised by this repo).
 [tool.pixi.pypi-options.dependency-overrides]
-numpy = ">=2.1,<2.4"
 matplotlib = ">=3.9.2"
 pysam = ">=0.24,<0.25"
 
@@ -100,7 +91,7 @@ tomli-w = ">=1.2.0,<2"
 r-rfast = ">=2.1.5.2,<3"
 r-seurat = ">=5.4.0,<6"
 r-cpp11 = ">=0.5,<1"
-ty = ">=0.0.92,<0.0.93"
+ty = ">=0.0.94,<0.0.95"
 actionlint = ">=1.7.12,<2"
 shellcheck = ">=0.11.0,<0.12"
 
@@ -112,7 +103,7 @@ gwaslab = "==4.2.3"
 invoke = ">=3.0.3,<3.1.0"
 loguru = ">=0.7.3"
 matplotlib = ">=3.8"
-narwhals = ">=2.27.1, <2.28.0"
+narwhals = ">=2.28.0, <2.29.0"
 networkx = ">=3.5"
 numpy = "*"
 osfclient = ">=0.0.5"
