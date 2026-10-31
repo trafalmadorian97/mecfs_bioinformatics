@@ -29,6 +29,6 @@ PARTITIONED_MODEL_GTEX_BRAIN_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask(
         filename="LDSCORE_LDSC_SEG_ldscores_GTEx_brain_1000Gv3_ldscores",
         extension=".tar",
     ),
-    url="https://www.dropbox.com/scl/fi/yg0bf3tq077ut74040wed/LDSCORE_LDSC_SEG_ldscores_GTEx_brain_1000Gv3_ldscores.tar?rlkey=dz8me7skwswwfsybytbe4wg8o&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/yg0bf3tq077ut74040wed/LDSCORE_LDSC_SEG_ldscores_GTEx_brain_1000Gv3_ldscores.tar?rlkey=dz8me7skwswwfsybytbe4wg8o&dl=1",
     md5_hash="b9842d0ef3b0b9afe0434d63c43067b2",
 )
