@@ -22,6 +22,6 @@ AEGISDOTTIR_ET_AL_RAW_SYNCOPE_DATA = DownloadFileTask(
         project_path=PurePath("syncope2023.gz"),
         read_spec=DataFrameReadSpec(format=DataFrameTextFormat(separator="\t")),
     ),
-    url="https://www.dropbox.com/scl/fi/sy1pitlnd1ywe9rsr8qqa/syncope2023.gz?rlkey=crno0suvqolsrp8fsrsjvc17j&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/sy1pitlnd1ywe9rsr8qqa/syncope2023.gz?rlkey=crno0suvqolsrp8fsrsjvc17j&dl=1",
     md5_hash="ffe32aefc6f91ad2be0c23a4a1ecbac6",
 )

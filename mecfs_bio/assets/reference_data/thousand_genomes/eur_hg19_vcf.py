@@ -29,7 +29,7 @@ THOUSAND_GENOMES_EUR_HG19_VCF = DownloadFileTask(
         extension=".vcf.gz",
     ),
     url=(
-        "https://www.dropbox.com/scl/fi/q3wndz2wockuqto5pq0cc/"
+        "https://dl.dropboxusercontent.com/scl/fi/q3wndz2wockuqto5pq0cc/"
         "EUR.ALL.split_norm_af.1kgp3v5.hg19.vcf.gz"
         "?rlkey=zq8fzrjtbbl20r1wr74p4tqa1&dl=1"
     ),

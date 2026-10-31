@@ -2,6 +2,7 @@ import tempfile
 import time
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from functools import partial
 from pathlib import Path
 from subprocess import CalledProcessError
 
@@ -9,11 +10,17 @@ import structlog
 from attrs import frozen
 
 from mecfs_bio.util.download.verify import hash_matches
+from mecfs_bio.util.retry.call_with_retries import call_with_retries
 from mecfs_bio.util.subproc.run_command import execute_command
 
 logger = structlog.get_logger()
 
 ARIA2_MAX_CONNECTIONS_PER_SERVER = 16
+_UNVERIFIED_FILE_PREVIEW_BYTES = 512
+
+
+class DownloadAttemptFailedError(RuntimeError):
+    pass
 
 
 class Downloader(ABC):
@@ -98,6 +105,46 @@ class AriaDownloader(Downloader):
             return False
 
 
+def _log_unverified_file(path: Path) -> None:
+    """
+    Log the size and leading bytes of a rejected download, since its temp directory is
+    deleted afterwards and it cannot be inspected later.
+    """
+    if not path.exists():
+        logger.warning(f"Downloader reported success, but {path} does not exist.")
+        return
+    with open(path, "rb") as f:
+        leading_bytes = f.read(_UNVERIFIED_FILE_PREVIEW_BYTES)
+    logger.warning(
+        f"Rejected downloaded file {path}: size {path.stat().st_size} bytes, "
+        f"leading bytes {leading_bytes!r}"
+    )
+
+
+def _attempt_download(
+    md5sum: str | None,
+    dest: Path,
+    url: str,
+    downloader: Downloader,
+    temp_out: Path,
+) -> None:
+    """
+    Make one download attempt, moving a verified file to dest.
+
+    A rejected file is deleted: aria2 with --continue=true treats an existing file of the
+    full size as finished, so keeping it would make the next attempt return the same bytes.
+    """
+    logger.debug(f"Downloading from {url} to {temp_out}")
+    if not downloader.download(url, local_path=temp_out):
+        raise DownloadAttemptFailedError(f"Downloader failed to fetch {url}.")
+    if temp_out.exists() and hash_matches(temp_out, md5sum):
+        temp_out.rename(dest)
+        return
+    _log_unverified_file(temp_out)
+    temp_out.unlink(missing_ok=True)
+    raise DownloadAttemptFailedError(f"Could not verify file downloaded from {url}.")
+
+
 def robust_download(
     md5sum: str | None,
     dest: Path,
@@ -105,35 +152,29 @@ def robust_download(
     downloader: Downloader,
     max_outer_retries: int = 10,
     max_backoff_time: int = 60,
+    sleep: Callable[[float], None] = time.sleep,
 ) -> None:
     """
-    Call a downloader in a loop, to add robustness
+    Call a downloader repeatedly, with backoff, until it produces a verified file.
+
+    A failed download and a file failing verification are retried identically: both can
+    come from a transient server problem, such as an error page served with status 200.
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as tmpdir:
-        tmp_path = Path(tmpdir)
-        temp_out = tmp_path / dest.name
-        for i in range(max_outer_retries):
-            logger.debug(f"Downloading from {url} to {temp_out}")
-            success = downloader.download(url, local_path=temp_out)
-            if success:
-                if temp_out.exists() and hash_matches(temp_out, md5sum):
-                    temp_out.rename(dest)
-                    return
-                else:
-                    logger.debug(
-                        "Downloader returned success, but downloaded file could not be verified."
-                    )
-            else:
-                if i >= (max_outer_retries - 1):
-                    break
-                backoff = min(2 ** (i), max_backoff_time)
-                logger.debug(
-                    f"Download attempt {i + 1} failed.  Backing off for {backoff} seconds."
-                )
-                time.sleep(backoff)
-        raise RuntimeError(
-            f"Download of from {url} to {dest} failed after {max_outer_retries} retries."
+        call_with_retries(
+            partial(
+                _attempt_download,
+                md5sum=md5sum,
+                dest=dest,
+                url=url,
+                downloader=downloader,
+                temp_out=Path(tmpdir) / dest.name,
+            ),
+            retry_on=(DownloadAttemptFailedError,),
+            max_attempts=max_outer_retries,
+            max_backoff_seconds=max_backoff_time,
+            sleep=sleep,
         )
 
 
