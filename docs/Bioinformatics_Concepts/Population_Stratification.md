@@ -281,7 +281,7 @@ The standard solution to proximal contamination is the exclusion of these proble
 
 $$
 \begin{align}
-y&= \hat\beta_j x_j R_{-\mathrm{chr}(j)}\gamma + \epsilon\\
+y&= \hat\beta_j+ x_j R_{-\mathrm{chr}(j)}\gamma + \epsilon\\
 \epsilon  &\sim \mathcal{N}(0, \sigma^2_e I)\\
 \gamma & \sim \mathcal{N}(0, \sigma^2_\gamma I ),
 \end{align}
