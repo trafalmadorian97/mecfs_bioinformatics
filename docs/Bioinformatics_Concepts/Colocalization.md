@@ -8,9 +8,9 @@ Because it evaluates commonality between GWAS signals, colocalization is somewha
 Colocalization is often paired with [Mendelian Randomization](Mendelian_Randomization.md), another local, variant-focused method.
 
 
-## ABF colocalization
+## Bayes factor colocalization
 
-todo
+Bayes factor colocalization is elegant, simple, and heavily dependent on certain restrictive assumptions.  It is used as a basis for more advanced colocalization methods that relax its restrictive assumptions.
 
 ## Data generating model
 
