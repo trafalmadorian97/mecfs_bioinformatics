@@ -31,6 +31,6 @@ HAPMAP3_SNPLIST_FOR_GENOMIC_SEM = DownloadFileTask(
         # Tab-separated with a header (SNP, A1, A2).
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
     ),
-    url="https://www.dropbox.com/scl/fi/8dsoz94erkkv3fdln1mhb/w_hm3.snplist?rlkey=59lhbaz7bvj3bv669f87fsufg&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/8dsoz94erkkv3fdln1mhb/w_hm3.snplist?rlkey=59lhbaz7bvj3bv669f87fsufg&dl=1",
     md5_hash="e1372a59749eb1f92f7f6931c075f5ac",
 )

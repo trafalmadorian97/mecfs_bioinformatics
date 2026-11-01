@@ -33,7 +33,7 @@ THOUSAND_GENOMES_EUR_HG38_30X_VCF = DownloadFileTask(
         extension=".vcf.gz",
     ),
     url=(
-        "https://www.dropbox.com/scl/fi/qtrh2d6u6p8405ug7a6fc/"
+        "https://dl.dropboxusercontent.com/scl/fi/qtrh2d6u6p8405ug7a6fc/"
         "EUR.ALL.split_norm_af.1kg_30x.hg38.vcf.gz"
         "?rlkey=z25adzkqjurvloak46fl93i8h&dl=1"
     ),
