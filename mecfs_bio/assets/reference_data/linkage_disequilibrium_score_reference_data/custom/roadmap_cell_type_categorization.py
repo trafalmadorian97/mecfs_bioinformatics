@@ -27,6 +27,6 @@ ROADMAP_CELL_TYPE_CATEGORIES_FOR_LDSC = DownloadFileTask(
         extension=".csv",
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
     ),
-    url="https://www.dropbox.com/scl/fi/cz1yty9sj8vsqnddarpqb/cell_type_series_categorized.csv?rlkey=upn71pljutjywj7dz3fyb785e&st=azq3dty6&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/cz1yty9sj8vsqnddarpqb/cell_type_series_categorized.csv?rlkey=upn71pljutjywj7dz3fyb785e&st=azq3dty6&dl=1",
     md5_hash="b42baf62ad56d75a0213d39f64c177e7",
 )

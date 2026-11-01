@@ -48,6 +48,6 @@ MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW = DownloadFileTask(
             )
         ),
     ),
-    url="https://www.dropbox.com/scl/fi/watz1v757xzjrawkl60se/ENSGv102.coding.genes.txt?rlkey=8lnk7i3nqxfnz7og8fasnn0zg&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/watz1v757xzjrawkl60se/ENSGv102.coding.genes.txt?rlkey=8lnk7i3nqxfnz7og8fasnn0zg&dl=1",
     md5_hash="8541ce5c7c95d67956672e1d37479ead",
 )

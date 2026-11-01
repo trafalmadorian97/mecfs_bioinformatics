@@ -22,6 +22,6 @@ GTEx_V8_TISSUE_EXPRESSION_BASED_GENE_SET_DATA = DownloadFileTask(
         filename="gtex_v8_ts_DEG",
         extension=".txt",
     ),
-    url="https://www.dropbox.com/scl/fi/qpsg0l5nw1sngy04otzcj/gtex_v8_ts_DEG.txt?rlkey=ku0ittmmkehyuldiqy8wvl22w&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/qpsg0l5nw1sngy04otzcj/gtex_v8_ts_DEG.txt?rlkey=ku0ittmmkehyuldiqy8wvl22w&dl=1",
     md5_hash="9e0ff40fcb2dec7603ff335efc352f24",
 )
