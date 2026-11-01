@@ -15,6 +15,6 @@ MAGMA_EUR_BUILD_37_1K_GENOMES_REF = DownloadFileTask(
         extension=".zip",
         filename="g1000_eur",
     ),
-    url="https://www.dropbox.com/scl/fi/9t9jdec7nlhll73chdehi/g1000_eur.zip?rlkey=6rdirky37vksdsfxi9d8gl27i&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/9t9jdec7nlhll73chdehi/g1000_eur.zip?rlkey=6rdirky37vksdsfxi9d8gl27i&dl=1",
     md5_hash="1919cb5c79bbe7871aed71ae4abe6217",
 )
