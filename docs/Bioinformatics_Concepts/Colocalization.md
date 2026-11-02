@@ -77,6 +77,7 @@ A realization of $(S_1,S_2)$ defining the causal variant for each of the two tra
 - $H_3$: Corresponds to the configurations $\mathcal{S}_3=\{ (i,j) : i,j \ge  1 ,i\ne j\}$. Both traits have causal variants at the locus, but they are different .
 - $H_4$: Corresponds to the configurations $\mathcal{S}_4=\{ (i,i) : i \ge  1\}$. Both traits have causal variants at the locus, but they are different .
 
+See the illustration below,
 
 ## Role of the prior
 
