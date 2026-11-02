@@ -30,7 +30,7 @@ We start by assuming we are working with quantitative traits.  Bayes factor colo
 - $\epsilon_k\in\mathbb{R}^{N_k}$:  The part of the phenotype for GWAS $k$ that is not determined by variants at the locus of interest.  Thus $\epsilon_k$ includes both environmental effects and the effects of variants at other loci.
 - $c_k$ is the number of covariates used in GWAS $k$.
 - $X_k\in\mathbb{R}^{N_k\times c_k}$ is a matrix of covariate values for GWAS $k$.
-- $\alpha_k\in\mathbb{R}^_{c_k}$ is the vector of covariate coefficients for GWAS $k$.
+- $\alpha_k\in\mathbb{R}^{c_k}$ is the vector of covariate coefficients for GWAS $k$.
 
 
 Our data generating model is:
@@ -42,10 +42,6 @@ y_k &= X_k\alpha_k +G_k \beta_k + \epsilon_k\\
 \end{align}
 $$
 
-Additional we assume:
-
-- We assume that $\epsilon_1$ and $\epsilon_2$ are independent conditional on $S_1,S_2$.  This assumption is usually satisifed by assuming that there are no overlapping participants between the two studies.
-- We assume that $\beta_{k,i| | \{ S_k =i \} \sim \mathcal{N}(0,\omega_k^2)$ .
 
 
 Furthermore, we assume that there is at most one causal variant at the locus for each of the two traits.  Let $S_1,S_2 \in \{ 0,\ldots, Q\}$ be the integer index of the causal variant for each trait if there is one, and 0 if there is no causal variant.  Thus
@@ -56,6 +52,30 @@ $$
 \beta_{k,i}&\ne 0  &\text{ if }i=S_k.
 \end{align}
 $$
+
+
+Additionally, we assume:
+
+- $\epsilon_1$ and $\epsilon_2$ are independent conditional on $S_1,S_2$.  This assumption is usually satisfied by assuming that there are no overlapping participants between the two studies.
+- We assume that $\beta_{k,i}| | \{ S_k =i \} \sim \mathcal{N}(0,\omega_k^2)$ .
+
+Let us also define the per variant prior probabilities.  Fix an arbitrary variant $i$.  Define
+
+- $p_0$: the probability that variant $i$ is not causal for either of the two traits.
+- $p_1$: the probability that variant $i$ is causal for trait 1 only.
+- $p_2$: the probability that variant $i$ is causal for trait 2 only.
+- $p_{1,2}$: the probability that variant $i$ is causal for both trait 1 and trait 2.
+
+
+## Configurations
+
+A realization of $(S_1,S_2)$ defining the causal variant for each of the two traits is called a configuration.  Since there are $Q+1$ possible values of each of the $S_k$, there are $(Q+1)^2$ configurations.  We define 5 hypothesis, which partition the configurations, as follows:
+
+- $H_0$: Corresponds to the configurations $\mathcal{S}_0=\{ (0,0) \}$.  No causal variants at the locus.
+- $H_1$: Corresponds to the configurations $\mathcal{S}_1=\{ (i,0) : i \ge  1 \}$.  A causal variant for trait 1 but not trait 2 at the locus.
+- $H_2$: Corresponds to the configurations $\mathcal{S}_2=\{ (0,j) : j \ge  1 \}$.  A causal variant for trait 2 but not trait 1 at the locus.
+- $H_3$: Corresponds to the configurations $\mathcal{S}_3=\{ (i,j) : i,j \ge  1 ,i\ne j\}$. Both traits have causal variants at the locus, but they are different .
+- $H_4$: Corresponds to the configurations $\mathcal{S}_4=\{ (i,i) : i \ge  1\}$. Both traits have causal variants at the locus, but they are different .
 
 
 ## Role of the prior
