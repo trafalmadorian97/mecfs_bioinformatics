@@ -191,10 +191,20 @@ vectors $g_(1 i)$ and $g_(2 i)$ are allowed to differ arbitrarily.
 
 == Prior on configurations <sec-prior>
 
-Following Text S1 of [1], give each variant, independently, one of four categories with
-probabilities $p_0, p_1, p_2, p_(12)$ summing to 1: associated with neither trait, trait 1 only,
-trait 2 only, or both. Let $Aev$ be the event that at most one variant is associated with each
-trait. The prior on configurations is this product measure conditioned on $Aev$.
+Following Text S1 of [1], give each variant, independently, one of four categories: associated
+with neither trait, trait 1 only, trait 2 only, or both. Label these $0, 1, 2, 12$, write
+$cal(C) = {0, 1, 2, 12}$ for the set of categories, and let them have probabilities
+$p_0, p_1, p_2, p_(12)$ summing to 1. A *category vector* is an assignment
+$c = (c_1, dots, c_Q) in cal(C)^Q$ of one category to each variant. Under this product measure,
+$
+  P(c) = product_(i=1)^Q p_(c_i).
+$
+Let $Aev$ be the event that at most one variant is associated with each trait: at most one entry
+of $c$ lies in ${1, 12}$ and at most one lies in ${2, 12}$. A category vector in $Aev$ determines
+a configuration $S(c) = (S_1, S_2)$, where $S_1$ is the index of the entry in ${1, 12}$ and $S_2$
+the index of the entry in ${2, 12}$, each $0$ if there is no such entry. The prior on
+configurations is the product measure conditioned on $Aev$, carried over to configurations by
+$c |-> S(c)$.
 
 #lemma(title: "configuration odds")[
   Let $rho_1 = p_1 \/ p_0$, $rho_2 = p_2 \/ p_0$, $rho_(12) = p_(12) \/ p_0$, and let
@@ -211,11 +221,12 @@ trait. The prior on configurations is this product measure conditioned on $Aev$.
 ] <lem-prior>
 
 #proof[
-  A category vector satisfies $Aev$ exactly when at most one entry lies in {trait 1 only, both} and
-  at most one in {trait 2 only, both}. Such vectors correspond one-to-one with configurations: $(i,j)$
-  with $i != j$ is the vector with category "trait 1 only" at $i$ and "trait 2 only" at $j$, and
-  $(i,i)$ is the vector with "both" at $i$. Their unconditional probabilities are $p_0^Q$,
-  $p_0^(Q-1) p_1$, $p_0^(Q-1) p_2$, $p_0^(Q-2) p_1 p_2$ and $p_0^(Q-1) p_(12)$. Conditioning on $Aev$
+  The map $c |-> S(c)$ is a bijection from the category vectors in $Aev$ onto configurations. Its
+  inverse sends $(i,j)$ with $i != j$ to the vector with $c_i = 1$ (if $i != 0$) and $c_j = 2$ (if
+  $j != 0$), and sends $(i,i)$ with $i >= 1$ to the vector with $c_i = 12$; every other entry is
+  $0$. By the product formula for $P(c)$, the unconditional probability of the vector of a
+  configuration in $Sset_0, dots, Sset_4$ is, respectively, $p_0^Q$, $p_0^(Q-1) p_1$,
+  $p_0^(Q-1) p_2$, $p_0^(Q-2) p_1 p_2$ and $p_0^(Q-1) p_(12)$. Conditioning on $Aev$
   divides each by the same constant. Dividing by $p_0^Q$ gives @eq:configodds.
 ]
 
