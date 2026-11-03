@@ -174,6 +174,9 @@ $$
 $$
 
 
+### The prior on the hypotheses
+
+
 
 ## SUSIE colocalization
 
