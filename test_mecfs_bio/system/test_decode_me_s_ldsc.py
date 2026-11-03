@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_sldsc import (
-    DECODE_ME_S_LDSC,
+    DECODE_ME_S_LDSC_VECTORIZED,
 )
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -17,7 +17,8 @@ from mecfs_bio.build_system.runner.simple_runner import SimpleRunner
 from test_mecfs_bio.system.util import log_on_error
 
 # Expected cell-type S-LDSC coefficient p-values for the GTEx/Franke multi-tissue gene-expression
-# dataset, from a clean from-scratch build on gwaslab 4.1.7 (CI run 26691178699, 2026-05-30).
+# dataset, from a clean from-scratch build on gwaslab 4.1.7 (CI run 26691178699, 2026-05-30) using
+# the original gwaslab S-LDSC Task, which the vectorized Task tested here reproduces.
 # This guards the documented DecodeME S-LDSC results against changes -- e.g. a gwaslab upgrade --
 # that would materially shift them: the gwaslab 3.6.x -> 4.1.7 upgrade changed the upstream
 # liftover/harmonization and moved these p-values ~5-10%, which the old "did it crash?" test could
@@ -50,21 +51,7 @@ def test_run_s_lsdc(tmp_path: Path) -> None:
             info_store=info_store,
             asset_root=asset_root,
         )
-        # Emit the full cts result tables to the logs (disable pandas truncation), so every
-        # tissue's p-value is recoverable from the CI logs rather than just the head/tail of the
-        # large GTEx/Franke and Roadmap-chromatin tables. The cts task logs the result via an
-        # f-string repr, which respects these process-wide display options.
-        with pd.option_context(
-            "display.max_rows",
-            None,
-            "display.max_columns",
-            None,
-            "display.width",
-            1000,
-            "display.max_colwidth",
-            None,
-        ):
-            store = test_runner.run(list(DECODE_ME_S_LDSC.get_terminal_tasks()))
+        store = test_runner.run(list(DECODE_ME_S_LDSC_VECTORIZED.get_terminal_tasks()))
         assert store is not None
         _assert_documented_multitissue_pvalues(store)
 
@@ -76,12 +63,14 @@ def _assert_documented_multitissue_pvalues(store: Mapping[AssetId, Asset]) -> No
     The cts result table is a transitive dependency of the S-LDSC terminal tasks, so it is present
     in the runner's returned asset store.
     """
-    cell_task = DECODE_ME_S_LDSC.partitioned_tasks[
+    cell_task = DECODE_ME_S_LDSC_VECTORIZED.partitioned_tasks[
         "multi_tissue_gene_expression"
     ].cell_analysis_task
     asset = store[cell_task.asset_id]
     assert isinstance(asset, FileAsset)
     results = pd.read_csv(asset.path)
+    # Keep every tissue's p-value recoverable from the CI logs.
+    print(results.to_string())
     pvalues = dict(zip(results["Name"], results["Coefficient_P_value"]))
 
     for name, expected in EXPECTED_MULTITISSUE_PVALUES.items():
