@@ -45,6 +45,6 @@ PARTITIONED_MODEL_MULTI_TISSUE_CHROMATIN_LD_SCORES_RAW: DownloadFileTask = Downl
         filename="LDSCORE_LDSC_SEG_ldscores_Multi_tissue_chromatin_1000Gv3_ldscores",
         extension=".tar",
     ),
-    url="https://www.dropbox.com/scl/fi/8gdia1hhbjg65l4lvvpnt/LDSCORE_LDSC_SEG_ldscores_Multi_tissue_chromatin_1000Gv3_ldscores.tar?rlkey=94v5r1mjawbd1ha2gzmrg3bur&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/8gdia1hhbjg65l4lvvpnt/LDSCORE_LDSC_SEG_ldscores_Multi_tissue_chromatin_1000Gv3_ldscores.tar?rlkey=94v5r1mjawbd1ha2gzmrg3bur&dl=1",
     md5_hash="8aa379558c9ff8986965b4337b5ce6d2",
 )

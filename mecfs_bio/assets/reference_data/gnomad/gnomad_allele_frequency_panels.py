@@ -44,7 +44,7 @@ GNOMAD_V2_1_1_GENOMES_HG19_ALLELE_FREQUENCIES_REHOSTED = DownloadFileTask(
         sub_folder=PurePath("rehosted"),
     ),
     url=(
-        "https://www.dropbox.com/scl/fi/ccvdhj47qj454qcdndf3h/"
+        "https://dl.dropboxusercontent.com/scl/fi/ccvdhj47qj454qcdndf3h/"
         "gnomad_allele_frequencies.parquet?rlkey=8qqhj9unoskcgmwcjfd4x40ee&dl=1"
     ),
     md5_hash="f10c58ea238ec758ac4c6754e8b73cce",

@@ -25,6 +25,6 @@ LD_SCORE_REGRESSION_ALLELE_FREQS = DownloadFileTask(
         filename="LDSCORE_1000G_Phase3_frq",
         extension=".tar",
     ),
-    url="https://www.dropbox.com/scl/fi/wx987fuu6s3utt6po993e/LDSCORE_1000G_Phase3_frq.tar?rlkey=li2v633jnktnfnkoy00awkzf2&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/wx987fuu6s3utt6po993e/LDSCORE_1000G_Phase3_frq.tar?rlkey=li2v633jnktnfnkoy00awkzf2&dl=1",
     md5_hash="ac29686ffd5b6378789857a522ebca77",
 )

@@ -45,6 +45,6 @@ MECFS_AZ_PHEWAS = DownloadFileTask(
             DataFrameTextFormat(separator=","),
         ),
     ),
-    url="https://www.dropbox.com/scl/fi/bio5hw7q07u1cnb4mjy17/120010_Ever_had_chronic_Fatigue_Syndrome_or_Myalgic_Encephalomy_GL_0513T221814Z_AZ_PheWAS_Portal.csv?rlkey=90lwlfl7tz37eugz7tel3rbcb&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/bio5hw7q07u1cnb4mjy17/120010_Ever_had_chronic_Fatigue_Syndrome_or_Myalgic_Encephalomy_GL_0513T221814Z_AZ_PheWAS_Portal.csv?rlkey=90lwlfl7tz37eugz7tel3rbcb&dl=1",
     md5_hash="8726146c22f0a8efbe10a3e24a3e0e4c",
 )

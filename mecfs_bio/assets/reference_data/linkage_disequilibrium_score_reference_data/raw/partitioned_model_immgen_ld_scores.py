@@ -31,6 +31,6 @@ PARTITIONED_MODEL_IMMGEN_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask(
         filename="LDSCORE_LDSC_SEG_ldscores_ImmGen_1000Gv3_ldscores",
         extension=".tar",
     ),
-    url="https://www.dropbox.com/scl/fi/kb30br7qcc68lsn84zak0/LDSCORE_LDSC_SEG_ldscores_ImmGen_1000Gv3_ldscores.tar?rlkey=rndsvy5q7m14sxp3swgu4r0lt&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/kb30br7qcc68lsn84zak0/LDSCORE_LDSC_SEG_ldscores_ImmGen_1000Gv3_ldscores.tar?rlkey=rndsvy5q7m14sxp3swgu4r0lt&dl=1",
     md5_hash="0cddb5ac5348045e4adabe9dac1c9485",
 )

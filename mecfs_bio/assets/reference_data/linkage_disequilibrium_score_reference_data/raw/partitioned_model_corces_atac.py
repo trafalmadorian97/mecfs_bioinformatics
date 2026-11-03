@@ -33,6 +33,6 @@ PARTITIONED_MODEL_CORCES_ATAC_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask
         filename="LDSCORE_LDSC_SEG_ldscores_Corces_ATAC_1000Gv3_ldscores",
         extension=".tar",
     ),
-    url="https://www.dropbox.com/scl/fi/val9agrddn58ivw5i1ym4/LDSCORE_LDSC_SEG_ldscores_Corces_ATAC_1000Gv3_ldscores.tar?rlkey=4yizbyor0of49jotv8la1ke56&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/val9agrddn58ivw5i1ym4/LDSCORE_LDSC_SEG_ldscores_Corces_ATAC_1000Gv3_ldscores.tar?rlkey=4yizbyor0of49jotv8la1ke56&dl=1",
     md5_hash="e39132c2695830a18ef525622c1b037d",
 )

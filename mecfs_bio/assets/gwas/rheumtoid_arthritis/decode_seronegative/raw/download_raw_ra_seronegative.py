@@ -28,6 +28,6 @@ DECODE_SERONEGATIVE_RA_RAW = DownloadFileTask(
             )
         ),
     ),
-    url="https://www.dropbox.com/scl/fi/8uumw9pwphkyjl2jru03u/RA_Seronegative.txt.gz?rlkey=ad35vhuaeo6oouqsam2nrcxvn&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/8uumw9pwphkyjl2jru03u/RA_Seronegative.txt.gz?rlkey=ad35vhuaeo6oouqsam2nrcxvn&dl=1",
     md5_hash="b5c7c41cbd85be11dbc63f5f0402e40f",
 )

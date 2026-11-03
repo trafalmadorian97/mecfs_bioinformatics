@@ -22,6 +22,6 @@ GSEA_HUMAN_GENE_SET_2025_V1 = DownloadFileTask(
         filename="msigdb_v2025.1",
         extension=".zip",
     ),
-    url="https://www.dropbox.com/scl/fi/4902crqdai9pmleiid4q5/msigdb_v2025.1.Hs_files_to_download_locally.zip?rlkey=12ib2iy5pzwxs3eauli4h1gip&st=iojgsqok&dl=1",  # official page
+    url="https://dl.dropboxusercontent.com/scl/fi/4902crqdai9pmleiid4q5/msigdb_v2025.1.Hs_files_to_download_locally.zip?rlkey=12ib2iy5pzwxs3eauli4h1gip&st=iojgsqok&dl=1",  # official page
     md5_hash="eef0cc56521fecb1f0949733d211b8d2",
 )

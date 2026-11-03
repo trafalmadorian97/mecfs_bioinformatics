@@ -97,3 +97,26 @@ def test_head(tmp_path: Path) -> None:
     dummy_parquet = tmp_path / "dummy_parquet.parquet"
     pd.DataFrame({"a": [1, 2, 3]}).to_parquet(dummy_parquet)
     head_file(dummy_parquet)
+
+
+_DUMMY_META = SimpleFileMeta.create("dummy")
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://www.dropbox.com/scl/fi/abc/file.csv?rlkey=def&dl=1",
+        "https://dropbox.com/scl/fi/abc/file.csv?rlkey=def&dl=1",
+    ],
+)
+def test_rejects_dropbox_preview_host(url: str) -> None:
+    with pytest.raises(AssertionError):
+        DownloadFileTask(meta=_DUMMY_META, url=url, md5_hash=None)
+
+
+def test_accepts_dropbox_content_host() -> None:
+    DownloadFileTask(
+        meta=_DUMMY_META,
+        url="https://dl.dropboxusercontent.com/scl/fi/abc/file.csv?rlkey=def&dl=1",
+        md5_hash=None,
+    )

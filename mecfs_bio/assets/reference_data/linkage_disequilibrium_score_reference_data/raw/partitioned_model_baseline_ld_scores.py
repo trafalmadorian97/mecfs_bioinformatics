@@ -61,6 +61,6 @@ THOUSAND_GENOME_BASE_MODEL_PARTITIONED_LD_SCORES = DownloadFileTask(
         filename="LDSCORE_1000G_Phase3_baseline_v1.2_ldscores",
         extension=".tar",
     ),
-    url="https://www.dropbox.com/scl/fi/w0syfa29pnhd3heq3slmq/LDSCORE_1000G_Phase3_baseline_v1.2_ldscores.tar?rlkey=vizywdwx79s7d0xg0t5yh2man&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/w0syfa29pnhd3heq3slmq/LDSCORE_1000G_Phase3_baseline_v1.2_ldscores.tar?rlkey=vizywdwx79s7d0xg0t5yh2man&dl=1",
     md5_hash="4a8faf1ec665d9cbfb67ea18139d98bf",
 )

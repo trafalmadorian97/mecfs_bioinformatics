@@ -44,7 +44,7 @@ DB_SNP150_ANNOVAR_PROC = DownloadFileTask(
             )
         ),
     ),
-    url="https://www.dropbox.com/scl/fi/rvonq6jk3o88mtzc83mrn/hg19_avsnp150.txt?rlkey=gitowj4jrw2wjzbx2uyqi2xxp&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/rvonq6jk3o88mtzc83mrn/hg19_avsnp150.txt?rlkey=gitowj4jrw2wjzbx2uyqi2xxp&dl=1",
     md5_hash="c17e8f96e9b36041455069be9c459555",
 )
 

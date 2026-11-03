@@ -35,6 +35,6 @@ GENE_THESAURUS = DownloadFileTask(
         id=AssetId("gene_thesaurus"),
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
     ),
-    url="https://www.dropbox.com/scl/fi/9yamk0bze0f509p9opcnk/biomart_thesaurus.csv?rlkey=r9f4sedug2l3f6b5ak7hs88o2&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/9yamk0bze0f509p9opcnk/biomart_thesaurus.csv?rlkey=r9f4sedug2l3f6b5ak7hs88o2&dl=1",
     md5_hash="cd1774041d88a4f27c9b77e491c23263",
 )

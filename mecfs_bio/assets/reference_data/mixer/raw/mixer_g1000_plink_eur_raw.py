@@ -18,6 +18,6 @@ MIXER_RAW_G1000_PLINK_DATA = DownloadFileTask(
         extension=".zip",
         id="mixer_raw_g1000_plink_reference_data",
     ),
-    url="https://www.dropbox.com/scl/fi/5pmw6ynentxq408dv5e6j/1000G_EUR_Phase3_plink.zip?rlkey=njkgknz1ntwf7v3nk5uivaxve&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/5pmw6ynentxq408dv5e6j/1000G_EUR_Phase3_plink.zip?rlkey=njkgknz1ntwf7v3nk5uivaxve&dl=1",
     md5_hash="3e47b78d4c3366f46df566acc9f0856c",
 )
