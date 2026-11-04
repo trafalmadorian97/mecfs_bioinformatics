@@ -26,8 +26,13 @@ trait 2 only, or both.
 
 When sdY of a quantitative trait is unknown it is estimated from the data: for a variant with
 minor allele frequency f, sample size n and standard error se, se^2 is approximately
-sdY^2 / (2 * n * f * (1 - f)). So sdY^2 is the no-intercept least squares coefficient of
-2 * n * f * (1 - f) on 1 / se^2.
+sdY^2 / (2 * n * f * (1 - f)). Rearranging, 2 * n * f * (1 - f) is approximately
+sdY^2 * (1 / se^2). So sdY^2 is the slope of the no-intercept regression
+
+    y_j = c * x_j + e_j,  with y_j = 2 * n_j * f_j * (1 - f_j) and x_j = 1 / se_j^2,
+
+over variants j, where e_j is the regression error (the deviation of y_j from c * x_j). The
+least squares solution is c = sum_j(x_j * y_j) / sum_j(x_j^2), and sdY = sqrt(c).
 """
 
 from __future__ import annotations
@@ -150,7 +155,7 @@ class ColocMethod(Protocol):
 
 
 def estimate_sd_y(se: np.ndarray, maf: np.ndarray, n: np.ndarray) -> float:
-    """Estimate sdY by no-intercept least squares of 2 * n * f * (1 - f) on 1 / se^2."""
+    """Estimate sdY as sqrt(c), c = sum_j(x_j * y_j) / sum_j(x_j^2), x = 1 / se^2, y = 2 * n * f * (1 - f)."""
     x = 1 / se**2
     y = 2 * n * maf * (1 - maf)
     keep = np.isfinite(x) & np.isfinite(y)

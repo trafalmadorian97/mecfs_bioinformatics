@@ -5,9 +5,9 @@ Genome-reference harmonization of deCODE's seropositive RA meta-GWAS at its GRCh
 Starts from the EAF-rescaled table restricted to MAF >= 0.01: the full table has 61M variants,
 which gwaslab cannot hold on a 16 GB machine, while MAF >= 0.01 keeps 14.2M, a density
 comparable to the UKB-PPP imputed set. (The standard analysis's MAF >= 0.05 filter would drop
-variants colocalization wants.) As in the standard analysis: only SNVs are kept, the per-variant effective N comes
-from the Cohorts string, and BETA and SE are computed from OR and P (after gwaslab, on its
-column names).
+variants colocalization wants.) Indels are kept, unlike the standard analysis. As in the
+standard analysis, the per-variant effective N comes from the Cohorts string, and BETA and SE
+are computed from OR and P (after gwaslab, on its column names).
 """
 
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.processed.ra_seropositive_preprocess import (
@@ -40,10 +40,7 @@ from mecfs_bio.build_system.task.pipes.compute_se_pipe import ComputeSEPipe
 from mecfs_bio.build_system.task.pipes.effective_n_from_cohort_string_pipe import (
     EffectiveNFromCohortStringPipe,
 )
-from mecfs_bio.build_system.task.pipes.filter_rows_by_value import FilterRowsByValue
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
-
-_ACGT = ["A", "C", "G", "T"]
 
 SEROPOS_RA_FILTERED_FOR_FREQ_0_01 = FilterSNPsFrequencyTask.create(
     id="ra_seropos_filter_for_freq_0_01",
@@ -69,8 +66,6 @@ SEROPOS_RA_BUILD_38_SUMSTATS = GWASLabCreateSumstatsTask(
     ),
     pre_pipe=CompositePipe(
         [
-            FilterRowsByValue(target_column="EA", valid_values=_ACGT),
-            FilterRowsByValue(target_column="OA", valid_values=_ACGT),
             EffectiveNFromCohortStringPipe(
                 cohorts=load_decode_ra_cohorts("seropositive"),
                 cohort_string_col="Cohorts",
