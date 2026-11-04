@@ -111,7 +111,7 @@ Bayes factor colocalization operates conditional on  $\mathcal{A}$, the assumpti
 
 [//]: # ()
 
-## Hypotheses
+### Hypotheses
 
 [//]: # (HypothesesA realization of $&#40;S_1,S_2&#41;$ defining the causal variant for each of the two traits is called a configuration. Since there are $Q+1$ possible values of each of the $S_k$, there are $&#40;Q+1&#41;^2$ configurations.  )
 
@@ -147,8 +147,8 @@ p_0^Q & h=0\\
 p_1 p_{0}^{Q-1} & h=1\\
 p_2 p_{0}^{Q-1} & h=2\\
 p_1 p_2 p_{0}^{Q-2} & h=3\\
-p_{12} p_{0}^{Q-1} & h=2\\
-\end{cases} \label{unconditional_prob}
+p_{12} p_{0}^{Q-1} & h=4\\
+\end{cases}. \label{unconditional_prob}
 \end{align}
 $$
 
@@ -169,12 +169,72 @@ $$
 \rho_2 & h=2\\
 \rho_1 \rho_2 & h=3\\
 \rho_{12} & h=4
-\end{cases} & \text{by (\ref{unconditional_prob})}
+\end{cases} & \text{by (\ref{unconditional_prob}).} 
 \end{align}
 $$
 
 
 ### The prior on the hypotheses
+
+Let us compute the probability of each of the hypotheses.  We will start with the unconditional probability, then move the probability conditional on $\mathcal{A}$
+
+There is one configuration corresponding to hypothesis 0, $Q$ configurations corresponding to hypothesis 1, $Q$ configurations corresponding to hypothesis 2, $Q(Q-1)$  configurations corresponding to hypothesis 3, and $Q$ configurations corresponding to hypothesis 4.  Thus, by $(\ref{unconditional_prob})$:
+
+$$
+\begin{align}
+P(H_h)&=\begin{cases}
+p_0^Q & h=0\\
+Qp_1 p_{0}^{Q-1} & h=1\\
+Qp_2 p_{0}^{Q-1} & h=2\\
+Q(Q-1)p_1 p_2 p_{0}^{Q-2} & h=3\\
+Qp_{12} p_{0}^{Q-1} & h=4\\
+\end{cases} &\text{By (\ref{unconditional_prob}).}. \label{hy_prob}
+\end{align}
+$$
+
+
+$\mathcal{A}$ is the union of these hypotheses, which are disjoint. Thus:
+
+$$
+\begin{align}
+P(\mathcal{A}) &= P(H_0) + P(H_1) + P(H_2) +P(H_3) +P(H_4)\\
+&= p_0^Q + Qp_1 p_{0}^{Q-1} + Qp_2 p_{0}^{Q-1} + Q(Q-1)p_1 p_2 p_{0}^{Q-2} + Qp_{12} p_{0}^{Q-1}.
+\end{align}
+$$
+
+
+Now, let us compute the conditional probability of the hypotheses.
+
+
+$$
+\begin{align}
+&P(H_h|\mathcal{A})\\
+&=\frac{P(H_h \cap \mathcal{A})}{P(\mathcal{A})}\\
+&=\frac{P(H_h)}{P(\mathcal{A})}\\
+&=\begin{cases}
+\frac{p_0^Q}{P(\mathcal{A})} & h=0\\
+\frac{Qp_1 p_{0}^{Q-1}}{P(\mathcal{A})} & h=1\\
+\frac{Qp_2 p_{0}^{Q-1}}{P(\mathcal{A})} & h=2\\
+\frac{Q(Q-1)p_1 p_2 p_{0}^{Q-2}}{P(\mathcal{A})} & h=3\\
+\frac{Qp_{12} p_{0}^{Q-1}}{P(\mathcal{A})} & h=4\\
+\end{cases} &\text{By (\ref{hy_prob})}\\
+&=\frac{n_h \rho_h}{Z} \label{cond_h_prob}
+\end{align}
+$$
+
+Where we have defined $\rho_0:=1$ and $Z:=1+Q\rho_1 +Q\rho_2 +Q(Q-1)\rho_{1}\rho_2 + Q\rho_{1,2}$ and 
+
+$$
+\begin{align}
+n_h:=\begin{cases}
+1 & h=0\\
+Q &h \in \{1,2,4\}\\
+Q(Q-1) & h=3
+\end{cases}
+\end{align}
+$$
+
+and where in $(\ref{cond_h_prob})$ we divided numerator and denominator by $p_0^Q$.
 
 
 
