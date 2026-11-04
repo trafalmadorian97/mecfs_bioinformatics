@@ -1,6 +1,7 @@
 """
 Genome-reference harmonization of the Liu et al. 2023 IBD European (NFE) summary statistics in
-their native GRCh38 coordinates (no liftover), against the UCSC hg38 genome and the 1000 Genomes EUR (30x, GRCh38) allele-frequency panel.
+their native GRCh38 coordinates (no liftover), against the UCSC hg38 genome and the gnomAD
+v4.1 genomes allele-frequency panel (non-Finnish European frequencies).
 
 The METAL-style alleles carry no reference orientation, so harmonization runs the untrusted
 path: SNVs are oriented by the genome, palindromic SNVs and ambiguous indels by panel
@@ -13,8 +14,8 @@ from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.processed_g
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
     UCSC_HG38_INDEXED_FASTA,
 )
-from mecfs_bio.assets.reference_data.thousand_genomes.eur_panel_allele_frequencies import (
-    THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
+from mecfs_bio.assets.reference_data.gnomad.gnomad_allele_frequency_panels import (
+    GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference_harmonization_task import (
@@ -58,6 +59,6 @@ LIU_ET_AL_2023_IBD_EUR_BUILD_38_HARMONIZED = GenomeReferenceHarmonizationTask.cr
     asset_id="liu_et_al_2023_ibd_eur_build_38_genome_reference_harmonized",
     sumstats_task=LIU_ET_AL_2023_IBD_EUR_BUILD_38_PRE_HARMONIZATION_TABLE,
     fasta_task=UCSC_HG38_INDEXED_FASTA,
-    panel_task=THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
-    panel_ancestry="eur",
+    panel_task=GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
+    panel_ancestry="nfe",
 )

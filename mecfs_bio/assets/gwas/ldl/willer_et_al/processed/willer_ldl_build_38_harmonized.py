@@ -1,6 +1,7 @@
 """
 Genome-reference harmonization of Willer et al.'s LDL GWAS at the GWAS Catalog's GRCh38
-positions (hm_chrom, hm_pos), against the UCSC hg38 genome and the 1000 Genomes EUR (30x, GRCh38) allele-frequency panel.
+positions (hm_chrom, hm_pos), against the UCSC hg38 genome and the gnomAD v4.1 genomes
+allele-frequency panel (non-Finnish European frequencies).
 
 The ORIGINAL alleles are used (effect_allele, other_allele, beta, standard_error), not the
 Catalog's harmonised ones, and our own harmonizer orients them. The alleles are lowercase in the
@@ -18,8 +19,8 @@ from mecfs_bio.assets.gwas.ldl.willer_et_al.raw.raw_willer_ldl_data import (
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
     UCSC_HG38_INDEXED_FASTA,
 )
-from mecfs_bio.assets.reference_data.thousand_genomes.eur_panel_allele_frequencies import (
-    THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
+from mecfs_bio.assets.reference_data.gnomad.gnomad_allele_frequency_panels import (
+    GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
 )
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.genome_reference_harmonization.genome_reference_harmonization_task import (
@@ -90,6 +91,6 @@ WILLER_LDL_BUILD_38_HARMONIZED = GenomeReferenceHarmonizationTask.create(
     asset_id="willer_ldl_build_38_genome_reference_harmonized",
     sumstats_task=WILLER_LDL_BUILD_38_PRE_HARMONIZATION_TABLE,
     fasta_task=UCSC_HG38_INDEXED_FASTA,
-    panel_task=THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
-    panel_ancestry="eur",
+    panel_task=GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
+    panel_ancestry="nfe",
 )

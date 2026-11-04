@@ -22,14 +22,14 @@ from mecfs_bio.assets.gwas.ukbb_ppp.ppp_database.hapmap3.eur_discovery_hapmap3_p
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
     UCSC_HG38_INDEXED_FASTA,
 )
+from mecfs_bio.assets.reference_data.gnomad.gnomad_allele_frequency_panels import (
+    GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
+)
 from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez_gene_locations_data_build_38_unzipped import (
     MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
 )
 from mecfs_bio.assets.reference_data.pqtls.processed.sun_et_al_2023_st3_extracted import (
     SUN_ET_AL_2023_ST3_EXTRACTED,
-)
-from mecfs_bio.assets.reference_data.thousand_genomes.eur_panel_allele_frequencies import (
-    THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
 )
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.protein_coloc.coloc_abf import TraitModel
@@ -84,8 +84,8 @@ def generate_ppp_coloc_tasks(
         hit_table_task=hit_table_task,
         gene_coords_task=SUN_ET_AL_2023_ST3_EXTRACTED,
         fasta_task=UCSC_HG38_INDEXED_FASTA,
-        panel_task=THOUSAND_GENOMES_EUR_HG38_PANEL_ALLELE_FREQUENCIES,
-        panel_ancestry="eur",
+        panel_task=GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
+        panel_ancestry="nfe",
         fetcher=PppWindowFetcher(proteins=load_ppp_protein_files(manifest_path)),
         config=config,
     )
