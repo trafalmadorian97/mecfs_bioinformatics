@@ -11,6 +11,14 @@ The algorithm, for one trait:
    align it exactly to the trait window, and run the colocalization method.
 4. Write the raw results table and the aligned window of every tested pair.
 
+The region colocalization runs on is always the trait's locus window from step 1. Protein hit
+segments only decide which proteins are paired with a locus (overlap, score and budget); they
+never change the window or filter its variants. The variants passed to the colocalization method
+are the trait's variants in the window that also appear, after orientation and exact allele
+matching, in the protein's dense summary statistics for the same window, with finite effects and
+positive standard errors on both sides. A protein segment may extend past the window, in which
+case only the part of the protein signal inside the window is seen.
+
 The build graph is static and which proteins to fetch depends on the hit table's contents, so
 all dense fetching happens inside this one Task, bounded by the pair budget.
 
