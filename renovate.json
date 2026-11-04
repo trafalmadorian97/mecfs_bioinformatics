@@ -69,7 +69,8 @@
         "tqdm",
         "invoke",
         "ruff",
-        "typeguard"
+        "typeguard",
+        "pyarrow"
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
