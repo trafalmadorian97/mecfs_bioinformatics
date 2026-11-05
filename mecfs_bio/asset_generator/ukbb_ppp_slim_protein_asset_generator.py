@@ -57,6 +57,12 @@ def _protein_file_from_row(row: dict) -> PppProteinFile:
     return protein_file
 
 
+def load_ppp_protein_files(manifest_path: Path) -> tuple[PppProteinFile, ...]:
+    """Every protein file listed in a committed per-cohort manifest."""
+    manifest = pl.read_csv(manifest_path)
+    return tuple(_protein_file_from_row(row) for row in manifest.iter_rows(named=True))
+
+
 @frozen(slots=True)
 class PppSlimProteinTaskCollection:
     protein_tasks: tuple[BuildSlimProteinParquetTask, ...]
