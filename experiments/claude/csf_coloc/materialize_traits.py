@@ -31,7 +31,9 @@ TASKS: dict[str, Task] = {
 
 def main() -> None:
     for name in sys.argv[1:]:
-        DEFAULT_RUNNER.run([TASKS[name]], incremental_save=True, must_rebuild_transitive=[])
+        DEFAULT_RUNNER.run(
+            [TASKS[name]], incremental_save=True, must_rebuild_transitive=[]
+        )
 
 
 if __name__ == "__main__":

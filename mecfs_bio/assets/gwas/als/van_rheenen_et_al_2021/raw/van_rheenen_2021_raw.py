@@ -35,4 +35,6 @@ VAN_RHEENEN_2021_ALS_EUR_RAW = DownloadFileTask(
     ),
     url="https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST90027001-GCST90028000/GCST90027164/GCST90027164_buildGRCh37.tsv.gz",
     md5_hash="705fa6657d75163d313138798ce9a579",
+    # The EBI FTP server limits speed per connection (~200 KB/s observed).
+    connections=16,
 )

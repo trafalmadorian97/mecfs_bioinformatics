@@ -35,4 +35,6 @@ NALLS_2019_PARKINSONS_RAW = DownloadFileTask(
     ),
     url="https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics/GCST009001-GCST010000/GCST009325/harmonised/GCST009325.h.tsv.gz",
     md5_hash="e7f2654a34931bb9996fb0927cece282",
+    # The EBI FTP server limits speed per connection (~200 KB/s observed).
+    connections=16,
 )
