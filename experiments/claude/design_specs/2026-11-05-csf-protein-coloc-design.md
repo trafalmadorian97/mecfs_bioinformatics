@@ -298,8 +298,8 @@ the Bayes factors.
 
 ## Operational order
 
-1. User runs `migrate-asset-store --reverse --only western_csf_pqtl --execute`, then deletes the
-   path_remap line.
+1. Run `migrate-asset-store --reverse --only western_csf_pqtl` (dry run, then `--execute`), then
+   delete the path_remap line. The implementer does this; it is not a user step.
 2. Database code onto main; confirm the slim collection verifies without rebuilding.
 3. Generalization refactor; confirm PPP tests unchanged and PPP outputs verify without rebuild.
 4. CSF fetcher, gene coords, hit table, generator.
