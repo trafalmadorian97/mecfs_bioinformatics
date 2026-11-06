@@ -26,6 +26,9 @@ from mecfs_bio.analysis.ppp_coloc_analysis import (
     WILLER_LDL_PPP_COLOC,
 )
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.csf_pqtl.csf_database.hapmap3.hapmap3_csf_database_aptamer_files import (
+    HAPMAP_3_CSF_DATABASE,
+)
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.imohash import (
@@ -139,10 +142,17 @@ def _ppp_coloc_tasks() -> list[Task]:
     return tasks
 
 
+def _csf_database_tasks() -> list[Task]:
+    """The 7,008 slim aptamer files; their closure adds the index and the template aptamer."""
+    return list(HAPMAP_3_CSF_DATABASE.aptamer_tasks)
+
+
 def main() -> None:
     which = sys.argv[1]
     if which == "ppp_coloc":
         tasks = _ppp_coloc_tasks()
+    elif which == "csf_database":
+        tasks = _csf_database_tasks()
     else:
         raise ValueError(f"unknown mode {which}")
     report = verify_tasks(tasks)
