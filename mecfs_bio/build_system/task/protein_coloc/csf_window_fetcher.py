@@ -131,6 +131,12 @@ def _rows_to_window_frame(rows: list[list[str]]) -> pl.DataFrame:
     )
 
 
+def _tabix_start(window: LocusWindow) -> int:
+    """0-based start of the closed 1-based window, clipped at the chromosome start (a trait
+    locus near a chromosome end has a negative start, which pysam rejects)."""
+    return max(window.start - 1, 0)
+
+
 def _fetch_windows(
     source: str, index: Path, windows: Sequence[LocusWindow]
 ) -> dict[str, pl.DataFrame]:
@@ -142,7 +148,7 @@ def _fetch_windows(
                     [
                         line.split("\t")
                         for line in tabix.fetch(
-                            str(window.chrom), window.start - 1, window.end
+                            str(window.chrom), _tabix_start(window), window.end
                         )
                     ]
                     if str(window.chrom) in contigs

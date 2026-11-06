@@ -120,6 +120,13 @@ def test_fetch_window_on_absent_contig_is_empty(tmp_path: Path) -> None:
     assert frame.schema == WINDOW_SCHEMA
 
 
+def test_fetch_window_starting_before_chromosome_start(tmp_path: Path) -> None:
+    # A trait locus near a chromosome end: lead minus the half-width is negative.
+    source = _tabix_fixture(tmp_path, [_row(100), _row(200)])
+    frame = _fetch(source, LocusWindow("L0", chrom=19, start=-400, end=150), tmp_path)
+    assert frame[GWASLAB_POS_COL].to_list() == [100]
+
+
 def test_fetch_na_fields_become_null(tmp_path: Path) -> None:
     source = _tabix_fixture(tmp_path, [_row(100, beta="NA", eaf="NA")])
     frame = _fetch(source, LocusWindow("L1", chrom=19, start=1, end=1000), tmp_path)
