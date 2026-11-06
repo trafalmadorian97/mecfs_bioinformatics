@@ -42,3 +42,9 @@ def gwas_catalog_sumstats_url(accession: GcstAccession) -> str:
     """The full https URL of a study's harmonized-into-SSF .tsv.gz summary statistics."""
     bucket = gwas_catalog_bucket(accession)
     return f"{_FTP_ROOT}/{bucket}/{accession}/{accession}.tsv.gz"
+
+
+def gwas_catalog_harmonised_url(accession: GcstAccession) -> str:
+    """The https URL of a study's GWAS Catalog harmonised file (GRCh38, tabix-indexed)."""
+    bucket = gwas_catalog_bucket(accession)
+    return f"{_FTP_ROOT}/{bucket}/{accession}/harmonised/{accession}.h.tsv.gz"
