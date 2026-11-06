@@ -242,11 +242,15 @@ no network in unit tests.
 Western z-score-normalized aptamer levels → `QuantitativeTraitModel(sd_y=1.0)`, same as PPP.
 N per variant from the `n` column.
 
-Verified empirically 2026-11-06 (`experiments/claude/csf_coloc/sdy_check.py`, coloc's sdY.est
-method: regress SE² on 1/(2·N·MAF·(1−MAF)) through the origin, MAF ≥ 0.01): template aptamer
-X13681.173 genome-wide 0.9955 (6.4M variants); X16763.11 (LECT2) 0.9917 and X13655.34 (NCL)
-0.9949 on three 1 Mb windows each. sd_y = 1 holds to within ~1%; the slight shortfall is
-consistent with z-scoring before covariate adjustment.
+Checked empirically 2026-11-06 (`experiments/claude/csf_coloc/sdy_check.py`, coloc's sdY.est
+method: regress SE² on 1/(2·N·MAF·(1−MAF)) through the origin, MAF ≥ 0.01). Template aptamer
+X13681.173 genome-wide: 0.9955 (6.4M variants). Eight random aptamers on three 1 Mb windows each:
+mean 0.967, range 0.916 (CHMP4A) – 0.995 (NCL; VCAM1 0.932, KIFBP 0.952). The estimator measures
+the residual SD after the GWAS covariates (age, sex, PCs, cohort, array); levels were z-scored
+before that regression, so the marginal SD is 1 and covariates explain up to ~16% of variance for
+some aptamers. Keep sd_y = 1 (the marginal SD, as for PPP): coloc uses sdY only to scale the
+effect-size prior (prior SD 0.15·sdY), and an 8% difference in that scale has a small effect on
+the Bayes factors.
 
 ### 5. CSF hit table and generator wiring
 
