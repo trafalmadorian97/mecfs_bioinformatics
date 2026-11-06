@@ -54,6 +54,22 @@ def _entrez_gene_id(value: str | None) -> EntrezGeneId | None:
     return None if value is None else EntrezGeneId(value)
 
 
+def _read_manifest(manifest_path: Path) -> pl.DataFrame:
+    return pl.read_csv(
+        manifest_path, schema_overrides={ENTREZ_ID_MANIFEST_COLUMN: pl.String}
+    )
+
+
+def load_csf_aptamer_files(
+    manifest_path: Path = CSF_APTAMER_MANIFEST_PATH,
+) -> tuple[CsfAptamerFile, ...]:
+    """Every aptamer in the manifest, in manifest order."""
+    return tuple(
+        _aptamer_file_from_row(row)
+        for row in _read_manifest(manifest_path).iter_rows(named=True)
+    )
+
+
 # The seq id (dash form, e.g. 13681-173) is not a safe asset-id token: '-' collides
 # with the id delimiter. The analyte's dot form (X13681.173) is not either. Use the
 # seq id with its separators normalized to underscores, which is unique per aptamer.
@@ -83,9 +99,7 @@ def generate_csf_slim_aptamer_tasks(
         index produces distinct, non-colliding assets.
     manifest_path: the committed aptamer manifest.
     """
-    manifest = pl.read_csv(
-        manifest_path, schema_overrides={ENTREZ_ID_MANIFEST_COLUMN: pl.String}
-    )
+    manifest = _read_manifest(manifest_path)
     aptamer_tasks = tuple(
         BuildSlimCsfAptamerParquetTask.create(
             index_task=index_task,
