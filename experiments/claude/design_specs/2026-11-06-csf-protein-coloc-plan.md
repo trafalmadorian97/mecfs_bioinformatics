@@ -26,7 +26,7 @@
 2. A remote read failure (unreachable URL, truncated stream) → raises `OSError` so `call_with_retries` retries it. Test in Task 6.
 3. `NA` in effect_allele_frequency / beta / standard_error in a harmonised row → null in the frame, not a crash; null-effect rows are later dropped by `_usable_variants`. Test in Task 6.
 4. Several aptamers on one gene (APOE has 4) → distinct protein ids end to end, each with its own row in raw results and display. Test in Task 7 (gene coords) and Task 8 (hit table).
-5. Multi-gene symbol or symbol missing from MAGMA → no gene interval → cis status "unknown", not a crash, not a wrong "trans". Test in Task 7.
+5. Multi-gene aptamer, or an aptamer neither whose Entrez id nor whose symbol is in MAGMA, or whose id and symbol point to loci > 1 Mb apart → no gene interval → cis status "unknown", not a crash, not a wrong "trans". Test in Task 7.
 
 ---
 
@@ -58,9 +58,10 @@ Purpose: tell whether existing assets would verify **without running the runner*
 - Do NOT bring: `csf_ldsc/`, `batched_ldsc/`, `hapmap3_csf_heritability.py`, `csf_heritability.py`, CSF LDSC constants/tests/experiments.
 
 **Interfaces:**
-- Produces: `HAPMAP_3_CSF_DATABASE: CsfSlimAptamerTaskCollection` (`.aptamer_tasks: tuple[BuildSlimCsfAptamerParquetTask, ...]`, each with `.aptamer: CsfAptamerFile` — fields `analyte, seq_id, accession, uniprot, entrez_gene_symbol`); `HAPMAP_3_CSF_DATABASE_INDEX`; `CSF_APTAMER_MANIFEST_PATH`; `gwas_catalog_bucket(accession) -> str`; `GcstAccession`, `SeqId`, `Analyte`, `UniProtId`; `WESTERN_CSF_TRAIT_NAME = "western_csf_pqtl"`.
+- Produces: `HAPMAP_3_CSF_DATABASE: CsfSlimAptamerTaskCollection` (`.aptamer_tasks: tuple[BuildSlimCsfAptamerParquetTask, ...]`, each with `.aptamer: CsfAptamerFile` — fields `analyte, seq_id, accession, uniprot, entrez_gene_id, entrez_gene_symbol`); `HAPMAP_3_CSF_DATABASE_INDEX`; `CSF_APTAMER_MANIFEST_PATH`; `gwas_catalog_bucket(accession) -> str`; `GcstAccession`, `SeqId`, `Analyte`, `UniProtId`; `WESTERN_CSF_TRAIT_NAME = "western_csf_pqtl"`.
 
 - [ ] **Step 1:** Copy the files. Adapt to main: `unordered_allele_key` callers add the `assert_all_snv` guard main now requires; downloads use main's `request_connections` WF/downloader parameter; fix any other import/API drift until `pixi r invoke green` passes. Asset ids, metas, `create()` signatures and path construction unchanged.
+- [ ] **Step 1b:** Add an `entrez_gene_id` manifest column (from aptamer_info.xlsx `EntrezGeneID`, kept as a string: multi-gene aptamers hold several ids separated by `|` or a space) and an `entrez_gene_id: EntrezGeneId` field (NewType of str in `csf_database_constants.py`) on `CsfAptamerFile`. Update `regenerate_csf_manifest.py` to emit it and re-run it; `git diff` of the manifest must show only the added column. No asset id, meta or path may change (the field is not used in any of them).
 - [ ] **Step 2:** Run the brought-over tests: `pixi r pytest test_mecfs_bio/unit/build_system/task/csf_database -p no:testmon -q`. Expected: all pass.
 - [ ] **Step 3:** Move the CSF files back to the main disk. Run `pixi r invoke migrate-asset-store --reverse --only western_csf_pqtl 2>&1 | tee experiments/claude/csf_coloc/migrate_dry_run.log` (dry run) and check it lists only the `gwas/western_csf_pqtl` subtree, about 45 GB, with enough free space on the main disk. Then run the same command with `--execute` in the background (tee'd to `migrate_execute.log`). When it finishes, delete the `gwas/western_csf_pqtl` path_remap line from `default_runner_config.yaml`. If the dry run lists anything unexpected or the execute step fails: stop and report.
 - [ ] **Step 4:** Add `csf_database` mode to the Task 1 script (index task + all 7,008 slim tasks + template aptamer tasks) and run it, tee'd. Expected: 7,008 slim + index `verified`. If not: stop and report (spec rule; a rebuild is ~1.4 TB). In particular check `HAPMAP_3_MEMBERSHIP_LIST`, an upstream dep whose code changed on main.
@@ -235,13 +236,16 @@ Purpose: tell whether existing assets would verify **without running the runner*
       aptamers: tuple[CsfAptamerFile, ...]
       def __call__(self, table: pl.DataFrame) -> dict[ProteinId, GenomicInterval]: ...
   ```
-  `table` is `MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED` read through its meta (GENE_INFO_NAME_COL, GENE_INFO_CHROM_COL, GENE_INFO_START_COL, GENE_INFO_END_COL; chromosome "X" → 23 via `parse_chrom`). Keys `ProteinId(seq_id)`. A symbol containing a multi-gene separator (whatever the manifest uses for its 78 multi-gene aptamers — inspect them), or absent from MAGMA, or present on more than one MAGMA row, → no entry.
+  `table` is `MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED` read through its meta (`entrez_id` — add a `GENE_INFO_ENTREZ_ID_COL = "entrez_id"` constant beside the other GENE_INFO_* constants and use it in the MAGMA read_spec — plus GENE_INFO_NAME_COL, GENE_INFO_CHROM_COL, GENE_INFO_START_COL, GENE_INFO_END_COL; read `entrez_id` as a string; chromosome "X" → 23 via `parse_chrom`). Keys `ProteinId(seq_id)`. Join on `entrez_gene_id`, with the rules in the spec's "Gene coordinates" bullet: (1) id found → its interval, unless the symbol is also a MAGMA gene on another chromosome or more than `cis_window_bp` (1 Mb, take it from `SelectionConfig`'s default, not a new literal) away → no entry; (2) id absent → symbol fallback if the symbol is on exactly one MAGMA row; (3) multi-gene id (contains a non-digit) or nothing found → no entry. Expected on the real data: 6,891 by id, minus 3 conflicts, plus 7 by symbol fallback.
 - [ ] **Step 1: Failing tests:**
-  - `test_symbol_found_gives_interval`
+  - `test_entrez_id_found_gives_interval`, where the aptamer's symbol differs from MAGMA's symbol for that id (renamed gene) → the id's interval
   - `test_two_aptamers_same_gene_both_mapped` (Review Focus 4): seq ids 2418-55 and 2937-10, both APOE → two keys, same interval.
-  - `test_multi_gene_symbol_has_no_interval` (Review Focus 5)
-  - `test_symbol_missing_from_magma_has_no_interval` (Review Focus 5)
-  - `test_duplicate_magma_symbol_has_no_interval`
+  - `test_id_and_symbol_nearby_keeps_id_interval` (readthrough case, < 1 Mb)
+  - `test_id_and_symbol_far_apart_has_no_interval` (CBS case: other chromosome position > 1 Mb) (Review Focus 5)
+  - `test_id_missing_falls_back_to_symbol`
+  - `test_multi_gene_id_has_no_interval` (Review Focus 5)
+  - `test_id_and_symbol_missing_from_magma_has_no_interval` (Review Focus 5)
+  - `test_real_manifest_mapping_counts` is NOT wanted (brittle count); instead log the mapped/unknown counts when the generator builds the CSF tasks and check them by hand once against the expected numbers above.
   - A coloc-task-level test in `test_trait_protein_coloc_task.py`, `test_csf_unmapped_aptamer_is_cis_unknown`: run the task with a CSF-shaped source whose aptamer symbol is missing from the gene table → raw results `CIS_STATUS_COL == CIS_STATUS_UNKNOWN` for that pair (reuse the existing test's fake fetcher pattern).
 - [ ] **Step 2:** Run, expect failures. **Step 3:** Implement. **Step 4:** Pass. **Step 5:** green; commit.
 

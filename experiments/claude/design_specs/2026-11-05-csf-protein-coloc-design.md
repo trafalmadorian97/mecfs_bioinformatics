@@ -211,10 +211,22 @@ exact names):
   label per task. PPP and CSF both instantiate it.
 - **Gene coordinates**: the coloc task currently reads Sun et al. ST3 via `read_gene_coords`.
   Generalize to a mapping protein id → GRCh38 gene interval, supplied by a source-specific reader:
-  PPP keeps ST3; CSF maps the manifest's `entrez_gene_symbol` through the GRCh38 MAGMA gene
-  location file (`MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED`). Multi-gene or
-  unmatched aptamers get no coordinates → cis status "unknown", exactly as PPP complexes do (my
-  call).
+  PPP keeps ST3; CSF joins the aptamer's NCBI Entrez gene id (the `EntrezGeneID` column of
+  Western's aptamer_info.xlsx, added to the manifest as `entrez_gene_id`) to the `entrez_id`
+  column of the GRCh38 MAGMA gene location file
+  (`MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED`), not the gene symbol.
+  Measured on the 7,008 published aptamers against MAGMA's 20,137 genes (unique ids and unique
+  symbols): 86 are multi-gene; of the 6,922 single-gene aptamers, 6,891 match by id versus 6,663
+  by symbol (the 235 id-only matches are mostly renamed genes, e.g. VSIR, MRE11, SELENOS). Rules:
+  1. Id found → that interval, unless the aptamer's symbol is also a MAGMA gene located on a
+     different chromosome or more than 1 Mb away (cis_window_bp) → no interval. Of the 27
+     id/symbol disagreements, 24 are readthroughs or adjacent paralogs under 1 Mb apart and keep
+     the id's interval; CBS and CRYAA (id points to the chr21 6.4 Mb duplicate copy, symbol to
+     the canonical 43 Mb locus) and CDY1 (1.6 Mb) become unknown.
+  2. Id absent from MAGMA (7 aptamers, retired/replaced ids) → fall back to the symbol if it is
+     on exactly one MAGMA row.
+  3. Otherwise (24 aptamers, mostly PAR/Y and immunoglobulin genes MAGMA lacks) and all
+     multi-gene aptamers → no coordinates → cis status "unknown", as PPP complexes are (my call).
 - **Coloc task**: `TraitProteinColocTask` already depends on the `DenseWindowFetcher` protocol;
   keep it, plus the generalized hit table / gene coords, and make the protein trait model a
   parameter (both sources use sd_y = 1).
