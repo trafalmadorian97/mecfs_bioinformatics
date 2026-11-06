@@ -92,7 +92,7 @@ from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
     LocusWindow,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
-    PppProteinHitTableTask,
+    ProteinHitTableTask,
     two_sided_mlog10p,
 )
 from mecfs_bio.build_system.task.protein_coloc.trait_loci import find_trait_loci
@@ -558,7 +558,7 @@ class TraitProteinColocTask(Task):
     meta: ResultDirectoryMeta
     trait_task: Task
     trait_model: TraitModel
-    hit_table_task: PppProteinHitTableTask
+    hit_table_task: ProteinHitTableTask
     gene_coords_task: Task
     gene_coords_reader: GeneCoordsReader
     fasta_task: Task
@@ -621,7 +621,7 @@ class TraitProteinColocTask(Task):
         asset_id: str,
         trait_task: Task,
         trait_model: TraitModel,
-        hit_table_task: PppProteinHitTableTask,
+        hit_table_task: ProteinHitTableTask,
         gene_coords_task: Task,
         gene_coords_reader: GeneCoordsReader,
         fasta_task: Task,

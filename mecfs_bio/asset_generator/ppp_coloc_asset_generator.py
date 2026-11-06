@@ -46,7 +46,7 @@ from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
     PppWindowFetcher,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
-    PppProteinHitTableTask,
+    ProteinHitTableTask,
 )
 from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
     ColocRunConfig,
@@ -70,7 +70,7 @@ def generate_ppp_coloc_tasks(
     trait_model: TraitModel,
     config: ColocRunConfig = ColocRunConfig(),
     h4_threshold: float = 0.8,
-    hit_table_task: PppProteinHitTableTask = HAPMAP_3_PPP_HIT_TABLE_5E8,
+    hit_table_task: ProteinHitTableTask = HAPMAP_3_PPP_HIT_TABLE_5E8,
     manifest_path: Path = EUR_DISCOVERY_PPP_MANIFEST_PATH,
 ) -> PppColocTaskGroup:
     """

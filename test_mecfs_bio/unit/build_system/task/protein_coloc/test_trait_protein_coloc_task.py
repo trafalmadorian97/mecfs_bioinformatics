@@ -53,7 +53,7 @@ from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
 )
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
-    PppProteinHitTableTask,
+    ProteinHitTableTask,
 )
 from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
     ColocRunConfig,
@@ -307,9 +307,13 @@ def _panel_task() -> FakeTask:
     )
 
 
-def _hit_table_task() -> PppProteinHitTableTask:
-    return PppProteinHitTableTask.create(
-        asset_id="hits", protein_tasks=(), index_task=FakeTask(_table_meta("index"))
+def _hit_table_task() -> ProteinHitTableTask:
+    return ProteinHitTableTask.create(
+        asset_id="hits",
+        proteins=(),
+        index_task=FakeTask(_table_meta("index")),
+        trait="synthetic",
+        project="test",
     )
 
 
