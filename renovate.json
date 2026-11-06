@@ -16,7 +16,7 @@
     "custom.regex"
   ],
   "constraints": {
-    "pixi": "0.83.0"
+    "pixi": "0.84.1"
   },
   "customManagers": [
     {
@@ -69,7 +69,8 @@
         "tqdm",
         "invoke",
         "ruff",
-        "typeguard"
+        "typeguard",
+        "pyarrow"
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
