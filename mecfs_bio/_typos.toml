@@ -1,7 +1,8 @@
 [files]
-# Data files of UKB-PPP gene symbols; not prose, and full of legitimate gene names
-# (SORD, SPRED2, STIP1, WNT9A, ...) that trip the spellchecker. One manifest per cohort.
-extend-exclude = ["**/*_ppp_manifest.csv"]
+# Proteomics database manifests; not prose, and full of legitimate gene names and
+# protein descriptions (SORD, SPRED2, Collectin-12, Mucin-1, ...) that trip the
+# spellchecker. UKB-PPP has one manifest per cohort; CSF has a single aptamer manifest.
+extend-exclude = ["**/*_ppp_manifest.csv", "**/csf_aptamer_manifest.csv"]
 
 [default.extend-words]
 ser="ser"
