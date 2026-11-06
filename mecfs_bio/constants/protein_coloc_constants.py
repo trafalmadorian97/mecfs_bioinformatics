@@ -5,7 +5,7 @@ The dense per-locus window frames use gwaslab column names (CHR, POS, EA, NEA, B
 N); the constants below name everything else.
 """
 
-from typing import Final, Literal
+from typing import Final, Literal, NewType
 
 import polars as pl
 
@@ -19,6 +19,10 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
+
+# Identifier of one protein measurement in a proteomics GWAS, as the coloc layer sees it: the
+# Olink id for UKB-PPP, the SomaScan seq id for the Western et al. CSF aptamers.
+ProteinId = NewType("ProteinId", str)
 
 LOCUS_ID_COL: Final = "LOCUS_ID"
 PROTEIN_ID_COL: Final = "PROTEIN_ID"

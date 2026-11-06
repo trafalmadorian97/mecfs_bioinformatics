@@ -50,7 +50,7 @@ _OUTCOMES: tuple[Outcome, ...] = (
 _MAX_EXAMPLES = 20
 
 
-@define
+@define(slots=True)
 class VerifyReport:
     counts: dict[Outcome, int] = field(factory=lambda: {o: 0 for o in _OUTCOMES})
     examples: dict[Outcome, list[str]] = field(

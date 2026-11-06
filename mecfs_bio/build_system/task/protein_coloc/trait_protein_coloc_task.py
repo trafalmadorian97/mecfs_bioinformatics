@@ -66,7 +66,6 @@ from mecfs_bio.build_system.task.genome_reference_harmonization.options import (
 from mecfs_bio.build_system.task.genome_reference_harmonization.outcomes import (
     DropReason,
 )
-from mecfs_bio.build_system.task.ppp_ldsc.gene_coords import read_gene_coords
 from mecfs_bio.build_system.task.protein_coloc.candidate_selection import (
     SelectionConfig,
     build_candidates,
@@ -79,6 +78,9 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_abf import (
     ColocPosteriors,
     QuantitativeTraitModel,
     TraitModel,
+)
+from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
+    GeneCoordsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.orient_and_align import (
     OrientedWindow,
@@ -545,7 +547,8 @@ class TraitProteinColocTask(Task):
     trait_task: the GRCh38 genome-reference harmonized trait GWAS.
     trait_model: quantitative (sdY known or estimated) or case-control.
     hit_table_task: the protein hit-segment table that screens candidate proteins.
-    gene_coords_task: the extracted Sun et al. 2023 ST3 sheet (GRCh38 gene coordinates).
+    gene_coords_task: a GRCh38 gene-coordinate table that gene_coords_reader understands.
+    gene_coords_reader: maps that table to protein id -> gene interval for the cis/trans call.
     fasta_task, panel_task, panel_af_col: GRCh38 reference genome and allele-frequency panel
         used to orient protein windows.
     fetcher: the dense window source of the proteomics GWAS.
@@ -557,6 +560,7 @@ class TraitProteinColocTask(Task):
     trait_model: TraitModel
     hit_table_task: PppProteinHitTableTask
     gene_coords_task: Task
+    gene_coords_reader: GeneCoordsReader
     fasta_task: Task
     panel_task: Task
     panel_af_col: str
@@ -586,7 +590,9 @@ class TraitProteinColocTask(Task):
         candidates = build_candidates(
             loci,
             _read_table(self.hit_table_task, fetch),
-            gene_coords=read_gene_coords(_read_table(self.gene_coords_task, fetch)),
+            gene_coords=self.gene_coords_reader(
+                _read_table(self.gene_coords_task, fetch)
+            ),
             cis_window_bp=self.config.selection.cis_window_bp,
         )
         ranked = select_candidates(candidates, loci, self.config.selection)
@@ -617,6 +623,7 @@ class TraitProteinColocTask(Task):
         trait_model: TraitModel,
         hit_table_task: PppProteinHitTableTask,
         gene_coords_task: Task,
+        gene_coords_reader: GeneCoordsReader,
         fasta_task: Task,
         panel_task: Task,
         panel_ancestry: PanelAncestry,
@@ -645,6 +652,7 @@ class TraitProteinColocTask(Task):
             trait_model=trait_model,
             hit_table_task=hit_table_task,
             gene_coords_task=gene_coords_task,
+            gene_coords_reader=gene_coords_reader,
             fasta_task=fasta_task,
             panel_task=panel_task,
             panel_af_col=resolve_panel_af_col(panel_task, panel_ancestry),

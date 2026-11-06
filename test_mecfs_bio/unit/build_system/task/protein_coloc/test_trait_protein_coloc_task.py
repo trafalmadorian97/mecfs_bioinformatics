@@ -48,6 +48,9 @@ from mecfs_bio.build_system.task.protein_coloc.candidate_selection import (
 from mecfs_bio.build_system.task.protein_coloc.coloc_abf import (
     QuantitativeTraitModel,
 )
+from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
+    St3GeneCoordsReader,
+)
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
     PppProteinHitTableTask,
@@ -317,6 +320,7 @@ def _create(fetcher: _FakeFetcher, trait_task: FakeTask) -> TraitProteinColocTas
         trait_model=QuantitativeTraitModel(sd_y=None),
         hit_table_task=_hit_table_task(),
         gene_coords_task=FakeTask(_table_meta("gene_coords")),
+        gene_coords_reader=St3GeneCoordsReader(),
         fasta_task=_fasta_task(),
         panel_task=_panel_task(),
         panel_ancestry="eur",

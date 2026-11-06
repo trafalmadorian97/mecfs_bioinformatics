@@ -7,7 +7,6 @@ from mecfs_bio.build_system.task.protein_coloc.candidate_selection import (
     build_candidates,
     select_candidates,
 )
-from mecfs_bio.constants.ppp_database_constants import Oid
 from mecfs_bio.constants.protein_coloc_constants import (
     CIS_STATUS_CIS,
     CIS_STATUS_COL,
@@ -38,6 +37,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     STATUS_EXCLUDED_MHC,
     STATUS_NOT_SELECTED_BUDGET,
     STATUS_SELECTED,
+    ProteinId,
 )
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
@@ -129,8 +129,8 @@ def test_cis_status_and_other_protein_count() -> None:
             ]
         ),
         gene_coords={
-            Oid("OID1"): GenomicInterval(chrom=1, start=1_200_000, end=1_300_000),
-            Oid("OID2"): GenomicInterval(chrom=1, start=5_000_000, end=5_100_000),
+            ProteinId("OID1"): GenomicInterval(chrom=1, start=1_200_000, end=1_300_000),
+            ProteinId("OID2"): GenomicInterval(chrom=1, start=5_000_000, end=5_100_000),
         },
         cis_window_bp=1_000_000,
     ).sort(PROTEIN_ID_COL)
@@ -264,9 +264,9 @@ def test_gene_distance_to_trait_lead_is_recorded() -> None:
             ]
         ),
         gene_coords={
-            Oid("OID1"): GenomicInterval(chrom=1, start=200_000, end=300_000),
-            Oid("OID2"): GenomicInterval(chrom=1, start=325_000, end=400_000),
-            Oid("OID3"): GenomicInterval(chrom=2, start=200_000, end=300_000),
+            ProteinId("OID1"): GenomicInterval(chrom=1, start=200_000, end=300_000),
+            ProteinId("OID2"): GenomicInterval(chrom=1, start=325_000, end=400_000),
+            ProteinId("OID3"): GenomicInterval(chrom=2, start=200_000, end=300_000),
         },
         cis_window_bp=1_000_000,
     ).sort(PROTEIN_ID_COL)

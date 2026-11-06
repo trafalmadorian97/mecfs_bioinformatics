@@ -39,6 +39,9 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
 from mecfs_bio.build_system.task.protein_coloc.coloc_locus_plot_task import (
     ColocLocusPlotTask,
 )
+from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
+    St3GeneCoordsReader,
+)
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
     PppWindowFetcher,
 )
@@ -83,6 +86,7 @@ def generate_ppp_coloc_tasks(
         trait_model=trait_model,
         hit_table_task=hit_table_task,
         gene_coords_task=SUN_ET_AL_2023_ST3_EXTRACTED,
+        gene_coords_reader=St3GeneCoordsReader(),
         fasta_task=UCSC_HG38_INDEXED_FASTA,
         panel_task=GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
         panel_ancestry="nfe",
