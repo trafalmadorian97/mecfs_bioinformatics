@@ -242,6 +242,12 @@ no network in unit tests.
 Western z-score-normalized aptamer levels → `QuantitativeTraitModel(sd_y=1.0)`, same as PPP.
 N per variant from the `n` column.
 
+Verified empirically 2026-11-06 (`experiments/claude/csf_coloc/sdy_check.py`, coloc's sdY.est
+method: regress SE² on 1/(2·N·MAF·(1−MAF)) through the origin, MAF ≥ 0.01): template aptamer
+X13681.173 genome-wide 0.9955 (6.4M variants); X16763.11 (LECT2) 0.9917 and X13655.34 (NCL)
+0.9949 on three 1 Mb windows each. sd_y = 1 holds to within ~1%; the slight shortfall is
+consistent with z-scoring before covariate adjustment.
+
 ### 5. CSF hit table and generator wiring
 
 - `mecfs_bio/assets/gwas/csf_pqtl/csf_database/hapmap3/hapmap3_csf_hit_table.py`: the
