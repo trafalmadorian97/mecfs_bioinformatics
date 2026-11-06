@@ -4,7 +4,7 @@ stacked locus plots per trait.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-from mecfs_bio.asset_generator.ppp_coloc_asset_generator import PppColocTaskGroup
+from mecfs_bio.asset_generator.protein_coloc_asset_generator import ColocTaskGroup
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.analysis.liu_et_al_2023_ibd_ppp_coloc import (
     LIU_ET_AL_2023_IBD_PPP_COLOC,
 )
@@ -19,7 +19,7 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_s
 )
 
 
-def _run(group: PppColocTaskGroup) -> None:
+def _run(group: ColocTaskGroup) -> None:
     DEFAULT_RUNNER.run(
         group.terminal_tasks(), incremental_save=True, must_rebuild_transitive=[]
     )
