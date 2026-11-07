@@ -135,7 +135,7 @@ def _ppp_coloc_tasks() -> list[Task]:
     ]
     tasks: list[Task] = []
     for g in groups:
-        tasks.extend([g.coloc_task, g.display_task, g.plot_task])
+        tasks.extend([g.coloc_task, g.display_task])
     tasks.append(groups[0].coloc_task.hit_table_task)
     for t in tasks:
         print(f"requested: {t.asset_id}")

@@ -3,8 +3,9 @@ Asset generator for colocalizing one trait GWAS with the proteins of one proteom
 (UKB-PPP plasma, Western et al. CSF).
 
 Builds, for one GRCh38-harmonized trait: the TraitProteinColocTask (raw results and aligned
-windows), the docs-facing display table of the pairs with PP.H4 above a threshold, and the
-stacked locus plots of those pairs. The proteomics source supplies the hit table, the dense
+windows) and the docs-facing display table of the pairs with PP.H4 above a threshold. Stacked
+locus plots are not built per run: generate_coloc_locus_plot_task makes them for hand-picked
+pairs of a run. The proteomics source supplies the hit table, the dense
 window fetcher and the gene coordinates; the GRCh38 genome, allele-frequency panel and gene
 track are shared by every source.
 """
@@ -29,6 +30,7 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
 )
 from mecfs_bio.build_system.task.protein_coloc.coloc_locus_plot_task import (
     ColocLocusPlotTask,
+    ColocPair,
 )
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
@@ -67,10 +69,9 @@ class ProteomicsColocSource:
 class ColocTaskGroup:
     coloc_task: TraitProteinColocTask
     display_task: ColocDisplayTableTask
-    plot_task: ColocLocusPlotTask
 
     def terminal_tasks(self) -> list[Task]:
-        return [self.display_task, self.plot_task]
+        return [self.display_task]
 
 
 def generate_protein_coloc_tasks(
@@ -105,12 +106,16 @@ def generate_protein_coloc_tasks(
         coloc_task=coloc_task,
         h4_threshold=h4_threshold,
     )
-    plot_task = ColocLocusPlotTask.create(
-        asset_id=f"{prefix}_coloc_plots",
-        coloc_task=coloc_task,
-        display_task=display_task,
+    return ColocTaskGroup(coloc_task=coloc_task, display_task=display_task)
+
+
+def generate_coloc_locus_plot_task(
+    asset_id: str, group: ColocTaskGroup, pairs: tuple[ColocPair, ...]
+) -> ColocLocusPlotTask:
+    """Stacked locus plots of chosen tested pairs of one coloc run."""
+    return ColocLocusPlotTask.create(
+        asset_id=asset_id,
+        coloc_task=group.coloc_task,
         gene_info_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
-    )
-    return ColocTaskGroup(
-        coloc_task=coloc_task, display_task=display_task, plot_task=plot_task
+        pairs=pairs,
     )

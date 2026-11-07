@@ -1,13 +1,14 @@
 """
-Stacked locus plots of the displayed trait x protein colocalizations.
+Stacked locus plots of chosen trait x protein colocalizations.
 
-One figure per row of the display table, saved as PNG and SVG, with three panels sharing the
+One figure per requested (locus, protein) pair, saved as PNG and SVG, with three panels sharing the
 GRCh38 x-axis over the locus window: the trait's -log10 p, the protein's -log10 p (both over the
 aligned variants the colocalization used, each with its lead variant highlighted), and the genes
 in the window. The title carries the gene symbol, cis/trans status and PP.H4.
 
 The output directory also holds plot_index.parquet (PROTEIN_ID, GENE, LOCUS_ID, PNG_FILENAME,
-SVG_FILENAME), which is empty when no pair passed the display threshold.
+SVG_FILENAME). Pairs are chosen by hand rather than by a PP.H4 threshold, so only loci worth
+a close look get figures; any tested pair can be plotted, including H3-dominant ones.
 """
 
 from pathlib import Path
@@ -20,13 +21,11 @@ from matplotlib.figure import Figure
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
-from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
-    ColocDisplayTableTask,
     read_raw_results,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
@@ -50,7 +49,6 @@ from mecfs_bio.constants.protein_coloc_constants import (
     BETA_PROTEIN_COL,
     BETA_TRAIT_COL,
     CIS_STATUS_COL,
-    DISPLAY_LOCUS_COL,
     GENE_COL,
     LOCUS_CHR_COL,
     LOCUS_END_COL,
@@ -62,6 +60,8 @@ from mecfs_bio.constants.protein_coloc_constants import (
     PROTEIN_ID_COL,
     SE_PROTEIN_COL,
     SE_TRAIT_COL,
+    STATUS_COL,
+    STATUS_TESTED,
     WINDOWS_DIRNAME,
     pair_file_stem,
 )
@@ -83,8 +83,16 @@ PLOT_INDEX_SCHEMA = pl.Schema(
 
 
 @frozen(slots=True)
+class ColocPair:
+    """One trait locus x protein pair of a coloc run, as named in its raw results."""
+
+    locus_id: str
+    protein_id: str
+
+
+@frozen(slots=True)
 class _PlotSpec:
-    """One displayed pair and where its aligned window and figure files live."""
+    """One requested pair and where its aligned window and figure files live."""
 
     protein_id: str
     gene: str
@@ -100,24 +108,29 @@ class _PlotSpec:
         return pair_file_stem(self.locus_id, self.protein_id)
 
 
-def _plot_specs(display: pl.DataFrame, raw: pl.DataFrame) -> list[_PlotSpec]:
-    loci = raw.select(
-        LOCUS_ID_COL, LOCUS_CHR_COL, LOCUS_START_COL, LOCUS_END_COL
-    ).unique(LOCUS_ID_COL)
-    joined = display.join(loci, left_on=DISPLAY_LOCUS_COL, right_on=LOCUS_ID_COL)
-    return [
-        _PlotSpec(
-            protein_id=row[PROTEIN_ID_COL],
-            gene=row[GENE_COL],
-            locus_id=row[DISPLAY_LOCUS_COL],
-            chrom=row[LOCUS_CHR_COL],
-            start=row[LOCUS_START_COL],
-            end=row[LOCUS_END_COL],
-            cis_status=row[CIS_STATUS_COL],
-            pp_h4=row[PP_H4_COL],
+def _plot_specs(raw: pl.DataFrame, pairs: tuple[ColocPair, ...]) -> list[_PlotSpec]:
+    tested = raw.filter(pl.col(STATUS_COL) == STATUS_TESTED)
+    specs = []
+    for pair in pairs:
+        rows = tested.filter(
+            pl.col(LOCUS_ID_COL) == pair.locus_id,
+            pl.col(PROTEIN_ID_COL) == pair.protein_id,
         )
-        for row in joined.iter_rows(named=True)
-    ]
+        assert rows.height == 1, f"{pair} is not a tested pair of the coloc results"
+        row = rows.row(0, named=True)
+        specs.append(
+            _PlotSpec(
+                protein_id=row[PROTEIN_ID_COL],
+                gene=row[GENE_COL],
+                locus_id=row[LOCUS_ID_COL],
+                chrom=row[LOCUS_CHR_COL],
+                start=row[LOCUS_START_COL],
+                end=row[LOCUS_END_COL],
+                cis_status=row[CIS_STATUS_COL],
+                pp_h4=row[PP_H4_COL],
+            )
+        )
+    return specs
 
 
 def _plot_association(
@@ -198,28 +211,27 @@ def _render_all(
 class ColocLocusPlotTask(Task):
     """
     coloc_task: the TraitProteinColocTask whose aligned windows are plotted.
-    display_task: selects which pairs to plot.
     gene_info_task: a GRCh38 gene table with the GENE_INFO_* columns.
+    pairs: the tested pairs to plot, one figure each.
     """
 
     meta: ResultDirectoryMeta
     coloc_task: Task
-    display_task: ColocDisplayTableTask
     gene_info_task: Task
+    pairs: tuple[ColocPair, ...]
+
+    def __attrs_post_init__(self) -> None:
+        assert len(self.pairs) > 0, "no pairs to plot"
+        assert len(set(self.pairs)) == len(self.pairs), f"duplicate pairs: {self.pairs}"
 
     @property
     def deps(self) -> list[Task]:
-        return [self.coloc_task, self.display_task, self.gene_info_task]
+        return [self.coloc_task, self.gene_info_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         coloc_asset = fetch(self.coloc_task.asset_id)
         assert isinstance(coloc_asset, DirectoryAsset)
-        display_asset = fetch(self.display_task.asset_id)
-        assert isinstance(display_asset, FileAsset)
-        specs = _plot_specs(
-            pl.read_parquet(display_asset.path),
-            read_raw_results(fetch, self.coloc_task),
-        )
+        specs = _plot_specs(read_raw_results(fetch, self.coloc_task), self.pairs)
         genes = (
             scan_dataframe_asset(
                 fetch(self.gene_info_task.asset_id), meta=self.gene_info_task.meta
@@ -238,8 +250,8 @@ class ColocLocusPlotTask(Task):
         cls,
         asset_id: str,
         coloc_task: Task,
-        display_task: ColocDisplayTableTask,
         gene_info_task: Task,
+        pairs: tuple[ColocPair, ...],
     ) -> "ColocLocusPlotTask":
         source_meta = coloc_task.meta
         assert isinstance(source_meta, ResultDirectoryMeta), (
@@ -250,6 +262,6 @@ class ColocLocusPlotTask(Task):
                 id=asset_id, trait=source_meta.trait, project=source_meta.project
             ),
             coloc_task=coloc_task,
-            display_task=display_task,
             gene_info_task=gene_info_task,
+            pairs=pairs,
         )

@@ -1,6 +1,6 @@
 """
-Driver to colocalize each trait with the Western et al. 2024 CSF aptamers: raw results,
-display table and stacked locus plots per trait.
+Driver to colocalize each trait with the Western et al. 2024 CSF aptamers: raw results and
+display table per trait.
 
 Alzheimer's runs first as the positive control (main() runs only it); the other traits and
 the exploratory DecodeME runs are started explicitly once its results have been checked

@@ -1,6 +1,6 @@
 """
-Driver to colocalize each v1 trait with the UKB-PPP proteins: raw results, display table and
-stacked locus plots per trait.
+Driver to colocalize each v1 trait with the UKB-PPP proteins: raw results and display table
+per trait.
 """
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
