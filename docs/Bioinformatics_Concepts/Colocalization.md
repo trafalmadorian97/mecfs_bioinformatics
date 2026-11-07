@@ -37,7 +37,7 @@ Our data generating model is:
 
 $$
 \begin{align}
-y_k &= X_k\alpha_k +G_k \beta_k + \epsilon_k\\
+y_k &= X_k\alpha_k +G_k \beta_k + \epsilon_k  \label{dg_model} \\
 \epsilon_k &\sim N(0,\sigma^2_k I).
 \end{align}
 $$
@@ -210,6 +210,11 @@ Q(Q-1) & h=3
 $$
 
 and where in $(\ref{cond_h_prob})$ we divided the numerator and denominator by $p_0^Q$.
+
+
+## Elimination of covariates
+
+The next step is to simplify the data-generating model $(\ref{dg_model})$ by eliminating the covariate matrix $X_k$.  Let $U\in\mathbb{R}^{(N_k-c_k)\times N_k}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X_k$.
 
 
 
