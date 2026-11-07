@@ -16,7 +16,7 @@
     "custom.regex"
   ],
   "constraints": {
-    "pixi": "0.84.0"
+    "pixi": "0.84.1"
   },
   "customManagers": [
     {
