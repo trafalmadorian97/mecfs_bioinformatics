@@ -1,4 +1,5 @@
 import shutil
+import socket
 from pathlib import Path
 
 import polars as pl
@@ -13,6 +14,7 @@ from mecfs_bio.build_system.task.protein_coloc.csf_window_fetcher import (
     CSF_HARMONISED_COLUMNS,
     CsfWindowFetcher,
     HarmonisedLocation,
+    UrlIndexFetcher,
 )
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
 from mecfs_bio.build_system.wf.base_wf import make_wf
@@ -157,3 +159,23 @@ def test_fetch_unknown_protein_id_asserts(tmp_path: Path) -> None:
             tmp_path,
             make_wf(),
         )
+
+
+def test_fetch_region_pysam_rejects_is_not_retried_as_io_error(tmp_path: Path) -> None:
+    # An end beyond what htslib can address is a programming error, not a read failure.
+    source = _tabix_fixture(tmp_path, [_row(100)])
+    window = LocusWindow("LBIG", chrom=19, start=1, end=2**63)
+    with pytest.raises(ValueError):
+        _fetch(source, window, tmp_path)
+
+
+def test_index_download_from_unresponsive_server_times_out(tmp_path: Path) -> None:
+    # The listening socket accepts the connection (kernel backlog) but never answers.
+    with socket.socket() as server:
+        server.bind(("127.0.0.1", 0))
+        server.listen(1)
+        port = server.getsockname()[1]
+        with pytest.raises(OSError):
+            UrlIndexFetcher(timeout_s=0.5)(
+                f"http://127.0.0.1:{port}/study.h.tsv.gz.tbi", tmp_path
+            )

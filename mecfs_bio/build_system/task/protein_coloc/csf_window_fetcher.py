@@ -11,8 +11,9 @@ the reference genome happens downstream, as for every source.
 
 The tabix index is downloaded into the call's scratch directory and handed to pysam
 explicitly; left to itself, htslib would save every remote index into the process's working
-directory. Failures to download the index or to read the source surface as OSError, so the
-coloc task's retry wrapper retries them.
+directory. Failures to download the index (including a stalled connection, after timeout_s)
+or to open or read the source surface as OSError, so the coloc task's retry wrapper retries
+them; a region pysam rejects is a programming error and stays a ValueError, failing at once.
 """
 
 import shutil
@@ -105,11 +106,19 @@ class IndexFetcher(Protocol):
 
 @frozen(slots=True)
 class UrlIndexFetcher:
-    """Downloads the index (a few MB) with urllib; URLError is an OSError."""
+    """
+    Downloads the index (a few MB) with urllib; URLError and socket timeouts are OSErrors.
+    timeout_s: give up on a connection that sends nothing for this long.
+    """
+
+    timeout_s: float = 60.0
 
     def __call__(self, index: str, dest_dir: Path) -> Path:
         dest = dest_dir / PurePosixPath(urlparse(index).path).name
-        with urllib.request.urlopen(index) as response, open(dest, "wb") as out:
+        with (
+            urllib.request.urlopen(index, timeout=self.timeout_s) as response,
+            open(dest, "wb") as out,
+        ):
             shutil.copyfileobj(response, out)
         return dest
 
@@ -137,28 +146,30 @@ def _tabix_start(window: LocusWindow) -> int:
     return max(window.start - 1, 0)
 
 
+def _read_window(tabix: pysam.TabixFile, window: LocusWindow) -> pl.DataFrame:
+    if str(window.chrom) not in set(tabix.contigs):
+        return _rows_to_window_frame([])
+    # Building the iterator validates the region: a ValueError here is a bad request.
+    lines = tabix.fetch(str(window.chrom), _tabix_start(window), window.end)
+    try:
+        return _rows_to_window_frame([line.split("\t") for line in lines])
+    except ValueError as error:
+        # pysam reports read failures (truncated stream, bad block) as ValueError.
+        raise OSError(f"tabix read of {tabix.filename!r} failed: {error}") from error
+
+
+def _open_tabix(source: str, index: Path) -> pysam.TabixFile:
+    try:
+        return pysam.TabixFile(source, index=str(index))
+    except ValueError as error:
+        raise OSError(f"opening {source} failed: {error}") from error
+
+
 def _fetch_windows(
     source: str, index: Path, windows: Sequence[LocusWindow]
 ) -> dict[str, pl.DataFrame]:
-    try:
-        with pysam.TabixFile(source, index=str(index)) as tabix:
-            contigs = set(tabix.contigs)
-            return {
-                window.locus_id: _rows_to_window_frame(
-                    [
-                        line.split("\t")
-                        for line in tabix.fetch(
-                            str(window.chrom), _tabix_start(window), window.end
-                        )
-                    ]
-                    if str(window.chrom) in contigs
-                    else []
-                )
-                for window in windows
-            }
-    except ValueError as error:
-        # pysam reports some I/O failures (truncated stream, bad index) as ValueError.
-        raise OSError(f"tabix read of {source} failed: {error}") from error
+    with _open_tabix(source, index) as tabix:
+        return {window.locus_id: _read_window(tabix, window) for window in windows}
 
 
 @frozen(slots=True)
