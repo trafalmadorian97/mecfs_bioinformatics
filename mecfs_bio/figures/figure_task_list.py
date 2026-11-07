@@ -1,7 +1,7 @@
 """
 This file contains a list of figures to be exported for use in documentation
 """
-
+from mecfs_bio.assets.diagrams.coloc_configuration_grid import COLOC_CONFIGURATION_GRID_DIAGRAM
 from mecfs_bio.assets.diagrams.ld_same_branch_correlation import (
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
 )
@@ -577,6 +577,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
     LIABILITY_THRESHOLD_ASCERTAINED_SAMPLE_DIAGRAM,
+    COLOC_CONFIGURATION_GRID_DIAGRAM,
+
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"

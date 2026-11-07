@@ -1,36 +1,36 @@
 # Colocalization
 
-Colocalization is a biostatistical technique to evaluate the evidence that the GWAS signal at a particular locus for two different traits is driven by the same underlying causal variant.  
+Colocalization is a biostatistical technique to evaluate the evidence that two GWAS share a causal variant at a locus.  
 
-Because it evaluates commonality between GWAS signals, colocalization is somewhat similar in spirit to [genetic correlation](Genetic_Correlation.md) techniques like [LDSC](LDSC.md).  However, whereas genetic correlation evaluates global polygenic overlap, colocalization is narrowly focused on a single locus.  It is thus possible for two GWAS to strongly colocalize at one locus, but not at another. Colocalization techniques enable a nuanced understanding of where two traits share biological pathways and where they do not.
+Because it evaluates commonality between GWAS signals, colocalization is somewhat similar in spirit to [genetic correlation](Genetic_Correlation.md) techniques like [CT-LDSC](Cross_Trait_LDSC.md).  However, whereas genetic correlation evaluates global overlap, colocalization focuses on a single locus.  Two GWAS may strongly colocalize at one locus, but not at another. Colocalization techniques facilitate nuanced understanding of where two traits share biological pathways and where they do not.
 
 
-Colocalization is often paired with [Mendelian Randomization](Mendelian_Randomization.md), another local, variant-focused method.
+Colocalization is often paired with [Mendelian Randomization](Mendelian_Randomization.md), another local technique.
 
 
 ## Bayes factor colocalization
 
-Bayes factor colocalization[@giambartolomei2014bayesian] is elegant and simple, but requires certain restrictive assumptions.  It is used as a basis for more advanced colocalization methods.
+Bayes factor colocalization[@giambartolomei2014bayesian] is simple, but requires assumptions.  It is used as a basis for more advanced colocalization methods.
 
 
 
 ### Data generating model
 
-We start by assuming we are working with quantitative traits.  Bayes factor colocalization assumes the following generative model.
+Assume initially that both traits are quantitative.  Assume the following generative model.
 
 
 - There are $Q$ genetic variants at the locus of interest.
-- We focus on two GWAS.  There are $N_1$ participants in the first GWAS and $N_2$ participants in the second GWAS.
+- We have two GWAS.  There are $N_1$ participants in the first GWAS and $N_2$ participants in the second GWAS.
 - $y_k\in\mathbb{R}^{N_k}$ is the vector of phenotypes for participants in GWAS $k$.
-- $G_k \in \mathbb{R}^{N_k \times Q}$ is the genotype matrix for GWAS $k$ at the locus of interest.
-- $g_{k,i}$ is the $i$th column of $G_k$.
-- $\beta_{k,i}$: The causal, joint underlying regression coefficient of variant $i$ for trait $k$.
-- $\hat\beta_{k,i}$: The GWAS marginal regression coefficient of variant $i$ in GWAS $k$.
-- $V_{k,i}$: The squared standard error of $\hat\beta_{k,i}$.
-- $\epsilon_k\in\mathbb{R}^{N_k}$:  The part of trait $k$ that is not determined by variants at the locus of interest.  Thus $\epsilon_k$ includes both environmental effects and the effects of variants at other loci.
-- $c_k$ is the number of covariates used in the trait $k$ model.
-- $X_k\in\mathbb{R}^{N_k\times c_k}$ is a matrix of trait $k$ covariates.
-- $\alpha_k\in\mathbb{R}^{c_k}$ is the vector of true trait $k$ covariate coefficients.
+- $G_k \in \mathbb{R}^{N_k \times Q}$ is the genotype matrix for GWAS $k$ at the locus.
+- $g_{k,i}\in\mathbb{R}^{N_k}$ is the $i$th column of $G_k$.
+- $\beta_{k}\in\mathbb{R}^{Q}$ is the vector of true variant effect sizes for $k$.
+- $\hat\beta_{k,i}\in\mathbb{R}$ i the GWAS marginal regression coefficient of variant $i$ in GWAS $k$.
+- $V_{k,i}\in\mathbb{R}$ is the squared standard error of $\hat\beta_{k,i}$.
+- $\epsilon_k\in\mathbb{R}^{N_k}$ is the part of $y_k$ not determined by variants at the locus.  $\epsilon_k$ includes both the environment and other loci.
+- $c_k$ is the number of covariates in the trait $k$ GWAS model.
+- $X_k\in\mathbb{R}^{N_k\times c_k}$ is the matrix of trait $k$ covariates.
+- $\alpha_k\in\mathbb{R}^{c_k}$ is the vector of trait $k$ covariate effects.
 
 
 Our data generating model is:
@@ -44,41 +44,26 @@ $$
 
 
 
-[//]: # (Furthermore, we assume that there is at most one causal variant at the locus for each of the two traits.  Let $S_1,S_2 \in \{ 0,\ldots, Q\}$ be the integer index of the causal variant for each trait if there is one, and 0 if there is no causal variant.  Thus)
-
-[//]: # ()
-[//]: # ($$)
-
-[//]: # (\begin{align})
-
-[//]: # (\beta_{k,i} &=0     &\text{ if }i\ne S_k,\\)
-
-[//]: # (\beta_{k,i}&\ne 0  &\text{ if }i=S_k.)
-
-[//]: # (\end{align})
-
-[//]: # ($$)
 
 
-We assume:
+We require:
 
-- $\epsilon_1$ and $\epsilon_2$ are independent.  This assumption is usually satisfied by assuming that there are no overlapping participants between the two studies.
+- $\epsilon_1$ and $\epsilon_2$ are independent.  This requirement is usually satisfied by assuming that there are no overlapping participants between the two studies.
 
-[//]: # (- We assume that $\beta_{k,i}| | \{ S_k =i \} \sim \mathcal{N}&#40;0,\omega_k^2&#41;$ .)
 
 
 ### Category vectors
 
-A variant $i$ is said to be causal for trait $k$ if $\beta_{k,i}\ne 0$.  Use $\mathcal{C}=\{0,1,2,12\}$  to express the 4 disjoint possibilities for any given variant:
+Variant $i$ is causal for trait $k$ if $\beta_{k,i}\ne 0$.  Use $\mathcal{C}=\{0,1,2,12\}$  to express the 4 disjoint possibilities for any given variant:
 
-- $0$: The variant is not causal for either trait.
+- $0$: The variant is not causal.
 - $1$: The variant is causal for trait 1 only.
 - $1$: The variant is causal for trait 2 only.
 - $12$: The variant is causal for both trait 1 and trait 2.
 
-Call $\mathcal{C}^Q$ the set of category vectors.  Each category vector corresponds to a decision about the causal nature of each variant at the locus.  Assume a prior under which the causality of the $Q$ variants are independent, and the probabilities are of the four possibilities for any given variant are $p_0,p_1,p_2,p_{1,2}$.
+Call $\mathcal{C}^Q$ the set of category vectors.  Each category vector assigns a causal status to each variant.  Assume the causal status of the $Q$ variants are independent and the probabilities of the four possibilities are $p_0,p_1,p_2,p_{1,2}$.
 
-Thus the prior probability of any category vector $c$ is 
+Thus, the prior probability of category vector $c\in\mathcal{C}^Q$ is :
 
 $$
 \begin{align}
@@ -94,36 +79,25 @@ Let $\mathcal{A}$ denote the event that at most one variant is causal for each o
  
 Bayes factor colocalization operates conditional on  $\mathcal{A}$, the assumption that at most one variant is causal.  This assumption is unrealistic for some loci, but permits significant simplification.
 
-[//]: # (For an arbitrary variant $i$, define)
-
-[//]: # ()
-[//]: # (- $p_0$: the probability that variant $i$ is not causal for either of the two traits.)
-
-[//]: # (- $p_1$: the probability that variant $i$ is causal for trait 1 only.)
-
-[//]: # (- $p_2$: the probability that variant $i$ is causal for trait 2 only.)
-
-[//]: # (- $p_{1,2}$: the probability that variant $i$ is causal for both trait 1 and trait 2.)
-
-[//]: # ()
-[//]: # ()
-[//]: # (Define  $\mathcal{C}$ denote the set )
-
-[//]: # ()
 
 ### Hypotheses
 
-[//]: # (HypothesesA realization of $&#40;S_1,S_2&#41;$ defining the causal variant for each of the two traits is called a configuration. Since there are $Q+1$ possible values of each of the $S_k$, there are $&#40;Q+1&#41;^2$ configurations.  )
 
-We define 5 hypothesis, which partition the configurations, as follows:
+We define 5 hypothesis, which partition the configurations:
 
-- $H_0$: Corresponds to the configurations $\mathcal{S}_0=\{ (0,0) \}$.  No causal variants at the locus.
-- $H_1$: Corresponds to the configurations $\mathcal{S}_1=\{ (i,0) : i \ge  1 \}$.  A causal variant for trait 1 but not trait 2 at the locus.
-- $H_2$: Corresponds to the configurations $\mathcal{S}_2=\{ (0,j) : j \ge  1 \}$.  A causal variant for trait 2 but not trait 1 at the locus.
-- $H_3$: Corresponds to the configurations $\mathcal{S}_3=\{ (i,j) : i,j \ge  1 ,i\ne j\}$. Both traits have causal variants at the locus, but they are different .
-- $H_4$: Corresponds to the configurations $\mathcal{S}_4=\{ (i,i) : i \ge  1\}$. Both traits have causal variants at the locus, but they are different .
+- $H_0$ corresponds to the configurations $\mathcal{S}_0=\{ (0,0) \}$.  There are no causal variants at the locus.
+- $H_1$ corresponds to the configurations $\mathcal{S}_1=\{ (i,0) : i \ge  1 \}$.  There is a causal variant for trait 1 but not trait 2.
+- $H_2$ corresponds to the configurations $\mathcal{S}_2=\{ (0,j) : j \ge  1 \}$.  There is a causal variant for trait 2 but not trait 1 at the locus.
+- $H_3$ corresponds to the configurations $\mathcal{S}_3=\{ (i,j) : i,j \ge  1 ,i\ne j\}$. Both traits have causal variants at the locus, but they are different.
+- $H_4$ corresponds to the configurations $\mathcal{S}_4=\{ (i,i) : i \ge  1\}$. The same variant is causal for both traits.
 
-See the illustration below,
+The illustration below shows how the hypotheses partition the configurations.
+
+
+
+{{
+static_img_embed("docs/_figs/coloc_configuration_grid.svg", width="100%")
+}}
 
 ### Configuration odds
 
