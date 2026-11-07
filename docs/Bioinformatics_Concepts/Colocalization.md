@@ -67,7 +67,7 @@ Thus, the prior probability of category vector $c\in\mathcal{C}^Q$ is :
 
 $$
 \begin{align}
-P(c) = \prod_{i=1}^Q p_{c_i}.
+P(c) = \prod_{i=1}^Q p_{c_i}. \label{P_def}
 \end{align}
 $$
 
@@ -101,6 +101,7 @@ static_img_embed("docs/_figs/coloc_configuration_grid.svg", width="100%")
 
 ### Configuration odds
 
+Define the following probability ratios:
 
 $$
 \begin{align}
@@ -110,7 +111,7 @@ $$
 \end{align}
 $$
 
-For some $h\in \{0,1,2,3,4\}$, let $S\in\mathcal{S}_h$. By the prior, we have
+Let $h\in \{0,1,2,3,4\}$. Let $S\in\mathcal{S}_h$. By $(\ref{P_def})$, we have,
 
 
 $$
@@ -122,7 +123,7 @@ p_1 p_{0}^{Q-1} & h=1\\
 p_2 p_{0}^{Q-1} & h=2\\
 p_1 p_2 p_{0}^{Q-2} & h=3\\
 p_{12} p_{0}^{Q-1} & h=4\\
-\end{cases}. \label{unconditional_prob}
+\end{cases} \label{unconditional_prob}
 \end{align}
 $$
 
@@ -136,7 +137,7 @@ $$
 &\frac{P(S|\mathcal{A})}{P(S^0|\mathcal{A})}\\
 &=\frac{P(S \cap \mathcal{A}) / P(\mathcal{A})}{P(S^0 \cap \mathcal{A})/ P(\mathcal{A})}\\
 &=\frac{P(S)}{P(S^0)}\\
-&=\frac{P(S)}{p_0^Q}\\
+&=\frac{P(S)}{p_0^Q} & \text{by \ref{P_def},}\\
 &=\begin{cases}
 1 & h=0\\
 \rho_1 & h=1\\
@@ -148,11 +149,11 @@ $$
 $$
 
 
-### The prior on the hypotheses
+### Prior on the hypotheses
 
-Let us compute the probability of each of the hypotheses.  We will start with the unconditional probability, then move the probability conditional on $\mathcal{A}$
+We compute the probability of each of the hypotheses.  We begin with the unconditional probability, then move the probability conditional on $\mathcal{A}$.
 
-There is one configuration corresponding to hypothesis 0, $Q$ configurations corresponding to hypothesis 1, $Q$ configurations corresponding to hypothesis 2, $Q(Q-1)$  configurations corresponding to hypothesis 3, and $Q$ configurations corresponding to hypothesis 4.  Thus, by $(\ref{unconditional_prob})$:
+There is one configuration corresponding to $H_0$, $Q$ configurations corresponding to $H_1$, $Q$ configurations corresponding to $H_2$, $Q(Q-1)$  configurations corresponding to $H_3$, and $Q$ configurations corresponding to $H_4$.  Thus, by $(\ref{unconditional_prob})$,
 
 $$
 \begin{align}
@@ -162,12 +163,12 @@ Qp_1 p_{0}^{Q-1} & h=1\\
 Qp_2 p_{0}^{Q-1} & h=2\\
 Q(Q-1)p_1 p_2 p_{0}^{Q-2} & h=3\\
 Qp_{12} p_{0}^{Q-1} & h=4\\
-\end{cases} &\text{By (\ref{unconditional_prob}).}. \label{hy_prob}
+\end{cases} &\text{By (\ref{unconditional_prob}).} \label{hy_prob}
 \end{align}
 $$
 
 
-$\mathcal{A}$ is the union of these hypotheses, which are disjoint. Thus:
+$\mathcal{A}$ is the union of these disjoint hypotheses. Thus,
 
 $$
 \begin{align}
@@ -177,7 +178,7 @@ P(\mathcal{A}) &= P(H_0) + P(H_1) + P(H_2) +P(H_3) +P(H_4)\\
 $$
 
 
-Now, let us compute the conditional probability of the hypotheses.
+Now, compute the conditional probability of the hypotheses.
 
 
 $$
@@ -192,11 +193,11 @@ $$
 \frac{Q(Q-1)p_1 p_2 p_{0}^{Q-2}}{P(\mathcal{A})} & h=3\\
 \frac{Qp_{12} p_{0}^{Q-1}}{P(\mathcal{A})} & h=4\\
 \end{cases} &\text{By (\ref{hy_prob})}\\
-&=\frac{n_h \rho_h}{Z} \label{cond_h_prob}
+&=\frac{n_h \rho_h}{Z}, \label{cond_h_prob}
 \end{align}
 $$
 
-Where we have defined $\rho_0:=1$ and $Z:=1+Q\rho_1 +Q\rho_2 +Q(Q-1)\rho_{1}\rho_2 + Q\rho_{1,2}$ and 
+where we have defined $\rho_0:=1$ and $Z:=1+Q\rho_1 +Q\rho_2 +Q(Q-1)\rho_{1}\rho_2 + Q\rho_{1,2}$ and 
 
 $$
 \begin{align}
@@ -208,7 +209,7 @@ Q(Q-1) & h=3
 \end{align}
 $$
 
-and where in $(\ref{cond_h_prob})$ we divided numerator and denominator by $p_0^Q$.
+and where in $(\ref{cond_h_prob})$ we divided the numerator and denominator by $p_0^Q$.
 
 
 
