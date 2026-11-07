@@ -16,7 +16,11 @@ import polars as pl
 import pysam
 
 FTP = "https://ftp.ebi.ac.uk/pub/databases/gwas/summary_statistics"
-_WINDOWS = [("2", 100_000_000, 101_000_000), ("11", 60_000_000, 61_000_000), ("22", 30_000_000, 31_000_000)]
+_WINDOWS = [
+    ("2", 100_000_000, 101_000_000),
+    ("11", 60_000_000, 61_000_000),
+    ("22", 30_000_000, 31_000_000),
+]
 
 
 def bucket(acc: str) -> str:
@@ -42,7 +46,9 @@ def sdy_est(acc: str) -> tuple[float, int]:
     return _estimate(np.array(se), np.array(eaf), np.array(n))
 
 
-def _estimate(se_a: np.ndarray, eaf_a: np.ndarray, n_a: np.ndarray) -> tuple[float, int]:
+def _estimate(
+    se_a: np.ndarray, eaf_a: np.ndarray, n_a: np.ndarray
+) -> tuple[float, int]:
     maf = np.minimum(eaf_a, 1 - eaf_a)
     keep = maf >= 0.01
     x = 1.0 / (2 * n_a[keep] * maf[keep] * (1 - maf[keep]))
@@ -53,15 +59,27 @@ def _estimate(se_a: np.ndarray, eaf_a: np.ndarray, n_a: np.ndarray) -> tuple[flo
 
 def main() -> None:
     manifest = pl.read_csv(sys.argv[1])
-    t = pl.read_parquet(sys.argv[2], columns=["standard_error", "effect_allele_frequency", "n"])
-    est, m = _estimate(t["standard_error"].to_numpy(), t["effect_allele_frequency"].to_numpy(), t["n"].to_numpy().astype(float))
-    print(f"template aptamer X13681.173 (CSNK2A2) genome-wide  sdY_est={est:.4f}  variants={m}", flush=True)
+    t = pl.read_parquet(
+        sys.argv[2], columns=["standard_error", "effect_allele_frequency", "n"]
+    )
+    est, m = _estimate(
+        t["standard_error"].to_numpy(),
+        t["effect_allele_frequency"].to_numpy(),
+        t["n"].to_numpy().astype(float),
+    )
+    print(
+        f"template aptamer X13681.173 (CSNK2A2) genome-wide  sdY_est={est:.4f}  variants={m}",
+        flush=True,
+    )
     k = int(sys.argv[3]) if len(sys.argv) > 3 else 8
     sample = manifest.sample(n=k, seed=20261106)
     rows = []
     for r in sample.iter_rows(named=True):
         est, m = sdy_est(r["accession"])
-        print(f"{r['analyte']:>12} {r['entrez_gene_symbol']:>10} {r['accession']}  sdY_est={est:.4f}  variants={m}", flush=True)
+        print(
+            f"{r['analyte']:>12} {r['entrez_gene_symbol']:>10} {r['accession']}  sdY_est={est:.4f}  variants={m}",
+            flush=True,
+        )
         rows.append(est)
     a = np.array(rows)
     print(f"\nn={len(a)}  mean={a.mean():.4f}  min={a.min():.4f}  max={a.max():.4f}")
