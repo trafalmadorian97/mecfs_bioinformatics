@@ -181,9 +181,10 @@ def susie_prerequisite_file_tasks(
     )
 
     ref_data = gwas_data.copy().iloc[::-1]
-    ld_matrix = np.corrcoef(genotypes.transpose())[
-        ::-1, ::-1
-    ]  # Flip order to ensure SUSIE task can resolve this issue
+    corr = np.corrcoef(genotypes.transpose())
+    assert isinstance(corr, np.ndarray)
+    # Flip order to ensure SUSIE task can resolve this issue
+    ld_matrix = corr[::-1, ::-1]
 
     partial_ld = ld_matrix / 2
     partial_ld_sparse = scipy.sparse.coo_matrix(partial_ld)
