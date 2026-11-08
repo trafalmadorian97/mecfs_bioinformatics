@@ -6,7 +6,7 @@ from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
 
 def go():
     regenerate_figures([COLOC_CONFIGURATION_GRID_DIAGRAM])
-    # push_figures()
+    push_figures()
 
 if __name__ == '__main__':
     go()
