@@ -37,8 +37,12 @@
   }
 }
 
+// The label column is sized to its widest entry (the S_1 \\ S_2 header) with no
+// left inset, so the header's ink sits flush against the page margin. That keeps
+// the whitespace left of the diagram equal to the whitespace right of the grid.
 #table(
-  columns: (46pt,) + (30pt,) * n,
+  columns: (auto,) + (30pt,) * n,
+  inset: (x, y) => if x == 0 { (left: 0pt, right: 6pt, y: 5pt) } else { 5pt },
   rows: 19pt,
   align: center + horizon,
   stroke: (x, y) => if x > 0 and y > 0 { 0.4pt + white } else { none },
