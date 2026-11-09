@@ -35,6 +35,8 @@ GROUPS: dict[str, ColocTaskGroup] = {
     "als": a.VAN_RHEENEN_2021_ALS_CSF_COLOC,
     "decode_me_1e6": a.DECODE_ME_CSF_COLOC_LEAD_P_1E_6,
     "decode_me_1e5": a.DECODE_ME_CSF_COLOC_LEAD_P_1E_5,
+    "fibro": a.KERREBIJN_FIBRO_CSF_COLOC,
+    "msp": a.JOHNSTON_PAIN_CSF_COLOC,
 }
 
 

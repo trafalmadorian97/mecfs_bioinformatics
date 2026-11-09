@@ -15,6 +15,9 @@ from mecfs_bio.assets.gwas.als.van_rheenen_et_al_2021.analysis.van_rheenen_2021_
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_alzheimers_csf_coloc import (
     BELLENGUEZ_ALZHEIMERS_CSF_COLOC,
 )
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.kerrebijn_fibro_csf_coloc import (
+    KERREBIJN_FIBRO_CSF_COLOC,
+)
 from mecfs_bio.assets.gwas.inflammatory_bowel_disease.liu_et_al_2023.analysis.liu_et_al_2023_ibd_csf_coloc import (
     LIU_ET_AL_2023_IBD_CSF_COLOC,
 )
@@ -27,6 +30,9 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_csf_coloc import 
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_csf_coloc_exploratory import (
     DECODE_ME_CSF_COLOC_LEAD_P_1E_5,
     DECODE_ME_CSF_COLOC_LEAD_P_1E_6,
+)
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_pain_csf_coloc import (
+    JOHNSTON_PAIN_CSF_COLOC,
 )
 from mecfs_bio.assets.gwas.parkinsons.nalls_et_al_2019.analysis.nalls_2019_parkinsons_csf_coloc import (
     NALLS_2019_PARKINSONS_CSF_COLOC,
@@ -80,6 +86,11 @@ def run_nalls_2019_parkinsons_csf_coloc() -> None:
 
 def run_van_rheenen_2021_als_csf_coloc() -> None:
     _run(VAN_RHEENEN_2021_ALS_CSF_COLOC)
+
+
+def run_pain_csf_coloc() -> None:
+    _run(KERREBIJN_FIBRO_CSF_COLOC)
+    _run(JOHNSTON_PAIN_CSF_COLOC)
 
 
 def main() -> None:
