@@ -95,6 +95,22 @@ def test(c: Context) -> None:
     c.run(cmd, pty=True)
 
 
+XDIST_WORKERS = 8
+
+
+@task
+def test_xdist(c: Context) -> None:
+    """
+    Like test, but distribute tests across parallel workers with pytest-xdist.
+    """
+    print(
+        f"Running unit and integration tests with pytest on {XDIST_WORKERS} xdist workers, while skipping un-needed tests with testmon..."
+    )
+    cmd = f" python   -m pytest  --testmon -n {XDIST_WORKERS} --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    print(cmd)
+    c.run(cmd, pty=True)
+
+
 @task
 def test_debug(c: Context) -> None:
     """
@@ -498,7 +514,7 @@ def lint_actions(c: Context) -> None:
         # fix_init_files,
         typecheck,
         lint_actions,
-        test,
+        test_xdist,
     ]
 )
 def green(c: Context) -> None:
