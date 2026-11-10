@@ -95,8 +95,13 @@ def test(c: Context) -> None:
     c.run(cmd, pty=True)
 
 
-XDIST_WORKERS = 8
+XDIST_MAX_WORKERS = 8
 XDIST_THREADS_PER_WORKER = 2
+# One worker per XDIST_THREADS_PER_WORKER usable cores, capped at 8 (the best worker count
+# measured on a 16-core machine; 16 workers was slower than 8).
+XDIST_WORKERS = max(
+    1, min(XDIST_MAX_WORKERS, (os.process_cpu_count() or 1) // XDIST_THREADS_PER_WORKER)
+)
 # Without a cap, every xdist worker starts a full pool of BLAS/OpenMP/polars threads, and the
 # workers oversubscribe the CPU.  Capping at 2 threads per worker made the full suite ~25% faster.
 XDIST_THREAD_CAP_ENV = {
