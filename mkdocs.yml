@@ -32,6 +32,7 @@ plugins:
       - MiXeR
       - SuSiE
       - LCV
+      - ABF colocalization
 - exclude-search:
       exclude:
         - reference/* # avoid cluttering search with code files
