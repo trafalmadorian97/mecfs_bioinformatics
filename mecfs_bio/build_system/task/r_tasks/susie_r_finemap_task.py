@@ -18,9 +18,6 @@ from rpy2.rinterface import FloatSexpVector
 from rpy2.rinterface_lib.sexp import SexpVector
 from rpy2.robjects import numpy2ri, pandas2ri
 from rpy2.robjects.conversion import localconverter
-from rpy2.robjects.packages import (
-    importr,
-)
 from scipy.sparse import csr_matrix
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -54,6 +51,7 @@ from mecfs_bio.constants.polyfun_constants import (
     POLYFUN_BP_COL,
     POLYFUN_CHR_COL,
 )
+from mecfs_bio.util.r_packages.cached_importr import cached_importr
 
 logger = structlog.get_logger()
 
@@ -174,8 +172,8 @@ class SusieRFinemapTask(Task):
         return dep_results
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        susie_package = importr("susieR")
-        ggplot2 = importr("ggplot2")
+        susie_package = cached_importr("susieR")
+        ggplot2 = cached_importr("ggplot2")
         conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
 
         gwas_asset = fetch(self.gwas_data_task.asset_id)

@@ -98,16 +98,33 @@ class _Store:
         return asset
 
 
-def _store(
-    tmp_path: Path, fixture: SLDSCFixture, sumstats_frame: pd.DataFrame
-) -> _Store:
-    tmp_path.mkdir(parents=True, exist_ok=True)
-    pickle_path = tmp_path / "sumstats.pickle"
+@frozen(slots=True)
+class _Prepared:
+    """
+    Fixture files, the outputs of the two Prepare tasks, and the clean sumstats pickle.
+
+    Built once per module; tests only read these files.
+    """
+
+    fixture: SLDSCFixture
+    assets: dict[str, Asset]
+    clean_sumstats: FileAsset
+
+
+def _pickle_sumstats(root: Path, sumstats_frame: pd.DataFrame) -> FileAsset:
+    root.mkdir(parents=True, exist_ok=True)
+    pickle_path = root / "sumstats.pickle"
     gl.dump_pickle(sumstats_from_frame(sumstats_frame), path=str(pickle_path))
+    return FileAsset(pickle_path)
+
+
+@pytest.fixture(scope="module")
+def prepared(tmp_path_factory: pytest.TempPathFactory) -> _Prepared:
+    root = tmp_path_factory.mktemp("sldsc_prepared")
+    fixture = write_sldsc_fixture(root / "fixture")
     store = _Store(
-        root=tmp_path,
+        root=root,
         assets={
-            "sumstats": FileAsset(pickle_path),
             "baseline_dir": DirectoryAsset(fixture.baseline_dir),
             "weights_dir": DirectoryAsset(fixture.weights_dir),
             "cts_dir": DirectoryAsset(fixture.cts_dir),
@@ -115,7 +132,23 @@ def _store(
     )
     store.run(_PREP_BASELINE)
     store.run(_PREP_SET)
-    return store
+    return _Prepared(
+        fixture=fixture,
+        assets=store.assets,
+        clean_sumstats=_pickle_sumstats(root / "clean", fixture.sumstats_frame),
+    )
+
+
+def _store(root: Path, prepared: _Prepared, sumstats: FileAsset) -> _Store:
+    """A fresh store under root holding the shared prepared assets and the given sumstats."""
+    root.mkdir(parents=True, exist_ok=True)
+    return _Store(root=root, assets={**prepared.assets, "sumstats": sumstats})
+
+
+def _store_with_frame(
+    root: Path, prepared: _Prepared, sumstats_frame: pd.DataFrame
+) -> _Store:
+    return _store(root, prepared, _pickle_sumstats(root, sumstats_frame))
 
 
 # The fixture has ~2,950 HapMap3-style regression SNPs, far below the production default.
@@ -142,9 +175,10 @@ def _read_result(asset: Asset) -> pl.DataFrame:
     return pl.read_csv(asset.path).sort(SLDSC_CTS_NAME_COL)
 
 
-def test_exact_mode_matches_gwaslab_cell_type_specific(tmp_path: Path) -> None:
-    fixture = write_sldsc_fixture(tmp_path)
-    store = _store(tmp_path, fixture, fixture.sumstats_frame)
+def test_exact_mode_matches_gwaslab_cell_type_specific(
+    tmp_path: Path, prepared: _Prepared
+) -> None:
+    store = _store(tmp_path, prepared, prepared.clean_sumstats)
     old = CellAnalysisByLDSCTask.create(
         asset_id="old",
         source_sumstats_task=_SUMSTATS,
@@ -164,20 +198,25 @@ def test_exact_mode_matches_gwaslab_cell_type_specific(tmp_path: Path) -> None:
         )
 
 
-def test_degenerate_z_rows_do_not_change_results(tmp_path: Path) -> None:
-    fixture = write_sldsc_fixture(tmp_path)
+def test_degenerate_z_rows_do_not_change_results(
+    tmp_path: Path, prepared: _Prepared
+) -> None:
     clean = _read_result(
-        _store(tmp_path / "clean", fixture, fixture.sumstats_frame).run(_vectorized())
+        _store(tmp_path / "clean", prepared, prepared.clean_sumstats).run(_vectorized())
     )
-    degenerate = fixture.sumstats_frame.copy()
+    degenerate = prepared.fixture.sumstats_frame.copy()
     degenerate.loc[[10, 11], "SE"] = 0.0  # +-inf Z: removed by the chi-square filter
     degenerate.loc[[12], ["BETA", "SE"]] = 0.0  # NaN Z: dropped
     with_bad = _read_result(
-        _store(tmp_path / "degenerate", fixture, degenerate).run(_vectorized())
+        _store_with_frame(tmp_path / "degenerate", prepared, degenerate).run(
+            _vectorized()
+        )
     )
-    without_rows = fixture.sumstats_frame.drop(index=[10, 11, 12])
+    without_rows = prepared.fixture.sumstats_frame.drop(index=[10, 11, 12])
     dropped = _read_result(
-        _store(tmp_path / "dropped", fixture, without_rows).run(_vectorized())
+        _store_with_frame(tmp_path / "dropped", prepared, without_rows).run(
+            _vectorized()
+        )
     )
     np.testing.assert_allclose(
         with_bad[SLDSC_CTS_COEF_COL].to_numpy(),
@@ -206,9 +245,12 @@ def _no_n_column(frame: pd.DataFrame) -> pd.DataFrame:
 @pytest.mark.parametrize(
     "corrupt", [_missing_n_on_regression_snp, _duplicate_rsid, _no_n_column]
 )
-def test_invalid_sumstats_fail_fast(tmp_path: Path, corrupt: _FrameCorruption) -> None:
-    fixture = write_sldsc_fixture(tmp_path)
-    store = _store(tmp_path, fixture, corrupt(fixture.sumstats_frame))
+def test_invalid_sumstats_fail_fast(
+    tmp_path: Path, prepared: _Prepared, corrupt: _FrameCorruption
+) -> None:
+    store = _store_with_frame(
+        tmp_path, prepared, corrupt(prepared.fixture.sumstats_frame)
+    )
     with pytest.raises(AssertionError):
         store.run(_vectorized())
 
@@ -220,18 +262,19 @@ def _assert_same_coefficients(actual: pl.DataFrame, expected: pl.DataFrame) -> N
         )
 
 
-def test_drop_duplicate_rsids_drops_every_copy(tmp_path: Path) -> None:
-    fixture = write_sldsc_fixture(tmp_path)
-    frame = fixture.sumstats_frame
+def test_drop_duplicate_rsids_drops_every_copy(
+    tmp_path: Path, prepared: _Prepared
+) -> None:
+    frame = prepared.fixture.sumstats_frame
     conflicting = frame.iloc[[400]].assign(BETA=-frame["BETA"].iloc[400])
     duplicated = pd.concat([frame, conflicting], ignore_index=True)
     actual = _read_result(
-        _store(tmp_path / "duplicated", fixture, duplicated).run(
+        _store_with_frame(tmp_path / "duplicated", prepared, duplicated).run(
             _vectorized(duplicate_rsids="drop")
         )
     )
     expected = _read_result(
-        _store(tmp_path / "removed", fixture, frame.drop(index=[400])).run(
+        _store_with_frame(tmp_path / "removed", prepared, frame.drop(index=[400])).run(
             _vectorized()
         )
     )
@@ -240,32 +283,33 @@ def test_drop_duplicate_rsids_drops_every_copy(tmp_path: Path) -> None:
 
 def test_drop_duplicate_rsids_keeps_snp_whose_duplicate_fails_allele_filter(
     tmp_path: Path,
+    prepared: _Prepared,
 ) -> None:
     """
     A row sharing a regression SNP's rsID but carrying alleles that do not match HapMap3 (for
     example a multi-allelic sibling) is removed by the HapMap3 allele filter, so the regression
     SNP itself is not a duplicate and is kept.
     """
-    fixture = write_sldsc_fixture(tmp_path)
-    frame = fixture.sumstats_frame
+    frame = prepared.fixture.sumstats_frame
     alleles = {frame["EA"].iloc[400], frame["NEA"].iloc[400]}
     other = next(b for b in "ACGT" if b not in alleles)
     sibling = frame.iloc[[400]].assign(EA=other)
     with_sibling = pd.concat([frame, sibling], ignore_index=True)
     actual = _read_result(
-        _store(tmp_path / "sibling", fixture, with_sibling).run(
+        _store_with_frame(tmp_path / "sibling", prepared, with_sibling).run(
             _vectorized(duplicate_rsids="drop")
         )
     )
     expected = _read_result(
-        _store(tmp_path / "clean", fixture, frame).run(_vectorized())
+        _store(tmp_path / "clean", prepared, prepared.clean_sumstats).run(_vectorized())
     )
     _assert_same_coefficients(actual, expected)
 
 
-def test_annotation_set_missing_regression_snps_fails(tmp_path: Path) -> None:
-    fixture = write_sldsc_fixture(tmp_path)
-    store = _store(tmp_path, fixture, fixture.sumstats_frame)
+def test_annotation_set_missing_regression_snps_fails(
+    tmp_path: Path, prepared: _Prepared
+) -> None:
+    store = _store(tmp_path, prepared, prepared.clean_sumstats)
     small_cts = tmp_path / "small_cts"
     write_sldsc_fixture(
         small_cts
@@ -290,8 +334,7 @@ def test_annotation_set_missing_regression_snps_fails(tmp_path: Path) -> None:
         store.run(task)
 
 
-def test_too_few_hapmap3_snps_fails(tmp_path: Path) -> None:
-    fixture = write_sldsc_fixture(tmp_path)
-    store = _store(tmp_path, fixture, fixture.sumstats_frame)
+def test_too_few_hapmap3_snps_fails(tmp_path: Path, prepared: _Prepared) -> None:
+    store = _store(tmp_path, prepared, prepared.clean_sumstats)
     with pytest.raises(AssertionError):
         store.run(_vectorized(min_hapmap3_snps=SLDSC_DEFAULT_MIN_HAPMAP3_SNPS))
