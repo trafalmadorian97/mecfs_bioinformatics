@@ -7,13 +7,13 @@ from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
 
 
 def go():
-   DEFAULT_RUNNER.run(
-       [
-
-           RA_SEROPOSITIVE_PPP_COLOC.display_task
-        ],
-       must_rebuild_transitive=[RA_SEROPOSITIVE_PPP_COLOC.display_task],
-   )
+   # DEFAULT_RUNNER.run(
+   #     [
+   #
+   #         RA_SEROPOSITIVE_PPP_COLOC.display_task
+   #      ],
+   #     must_rebuild_transitive=[RA_SEROPOSITIVE_PPP_COLOC.display_task],
+   # )
    regenerate_figures(
        [
 
