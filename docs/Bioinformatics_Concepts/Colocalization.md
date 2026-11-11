@@ -46,9 +46,7 @@ $$
 
 
 
-We require:
-
-- $\epsilon_1$ and $\epsilon_2$ are independent.  This requirement is usually satisfied by assuming that there are no overlapping participants between the two studies.
+We require that $\epsilon_1$ and $\epsilon_2$ are independent.  This requirement is usually satisfied by assuming that there are no overlapping participants between the two studies.
 
 
 
@@ -70,6 +68,9 @@ $$
 P(c) = \prod_{i=1}^Q p_{c_i}. \label{P_def}
 \end{align}
 $$
+
+
+Conditional on variant $i$ being causal for trait $k$, assume that effect sizes are distributed as $\mathcal{N}(0,\omega_k)$ for $\omega_k>0$.
 
 
 ### The single causal variant assumption
@@ -212,9 +213,27 @@ $$
 and where in $(\ref{cond_h_prob})$ we divided the numerator and denominator by $p_0^Q$.
 
 
-## Elimination of covariates
+### Elimination of covariates
 
-The next step is to simplify the data-generating model $(\ref{dg_model})$ by eliminating the covariate matrix $X_k$.  Let $U\in\mathbb{R}^{(N_k-c_k)\times N_k}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X_k$.
+The next step is to simplify the data-generating model $(\ref{dg_model})$ by eliminating the covariate matrix $X$.  The derivations of this section apply separately to the two GWAS, so we supress the  per-GWAS $k$-subscript.  Let $U\in\mathbb{R}^{(N-c)\times N}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X$. Define
+
+
+$$
+\begin{align}
+\tilde{y}&:=Uy\in\mathbb{R}^{N-c}\\
+\tilde{G}&:=UG\in\mathbb{R}^{(N-c)\times Q}.
+\end{align}
+$$
+
+Note that 
+
+$$
+\begin{align}
+UU^T &= I \in \mathbb{R}^{(N-c)\times (N_c)}\\
+U^TU &= M_x:= I-X(X^TX)^{-1}X^T \in \mathbb{R}^{N \times N}\\
+U
+\end{align}
+$$
 
 
 
