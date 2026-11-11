@@ -7,9 +7,6 @@ import rpy2.robjects as robjects
 from attrs import frozen
 from rpy2.robjects import numpy2ri, pandas2ri
 from rpy2.robjects.conversion import localconverter
-from rpy2.robjects.packages import (
-    importr,
-)
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -25,6 +22,7 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.util.r_packages.cached_importr import cached_importr
 
 
 @frozen(slots=True)
@@ -44,7 +42,7 @@ class ExtractDataFrameFromRDataTask(Task):
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         for package in self.r_package_list:
-            importr(package)
+            cached_importr(package)
         conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
         rdata_asset = fetch(self.rdata_file_task.asset_id)
         assert isinstance(rdata_asset, FileAsset)

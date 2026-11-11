@@ -16,7 +16,8 @@ from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task im
     PppProteinFile,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
-    PppProteinHitTableTask,
+    HitTableProtein,
+    ProteinHitTableTask,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import (
@@ -35,6 +36,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     HIT_PROTEIN_ID_COL,
     HIT_SEG_END_COL,
     HIT_SEG_START_COL,
+    ProteinId,
 )
 
 _SE = 0.01
@@ -66,14 +68,20 @@ def _meta(asset_id: str) -> ResultTableMeta:
     )
 
 
+def _ppp_label(n: int) -> tuple[ProteinId, str]:
+    return ProteinId(f"OID{n}"), f"G{n}"
+
+
 def _run(
     tmp_path: Path,
     variants: list[tuple[int, int]],
     z_by_protein: list[list[float]],
     p_threshold: float = 5e-8,
     merge_gap_bp: int = 250_000,
+    labels: list[tuple[ProteinId, str]] | None = None,
 ) -> pl.DataFrame:
-    """variants: (CHR, POS) in index order; z_by_protein: one z per variant per protein."""
+    """variants: (CHR, POS) in index order; z_by_protein: one z per variant per protein;
+    labels: (protein id, gene) per protein, PPP-style OIDn / Gn by default."""
     tmp_path.mkdir(parents=True, exist_ok=True)
     assets: dict[AssetId, Asset] = {}
     index_task = FakeTask(meta=_meta("index"))
@@ -103,11 +111,16 @@ def _run(
             schema={GWASLAB_BETA_COL: pl.Float32, GWASLAB_SE_COL: pl.Float32},
         ).write_parquet(path)
         assets[task.asset_id] = FileAsset(path)
-        protein_tasks.append(task)
-    task = PppProteinHitTableTask.create(
+        protein_id, gene = _ppp_label(n) if labels is None else labels[n]
+        protein_tasks.append(
+            HitTableProtein(task=task, protein_id=protein_id, gene=gene)
+        )
+    task = ProteinHitTableTask.create(
         asset_id="hits",
-        protein_tasks=tuple(protein_tasks),
+        proteins=tuple(protein_tasks),
         index_task=index_task,
+        trait="synthetic",
+        project="test",
         p_threshold=p_threshold,
         merge_gap_bp=merge_gap_bp,
     )
@@ -182,3 +195,14 @@ def test_protein_without_hits_contributes_no_rows(tmp_path: Path) -> None:
         tmp_path, [(1, 1_000_000), (1, 2_000_000)], [[_HIT_Z, 0.0], [0.0, 1.0]]
     )
     assert table[HIT_PROTEIN_ID_COL].to_list() == ["OID0"]
+
+
+def test_hit_table_keeps_aptamers_of_one_gene_distinct(tmp_path: Path) -> None:
+    table = _run(
+        tmp_path,
+        [(19, 44_900_000)],
+        [[_HIT_Z], [_HIT_Z]],
+        labels=[(ProteinId("2418-55"), "APOE"), (ProteinId("2937-10"), "APOE")],
+    )
+    assert sorted(table[HIT_PROTEIN_ID_COL].to_list()) == ["2418-55", "2937-10"]
+    assert table[HIT_GENE_COL].to_list() == ["APOE", "APOE"]

@@ -26,7 +26,6 @@ import structlog
 from attrs import frozen
 from rpy2.robjects import pandas2ri
 from rpy2.robjects.conversion import localconverter
-from rpy2.robjects.packages import importr
 from tqdm import tqdm
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -52,6 +51,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.util.r_packages.cached_importr import cached_importr
 
 logger = structlog.get_logger()
 
@@ -169,7 +169,7 @@ class LavaTask(Task):
         return result
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        lava = importr("LAVA")
+        lava = cached_importr("LAVA")
         conv = ro.default_converter + pandas2ri.converter
         r_is_null = ro.r("is.null")
 

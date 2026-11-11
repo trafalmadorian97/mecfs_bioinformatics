@@ -71,6 +71,7 @@ GENE_INFO_END_COL = "gene_end"
 GENE_INFO_NAME_COL = "gene_name"
 GENE_INFO_STRAND_COL = "strand"
 GENE_INFO_CHROM_COL = "chrom"
+GENE_INFO_ENTREZ_ID_COL = "entrez_id"
 
 # Default GWAS genome-wide significance threshold in -log10(p) units, drawn as a
 # dashed grey reference line on the Manhattan panel.

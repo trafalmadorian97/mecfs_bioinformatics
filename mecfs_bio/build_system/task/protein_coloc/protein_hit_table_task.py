@@ -1,5 +1,6 @@
 """
-Table of genome-wide significant hit segments for every UKB-PPP protein.
+Table of genome-wide significant hit segments for every protein of a proteomics GWAS
+(UKB-PPP plasma proteins, Western et al. CSF aptamers).
 
 This screening table tells the colocalization Task which proteins have a pQTL near a trait
 locus, without touching the dense per-protein summary statistics. It is computed from the slim
@@ -36,9 +37,6 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
-from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
-    BuildSlimProteinParquetTask,
-)
 from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -57,6 +55,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     HIT_PROTEIN_ID_COL,
     HIT_SEG_END_COL,
     HIT_SEG_START_COL,
+    ProteinId,
 )
 
 _SEGMENT_COL = "_segment"
@@ -94,8 +93,21 @@ def _read_index_positions(index_task: Task, fetch: Fetch) -> pl.DataFrame:
     )
 
 
+@frozen(slots=True)
+class HitTableProtein:
+    """
+    task: the protein's slim BETA/SE file, aligned row for row to the shared variant index.
+    protein_id: the protein's id in the coloc layer (Olink id, SomaScan seq id).
+    gene: the gene label shown alongside it; several proteins may share one.
+    """
+
+    task: Task
+    protein_id: ProteinId
+    gene: str
+
+
 def _significant_variants(
-    protein_task: BuildSlimProteinParquetTask,
+    protein_task: Task,
     index: pl.DataFrame,
     min_mlog10p: float,
     fetch: Fetch,
@@ -151,48 +163,48 @@ def merge_into_segments(significant: pl.DataFrame, merge_gap_bp: int) -> pl.Data
 
 
 def _protein_segments(
-    protein_task: BuildSlimProteinParquetTask,
+    protein: HitTableProtein,
     index: pl.DataFrame,
     min_mlog10p: float,
     merge_gap_bp: int,
     fetch: Fetch,
 ) -> pl.DataFrame:
     segments = merge_into_segments(
-        _significant_variants(protein_task, index, min_mlog10p, fetch), merge_gap_bp
+        _significant_variants(protein.task, index, min_mlog10p, fetch), merge_gap_bp
     )
     return segments.with_columns(
-        pl.lit(str(protein_task.protein.oid)).alias(HIT_PROTEIN_ID_COL),
-        pl.lit(protein_task.protein.gene).alias(HIT_GENE_COL),
+        pl.lit(str(protein.protein_id)).alias(HIT_PROTEIN_ID_COL),
+        pl.lit(protein.gene).alias(HIT_GENE_COL),
     )
 
 
 @frozen(slots=True)
-class PppProteinHitTableTask(GeneratingTask):
+class ProteinHitTableTask(GeneratingTask):
     """
-    protein_tasks: the slim per-protein beta/se tasks, aligned to index_task.
+    proteins: the slim per-protein beta/se tasks, aligned to index_task, with their labels.
     index_task: the shared variant index (CHR, POS in GRCh38).
     p_threshold: a variant is significant when p < p_threshold.
     merge_gap_bp: significant variants closer than this join one segment.
     """
 
     meta: Meta
-    protein_tasks: tuple[BuildSlimProteinParquetTask, ...]
+    proteins: tuple[HitTableProtein, ...]
     index_task: Task
     p_threshold: float
     merge_gap_bp: int
 
     @property
     def deps(self) -> list[Task]:
-        return [self.index_task, *self.protein_tasks]
+        return [self.index_task, *(protein.task for protein in self.proteins)]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         index = _read_index_positions(self.index_task, fetch)
         min_mlog10p = -math.log10(self.p_threshold)
         segments = [
             _protein_segments(
-                protein_task, index, min_mlog10p, self.merge_gap_bp, fetch
+                protein, index, min_mlog10p, self.merge_gap_bp, fetch
             ).select(HIT_TABLE_SCHEMA.names())
-            for protein_task in self.protein_tasks
+            for protein in self.proteins
         ]
         table = (
             pl.concat(segments)
@@ -209,11 +221,14 @@ class PppProteinHitTableTask(GeneratingTask):
     def create(
         cls,
         asset_id: str,
-        protein_tasks: tuple[BuildSlimProteinParquetTask, ...],
+        proteins: tuple[HitTableProtein, ...],
         index_task: Task,
+        trait: str,
+        project: str,
         p_threshold: float = 5e-8,
         merge_gap_bp: int = 250_000,
-    ) -> "PppProteinHitTableTask":
+    ) -> "ProteinHitTableTask":
+        """trait, project: where the table lives in the asset store (the proteomics source)."""
         assert 0 < p_threshold < 1, f"p_threshold must be in (0, 1): {p_threshold}"
         assert merge_gap_bp >= 0, f"merge_gap_bp must be non-negative: {merge_gap_bp}"
         assert produces_dataframe(index_task), (
@@ -221,15 +236,15 @@ class PppProteinHitTableTask(GeneratingTask):
         )
         meta = ResultTableMeta(
             id=AssetId(asset_id),
-            trait="ukbb_ppp",
-            project="ppp_hit_segments",
+            trait=trait,
+            project=project,
             sub_dir=PurePath("analysis"),
             extension=".parquet",
             read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
         )
         return cls(
             meta=meta,
-            protein_tasks=protein_tasks,
+            proteins=proteins,
             index_task=index_task,
             p_threshold=p_threshold,
             merge_gap_bp=merge_gap_bp,

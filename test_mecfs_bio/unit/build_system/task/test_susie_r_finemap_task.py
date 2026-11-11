@@ -147,9 +147,9 @@ def test_align() -> None:
 _susie_n = 2500
 
 
-@pytest.fixture(params=[[0, -1], []])
+@pytest.fixture(params=[[0, -1], []], scope="module")
 def susie_prerequisite_file_tasks(
-    tmp_path: Path, request: pytest.FixtureRequest
+    tmp_path_factory: pytest.TempPathFactory, request: pytest.FixtureRequest
 ) -> Iterator[tuple[Task, Task, Task, list[int]]]:
     n = _susie_n
     m = 100
@@ -197,8 +197,7 @@ def susie_prerequisite_file_tasks(
         se_beta_hat = result.rx2("sebetahat")
     gwas_data[GWASLAB_BETA_COL] = beta_hat
     gwas_data[GWASLAB_SE_COL] = se_beta_hat
-    scratch = tmp_path / "scratch"
-    scratch.mkdir(parents=True, exist_ok=True)
+    scratch = tmp_path_factory.mktemp("susie_scratch")
     gwas_data_path = scratch / "gwas_data"
     ld_labels_path = scratch / "ld_labels"
     ld_matrix_path = scratch / "ld_matrix.npz"

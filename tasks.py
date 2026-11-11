@@ -95,6 +95,40 @@ def test(c: Context) -> None:
     c.run(cmd, pty=True)
 
 
+XDIST_MAX_WORKERS = 8
+XDIST_THREADS_PER_WORKER = 2
+# One worker per XDIST_THREADS_PER_WORKER usable cores, capped at 8 (the best worker count
+# measured on a 16-core machine; 16 workers was slower than 8).
+XDIST_WORKERS = max(
+    1, min(XDIST_MAX_WORKERS, (os.process_cpu_count() or 1) // XDIST_THREADS_PER_WORKER)
+)
+# Without a cap, every xdist worker starts a full pool of BLAS/OpenMP/polars threads, and the
+# workers oversubscribe the CPU.  Capping at 2 threads per worker made the full suite ~25% faster.
+XDIST_THREAD_CAP_ENV = {
+    var: str(XDIST_THREADS_PER_WORKER)
+    for var in (
+        "OMP_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "NUMEXPR_MAX_THREADS",
+        "POLARS_MAX_THREADS",
+    )
+}
+
+
+@task
+def test_xdist(c: Context) -> None:
+    """
+    Like test, but distribute tests across parallel workers with pytest-xdist.
+    """
+    print(
+        f"Running unit and integration tests with pytest on {XDIST_WORKERS} xdist workers, while skipping un-needed tests with testmon..."
+    )
+    cmd = f" python   -m pytest  --testmon -n {XDIST_WORKERS} --typeguard-packages={SRC_PATH}  {NEW_UNIT_TEST_PATH}"
+    print(cmd)
+    c.run(cmd, pty=True, env=XDIST_THREAD_CAP_ENV)
+
+
 @task
 def test_debug(c: Context) -> None:
     """
@@ -498,7 +532,7 @@ def lint_actions(c: Context) -> None:
         # fix_init_files,
         typecheck,
         lint_actions,
-        test,
+        test_xdist,
     ]
 )
 def green(c: Context) -> None:

@@ -30,6 +30,9 @@ from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_met
     HarmonizableReferenceTableMeta,
 )
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
+from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
+    CsfAptamerFile,
+)
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.genome_reference_harmonization.reference_panel_task import (
     PANEL_AF_COL,
@@ -48,15 +51,37 @@ from mecfs_bio.build_system.task.protein_coloc.candidate_selection import (
 from mecfs_bio.build_system.task.protein_coloc.coloc_abf import (
     QuantitativeTraitModel,
 )
+from mecfs_bio.build_system.task.protein_coloc.csf_gene_coords_reader import (
+    CsfGeneCoordsReader,
+)
+from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
+    GeneCoordsReader,
+    St3GeneCoordsReader,
+)
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
-    PppProteinHitTableTask,
+    ProteinHitTableTask,
 )
 from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
     ColocRunConfig,
     TraitProteinColocTask,
 )
+from mecfs_bio.build_system.task.susie_stacked_plot_task import (
+    GENE_INFO_CHROM_COL,
+    GENE_INFO_END_COL,
+    GENE_INFO_ENTREZ_ID_COL,
+    GENE_INFO_NAME_COL,
+    GENE_INFO_START_COL,
+    GENE_INFO_STRAND_COL,
+)
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
+from mecfs_bio.constants.csf_database_constants import (
+    Analyte,
+    EntrezGeneId,
+    GcstAccession,
+    SeqId,
+    UniProtId,
+)
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -68,6 +93,8 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
+    CIS_STATUS_COL,
+    CIS_STATUS_UNKNOWN,
     FAILURE_REASON_COL,
     HIT_CHR_COL,
     HIT_GENE_COL,
@@ -304,19 +331,28 @@ def _panel_task() -> FakeTask:
     )
 
 
-def _hit_table_task() -> PppProteinHitTableTask:
-    return PppProteinHitTableTask.create(
-        asset_id="hits", protein_tasks=(), index_task=FakeTask(_table_meta("index"))
+def _hit_table_task() -> ProteinHitTableTask:
+    return ProteinHitTableTask.create(
+        asset_id="hits",
+        proteins=(),
+        index_task=FakeTask(_table_meta("index")),
+        trait="synthetic",
+        project="test",
     )
 
 
-def _create(fetcher: _FakeFetcher, trait_task: FakeTask) -> TraitProteinColocTask:
+def _create(
+    fetcher: _FakeFetcher,
+    trait_task: FakeTask,
+    gene_coords_reader: GeneCoordsReader = St3GeneCoordsReader(),
+) -> TraitProteinColocTask:
     return TraitProteinColocTask.create(
         asset_id="coloc",
         trait_task=trait_task,
         trait_model=QuantitativeTraitModel(sd_y=None),
         hit_table_task=_hit_table_task(),
         gene_coords_task=FakeTask(_table_meta("gene_coords")),
+        gene_coords_reader=gene_coords_reader,
         fasta_task=_fasta_task(),
         panel_task=_panel_task(),
         panel_ancestry="eur",
@@ -330,7 +366,13 @@ def _write(path: Path, frame: pl.DataFrame) -> FileAsset:
     return FileAsset(path)
 
 
-def _run(tmp_path: Path) -> tuple[_FakeFetcher, Path]:
+def _run(
+    tmp_path: Path,
+    gene_coords: pl.DataFrame | None = None,
+    gene_coords_reader: GeneCoordsReader = St3GeneCoordsReader(),
+) -> tuple[_FakeFetcher, Path]:
+    """gene_coords, gene_coords_reader: the gene-coordinate table and its reader; the ST3
+    table placing OID1 at chr1:900-1100 by default."""
     sequences = _sequences()
     variants = _variants(sequences)
     trait = pl.concat(
@@ -375,12 +417,13 @@ def _run(tmp_path: Path) -> tuple[_FakeFetcher, Path]:
         AssetId("trait"): _write(tmp_path / "trait.parquet", trait),
         AssetId("hits"): _write(tmp_path / "hits.parquet", _hit_segments()),
         AssetId("gene_coords"): _write(
-            tmp_path / "gene_coords.parquet", _gene_coords()
+            tmp_path / "gene_coords.parquet",
+            _gene_coords() if gene_coords is None else gene_coords,
         ),
         AssetId("fasta"): DirectoryAsset(fasta_dir),
         AssetId("panel"): _write(tmp_path / "panel.parquet", panel),
     }
-    task = _create(fetcher, FakeTask(_trait_meta(harmonized=True)))
+    task = _create(fetcher, FakeTask(_trait_meta(harmonized=True)), gene_coords_reader)
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     result = task.execute(
@@ -464,3 +507,36 @@ def test_locus_without_candidates_is_reported(tmp_path: Path) -> None:
     rows = _results(out_dir).filter(pl.col(STATUS_COL) == STATUS_NO_CANDIDATES)
     assert rows[LOCUS_ID_COL].to_list() == ["chr2:3200-3800"]
     assert rows[PROTEIN_ID_COL].item() is None
+
+
+def test_csf_unmapped_aptamer_is_cis_unknown(tmp_path: Path) -> None:
+    # A CSF-shaped source: OID1 is an aptamer whose Entrez id and symbol are both absent
+    # from the MAGMA-shaped gene table, so its pairs cannot be called cis or trans.
+    aptamer = CsfAptamerFile(
+        analyte=Analyte("XOID1"),
+        seq_id=SeqId("OID1"),
+        accession=GcstAccession("GCST90421540"),
+        uniprot=UniProtId("P00000"),
+        entrez_gene_symbol="NOTAGENE",
+        entrez_gene_id=EntrezGeneId("1"),
+    )
+    magma = pl.DataFrame(
+        {
+            GENE_INFO_ENTREZ_ID_COL: [348],
+            GENE_INFO_CHROM_COL: ["19"],
+            GENE_INFO_START_COL: [44_905_754],
+            GENE_INFO_END_COL: [44_909_393],
+            GENE_INFO_STRAND_COL: ["+"],
+            GENE_INFO_NAME_COL: ["APOE"],
+        }
+    )
+    _, out_dir = _run(
+        tmp_path,
+        gene_coords=magma,
+        gene_coords_reader=CsfGeneCoordsReader(aptamers=(aptamer,)),
+    )
+    rows = _results(out_dir).filter(
+        pl.col(STATUS_COL) == STATUS_TESTED, pl.col(PROTEIN_ID_COL) == "OID1"
+    )
+    assert rows.height > 0
+    assert (rows[CIS_STATUS_COL] == CIS_STATUS_UNKNOWN).all()

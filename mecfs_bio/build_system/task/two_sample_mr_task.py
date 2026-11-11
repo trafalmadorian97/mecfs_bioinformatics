@@ -15,7 +15,6 @@ from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import (
     InstalledPackage,
     InstalledSTPackage,
-    importr,
 )
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -43,6 +42,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_RSID_COL,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.util.r_packages.cached_importr import cached_importr
 
 logger = structlog.get_logger()
 
@@ -237,7 +237,7 @@ class TwoSampleMRTask(Task):
         return [self.exposure_data_task, self.outcome_data_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        tsmr = importr("TwoSampleMR")
+        tsmr = cached_importr("TwoSampleMR")
         conv = ro.default_converter + pandas2ri.converter
 
         exposure_asset = fetch(self.exposure_id)
@@ -400,7 +400,7 @@ def run_two_sample_mr(
     outcome_df: pd.DataFrame,
     config: TwoSampleMRConfig,
 ) -> TwoSampleMRResult:
-    tsmr = importr("TwoSampleMR")
+    tsmr = cached_importr("TwoSampleMR")
     # base = importr('base')
     formatted_exposure, formatted_outcome = format_data(
         exposure_df, outcome_df, tsmr=tsmr

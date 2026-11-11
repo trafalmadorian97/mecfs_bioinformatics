@@ -28,7 +28,6 @@ from collections.abc import Mapping
 import polars as pl
 from attrs import frozen
 
-from mecfs_bio.constants.ppp_database_constants import Oid
 from mecfs_bio.constants.protein_coloc_constants import (
     CIS_STATUS_CIS,
     CIS_STATUS_COL,
@@ -57,6 +56,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     STATUS_COL,
     STATUS_NOT_SELECTED_BUDGET,
     STATUS_SELECTED,
+    ProteinId,
 )
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
@@ -91,10 +91,12 @@ class SelectionConfig:
         assert self.cis_window_bp >= 0
 
 
-def _gene_coords_frame(gene_coords: Mapping[Oid, GenomicInterval]) -> pl.DataFrame:
+def _gene_coords_frame(
+    gene_coords: Mapping[ProteinId, GenomicInterval],
+) -> pl.DataFrame:
     return pl.DataFrame(
         {
-            PROTEIN_ID_COL: [str(oid) for oid in gene_coords],
+            PROTEIN_ID_COL: [str(protein_id) for protein_id in gene_coords],
             _GENE_CHR: [interval.chrom for interval in gene_coords.values()],
             _GENE_START: [interval.start for interval in gene_coords.values()],
             _GENE_END: [interval.end for interval in gene_coords.values()],
@@ -140,7 +142,7 @@ def _gene_lead_distance_expr() -> pl.Expr:
 def build_candidates(
     loci: pl.DataFrame,
     hit_segments: pl.DataFrame,
-    gene_coords: Mapping[Oid, GenomicInterval],
+    gene_coords: Mapping[ProteinId, GenomicInterval],
     cis_window_bp: int,
 ) -> pl.DataFrame:
     """One row per (candidate locus, protein with a segment overlapping its window)."""
