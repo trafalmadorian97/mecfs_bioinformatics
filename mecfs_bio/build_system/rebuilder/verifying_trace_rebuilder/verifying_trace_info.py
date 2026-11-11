@@ -43,7 +43,7 @@ class VerifyingTraceInfo:
     def deserialize(cls, path: Path) -> "VerifyingTraceInfo":
         conv = CONVERTER_FOR_SERIALIZATION
         with open(path) as infile:
-            unstructured = yaml.load(infile, Loader=yaml.FullLoader)
+            unstructured = yaml.load(infile, Loader=yaml.CSafeLoader)
 
         trace_store = conv.structure(unstructured, dict[AssetId, TraceRecord])
 
