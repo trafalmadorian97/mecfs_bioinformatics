@@ -47,6 +47,16 @@ from mecfs_bio.constants.ppp_ldsc_constants import (
     PPP_RG_SIGNIFICANT_BH_COL,
     PPP_RG_SIGNIFICANT_BONFERRONI_COL,
 )
+from mecfs_bio.constants.protein_coloc_constants import (
+    DISPLAY_CIS_STATUS_COL,
+    DISPLAY_FDR_SIGNIFICANT_COL,
+    DISPLAY_GENE_COL,
+    DISPLAY_LEAD_VARIANT_COL,
+    DISPLAY_LOCUS_COL,
+    DISPLAY_PP_H4_COL,
+    DISPLAY_PROTEIN_COL,
+    DISPLAY_Q_VALUE_COL,
+)
 
 
 def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
@@ -379,6 +389,18 @@ def define_env(env: MacrosPlugin) -> None:
         )
 
     @env.macro
+    def coloc_results_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption=COLOC_RESULTS_TABLE_CAPTION,
+        )
+
+    @env.macro
     def ldsc_diagnostic_plot(src: str, id: str, height: str = "775px") -> str:
         return plotly_embed(
             src=src,
@@ -647,3 +669,17 @@ SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = _columns_caption(
 )
 
 LDSC_DIAGNOSTIC_PLOT_CAPTION = "LDSC diagnostic plot.  Genetic variants are binned by LD Score.  For each bin, we plot the mean LD score of variants in the bin (x axis) against Wald chi squared statistic (y axis 1) and scaled Wald chi squared statistic (y axis 2). Each plotted bin includes error bars indicating the standard error of bin chi squared mean. We also plot the LDSC regression line (solid) and the line corresponding to chi squared =1 (dashed).  If the LDSC model fits the data perfectly, we should expect that the intercept of the regression line is at chi squared=1"
+
+
+COLOC_RESULTS_TABLE_CAPTION = "Results of colocalization analysis. " + _columns_caption(
+    {
+        DISPLAY_GENE_COL: "gene",
+        DISPLAY_PROTEIN_COL: "ID of assay",
+        DISPLAY_LOCUS_COL: "Genomic region used for colocalization",
+        DISPLAY_LEAD_VARIANT_COL: "Most significant trait variant in locus",
+        DISPLAY_CIS_STATUS_COL: "cis means the lead variant is close to the gene coding for the protein in question.  Trans means the lead variant is far from that gene.  Unknown means the data required to make this determination is missing",
+        DISPLAY_PP_H4_COL: "posterior probability that the two GWAS share a causal variant at the locus.  Note that this is prior-dependent",
+        DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
+        DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
+    }
+)

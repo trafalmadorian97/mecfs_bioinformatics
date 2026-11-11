@@ -2,6 +2,9 @@
 This file contains a list of figures to be exported for use in documentation
 """
 
+from mecfs_bio.assets.diagrams.coloc_configuration_grid import (
+    COLOC_CONFIGURATION_GRID_DIAGRAM,
+)
 from mecfs_bio.assets.diagrams.ld_same_branch_correlation import (
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
 )
@@ -52,6 +55,9 @@ from mecfs_bio.assets.gwas.ldl.million_veterans.analysis.mv_ldl_heritability_tas
 )
 from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ldl import (
     CT_LDSC_LDL,
+)
+from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_ppp_coloc import (
+    WILLER_LDL_PPP_COLOC,
 )
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_standard_analysis import (
     WILLER_ET_AL_EUR_LDL_STANDARD_ANALYSIS,
@@ -463,6 +469,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     WILLER_ET_AL_EUR_TG_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
         MULTI_TISSUE_GENE_EXPRESSION_REF
     ].plot_task_unwrap,
+    WILLER_LDL_PPP_COLOC.display_task,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.heritability_markdown_task_unwrap,
     SAID_ET_AL_EUR_CRP_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -577,6 +584,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     LD_SAME_BRANCH_CORRELATION_DIAGRAM,
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
     LIABILITY_THRESHOLD_ASCERTAINED_SAMPLE_DIAGRAM,
+    COLOC_CONFIGURATION_GRID_DIAGRAM,
 ]
 # CAHOY_CNS_REF = "cahoy_cns"
 # GTEX_BRAIN_REF = "gtex_brain"

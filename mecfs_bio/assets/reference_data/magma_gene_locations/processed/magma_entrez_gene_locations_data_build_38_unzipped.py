@@ -24,6 +24,7 @@ from mecfs_bio.build_system.task.extraction_one_file_from_zip_task import (
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_CHROM_COL,
     GENE_INFO_END_COL,
+    GENE_INFO_ENTREZ_ID_COL,
     GENE_INFO_NAME_COL,
     GENE_INFO_START_COL,
     GENE_INFO_STRAND_COL,
@@ -43,7 +44,7 @@ MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED = ExtractFromZipTas
             DataFrameWhiteSpaceSepTextFormat(
                 comment_code="#",
                 col_names=[
-                    "entrez_id",
+                    GENE_INFO_ENTREZ_ID_COL,
                     GENE_INFO_CHROM_COL,
                     GENE_INFO_START_COL,
                     GENE_INFO_END_COL,

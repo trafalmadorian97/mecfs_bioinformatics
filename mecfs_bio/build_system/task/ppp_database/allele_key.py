@@ -8,6 +8,7 @@ must guarantee SNV-only input.
 
 """
 
+import narwhals as nw
 import polars as pl
 
 
@@ -20,6 +21,17 @@ def unordered_allele_key(a: str, b: str) -> pl.Expr:
         pl.when(pl.col(a) <= pl.col(b))
         .then(pl.col(a) + pl.lit("_") + pl.col(b))
         .otherwise(pl.col(b) + pl.lit("_") + pl.col(a))
+    )
+
+
+def unordered_allele_key_narwhals(a: str, b: str) -> nw.Expr:
+    """Narwhals sibling of unordered_allele_key, for building the key while staying on a
+    narwhals frame (so the whole pipeline defers to a single collect). Same SNV-only
+    caveat. Kept identical to the polars version; the tests compare the two."""
+    return (
+        nw.when(nw.col(a) <= nw.col(b))
+        .then(nw.col(a) + "_" + nw.col(b))
+        .otherwise(nw.col(b) + "_" + nw.col(a))
     )
 
 
