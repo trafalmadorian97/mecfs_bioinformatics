@@ -8,8 +8,6 @@ Ensembl Biomart (https://useast.ensembl.org/info/data/biomart/index.html)
 However, this source now seems to have been discontinued by ensembl:
 https://support.bioconductor.org/p/9163690/#9163693
 
-As a replacement, this data now should be accessible via the archive:
-https://jun2026.archive.ensembl.org/info/data/biomart/index.html
 
 """
 
