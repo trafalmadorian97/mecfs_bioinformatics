@@ -2,7 +2,7 @@
 A scheduler that builds a dependency graph of tasks, and executes them in topological order
 """
 
-from copy import deepcopy
+from collections import deque
 from pathlib import Path
 from typing import Mapping, Sequence
 
@@ -93,21 +93,22 @@ def _get_initial_frontier(g: nx.DiGraph) -> list[AssetId]:
     return list_of_generations[0]
 
 
-def _update_frontier_and_G(
-    G: nx.DiGraph, completed: AssetId, frontier: list[AssetId]
-) -> tuple[list[AssetId], nx.DiGraph]:
+def _mark_completed(
+    G: nx.DiGraph,
+    completed: AssetId,
+    remaining_dep_counts: dict[AssetId, int],
+    frontier: deque[AssetId],
+) -> None:
     """
-    After competing an asset, any nodes whose only predecessor was that asset can be added to the frontier
+    Kahn's algorithm step: decrement the unfinished-dependency count of each dependee of the
+    completed asset, appending to the frontier any dependee whose count reaches zero.
+    Mutates remaining_dep_counts and frontier in place; costs O(out-degree of completed),
+    independent of the size of G.
     """
-    frontier = deepcopy(frontier)
-    G = deepcopy(G)
-    succs = list(G.successors(completed))
-    G.remove_node(completed)
-    frontier.remove(completed)
-    for node in succs:
-        if len(list(G.predecessors(node))) == 0:
+    for node in G.successors(completed):
+        remaining_dep_counts[node] -= 1
+        if remaining_dep_counts[node] == 0:
             frontier.append(node)
-    return frontier, G
 
 
 def _get_progress_list(todo: Sequence[AssetId], done: set[AssetId]) -> str:
@@ -155,14 +156,15 @@ def topological[
     todo: list[AssetId] = list(nx.topological_sort(G))
     done: set[AssetId] = set()
     store: dict[AssetId, Asset] = {}
-    frontier = _get_initial_frontier(G)
-    while len(G) > 0:
+    frontier = deque(_get_initial_frontier(G))
+    remaining_dep_counts: dict[AssetId, int] = dict(G.in_degree())
+    while frontier:
         _print_progress(
             todo=todo,
             done=done,
             print_progress_list=settings.print_progress,
         )
-        node = frontier[0]
+        node = frontier.popleft()
         task = tasks[node]
         maybe_asset = get_asset_if_exists(
             meta=task.meta,
@@ -184,7 +186,16 @@ def topological[
         if incremental_save_path is not None and info_changed:
             rebuilder.save_info(info, incremental_save_path)
         store[node] = new_asset
-        frontier, G = _update_frontier_and_G(G=G, completed=node, frontier=frontier)
+        _mark_completed(
+            G=G,
+            completed=node,
+            remaining_dep_counts=remaining_dep_counts,
+            frontier=frontier,
+        )
         done.add(node)
+    assert len(done) == len(G), (
+        f"Scheduler finished with {len(G) - len(done)} of {len(G)} assets unvisited; "
+        "the dependency graph must be acyclic."
+    )
     logger.info(_get_progress_list(todo=todo, done=done))
     return store, info
