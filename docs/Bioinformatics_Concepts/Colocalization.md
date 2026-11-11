@@ -231,7 +231,7 @@ $$
 \begin{align}
 UU^T &= I \in \mathbb{R}^{(N-c)\times (N_c)}\\
 U^TU &= M_x:= I-X(X^TX)^{-1}X^T \in \mathbb{R}^{N \times N}\\
-U
+U\epsilon & \sim \mathcal{N}(0,\omega^2UU^T)=\mathcal{N}(0,\omega^2I)
 \end{align}
 $$
 
