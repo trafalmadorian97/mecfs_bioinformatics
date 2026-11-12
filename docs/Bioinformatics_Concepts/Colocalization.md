@@ -222,7 +222,7 @@ and where in $(\ref{cond_h_prob})$ we divided the numerator and denominator by $
 [//]: # (### Elimination of covariates)
 
 [//]: # ()
-[//]: # (The next step is to simplify the data-generating model $&#40;\ref{dg_model}&#41;$ by eliminating the covariate matrix $X$.  The derivations of this section apply separately to the two GWAS, so we supress the  per-GWAS $k$-subscript.  Let $U\in\mathbb{R}^{&#40;N-c&#41;\times N}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X$. Define)
+[//]: # (The next step is to simplify the data-generating model $&#40;\ref{dg_model}&#41;$ by eliminating the covariate matrix $X$.  The derivations of this section apply separately to the two GWAS, so we suppress the  per-GWAS $k$-subscript.  Let $U\in\mathbb{R}^{&#40;N-c&#41;\times N}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X$. Define)
 
 [//]: # ()
 [//]: # ()
@@ -369,7 +369,7 @@ $$
 &\exp\left( -\frac{1}{2\sigma^2}( \lVert  y -  g_i \beta_i\rVert^2 -  \lVert  y_i \rVert^2)  \right)\\
 &=\exp\left( -\frac{1}{2\sigma^2}( \lVert y \rVert^2 - 2\beta_i y^T  g_i + \beta_i^2\lVert  g_i \rVert^2 -  \lVert  y_i \rVert^2)  \right)\\
 &=\exp\left( -\frac{1}{2\sigma^2}( \beta_i^2\lVert  g_i \rVert^2 - 2\beta_i y^T  g_i )  \right)\\
-&=\exp \left( \frac{\beta_i}{\sigma^2} y^T  g_i- \beta_i^2\frac{\lVert g_i \rVert^2}{2\sigma^2} \right)
+&=\exp \left( \frac{\beta_i}{\sigma^2} y^T  g_i- \beta_i^2\frac{\lVert g_i \rVert^2}{2\sigma^2} \right)\\
 &=  \exp \left( \beta_i \hat \beta_i \sigma^2 \frac{1}{V_i\sigma^2} -\beta_i^2 \frac{1}{2V_i}\right) & \text{by (\ref{v_rewrite}) and (\ref{beta_rewrite})  }
 \end{align}
 $$
