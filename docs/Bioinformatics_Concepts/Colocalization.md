@@ -29,15 +29,13 @@ Assume initially that both traits are quantitative.  Assume the following genera
 - $V_{k,i}\in\mathbb{R}$ is the squared standard error of $\hat\beta_{k,i}$.
 - $\epsilon_k\in\mathbb{R}^{N_k}$ is the part of $y_k$ not determined by variants at the locus.  $\epsilon_k$ includes both the environment and other loci.
 - $c_k$ is the number of covariates in the trait $k$ GWAS model.
-- $X_k\in\mathbb{R}^{N_k\times c_k}$ is the matrix of trait $k$ covariates.
-- $\alpha_k\in\mathbb{R}^{c_k}$ is the vector of trait $k$ covariate effects.
 
 
 Our data generating model is:
 
 $$
 \begin{align}
-y_k &= X_k\alpha_k +G_k \beta_k + \epsilon_k  \label{dg_model} \\
+y_k &= G_k \beta_k + \epsilon_k  \label{dg_model} \\
 \epsilon_k &\sim N(0,\sigma^2_k I).
 \end{align}
 $$
@@ -70,7 +68,15 @@ P(c) = \prod_{i=1}^Q p_{c_i}. \label{P_def}
 $$
 
 
-Conditional on variant $i$ being causal for trait $k$, assume that effect sizes are distributed as $\mathcal{N}(0,\omega_k)$ for $\omega_k>0$.
+Conditional on variant $i$ being causal for trait $k$, we assume the following prior on effect  sizes:
+
+$$
+\begin{align}
+$\beta_{k,i}$ | (i \text{ is causal for }$k$) \sim \mathcal{N}(0,\omega_k) \label{effect_prior}
+\end{align}
+$$ 
+
+for $\omega_k>0$.
 
 
 ### The single causal variant assumption
@@ -213,27 +219,215 @@ $$
 and where in $(\ref{cond_h_prob})$ we divided the numerator and denominator by $p_0^Q$.
 
 
-### Elimination of covariates
+[//]: # (### Elimination of covariates)
 
-The next step is to simplify the data-generating model $(\ref{dg_model})$ by eliminating the covariate matrix $X$.  The derivations of this section apply separately to the two GWAS, so we supress the  per-GWAS $k$-subscript.  Let $U\in\mathbb{R}^{(N-c)\times N}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X$. Define
+[//]: # ()
+[//]: # (The next step is to simplify the data-generating model $&#40;\ref{dg_model}&#41;$ by eliminating the covariate matrix $X$.  The derivations of this section apply separately to the two GWAS, so we supress the  per-GWAS $k$-subscript.  Let $U\in\mathbb{R}^{&#40;N-c&#41;\times N}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X$. Define)
+
+[//]: # ()
+[//]: # ()
+[//]: # ($$)
+
+[//]: # (\begin{align})
+
+[//]: # (\tilde{y}&:=Uy\in\mathbb{R}^{N-c}\\)
+
+[//]: # (\tilde{G}&:=UG\in\mathbb{R}^{&#40;N-c&#41;\times Q}.)
+
+[//]: # (\end{align})
+
+[//]: # ($$)
+
+[//]: # ()
+[//]: # (Note that )
+
+[//]: # ()
+[//]: # ($$)
+
+[//]: # (\begin{align})
+
+[//]: # (UU^T &= I \in \mathbb{R}^{&#40;N-c&#41;\times &#40;N_c&#41;}\\)
+
+[//]: # (U^TU &= M_X:= I-X&#40;X^TX&#41;^{-1}X^T \in \mathbb{R}^{N \times N}\\)
+
+[//]: # (U\epsilon & \sim \mathcal{N}&#40;0,\omega^2UU^T&#41;=\mathcal{N}&#40;0,\sigma^2I&#41;)
+
+[//]: # (\end{align})
+
+[//]: # ($$)
+
+[//]: # ()
+[//]: # (Where $M_X$ is the projection onto the orthogonal complement of the column space of $X$.)
+
+[//]: # ()
+[//]: # (Let multiplying equation $&#40;\ref{dg_model}&#41;$ by $U$ produces)
+
+[//]: # ()
+[//]: # ($$)
+
+[//]: # (\begin{align})
+
+[//]: # (\tilde{y} &= \tilde{G} \beta + \delta\\)
+
+[//]: # (\delta &\sim \mathcal{N}&#40;0, \sigma^2 I &#41;.)
+
+[//]: # (\end{align})
+
+[//]: # ($$)
+
+[//]: # ()
+[//]: # ()
+[//]: # (We next relate the )
+
+
+
+### Marginal GWAS regression coefficients
+
+By the principles of ordinary linear regression, note that the marginal GWAS regression coefficient $\hat\beta_{i}$ and its standard error $V_{i}$ are given by
+
+$$
+\begin{align}
+\hat\beta_{i}&=\frac{g_{k,i}^T y}{\lVert g_{i}\rVert^2}\\
+V_{i}&= \frac{\sigma^2}{\lVert g_{i}\rVert^2 } \label{v_rewrite}.
+\end{align}
+$$
+
+where we have suppressed $k$, the study-number subscript.
+
+
+Combining the above implies that 
 
 
 $$
 \begin{align}
-\tilde{y}&:=Uy\in\mathbb{R}^{N-c}\\
-\tilde{G}&:=UG\in\mathbb{R}^{(N-c)\times Q}.
+\hat\beta_i&=\frac{ g_i^T  y}{\lVert g_i \rVert^2}\\
+&=\frac{ g_i ^T  y}{\sigma^2} V_i \label{beta_rewrite}
 \end{align}
 $$
 
-Note that 
+### Gaussian integral
+
+The following Gaussian integral will be useful below
 
 $$
 \begin{align}
-UU^T &= I \in \mathbb{R}^{(N-c)\times (N_c)}\\
-U^TU &= M_x:= I-X(X^TX)^{-1}X^T \in \mathbb{R}^{N \times N}\\
-U\epsilon & \sim \mathcal{N}(0,\omega^2UU^T)=\mathcal{N}(0,\omega^2I)
+&\int_\mathbb{R} \exp \left(a\beta - b \frac{\beta^2}{2} \right)\mathcal{N}(\beta;0,\omega^2)d\beta\\
+&=(1+b\omega^2)^{-\frac{1}{2}} \exp \left( \frac{a^2\omega^2}{2(1+b\omega^2)} \right) \label{gaussian_integral}
 \end{align}
 $$
+
+It can be proved by standard integration techniques.
+
+
+### Bayes Factor
+
+As the name suggests, a central quantity in the study of Bayes factor colocalization is the Bayes factor.  Suppressing the study index $k$ for now, the Bayes factor for variant $i$ is defined as
+
+$$
+\begin{align}
+BF(i):=\frac{p(y|S=i)}{p(y|S=0)}
+\end{align}
+$$
+where $p$ denotes probability density, and $\{S=i\}$ is the event that $i$ is the sole causal variant, while $\{s=0\}$ is the event that there are no causal variants.  Note that both these events are subsets of the event $\mathcal{A}$ defined above.
+
+Define the quantities
+
+$$
+\begin{align}
+r_i&:=\frac{\omega^2}{\omega^2+V_i}\\
+z_i&:=\frac{\hat\beta_i}{\sqrt{V_i}}.
+\end{align}
+$$
+
+The following result is key:
+
+$$
+\begin{align}
+BF(i)&=\sqrt{1-r_i}\exp \left( \frac{r_i z_i^2}{2} \right).
+\end{align}
+$$
+
+
+**Proof of result**
+
+
+To prove this, first note that by $(\ref{dg_model})$ we have:
+
+$$
+\begin{align}
+y | \{S=0,\beta_i \} &\sim \mathcal{N}(g_i \beta_i, \sigma^2 I)\\
+y | \{S=0 \} &\sim \mathcal{N}(0,\sigma^2 I).
+\end{align}
+$$
+
+
+Now take the ratio of the densities of the two distributions.  We get
+
+
+$$
+\begin{align}
+&\exp\left( -\frac{1}{2\sigma^2}( \lVert  y -  g_i \beta_i\rVert^2 -  \lVert  y_i \rVert^2)  \right)\\
+&=\exp\left( -\frac{1}{2\sigma^2}( \lVert y \rVert^2 - 2\beta_i y^T  g_i + \beta_i^2\lVert  g_i \rVert^2 -  \lVert  y_i \rVert^2)  \right)\\
+&=\exp\left( -\frac{1}{2\sigma^2}( \beta_i^2\lVert  g_i \rVert^2 - 2\beta_i y^T  g_i )  \right)\\
+&=\exp \left( \frac{\beta_i}{\sigma^2} y^T  g_i- \beta_i^2\frac{\lVert g_i \rVert^2}{2\sigma^2} \right)
+&=  \exp \left( \beta_i \hat \beta_i \sigma^2 \frac{1}{V_i\sigma^2} -\beta_i^2 \frac{1}{2V_i}\right) & \text{by (\ref{v_rewrite}) and (\ref{beta_rewrite})  }
+\end{align}
+$$
+
+
+To produce an expression for the Bayes factor, we need to integrate the above over all possible values of $\beta_i$, weighting by the prior on $\beta_i$ from $\(ref{effect_prior})$. We can apply the Gaussian integral from $(\ref{gaussian_integral})$ with
+
+$$
+\begin{align}
+a&=\frac{\hat\beta_i}{V_i}\\
+b&=\frac{1}{V_i}
+\end{align}
+$$
+
+Thus, we have
+
+$$
+\begin{align}
+BF(i)&=(1+\frac{\omega^2}{V_i})^{-\frac{1}{2}}\exp \left( \frac{\hat\beta_i^2\omega^2 /V_i^2  }{2(1+\omega^2/V_i)}  \right)
+\end{align}
+$$
+
+Note that
+
+$$
+\begin{align}
+&(1+\frac{\omega^2}{V_i})^{-\frac{1}{2}}\\
+&=(V_i + \omega^2)^{-\frac{1}{2}} V_i^{\frac{1}{2}}\\
+&=\sqrt{\frac{V_i}{V_i+\omega^2}}\\
+&=\sqrt{1-r_i}
+\end{align}
+$$
+
+and
+
+$$
+\begin{align}
+&\frac{\hat\beta_i^2\omega^2 /V_i^2  }{2(1+\omega^2/V_i)} \\
+&=\frac{\hat\beta_i^2\omega^2 /V_i  }{2(1+\omega^2)}\\
+&=r_iz_i^2/2.
+\end{align}
+$$
+
+
+Combining the above, 
+
+
+$$
+\begin{align}
+BF(i)&=\sqrt{1-r_i}\exp \left(r_iz_i^2/2 \right)
+\end{align}
+$$
+
+as desired
+
+
+**end of proof**
+
 
 
 
