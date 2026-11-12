@@ -35,6 +35,7 @@ from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.tracer.simple_ha
     SimpleHasher,
 )
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_info import (
+    TraceRecord,
     VerifyingTraceInfo,
 )
 from mecfs_bio.build_system.rebuilder.verifying_trace_rebuilder.verifying_trace_rebuilder_core import (
@@ -105,8 +106,10 @@ class SimpleRunner:
         warn_on_unmigrated_assets(self.asset_root, self.path_remap)
         if self.info_store.is_file():
             info = VerifyingTraceInfo.deserialize(self.info_store)
+            loaded_trace_store = info.trace_store
         else:
             info = VerifyingTraceInfo.empty()
+            loaded_trace_store = None
         if incremental_save:
             logger.debug("incremental save is enabled")
         rebuilder = VerifyingTraceRebuilder(
@@ -132,9 +135,27 @@ class SimpleRunner:
             incremental_save_path=incremental_save_path,
             settings=settings,
         )
-        info.serialize(self.info_store)
+        _save_info_if_changed(
+            info=info, loaded_trace_store=loaded_trace_store, path=self.info_store
+        )
         _print_target_locs(store, targets=targets)
         return store
+
+
+def _save_info_if_changed(
+    info: VerifyingTraceInfo,
+    loaded_trace_store: dict[AssetId, TraceRecord] | None,
+    path: Path,
+) -> None:
+    """
+    Write info to path unless the store already existed and the run left its trace_store
+    unchanged.  loaded_trace_store is None when no store existed at the start of the run.
+    Rewriting an unchanged multi-megabyte store costs seconds on every no-op run.
+    """
+    if loaded_trace_store is not None and info.trace_store == loaded_trace_store:
+        logger.debug("Info store unchanged; skipping final save.")
+        return
+    info.serialize(path)
 
 
 def _print_target_locs(store: Mapping[AssetId, Asset], targets: list[Task]) -> None:

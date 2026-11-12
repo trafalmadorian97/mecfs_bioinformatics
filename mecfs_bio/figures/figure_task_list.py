@@ -191,8 +191,8 @@ from mecfs_bio.assets.gwas.migraine.multistudy.ct_ldsc_migraine_studies import (
 from mecfs_bio.assets.gwas.migraine.uk_biobank_2025.analysis.uk_biobank_2025_migraine_standard_analysis import (
     UK_BIOBANK_2025_EUR_MIGRAINE_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_plot import (
-    CT_LDSC_INITIAL_PLOT,
+from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_fast_plot import (
+    CT_LDSC_FAST_INITIAL_PLOT,
 )
 from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GROUP
 from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import (
@@ -405,7 +405,8 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_UNIVARIATE_MIXER.result_markdown_table_task,
     DECODE_ME_CURATED_GENE_SET_ANALYSIS.bar_plot_task_full,
     DECODE_ME_GWAS_1_LDSC_DIAGNOSTIC_PLOT,
-    CT_LDSC_INITIAL_PLOT,
+    # CT_LDSC_INITIAL_PLOT,
+    CT_LDSC_FAST_INITIAL_PLOT,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
     BENTHAM_LUPUS_STANDARD_ANALYSIS.sldsc_tasks.partitioned_tasks[
