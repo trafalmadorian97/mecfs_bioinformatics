@@ -171,8 +171,16 @@ aria2 = { channel = "conda-forge" }
 pymupdf = { channel = "conda-forge" }
 poppler = { channel = "conda-forge" }
 
+# Node.js plus MathJax, used by "invoke check-math" to parse every equation in docs/ with the
+# same MathJax version the published site loads (see extra_javascript in mkdocs.yml; keep the
+# two versions in sync). Kept in its own env so the analysis env does not carry Node.
+[tool.pixi.feature.mathcheck.dependencies]
+nodejs = { version = ">=22", channel = "conda-forge" }
+mathjax = { version = "==3.2.2", channel = "conda-forge" }
+
 [tool.pixi.environments]
 default = ["analysis"]
 
 download-env = ["download"]
 pdf-env = ["pdf"]
+mathcheck-env = ["mathcheck"]

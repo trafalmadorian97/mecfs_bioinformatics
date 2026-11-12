@@ -17,6 +17,10 @@ from pathlib import Path
 import yaml
 from invoke import Context, task
 
+from mecfs_bio.util.docs_math_check.check_docs_math import (
+    check_docs_math,
+    format_report,
+)
 from mecfs_bio.util.link_check_streak import (
     dump_state,
     load_state,
@@ -511,6 +515,26 @@ def check_local_links(c: Context) -> None:
 
 
 @task
+def check_math(c: Context) -> None:
+    """
+    Check that every TeX equation in the docs parses without error in MathJax.
+
+    Runs the MathJax version the site loads under Node.js (mathcheck-env pixi environment),
+    so this catches the equations that would otherwise render as red error text, without
+    building the site.
+    """
+    print("Checking MathJax equations in docs...")
+    report = check_docs_math(
+        docs_dir=DOCS_PATH,
+        mkdocs_yml=Path("mkdocs.yml"),
+        site_mathjax_config=DOCS_PATH / "javascripts" / "mathjax.js",
+    )
+    print(format_report(report))
+    if report.errors:
+        sys.exit(1)
+
+
+@task
 def lint_actions(c: Context) -> None:
     print("Linting github actions...")
     cmd = "actionlint"
@@ -526,6 +550,7 @@ def lint_actions(c: Context) -> None:
         spellcheck_src,
         check_local_links,
         fix_table_trailing_newlines,
+        check_math,
         checkimports,
         check_attrs_slots,
         # check_asset_imports, # skip: too slow to run in dev loop.  Can still run in CI

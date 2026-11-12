@@ -68,6 +68,9 @@ jobs:
       - name: Check that markdown files ending in tables have trailing newlines
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r invoke check-table-trailing-newlines
+      - name: Check MathJax equations in docs
+        if: steps.changes.outputs.nonmark == 'true'
+        run: pixi r invoke check-math
       - name: Lint using ruff
         if: steps.changes.outputs.nonmark == 'true'
         run: pixi r  invoke lintcheck
