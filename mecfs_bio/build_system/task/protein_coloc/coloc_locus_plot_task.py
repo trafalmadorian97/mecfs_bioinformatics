@@ -16,7 +16,6 @@ from pathlib import Path
 import numpy as np
 import polars as pl
 from attrs import frozen
-from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -25,24 +24,18 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.locus_plot_helpers import (
+    plot_association,
+    plot_gene_track_panel,
+)
 from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
     read_raw_results,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
     two_sided_mlog10p,
 )
-from mecfs_bio.build_system.task.susie_stacked_plot_task import (
-    GENE_INFO_CHROM_COL,
-    GENE_INFO_END_COL,
-    GENE_INFO_NAME_COL,
-    GENE_INFO_START_COL,
-    GENE_INFO_STRAND_COL,
-    GWAS_SIGNIFICANCE_MLOG10P,
-    plot_gene_tracks,
-)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
-    GWASLAB_CHROM_NAME_FOR_CODE,
     GWASLAB_POS_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
@@ -133,33 +126,9 @@ def _plot_specs(raw: pl.DataFrame, pairs: tuple[ColocPair, ...]) -> list[_PlotSp
     return specs
 
 
-def _plot_association(
-    ax: Axes, window: pl.DataFrame, beta: str, se: str, label: str
-) -> None:
-    pos = window[GWASLAB_POS_COL].to_numpy()
+def _window_mlog10p(window: pl.DataFrame, beta: str, se: str) -> np.ndarray:
     with np.errstate(invalid="ignore", divide="ignore"):
-        mlog10p = two_sided_mlog10p((window[beta] / window[se]).to_numpy())
-    ax.scatter(pos, mlog10p, s=8, color="tab:blue").set_rasterized(True)
-    lead = int(np.nanargmax(mlog10p))
-    ax.scatter(pos[lead], mlog10p[lead], s=40, marker="^", color="black")
-    ax.axhline(y=GWAS_SIGNIFICANCE_MLOG10P, color="grey", linestyle="--", linewidth=1)
-    ax.set_ylabel(f"{label}\n-log10 p")
-
-
-def _plot_genes(ax: Axes, genes: pl.DataFrame, spec: _PlotSpec) -> None:
-    chrom_name = GWASLAB_CHROM_NAME_FOR_CODE.get(spec.chrom, None) or str(spec.chrom)
-    plot_gene_tracks(
-        ax=ax,
-        gene_df=genes.filter(pl.col(GENE_INFO_CHROM_COL).cast(pl.String) == chrom_name),
-        start_bp=spec.start,
-        end_bp=spec.end,
-        gene_start_col=GENE_INFO_START_COL,
-        gene_end_col=GENE_INFO_END_COL,
-        gene_name_col=GENE_INFO_NAME_COL,
-        gene_strand_col=GENE_INFO_STRAND_COL,
-    )
-    ax.set_ylabel("genes")
-    ax.set_xlabel(f"GRCh38 chr{chrom_name} position (bp)")
+        return two_sided_mlog10p((window[beta] / window[se]).to_numpy())
 
 
 def _render(
@@ -169,9 +138,22 @@ def _render(
     ax_trait = fig.add_subplot(3, 1, 1)
     ax_protein = fig.add_subplot(3, 1, 2, sharex=ax_trait)
     ax_genes = fig.add_subplot(3, 1, 3, sharex=ax_trait)
-    _plot_association(ax_trait, window, BETA_TRAIT_COL, SE_TRAIT_COL, "trait")
-    _plot_association(ax_protein, window, BETA_PROTEIN_COL, SE_PROTEIN_COL, spec.gene)
-    _plot_genes(ax_genes, genes, spec)
+    pos = window[GWASLAB_POS_COL].to_numpy()
+    plot_association(
+        ax_trait,
+        pos,
+        _window_mlog10p(window, BETA_TRAIT_COL, SE_TRAIT_COL),
+        label="trait",
+        significance_line=True,
+    )
+    plot_association(
+        ax_protein,
+        pos,
+        _window_mlog10p(window, BETA_PROTEIN_COL, SE_PROTEIN_COL),
+        label=spec.gene,
+        significance_line=True,
+    )
+    plot_gene_track_panel(ax_genes, genes, spec.chrom, spec.start, spec.end)
     ax_trait.set_xlim(spec.start, spec.end)
     for ax in (ax_trait, ax_protein):
         ax.tick_params(axis="x", labelbottom=False)
