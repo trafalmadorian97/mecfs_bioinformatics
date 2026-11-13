@@ -15,3 +15,14 @@ built locally). Logs: experiments/claude/logs/*_ppp_coloc_rerun.log (uncommitted
 Positive control: PCSK9 cis PP.H4 = 1.00 with the same lead variant in both panels
 (chr1:55,039,974, R46L). At large merged loci with several trait signals (APOE, LDLR region)
 coloc.abf's single-causal-variant assumption pushes pairs to H3; SuSiE-coloc is the follow-up.
+
+## R coloc cross-check (2026-11-13)
+
+`experiments/claude/protein_coloc/r_coloc_crosscheck.py` reran every tested pair of
+`decode_me_gwas_1_exploratory_2_ppp_coloc` (517 pairs) through R coloc 5.2.3 `coloc.abf`
+(throwaway `pixi exec` env) on the exact saved windows and priors. Result: PASS.
+- R nsnps == N_ALIGNED for all 517 pairs.
+- max |dPP| over all pairs and hypotheses: 2.8e-15; over the 8 hits (PP.H4 > 0.8): 8.6e-16.
+- R's prior SDs confirmed from source: cc with beta/varbeta uses 0.2 (s and MAF unused);
+  quant with sdY = 1 uses 0.15. Same as ColocAbf.
+This verifies the ABF/posterior arithmetic only, not the harmonization/alignment upstream.
