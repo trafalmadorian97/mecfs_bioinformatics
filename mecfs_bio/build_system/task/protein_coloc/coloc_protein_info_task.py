@@ -18,7 +18,6 @@ from typing import Protocol
 import numpy as np
 import pandas as pd
 import polars as pl
-import requests
 import structlog
 from attrs import frozen
 
@@ -35,21 +34,23 @@ from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.dataframe_output import write_parquet_table
-from mecfs_bio.build_system.task.fetch_gget_info_task import (
-    GGET_TRANSIENT_ERRORS,
-    fetch_gget_info,
-)
+from mecfs_bio.build_system.task.fetch_gget_info_task import fetch_gget_info
 from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
     ranked_display_loci,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.gene_thesaurus_constants import (
+    THESAURUS_CHROM_COL,
+    THESAURUS_ENSEMBL_ID_COL,
+    THESAURUS_GENE_NAME_COL,
+    THESAURUS_PRIMARY_CHROMOSOMES,
+)
 from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_GENE_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
 )
-from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 logger = structlog.getLogger()
 
@@ -64,9 +65,6 @@ PROTEIN_NAMES_COL = "protein_names"
 ENSEMBL_DESCRIPTION_COL = "ensembl_description"
 _COMPLEX_SEPARATOR = "_"
 _LIST_JOIN = "; "
-_ENSEMBL_SYMBOL_URL = "https://rest.ensembl.org/lookup/symbol/homo_sapiens/{symbol}"
-_HTTP_BAD_REQUEST = 400
-_REQUEST_TIMEOUT_S = 30.0
 
 INFO_SCHEMA = pl.Schema(
     {
@@ -92,43 +90,10 @@ _DISPLAY_KEPT_SCHEMA = pl.Schema(
 )
 
 
-class SymbolLookup(Protocol):
-    def __call__(self, symbol: str) -> str | None:
-        """The Ensembl gene id of a human gene symbol, or None when it does not resolve."""
-        ...
-
-
 class InfoLookup(Protocol):
     def __call__(self, ensembl_ids: list[str]) -> pl.DataFrame:
         """One row per Ensembl id found, in INFO_SCHEMA."""
         ...
-
-
-@frozen(slots=True)
-class EnsemblRestSymbolLookup:
-    """Ensembl REST lookup/symbol; HTTP 400 means the symbol is unknown."""
-
-    def __call__(self, symbol: str) -> str | None:
-        response = call_with_retries(
-            lambda: _get_symbol(symbol), retry_on=GGET_TRANSIENT_ERRORS
-        )
-        if response.status_code == _HTTP_BAD_REQUEST:
-            return None
-        response.raise_for_status()
-        ensembl_id = response.json().get("id")
-        assert ensembl_id is None or isinstance(ensembl_id, str)
-        return ensembl_id
-
-
-def _get_symbol(symbol: str) -> requests.Response:
-    response = requests.get(
-        _ENSEMBL_SYMBOL_URL.format(symbol=symbol),
-        headers={"Content-Type": "application/json"},
-        timeout=_REQUEST_TIMEOUT_S,
-    )
-    if response.status_code >= 500:
-        response.raise_for_status()
-    return response
 
 
 def _as_text(value: object) -> str | None:
@@ -202,18 +167,49 @@ def _top_loci_by_symbol(display: pl.DataFrame, max_loci: int) -> pl.DataFrame:
     )
 
 
-def _ensembl_ids(symbols: list[str], lookup: SymbolLookup) -> dict[str, str | None]:
-    mapping = {symbol: lookup(symbol) for symbol in dict.fromkeys(symbols)}
+def _primary_assembly_ids(thesaurus: pl.DataFrame) -> pl.DataFrame:
+    """Distinct (gene symbol, Ensembl id) pairs of the genes on primary-assembly chromosomes."""
+    return (
+        thesaurus.filter(
+            pl.col(THESAURUS_CHROM_COL)
+            .cast(pl.String)
+            .is_in(sorted(THESAURUS_PRIMARY_CHROMOSOMES))
+        )
+        .select(
+            pl.col(THESAURUS_GENE_NAME_COL).cast(pl.String),
+            pl.col(THESAURUS_ENSEMBL_ID_COL).cast(pl.String),
+        )
+        .drop_nulls()
+        .unique()
+    )
+
+
+def _ensembl_ids(
+    symbols: list[str], primary_ids: pl.DataFrame
+) -> dict[str, str | None]:
+    wanted = list(dict.fromkeys(symbols))
+    matches = primary_ids.filter(pl.col(THESAURUS_GENE_NAME_COL).is_in(wanted))
+    ambiguous = (
+        matches.group_by(THESAURUS_GENE_NAME_COL)
+        .len()
+        .filter(pl.col("len") > 1)[THESAURUS_GENE_NAME_COL]
+        .to_list()
+    )
+    assert not ambiguous, (
+        f"gene symbols with more than one primary-assembly Ensembl id: {ambiguous}"
+    )
+    found = dict(matches.iter_rows())
+    mapping = {symbol: found.get(symbol) for symbol in wanted}
     for symbol, ensembl_id in mapping.items():
         if ensembl_id is None:
-            logger.warning(f"gene symbol {symbol} did not resolve to an Ensembl id")
+            logger.warning(f"gene symbol {symbol} is not in the gene thesaurus")
     return mapping
 
 
 def _annotate(
-    rows: pl.DataFrame, symbol_lookup: SymbolLookup, info_lookup: InfoLookup
+    rows: pl.DataFrame, primary_ids: pl.DataFrame, info_lookup: InfoLookup
 ) -> pl.DataFrame:
-    mapping = _ensembl_ids(rows[GENE_SYMBOL_COL].to_list(), symbol_lookup)
+    mapping = _ensembl_ids(rows[GENE_SYMBOL_COL].to_list(), primary_ids)
     with_ids = rows.with_columns(
         pl.col(GENE_SYMBOL_COL)
         .replace_strict(mapping, default=None, return_dtype=pl.String)
@@ -229,19 +225,25 @@ def _annotate(
     )
 
 
+def _read_table(fetch: Fetch, task: Task) -> pl.DataFrame:
+    return (
+        scan_dataframe_asset(fetch(task.asset_id), meta=task.meta).collect().to_polars()
+    )
+
+
 @frozen(slots=True)
 class ColocProteinInfoTask(Task):
     """
     display_task: a ColocDisplayTableTask (any Task producing its table).
+    gene_thesaurus_task: the gene thesaurus, mapping gene symbols to Ensembl gene ids.
     max_loci: only the proteins at the top max_loci loci (best PP.H4 first) are annotated.
-    symbol_lookup: maps gene symbols to Ensembl gene ids.
     info_lookup: annotates Ensembl gene ids.
     """
 
     meta: Meta
     display_task: Task
+    gene_thesaurus_task: Task
     max_loci: int
-    symbol_lookup: SymbolLookup
     info_lookup: InfoLookup
 
     def __attrs_post_init__(self) -> None:
@@ -249,19 +251,13 @@ class ColocProteinInfoTask(Task):
 
     @property
     def deps(self) -> list[Task]:
-        return [self.display_task]
+        return [self.display_task, self.gene_thesaurus_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        display = (
-            scan_dataframe_asset(
-                fetch(self.display_task.asset_id), meta=self.display_task.meta
-            )
-            .collect()
-            .to_polars()
-        )
+        display = _read_table(fetch, self.display_task)
         table = _annotate(
             _top_loci_by_symbol(display, self.max_loci),
-            self.symbol_lookup,
+            _primary_assembly_ids(_read_table(fetch, self.gene_thesaurus_task)),
             self.info_lookup,
         )
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet"
@@ -279,8 +275,8 @@ class ColocProteinInfoTask(Task):
         cls,
         asset_id: str,
         display_task: Task,
+        gene_thesaurus_task: Task,
         max_loci: int = 10,
-        symbol_lookup: SymbolLookup = EnsemblRestSymbolLookup(),
         info_lookup: InfoLookup = GgetInfoLookup(),
     ) -> "ColocProteinInfoTask":
         source_meta = display_task.meta
@@ -297,7 +293,7 @@ class ColocProteinInfoTask(Task):
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             ),
             display_task=display_task,
+            gene_thesaurus_task=gene_thesaurus_task,
             max_loci=max_loci,
-            symbol_lookup=symbol_lookup,
             info_lookup=info_lookup,
         )

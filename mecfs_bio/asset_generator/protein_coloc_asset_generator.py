@@ -14,6 +14,9 @@ from typing import Literal
 
 from attrs import frozen
 
+from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
+    GENE_THESAURUS,
+)
 from mecfs_bio.assets.reference_data.genetic_map.genetic_map_hg38 import (
     GENETIC_MAP_HG38,
 )
@@ -182,5 +185,8 @@ def generate_coloc_protein_info_task(
 ) -> ColocProteinInfoTask:
     """Database annotations of the colocalizing proteins at the top display-table loci."""
     return ColocProteinInfoTask.create(
-        asset_id=asset_id, display_task=group.display_task, max_loci=max_loci
+        asset_id=asset_id,
+        display_task=group.display_task,
+        gene_thesaurus_task=GENE_THESAURUS,
+        max_loci=max_loci,
     )
