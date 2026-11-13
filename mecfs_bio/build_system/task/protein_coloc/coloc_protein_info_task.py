@@ -8,10 +8,10 @@ and at most max_loci are kept. Each display row at those loci becomes one row pe
 accession of the protein, as the proteomics source's protein table lists them (via
 protein_accessions_reader): a protein complex such as EBI3_IL27 has one accession per subunit.
 
-- Genes (joined on the accession): the HGNC complete set gives the gene's current approved
-  symbol, its name and its Ensembl gene id. An accession encoded by duplicated genes (for
-  example P59665, by DEFA1 and DEFA1B) gets one row per gene. Readthrough genes (a transcript
-  spanning two adjacent genes, such as PTGES3L-AARSD1) are skipped.
+- Genes (joined on the accession): a normalized UniProt-to-gene table from the HGNC complete set
+  (HGNC_UNIPROT_GENES) gives the gene's current approved symbol, its name and its Ensembl gene
+  id. An accession encoded by duplicated genes (for example P59665, by DEFA1 and DEFA1B) gets
+  one row per gene.
 - UniProt (joined on the accession): protein names, function and subcellular location, from a
   bulk export of reviewed human UniProt entries. Field labels such as "FUNCTION:" and evidence
   codes such as {ECO:0000269|PubMed:123} are dropped.
@@ -51,12 +51,9 @@ from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import 
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.hgnc_constants import (
     HGNC_ENSEMBL_ID_COL,
-    HGNC_LIST_SEPARATOR,
-    HGNC_LOCUS_TYPE_COL,
     HGNC_NAME_COL,
-    HGNC_READTHROUGH_LOCUS_TYPE,
     HGNC_SYMBOL_COL,
-    HGNC_UNIPROT_IDS_COL,
+    HGNC_UNIPROT_ID_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_GENE_COL,
@@ -187,25 +184,15 @@ def _top_loci_by_accession(
     )
 
 
-def _genes_by_accession(hgnc: pl.DataFrame, accessions: list[str]) -> pl.DataFrame:
-    """The non-readthrough HGNC genes encoding each accession, one row per (accession, gene)."""
-    found = (
-        hgnc.filter(pl.col(HGNC_LOCUS_TYPE_COL) != HGNC_READTHROUGH_LOCUS_TYPE)
-        .select(
-            pl.col(HGNC_UNIPROT_IDS_COL)
-            .cast(pl.String)
-            .str.split(HGNC_LIST_SEPARATOR)
-            .alias(UNIPROT_ID_COL),
-            pl.col(HGNC_SYMBOL_COL).cast(pl.String).alias(GENE_SYMBOL_COL),
-            _null_if_blank(pl.col(HGNC_ENSEMBL_ID_COL).cast(pl.String)).alias(
-                ENSEMBL_ID_COL
-            ),
-            _null_if_blank(pl.col(HGNC_NAME_COL).cast(pl.String)).alias(GENE_NAME_COL),
-        )
-        .explode(UNIPROT_ID_COL)
-        .with_columns(pl.col(UNIPROT_ID_COL).str.strip_chars())
-        .filter(pl.col(UNIPROT_ID_COL).is_in(accessions))
-        .unique()
+def _genes_by_accession(
+    uniprot_genes: pl.DataFrame, accessions: list[str]
+) -> pl.DataFrame:
+    """The genes encoding each accession, one row per (accession, gene)."""
+    found = uniprot_genes.filter(pl.col(HGNC_UNIPROT_ID_COL).is_in(accessions)).select(
+        pl.col(HGNC_UNIPROT_ID_COL).alias(UNIPROT_ID_COL),
+        pl.col(HGNC_SYMBOL_COL).alias(GENE_SYMBOL_COL),
+        pl.col(HGNC_ENSEMBL_ID_COL).alias(ENSEMBL_ID_COL),
+        pl.col(HGNC_NAME_COL).alias(GENE_NAME_COL),
     )
     for accession in sorted(set(accessions) - set(found[UNIPROT_ID_COL].to_list())):
         logger.warning(f"UniProt accession {accession} is not in the HGNC table")
@@ -233,12 +220,16 @@ def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.Da
 
 
 def _annotate(
-    rows: pl.DataFrame, hgnc: pl.DataFrame, uniprot: pl.DataFrame
+    rows: pl.DataFrame, uniprot_genes: pl.DataFrame, uniprot: pl.DataFrame
 ) -> pl.DataFrame:
     accessions = rows[UNIPROT_ID_COL].drop_nulls().unique().to_list()
     return (
         rows.with_row_index(_ROW_INDEX_COL)
-        .join(_genes_by_accession(hgnc, accessions), on=UNIPROT_ID_COL, how="left")
+        .join(
+            _genes_by_accession(uniprot_genes, accessions),
+            on=UNIPROT_ID_COL,
+            how="left",
+        )
         .join(_uniprot_by_accession(uniprot, accessions), on=UNIPROT_ID_COL, how="left")
         .sort([_ROW_INDEX_COL, GENE_SYMBOL_COL], nulls_last=True)
         .select(OUTPUT_SCHEMA.names())
@@ -254,7 +245,7 @@ class ColocProteinInfoTask(Task):
         ST3 sheet), read by protein_accessions_reader.
     protein_accessions_reader: lists the UniProt accessions of each protein.
     uniprot_task: the bulk UniProt export (for example UNIPROT_LOOKUP).
-    hgnc_task: the HGNC complete set, mapping UniProt accessions to genes.
+    uniprot_genes_task: the normalized HGNC UniProt-to-gene table (HGNC_UNIPROT_GENES).
     max_loci: only the proteins at the top max_loci loci (best PP.H4 first) are annotated.
     """
 
@@ -263,7 +254,7 @@ class ColocProteinInfoTask(Task):
     protein_table_task: Task
     protein_accessions_reader: ProteinAccessionsReader
     uniprot_task: Task
-    hgnc_task: Task
+    uniprot_genes_task: Task
     max_loci: int
 
     def __attrs_post_init__(self) -> None:
@@ -275,7 +266,7 @@ class ColocProteinInfoTask(Task):
             self.display_task,
             self.protein_table_task,
             self.uniprot_task,
-            self.hgnc_task,
+            self.uniprot_genes_task,
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -286,7 +277,7 @@ class ColocProteinInfoTask(Task):
         )
         table = _annotate(
             rows,
-            hgnc=_read_table(fetch, self.hgnc_task),
+            uniprot_genes=_read_table(fetch, self.uniprot_genes_task),
             uniprot=_read_table(fetch, self.uniprot_task),
         )
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet"
@@ -307,7 +298,7 @@ class ColocProteinInfoTask(Task):
         protein_table_task: Task,
         protein_accessions_reader: ProteinAccessionsReader,
         uniprot_task: Task,
-        hgnc_task: Task,
+        uniprot_genes_task: Task,
         max_loci: int = 10,
     ) -> "ColocProteinInfoTask":
         source_meta = display_task.meta
@@ -327,6 +318,6 @@ class ColocProteinInfoTask(Task):
             protein_table_task=protein_table_task,
             protein_accessions_reader=protein_accessions_reader,
             uniprot_task=uniprot_task,
-            hgnc_task=hgnc_task,
+            uniprot_genes_task=uniprot_genes_task,
             max_loci=max_loci,
         )

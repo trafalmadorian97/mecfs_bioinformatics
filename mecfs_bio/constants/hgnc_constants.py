@@ -2,6 +2,9 @@
 Column names and values of the HGNC complete set (https://www.genenames.org/download/): one row
 per approved human gene, with its current symbol, its Ensembl gene id and the UniProt accessions
 of its protein products.
+
+The normalized UniProt-to-gene table (HGNC_UNIPROT_GENES) keeps HGNC_SYMBOL_COL, HGNC_NAME_COL
+and HGNC_ENSEMBL_ID_COL and has one UniProt accession per row in HGNC_UNIPROT_ID_COL.
 """
 
 from typing import Final
@@ -13,6 +16,8 @@ HGNC_ENSEMBL_ID_COL: Final = "ensembl_gene_id"
 # "|"-separated UniProt accessions.
 HGNC_UNIPROT_IDS_COL: Final = "uniprot_ids"
 HGNC_LIST_SEPARATOR: Final = "|"
+# One UniProt accession, in the normalized UniProt-to-gene table.
+HGNC_UNIPROT_ID_COL: Final = "uniprot_id"
 
 # A transcript spanning two adjacent genes (for example PTGES3L-AARSD1). HGNC lists the
 # readthrough under the UniProt accession of one of the genes it spans.

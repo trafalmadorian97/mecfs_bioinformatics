@@ -23,7 +23,7 @@ from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
 from mecfs_bio.assets.reference_data.gnomad.gnomad_allele_frequency_panels import (
     GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
 )
-from mecfs_bio.assets.reference_data.hgnc.hgnc_complete_set import HGNC_COMPLETE_SET
+from mecfs_bio.assets.reference_data.hgnc.hgnc_complete_set import HGNC_UNIPROT_GENES
 from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez_gene_locations_data_build_38_unzipped import (
     MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
 )
@@ -202,6 +202,6 @@ def generate_coloc_protein_info_task(
         protein_table_task=coloc_task.gene_coords_task,
         protein_accessions_reader=St3ProteinAccessionsReader(),
         uniprot_task=UNIPROT_LOOKUP,
-        hgnc_task=HGNC_COMPLETE_SET,
+        uniprot_genes_task=HGNC_UNIPROT_GENES,
         max_loci=max_loci,
     )

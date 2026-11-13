@@ -8,7 +8,6 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
-    DataFrameTextFormat,
 )
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
@@ -33,11 +32,9 @@ from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import 
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.hgnc_constants import (
     HGNC_ENSEMBL_ID_COL,
-    HGNC_LOCUS_TYPE_COL,
     HGNC_NAME_COL,
-    HGNC_READTHROUGH_LOCUS_TYPE,
     HGNC_SYMBOL_COL,
-    HGNC_UNIPROT_IDS_COL,
+    HGNC_UNIPROT_ID_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_GENE_COL,
@@ -60,7 +57,6 @@ _PROTEIN_TABLE_ROWS = [
     ("OID4", "P23381"),
     ("OID5", "Q99999"),
     ("OID6", "P59665;P59665"),
-    ("OID7", "Q9BTE6"),
     ("OID9", "Q14213;Q8NEV9"),
 ]
 
@@ -83,32 +79,16 @@ _UNIPROT_ROWS = [
     ("P23381", "Tryptophan--tRNA ligase", "FUNCTION: Ligase.", None),
 ]
 
-_PROTEIN_CODING = "gene with protein product"
-
-# (symbol, name, locus type, Ensembl id, "|"-separated UniProt accessions)
-_HGNC_ROWS = [
-    ("AAA", "gene A", _PROTEIN_CODING, "ENSG_AAA", "P00001"),
-    ("BBB", "gene B", _PROTEIN_CODING, "ENSG_BBB", "P00002"),
-    ("CCC", "gene C", _PROTEIN_CODING, "ENSG_CCC", "P99998|P00003"),
-    (
-        "WARS1",
-        "tryptophanyl-tRNA synthetase 1",
-        _PROTEIN_CODING,
-        "ENSG_WARS1",
-        "P23381",
-    ),
-    ("DEFA1B", "defensin alpha 1B", _PROTEIN_CODING, "ENSG_DEFA1B", "P59665"),
-    ("DEFA1", "defensin alpha 1", _PROTEIN_CODING, "ENSG_DEFA1", "P59665"),
-    ("AARSD1", "alanyl-tRNA editing", _PROTEIN_CODING, "ENSG_AARSD1", "Q9BTE6"),
-    (
-        "PTGES3L-AARSD1",
-        "readthrough",
-        HGNC_READTHROUGH_LOCUS_TYPE,
-        "ENSG_RT",
-        "Q9BTE6",
-    ),
-    ("EBI3", "EBI3 subunit", _PROTEIN_CODING, "ENSG_EBI3", "Q14213"),
-    ("IL27", "IL27 subunit", _PROTEIN_CODING, "ENSG_IL27", "Q8NEV9"),
+# The normalized HGNC UniProt-to-gene table: (accession, symbol, name, Ensembl id).
+_UNIPROT_GENES_ROWS = [
+    ("P00001", "AAA", "gene A", "ENSG_AAA"),
+    ("P00002", "BBB", "gene B", "ENSG_BBB"),
+    ("P00003", "CCC", "gene C", "ENSG_CCC"),
+    ("P23381", "WARS1", "tryptophanyl-tRNA synthetase 1", "ENSG_WARS1"),
+    ("P59665", "DEFA1B", "defensin alpha 1B", "ENSG_DEFA1B"),
+    ("P59665", "DEFA1", "defensin alpha 1", "ENSG_DEFA1"),
+    ("Q14213", "EBI3", "EBI3 subunit", "ENSG_EBI3"),
+    ("Q8NEV9", "IL27", "IL27 subunit", "ENSG_IL27"),
 ]
 
 _DISPLAY_SCHEMA = {
@@ -139,7 +119,7 @@ def _write_inputs(
         "display": tmp_path / "display.parquet",
         "protein_table": tmp_path / "protein_table.parquet",
         "uniprot": tmp_path / "uniprot.parquet",
-        "hgnc": tmp_path / "hgnc.tsv",
+        "uniprot_genes": tmp_path / "uniprot_genes.parquet",
     }
     pl.DataFrame(
         [list(r) for r in display_rows], schema=_DISPLAY_SCHEMA, orient="row"
@@ -158,16 +138,15 @@ def _write_inputs(
         orient="row",
     ).write_parquet(paths["uniprot"])
     pl.DataFrame(
-        _HGNC_ROWS,
+        _UNIPROT_GENES_ROWS,
         schema=[
+            HGNC_UNIPROT_ID_COL,
             HGNC_SYMBOL_COL,
             HGNC_NAME_COL,
-            HGNC_LOCUS_TYPE_COL,
             HGNC_ENSEMBL_ID_COL,
-            HGNC_UNIPROT_IDS_COL,
         ],
         orient="row",
-    ).write_csv(paths["hgnc"], separator="\t")
+    ).write_parquet(paths["uniprot_genes"])
     return {AssetId(name): FileAsset(path) for name, path in paths.items()}
 
 
@@ -184,9 +163,7 @@ def _info(
         protein_table_task=_table_task("protein_table", parquet),
         protein_accessions_reader=St3ProteinAccessionsReader(),
         uniprot_task=_table_task("uniprot", parquet),
-        hgnc_task=_table_task(
-            "hgnc", DataFrameReadSpec(DataFrameTextFormat(separator="\t"))
-        ),
+        uniprot_genes_task=_table_task("uniprot_genes", parquet),
         max_loci=max_loci,
     )
     scratch = tmp_path / "scratch"
@@ -232,11 +209,6 @@ def test_multiple_uniprot_comments_join_as_sentences(tmp_path: Path) -> None:
     ]
 
 
-def test_gene_found_among_several_hgnc_accessions(tmp_path: Path) -> None:
-    info = _info(tmp_path, [("CCC", "OID3", "L1", 0.9)])
-    assert info[GENE_SYMBOL_COL].to_list() == ["CCC"]
-
-
 def test_symbol_comes_from_hgnc_not_the_display_table(tmp_path: Path) -> None:
     info = _info(tmp_path, [("WARS", "OID4", "L1", 0.9)])
     assert info.select(GENE_SYMBOL_COL, ENSEMBL_ID_COL).rows() == [
@@ -257,11 +229,6 @@ def test_complex_gives_one_row_per_subunit_gene(tmp_path: Path) -> None:
 def test_duplicated_genes_of_one_protein_each_get_a_row(tmp_path: Path) -> None:
     info = _info(tmp_path, [("DEFA1_DEFA1B", "OID6", "L1", 0.9)])
     assert info[GENE_SYMBOL_COL].to_list() == ["DEFA1", "DEFA1B"]
-
-
-def test_readthrough_gene_is_dropped(tmp_path: Path) -> None:
-    info = _info(tmp_path, [("AARSD1", "OID7", "L1", 0.9)])
-    assert info[GENE_SYMBOL_COL].to_list() == ["AARSD1"]
 
 
 def test_accession_missing_from_references_keeps_row(tmp_path: Path) -> None:
