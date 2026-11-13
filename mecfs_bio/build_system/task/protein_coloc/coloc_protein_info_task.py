@@ -1,22 +1,30 @@
 """
-Database annotations of the colocalizing proteins at the top loci of a coloc display table.
+Annotations of the colocalizing proteins at the top loci of a coloc display table, from static
+in-repo reference tables (no network calls).
 
 The loci are ranked by their best PP.H4 (the posterior probability of a shared causal variant)
-and at most max_loci are kept. Each display row at those loci is split into one row per gene
-symbol: a protein complex such as IL12A_IL12B is measured as one protein but has one symbol per
-gene. Each symbol is mapped to an Ensembl gene id (by default via the Ensembl REST symbol
-lookup), and the ids are annotated once, in a single batch, by gget.info (UniProt function, NCBI
-summary, subcellular localisation).
+and at most max_loci are kept. Each display row at those loci becomes one row per gene behind the
+protein, as the proteomics source's protein table lists them (via protein_genes_reader): a
+protein complex such as EBI3_IL27 is measured as one protein but has one gene symbol and one
+UniProt accession per gene.
 
-A symbol that does not map keeps its row with null annotation columns, and a warning is logged.
-An empty display table gives an empty table with the full schema.
+- UniProt (joined on the accession): primary gene name, protein names, function and subcellular
+  location, from a bulk export of reviewed human UniProt entries. Field labels such as
+  "FUNCTION:" and evidence codes such as {ECO:0000269|PubMed:123} are dropped.
+- Ensembl (joined on the gene symbol): Ensembl gene id and description, from the gene thesaurus
+  (a static Ensembl BioMart export), using only genes on primary-assembly chromosomes, since
+  alternate-haplotype scaffolds repeat primary-assembly genes under the same symbol.
+
+Joining UniProt on the accession keeps the UniProt annotations of proteins the source lists
+under an outdated symbol (for example WARS, now WARS1); only their Ensembl columns are null. An
+accession missing from UniProt (for example a merged entry) or a symbol missing from the
+thesaurus keeps its row with null columns, and a warning is logged. A display protein missing
+from the protein table, or a symbol with more than one primary-assembly Ensembl id, fails the
+task. An empty display table gives an empty table with the full schema.
 """
 
 from pathlib import Path, PurePath
-from typing import Protocol
 
-import numpy as np
-import pandas as pd
 import polars as pl
 import structlog
 from attrs import frozen
@@ -34,13 +42,19 @@ from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.dataframe_output import write_parquet_table
-from mecfs_bio.build_system.task.fetch_gget_info_task import fetch_gget_info
 from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
     ranked_display_loci,
+)
+from mecfs_bio.build_system.task.protein_coloc.protein_genes_reader import (
+    PROTEIN_GENES_PROTEIN_ID_COL,
+    PROTEIN_GENES_SYMBOL_COL,
+    PROTEIN_GENES_UNIPROT_COL,
+    ProteinGenesReader,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gene_thesaurus_constants import (
     THESAURUS_CHROM_COL,
+    THESAURUS_DESCRIPTION_COL,
     THESAURUS_ENSEMBL_ID_COL,
     THESAURUS_GENE_NAME_COL,
     THESAURUS_PRIMARY_CHROMOSOMES,
@@ -51,178 +65,76 @@ from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
 )
+from mecfs_bio.constants.uniprot_constants import (
+    UNIPROT_DAT_FUNCTION_COL,
+    UNIPROT_DAT_GENE_NAMES_COL,
+    UNIPROT_DAT_ID_COL,
+    UNIPROT_DAT_PROTEIN_NAMES_COL,
+    UNIPROT_DAT_SUBCELLULAR_LOC_COL,
+)
 
 logger = structlog.getLogger()
 
-GENE_SYMBOL_COL = "gene_symbol"
+GENE_SYMBOL_COL = PROTEIN_GENES_SYMBOL_COL
+UNIPROT_ID_COL = PROTEIN_GENES_UNIPROT_COL
 ENSEMBL_ID_COL = "ensembl_id"
-UNIPROT_ID_COL = "uniprot_id"
 PRIMARY_GENE_NAME_COL = "primary_gene_name"
-NCBI_DESCRIPTION_COL = "ncbi_description"
-UNIPROT_DESCRIPTION_COL = "uniprot_description"
-SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
 PROTEIN_NAMES_COL = "protein_names"
 ENSEMBL_DESCRIPTION_COL = "ensembl_description"
-_COMPLEX_SEPARATOR = "_"
-_LIST_JOIN = "; "
+UNIPROT_DESCRIPTION_COL = "uniprot_description"
+SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
 
-INFO_SCHEMA = pl.Schema(
-    {
-        ENSEMBL_ID_COL: pl.String,
-        UNIPROT_ID_COL: pl.String,
-        PRIMARY_GENE_NAME_COL: pl.String,
-        PROTEIN_NAMES_COL: pl.String,
-        ENSEMBL_DESCRIPTION_COL: pl.String,
-        NCBI_DESCRIPTION_COL: pl.String,
-        UNIPROT_DESCRIPTION_COL: pl.String,
-        SUBCELLULAR_LOCALISATION_COL: pl.String,
-    }
-)
+# An evidence code, e.g. " {ECO:0000269|PubMed:12805376}". UniProt writes it between a
+# sentence's full stop and the comment's closing full stop, so dropping it can leave "..".
+_ECO_PATTERN = r"\s*\{ECO:[^}]*\}"
+_THESAURUS_SOURCE_PATTERN = r"\s*\[Source:[^\]]*\]"
+# Consecutive comments of one field are joined by "; " after a full stop; inside a comment, "; "
+# separates items (for example "Cell membrane; Single-pass type I membrane protein").
+_COMMENT_SEPARATOR_PATTERN = r"\.;\s+"
 
-_DISPLAY_KEPT_SCHEMA = pl.Schema(
+_ROWS_SCHEMA = pl.Schema(
     {
         DISPLAY_GENE_COL: pl.String,
         DISPLAY_PROTEIN_COL: pl.String,
         DISPLAY_LOCUS_COL: pl.String,
         DISPLAY_PP_H4_COL: pl.Float64,
         GENE_SYMBOL_COL: pl.String,
+        UNIPROT_ID_COL: pl.String,
     }
 )
 
+_ENSEMBL_SCHEMA = pl.Schema(
+    {
+        GENE_SYMBOL_COL: pl.String,
+        ENSEMBL_ID_COL: pl.String,
+        ENSEMBL_DESCRIPTION_COL: pl.String,
+    }
+)
 
-class InfoLookup(Protocol):
-    def __call__(self, ensembl_ids: list[str]) -> pl.DataFrame:
-        """One row per Ensembl id found, in INFO_SCHEMA."""
-        ...
+_UNIPROT_SCHEMA = pl.Schema(
+    {
+        UNIPROT_ID_COL: pl.String,
+        PRIMARY_GENE_NAME_COL: pl.String,
+        PROTEIN_NAMES_COL: pl.String,
+        UNIPROT_DESCRIPTION_COL: pl.String,
+        SUBCELLULAR_LOCALISATION_COL: pl.String,
+    }
+)
 
+# The annotation columns added to each row.
+INFO_SCHEMA = pl.Schema(
+    {
+        UNIPROT_ID_COL: pl.String,
+        ENSEMBL_ID_COL: pl.String,
+        PRIMARY_GENE_NAME_COL: pl.String,
+        PROTEIN_NAMES_COL: pl.String,
+        ENSEMBL_DESCRIPTION_COL: pl.String,
+        UNIPROT_DESCRIPTION_COL: pl.String,
+        SUBCELLULAR_LOCALISATION_COL: pl.String,
+    }
+)
 
-def _as_text(value: object) -> str | None:
-    """A gget field as text: lists joined by "; ", and missing or blank values as None."""
-    if isinstance(value, (list, tuple, np.ndarray)):
-        parts = [str(v) for v in value if v is not None and not pd.isna(v)]
-        text = _LIST_JOIN.join(parts)
-    elif value is None or (isinstance(value, float) and np.isnan(value)):
-        return None
-    else:
-        text = str(value)
-    return text if text.strip() else None
-
-
-class GgetFetch(Protocol):
-    def __call__(self, ensembl_ids: list[str]) -> pd.DataFrame:
-        """gget.info output: one row per Ensembl id found, indexed by id."""
-        ...
-
-
-@frozen(slots=True)
-class GgetInfoLookup:
-    """gget.info (through fetch), with list-valued fields joined by "; " and blanks as None.
-
-    gget's ncbi_description is often missing upstream, so protein_names and ensembl_description
-    are kept as well.
-    """
-
-    fetch: GgetFetch = fetch_gget_info
-
-    def __call__(self, ensembl_ids: list[str]) -> pl.DataFrame:
-        frame = self.fetch(ensembl_ids)
-        return pl.DataFrame(
-            {
-                ENSEMBL_ID_COL: [str(i) for i in frame.index],
-                **{
-                    name: [
-                        _as_text(v)
-                        for v in (
-                            frame[name]
-                            if name in frame.columns
-                            else [None] * len(frame)
-                        )
-                    ]
-                    for name in INFO_SCHEMA.names()
-                    if name != ENSEMBL_ID_COL
-                },
-            },
-            schema=INFO_SCHEMA,
-        )
-
-
-def _top_loci_by_symbol(display: pl.DataFrame, max_loci: int) -> pl.DataFrame:
-    loci = ranked_display_loci(display, max_loci)
-    return (
-        display.filter(pl.col(DISPLAY_LOCUS_COL).is_in(loci))
-        .with_columns(
-            pl.col(DISPLAY_LOCUS_COL)
-            .replace_strict(loci, list(range(len(loci))), return_dtype=pl.Int64)
-            .alias("_locus_rank")
-        )
-        .sort(["_locus_rank", DISPLAY_PP_H4_COL], descending=[False, True])
-        .with_columns(
-            pl.col(DISPLAY_GENE_COL)
-            .str.split(_COMPLEX_SEPARATOR)
-            .alias(GENE_SYMBOL_COL)
-        )
-        .explode(GENE_SYMBOL_COL)
-        .select(_DISPLAY_KEPT_SCHEMA.names())
-        .cast(_DISPLAY_KEPT_SCHEMA)
-    )
-
-
-def _primary_assembly_ids(thesaurus: pl.DataFrame) -> pl.DataFrame:
-    """Distinct (gene symbol, Ensembl id) pairs of the genes on primary-assembly chromosomes."""
-    return (
-        thesaurus.filter(
-            pl.col(THESAURUS_CHROM_COL)
-            .cast(pl.String)
-            .is_in(sorted(THESAURUS_PRIMARY_CHROMOSOMES))
-        )
-        .select(
-            pl.col(THESAURUS_GENE_NAME_COL).cast(pl.String),
-            pl.col(THESAURUS_ENSEMBL_ID_COL).cast(pl.String),
-        )
-        .drop_nulls()
-        .unique()
-    )
-
-
-def _ensembl_ids(
-    symbols: list[str], primary_ids: pl.DataFrame
-) -> dict[str, str | None]:
-    wanted = list(dict.fromkeys(symbols))
-    matches = primary_ids.filter(pl.col(THESAURUS_GENE_NAME_COL).is_in(wanted))
-    ambiguous = (
-        matches.group_by(THESAURUS_GENE_NAME_COL)
-        .len()
-        .filter(pl.col("len") > 1)[THESAURUS_GENE_NAME_COL]
-        .to_list()
-    )
-    assert not ambiguous, (
-        f"gene symbols with more than one primary-assembly Ensembl id: {ambiguous}"
-    )
-    found = dict(matches.iter_rows())
-    mapping = {symbol: found.get(symbol) for symbol in wanted}
-    for symbol, ensembl_id in mapping.items():
-        if ensembl_id is None:
-            logger.warning(f"gene symbol {symbol} is not in the gene thesaurus")
-    return mapping
-
-
-def _annotate(
-    rows: pl.DataFrame, primary_ids: pl.DataFrame, info_lookup: InfoLookup
-) -> pl.DataFrame:
-    mapping = _ensembl_ids(rows[GENE_SYMBOL_COL].to_list(), primary_ids)
-    with_ids = rows.with_columns(
-        pl.col(GENE_SYMBOL_COL)
-        .replace_strict(mapping, default=None, return_dtype=pl.String)
-        .alias(ENSEMBL_ID_COL)
-    )
-    ids = [i for i in dict.fromkeys(mapping.values()) if i is not None]
-    info = info_lookup(ids) if ids else pl.DataFrame(schema=INFO_SCHEMA)
-    return with_ids.join(
-        info.cast(INFO_SCHEMA).unique(ENSEMBL_ID_COL, keep="first"),
-        on=ENSEMBL_ID_COL,
-        how="left",
-        maintain_order="left",
-    )
+OUTPUT_SCHEMA = pl.Schema({**_ROWS_SCHEMA, **INFO_SCHEMA})
 
 
 def _read_table(fetch: Fetch, task: Task) -> pl.DataFrame:
@@ -231,34 +143,171 @@ def _read_table(fetch: Fetch, task: Task) -> pl.DataFrame:
     )
 
 
+def _null_if_blank(expr: pl.Expr) -> pl.Expr:
+    stripped = expr.str.strip_chars()
+    return pl.when(stripped == "").then(None).otherwise(stripped)
+
+
+def _without_label(column: str, label: str) -> pl.Expr:
+    """A UniProt comment field with its label (e.g. "FUNCTION:") and evidence codes dropped."""
+    return _null_if_blank(
+        pl.col(column)
+        .cast(pl.String)
+        .str.replace_all(f"{label}:", "", literal=True)
+        .str.replace_all(_ECO_PATTERN, "")
+        .str.replace_all(r"\.\.", ".")
+        .str.replace_all(_COMMENT_SEPARATOR_PATTERN, ". ")
+        .str.replace_all(r"\s+", " ")
+    )
+
+
+def _top_loci_by_gene(
+    display: pl.DataFrame, protein_genes: pl.DataFrame, max_loci: int
+) -> pl.DataFrame:
+    loci = ranked_display_loci(display, max_loci)
+    top = (
+        display.filter(pl.col(DISPLAY_LOCUS_COL).is_in(loci))
+        .with_columns(
+            pl.col(DISPLAY_LOCUS_COL)
+            .replace_strict(loci, list(range(len(loci))), return_dtype=pl.Int64)
+            .alias("_locus_rank")
+        )
+        .sort(["_locus_rank", DISPLAY_PP_H4_COL], descending=[False, True])
+    )
+    missing = set(top[DISPLAY_PROTEIN_COL].to_list()) - set(
+        protein_genes[PROTEIN_GENES_PROTEIN_ID_COL].to_list()
+    )
+    assert not missing, f"display proteins missing from the protein table: {missing}"
+    return (
+        top.join(
+            protein_genes,
+            left_on=DISPLAY_PROTEIN_COL,
+            right_on=PROTEIN_GENES_PROTEIN_ID_COL,
+            how="left",
+            maintain_order="left",
+        )
+        .select(_ROWS_SCHEMA.names())
+        .cast(_ROWS_SCHEMA)
+    )
+
+
+def _ensembl_by_symbol(thesaurus: pl.DataFrame, symbols: list[str]) -> pl.DataFrame:
+    """Ensembl id and description of each symbol on a primary-assembly chromosome."""
+    found = (
+        thesaurus.filter(
+            pl.col(THESAURUS_CHROM_COL)
+            .cast(pl.String)
+            .is_in(sorted(THESAURUS_PRIMARY_CHROMOSOMES))
+            & pl.col(THESAURUS_GENE_NAME_COL).cast(pl.String).is_in(symbols)
+        )
+        .select(
+            pl.col(THESAURUS_GENE_NAME_COL).cast(pl.String).alias(GENE_SYMBOL_COL),
+            pl.col(THESAURUS_ENSEMBL_ID_COL).cast(pl.String).alias(ENSEMBL_ID_COL),
+            _null_if_blank(
+                pl.col(THESAURUS_DESCRIPTION_COL)
+                .cast(pl.String)
+                .str.replace_all(_THESAURUS_SOURCE_PATTERN, "")
+            ).alias(ENSEMBL_DESCRIPTION_COL),
+        )
+        .unique(subset=[GENE_SYMBOL_COL, ENSEMBL_ID_COL], keep="first")
+    )
+    ambiguous = (
+        found.group_by(GENE_SYMBOL_COL)
+        .len()
+        .filter(pl.col("len") > 1)[GENE_SYMBOL_COL]
+        .to_list()
+    )
+    assert not ambiguous, (
+        f"gene symbols with more than one primary-assembly Ensembl id: {ambiguous}"
+    )
+    for symbol in sorted(set(symbols) - set(found[GENE_SYMBOL_COL].to_list())):
+        logger.warning(f"gene symbol {symbol} is not in the gene thesaurus")
+    return found.cast(_ENSEMBL_SCHEMA)
+
+
+def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.DataFrame:
+    found = uniprot.filter(
+        pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).is_in(accessions)
+    ).select(
+        pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).alias(UNIPROT_ID_COL),
+        pl.col(UNIPROT_DAT_GENE_NAMES_COL)
+        .cast(pl.String)
+        .str.split(" ")
+        .list.first()
+        .alias(PRIMARY_GENE_NAME_COL),
+        _null_if_blank(pl.col(UNIPROT_DAT_PROTEIN_NAMES_COL).cast(pl.String)).alias(
+            PROTEIN_NAMES_COL
+        ),
+        _without_label(UNIPROT_DAT_FUNCTION_COL, "FUNCTION").alias(
+            UNIPROT_DESCRIPTION_COL
+        ),
+        _without_label(UNIPROT_DAT_SUBCELLULAR_LOC_COL, "SUBCELLULAR LOCATION").alias(
+            SUBCELLULAR_LOCALISATION_COL
+        ),
+    )
+    for accession in sorted(set(accessions) - set(found[UNIPROT_ID_COL].to_list())):
+        logger.warning(f"UniProt accession {accession} is not in the UniProt table")
+    return found.cast(_UNIPROT_SCHEMA)
+
+
+def _annotate(
+    rows: pl.DataFrame, thesaurus: pl.DataFrame, uniprot: pl.DataFrame
+) -> pl.DataFrame:
+    ensembl = _ensembl_by_symbol(thesaurus, rows[GENE_SYMBOL_COL].unique().to_list())
+    annotations = _uniprot_by_accession(
+        uniprot, rows[UNIPROT_ID_COL].unique().to_list()
+    )
+    return (
+        rows.join(ensembl, on=GENE_SYMBOL_COL, how="left", maintain_order="left")
+        .join(annotations, on=UNIPROT_ID_COL, how="left", maintain_order="left")
+        .select(OUTPUT_SCHEMA.names())
+        .cast(OUTPUT_SCHEMA)
+    )
+
+
 @frozen(slots=True)
 class ColocProteinInfoTask(Task):
     """
     display_task: a ColocDisplayTableTask (any Task producing its table).
+    protein_table_task: the proteomics source's protein table (for UKB-PPP, the Sun et al. 2023
+        ST3 sheet), read by protein_genes_reader.
+    protein_genes_reader: lists the gene symbol and UniProt accession of each gene behind a
+        protein.
+    uniprot_task: the bulk UniProt export (for example UNIPROT_LOOKUP).
     gene_thesaurus_task: the gene thesaurus, mapping gene symbols to Ensembl gene ids.
     max_loci: only the proteins at the top max_loci loci (best PP.H4 first) are annotated.
-    info_lookup: annotates Ensembl gene ids.
     """
 
     meta: Meta
     display_task: Task
+    protein_table_task: Task
+    protein_genes_reader: ProteinGenesReader
+    uniprot_task: Task
     gene_thesaurus_task: Task
     max_loci: int
-    info_lookup: InfoLookup
 
     def __attrs_post_init__(self) -> None:
         assert self.max_loci >= 1, f"max_loci must be at least 1: {self.max_loci}"
 
     @property
     def deps(self) -> list[Task]:
-        return [self.display_task, self.gene_thesaurus_task]
+        return [
+            self.display_task,
+            self.protein_table_task,
+            self.uniprot_task,
+            self.gene_thesaurus_task,
+        ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        display = _read_table(fetch, self.display_task)
+        rows = _top_loci_by_gene(
+            _read_table(fetch, self.display_task),
+            self.protein_genes_reader(_read_table(fetch, self.protein_table_task)),
+            self.max_loci,
+        )
         table = _annotate(
-            _top_loci_by_symbol(display, self.max_loci),
-            _primary_assembly_ids(_read_table(fetch, self.gene_thesaurus_task)),
-            self.info_lookup,
+            rows,
+            thesaurus=_read_table(fetch, self.gene_thesaurus_task),
+            uniprot=_read_table(fetch, self.uniprot_task),
         )
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet"
         write_parquet_table(
@@ -275,9 +324,11 @@ class ColocProteinInfoTask(Task):
         cls,
         asset_id: str,
         display_task: Task,
+        protein_table_task: Task,
+        protein_genes_reader: ProteinGenesReader,
+        uniprot_task: Task,
         gene_thesaurus_task: Task,
         max_loci: int = 10,
-        info_lookup: InfoLookup = GgetInfoLookup(),
     ) -> "ColocProteinInfoTask":
         source_meta = display_task.meta
         assert isinstance(source_meta, ResultTableMeta), (
@@ -293,7 +344,9 @@ class ColocProteinInfoTask(Task):
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             ),
             display_task=display_task,
+            protein_table_task=protein_table_task,
+            protein_genes_reader=protein_genes_reader,
+            uniprot_task=uniprot_task,
             gene_thesaurus_task=gene_thesaurus_task,
             max_loci=max_loci,
-            info_lookup=info_lookup,
         )

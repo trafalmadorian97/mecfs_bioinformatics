@@ -26,6 +26,10 @@ ST3_OLINK_ID_COL = "Olink ID"
 ST3_GENE_CHROM_COL = "Gene CHROM"
 ST3_GENE_START_COL = "Gene start"
 ST3_GENE_END_COL = "Gene end"
+# ";"-separated gene symbols and UniProt accessions of the assay target, in matching order: a
+# protein complex lists one symbol and one accession per gene.
+ST3_GENE_SYMBOL_COL = "Gene symbol"
+ST3_UNIPROT_COL = "UniProt"
 
 _X_CHROMOSOME = 23
 
