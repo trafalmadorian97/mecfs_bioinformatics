@@ -80,6 +80,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_varia
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
 )
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_coloc import DECODE_ME_PPP_COLOC_EXPLORATORY_2, \
+    DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS, DECODE_ME_PPP_COLOC_EXPLORATORY_2_PROTEIN_INFO
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_rg import (
     DECODE_ME_PPP_RG_CIS_EXCLUDED,
 )
@@ -298,6 +300,9 @@ ALL_FIGURE_TASKS: list[Task] = [
     DECODE_ME_S_LDSC.partitioned_tasks[CORCES_ATAC_REF].multiple_testing_task_markdown,
     DECODE_ME_S_LDSC.partitioned_tasks[CAHOY_CNS_REF].multiple_testing_task_markdown,
     DECODE_ME_S_LDSC.partitioned_tasks[GTEX_BRAIN_REF].multiple_testing_task_markdown,
+    DECODE_ME_PPP_COLOC_EXPLORATORY_2.display_task,
+    DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS.png_task,
+    DECODE_ME_PPP_COLOC_EXPLORATORY_2_PROTEIN_INFO,
     # SUSIE credible-set variant lists
     DECODE_ME_GWAS_37_CHR1_174_128_548_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
     DECODE_ME_GWAS_37_CHR6_97_505_620_FINEMAP_PALINDROMES.susie_base_credible_set_markdown_table,
