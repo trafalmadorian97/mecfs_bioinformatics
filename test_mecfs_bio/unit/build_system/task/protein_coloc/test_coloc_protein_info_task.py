@@ -72,7 +72,7 @@ _UNIPROT_ROWS = [
         "P00002",
         "Protein B",
         None,
-        "SUBCELLULAR LOCATION: [Cleaved B]: Secreted. {ECO:0000269|PubMed:2}; "
+        "SUBCELLULAR LOCATION: [Cleaved B]: Secreted {ECO:0000269|PubMed:2}.; "
         "SUBCELLULAR LOCATION: Cell membrane; Single-pass type I membrane protein.",
     ),
     ("P00003", "Protein C", None, None),
@@ -195,17 +195,19 @@ def test_one_row_per_gene_of_top_loci(tmp_path: Path) -> None:
     assert info[PROTEIN_NAMES_COL].to_list() == ["Protein A", "Protein B"]
 
 
-def test_uniprot_text_is_cleaned(tmp_path: Path) -> None:
-    """Field labels and evidence codes are dropped."""
+def test_uniprot_field_labels_dropped_and_evidence_codes_kept(tmp_path: Path) -> None:
     info = _info(tmp_path, [("AAA", "OID1", "L1", 0.95)])
-    assert info[UNIPROT_DESCRIPTION_COL].to_list() == ["Binds things."]
-    assert info[SUBCELLULAR_LOCALISATION_COL].to_list() == ["Secreted."]
+    assert info[UNIPROT_DESCRIPTION_COL].to_list() == [
+        "Binds things. {ECO:0000269|PubMed:1}."
+    ]
+    assert info[SUBCELLULAR_LOCALISATION_COL].to_list() == ["Secreted {ECO:0000305}."]
 
 
 def test_multiple_uniprot_comments_join_as_sentences(tmp_path: Path) -> None:
     info = _info(tmp_path, [("BBB", "OID2", "L1", 0.95)])
     assert info[SUBCELLULAR_LOCALISATION_COL].to_list() == [
-        "[Cleaved B]: Secreted. Cell membrane; Single-pass type I membrane protein."
+        "[Cleaved B]: Secreted {ECO:0000269|PubMed:2}. Cell membrane; "
+        "Single-pass type I membrane protein."
     ]
 
 

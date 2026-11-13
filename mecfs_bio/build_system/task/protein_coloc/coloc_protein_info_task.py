@@ -13,8 +13,8 @@ protein_accessions_reader): a protein complex such as EBI3_IL27 has one accessio
   id. An accession encoded by duplicated genes (for example P59665, by DEFA1 and DEFA1B) gets
   one row per gene.
 - UniProt (joined on the accession): protein names, function and subcellular location, from a
-  bulk export of reviewed human UniProt entries. Field labels such as "FUNCTION:" and evidence
-  codes such as {ECO:0000269|PubMed:123} are dropped.
+  bulk export of reviewed human UniProt entries. Field labels such as "FUNCTION:" are dropped;
+  evidence codes such as {ECO:0000269|PubMed:123} are kept.
 
 An accession missing from HGNC or from UniProt keeps its row with null columns, and a warning is
 logged. A display protein missing from the protein table fails the task. An empty display table
@@ -79,9 +79,6 @@ UNIPROT_DESCRIPTION_COL = "uniprot_description"
 SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
 _ROW_INDEX_COL = "_row"
 
-# An evidence code, e.g. " {ECO:0000269|PubMed:12805376}". UniProt writes it between a
-# sentence's full stop and the comment's closing full stop, so dropping it can leave "..".
-_ECO_PATTERN = r"\s*\{ECO:[^}]*\}"
 # Consecutive comments of one field are joined by "; " after a full stop; inside a comment, "; "
 # separates items (for example "Cell membrane; Single-pass type I membrane protein").
 _COMMENT_SEPARATOR_PATTERN = r"\.;\s+"
@@ -142,13 +139,16 @@ def _null_if_blank(expr: pl.Expr) -> pl.Expr:
 
 
 def _without_label(column: str, label: str) -> pl.Expr:
-    """A UniProt comment field with its label (e.g. "FUNCTION:") and evidence codes dropped."""
+    """A UniProt comment field with its label (e.g. "FUNCTION:") dropped.
+
+    Evidence codes such as {ECO:0000269|PubMed:12805376} are kept: they say whether a statement
+    was shown experimentally (ECO:0000269), inferred by similarity (ECO:0000250) or predicted
+    (ECO:0000255), and cite the source.
+    """
     return _null_if_blank(
         pl.col(column)
         .cast(pl.String)
         .str.replace_all(f"{label}:", "", literal=True)
-        .str.replace_all(_ECO_PATTERN, "")
-        .str.replace_all(r"\.\.", ".")
         .str.replace_all(_COMMENT_SEPARATOR_PATTERN, ". ")
         .str.replace_all(r"\s+", " ")
     )
