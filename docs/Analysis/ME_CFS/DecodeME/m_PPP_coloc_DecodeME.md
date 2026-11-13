@@ -29,7 +29,7 @@ static_img_embed("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_stack_plot
 
 
 
-I looked up the colocalizing proteins in some proteomics databases.  The results follow.
+I looked up the colocalizing proteins in some proteomics databases.  The results follow:
 
 
 {{
@@ -37,6 +37,6 @@ coloc_protein_info_table("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_pr
 }}
 
 
-
+At a glance, it is hard to pick out a general theme, but it is notable that both DRAXIN and CRIM1 pertain to nervous system development.
 
 [^trim_note]: The table is trimmed to include only proteins with $P(H_4)\ge 0.8$.
