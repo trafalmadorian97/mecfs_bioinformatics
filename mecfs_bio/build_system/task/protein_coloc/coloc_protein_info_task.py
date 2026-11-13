@@ -1,26 +1,24 @@
 """
 Annotations of the colocalizing proteins at the top loci of a coloc display table, from static
-in-repo reference tables (no network calls).
+in-repo reference tables (no network calls). Every join is on a UniProt accession, never on a
+gene symbol: symbols go stale (UKB-PPP lists WARS, now WARS1) and collide.
 
 The loci are ranked by their best PP.H4 (the posterior probability of a shared causal variant)
-and at most max_loci are kept. Each display row at those loci becomes one row per gene behind the
-protein, as the proteomics source's protein table lists them (via protein_genes_reader): a
-protein complex such as EBI3_IL27 is measured as one protein but has one gene symbol and one
-UniProt accession per gene.
+and at most max_loci are kept. Each display row at those loci becomes one row per UniProt
+accession of the protein, as the proteomics source's protein table lists them (via
+protein_accessions_reader): a protein complex such as EBI3_IL27 has one accession per subunit.
 
-- UniProt (joined on the accession): primary gene name, protein names, function and subcellular
-  location, from a bulk export of reviewed human UniProt entries. Field labels such as
-  "FUNCTION:" and evidence codes such as {ECO:0000269|PubMed:123} are dropped.
-- Ensembl (joined on the gene symbol): Ensembl gene id and description, from the gene thesaurus
-  (a static Ensembl BioMart export), using only genes on primary-assembly chromosomes, since
-  alternate-haplotype scaffolds repeat primary-assembly genes under the same symbol.
+- Genes (joined on the accession): the HGNC complete set gives the gene's current approved
+  symbol, its name and its Ensembl gene id. An accession encoded by duplicated genes (for
+  example P59665, by DEFA1 and DEFA1B) gets one row per gene. Readthrough genes (a transcript
+  spanning two adjacent genes, such as PTGES3L-AARSD1) are skipped.
+- UniProt (joined on the accession): protein names, function and subcellular location, from a
+  bulk export of reviewed human UniProt entries. Field labels such as "FUNCTION:" and evidence
+  codes such as {ECO:0000269|PubMed:123} are dropped.
 
-Joining UniProt on the accession keeps the UniProt annotations of proteins the source lists
-under an outdated symbol (for example WARS, now WARS1); only their Ensembl columns are null. An
-accession missing from UniProt (for example a merged entry) or a symbol missing from the
-thesaurus keeps its row with null columns, and a warning is logged. A display protein missing
-from the protein table, or a symbol with more than one primary-assembly Ensembl id, fails the
-task. An empty display table gives an empty table with the full schema.
+An accession missing from HGNC or from UniProt keeps its row with null columns, and a warning is
+logged. A display protein missing from the protein table fails the task. An empty display table
+gives an empty table with the full schema.
 """
 
 from pathlib import Path, PurePath
@@ -45,19 +43,20 @@ from mecfs_bio.build_system.task.dataframe_output import write_parquet_table
 from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
     ranked_display_loci,
 )
-from mecfs_bio.build_system.task.protein_coloc.protein_genes_reader import (
-    PROTEIN_GENES_PROTEIN_ID_COL,
-    PROTEIN_GENES_SYMBOL_COL,
-    PROTEIN_GENES_UNIPROT_COL,
-    ProteinGenesReader,
+from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import (
+    PROTEIN_ACCESSIONS_PROTEIN_ID_COL,
+    PROTEIN_ACCESSIONS_UNIPROT_COL,
+    ProteinAccessionsReader,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.constants.gene_thesaurus_constants import (
-    THESAURUS_CHROM_COL,
-    THESAURUS_DESCRIPTION_COL,
-    THESAURUS_ENSEMBL_ID_COL,
-    THESAURUS_GENE_NAME_COL,
-    THESAURUS_PRIMARY_CHROMOSOMES,
+from mecfs_bio.constants.hgnc_constants import (
+    HGNC_ENSEMBL_ID_COL,
+    HGNC_LIST_SEPARATOR,
+    HGNC_LOCUS_TYPE_COL,
+    HGNC_NAME_COL,
+    HGNC_READTHROUGH_LOCUS_TYPE,
+    HGNC_SYMBOL_COL,
+    HGNC_UNIPROT_IDS_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_GENE_COL,
@@ -67,7 +66,6 @@ from mecfs_bio.constants.protein_coloc_constants import (
 )
 from mecfs_bio.constants.uniprot_constants import (
     UNIPROT_DAT_FUNCTION_COL,
-    UNIPROT_DAT_GENE_NAMES_COL,
     UNIPROT_DAT_ID_COL,
     UNIPROT_DAT_PROTEIN_NAMES_COL,
     UNIPROT_DAT_SUBCELLULAR_LOC_COL,
@@ -75,19 +73,18 @@ from mecfs_bio.constants.uniprot_constants import (
 
 logger = structlog.getLogger()
 
-GENE_SYMBOL_COL = PROTEIN_GENES_SYMBOL_COL
-UNIPROT_ID_COL = PROTEIN_GENES_UNIPROT_COL
+UNIPROT_ID_COL = PROTEIN_ACCESSIONS_UNIPROT_COL
+GENE_SYMBOL_COL = "gene_symbol"
+GENE_NAME_COL = "gene_name"
 ENSEMBL_ID_COL = "ensembl_id"
-PRIMARY_GENE_NAME_COL = "primary_gene_name"
 PROTEIN_NAMES_COL = "protein_names"
-ENSEMBL_DESCRIPTION_COL = "ensembl_description"
 UNIPROT_DESCRIPTION_COL = "uniprot_description"
 SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
+_ROW_INDEX_COL = "_row"
 
 # An evidence code, e.g. " {ECO:0000269|PubMed:12805376}". UniProt writes it between a
 # sentence's full stop and the comment's closing full stop, so dropping it can leave "..".
 _ECO_PATTERN = r"\s*\{ECO:[^}]*\}"
-_THESAURUS_SOURCE_PATTERN = r"\s*\[Source:[^\]]*\]"
 # Consecutive comments of one field are joined by "; " after a full stop; inside a comment, "; "
 # separates items (for example "Cell membrane; Single-pass type I membrane protein").
 _COMMENT_SEPARATOR_PATTERN = r"\.;\s+"
@@ -98,37 +95,36 @@ _ROWS_SCHEMA = pl.Schema(
         DISPLAY_PROTEIN_COL: pl.String,
         DISPLAY_LOCUS_COL: pl.String,
         DISPLAY_PP_H4_COL: pl.Float64,
-        GENE_SYMBOL_COL: pl.String,
         UNIPROT_ID_COL: pl.String,
     }
 )
 
-_ENSEMBL_SCHEMA = pl.Schema(
+_GENES_SCHEMA = pl.Schema(
     {
+        UNIPROT_ID_COL: pl.String,
         GENE_SYMBOL_COL: pl.String,
         ENSEMBL_ID_COL: pl.String,
-        ENSEMBL_DESCRIPTION_COL: pl.String,
+        GENE_NAME_COL: pl.String,
     }
 )
 
 _UNIPROT_SCHEMA = pl.Schema(
     {
         UNIPROT_ID_COL: pl.String,
-        PRIMARY_GENE_NAME_COL: pl.String,
         PROTEIN_NAMES_COL: pl.String,
         UNIPROT_DESCRIPTION_COL: pl.String,
         SUBCELLULAR_LOCALISATION_COL: pl.String,
     }
 )
 
-# The annotation columns added to each row.
+# The annotation columns added to each display row.
 INFO_SCHEMA = pl.Schema(
     {
         UNIPROT_ID_COL: pl.String,
+        GENE_SYMBOL_COL: pl.String,
         ENSEMBL_ID_COL: pl.String,
-        PRIMARY_GENE_NAME_COL: pl.String,
+        GENE_NAME_COL: pl.String,
         PROTEIN_NAMES_COL: pl.String,
-        ENSEMBL_DESCRIPTION_COL: pl.String,
         UNIPROT_DESCRIPTION_COL: pl.String,
         SUBCELLULAR_LOCALISATION_COL: pl.String,
     }
@@ -161,8 +157,8 @@ def _without_label(column: str, label: str) -> pl.Expr:
     )
 
 
-def _top_loci_by_gene(
-    display: pl.DataFrame, protein_genes: pl.DataFrame, max_loci: int
+def _top_loci_by_accession(
+    display: pl.DataFrame, protein_accessions: pl.DataFrame, max_loci: int
 ) -> pl.DataFrame:
     loci = ranked_display_loci(display, max_loci)
     top = (
@@ -175,14 +171,14 @@ def _top_loci_by_gene(
         .sort(["_locus_rank", DISPLAY_PP_H4_COL], descending=[False, True])
     )
     missing = set(top[DISPLAY_PROTEIN_COL].to_list()) - set(
-        protein_genes[PROTEIN_GENES_PROTEIN_ID_COL].to_list()
+        protein_accessions[PROTEIN_ACCESSIONS_PROTEIN_ID_COL].to_list()
     )
     assert not missing, f"display proteins missing from the protein table: {missing}"
     return (
         top.join(
-            protein_genes,
+            protein_accessions,
             left_on=DISPLAY_PROTEIN_COL,
-            right_on=PROTEIN_GENES_PROTEIN_ID_COL,
+            right_on=PROTEIN_ACCESSIONS_PROTEIN_ID_COL,
             how="left",
             maintain_order="left",
         )
@@ -191,38 +187,29 @@ def _top_loci_by_gene(
     )
 
 
-def _ensembl_by_symbol(thesaurus: pl.DataFrame, symbols: list[str]) -> pl.DataFrame:
-    """Ensembl id and description of each symbol on a primary-assembly chromosome."""
+def _genes_by_accession(hgnc: pl.DataFrame, accessions: list[str]) -> pl.DataFrame:
+    """The non-readthrough HGNC genes encoding each accession, one row per (accession, gene)."""
     found = (
-        thesaurus.filter(
-            pl.col(THESAURUS_CHROM_COL)
-            .cast(pl.String)
-            .is_in(sorted(THESAURUS_PRIMARY_CHROMOSOMES))
-            & pl.col(THESAURUS_GENE_NAME_COL).cast(pl.String).is_in(symbols)
-        )
+        hgnc.filter(pl.col(HGNC_LOCUS_TYPE_COL) != HGNC_READTHROUGH_LOCUS_TYPE)
         .select(
-            pl.col(THESAURUS_GENE_NAME_COL).cast(pl.String).alias(GENE_SYMBOL_COL),
-            pl.col(THESAURUS_ENSEMBL_ID_COL).cast(pl.String).alias(ENSEMBL_ID_COL),
-            _null_if_blank(
-                pl.col(THESAURUS_DESCRIPTION_COL)
-                .cast(pl.String)
-                .str.replace_all(_THESAURUS_SOURCE_PATTERN, "")
-            ).alias(ENSEMBL_DESCRIPTION_COL),
+            pl.col(HGNC_UNIPROT_IDS_COL)
+            .cast(pl.String)
+            .str.split(HGNC_LIST_SEPARATOR)
+            .alias(UNIPROT_ID_COL),
+            pl.col(HGNC_SYMBOL_COL).cast(pl.String).alias(GENE_SYMBOL_COL),
+            _null_if_blank(pl.col(HGNC_ENSEMBL_ID_COL).cast(pl.String)).alias(
+                ENSEMBL_ID_COL
+            ),
+            _null_if_blank(pl.col(HGNC_NAME_COL).cast(pl.String)).alias(GENE_NAME_COL),
         )
-        .unique(subset=[GENE_SYMBOL_COL, ENSEMBL_ID_COL], keep="first")
+        .explode(UNIPROT_ID_COL)
+        .with_columns(pl.col(UNIPROT_ID_COL).str.strip_chars())
+        .filter(pl.col(UNIPROT_ID_COL).is_in(accessions))
+        .unique()
     )
-    ambiguous = (
-        found.group_by(GENE_SYMBOL_COL)
-        .len()
-        .filter(pl.col("len") > 1)[GENE_SYMBOL_COL]
-        .to_list()
-    )
-    assert not ambiguous, (
-        f"gene symbols with more than one primary-assembly Ensembl id: {ambiguous}"
-    )
-    for symbol in sorted(set(symbols) - set(found[GENE_SYMBOL_COL].to_list())):
-        logger.warning(f"gene symbol {symbol} is not in the gene thesaurus")
-    return found.cast(_ENSEMBL_SCHEMA)
+    for accession in sorted(set(accessions) - set(found[UNIPROT_ID_COL].to_list())):
+        logger.warning(f"UniProt accession {accession} is not in the HGNC table")
+    return found.cast(_GENES_SCHEMA)
 
 
 def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.DataFrame:
@@ -230,11 +217,6 @@ def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.Da
         pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).is_in(accessions)
     ).select(
         pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).alias(UNIPROT_ID_COL),
-        pl.col(UNIPROT_DAT_GENE_NAMES_COL)
-        .cast(pl.String)
-        .str.split(" ")
-        .list.first()
-        .alias(PRIMARY_GENE_NAME_COL),
         _null_if_blank(pl.col(UNIPROT_DAT_PROTEIN_NAMES_COL).cast(pl.String)).alias(
             PROTEIN_NAMES_COL
         ),
@@ -251,15 +233,14 @@ def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.Da
 
 
 def _annotate(
-    rows: pl.DataFrame, thesaurus: pl.DataFrame, uniprot: pl.DataFrame
+    rows: pl.DataFrame, hgnc: pl.DataFrame, uniprot: pl.DataFrame
 ) -> pl.DataFrame:
-    ensembl = _ensembl_by_symbol(thesaurus, rows[GENE_SYMBOL_COL].unique().to_list())
-    annotations = _uniprot_by_accession(
-        uniprot, rows[UNIPROT_ID_COL].unique().to_list()
-    )
+    accessions = rows[UNIPROT_ID_COL].drop_nulls().unique().to_list()
     return (
-        rows.join(ensembl, on=GENE_SYMBOL_COL, how="left", maintain_order="left")
-        .join(annotations, on=UNIPROT_ID_COL, how="left", maintain_order="left")
+        rows.with_row_index(_ROW_INDEX_COL)
+        .join(_genes_by_accession(hgnc, accessions), on=UNIPROT_ID_COL, how="left")
+        .join(_uniprot_by_accession(uniprot, accessions), on=UNIPROT_ID_COL, how="left")
+        .sort([_ROW_INDEX_COL, GENE_SYMBOL_COL], nulls_last=True)
         .select(OUTPUT_SCHEMA.names())
         .cast(OUTPUT_SCHEMA)
     )
@@ -270,20 +251,19 @@ class ColocProteinInfoTask(Task):
     """
     display_task: a ColocDisplayTableTask (any Task producing its table).
     protein_table_task: the proteomics source's protein table (for UKB-PPP, the Sun et al. 2023
-        ST3 sheet), read by protein_genes_reader.
-    protein_genes_reader: lists the gene symbol and UniProt accession of each gene behind a
-        protein.
+        ST3 sheet), read by protein_accessions_reader.
+    protein_accessions_reader: lists the UniProt accessions of each protein.
     uniprot_task: the bulk UniProt export (for example UNIPROT_LOOKUP).
-    gene_thesaurus_task: the gene thesaurus, mapping gene symbols to Ensembl gene ids.
+    hgnc_task: the HGNC complete set, mapping UniProt accessions to genes.
     max_loci: only the proteins at the top max_loci loci (best PP.H4 first) are annotated.
     """
 
     meta: Meta
     display_task: Task
     protein_table_task: Task
-    protein_genes_reader: ProteinGenesReader
+    protein_accessions_reader: ProteinAccessionsReader
     uniprot_task: Task
-    gene_thesaurus_task: Task
+    hgnc_task: Task
     max_loci: int
 
     def __attrs_post_init__(self) -> None:
@@ -295,18 +275,18 @@ class ColocProteinInfoTask(Task):
             self.display_task,
             self.protein_table_task,
             self.uniprot_task,
-            self.gene_thesaurus_task,
+            self.hgnc_task,
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        rows = _top_loci_by_gene(
+        rows = _top_loci_by_accession(
             _read_table(fetch, self.display_task),
-            self.protein_genes_reader(_read_table(fetch, self.protein_table_task)),
+            self.protein_accessions_reader(_read_table(fetch, self.protein_table_task)),
             self.max_loci,
         )
         table = _annotate(
             rows,
-            thesaurus=_read_table(fetch, self.gene_thesaurus_task),
+            hgnc=_read_table(fetch, self.hgnc_task),
             uniprot=_read_table(fetch, self.uniprot_task),
         )
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet"
@@ -325,9 +305,9 @@ class ColocProteinInfoTask(Task):
         asset_id: str,
         display_task: Task,
         protein_table_task: Task,
-        protein_genes_reader: ProteinGenesReader,
+        protein_accessions_reader: ProteinAccessionsReader,
         uniprot_task: Task,
-        gene_thesaurus_task: Task,
+        hgnc_task: Task,
         max_loci: int = 10,
     ) -> "ColocProteinInfoTask":
         source_meta = display_task.meta
@@ -345,8 +325,8 @@ class ColocProteinInfoTask(Task):
             ),
             display_task=display_task,
             protein_table_task=protein_table_task,
-            protein_genes_reader=protein_genes_reader,
+            protein_accessions_reader=protein_accessions_reader,
             uniprot_task=uniprot_task,
-            gene_thesaurus_task=gene_thesaurus_task,
+            hgnc_task=hgnc_task,
             max_loci=max_loci,
         )

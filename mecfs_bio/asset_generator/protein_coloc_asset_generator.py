@@ -14,9 +14,6 @@ from typing import Literal
 
 from attrs import frozen
 
-from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
-    GENE_THESAURUS,
-)
 from mecfs_bio.assets.reference_data.genetic_map.genetic_map_hg38 import (
     GENETIC_MAP_HG38,
 )
@@ -26,6 +23,7 @@ from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
 from mecfs_bio.assets.reference_data.gnomad.gnomad_allele_frequency_panels import (
     GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
 )
+from mecfs_bio.assets.reference_data.hgnc.hgnc_complete_set import HGNC_COMPLETE_SET
 from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez_gene_locations_data_build_38_unzipped import (
     MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
 )
@@ -55,8 +53,8 @@ from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
     DenseWindowFetcher,
 )
-from mecfs_bio.build_system.task.protein_coloc.protein_genes_reader import (
-    St3ProteinGenesReader,
+from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import (
+    St3ProteinAccessionsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
     ProteinHitTableTask,
@@ -190,8 +188,8 @@ def generate_coloc_protein_info_task(
 ) -> ColocProteinInfoTask:
     """UniProt and Ensembl annotations of the colocalizing proteins at the top display-table loci.
 
-    Only UKB-PPP runs are supported: the genes behind each protein are read from the Sun et al.
-    2023 ST3 sheet, the run's gene-coordinate table.
+    Only UKB-PPP runs are supported: the UniProt accessions of each protein are read from the
+    Sun et al. 2023 ST3 sheet, the run's gene-coordinate table.
     """
     coloc_task = group.coloc_task
     assert isinstance(coloc_task.gene_coords_reader, St3GeneCoordsReader), (
@@ -202,8 +200,8 @@ def generate_coloc_protein_info_task(
         asset_id=asset_id,
         display_task=group.display_task,
         protein_table_task=coloc_task.gene_coords_task,
-        protein_genes_reader=St3ProteinGenesReader(),
+        protein_accessions_reader=St3ProteinAccessionsReader(),
         uniprot_task=UNIPROT_LOOKUP,
-        gene_thesaurus_task=GENE_THESAURUS,
+        hgnc_task=HGNC_COMPLETE_SET,
         max_loci=max_loci,
     )
