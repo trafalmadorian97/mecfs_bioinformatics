@@ -17,9 +17,10 @@ from mecfs_bio.build_system.task.ppp_ldsc.gene_coords import (
 )
 from mecfs_bio.build_system.task.protein_coloc.coloc_protein_info_task import (
     ENSEMBL_ID_COL,
+    EVIDENCE_COL,
     GENE_NAME_COL,
     GENE_SYMBOL_COL,
-    INFO_SCHEMA,
+    OUTPUT_SCHEMA,
     PROTEIN_NAMES_COL,
     SUBCELLULAR_LOCALISATION_COL,
     UNIPROT_DESCRIPTION_COL,
@@ -75,7 +76,14 @@ _UNIPROT_ROWS = [
         "SUBCELLULAR LOCATION: [Cleaved B]: Secreted {ECO:0000269|PubMed:2}.; "
         "SUBCELLULAR LOCATION: Cell membrane; Single-pass type I membrane protein.",
     ),
-    ("P00003", "Protein C", None, None),
+    (
+        "P00003",
+        "Protein C",
+        "FUNCTION: Does C (PubMed:5). {ECO:0000269|PubMed:5, "
+        "ECO:0000250|UniProtKB:Q8R4Y0}. Also D. {ECO:0000269|PubMed:6, "
+        "ECO:0000269|PubMed:5, ECO:0009999}.",
+        None,
+    ),
     ("P23381", "Tryptophan--tRNA ligase", "FUNCTION: Ligase.", None),
 ]
 
@@ -185,59 +193,90 @@ def test_one_row_per_gene_of_top_loci(tmp_path: Path) -> None:
         ],
         max_loci=1,
     )
-    assert info.select(
-        DISPLAY_PROTEIN_COL, UNIPROT_ID_COL, GENE_SYMBOL_COL, ENSEMBL_ID_COL
-    ).rows() == [
-        ("OID1", "P00001", "AAA", "ENSG_AAA"),
-        ("OID2", "P00002", "BBB", "ENSG_BBB"),
+    assert info.select(DISPLAY_GENE_COL, GENE_NAME_COL, PROTEIN_NAMES_COL).rows() == [
+        ("AAA", "gene A", "Protein A"),
+        ("BBB", "gene B", "Protein B"),
     ]
-    assert info[GENE_NAME_COL].to_list() == ["gene A", "gene B"]
-    assert info[PROTEIN_NAMES_COL].to_list() == ["Protein A", "Protein B"]
 
 
-def test_uniprot_field_labels_dropped_and_evidence_codes_kept(tmp_path: Path) -> None:
+def test_output_columns(tmp_path: Path) -> None:
     info = _info(tmp_path, [("AAA", "OID1", "L1", 0.95)])
-    assert info[UNIPROT_DESCRIPTION_COL].to_list() == [
-        "Binds things. {ECO:0000269|PubMed:1}."
+    assert info.columns == [
+        DISPLAY_GENE_COL,
+        DISPLAY_PROTEIN_COL,
+        DISPLAY_LOCUS_COL,
+        DISPLAY_PP_H4_COL,
+        UNIPROT_ID_COL,
+        GENE_SYMBOL_COL,
+        ENSEMBL_ID_COL,
+        GENE_NAME_COL,
+        PROTEIN_NAMES_COL,
+        UNIPROT_DESCRIPTION_COL,
+        SUBCELLULAR_LOCALISATION_COL,
+        EVIDENCE_COL,
     ]
-    assert info[SUBCELLULAR_LOCALISATION_COL].to_list() == ["Secreted {ECO:0000305}."]
+    assert info.select(
+        DISPLAY_PROTEIN_COL, DISPLAY_LOCUS_COL, DISPLAY_PP_H4_COL, UNIPROT_ID_COL
+    ).rows() == [("OID1", "L1", 0.95, "P00001")]
+
+
+def test_evidence_codes_move_to_labelled_evidence_column(tmp_path: Path) -> None:
+    info = _info(tmp_path, [("AAA", "OID1", "L1", 0.95)])
+    assert info.select(
+        UNIPROT_DESCRIPTION_COL, SUBCELLULAR_LOCALISATION_COL, EVIDENCE_COL
+    ).rows() == [
+        ("Binds things.", "Secreted.", "experimental (PubMed:1); curator inference")
+    ]
+
+
+def test_evidence_grouped_by_label_without_duplicates(tmp_path: Path) -> None:
+    info = _info(tmp_path, [("CCC", "OID3", "L1", 0.95)])
+    assert info[UNIPROT_DESCRIPTION_COL].to_list() == ["Does C (PubMed:5). Also D."]
+    assert info[EVIDENCE_COL].to_list() == [
+        "experimental (PubMed:5, PubMed:6); by similarity (UniProtKB:Q8R4Y0); "
+        "ECO:0009999"
+    ]
+
+
+def test_no_evidence_codes_gives_null_evidence(tmp_path: Path) -> None:
+    info = _info(tmp_path, [("WARS", "OID4", "L1", 0.9)])
+    assert info[EVIDENCE_COL].to_list() == [None]
 
 
 def test_multiple_uniprot_comments_join_as_sentences(tmp_path: Path) -> None:
     info = _info(tmp_path, [("BBB", "OID2", "L1", 0.95)])
     assert info[SUBCELLULAR_LOCALISATION_COL].to_list() == [
-        "[Cleaved B]: Secreted {ECO:0000269|PubMed:2}. Cell membrane; "
-        "Single-pass type I membrane protein."
+        "[Cleaved B]: Secreted. Cell membrane; Single-pass type I membrane protein."
     ]
 
 
-def test_symbol_comes_from_hgnc_not_the_display_table(tmp_path: Path) -> None:
+def test_outdated_display_symbol_still_annotated_via_accession(
+    tmp_path: Path,
+) -> None:
     info = _info(tmp_path, [("WARS", "OID4", "L1", 0.9)])
-    assert info.select(GENE_SYMBOL_COL, ENSEMBL_ID_COL).rows() == [
-        ("WARS1", "ENSG_WARS1")
+    assert info.select(GENE_SYMBOL_COL, ENSEMBL_ID_COL, GENE_NAME_COL).rows() == [
+        ("WARS1", "ENSG_WARS1", "tryptophanyl-tRNA synthetase 1")
     ]
     assert info[UNIPROT_DESCRIPTION_COL].to_list() == ["Ligase."]
 
 
 def test_complex_gives_one_row_per_subunit_gene(tmp_path: Path) -> None:
     info = _info(tmp_path, [("EBI3_IL27", "OID9", "L1", 0.9)])
-    assert info.select(UNIPROT_ID_COL, GENE_SYMBOL_COL, ENSEMBL_ID_COL).rows() == [
-        ("Q14213", "EBI3", "ENSG_EBI3"),
-        ("Q8NEV9", "IL27", "ENSG_IL27"),
+    assert info.select(DISPLAY_GENE_COL, GENE_NAME_COL).rows() == [
+        ("EBI3_IL27", "EBI3 subunit"),
+        ("EBI3_IL27", "IL27 subunit"),
     ]
-    assert info[DISPLAY_PROTEIN_COL].to_list() == ["OID9", "OID9"]
 
 
 def test_duplicated_genes_of_one_protein_each_get_a_row(tmp_path: Path) -> None:
     info = _info(tmp_path, [("DEFA1_DEFA1B", "OID6", "L1", 0.9)])
-    assert info[GENE_SYMBOL_COL].to_list() == ["DEFA1", "DEFA1B"]
+    assert info[GENE_NAME_COL].to_list() == ["defensin alpha 1", "defensin alpha 1B"]
 
 
 def test_accession_missing_from_references_keeps_row(tmp_path: Path) -> None:
     info = _info(tmp_path, [("OBSOLETE", "OID5", "L1", 0.9)])
-    assert info[UNIPROT_ID_COL].to_list() == ["Q99999"]
-    assert info.select(GENE_SYMBOL_COL, ENSEMBL_ID_COL, PROTEIN_NAMES_COL).rows() == [
-        (None, None, None)
+    assert info.select(DISPLAY_GENE_COL, GENE_NAME_COL, PROTEIN_NAMES_COL).rows() == [
+        ("OBSOLETE", None, None)
     ]
 
 
@@ -249,4 +288,4 @@ def test_protein_missing_from_protein_table_fails(tmp_path: Path) -> None:
 def test_empty_display_gives_empty_table(tmp_path: Path) -> None:
     info = _info(tmp_path, [])
     assert info.height == 0
-    assert set(INFO_SCHEMA.names()) <= set(info.columns)
+    assert info.columns == OUTPUT_SCHEMA.names()

@@ -13,8 +13,15 @@ protein_accessions_reader): a protein complex such as EBI3_IL27 has one accessio
   id. An accession encoded by duplicated genes (for example P59665, by DEFA1 and DEFA1B) gets
   one row per gene.
 - UniProt (joined on the accession): protein names, function and subcellular location, from a
-  bulk export of reviewed human UniProt entries. Field labels such as "FUNCTION:" are dropped;
-  evidence codes such as {ECO:0000269|PubMed:123} are kept.
+  bulk export of reviewed human UniProt entries. Field labels such as "FUNCTION:" are dropped.
+  Evidence code blocks such as {ECO:0000269|PubMed:123, ECO:0000250|UniProtKB:Q8R4Y0} are moved
+  out of the text into one evidence column, grouped by readable label with their sources, e.g.
+  "experimental (PubMed:123); by similarity (UniProtKB:Q8R4Y0)". An ECO (Evidence and Conclusion
+  Ontology) code without a label in _ECO_LABELS is shown as the code itself.
+
+The output has the display columns (gene, protein, locus, PP.H4), the ids (UniProt accession,
+approved symbol, Ensembl gene id) and the descriptive columns (gene name, protein names, UniProt
+function, subcellular location as "locale", and evidence).
 
 An accession missing from HGNC or from UniProt keeps its row with null columns, and a warning is
 logged. A display protein missing from the protein table fails the task. An empty display table
@@ -60,6 +67,14 @@ from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_LOCUS_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
+    INFO_ENSEMBL_ID_COL,
+    INFO_EVIDENCE_COL,
+    INFO_GENE_NAME_COL,
+    INFO_GENE_SYMBOL_COL,
+    INFO_PROTEIN_NAMES_COL,
+    INFO_SUBCELLULAR_LOCALISATION_COL,
+    INFO_UNIPROT_DESCRIPTION_COL,
+    INFO_UNIPROT_ID_COL,
 )
 from mecfs_bio.constants.uniprot_constants import (
     UNIPROT_DAT_FUNCTION_COL,
@@ -70,18 +85,42 @@ from mecfs_bio.constants.uniprot_constants import (
 
 logger = structlog.getLogger()
 
-UNIPROT_ID_COL = PROTEIN_ACCESSIONS_UNIPROT_COL
-GENE_SYMBOL_COL = "gene_symbol"
-GENE_NAME_COL = "gene_name"
-ENSEMBL_ID_COL = "ensembl_id"
-PROTEIN_NAMES_COL = "protein_names"
-UNIPROT_DESCRIPTION_COL = "uniprot_description"
-SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
+UNIPROT_ID_COL = INFO_UNIPROT_ID_COL
+GENE_SYMBOL_COL = INFO_GENE_SYMBOL_COL
+GENE_NAME_COL = INFO_GENE_NAME_COL
+ENSEMBL_ID_COL = INFO_ENSEMBL_ID_COL
+PROTEIN_NAMES_COL = INFO_PROTEIN_NAMES_COL
+UNIPROT_DESCRIPTION_COL = INFO_UNIPROT_DESCRIPTION_COL
+SUBCELLULAR_LOCALISATION_COL = INFO_SUBCELLULAR_LOCALISATION_COL
+EVIDENCE_COL = INFO_EVIDENCE_COL
 _ROW_INDEX_COL = "_row"
 
 # Consecutive comments of one field are joined by "; " after a full stop; inside a comment, "; "
 # separates items (for example "Cell membrane; Single-pass type I membrane protein").
 _COMMENT_SEPARATOR_PATTERN = r"\.;\s+"
+
+# One evidence block, e.g. {ECO:0000269|PubMed:5, ECO:0000250|UniProtKB:Q8R4Y0}, with the space
+# before it. Inside a block, ", " separates items; each item is "ECO:<code>" optionally followed
+# by "|<source>".
+_EVIDENCE_BLOCK_PATTERN = r"\s*\{ECO:[^}]*\}"
+# A block between two full stops ("Binds X. {ECO:...}."), dropped with one of them.
+_EVIDENCE_SENTENCE_PATTERN = r"\.\s*\{ECO:[^}]*\}\."
+_EVIDENCE_ITEM_SEPARATOR = ", "
+_EVIDENCE_SOURCE_SEPARATOR = "|"
+
+# Readable labels of the ECO codes UniProt uses in its comment fields.
+_ECO_LABELS: dict[str, str] = {
+    "ECO:0000269": "experimental",
+    "ECO:0000250": "by similarity",
+    "ECO:0000255": "sequence model",
+    "ECO:0000256": "sequence model, automatic",
+    "ECO:0000303": "non-traceable author statement",
+    "ECO:0000305": "curator inference",
+    "ECO:0000312": "imported",
+    "ECO:0000313": "imported, automatic",
+    "ECO:0007744": "combinatorial",
+    "ECO:0007829": "combinatorial, automatic",
+}
 
 _ROWS_SCHEMA = pl.Schema(
     {
@@ -108,23 +147,22 @@ _UNIPROT_SCHEMA = pl.Schema(
         PROTEIN_NAMES_COL: pl.String,
         UNIPROT_DESCRIPTION_COL: pl.String,
         SUBCELLULAR_LOCALISATION_COL: pl.String,
+        EVIDENCE_COL: pl.String,
     }
 )
 
-# The annotation columns added to each display row.
-INFO_SCHEMA = pl.Schema(
+OUTPUT_SCHEMA = pl.Schema(
     {
-        UNIPROT_ID_COL: pl.String,
+        **_ROWS_SCHEMA,
         GENE_SYMBOL_COL: pl.String,
         ENSEMBL_ID_COL: pl.String,
         GENE_NAME_COL: pl.String,
         PROTEIN_NAMES_COL: pl.String,
         UNIPROT_DESCRIPTION_COL: pl.String,
         SUBCELLULAR_LOCALISATION_COL: pl.String,
+        EVIDENCE_COL: pl.String,
     }
 )
-
-OUTPUT_SCHEMA = pl.Schema({**_ROWS_SCHEMA, **INFO_SCHEMA})
 
 
 def _read_table(fetch: Fetch, task: Task) -> pl.DataFrame:
@@ -139,18 +177,49 @@ def _null_if_blank(expr: pl.Expr) -> pl.Expr:
 
 
 def _without_label(column: str, label: str) -> pl.Expr:
-    """A UniProt comment field with its label (e.g. "FUNCTION:") dropped.
-
-    Evidence codes such as {ECO:0000269|PubMed:12805376} are kept: they say whether a statement
-    was shown experimentally (ECO:0000269), inferred by similarity (ECO:0000250) or predicted
-    (ECO:0000255), and cite the source.
-    """
+    """A UniProt comment field with its label (e.g. "FUNCTION:") and evidence blocks dropped."""
     return _null_if_blank(
         pl.col(column)
         .cast(pl.String)
         .str.replace_all(f"{label}:", "", literal=True)
+        .str.replace_all(_EVIDENCE_SENTENCE_PATTERN, ".")
+        .str.replace_all(_EVIDENCE_BLOCK_PATTERN, "")
         .str.replace_all(_COMMENT_SEPARATOR_PATTERN, ". ")
         .str.replace_all(r"\s+", " ")
+    )
+
+
+def _evidence_blocks(columns: list[str]) -> pl.Expr:
+    """All evidence blocks of the given UniProt comment fields, in order, as a list."""
+    return pl.concat_list(
+        [
+            pl.col(column)
+            .cast(pl.String)
+            .str.extract_all(_EVIDENCE_BLOCK_PATTERN)
+            .fill_null(pl.lit([], dtype=pl.List(pl.String)))
+            for column in columns
+        ]
+    )
+
+
+def _evidence_label(blocks: list[str]) -> str | None:
+    """Readable evidence for one entry, e.g. "experimental (PubMed:5, PubMed:6); curator inference".
+
+    Items are grouped by the label of their ECO code, in order of first appearance; each label
+    lists its distinct sources. None when there are no evidence blocks.
+    """
+    sources_by_label: dict[str, list[str]] = {}
+    for block in blocks:
+        for item in block.strip().strip("{}").split(_EVIDENCE_ITEM_SEPARATOR):
+            code, _, source = item.strip().partition(_EVIDENCE_SOURCE_SEPARATOR)
+            sources = sources_by_label.setdefault(_ECO_LABELS.get(code, code), [])
+            if source and source not in sources:
+                sources.append(source)
+    if not sources_by_label:
+        return None
+    return "; ".join(
+        f"{label} ({', '.join(sources)})" if sources else label
+        for label, sources in sources_by_label.items()
     )
 
 
@@ -179,6 +248,7 @@ def _top_loci_by_accession(
             how="left",
             maintain_order="left",
         )
+        .rename({PROTEIN_ACCESSIONS_UNIPROT_COL: UNIPROT_ID_COL})
         .select(_ROWS_SCHEMA.names())
         .cast(_ROWS_SCHEMA)
     )
@@ -200,9 +270,18 @@ def _genes_by_accession(
 
 
 def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.DataFrame:
-    found = uniprot.filter(
-        pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).is_in(accessions)
-    ).select(
+    found = uniprot.filter(pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).is_in(accessions))
+    evidence = [
+        _evidence_label(blocks)
+        for blocks in found.select(
+            _evidence_blocks(
+                [UNIPROT_DAT_FUNCTION_COL, UNIPROT_DAT_SUBCELLULAR_LOC_COL]
+            )
+        )
+        .to_series()
+        .to_list()
+    ]
+    found = found.select(
         pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).alias(UNIPROT_ID_COL),
         _null_if_blank(pl.col(UNIPROT_DAT_PROTEIN_NAMES_COL).cast(pl.String)).alias(
             PROTEIN_NAMES_COL
@@ -213,7 +292,7 @@ def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.Da
         _without_label(UNIPROT_DAT_SUBCELLULAR_LOC_COL, "SUBCELLULAR LOCATION").alias(
             SUBCELLULAR_LOCALISATION_COL
         ),
-    )
+    ).with_columns(pl.Series(EVIDENCE_COL, evidence, dtype=pl.String))
     for accession in sorted(set(accessions) - set(found[UNIPROT_ID_COL].to_list())):
         logger.warning(f"UniProt accession {accession} is not in the UniProt table")
     return found.cast(_UNIPROT_SCHEMA)
