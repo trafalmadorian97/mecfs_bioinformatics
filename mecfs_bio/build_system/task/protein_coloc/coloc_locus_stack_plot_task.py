@@ -9,7 +9,7 @@ x-axis over the locus window:
    GWAS in the window, with a dashed genome-wide-significance line, and the recombination rate (cM/Mb,
    from a genetic map) on a second y-axis as rough LD context.
 2. One row per display-table protein at the locus, in PP.H4 order: -log10 p over the aligned
-   variants coloc used (the pair's saved window), and a dotted vertical
+   variants coloc used (the pair's saved window), the same dashed significance line, and a dotted vertical
    line at the trait lead position so offsets between the peaks are visible.
 3. The genes in the window.
 
@@ -223,7 +223,7 @@ def _render_locus(
     ):
         ax = fig.add_subplot(n_rows, 1, 2 + i, sharex=ax_trait)
         plot_association(
-            ax, track.pos, track.mlog10p, label=protein.gene, significance_line=False
+            ax, track.pos, track.mlog10p, label=protein.gene, significance_line=True
         )
         ax.axvline(trait_lead_pos, linestyle=":", color="grey", linewidth=1)
         ax.set_title(
