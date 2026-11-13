@@ -1,5 +1,7 @@
 from pathlib import Path, PurePath
 
+import numpy as np
+import pandas as pd
 import polars as pl
 from attrs import define, field
 
@@ -12,11 +14,15 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.protein_coloc.coloc_protein_info_task import (
+    ENSEMBL_DESCRIPTION_COL,
     ENSEMBL_ID_COL,
     GENE_SYMBOL_COL,
     INFO_SCHEMA,
+    PROTEIN_NAMES_COL,
+    SUBCELLULAR_LOCALISATION_COL,
     UNIPROT_DESCRIPTION_COL,
     ColocProteinInfoTask,
+    GgetInfoLookup,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.protein_coloc_constants import (
@@ -169,3 +175,26 @@ def test_empty_display_gives_empty_table(tmp_path: Path) -> None:
     assert info.height == 0
     assert set(INFO_SCHEMA.names()) <= set(info.columns)
     assert info_lookup.calls == []
+
+
+def test_gget_info_lookup_flattens_lists_and_blanks() -> None:
+    def fake_fetch(ensembl_ids: list[str]) -> pd.DataFrame:
+        return pd.DataFrame(
+            {
+                UNIPROT_DESCRIPTION_COL: ["", "Binds things."],
+                SUBCELLULAR_LOCALISATION_COL: [np.nan, ["Secreted", "Cell membrane"]],
+                PROTEIN_NAMES_COL: ["Protein A", "Protein B"],
+            },
+            index=ensembl_ids,
+        )
+
+    info = GgetInfoLookup(fetch=fake_fetch)(["ENSG1", "ENSG2"])
+    assert info.schema == INFO_SCHEMA
+    assert info[ENSEMBL_ID_COL].to_list() == ["ENSG1", "ENSG2"]
+    assert info[UNIPROT_DESCRIPTION_COL].to_list() == [None, "Binds things."]
+    assert info[SUBCELLULAR_LOCALISATION_COL].to_list() == [
+        None,
+        "Secreted; Cell membrane",
+    ]
+    assert info[PROTEIN_NAMES_COL].to_list() == ["Protein A", "Protein B"]
+    assert info[ENSEMBL_DESCRIPTION_COL].to_list() == [None, None]

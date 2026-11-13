@@ -60,6 +60,8 @@ PRIMARY_GENE_NAME_COL = "primary_gene_name"
 NCBI_DESCRIPTION_COL = "ncbi_description"
 UNIPROT_DESCRIPTION_COL = "uniprot_description"
 SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
+PROTEIN_NAMES_COL = "protein_names"
+ENSEMBL_DESCRIPTION_COL = "ensembl_description"
 _COMPLEX_SEPARATOR = "_"
 _LIST_JOIN = "; "
 _ENSEMBL_SYMBOL_URL = "https://rest.ensembl.org/lookup/symbol/homo_sapiens/{symbol}"
@@ -71,6 +73,8 @@ INFO_SCHEMA = pl.Schema(
         ENSEMBL_ID_COL: pl.String,
         UNIPROT_ID_COL: pl.String,
         PRIMARY_GENE_NAME_COL: pl.String,
+        PROTEIN_NAMES_COL: pl.String,
+        ENSEMBL_DESCRIPTION_COL: pl.String,
         NCBI_DESCRIPTION_COL: pl.String,
         UNIPROT_DESCRIPTION_COL: pl.String,
         SUBCELLULAR_LOCALISATION_COL: pl.String,
@@ -128,20 +132,35 @@ def _get_symbol(symbol: str) -> requests.Response:
 
 
 def _as_text(value: object) -> str | None:
+    """A gget field as text: lists joined by "; ", and missing or blank values as None."""
     if isinstance(value, (list, tuple, np.ndarray)):
         parts = [str(v) for v in value if v is not None and not pd.isna(v)]
-        return _LIST_JOIN.join(parts) if parts else None
-    if value is None or (isinstance(value, float) and np.isnan(value)):
+        text = _LIST_JOIN.join(parts)
+    elif value is None or (isinstance(value, float) and np.isnan(value)):
         return None
-    return str(value)
+    else:
+        text = str(value)
+    return text if text.strip() else None
+
+
+class GgetFetch(Protocol):
+    def __call__(self, ensembl_ids: list[str]) -> pd.DataFrame:
+        """gget.info output: one row per Ensembl id found, indexed by id."""
+        ...
 
 
 @frozen(slots=True)
 class GgetInfoLookup:
-    """gget.info, with list-valued fields joined by "; "."""
+    """gget.info (through fetch), with list-valued fields joined by "; " and blanks as None.
+
+    gget's ncbi_description is often missing upstream, so protein_names and ensembl_description
+    are kept as well.
+    """
+
+    fetch: GgetFetch = fetch_gget_info
 
     def __call__(self, ensembl_ids: list[str]) -> pl.DataFrame:
-        frame = fetch_gget_info(ensembl_ids)
+        frame = self.fetch(ensembl_ids)
         return pl.DataFrame(
             {
                 ENSEMBL_ID_COL: [str(i) for i in frame.index],

@@ -14,6 +14,9 @@ from typing import Literal
 
 from attrs import frozen
 
+from mecfs_bio.assets.reference_data.genetic_map.genetic_map_hg38 import (
+    GENETIC_MAP_HG38,
+)
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
     UCSC_HG38_INDEXED_FASTA,
 )
@@ -31,6 +34,12 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
 from mecfs_bio.build_system.task.protein_coloc.coloc_locus_plot_task import (
     ColocLocusPlotTask,
     ColocPair,
+)
+from mecfs_bio.build_system.task.protein_coloc.coloc_locus_stack_plot_task import (
+    ColocLocusStackPlotTask,
+)
+from mecfs_bio.build_system.task.protein_coloc.coloc_protein_info_task import (
+    ColocProteinInfoTask,
 )
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
@@ -118,4 +127,28 @@ def generate_coloc_locus_plot_task(
         coloc_task=group.coloc_task,
         gene_info_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
         pairs=pairs,
+    )
+
+
+def generate_coloc_locus_stack_plot_task(
+    asset_id: str, group: ColocTaskGroup, max_loci: int = 10
+) -> ColocLocusStackPlotTask:
+    """Per-locus stacked trait and protein Manhattan plots of the top display-table loci."""
+    return ColocLocusStackPlotTask.create(
+        asset_id=asset_id,
+        coloc_task=group.coloc_task,
+        trait_task=group.coloc_task.trait_task,
+        display_task=group.display_task,
+        gene_info_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
+        genetic_map_task=GENETIC_MAP_HG38,
+        max_loci=max_loci,
+    )
+
+
+def generate_coloc_protein_info_task(
+    asset_id: str, group: ColocTaskGroup, max_loci: int = 10
+) -> ColocProteinInfoTask:
+    """Database annotations of the colocalizing proteins at the top display-table loci."""
+    return ColocProteinInfoTask.create(
+        asset_id=asset_id, display_task=group.display_task, max_loci=max_loci
     )
