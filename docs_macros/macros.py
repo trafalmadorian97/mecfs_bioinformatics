@@ -53,9 +53,13 @@ from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_GENE_COL,
     DISPLAY_LEAD_VARIANT_COL,
     DISPLAY_LOCUS_COL,
+    DISPLAY_N_SNP_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
+    DISPLAY_PROTEIN_P_COL,
     DISPLAY_Q_VALUE_COL,
+    DISPLAY_SAME_SIGN_COL,
+    DISPLAY_TRAIT_P_COL,
 )
 
 
@@ -681,5 +685,9 @@ COLOC_RESULTS_TABLE_CAPTION = "Results of colocalization analysis. " + _columns_
         DISPLAY_PP_H4_COL: "posterior probability that the two GWAS share a causal variant at the locus.  Note that this is prior-dependent",
         DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
         DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
+        DISPLAY_TRAIT_P_COL: "p value of the most significant trait variant in the locus",
+        DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant among the variants used for colocalization",
+        DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant, i.e. whether the allele that raises the protein level also raises the trait (or, for a disease, its risk)",
+        DISPLAY_N_SNP_COL: "number of variants present in both GWAS and used for colocalization",
     }
 )
