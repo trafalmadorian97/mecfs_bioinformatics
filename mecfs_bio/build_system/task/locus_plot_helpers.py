@@ -67,10 +67,12 @@ def plot_association(
     label: str,
     significance_line: bool,
 ) -> int:
-    """Scatter -log10 p against position, mark the lead variant, and return its index."""
+    """Scatter -log10 p against position and return the index of the lead variant.
+
+    The lead is not drawn differently: with no LD coloring there is nothing to relate it to.
+    """
     ax.scatter(pos, mlog10p, s=8, color="tab:blue").set_rasterized(True)
     lead = int(np.nanargmax(mlog10p))
-    ax.scatter(pos[lead], mlog10p[lead], s=40, marker="^", color="black")
     if significance_line:
         ax.axhline(
             y=GWAS_SIGNIFICANCE_MLOG10P, color="grey", linestyle="--", linewidth=1

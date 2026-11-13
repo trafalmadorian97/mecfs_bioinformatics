@@ -6,11 +6,10 @@ ranked by their best PP.H4 (the posterior probability of a shared causal variant
 max_loci are plotted. One figure per locus, saved as PNG and SVG, with rows sharing the GRCh38
 x-axis over the locus window:
 1. The trait: -log10 p of every usable variant (finite beta, finite SE > 0) of the full trait
-   GWAS in the window, with the lead
-   variant marked, a dashed genome-wide-significance line, and the recombination rate (cM/Mb,
+   GWAS in the window, with a dashed genome-wide-significance line, and the recombination rate (cM/Mb,
    from a genetic map) on a second y-axis as rough LD context.
 2. One row per display-table protein at the locus, in PP.H4 order: -log10 p over the aligned
-   variants coloc used (the pair's saved window), the protein lead marked, and a dotted vertical
+   variants coloc used (the pair's saved window), and a dotted vertical
    line at the trait lead position so offsets between the peaks are visible.
 3. The genes in the window.
 

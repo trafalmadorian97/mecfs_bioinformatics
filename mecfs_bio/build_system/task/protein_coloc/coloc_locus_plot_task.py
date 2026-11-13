@@ -3,7 +3,7 @@ Stacked locus plots of chosen trait x protein colocalizations.
 
 One figure per requested (locus, protein) pair, saved as PNG and SVG, with three panels sharing the
 GRCh38 x-axis over the locus window: the trait's -log10 p, the protein's -log10 p (both over the
-aligned variants the colocalization used, each with its lead variant highlighted), and the genes
+aligned variants the colocalization used), and the genes
 in the window. The title carries the gene symbol, cis/trans status and PP.H4.
 
 The output directory also holds plot_index.parquet (PROTEIN_ID, GENE, LOCUS_ID, PNG_FILENAME,
