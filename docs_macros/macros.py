@@ -401,7 +401,7 @@ def define_env(env: MacrosPlugin) -> None:
             id=id,
             page_size=page_size,
             precision=precision,
-            caption=COLOC_RESULTS_TABLE_CAPTION,
+            caption=PROTEIN_COLOC_RESULTS_TABLE_CAPTION,
         )
 
     @env.macro
@@ -675,19 +675,22 @@ SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = _columns_caption(
 LDSC_DIAGNOSTIC_PLOT_CAPTION = "LDSC diagnostic plot.  Genetic variants are binned by LD Score.  For each bin, we plot the mean LD score of variants in the bin (x axis) against Wald chi squared statistic (y axis 1) and scaled Wald chi squared statistic (y axis 2). Each plotted bin includes error bars indicating the standard error of bin chi squared mean. We also plot the LDSC regression line (solid) and the line corresponding to chi squared =1 (dashed).  If the LDSC model fits the data perfectly, we should expect that the intercept of the regression line is at chi squared=1"
 
 
-COLOC_RESULTS_TABLE_CAPTION = "Results of colocalization analysis. " + _columns_caption(
-    {
-        DISPLAY_GENE_COL: "gene",
-        DISPLAY_PROTEIN_COL: "ID of assay",
-        DISPLAY_LOCUS_COL: "Genomic region used for colocalization",
-        DISPLAY_LEAD_VARIANT_COL: "Most significant trait variant in locus",
-        DISPLAY_CIS_STATUS_COL: "cis means the lead variant is close to the gene coding for the protein in question.  Trans means the lead variant is far from that gene.  Unknown means the data required to make this determination is missing",
-        DISPLAY_PP_H4_COL: "posterior probability that the two GWAS share a causal variant at the locus.  Note that this is prior-dependent",
-        DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
-        DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
-        DISPLAY_TRAIT_P_COL: "p value of the most significant trait variant in the locus",
-        DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant among the variants used for colocalization",
-        DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant, i.e. whether the allele that raises the protein level also raises the trait (or, for a disease, its risk)",
-        DISPLAY_N_SNP_COL: "number of variants present in both GWAS and used for colocalization",
-    }
+PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
+    "Results of colocalization analysis. "
+    + _columns_caption(
+        {
+            DISPLAY_GENE_COL: "gene",
+            DISPLAY_PROTEIN_COL: "ID of proteomic assay",
+            DISPLAY_LOCUS_COL: "Genomic region used for colocalization",
+            DISPLAY_LEAD_VARIANT_COL: "Most significant trait variant in locus",
+            DISPLAY_CIS_STATUS_COL: "cis means the lead variant is close to the gene coding for the protein in question.  Trans means the lead variant is far from that gene.  Unknown means the data required to make this determination is missing",
+            DISPLAY_PP_H4_COL: "posterior probability that the trait and protein GWAS share a causal variant at the locus.  Note that this is prior-dependent",
+            DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
+            DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
+            DISPLAY_TRAIT_P_COL: "p value of the most significant trait variant at the locus",
+            DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant at the locus",
+            DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant, i.e. whether the allele that raises the protein level also raises the trait (or, for a disease, its risk)",
+            DISPLAY_N_SNP_COL: "number of variants present in trait and protein GWAS at the locus",
+        }
+    )
 )
