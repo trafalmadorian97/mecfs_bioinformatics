@@ -14,16 +14,24 @@ from typing import Literal
 
 from attrs import frozen
 
+from mecfs_bio.assets.reference_data.genetic_map.genetic_map_hg38 import (
+    GENETIC_MAP_HG38,
+)
 from mecfs_bio.assets.reference_data.genome_sequence.ucsc_hg38_fasta import (
     UCSC_HG38_INDEXED_FASTA,
 )
 from mecfs_bio.assets.reference_data.gnomad.gnomad_allele_frequency_panels import (
     GNOMAD_V4_1_GENOMES_HG38_ALLELE_FREQUENCIES,
 )
+from mecfs_bio.assets.reference_data.hgnc.hgnc_complete_set import HGNC_UNIPROT_GENES
 from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez_gene_locations_data_build_38_unzipped import (
     MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
 )
+from mecfs_bio.assets.reference_data.uniprot.uniprot_lookup_table import UNIPROT_LOOKUP
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.copy_files_with_suffix_from_directory_task import (
+    CopyFilesWithSuffixFromDirectoryTask,
+)
 from mecfs_bio.build_system.task.protein_coloc.coloc_abf import TraitModel
 from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
     ColocDisplayTableTask,
@@ -32,11 +40,21 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_locus_plot_task import (
     ColocLocusPlotTask,
     ColocPair,
 )
+from mecfs_bio.build_system.task.protein_coloc.coloc_locus_stack_plot_task import (
+    ColocLocusStackPlotTask,
+)
+from mecfs_bio.build_system.task.protein_coloc.coloc_protein_info_task import (
+    ColocProteinInfoTask,
+)
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
+    St3GeneCoordsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
     DenseWindowFetcher,
+)
+from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import (
+    St3ProteinAccessionsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
     ProteinHitTableTask,
@@ -118,4 +136,72 @@ def generate_coloc_locus_plot_task(
         coloc_task=group.coloc_task,
         gene_info_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
         pairs=pairs,
+    )
+
+
+@frozen(slots=True)
+class ColocStackPlotGroup:
+    """
+    plot_task: the per-locus stacked plots (PNG, SVG and an index table in one directory).
+    svg_task: just the SVG figures, copied out of plot_task's directory.
+    png_task: just the PNG figures, copied out of plot_task's directory.
+    """
+
+    plot_task: ColocLocusStackPlotTask
+    svg_task: CopyFilesWithSuffixFromDirectoryTask
+    png_task: CopyFilesWithSuffixFromDirectoryTask
+
+    def terminal_tasks(self) -> list[Task]:
+        return [self.svg_task, self.png_task]
+
+
+def generate_coloc_locus_stack_plot_task(
+    asset_id: str, group: ColocTaskGroup, max_loci: int = 10
+) -> ColocStackPlotGroup:
+    """Per-locus stacked trait and protein Manhattan plots of the top display-table loci.
+
+    The SVG and PNG figures are also copied out into their own directories (asset ids with
+    _svg and _png appended).
+    """
+    plot_task = ColocLocusStackPlotTask.create(
+        asset_id=asset_id,
+        coloc_task=group.coloc_task,
+        trait_task=group.coloc_task.trait_task,
+        display_task=group.display_task,
+        gene_info_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
+        genetic_map_task=GENETIC_MAP_HG38,
+        max_loci=max_loci,
+    )
+    return ColocStackPlotGroup(
+        plot_task=plot_task,
+        svg_task=CopyFilesWithSuffixFromDirectoryTask.create(
+            asset_id=f"{asset_id}_svg", source_directory_task=plot_task, suffix=".svg"
+        ),
+        png_task=CopyFilesWithSuffixFromDirectoryTask.create(
+            asset_id=f"{asset_id}_png", source_directory_task=plot_task, suffix=".png"
+        ),
+    )
+
+
+def generate_coloc_protein_info_task(
+    asset_id: str, group: ColocTaskGroup, max_loci: int = 10
+) -> ColocProteinInfoTask:
+    """UniProt and Ensembl annotations of the colocalizing proteins at the top display-table loci.
+
+    Only UKB-PPP runs are supported: the UniProt accessions of each protein are read from the
+    Sun et al. 2023 ST3 sheet, the run's gene-coordinate table.
+    """
+    coloc_task = group.coloc_task
+    assert isinstance(coloc_task.gene_coords_reader, St3GeneCoordsReader), (
+        "generate_coloc_protein_info_task supports UKB-PPP runs only, got gene coords reader "
+        f"{type(coloc_task.gene_coords_reader).__name__}"
+    )
+    return ColocProteinInfoTask.create(
+        asset_id=asset_id,
+        display_task=group.display_task,
+        protein_table_task=coloc_task.gene_coords_task,
+        protein_accessions_reader=St3ProteinAccessionsReader(),
+        uniprot_task=UNIPROT_LOOKUP,
+        uniprot_genes_task=HGNC_UNIPROT_GENES,
+        max_loci=max_loci,
     )

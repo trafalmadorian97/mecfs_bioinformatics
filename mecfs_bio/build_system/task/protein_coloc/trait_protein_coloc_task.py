@@ -216,7 +216,7 @@ class _PairOutcome:
     protein_lead_mlog10p: float | None
 
 
-def _scan_trait(trait_task: Task, fetch: Fetch) -> pl.LazyFrame:
+def scan_trait(trait_task: Task, fetch: Fetch) -> pl.LazyFrame:
     """The trait in WINDOW_SCHEMA; EAF and N are null when the trait has none."""
     lazy = scan_dataframe_asset(
         fetch(trait_task.asset_id), meta=trait_task.meta, parquet_backend="polars"
@@ -579,7 +579,7 @@ class TraitProteinColocTask(Task):
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        trait = _scan_trait(self.trait_task, fetch)
+        trait = scan_trait(self.trait_task, fetch)
         _assert_trait_supports_model(trait, self.trait_model)
         loci = find_trait_loci(
             _significant_trait_rows(trait, self.config.lead_p_threshold),
