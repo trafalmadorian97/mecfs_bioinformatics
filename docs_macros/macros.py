@@ -1,8 +1,10 @@
 import html
+import json
 import os
 import textwrap
 from pathlib import Path
 
+import polars as pl
 from mkdocs_macros.plugin import MacrosPlugin
 
 from mecfs_bio.constants.annotation_weights_constants import (
@@ -60,6 +62,10 @@ from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_Q_VALUE_COL,
     DISPLAY_SAME_SIGN_COL,
     DISPLAY_TRAIT_P_COL,
+    INFO_GENE_NAME_COL,
+    INFO_PROTEIN_NAMES_COL,
+    INFO_SUBCELLULAR_LOCALISATION_COL,
+    INFO_UNIPROT_DESCRIPTION_COL,
 )
 
 
@@ -405,6 +411,25 @@ def define_env(env: MacrosPlugin) -> None:
         )
 
     @env.macro
+    def coloc_protein_info_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption="",
+            wrap_columns=[
+                INFO_GENE_NAME_COL,
+                INFO_PROTEIN_NAMES_COL,
+                INFO_UNIPROT_DESCRIPTION_COL,
+                INFO_SUBCELLULAR_LOCALISATION_COL,
+            ],
+            wrap_width=250,
+        )
+
+    @env.macro
     def ldsc_diagnostic_plot(src: str, id: str, height: str = "775px") -> str:
         return plotly_embed(
             src=src,
@@ -415,7 +440,13 @@ def define_env(env: MacrosPlugin) -> None:
 
     @env.macro
     def data_table(
-        src: str, id: str, page_size: int = 20, precision: int = 4, caption: str = ""
+        src: str,
+        id: str,
+        page_size: int = 20,
+        precision: int = 4,
+        caption: str = "",
+        wrap_columns: list[str] | None = None,
+        wrap_width: int = 400,
     ) -> str:
         """Embed a large tabular asset as a sortable, filterable, paginated table.
 
@@ -461,12 +492,27 @@ def define_env(env: MacrosPlugin) -> None:
             affect the underlying data or the CSV download.
         caption : str
             Optional caption rendered below the table.
+        wrap_columns : list[str] | None
+            Names of long free-text columns whose cells should wrap onto several
+            lines instead of widening the table. Each is capped at wrap_width
+            pixels and its rows grow to fit the wrapped text. The default (None)
+            wraps no column, so every column sizes to its longest value on one
+            line.
+        wrap_width : int
+            Maximum width in pixels of each column in wrap_columns. Unused when
+            wrap_columns is None.
         """
         if not Path(src).is_file():
             raise FileNotFoundError(
                 f"data_table: '{src}' does not exist "
                 f"(referenced from page '{env.page.file.src_uri}')"
             )
+        wrap_columns = wrap_columns or []
+        missing_wrap_columns = set(wrap_columns) - set(pl.read_parquet_schema(src))
+        assert not missing_wrap_columns, (
+            f"data_table: wrap_columns {sorted(missing_wrap_columns)} are not "
+            f"columns of '{src}' (referenced from page '{env.page.file.src_uri}')"
+        )
 
         relative_url = _site_relative_url(
             src, env.conf["docs_dir"], env.page.file.dest_uri
@@ -483,6 +529,8 @@ def define_env(env: MacrosPlugin) -> None:
             ("__PRECISION__", str(precision)),
             ("__DOWNLOAD_NAME__", download_name),
             ("__PAGE_SIZE__", str(page_size)),
+            ("__WRAP_COLUMNS__", json.dumps(wrap_columns)),
+            ("__WRAP_WIDTH__", str(wrap_width)),
         ):
             script = script.replace(token, value)
 
@@ -555,6 +603,19 @@ _DATA_TABLE_SCRIPT = """<script type="module">
       return value.toFixed(__PRECISION__);
     };
 
+    // Long free-text columns: wrap onto several lines and cap the width, since
+    // fitDataFill would otherwise size the column to its longest value on one
+    // line. overflow-wrap lets a long token with no spaces (an evidence code
+    // such as {ECO:0000269|PubMed:12345678}) break mid-word instead of being
+    // clipped. The text node keeps the value from being parsed as HTML.
+    const wrapColumns = new Set(__WRAP_COLUMNS__);
+    const wrapped = (cell) => {
+      const element = cell.getElement();
+      element.style.whiteSpace = "pre-wrap";
+      element.style.overflowWrap = "anywhere";
+      return document.createTextNode(cell.getValue() ?? "");
+    };
+
     const table = new Tabulator(container, {
       data: rows,
       // No fixed height: the table grows to fit one page, so the page's own
@@ -576,12 +637,20 @@ _DATA_TABLE_SCRIPT = """<script type="module">
             headerFilterPlaceholder: numeric ? ">=" : "filter",
             sorter: numeric ? "number" : "string",
             formatter: numeric ? display : undefined,
+            ...(wrapColumns.has(definition.field)
+              ? { formatter: wrapped, maxWidth: __WRAP_WIDTH__ }
+              : {}),
           };
         }),
     });
 
     table.on("tableBuilt", () => {
       status?.remove();
+      // Row heights of wrapped columns are measured before the column widths
+      // settle, which leaves rows taller than their text. Re-measure them.
+      if (wrapColumns.size > 0) {
+        table.getRows().forEach((row) => row.normalizeHeight());
+      }
       // fitDataFill pads a table narrower than the page out to full width with
       // an empty filler region. Cap the frame at the columns' natural width
       // instead; a table wider than the page is unaffected and still scrolls.
@@ -682,14 +751,14 @@ PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
             DISPLAY_GENE_COL: "gene",
             DISPLAY_PROTEIN_COL: "ID of proteomic assay",
             DISPLAY_LOCUS_COL: "Genomic region used for colocalization",
-            DISPLAY_LEAD_VARIANT_COL: "Most significant trait variant in locus",
+            DISPLAY_LEAD_VARIANT_COL: "most significant trait variant in locus",
             DISPLAY_CIS_STATUS_COL: "cis means the lead variant is close to the gene coding for the protein in question.  Trans means the lead variant is far from that gene.  Unknown means the data required to make this determination is missing",
             DISPLAY_PP_H4_COL: "posterior probability that the trait and protein GWAS share a causal variant at the locus.  Note that this is prior-dependent",
             DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
             DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
             DISPLAY_TRAIT_P_COL: "p value of the most significant trait variant at the locus",
             DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant at the locus",
-            DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant, i.e. whether the allele that raises the protein level also raises the trait (or, for a disease, its risk)",
+            DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant",
             DISPLAY_N_SNP_COL: "number of variants present in trait and protein GWAS at the locus",
         }
     )

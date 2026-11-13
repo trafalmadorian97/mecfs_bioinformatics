@@ -149,6 +149,13 @@ DISPLAY_TRAIT_P_COL: Final = "trait_p"
 DISPLAY_PROTEIN_P_COL: Final = "prot_p"
 DISPLAY_SAME_SIGN_COL: Final = "same_sign"
 DISPLAY_N_SNP_COL: Final = "n_snp"
+
+# Long free-text columns of the protein info table (gene name, UniProt protein names, function and
+# subcellular location).
+INFO_GENE_NAME_COL: Final = "gene_name"
+INFO_PROTEIN_NAMES_COL: Final = "protein_names"
+INFO_UNIPROT_DESCRIPTION_COL: Final = "uniprot_description"
+INFO_SUBCELLULAR_LOCALISATION_COL: Final = "subcellular_localisation"
 PLOT_PNG_FILENAME_COL: Final = "PNG_FILENAME"
 N_PROTEINS_COL: Final = "N_PROTEINS"
 PLOT_SVG_FILENAME_COL: Final = "SVG_FILENAME"

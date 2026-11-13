@@ -16,6 +16,10 @@ protein_accessions_reader): a protein complex such as EBI3_IL27 has one accessio
   bulk export of reviewed human UniProt entries. Field labels such as "FUNCTION:" are dropped;
   evidence codes such as {ECO:0000269|PubMed:123} are kept.
 
+The output keeps only the display gene and the descriptive columns (gene name, protein names,
+UniProt function and subcellular location), so that the table fits on a documentation page. The
+accession, approved symbol and Ensembl id are used for the joins but not written.
+
 An accession missing from HGNC or from UniProt keeps its row with null columns, and a warning is
 logged. A display protein missing from the protein table fails the task. An empty display table
 gives an empty table with the full schema.
@@ -60,6 +64,10 @@ from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_LOCUS_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
+    INFO_GENE_NAME_COL,
+    INFO_PROTEIN_NAMES_COL,
+    INFO_SUBCELLULAR_LOCALISATION_COL,
+    INFO_UNIPROT_DESCRIPTION_COL,
 )
 from mecfs_bio.constants.uniprot_constants import (
     UNIPROT_DAT_FUNCTION_COL,
@@ -72,11 +80,11 @@ logger = structlog.getLogger()
 
 UNIPROT_ID_COL = PROTEIN_ACCESSIONS_UNIPROT_COL
 GENE_SYMBOL_COL = "gene_symbol"
-GENE_NAME_COL = "gene_name"
+GENE_NAME_COL = INFO_GENE_NAME_COL
 ENSEMBL_ID_COL = "ensembl_id"
-PROTEIN_NAMES_COL = "protein_names"
-UNIPROT_DESCRIPTION_COL = "uniprot_description"
-SUBCELLULAR_LOCALISATION_COL = "subcellular_localisation"
+PROTEIN_NAMES_COL = INFO_PROTEIN_NAMES_COL
+UNIPROT_DESCRIPTION_COL = INFO_UNIPROT_DESCRIPTION_COL
+SUBCELLULAR_LOCALISATION_COL = INFO_SUBCELLULAR_LOCALISATION_COL
 _ROW_INDEX_COL = "_row"
 
 # Consecutive comments of one field are joined by "; " after a full stop; inside a comment, "; "
@@ -111,20 +119,15 @@ _UNIPROT_SCHEMA = pl.Schema(
     }
 )
 
-# The annotation columns added to each display row.
-INFO_SCHEMA = pl.Schema(
+OUTPUT_SCHEMA = pl.Schema(
     {
-        UNIPROT_ID_COL: pl.String,
-        GENE_SYMBOL_COL: pl.String,
-        ENSEMBL_ID_COL: pl.String,
+        DISPLAY_GENE_COL: pl.String,
         GENE_NAME_COL: pl.String,
         PROTEIN_NAMES_COL: pl.String,
         UNIPROT_DESCRIPTION_COL: pl.String,
         SUBCELLULAR_LOCALISATION_COL: pl.String,
     }
 )
-
-OUTPUT_SCHEMA = pl.Schema({**_ROWS_SCHEMA, **INFO_SCHEMA})
 
 
 def _read_table(fetch: Fetch, task: Task) -> pl.DataFrame:
@@ -286,7 +289,7 @@ class ColocProteinInfoTask(Task):
             out_path=out_path,
             compression="zstd",
             compression_level=None,
-            byte_stream_split_columns=[DISPLAY_PP_H4_COL],
+            byte_stream_split_columns=[],
         )
         return FileAsset(out_path)
 

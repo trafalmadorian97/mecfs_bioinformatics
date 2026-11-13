@@ -80,8 +80,11 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_lead_varia
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_gwas_1_manhattan import (
     DECODE_ME_GWAS_1_MANHATTAN_PLOT,
 )
-from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_coloc import DECODE_ME_PPP_COLOC_EXPLORATORY_2, \
-    DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS, DECODE_ME_PPP_COLOC_EXPLORATORY_2_PROTEIN_INFO
+from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_coloc import (
+    DECODE_ME_PPP_COLOC_EXPLORATORY_2,
+    DECODE_ME_PPP_COLOC_EXPLORATORY_2_PROTEIN_INFO,
+    DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS,
+)
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_rg import (
     DECODE_ME_PPP_RG_CIS_EXCLUDED,
 )

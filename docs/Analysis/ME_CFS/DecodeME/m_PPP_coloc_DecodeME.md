@@ -33,7 +33,7 @@ I looked up the colocalizing proteins in some proteomics databases.  The results
 
 
 {{
-data_table("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_protein_info.parquet",id="decode_me_ppp_coloc_info")
+coloc_protein_info_table("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_protein_info.parquet", id="decode-me-protein-info") 
 }}
 
 
