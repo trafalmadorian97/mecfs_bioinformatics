@@ -1,7 +1,7 @@
 """
 Builds the follow-ups of the exploratory DecodeME x UKB-PPP coloc run: the display table (forced,
 since code changes do not invalidate the build cache and it gained columns), the per-locus stack
-plots, and the protein annotations. The coloc task itself is not rerun.
+plots with their SVG and PNG copy-outs, and the protein annotations. The coloc task itself is not rerun.
 
 Usage: pixi r python experiments/claude/protein_coloc/run_decode_me_exploratory_2_followups.py
 """
@@ -18,7 +18,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_coloc import 
 if __name__ == "__main__":
     DEFAULT_RUNNER.run(
         [
-            DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS,
+            *DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS.terminal_tasks(),
             DECODE_ME_PPP_COLOC_EXPLORATORY_2_PROTEIN_INFO,
         ],
         incremental_save=True,
@@ -33,8 +33,11 @@ if __name__ == "__main__":
     ):
         print(task.asset_id)
         print(pl.read_parquet(DEFAULT_RUNNER.meta_to_path(task.meta)))
-    plots_dir = DEFAULT_RUNNER.meta_to_path(
-        DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS.meta
-    )
-    print(plots_dir)
-    print(sorted(p.name for p in plots_dir.iterdir()))
+    for plot_task in (
+        DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS.plot_task,
+        DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS.svg_task,
+        DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS.png_task,
+    ):
+        plots_dir = DEFAULT_RUNNER.meta_to_path(plot_task.meta)
+        print(plots_dir)
+        print(sorted(p.name for p in plots_dir.iterdir()))

@@ -27,6 +27,9 @@ from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez
     MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
 )
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.copy_files_with_suffix_from_directory_task import (
+    CopyFilesWithSuffixFromDirectoryTask,
+)
 from mecfs_bio.build_system.task.protein_coloc.coloc_abf import TraitModel
 from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
     ColocDisplayTableTask,
@@ -130,11 +133,31 @@ def generate_coloc_locus_plot_task(
     )
 
 
+@frozen(slots=True)
+class ColocStackPlotGroup:
+    """
+    plot_task: the per-locus stacked plots (PNG, SVG and an index table in one directory).
+    svg_task: just the SVG figures, copied out of plot_task's directory.
+    png_task: just the PNG figures, copied out of plot_task's directory.
+    """
+
+    plot_task: ColocLocusStackPlotTask
+    svg_task: CopyFilesWithSuffixFromDirectoryTask
+    png_task: CopyFilesWithSuffixFromDirectoryTask
+
+    def terminal_tasks(self) -> list[Task]:
+        return [self.svg_task, self.png_task]
+
+
 def generate_coloc_locus_stack_plot_task(
     asset_id: str, group: ColocTaskGroup, max_loci: int = 10
-) -> ColocLocusStackPlotTask:
-    """Per-locus stacked trait and protein Manhattan plots of the top display-table loci."""
-    return ColocLocusStackPlotTask.create(
+) -> ColocStackPlotGroup:
+    """Per-locus stacked trait and protein Manhattan plots of the top display-table loci.
+
+    The SVG and PNG figures are also copied out into their own directories (asset ids with
+    _svg and _png appended).
+    """
+    plot_task = ColocLocusStackPlotTask.create(
         asset_id=asset_id,
         coloc_task=group.coloc_task,
         trait_task=group.coloc_task.trait_task,
@@ -142,6 +165,15 @@ def generate_coloc_locus_stack_plot_task(
         gene_info_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
         genetic_map_task=GENETIC_MAP_HG38,
         max_loci=max_loci,
+    )
+    return ColocStackPlotGroup(
+        plot_task=plot_task,
+        svg_task=CopyFilesWithSuffixFromDirectoryTask.create(
+            asset_id=f"{asset_id}_svg", source_directory_task=plot_task, suffix=".svg"
+        ),
+        png_task=CopyFilesWithSuffixFromDirectoryTask.create(
+            asset_id=f"{asset_id}_png", source_directory_task=plot_task, suffix=".png"
+        ),
     )
 
 
