@@ -5,7 +5,8 @@ The loci are the distinct loci of the display table (pairs with PP.H4 above its 
 ranked by their best PP.H4 (the posterior probability of a shared causal variant), and at most
 max_loci are plotted. One figure per locus, saved as PNG and SVG, with rows sharing the GRCh38
 x-axis over the locus window:
-1. The trait: -log10 p of every variant of the full trait GWAS in the window, with the lead
+1. The trait: -log10 p of every usable variant (finite beta, finite SE > 0) of the full trait
+   GWAS in the window, with the lead
    variant marked, a dashed genome-wide-significance line, and the recombination rate (cM/Mb,
    from a genetic map) on a second y-axis as rough LD context.
 2. One row per display-table protein at the locus, in PP.H4 order: -log10 p over the aligned
@@ -167,6 +168,8 @@ def _trait_track(trait: pl.LazyFrame, spec: _LocusSpec) -> _TrackData:
         trait.filter(
             pl.col(GWASLAB_CHROM_COL) == spec.chrom,
             pl.col(GWASLAB_POS_COL).is_between(spec.start, spec.end),
+            pl.col(GWASLAB_BETA_COL).is_finite(),
+            pl.col(GWASLAB_SE_COL).is_finite() & (pl.col(GWASLAB_SE_COL) > 0),
         )
         .select(GWASLAB_POS_COL, GWASLAB_BETA_COL, GWASLAB_SE_COL)
         .collect()

@@ -19,6 +19,8 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
 from mecfs_bio.build_system.task.protein_coloc.coloc_locus_stack_plot_task import (
     STACK_PLOT_INDEX_FILENAME,
     ColocLocusStackPlotTask,
+    _LocusSpec,
+    _trait_track,
 )
 from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     GENE_INFO_CHROM_COL,
@@ -216,3 +218,18 @@ def test_empty_display_table_gives_empty_index(tmp_path: Path) -> None:
     index = pl.read_parquet(out / STACK_PLOT_INDEX_FILENAME)
     assert index.height == 0
     assert list(out.glob("*.png")) == []
+
+
+def test_trait_track_drops_unusable_variants() -> None:
+    """An SE = 0 row (infinite z) or a non-finite beta must not become the plotted trait lead."""
+    trait = pl.DataFrame(
+        {
+            GWASLAB_CHROM_COL: [1, 1, 1, 1],
+            GWASLAB_POS_COL: [1100, 1500, 2000, 2500],
+            GWASLAB_BETA_COL: [0.5, float("nan"), 0.08, 0.01],
+            GWASLAB_SE_COL: [0.0, 0.01, 0.01, 0.01],
+        }
+    ).lazy()
+    spec = _LocusSpec(locus_id=_CHR1_LOCUS, chrom=1, start=1000, end=3000, proteins=())
+    track = _trait_track(trait, spec)
+    assert track.pos.tolist() == [2000, 2500]
