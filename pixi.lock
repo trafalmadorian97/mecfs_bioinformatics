@@ -390,7 +390,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-future-1.82.0-r45hacb3a79_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-future.apply-1.21.0-r45hacb3a79_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-generics-0.1.4-r45hc72bb7e_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggplot2-4.0.3-r45h785f33e_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggplot2-4.0.4-r45h9cad52b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggridges-0.5.7-r45hc72bb7e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-globals-0.20.0-r45hacb3a79_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-gplots-3.3.0-r45hc72bb7e_0.conda
@@ -516,7 +516,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/4e/9a/ec4214e84f8085ab1f45be9ff39a10147ea555420d27cc9f190cf21f9a7c/selectolax-1.0.2-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/51/39/1f5d8c8877a0fa327db959c19341d4be61660de1ab6b7391f9eb805bcd67/pytest-9.2.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/51/62/9fffba5bb9ed3d31a932ad35038ba9483d59850256ee0fea7f1187173983/mkdocs_macros_plugin-1.5.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/52/f2/644357ef6e7333c4aba0c9ba733f885a18518790bdace45beae219578bbd/types_networkx-3.6.1.20261108-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/53/40/37d6161dcd95285c9c3eb75e2dbeb1dbc6e868551532735374918a22e298/opentelemetry_instrumentation_httpx-0.66b2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/54/1b/831f2de4840a25db1dd7b1afea433ccafe6bb10aca07e13264f2079462d0/threadpoolctl-3.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/54/6f/84908cad2d6aa5144abcf7b42709fe4fdb459bc640ec7ac5786e7693dabc/prompt_toolkit-3.0.53-py3-none-any.whl
@@ -658,6 +657,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f2/41/199ed7e2481138e877eeebefa8a740a41e70ada62f81666bab638984ad54/types_seaborn-0.13.2.20261113-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f2/8a/1e29c0c3785ae7e5cd0d54ee8717a08867ef71545796340be4c653c57e24/ruff-0.17.5-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/f3/21/9cca2185910326a55f47be956a953d2b5d94308f06280ebd9eea3266620e/types_networkx-3.6.1.20261114-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f8/3a/4fc99e788bcfa1b3b3f21abf57da45898d807d007e7f6fd1c7300904eb70/dask-2026.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f9/81/287400710ece16ca6421593c6426b1dcf43809466bfe8fe143857fc8e34f/coverage-7.17.3-cp313-cp313-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl
@@ -7800,9 +7800,9 @@ packages:
   run_exports: {}
   size: 88225
   timestamp: 1757455977192
-- conda: https://conda.anaconda.org/conda-forge/noarch/r-ggplot2-4.0.3-r45h785f33e_0.conda
-  sha256: 3a91d5334b7d99bc247386eaf0d331e119852e381e769e266f70df20eab22689
-  md5: 866fbbf3f356140922d618f26f2b889c
+- conda: https://conda.anaconda.org/conda-forge/noarch/r-ggplot2-4.0.4-r45h9cad52b_0.conda
+  sha256: 549de7a0e1982e6b99efc933189c12ab23e46520596793055a5b715c6fa07417
+  md5: 2ed2fc34ab68b19d4d331d64d4091dc6
   depends:
   - r-base >=4.5,<4.6.0a0
   - r-cli
@@ -7819,8 +7819,8 @@ packages:
   license_family: MIT
   purls: []
   run_exports: {}
-  size: 7812326
-  timestamp: 1776860393567
+  size: 7931663
+  timestamp: 1794636521354
 - conda: https://conda.anaconda.org/conda-forge/noarch/r-ggridges-0.5.7-r45hc72bb7e_1.conda
   sha256: c1f7be60959658d4c831229312d14da3ac32c14414513bd17d9b3fba62145b43
   md5: bd01de3ca3b11408d5f059a6a158f54d
@@ -9611,14 +9611,6 @@ packages:
   - mkdocs-d2-plugin ; extra == 'test'
   - mkdocs-mermaid2-plugin ; extra == 'doc'
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/52/f2/644357ef6e7333c4aba0c9ba733f885a18518790bdace45beae219578bbd/types_networkx-3.6.1.20261108-py3-none-any.whl
-  name: types-networkx
-  version: 3.6.1.20261108
-  sha256: 6a1c168c311e0bb17033302aca3ce1ac280b41198e1532a591091b74513dc2b5
-  requires_dist:
-  - numpy>=1.21 ; extra == 'all'
-  - numpy>=1.21 ; extra == 'numpy'
-  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/53/40/37d6161dcd95285c9c3eb75e2dbeb1dbc6e868551532735374918a22e298/opentelemetry_instrumentation_httpx-0.66b2-py3-none-any.whl
   name: opentelemetry-instrumentation-httpx
   version: 0.66b2
@@ -11632,6 +11624,14 @@ packages:
   version: 0.17.5
   sha256: 40ca8afaac309b41a5b2e09e4e7beb1f824826b93c25697c4d74f573324fba4e
   requires_python: '>=3.7'
+- pypi: https://files.pythonhosted.org/packages/f3/21/9cca2185910326a55f47be956a953d2b5d94308f06280ebd9eea3266620e/types_networkx-3.6.1.20261114-py3-none-any.whl
+  name: types-networkx
+  version: 3.6.1.20261114
+  sha256: 3c1d41c5e24b5d761da00641ead11afe59f8f3caa6ce9e2c6f7ea51ffcf798a7
+  requires_dist:
+  - numpy>=1.21 ; extra == 'all'
+  - numpy>=1.21 ; extra == 'numpy'
+  requires_python: '>=3.10'
 - pypi: https://files.pythonhosted.org/packages/f7/ec/67fbef5d497f86283db54c22eec6f6140243aae73265799baaaa19cd17fb/ghp_import-2.1.0-py3-none-any.whl
   name: ghp-import
   version: 2.1.0
