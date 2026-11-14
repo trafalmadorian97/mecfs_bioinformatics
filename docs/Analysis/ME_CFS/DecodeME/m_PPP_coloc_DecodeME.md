@@ -11,13 +11,13 @@ I used [ABF Colocalization](../../../Bioinformatics_Concepts/Colocalization.md)[
 
 ## Results
 
-This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow.  The table below shows all protein/ locus pairs at which the probability of colocalization exceeds 80%.
+This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow.  The table below includes all protein/ locus pairs at which the probability of colocalization exceeds 80%.
 
 
 {{ coloc_results_table("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_display.parquet", id="ukbb-ppp-coloc-decodeme" )}}
 
 
-DecodeME did not colocalize with proteomic GWAS at any of the DecodeME genome-wide significant loci.  DecodeME did colocalize at two sub-genome-wide-significant loci.
+As the table shows, while DecodeME did not colocalize with proteomic GWAS at any of the DecodeME genome-wide-significant loci, there was colocalization at two sub-genome-wide-significant loci.
 
 
 
@@ -49,7 +49,7 @@ It is notable that both DRAXIN and CRIM1 pertain to nervous system development.
 
 ## Caveats
 
-**Trans versus cis pQTL**: Note that DecodeME colocalizes with trans-pQTL (defined as pQTLs more than 1Mb from the gene coding for the protein) rather than cis-pQTL (defined as pQTLs within 1Mb of the gene coding for the protein).  Colocalization with cis-pQTL is generally much more mechanistically informative than colocalization with trans-pQTL.  This is because cis-pQTLs can be reasonably assumed to affect protein levels by directly regulating the synthesis of the protein in question, while a trans-pQTL may perturb a complex regulatory network in a way that changes protein levels as a remote downstream consequence (see [Omnigenic model](../../../Bioinformatics_Concepts/Omnigenic_Model.md)).
+**Trans versus cis pQTL**: Note that DecodeME colocalizes with trans-pQTL (defined as pQTLs more than 1Mb from the gene coding for the protein) rather than cis-pQTL (defined as pQTLs within 1Mb of the gene coding for the protein).  Colocalization with cis-pQTL is generally much more mechanistically informative than colocalization with trans-pQTL.  This is because cis-pQTLs can be reasonably assumed to affect protein levels by directly regulating the synthesis of the protein in question, while a trans-pQTL may perturb a complex regulatory network in a way that changes protein levels only as a remote downstream consequence (see [Omnigenic model](../../../Bioinformatics_Concepts/Omnigenic_Model.md)).
 
 Thus when a trait GWAS colocalizes with a cis-pQTL, we may infer a causal graph like this:
 
