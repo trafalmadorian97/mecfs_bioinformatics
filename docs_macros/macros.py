@@ -886,7 +886,7 @@ PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
             DISPLAY_CIS_STATUS_COL: "cis means the locus is within 1 Mb of the gene coding for the protein.  Trans means the locus is more than 1Mb from that gene.  Unknown means data required to make this determination is missing",
             DISPLAY_PP_H4_COL: "posterior probability that the trait and protein GWAS share a causal variant at the locus.  Note that this is prior-dependent",
             DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
-            DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
+            DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included in the discovery set if we cap the Bayesian false discovery rate at 0.05",
             DISPLAY_TRAIT_P_COL: "p value of the most significant trait variant at the locus",
             DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant at the locus",
             DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant",
