@@ -91,11 +91,13 @@ class A,B,C,D normal;
 **Single causal variant assumption**: ABF colocalization depends on the assumption that each GWAS has at most one causal variant at each locus.  Eyeballing the Manhattan plots above suggests this assumption is reasonable for the loci in question, but it could be worthwhile to apply a method like SUSIE-coloc, which allows for multiple causal variants per locus.
 
 
+**Participant overlap**:  The mathematical derivation of ABF colocalization relies on there being no overlap between the participants in the two GWAS being colocalized.  The PPP proteomics GWAS used UK Biobank participants, while DecodeME controls were also drawn from the UK Biobank.  Thus technically the above analysis violates the assumptions underlying ABF colocalization. Because the overlap is only partial, I do not expect that this had a major impact on our results.  Nevertheless, it is worth keeping in mind.  Attempting to replicate the above results using another proteomics GWAS that does not have participant overlap DecodeMe would be worthwhile.
+
 
 ## Next steps
 
 
 - Investigating what is known about regulatory pathways involving the colocalizing proteins could be informative.
-- Besides PPP, there are other large scale proteomics GWAS, such as Western et al.[@western2024proteogenomic] and the deCODE proteomics study[@ferkingstad2021large]. These proteomics GWAS use different technologies (Somascan instead of Olink), different participants, and in the case of Western et al. a different bodily site (Western et al. uses cerebro-spinal fluid instead of plasma). Comparing colocalization results generated with these proteomic GWAS to the above PPP colocalization results could be revealing.
+- Besides PPP, there are other large scale proteomics GWAS, such as Western et al.[@western2024proteogenomic] and the deCODE proteomics study[@ferkingstad2021large]. These proteomics GWAS use different technologies (SomaScan instead of Olink), different participants, and in the case of Western et al. a different bodily site (Western et al. uses cerebro-spinal fluid instead of plasma). Comparing colocalization results generated with these proteomic GWAS to the above PPP colocalization results could be revealing.
 
 
