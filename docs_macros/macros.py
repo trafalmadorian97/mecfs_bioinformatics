@@ -109,7 +109,7 @@ def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
     return os.path.relpath(site_path, Path(page_dest_uri).parent)
 
 
-def _columns_caption(columns: dict[str, str]) -> str:
+def _columns_caption(columns: dict[str, str], sep: str = ";") -> str:
     """Render a table caption describing each column.
 
     Parameters
@@ -118,7 +118,7 @@ def _columns_caption(columns: dict[str, str]) -> str:
         Maps each column name, as it appears in the table, to a plain-text
         description. Both are HTML-escaped.
     """
-    return "Columns: " + "; ".join(
+    return "Columns: " + f"{sep} ".join(
         f"{html.escape(name)}: {html.escape(description)}"
         for name, description in columns.items()
     )
@@ -879,11 +879,11 @@ PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
     "Results of colocalization analysis. "
     + _columns_caption(
         {
-            DISPLAY_GENE_COL: "gene",
+            DISPLAY_GENE_COL: "gene symbol of the gene coding for the protein",
             DISPLAY_PROTEIN_COL: "ID of proteomic assay",
-            DISPLAY_LOCUS_COL: "Genomic region used for colocalization",
+            DISPLAY_LOCUS_COL: "genomic interval used for colocalization",
             DISPLAY_LEAD_VARIANT_COL: "most significant trait variant in locus",
-            DISPLAY_CIS_STATUS_COL: "cis means the lead variant is close to the gene coding for the protein in question.  Trans means the lead variant is far from that gene.  Unknown means the data required to make this determination is missing",
+            DISPLAY_CIS_STATUS_COL: "cis means the locus is within 1 Mb of the gene coding for the protein.  Trans means the locus is more than 1Mb from that gene.  Unknown means data required to make this determination is missing",
             DISPLAY_PP_H4_COL: "posterior probability that the trait and protein GWAS share a causal variant at the locus.  Note that this is prior-dependent",
             DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
             DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
@@ -891,6 +891,8 @@ PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
             DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant at the locus",
             DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant",
             DISPLAY_N_SNP_COL: "number of variants present in trait and protein GWAS at the locus",
-        }
+        },
+        sep=".",
     )
+    + "."
 )
