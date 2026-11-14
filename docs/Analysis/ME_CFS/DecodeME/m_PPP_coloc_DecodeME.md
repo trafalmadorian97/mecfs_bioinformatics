@@ -11,7 +11,7 @@ I used [ABF Colocalization](../../../Bioinformatics_Concepts/Colocalization.md)[
 
 ## Results
 
-This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow[^trim_note]:
+This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow.  The table below shows all protein/ locus pairs at which the probability of colocalization exceeded 80 percent.
 
 
 {{ coloc_results_table("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_display.parquet", id="ukbb-ppp-coloc-decodeme" )}}
@@ -99,4 +99,3 @@ class A,B,C,D normal;
 - Besides PPP, there are other large scale proteomics GWAS, such as Western et al.[@western2024proteogenomic] and the deCODE proteomics study[@ferkingstad2021large]. These proteomics GWAS use different technologies (Somascan instead of Olink), different participants, and in the case of Western et al. a different bodily site (Western et al. uses cerebro-spinal fluid instead of plasma). Comparing colocalization results generated with these proteomic GWAS to the above PPP colocalization results could be revealing.
 
 
-[^trim_note]: The table is trimmed to include only proteins with $P(H_4)\ge 0.8$.
