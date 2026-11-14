@@ -38,7 +38,7 @@ from mecfs_bio.constants.hgnc_constants import (
     HGNC_UNIPROT_ID_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
-    DISPLAY_GENE_COL,
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
@@ -100,8 +100,8 @@ _UNIPROT_GENES_ROWS = [
 ]
 
 _DISPLAY_SCHEMA = {
-    DISPLAY_GENE_COL: pl.String,
     DISPLAY_PROTEIN_COL: pl.String,
+    DISPLAY_ASSAY_ID_COL: pl.String,
     DISPLAY_LOCUS_COL: pl.String,
     DISPLAY_PP_H4_COL: pl.Float64,
 }
@@ -193,7 +193,9 @@ def test_one_row_per_gene_of_top_loci(tmp_path: Path) -> None:
         ],
         max_loci=1,
     )
-    assert info.select(DISPLAY_GENE_COL, GENE_NAME_COL, PROTEIN_NAMES_COL).rows() == [
+    assert info.select(
+        DISPLAY_PROTEIN_COL, GENE_NAME_COL, PROTEIN_NAMES_COL
+    ).rows() == [
         ("AAA", "gene A", "Protein A"),
         ("BBB", "gene B", "Protein B"),
     ]
@@ -202,8 +204,8 @@ def test_one_row_per_gene_of_top_loci(tmp_path: Path) -> None:
 def test_output_columns(tmp_path: Path) -> None:
     info = _info(tmp_path, [("AAA", "OID1", "L1", 0.95)])
     assert info.columns == [
-        DISPLAY_GENE_COL,
         DISPLAY_PROTEIN_COL,
+        DISPLAY_ASSAY_ID_COL,
         DISPLAY_LOCUS_COL,
         DISPLAY_PP_H4_COL,
         UNIPROT_ID_COL,
@@ -216,7 +218,7 @@ def test_output_columns(tmp_path: Path) -> None:
         EVIDENCE_COL,
     ]
     assert info.select(
-        DISPLAY_PROTEIN_COL, DISPLAY_LOCUS_COL, DISPLAY_PP_H4_COL, UNIPROT_ID_COL
+        DISPLAY_ASSAY_ID_COL, DISPLAY_LOCUS_COL, DISPLAY_PP_H4_COL, UNIPROT_ID_COL
     ).rows() == [("OID1", "L1", 0.95, "P00001")]
 
 
@@ -262,7 +264,7 @@ def test_outdated_display_symbol_still_annotated_via_accession(
 
 def test_complex_gives_one_row_per_subunit_gene(tmp_path: Path) -> None:
     info = _info(tmp_path, [("EBI3_IL27", "OID9", "L1", 0.9)])
-    assert info.select(DISPLAY_GENE_COL, GENE_NAME_COL).rows() == [
+    assert info.select(DISPLAY_PROTEIN_COL, GENE_NAME_COL).rows() == [
         ("EBI3_IL27", "EBI3 subunit"),
         ("EBI3_IL27", "IL27 subunit"),
     ]
@@ -275,9 +277,9 @@ def test_duplicated_genes_of_one_protein_each_get_a_row(tmp_path: Path) -> None:
 
 def test_accession_missing_from_references_keeps_row(tmp_path: Path) -> None:
     info = _info(tmp_path, [("OBSOLETE", "OID5", "L1", 0.9)])
-    assert info.select(DISPLAY_GENE_COL, GENE_NAME_COL, PROTEIN_NAMES_COL).rows() == [
-        ("OBSOLETE", None, None)
-    ]
+    assert info.select(
+        DISPLAY_PROTEIN_COL, GENE_NAME_COL, PROTEIN_NAMES_COL
+    ).rows() == [("OBSOLETE", None, None)]
 
 
 def test_protein_missing_from_protein_table_fails(tmp_path: Path) -> None:

@@ -156,9 +156,14 @@ class ColocStackPlotGroup:
 
 
 def generate_coloc_locus_stack_plot_task(
-    asset_id: str, group: ColocTaskGroup, max_loci: int = 10
+    asset_id: str,
+    group: ColocTaskGroup,
+    max_loci: int = 10,
+    trait_name: str | None = None,
 ) -> ColocStackPlotGroup:
     """Per-locus stacked trait and protein Manhattan plots of the top display-table loci.
+
+    trait_name, if given, labels the trait row in place of "trait".
 
     The SVG and PNG figures are also copied out into their own directories (asset ids with
     _svg and _png appended).
@@ -171,6 +176,7 @@ def generate_coloc_locus_stack_plot_task(
         gene_info_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
         genetic_map_task=GENETIC_MAP_HG38,
         max_loci=max_loci,
+        trait_name=trait_name,
     )
     return ColocStackPlotGroup(
         plot_task=plot_task,

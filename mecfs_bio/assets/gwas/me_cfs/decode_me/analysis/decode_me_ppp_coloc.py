@@ -57,6 +57,7 @@ DECODE_ME_PPP_COLOC_EXPLORATORY_2 = generate_ppp_coloc_tasks(
 DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS = generate_coloc_locus_stack_plot_task(
     asset_id="decode_me_gwas_1_exploratory_2_ppp_coloc_stack_plots",
     group=DECODE_ME_PPP_COLOC_EXPLORATORY_2,
+    trait_name="DecodeME GWAS-1",
 )
 
 DECODE_ME_PPP_COLOC_EXPLORATORY_2_PROTEIN_INFO = generate_coloc_protein_info_task(

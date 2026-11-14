@@ -5,7 +5,7 @@ The loci are the distinct loci of the display table (pairs with PP.H4 above its 
 ranked by their best PP.H4 (the posterior probability of a shared causal variant), and at most
 max_loci are plotted. One figure per locus, saved as PNG and SVG, with rows sharing the GRCh38
 x-axis over the locus window:
-1. The trait: -log10 p of every usable variant (finite beta, finite SE > 0) of the full trait
+1. The trait (labelled trait_name, or "trait" when none is given): -log10 p of every usable variant (finite beta, finite SE > 0) of the full trait
    GWAS in the window, with a dashed genome-wide-significance line, and the recombination rate (cM/Mb,
    from a genetic map) on a second y-axis as rough LD context.
 2. One row per display-table protein at the locus, in PP.H4 order: -log10 p over the aligned
@@ -56,8 +56,8 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 from mecfs_bio.constants.protein_coloc_constants import (
     BETA_PROTEIN_COL,
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_CIS_STATUS_COL,
-    DISPLAY_GENE_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
@@ -91,7 +91,7 @@ STACK_PLOT_INDEX_SCHEMA = pl.Schema(
 
 @frozen(slots=True)
 class _ProteinRow:
-    gene: str
+    name: str
     protein_id: str
     cis_status: str
     pp_h4: float
@@ -150,8 +150,8 @@ def _locus_specs(
                 end=int(bound[LOCUS_END_COL].item()),
                 proteins=tuple(
                     _ProteinRow(
-                        gene=row[DISPLAY_GENE_COL],
-                        protein_id=row[DISPLAY_PROTEIN_COL],
+                        name=row[DISPLAY_PROTEIN_COL],
+                        protein_id=row[DISPLAY_ASSAY_ID_COL],
                         cis_status=row[DISPLAY_CIS_STATUS_COL],
                         pp_h4=row[DISPLAY_PP_H4_COL],
                     )
@@ -196,8 +196,12 @@ def _strip_spines(ax: Axes) -> None:
     ax.spines["right"].set_visible(False)
 
 
+_DEFAULT_TRAIT_LABEL = "trait"
+
+
 def _render_locus(
     spec: _LocusSpec,
+    trait_label: str,
     trait_track: _TrackData,
     protein_tracks: list[_TrackData],
     recomb: pl.DataFrame,
@@ -211,7 +215,7 @@ def _render_locus(
         ax_trait,
         trait_track.pos,
         trait_track.mlog10p,
-        label="trait",
+        label=trait_label,
         significance_line=True,
     )
     trait_lead_pos = float(trait_track.pos[lead])
@@ -223,11 +227,11 @@ def _render_locus(
     ):
         ax = fig.add_subplot(n_rows, 1, 2 + i, sharex=ax_trait)
         plot_association(
-            ax, track.pos, track.mlog10p, label=protein.gene, significance_line=True
+            ax, track.pos, track.mlog10p, label=protein.name, significance_line=True
         )
         ax.axvline(trait_lead_pos, linestyle=":", color="grey", linewidth=1)
         ax.set_title(
-            f"{protein.gene} ({protein.cis_status}) PP.H4={protein.pp_h4:.2f}",
+            f"{protein.name} ({protein.cis_status}) PP.H4={protein.pp_h4:.2f}",
             fontsize=9,
             loc="left",
         )
@@ -268,6 +272,7 @@ class ColocLocusStackPlotTask(Task):
     gene_info_task: a GRCh38 gene table with the GENE_INFO_* columns.
     genetic_map_task: a GRCh38 genetic map with the GMAP_* columns.
     max_loci: at most this many loci are plotted, best PP.H4 first.
+    trait_name: the label of the trait row, e.g. "DecodeME GWAS-1"; None labels it "trait".
     """
 
     meta: ResultDirectoryMeta
@@ -277,9 +282,13 @@ class ColocLocusStackPlotTask(Task):
     gene_info_task: Task
     genetic_map_task: Task
     max_loci: int
+    trait_name: str | None
 
     def __attrs_post_init__(self) -> None:
         assert self.max_loci >= 1, f"max_loci must be at least 1: {self.max_loci}"
+        assert self.trait_name is None or self.trait_name.strip(), (
+            f"trait_name must not be blank: {self.trait_name!r}"
+        )
 
     @property
     def deps(self) -> list[Task]:
@@ -315,6 +324,7 @@ class ColocLocusStackPlotTask(Task):
         gene_info_task: Task,
         genetic_map_task: Task,
         max_loci: int = 10,
+        trait_name: str | None = None,
     ) -> "ColocLocusStackPlotTask":
         source_meta = coloc_task.meta
         assert isinstance(source_meta, ResultDirectoryMeta), (
@@ -330,6 +340,7 @@ class ColocLocusStackPlotTask(Task):
             gene_info_task=gene_info_task,
             genetic_map_task=genetic_map_task,
             max_loci=max_loci,
+            trait_name=trait_name,
         )
 
 
@@ -347,6 +358,9 @@ def _render_all(
     for spec in specs:
         _render_locus(
             spec,
+            trait_label=_DEFAULT_TRAIT_LABEL
+            if task.trait_name is None
+            else task.trait_name,
             trait_track=_trait_track(trait, spec),
             protein_tracks=[
                 _protein_track(windows_dir, spec.locus_id, protein.protein_id)

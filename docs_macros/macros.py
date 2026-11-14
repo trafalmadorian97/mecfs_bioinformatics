@@ -52,9 +52,9 @@ from mecfs_bio.constants.ppp_ldsc_constants import (
     PPP_RG_SIGNIFICANT_BONFERRONI_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_CIS_STATUS_COL,
     DISPLAY_FDR_SIGNIFICANT_COL,
-    DISPLAY_GENE_COL,
     DISPLAY_LEAD_VARIANT_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_N_SNP_COL,
@@ -444,7 +444,7 @@ def define_env(env: MacrosPlugin) -> None:
                 INFO_EVIDENCE_COL: 190,
             },
             hidden_columns=[
-                DISPLAY_PROTEIN_COL,
+                DISPLAY_ASSAY_ID_COL,
                 DISPLAY_LOCUS_COL,
                 DISPLAY_PP_H4_COL,
                 INFO_UNIPROT_ID_COL,
@@ -879,8 +879,8 @@ PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
     "Results of colocalization analysis. "
     + _columns_caption(
         {
-            DISPLAY_GENE_COL: "gene symbol of the gene coding for the protein",
-            DISPLAY_PROTEIN_COL: "ID of proteomic assay",
+            DISPLAY_PROTEIN_COL: "name of the protein",
+            DISPLAY_ASSAY_ID_COL: "ID of proteomic assay",
             DISPLAY_LOCUS_COL: "genomic interval used for colocalization",
             DISPLAY_LEAD_VARIANT_COL: "most significant trait variant in locus",
             DISPLAY_CIS_STATUS_COL: "cis means the locus is within 1 Mb of the gene coding for the protein.  Trans means the locus is more than 1Mb from that gene.  Unknown means data required to make this determination is missing",

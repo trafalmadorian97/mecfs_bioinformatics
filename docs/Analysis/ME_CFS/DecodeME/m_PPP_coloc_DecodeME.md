@@ -49,7 +49,7 @@ It is notable that both DRAXIN and CRIM1 pertain to nervous system development.
 
 ## Caveats
 
-**Trans versus cis pQTL**: Note that DecodeME colocalized with trans-pQTL (defined as pQTLs more than 1Mb from the gene coding for the protein) rather than cis-pQTL (defined as pQTLs within 1Mb of the gene coding for the protein).  Colocalization with cis-pQTL is generally much more mechanistically informative than colocalization with trans-pQTL.  This is because cis-pQTLs can be reasonably assumed to affect protein levels by directly regulating the synthesis of the protein in question, while trans-pQTLs may perturb some complex regulatory network so that the change in protein levels is a distance downstream consequence (see [Omnigenic model](../../../Bioinformatics_Concepts/Omnigenic_Model.md)).
+**Trans versus cis pQTL**: Note that DecodeME colocalizes with trans-pQTL (defined as pQTLs more than 1Mb from the gene coding for the protein) rather than cis-pQTL (defined as pQTLs within 1Mb of the gene coding for the protein).  Colocalization with cis-pQTL is generally much more mechanistically informative than colocalization with trans-pQTL.  This is because cis-pQTLs can be reasonably assumed to affect protein levels by directly regulating the synthesis of the protein in question, while a trans-pQTL may perturb a complex regulatory network in a way that changes protein levels as a remote downstream consequence (see [Omnigenic model](../../../Bioinformatics_Concepts/Omnigenic_Model.md)).
 
 Thus when a trait GWAS colocalizes with a cis-pQTL, we may infer a causal graph like this:
 
@@ -66,7 +66,7 @@ class A,B,C normal;
 
 
 
-However, since DecodeME colocalizes with only trans-pQTL, the true causal graphs may instead resemble:
+However, since DecodeME colocalizes with only trans-pQTL, the true causal graph may instead resemble:
 
 ``` mermaid
 graph LR
@@ -95,8 +95,8 @@ class A,B,C,D normal;
 ## Next steps
 
 
-- Investigating what is known regulatory pathways involving the colocalizing proteins could be informative.
-- There are other large scale proteomics GWAS, such as Western et al.[@western2024proteogenomic] and the deCODE proteomics study[@ferkingstad2021large]. These proteomics GWAS use different technologies (Somascan instead of Olink), different participants, and in the case of Western et al. a different bodily site (Western et al. uses cerebro-spinal fluid instead of plasma). Comparing colocalization results generated with these proteomic GWAS to the above PPP colocalization results could be revealing.
+- Investigating what is known about regulatory pathways involving the colocalizing proteins could be informative.
+- Besides PPP, there are other large scale proteomics GWAS, such as Western et al.[@western2024proteogenomic] and the deCODE proteomics study[@ferkingstad2021large]. These proteomics GWAS use different technologies (Somascan instead of Olink), different participants, and in the case of Western et al. a different bodily site (Western et al. uses cerebro-spinal fluid instead of plasma). Comparing colocalization results generated with these proteomic GWAS to the above PPP colocalization results could be revealing.
 
 
 [^trim_note]: The table is trimmed to include only proteins with $P(H_4)\ge 0.8$.
