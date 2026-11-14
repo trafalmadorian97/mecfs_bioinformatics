@@ -479,7 +479,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/1f/e8/2516ba2594649a9ea25874831f700c76b73cd8c603989b6ffb8610abc651/mkdocstrings_python-2.0.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/20/70/cd3cf5cff538323076a879edef02cce6f13f7d75e03d12f211b0a0dbd178/patsy-1.0.3-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/21/18/c667ef09738d1ede5402f2c042d228adcf0ea00ca9d3042942d2af906660/rpy2_rinterface-3.6.7.tar.gz
-      - pypi: https://files.pythonhosted.org/packages/21/b5/52a750a062db07ba056cde1c52c802b898a96b70953389a0b2247e18f210/bracex-3.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/22/5b/dbc6a8cddc9cfa9c4971d59fb12bb8d42e161b7e7f8cc89e49137c5b279c/mkdocs-1.6.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/22/a6/858897256d0deac81a172289110f31629fc4cee19b6f01283303e18c8db3/ptyprocess-0.7.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/23/e5/688703d357e5393f708d98eb189fd415ae69e39f6de03c6bd4005aef6118/scikit_learn-1.9.1-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
@@ -558,9 +557,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/84/d0/205d54408c08b13550c733c4b85429e7ead111c7f0014309637425520a9a/deprecated-1.3.1-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/88/29/744136411e785c4b0b744d5413e56555265939ab3a104c6a4b719dad33fd/mkdocs_get_deps-0.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/88/39/799be3f2f0f38cc727ee3b4f1445fe6d5e4133064ec2e4115069418a5bb6/cloudpickle-3.1.2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/88/73/6a2087c72975cfc07394623bca8d17654342ea4055ae368deafe5a81a542/soupsieve-4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/8a/24/8a5bbb3e73962b5bc901966f926b4fe25cbc9d1170ad9b4d9938441dbdc3/wcmatch-12.0.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8d/59/b4572118e098ac8e46e399a1dd0f2d85403ce8bbaad9ec79373ed6badaf9/PySocks-1.7.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8e/f5/768590251839a148c188d64779b809bde0e78a306295c18fc29d7fc71ce1/mkdocs_git_committers_plugin_2-2.5.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/8f/eb/461d5f167b6f5c7d97696f397c82f82e3480e003fce3f0a1cd1dd26e2eb2/typeguard-4.6.0-py3-none-any.whl
@@ -620,9 +617,11 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/c6/0e/7afa93d50b729fb95d557cfe5d0ffd6d5006b0642ebe489c07095a207527/sumstats_liftover-1.1.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c6/d8/25b22e25bdd7745808c3a7e47515c0618b202b083a77b0ac4ba0fba15439/gget-0.30.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c8/00/9ee7c8da7342b1a5524bca9d036f89e7d1d1e5a6345c9623763eeeac941f/loguru-0.8.0-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/c8/42/f5d49972873bd3fff36e736ad1fcb36f9fdadb1ad577dfcfa17777dc84f0/bracex-3.2.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/c9/31/5f0ac2f1a1c67423c995c731a11cd4ad05d081a2be969d74f868bdb9cc70/markdown_it_py-4.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ca/31/d4e37e9e550c2b92a9cbc2e4d0b7420a27224968580b5a447f420847c975/pytest_xdist-3.8.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cc/88/5c8819f232448d52514b76a64cf285bc608cff9179f3eeacf58750612323/statsmodels-0.15.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
+      - pypi: https://files.pythonhosted.org/packages/cd/65/7fae69a095696195334a934eab23aeb12e2715e6c3f08025d2f91942750e/soupsieve-4.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/cf/82/8ef9c7e0f50493307a49c09cfa7f00c5a778b6d1921f7b2dabe1d3a5809e/narwhals-2.28.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d1/48/76df0d37456538ec61772ca174ef9f12b4d35c41be2102345d2ebd2e8d62/mkdocs_glightbox-0.5.3-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/d1/d6/3965ed04c63042e047cb6a3e6ed1a63a35087b6a609aa3a15ed8ac56c221/colorama-0.4.6-py2.py3-none-any.whl
@@ -664,6 +663,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/fa/e8/0485850748dfdba9443f4151c7b2442cfa4987ba6cd871038eb5d6b8eca9/wcwidth-0.9.4-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/fc/75/0576b03f7889ad25b5385b4f6c69e0543713425a6f193b056c9b0a2e65ce/formulaic-1.2.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fc/75/2879e315d809364160eec9bc6483bbb62544e5478a2ead9ea54a80a776e0/textalloc-1.2.4-py3-none-any.whl
+      - pypi: https://files.pythonhosted.org/packages/fd/87/25c38887aa764999af61086bc8a483d617c6c04d33c87282abc165aa42bc/wcmatch-12.0.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fd/8a/75e3177f374877b19dd3112820b071836ad1100f9f58424630b4783519bc/emoji-2.16.0-py3-none-any.whl
   download-env:
     channels:
@@ -9145,11 +9145,6 @@ packages:
   - coverage ; extra == 'all'
   - pytest-cov ; extra == 'all'
   requires_python: '>=3.9'
-- pypi: https://files.pythonhosted.org/packages/21/b5/52a750a062db07ba056cde1c52c802b898a96b70953389a0b2247e18f210/bracex-3.2.2-py3-none-any.whl
-  name: bracex
-  version: 3.2.2
-  sha256: 284d59c4656e5a0421ff691402074bd5847049d50410535764a2c522a47095bc
-  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/22/5b/dbc6a8cddc9cfa9c4971d59fb12bb8d42e161b7e7f8cc89e49137c5b279c/mkdocs-1.6.1-py3-none-any.whl
   name: mkdocs
   version: 1.6.1
@@ -10250,11 +10245,6 @@ packages:
   version: 3.1.2
   sha256: 9acb47f6afd73f60dc1df93bb801b472f05ff42fa6c84167d25cb206be1fbf4a
   requires_python: '>=3.8'
-- pypi: https://files.pythonhosted.org/packages/88/73/6a2087c72975cfc07394623bca8d17654342ea4055ae368deafe5a81a542/soupsieve-4.1-py3-none-any.whl
-  name: soupsieve
-  version: '4.1'
-  sha256: e4d667b3974ce6e038e7390486b8093369854a1d345ffdd4c121dfc4a782e809
-  requires_python: '>=3.11.5'
 - pypi: https://files.pythonhosted.org/packages/88/c6/92fcd42f1ba33e1184263f25bfabf3d27c383410470f169e4b8163bf9c17/beautifulsoup4-4.15.0-py3-none-any.whl
   name: beautifulsoup4
   version: 4.15.0
@@ -10268,13 +10258,6 @@ packages:
   - html5lib ; extra == 'html5lib'
   - lxml ; extra == 'lxml'
   requires_python: '>=3.7.0'
-- pypi: https://files.pythonhosted.org/packages/8a/24/8a5bbb3e73962b5bc901966f926b4fe25cbc9d1170ad9b4d9938441dbdc3/wcmatch-12.0.1-py3-none-any.whl
-  name: wcmatch
-  version: 12.0.1
-  sha256: 0e11b0bf1700bc8222ad5e7dc79fb326d9e0304458c7e2c25419ab6d26d07d8e
-  requires_dist:
-  - bracex>=3.2.2
-  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/8d/59/b4572118e098ac8e46e399a1dd0f2d85403ce8bbaad9ec79373ed6badaf9/PySocks-1.7.1-py3-none-any.whl
   name: pysocks
   version: 1.7.1
@@ -11038,6 +11021,11 @@ packages:
   - build==1.6.1 ; python_full_version >= '3.11' and extra == 'dev'
   - twine==7.0.0 ; python_full_version >= '3.11' and extra == 'dev'
   requires_python: '>=3.5'
+- pypi: https://files.pythonhosted.org/packages/c8/42/f5d49972873bd3fff36e736ad1fcb36f9fdadb1ad577dfcfa17777dc84f0/bracex-3.2.3-py3-none-any.whl
+  name: bracex
+  version: 3.2.3
+  sha256: 8d6d677856121820d67b9009e76a5740fb02ab6dcd2d9815a83724d1888c305d
+  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/c9/31/5f0ac2f1a1c67423c995c731a11cd4ad05d081a2be969d74f868bdb9cc70/markdown_it_py-4.3.0-py3-none-any.whl
   name: markdown-it-py
   version: 4.3.0
@@ -11131,6 +11119,11 @@ packages:
   - ruff ; extra == 'dev'
   - polars>=1.0.0 ; extra == 'polars'
   requires_python: '>=3.10'
+- pypi: https://files.pythonhosted.org/packages/cd/65/7fae69a095696195334a934eab23aeb12e2715e6c3f08025d2f91942750e/soupsieve-4.1.1-py3-none-any.whl
+  name: soupsieve
+  version: 4.1.1
+  sha256: 8ff3422dab0b720fb667ee79864d80531a0e57994a13eb701697719ffcb751f6
+  requires_python: '>=3.11.5'
 - pypi: https://files.pythonhosted.org/packages/cf/82/8ef9c7e0f50493307a49c09cfa7f00c5a778b6d1921f7b2dabe1d3a5809e/narwhals-2.28.0-py3-none-any.whl
   name: narwhals
   version: 2.28.0
@@ -11710,6 +11703,13 @@ packages:
   - matplotlib
   - packaging
   requires_python: '>=3.6'
+- pypi: https://files.pythonhosted.org/packages/fd/87/25c38887aa764999af61086bc8a483d617c6c04d33c87282abc165aa42bc/wcmatch-12.0.2-py3-none-any.whl
+  name: wcmatch
+  version: 12.0.2
+  sha256: 421209e3c220a3b3c7d6c6503277ef6cd3a0b28b35fc350539e4c088ac083b57
+  requires_dist:
+  - bracex>=3.2.3
+  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/fd/8a/75e3177f374877b19dd3112820b071836ad1100f9f58424630b4783519bc/emoji-2.16.0-py3-none-any.whl
   name: emoji
   version: 2.16.0
