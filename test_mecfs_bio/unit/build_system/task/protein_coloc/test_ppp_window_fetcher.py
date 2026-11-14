@@ -1,8 +1,10 @@
 import gzip
+import random
 import tarfile
 from pathlib import Path
 
 import polars as pl
+from attrs import frozen
 
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
@@ -22,6 +24,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 from mecfs_bio.constants.ppp_database_constants import Oid, SynID
 from mecfs_bio.constants.protein_coloc_constants import WINDOW_SCHEMA
+from mecfs_bio.util.file_io.ranged_tar import RangeReader
 
 _REGENIE_HEADER = (
     "CHROM GENPOS ID ALLELE0 ALLELE1 A1FREQ INFO N TEST BETA SE CHISQ LOG10P EXTRA"
@@ -37,21 +40,37 @@ _PROTEIN = PppProteinFile(
 )
 
 
-class _TarCopyingDownloader(SynapseDownloader):
-    """Serves a prepared tar for every request and counts downloads."""
+@frozen(slots=True)
+class _ByteRange:
+    start: int
+    end: int
+
+    def overlap_length(self, other: "_ByteRange") -> int:
+        return max(0, min(self.end, other.end) - max(self.start, other.start))
+
+
+class _RecordingRangeReader:
+    def __init__(self, data: bytes, reads: list[_ByteRange]) -> None:
+        self.data = data
+        self.reads = reads
+
+    def read_range(self, start: int, length: int) -> bytes:
+        self.reads.append(_ByteRange(start=start, end=start + length))
+        return self.data[start : start + length]
+
+
+class _TarServingDownloader(SynapseDownloader):
+    """Serves byte ranges of a prepared tar, records them, and refuses full downloads."""
 
     def __init__(self, tar_path: Path) -> None:
         self.tar_path = tar_path
-        self.n_calls = 0
+        self.reads: list[_ByteRange] = []
 
     def download(self, synid: str, dest_dir: Path, expected_name: str) -> Path:
-        self.n_calls += 1
-        out = dest_dir / expected_name
-        out.write_bytes(self.tar_path.read_bytes())
-        return out
+        raise AssertionError("the fetcher must not download the whole tar")
 
-    def fetch_file_head(self, synid: str, n_bytes: int) -> bytes:
-        return self.tar_path.read_bytes()[:n_bytes]
+    def open_range_reader(self, synid: str) -> RangeReader:
+        return _RecordingRangeReader(self.tar_path.read_bytes(), self.reads)
 
 
 def _write_chr_gz(path: Path, rows: list[str]) -> None:
@@ -60,8 +79,24 @@ def _write_chr_gz(path: Path, rows: list[str]) -> None:
         handle.write("\n".join(rows) + "\n")
 
 
+# Long enough that GNU tar stores member names in separate long-name entries, as in the
+# real tars of complexes such as AMY1A_AMY1B_AMY1C.
+_LONG_DIR_NAME = "GENE1_GENE2_GENE3_P00001_P00002_P00003_OID1_v1_Oncology_II"
+
+
+def _filler_rows(chrom: int) -> list[str]:
+    """Rows far from every test window, numerous and varied enough that the chromosome's
+    compressed file is much larger than one tar header read."""
+    rng = random.Random(0)
+    return [
+        f"{chrom} {10_000 + i} f{i} C T {rng.random():.6f} 0.9 1000 ADD "
+        f"{rng.random():.6f} {rng.random():.6f} 1 1 NA"
+        for i in range(20_000)
+    ]
+
+
 def _make_tar(tmp_path: Path) -> Path:
-    member_dir = tmp_path / "build" / "GENE1_P00001_OID1_v1_Oncology"
+    member_dir = tmp_path / "build" / _LONG_DIR_NAME
     member_dir.mkdir(parents=True)
     _write_chr_gz(
         member_dir / "discovery_chr1_GENE1_P00001_OID1_v1_Oncology.gz",
@@ -73,20 +108,20 @@ def _make_tar(tmp_path: Path) -> Path:
     )
     _write_chr_gz(
         member_dir / "discovery_chr2_GENE1_P00001_OID1_v1_Oncology.gz",
-        ["2 300 d T A 0.1 0.9 1000 ADD 0.7 0.3 1 1 NA"],
+        ["2 300 d T A 0.1 0.9 1000 ADD 0.7 0.3 1 1 NA", *_filler_rows(chrom=2)],
     )
     _write_chr_gz(
         member_dir / "discovery_chrX_GENE1_P00001_OID1_v1_Oncology.gz",
         ["23 400 e T A 0.1 0.9 1000 ADD 0.7 0.3 1 1 NA"],
     )
     tar_path = tmp_path / "source.tar"
-    with tarfile.open(tar_path, "w") as tar:
+    with tarfile.open(tar_path, "w", format=tarfile.GNU_FORMAT) as tar:
         tar.add(member_dir, arcname=member_dir.name)
     return tar_path
 
 
-def _setup(tmp_path: Path) -> tuple[_TarCopyingDownloader, WF, Path]:
-    downloader = _TarCopyingDownloader(_make_tar(tmp_path))
+def _setup(tmp_path: Path) -> tuple[_TarServingDownloader, WF, Path]:
+    downloader = _TarServingDownloader(_make_tar(tmp_path))
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     return downloader, make_wf(synapse_downloader=downloader), scratch
@@ -121,17 +156,21 @@ def test_fetch_reads_chromosome_x_as_23(tmp_path: Path) -> None:
     assert frames["LX"][GWASLAB_POS_COL].to_list() == [400]
 
 
-def test_fetch_downloads_once_for_windows_on_two_chromosomes(tmp_path: Path) -> None:
+def _member_data_range(tar_path: Path, chrom_tag: str) -> _ByteRange:
+    with tarfile.open(tar_path) as tar:
+        (member,) = [m for m in tar.getmembers() if chrom_tag in m.name]
+    return _ByteRange(start=member.offset_data, end=member.offset_data + member.size)
+
+
+def test_fetch_does_not_read_an_unneeded_chromosome_file(tmp_path: Path) -> None:
     downloader, wf, scratch = _setup(tmp_path)
-    PppWindowFetcher(proteins=(_PROTEIN,)).fetch("OID1", _WINDOWS, scratch, wf)
-    assert downloader.n_calls == 1
-
-
-def test_fetch_deletes_download_and_extraction(tmp_path: Path) -> None:
-    _, wf, scratch = _setup(tmp_path)
-    PppWindowFetcher(proteins=(_PROTEIN,)).fetch("OID1", _WINDOWS, scratch, wf)
-    assert not any(scratch.rglob("*.tar"))
-    assert not any(scratch.rglob("*.gz"))
+    PppWindowFetcher(proteins=(_PROTEIN,)).fetch(
+        "OID1", [LocusWindow(locus_id="L1", chrom=1, start=50, end=250)], scratch, wf
+    )
+    unneeded = _member_data_range(downloader.tar_path, "_chr2_")
+    bytes_read = sum(read.overlap_length(unneeded) for read in downloader.reads)
+    # Reading the next tar header may touch the start of chr2's data, never all of it.
+    assert bytes_read < (unneeded.end - unneeded.start) / 2
 
 
 def test_window_with_no_rows_returns_empty_frame_with_schema(tmp_path: Path) -> None:

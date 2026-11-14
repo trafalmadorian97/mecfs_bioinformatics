@@ -10,6 +10,7 @@ from mecfs_bio.build_system.wf.wf_downloader import (
     SimpleWFDownloader,
     WFDownloader,
 )
+from mecfs_bio.util.file_io.ranged_tar import RangeReader
 
 
 @frozen(slots=True)
@@ -54,6 +55,11 @@ class WF:
         """Return the first n_bytes of the Synapse file at synid without downloading the
         whole file (via a pre-signed URL + HTTP Range request)."""
         return self.synapse_downloader.fetch_file_head(synid, n_bytes)
+
+    def open_synapse_range_reader(self, synid: str) -> RangeReader:
+        """A reader of byte ranges of the Synapse file at synid, for a burst of reads that
+        avoids downloading the whole file."""
+        return self.synapse_downloader.open_range_reader(synid)
 
 
 def make_wf(

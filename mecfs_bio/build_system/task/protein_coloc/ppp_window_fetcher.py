@@ -6,15 +6,20 @@ source (UKB-PPP, CSF pQTL, ...) can be plugged in. Fetched frames are in the com
 schema (WINDOW_SCHEMA, positions in GRCh38) but NOT yet oriented to the reference genome:
 EA/NEA are whatever the source reports, and orientation happens downstream.
 
-PppWindowFetcher downloads a protein's UKB-PPP tar from Synapse once per call, reads only the
-chromosome files the windows need (one at a time, only the needed columns), filters each
-window, and deletes the tar and the extracted files before returning. In PPP's regenie files
-ALLELE1 is the effect allele and A1FREQ its frequency; ALLELE0 is the other allele.
+PppWindowFetcher never downloads a protein's whole UKB-PPP tar (about 550 MB, one gzipped
+regenie file per chromosome). It lists the tar's members with one small HTTP Range read per
+member header, then range-reads only the chromosome files the windows need, one at a time,
+decompressing each in memory and keeping only the needed columns. A chromosome file is 1-8%
+of the tar. The files are plain gzip rather than BGZF, so a chromosome file is always read
+whole. In PPP's regenie files ALLELE1 is the effect allele and A1FREQ its frequency; ALLELE0
+is the other allele.
 """
 
-import shutil
+import fnmatch
+import gzip
+import io
 from collections.abc import Sequence
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Protocol
 
 import polars as pl
@@ -22,7 +27,6 @@ from attrs import frozen
 
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
-    extract_protein_tar,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -46,6 +50,12 @@ from mecfs_bio.constants.regenie_constants import (
     REGENIE_GENPOS_COL,
     REGENIE_N_COL,
     REGENIE_SE_COL,
+)
+from mecfs_bio.util.file_io.ranged_tar import (
+    RangeReader,
+    TarMemberExtent,
+    list_tar_members,
+    read_tar_member,
 )
 
 _MAX_CHROM = 23
@@ -87,19 +97,24 @@ class DenseWindowFetcher(Protocol):
         ...
 
 
-def _chromosome_file(extracted_dir: Path, chrom: int) -> Path:
+def _chromosome_member(
+    members: Sequence[TarMemberExtent], chrom: int
+) -> TarMemberExtent:
     name = GWASLAB_CHROM_NAME_FOR_CODE.get(chrom, None) or str(chrom)
-    matches = list(extracted_dir.rglob(f"*chr{name}_*.gz"))
+    pattern = f"*chr{name}_*.gz"
+    matches = [
+        m for m in members if fnmatch.fnmatch(PurePosixPath(m.name).name, pattern)
+    ]
     assert len(matches) == 1, (
-        f"expected exactly one regenie file for chr{name} under {extracted_dir}, "
-        f"found {matches}"
+        f"expected exactly one regenie file for chr{name} in the tar, found {matches}"
     )
     return matches[0]
 
 
-def _read_chromosome(path: Path) -> pl.DataFrame:
+def _read_chromosome(reader: RangeReader, member: TarMemberExtent) -> pl.DataFrame:
+    text = gzip.decompress(read_tar_member(reader, member))
     return (
-        pl.read_csv(path, separator=" ", columns=list(_REGENIE_TO_WINDOW))
+        pl.read_csv(io.BytesIO(text), separator=" ", columns=list(_REGENIE_TO_WINDOW))
         .rename(_REGENIE_TO_WINDOW)
         .cast(WINDOW_SCHEMA)
         .select(WINDOW_SCHEMA.names())
@@ -113,12 +128,23 @@ def _slice_window(chromosome_rows: pl.DataFrame, window: LocusWindow) -> pl.Data
     )
 
 
+def _slice_windows_on_chromosome(
+    chromosome_rows: pl.DataFrame, windows: Sequence[LocusWindow], chrom: int
+) -> dict[str, pl.DataFrame]:
+    return {
+        w.locus_id: _slice_window(chromosome_rows, w)
+        for w in windows
+        if w.chrom == chrom
+    }
+
+
 @frozen(slots=True)
 class PppWindowFetcher:
     """
     DenseWindowFetcher for UKB-PPP.
 
     proteins: the manifest rows of every protein that may be requested, looked up by OID.
+    Nothing is written to scratch_dir.
     """
 
     proteins: tuple[PppProteinFile, ...]
@@ -136,20 +162,10 @@ class PppWindowFetcher:
         wf: WF,
     ) -> dict[str, pl.DataFrame]:
         protein = self._protein(protein_id)
-        download_dir = scratch_dir / f"dense_{protein_id}"
-        download_dir.mkdir(parents=True, exist_ok=True)
-        try:
-            tar_path = wf.download_from_synapse(
-                protein.synid, download_dir, protein.tar_filename
-            )
-            extracted_dir = extract_protein_tar(tar_path, download_dir)
-            tar_path.unlink()
-            frames: dict[str, pl.DataFrame] = {}
-            for chrom in sorted({w.chrom for w in windows}):
-                rows = _read_chromosome(_chromosome_file(extracted_dir, chrom))
-                for window in windows:
-                    if window.chrom == chrom:
-                        frames[window.locus_id] = _slice_window(rows, window)
-            return frames
-        finally:
-            shutil.rmtree(download_dir, ignore_errors=True)
+        reader = wf.open_synapse_range_reader(protein.synid)
+        members = list_tar_members(reader)
+        frames: dict[str, pl.DataFrame] = {}
+        for chrom in sorted({w.chrom for w in windows}):
+            rows = _read_chromosome(reader, _chromosome_member(members, chrom))
+            frames.update(_slice_windows_on_chromosome(rows, windows, chrom))
+        return frames
