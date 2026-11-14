@@ -94,6 +94,9 @@ class A,B,C,D normal;
 **Participant overlap**:  The mathematical derivation of ABF colocalization relies on there being no overlap between the participants in the two GWAS being colocalized.  The PPP proteomics GWAS used UK Biobank participants, while DecodeME controls were also drawn from the UK Biobank.  Thus technically the above analysis violates the assumptions underlying ABF colocalization. Because the overlap is only partial, I do not expect that this had a major impact on our results.  Nevertheless, it is worth investigating.  Attempting to replicate the above results using another proteomics GWAS that does not have participant overlap DecodeME would be worthwhile.
 
 
+**Sub-significant loci**:  The loci at which we found a high probability of colocalization did not meet the standard genome-wide significance threshold of $p<5 \times 10^{-8}$.  It is possible, though unlikely, that the signal at these loci is spurious.
+
+
 ## Next steps
 
 
