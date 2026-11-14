@@ -6,18 +6,18 @@ tags:
 
 ## Overview
 
-I used [ABF Colocalization](../../../Bioinformatics_Concepts/Colocalization.md)[@giambartolomei2014bayesian] to search for loci at which [DecodeME](../../../Data_Sources/DecodeME.md) GWAS-1[@genetics2025initial] colocalized with Olink[@wik2021proximity] proteomic GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
+I used [ABF colocalization](../../../Bioinformatics_Concepts/Colocalization.md)[@giambartolomei2014bayesian] to search for loci at which [DecodeME](../../../Data_Sources/DecodeME.md) GWAS-1[@genetics2025initial] colocalized with Olink[@wik2021proximity] proteomic GWAS from the European discovery cohort of the [UK Biobank Pharma Proteomics Project](../../../Data_Sources/UKBB_PPP.md) (UKBB PPP)[@sun2023plasma].
 
 
 ## Results
 
-This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow[^trim_note]:
+This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow.  The table below includes all protein/ locus pairs at which the probability of colocalization exceeds 80%.
 
 
 {{ coloc_results_table("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_display.parquet", id="ukbb-ppp-coloc-decodeme" )}}
 
 
-DecodeME did not colocalize with proteomic GWAS at any of the DecodeME genome-wide significant loci.  DecodeME did colocalize at two sub-genome-wide-significant loci.
+As the table shows, while DecodeME did not colocalize with proteomic GWAS at any of the DecodeME genome-wide-significant loci, there was colocalization at two sub-genome-wide-significant loci.
 
 
 
@@ -49,7 +49,7 @@ It is notable that both DRAXIN and CRIM1 pertain to nervous system development.
 
 ## Caveats
 
-**Trans versus cis pQTL**: Note that DecodeME colocalizes with trans-pQTL (defined as pQTLs more than 1Mb from the gene coding for the protein) rather than cis-pQTL (defined as pQTLs within 1Mb of the gene coding for the protein).  Colocalization with cis-pQTL is generally much more mechanistically informative than colocalization with trans-pQTL.  This is because cis-pQTLs can be reasonably assumed to affect protein levels by directly regulating the synthesis of the protein in question, while a trans-pQTL may perturb a complex regulatory network in a way that changes protein levels as a remote downstream consequence (see [Omnigenic model](../../../Bioinformatics_Concepts/Omnigenic_Model.md)).
+**Trans versus cis pQTL**: Note that DecodeME colocalizes with trans-pQTL (defined as pQTLs more than 1Mb from the gene coding for the protein) rather than cis-pQTL (defined as pQTLs within 1Mb of the gene coding for the protein).  Colocalization with cis-pQTL is generally much more mechanistically informative than colocalization with trans-pQTL.  This is because cis-pQTLs can be reasonably assumed to affect protein levels by directly regulating the synthesis of the protein in question, while a trans-pQTL may perturb a complex regulatory network in a way that changes protein levels only as a remote downstream consequence (see [Omnigenic model](../../../Bioinformatics_Concepts/Omnigenic_Model.md)).
 
 Thus when a trait GWAS colocalizes with a cis-pQTL, we may infer a causal graph like this:
 
@@ -84,19 +84,26 @@ class A,B,C,D normal;
 
 
 
-**Multiple testing**:  To handle multiple testing, I used a Bayesian false discovery rate approach.  However, this is not as conservative as standard frequentist multiple testing correction.
+**Multiple testing**:  To handle multiple testing, I used a Bayesian false discovery rate approach.  However, this is not as conservative as standard frequentist multiple testing correction. Since I tested so many proteins, use of a "skeptical prior" might be justified here, but it would be hard to choose a-priori how skeptical to make it.
 
 
 
 **Single causal variant assumption**: ABF colocalization depends on the assumption that each GWAS has at most one causal variant at each locus.  Eyeballing the Manhattan plots above suggests this assumption is reasonable for the loci in question, but it could be worthwhile to apply a method like SUSIE-coloc, which allows for multiple causal variants per locus.
 
 
+**Participant overlap**:  The mathematical derivation of ABF colocalization relies on there being no overlap between the participants in the two GWAS being colocalized.  The PPP proteomics GWAS used UK Biobank participants, while DecodeME controls were also drawn from the UK Biobank.  Thus technically the above analysis violates the assumptions underlying ABF colocalization. Because the overlap is only partial, I do not expect that this had a major impact on our results.  Nevertheless, it is worth investigating.  Attempting to replicate the above results using another proteomics GWAS that does not have participant overlap with DecodeME would be worthwhile.
+
+
+**Sub-significant loci**:  The loci at which we found a high probability of colocalization did not meet the standard genome-wide significance threshold of $p<5 \times 10^{-8}$ in DecodeME.  It is possible, though unlikely, that the DecodeME signal at these loci is spurious.
+
+
+**Comparison with proteomics CT-LDSC study**:  Previously, I ran a [CT-LDSC screen of all PPP proteins against DecodeME](l_PPP_rg_DecodeME.md).  None of the proteins that colocalized with DecodeME in the above analysis were found to be significantly genetically correlated with DecodeME in that CT-LDSC study.  CT-LDSC measures global, polygenic overlap of genetic architecture, whereas ABF colocalization measures local matching of causal variants.  We can therefore conclude that that matching between DecodeME and these proteins is purely local.
+
 
 ## Next steps
 
 
 - Investigating what is known about regulatory pathways involving the colocalizing proteins could be informative.
-- Besides PPP, there are other large scale proteomics GWAS, such as Western et al.[@western2024proteogenomic] and the deCODE proteomics study[@ferkingstad2021large]. These proteomics GWAS use different technologies (Somascan instead of Olink), different participants, and in the case of Western et al. a different bodily site (Western et al. uses cerebro-spinal fluid instead of plasma). Comparing colocalization results generated with these proteomic GWAS to the above PPP colocalization results could be revealing.
+- Besides PPP, there are other large scale proteomics GWAS, such as Western et al.[@western2024proteogenomic] and the deCODE proteomics study[@ferkingstad2021large]. These proteomics GWAS use different technologies (SomaScan instead of Olink), different participants, and in the case of Western et al. a different bodily site (Western et al. uses cerebro-spinal fluid instead of plasma). Comparing colocalization results generated with these proteomic GWAS to the above PPP colocalization results could be revealing.
 
 
-[^trim_note]: The table is trimmed to include only proteins with $P(H_4)\ge 0.8$.
