@@ -1,7 +1,11 @@
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from mecfs_bio.build_system.wf.base_wf import make_wf
-from mecfs_bio.build_system.wf.synapse_downloader import SynapseDownloader
+from mecfs_bio.build_system.wf.synapse_downloader import (
+    SynapseDownloader,
+    _ThreadLocalSessions,
+)
 from mecfs_bio.util.file_io.ranged_tar import RangeReader
 
 
@@ -45,3 +49,13 @@ def test_wf_delegates_fetch_synapse_file_head() -> None:
     head = wf.fetch_synapse_file_head("syn123", 6)
 
     assert head == b"header"
+
+
+def test_sessions_are_reused_within_a_thread_and_separate_across_threads() -> None:
+    sessions = _ThreadLocalSessions()
+    main_session = sessions.get()
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        other_session = pool.submit(sessions.get).result()
+
+    assert sessions.get() is main_session
+    assert other_session is not main_session
