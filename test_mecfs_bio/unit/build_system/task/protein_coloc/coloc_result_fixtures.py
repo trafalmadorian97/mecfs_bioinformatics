@@ -22,11 +22,14 @@ from mecfs_bio.constants.protein_coloc_constants import (
     LOCUS_END_COL,
     LOCUS_ID_COL,
     LOCUS_LEAD_EA_COL,
+    LOCUS_LEAD_MLOG10P_COL,
     LOCUS_LEAD_NEA_COL,
     LOCUS_LEAD_POS_COL,
     LOCUS_START_COL,
+    N_ALIGNED_COL,
     PP_H4_COL,
     PROTEIN_ID_COL,
+    PROTEIN_LEAD_MLOG10P_COL,
     RAW_RESULTS_FILENAME,
     SE_PROTEIN_COL,
     SE_TRAIT_COL,
@@ -39,6 +42,11 @@ from mecfs_bio.constants.protein_coloc_constants import (
 )
 
 COLOC_ID = "coloc"
+FIXTURE_LEAD_MLOG10P = 7.0
+FIXTURE_PROTEIN_LEAD_MLOG10P = 10.0
+FIXTURE_N_ALIGNED = 1234
+# Proteins whose window has trait betas of the opposite sign to the protein betas.
+OPPOSITE_SIGN_PROTEINS = frozenset({"OID2"})
 
 # (LOCUS_ID, PROTEIN_ID, GENE, PP_H4, STATUS)
 RESULT_ROWS = [
@@ -69,16 +77,22 @@ def write_coloc_dir(directory: Path) -> Path:
                 LOCUS_LEAD_POS_COL: 2000,
                 LOCUS_LEAD_EA_COL: "A",
                 LOCUS_LEAD_NEA_COL: "G",
+                LOCUS_LEAD_MLOG10P_COL: FIXTURE_LEAD_MLOG10P,
                 PROTEIN_ID_COL: protein_id,
                 GENE_COL: gene,
                 CIS_STATUS_COL: "cis",
                 PP_H4_COL: pp_h4,
                 STATUS_COL: status,
+                PROTEIN_LEAD_MLOG10P_COL: (
+                    FIXTURE_PROTEIN_LEAD_MLOG10P if status == STATUS_TESTED else None
+                ),
+                N_ALIGNED_COL: FIXTURE_N_ALIGNED if status == STATUS_TESTED else None,
             }
         )
         if status == STATUS_TESTED:
             assert protein_id is not None
-            _window(chrom).write_parquet(
+            trait_sign = -1.0 if protein_id in OPPOSITE_SIGN_PROTEINS else 1.0
+            _window(chrom, trait_sign).write_parquet(
                 windows / f"{pair_file_stem(locus_id, protein_id)}.parquet"
             )
     pl.DataFrame(rows).cast(
@@ -87,12 +101,13 @@ def write_coloc_dir(directory: Path) -> Path:
             LOCUS_START_COL: pl.Int32,
             LOCUS_END_COL: pl.Int32,
             LOCUS_LEAD_POS_COL: pl.Int32,
+            N_ALIGNED_COL: pl.Int32,
         }
     ).write_parquet(directory / RAW_RESULTS_FILENAME)
     return directory
 
 
-def _window(chrom: int) -> pl.DataFrame:
+def _window(chrom: int, trait_sign: float) -> pl.DataFrame:
     rng = np.random.default_rng(chrom)
     pos = np.arange(1000, 3001, 20)
     z = rng.normal(0, 1, len(pos))
@@ -103,7 +118,7 @@ def _window(chrom: int) -> pl.DataFrame:
             GWASLAB_POS_COL: pos,
             GWASLAB_EFFECT_ALLELE_COL: "A",
             GWASLAB_NON_EFFECT_ALLELE_COL: "G",
-            BETA_TRAIT_COL: z * 0.01,
+            BETA_TRAIT_COL: trait_sign * z * 0.01,
             SE_TRAIT_COL: 0.01,
             BETA_PROTEIN_COL: z * 0.02,
             SE_PROTEIN_COL: 0.02,

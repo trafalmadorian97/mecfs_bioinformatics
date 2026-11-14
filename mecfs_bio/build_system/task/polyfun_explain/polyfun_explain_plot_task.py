@@ -31,7 +31,6 @@ global manager, so there is nothing to close to reclaim memory.
 
 from pathlib import Path, PurePath
 
-import narwhals as nw
 import numpy as np
 import polars as pl
 import textalloc as ta
@@ -52,6 +51,7 @@ from mecfs_bio.build_system.meta.result_directory_meta import (
 )
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.locus_plot_helpers import load_recomb, plot_recomb
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import (
     DataProcessingPipe,
 )
@@ -78,10 +78,6 @@ from mecfs_bio.build_system.task.susie_stacked_plot_task import (
     plot_susie_track,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
-from mecfs_bio.constants.genetic_map_constants import (
-    GMAP_POS_COL,
-    GMAP_RATE_COL,
-)
 from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -190,7 +186,7 @@ class PolyfunExplainPlotTask(Task):
             .collect()
             .to_polars()
         )
-        recomb = _load_recomb(
+        recomb = load_recomb(
             fetch, self.genetic_map_task, locus.chrom, locus.bp_min, locus.bp_max
         )
         _render(
@@ -327,35 +323,6 @@ def _norm_sf(z: np.ndarray) -> np.ndarray:
     return norm.sf(z)
 
 
-def _load_recomb(
-    fetch: Fetch, task: Task, chrom: int, bp_min: int, bp_max: int
-) -> pl.DataFrame:
-    """Locus-windowed recombination rate (cM/Mb) from the hg19 genetic map."""
-    return (
-        scan_dataframe_asset(fetch(task.asset_id), task.meta)
-        .filter(
-            (nw.col(GWASLAB_CHROM_COL) == chrom)
-            & (nw.col(GMAP_POS_COL) >= bp_min)
-            & (nw.col(GMAP_POS_COL) <= bp_max)
-        )
-        .select(GWASLAB_CHROM_COL, GMAP_POS_COL, GMAP_RATE_COL)
-        .collect()
-        .to_polars()
-        .sort(GMAP_POS_COL)
-    )
-
-
-def _plot_recomb(ax: Axes, recomb: pl.DataFrame) -> None:
-    bp = recomb[GMAP_POS_COL].to_numpy().astype(float)
-    rate = recomb[GMAP_RATE_COL].to_numpy().astype(float)
-    if len(bp) >= 1:
-        (line,) = ax.plot(bp, rate, color="tab:red", alpha=0.4, linewidth=1)
-        line.set_rasterized(True)
-    # The recomb line is red, but its axis label/ticks stay black to match the
-    # other panels' axis labels (the color only carries meaning on the line).
-    ax.set_ylabel("cM/Mb")
-
-
 def _render(
     scratch_dir: Path,
     locus: _Locus,
@@ -443,7 +410,7 @@ def _plot_manhattan(
     fig.colorbar(sc, cax=cax, label="r$^2$ w/ lead")
 
     ax0b = ax0.twinx()
-    _plot_recomb(ax0b, recomb)
+    plot_recomb(ax0b, recomb)
     cbar_cell.plot(
         [cbar_x0, cbar_x0 + cbar_w],
         [0.24, 0.24],
