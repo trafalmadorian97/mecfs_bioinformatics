@@ -11,7 +11,7 @@ I used [ABF Colocalization](../../../Bioinformatics_Concepts/Colocalization.md)[
 
 ## Results
 
-This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow.  The table below shows all protein/ locus pairs at which the probability of colocalization exceeded 80 percent.
+This was an exploratory analysis, so I included all DecodeME loci at which the lead DecodeME variant had a p value less that $10^{-5}$.  Note that this is a looser threshold than is normally used for genome-wide significance.  The main results follow.  The table below shows all protein/ locus pairs at which the probability of colocalization exceeds 80%.
 
 
 {{ coloc_results_table("docs/_figs/decode_me_gwas_1_exploratory_2_ppp_coloc_display.parquet", id="ukbb-ppp-coloc-decodeme" )}}
