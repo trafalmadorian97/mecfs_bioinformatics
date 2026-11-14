@@ -58,6 +58,22 @@ _dummy_gget_result = pd.DataFrame(
 )
 
 UNIPROT_ID_COL = "uniprot_id"
+
+
+def fetch_gget_info(ensembl_ids: list[str]) -> pd.DataFrame:
+    """gget.info on Ensembl gene ids (indexed by id), retried on transient errors.
+
+    gget returns None instead of a frame when nothing matches; a one-row all-null frame then
+    stands in, so a left join on the index leaves every annotation null.
+    """
+    gget_result = call_with_retries(
+        partial(gget.info, ensembl_ids), retry_on=GGET_TRANSIENT_ERRORS
+    )
+    if isinstance(gget_result, pd.DataFrame):
+        return gget_result
+    return _dummy_gget_result
+
+
 UNIPROT_DESCRIPTION = "uniprot_description"
 PROTEIN_NAMES_COL = "protein_names"
 PRIMARY_GENE_NAME = "primary_gene_name"
@@ -110,13 +126,7 @@ class FetchGGetInfoTask(Task):
             genes = genes[: self.genes_to_use]
         logger.debug(f"Using gget to retrieve info on {len(genes)} genes")
         logger.debug(f"Genes are: {genes}")
-        gget_result = call_with_retries(
-            partial(gget.info, genes), retry_on=GGET_TRANSIENT_ERRORS
-        )
-        if isinstance(gget_result, pd.DataFrame):
-            gene_info = gget_result
-        else:
-            gene_info = _dummy_gget_result
+        gene_info = fetch_gget_info(genes)
         result_df = pd.merge(
             df, gene_info, left_on=self.ensembl_id_col, right_index=True, how="left"
         )

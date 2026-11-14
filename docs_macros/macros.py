@@ -1,8 +1,12 @@
 import html
+import json
 import os
+import string
 import textwrap
+from collections.abc import Iterable
 from pathlib import Path
 
+import polars as pl
 from mkdocs_macros.plugin import MacrosPlugin
 
 from mecfs_bio.constants.annotation_weights_constants import (
@@ -48,15 +52,37 @@ from mecfs_bio.constants.ppp_ldsc_constants import (
     PPP_RG_SIGNIFICANT_BONFERRONI_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_CIS_STATUS_COL,
     DISPLAY_FDR_SIGNIFICANT_COL,
-    DISPLAY_GENE_COL,
     DISPLAY_LEAD_VARIANT_COL,
     DISPLAY_LOCUS_COL,
+    DISPLAY_N_SNP_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
+    DISPLAY_PROTEIN_P_COL,
     DISPLAY_Q_VALUE_COL,
+    DISPLAY_SAME_SIGN_COL,
+    DISPLAY_TRAIT_P_COL,
+    INFO_ENSEMBL_ID_COL,
+    INFO_EVIDENCE_COL,
+    INFO_GENE_NAME_COL,
+    INFO_GENE_SYMBOL_COL,
+    INFO_PROTEIN_NAMES_COL,
+    INFO_SUBCELLULAR_LOCALISATION_COL,
+    INFO_UNIPROT_DESCRIPTION_COL,
+    INFO_UNIPROT_ID_COL,
 )
+
+
+def _template_fields(templates: Iterable[str]) -> set[str]:
+    """The {placeholder} names used in URL templates."""
+    return {
+        field
+        for template in templates
+        for _, field, _, _ in string.Formatter().parse(template)
+        if field is not None
+    }
 
 
 def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
@@ -83,7 +109,7 @@ def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
     return os.path.relpath(site_path, Path(page_dest_uri).parent)
 
 
-def _columns_caption(columns: dict[str, str]) -> str:
+def _columns_caption(columns: dict[str, str], sep: str = ";") -> str:
     """Render a table caption describing each column.
 
     Parameters
@@ -92,7 +118,7 @@ def _columns_caption(columns: dict[str, str]) -> str:
         Maps each column name, as it appears in the table, to a plain-text
         description. Both are HTML-escaped.
     """
-    return "Columns: " + "; ".join(
+    return "Columns: " + f"{sep} ".join(
         f"{html.escape(name)}: {html.escape(description)}"
         for name, description in columns.items()
     )
@@ -397,7 +423,44 @@ def define_env(env: MacrosPlugin) -> None:
             id=id,
             page_size=page_size,
             precision=precision,
-            caption=COLOC_RESULTS_TABLE_CAPTION,
+            caption=PROTEIN_COLOC_RESULTS_TABLE_CAPTION,
+        )
+
+    @env.macro
+    def coloc_protein_info_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption="",
+            wrap_columns={
+                INFO_GENE_NAME_COL: 130,
+                INFO_PROTEIN_NAMES_COL: 140,
+                INFO_UNIPROT_DESCRIPTION_COL: 300,
+                INFO_SUBCELLULAR_LOCALISATION_COL: 140,
+                INFO_EVIDENCE_COL: 190,
+            },
+            hidden_columns=[
+                DISPLAY_ASSAY_ID_COL,
+                DISPLAY_LOCUS_COL,
+                DISPLAY_PP_H4_COL,
+                INFO_UNIPROT_ID_COL,
+                INFO_GENE_SYMBOL_COL,
+                INFO_ENSEMBL_ID_COL,
+            ],
+            link_columns={
+                INFO_GENE_NAME_COL: "https://www.uniprot.org/uniprotkb/{"
+                + INFO_UNIPROT_ID_COL
+                + "}/entry"
+            },
+            reference_columns=[
+                INFO_UNIPROT_DESCRIPTION_COL,
+                INFO_SUBCELLULAR_LOCALISATION_COL,
+                INFO_EVIDENCE_COL,
+            ],
         )
 
     @env.macro
@@ -411,7 +474,15 @@ def define_env(env: MacrosPlugin) -> None:
 
     @env.macro
     def data_table(
-        src: str, id: str, page_size: int = 20, precision: int = 4, caption: str = ""
+        src: str,
+        id: str,
+        page_size: int = 20,
+        precision: int = 4,
+        caption: str = "",
+        wrap_columns: dict[str, int] | None = None,
+        hidden_columns: list[str] | None = None,
+        link_columns: dict[str, str] | None = None,
+        reference_columns: list[str] | None = None,
     ) -> str:
         """Embed a large tabular asset as a sortable, filterable, paginated table.
 
@@ -457,11 +528,48 @@ def define_env(env: MacrosPlugin) -> None:
             affect the underlying data or the CSV download.
         caption : str
             Optional caption rendered below the table.
+        wrap_columns : dict[str, int] | None
+            Long free-text columns whose cells should wrap onto several lines
+            instead of widening the table, mapped to each column's maximum width
+            in pixels. Rows grow to fit the wrapped text, and a long word with no
+            spaces breaks mid-word rather than being clipped. The default (None)
+            wraps no column, so every column sizes to its longest value on one
+            line.
+        hidden_columns : list[str] | None
+            Columns left off the page but kept in the CSV download (which has no
+            width limit), e.g. an id used only to build links.
+        link_columns : dict[str, str] | None
+            Columns whose cells become links, mapped to a URL template. Each
+            {column_name} placeholder in the template is filled, URL-encoded,
+            from that column of the same row (it may be a hidden column). A cell
+            whose placeholders are not all filled stays plain text.
+        reference_columns : list[str] | None
+            Columns in which references written as PubMed:<id>,
+            UniProtKB:<accession> or HAMAP-Rule:<rule> become links to the
+            PubMed article, the UniProt entry or the HAMAP family rule; the rest
+            of the text stays plain.
         """
         if not Path(src).is_file():
             raise FileNotFoundError(
                 f"data_table: '{src}' does not exist "
                 f"(referenced from page '{env.page.file.src_uri}')"
+            )
+        wrap_columns = wrap_columns or {}
+        hidden_columns = hidden_columns or []
+        link_columns = link_columns or {}
+        reference_columns = reference_columns or []
+        columns = set(pl.read_parquet_schema(src))
+        for argument, names in (
+            ("wrap_columns", wrap_columns),
+            ("hidden_columns", hidden_columns),
+            ("link_columns", link_columns),
+            ("link_columns templates", _template_fields(link_columns.values())),
+            ("reference_columns", reference_columns),
+        ):
+            missing = set(names) - columns
+            assert not missing, (
+                f"data_table: {argument} {sorted(missing)} are not columns of "
+                f"'{src}' (referenced from page '{env.page.file.src_uri}')"
             )
 
         relative_url = _site_relative_url(
@@ -479,6 +587,10 @@ def define_env(env: MacrosPlugin) -> None:
             ("__PRECISION__", str(precision)),
             ("__DOWNLOAD_NAME__", download_name),
             ("__PAGE_SIZE__", str(page_size)),
+            ("__WRAP_COLUMNS__", json.dumps(wrap_columns)),
+            ("__HIDDEN_COLUMNS__", json.dumps(hidden_columns)),
+            ("__LINK_COLUMNS__", json.dumps(link_columns)),
+            ("__REFERENCE_COLUMNS__", json.dumps(reference_columns)),
         ):
             script = script.replace(token, value)
 
@@ -551,6 +663,79 @@ _DATA_TABLE_SCRIPT = """<script type="module">
       return value.toFixed(__PRECISION__);
     };
 
+    // Column name -> maximum width in pixels of the wrapped text columns;
+    // column name -> URL template of the link columns.
+    const wrapWidths = __WRAP_COLUMNS__;
+    const hiddenColumns = new Set(__HIDDEN_COLUMNS__);
+    const linkTemplates = __LINK_COLUMNS__;
+    const referenceColumns = new Set(__REFERENCE_COLUMNS__);
+    const REFERENCE_PATTERN =
+      /PubMed:(\\d+)|UniProtKB:([A-Za-z0-9]+(?:-\\d+)?)|HAMAP-Rule:(MF_\\d+)/g;
+    const referenceUrl = (match) => {
+      if (match[1]) return `https://pubmed.ncbi.nlm.nih.gov/${match[1]}/`;
+      if (match[2]) return `https://www.uniprot.org/uniprotkb/${match[2]}/entry`;
+      return `https://hamap.expasy.org/rule/${match[3]}`;
+    };
+
+    const anchor = (href, text) => {
+      const link = document.createElement("a");
+      link.href = href;
+      link.textContent = text;
+      link.target = "_blank";
+      link.rel = "noopener";
+      return link;
+    };
+    // Fill each {column} of the template from the row; null if any is empty.
+    const fillTemplate = (template, row) => {
+      let complete = true;
+      const url = template.replace(/\\{(\\w+)\\}/g, (_, field) => {
+        const value = row[field];
+        if (value === null || value === undefined || value === "") complete = false;
+        return encodeURIComponent(String(value));
+      });
+      return complete ? url : null;
+    };
+    // Text with each PubMed, UniProtKB and HAMAP-Rule reference turned into a link.
+    const withReferenceLinks = (text, container) => {
+      let last = 0;
+      for (const match of text.matchAll(REFERENCE_PATTERN)) {
+        container.append(text.slice(last, match.index));
+        container.append(anchor(referenceUrl(match), match[0]));
+        last = match.index + match[0].length;
+      }
+      container.append(text.slice(last));
+      return container;
+    };
+    // Formatter of the wrapped, link and reference columns. Wrapped cells keep
+    // newlines and break a long word with no spaces (such as
+    // ECO:0000269|PubMed:12345678) mid-word instead of clipping it, since
+    // fitDataFill would otherwise size the column to its longest value on one
+    // line. Values are inserted as text, never parsed as HTML.
+    const richText = (cell) => {
+      const field = cell.getColumn().getField();
+      if (Object.hasOwn(wrapWidths, field)) {
+        const element = cell.getElement();
+        element.style.whiteSpace = "pre-wrap";
+        element.style.overflowWrap = "anywhere";
+      }
+      const value = cell.getValue();
+      if (value === null || value === undefined) return "";
+      const text = String(value);
+      const span = document.createElement("span");
+      if (Object.hasOwn(linkTemplates, field)) {
+        const url = fillTemplate(linkTemplates[field], cell.getData());
+        span.append(url ? anchor(url, text) : text);
+        return span;
+      }
+      if (referenceColumns.has(field)) return withReferenceLinks(text, span);
+      span.append(text);
+      return span;
+    };
+    const usesRichText = (field) =>
+      Object.hasOwn(wrapWidths, field) ||
+      Object.hasOwn(linkTemplates, field) ||
+      referenceColumns.has(field);
+
     const table = new Tabulator(container, {
       data: rows,
       // No fixed height: the table grows to fit one page, so the page's own
@@ -572,12 +757,30 @@ _DATA_TABLE_SCRIPT = """<script type="module">
             headerFilterPlaceholder: numeric ? ">=" : "filter",
             sorter: numeric ? "number" : "string",
             formatter: numeric ? display : undefined,
+            ...(usesRichText(definition.field) ? { formatter: richText } : {}),
+            ...(Object.hasOwn(wrapWidths, definition.field)
+              ? { maxWidth: wrapWidths[definition.field] }
+              : {}),
+            // Hidden on the page but kept in the CSV download.
+            ...(hiddenColumns.has(definition.field)
+              ? { visible: false, download: true }
+              : {}),
           };
         }),
     });
 
+    // Row heights of wrapped columns are measured before the column widths
+    // settle, which leaves rows taller than their text. Re-measure them once
+    // built and on each page change.
+    const normalizeWrappedRowHeights = () => {
+      if (Object.keys(wrapWidths).length > 0) {
+        table.getRows("visible").forEach((row) => row.normalizeHeight());
+      }
+    };
+    table.on("pageLoaded", normalizeWrappedRowHeights);
     table.on("tableBuilt", () => {
       status?.remove();
+      normalizeWrappedRowHeights();
       // fitDataFill pads a table narrower than the page out to full width with
       // an empty filler region. Cap the frame at the columns' natural width
       // instead; a table wider than the page is unaffected and still scrolls.
@@ -586,6 +789,7 @@ _DATA_TABLE_SCRIPT = """<script type="module">
       const border = container.offsetWidth - container.clientWidth;
       const columnsWidth = table
         .getColumns()
+        .filter((column) => column.isVisible())
         .reduce((total, column) => total + column.getWidth(), 0);
       document.getElementById("__TABLE_ID__-frame").style.maxWidth =
         `${columnsWidth + scrollbar + border}px`;
@@ -671,15 +875,24 @@ SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = _columns_caption(
 LDSC_DIAGNOSTIC_PLOT_CAPTION = "LDSC diagnostic plot.  Genetic variants are binned by LD Score.  For each bin, we plot the mean LD score of variants in the bin (x axis) against Wald chi squared statistic (y axis 1) and scaled Wald chi squared statistic (y axis 2). Each plotted bin includes error bars indicating the standard error of bin chi squared mean. We also plot the LDSC regression line (solid) and the line corresponding to chi squared =1 (dashed).  If the LDSC model fits the data perfectly, we should expect that the intercept of the regression line is at chi squared=1"
 
 
-COLOC_RESULTS_TABLE_CAPTION = "Results of colocalization analysis. " + _columns_caption(
-    {
-        DISPLAY_GENE_COL: "gene",
-        DISPLAY_PROTEIN_COL: "ID of assay",
-        DISPLAY_LOCUS_COL: "Genomic region used for colocalization",
-        DISPLAY_LEAD_VARIANT_COL: "Most significant trait variant in locus",
-        DISPLAY_CIS_STATUS_COL: "cis means the lead variant is close to the gene coding for the protein in question.  Trans means the lead variant is far from that gene.  Unknown means the data required to make this determination is missing",
-        DISPLAY_PP_H4_COL: "posterior probability that the two GWAS share a causal variant at the locus.  Note that this is prior-dependent",
-        DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
-        DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
-    }
+PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
+    "Results of colocalization analysis. "
+    + _columns_caption(
+        {
+            DISPLAY_PROTEIN_COL: "name of the protein",
+            DISPLAY_ASSAY_ID_COL: "ID of proteomic assay",
+            DISPLAY_LOCUS_COL: "genomic interval used for colocalization",
+            DISPLAY_LEAD_VARIANT_COL: "most significant trait variant in locus",
+            DISPLAY_CIS_STATUS_COL: "cis means the locus is within 1 Mb of the gene coding for the protein.  Trans means the locus is more than 1Mb from that gene.  Unknown means data required to make this determination is missing",
+            DISPLAY_PP_H4_COL: "posterior probability that the trait and protein GWAS share a causal variant at the locus.  Note that this is prior-dependent",
+            DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
+            DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included as a discovery if we cap the Bayesian false discovery rate",
+            DISPLAY_TRAIT_P_COL: "p value of the most significant trait variant at the locus",
+            DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant at the locus",
+            DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant",
+            DISPLAY_N_SNP_COL: "number of variants present in trait and protein GWAS at the locus",
+        },
+        sep=".",
+    )
+    + "."
 )

@@ -137,13 +137,30 @@ def pair_file_stem(locus_id: str, protein_id: str) -> str:
 
 # Docs-facing display table and plot index.
 # Display columns are short and lowercase so the table fits the docs page without scrolling.
-DISPLAY_GENE_COL: Final = "gene"
 DISPLAY_PROTEIN_COL: Final = "protein"
+DISPLAY_ASSAY_ID_COL: Final = "assay_id"
 DISPLAY_LOCUS_COL: Final = "locus"
 DISPLAY_LEAD_VARIANT_COL: Final = "lead"
 DISPLAY_CIS_STATUS_COL: Final = "cis"
 DISPLAY_PP_H4_COL: Final = "pp_h4"
 DISPLAY_Q_VALUE_COL: Final = "q"
 DISPLAY_FDR_SIGNIFICANT_COL: Final = "fdr_sig"
+DISPLAY_TRAIT_P_COL: Final = "trait_p"
+DISPLAY_PROTEIN_P_COL: Final = "prot_p"
+DISPLAY_SAME_SIGN_COL: Final = "same_sign"
+DISPLAY_N_SNP_COL: Final = "n_snp"
+
+# Columns of the protein info table: ids, then long free-text columns (gene name, UniProt protein
+# names, function and subcellular location).
+INFO_UNIPROT_ID_COL: Final = "uniprot_id"
+INFO_GENE_SYMBOL_COL: Final = "gene_symbol"
+INFO_ENSEMBL_ID_COL: Final = "ensembl_id"
+INFO_GENE_NAME_COL: Final = "gene_name"
+INFO_PROTEIN_NAMES_COL: Final = "protein_names"
+INFO_UNIPROT_DESCRIPTION_COL: Final = "uniprot_description"
+INFO_SUBCELLULAR_LOCALISATION_COL: Final = "locale"
+# UniProt evidence codes of the description and localisation, as readable labels with sources.
+INFO_EVIDENCE_COL: Final = "evidence"
 PLOT_PNG_FILENAME_COL: Final = "PNG_FILENAME"
+N_PROTEINS_COL: Final = "N_PROTEINS"
 PLOT_SVG_FILENAME_COL: Final = "SVG_FILENAME"
