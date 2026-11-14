@@ -137,8 +137,8 @@ def pair_file_stem(locus_id: str, protein_id: str) -> str:
 
 # Docs-facing display table and plot index.
 # Display columns are short and lowercase so the table fits the docs page without scrolling.
-DISPLAY_GENE_COL: Final = "gene"
 DISPLAY_PROTEIN_COL: Final = "protein"
+DISPLAY_ASSAY_ID_COL: Final = "assay_id"
 DISPLAY_LOCUS_COL: Final = "locus"
 DISPLAY_LEAD_VARIANT_COL: Final = "lead"
 DISPLAY_CIS_STATUS_COL: Final = "cis"

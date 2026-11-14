@@ -19,7 +19,7 @@ protein_accessions_reader): a protein complex such as EBI3_IL27 has one accessio
   "experimental (PubMed:123); by similarity (UniProtKB:Q8R4Y0)". An ECO (Evidence and Conclusion
   Ontology) code without a label in _ECO_LABELS is shown as the code itself.
 
-The output has the display columns (gene, protein, locus, PP.H4), the ids (UniProt accession,
+The output has the display columns (protein, assay_id, locus, PP.H4), the ids (UniProt accession,
 approved symbol, Ensembl gene id) and the descriptive columns (gene name, protein names, UniProt
 function, subcellular location as "locale", and evidence).
 
@@ -63,7 +63,7 @@ from mecfs_bio.constants.hgnc_constants import (
     HGNC_UNIPROT_ID_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
-    DISPLAY_GENE_COL,
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
@@ -124,8 +124,8 @@ _ECO_LABELS: dict[str, str] = {
 
 _ROWS_SCHEMA = pl.Schema(
     {
-        DISPLAY_GENE_COL: pl.String,
         DISPLAY_PROTEIN_COL: pl.String,
+        DISPLAY_ASSAY_ID_COL: pl.String,
         DISPLAY_LOCUS_COL: pl.String,
         DISPLAY_PP_H4_COL: pl.Float64,
         UNIPROT_ID_COL: pl.String,
@@ -236,14 +236,14 @@ def _top_loci_by_accession(
         )
         .sort(["_locus_rank", DISPLAY_PP_H4_COL], descending=[False, True])
     )
-    missing = set(top[DISPLAY_PROTEIN_COL].to_list()) - set(
+    missing = set(top[DISPLAY_ASSAY_ID_COL].to_list()) - set(
         protein_accessions[PROTEIN_ACCESSIONS_PROTEIN_ID_COL].to_list()
     )
     assert not missing, f"display proteins missing from the protein table: {missing}"
     return (
         top.join(
             protein_accessions,
-            left_on=DISPLAY_PROTEIN_COL,
+            left_on=DISPLAY_ASSAY_ID_COL,
             right_on=PROTEIN_ACCESSIONS_PROTEIN_ID_COL,
             how="left",
             maintain_order="left",

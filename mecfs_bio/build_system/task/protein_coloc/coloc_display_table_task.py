@@ -3,7 +3,8 @@ Docs-facing table of the colocalizations of one trait with proteins.
 
 Keeps the tested (locus, protein) pairs of a TraitProteinColocTask result whose PP.H4 exceeds
 h4_threshold, sorted by PP.H4 descending. Column names are short so the table fits a docs page:
-gene, protein (aptamer/protein id), locus (the locus id, chr:start-end in GRCh38), lead (the
+protein (the assay target name, usually the symbol of the coding gene), assay_id (the
+Olink or SomaScan assay id), locus (the locus id, chr:start-end in GRCh38), lead (the
 trait lead as chr:pos:NEA:EA), cis (cis/trans status), pp_h4, q, fdr_sig, and:
 - trait_p: p-value of the trait lead variant of the locus (over the whole trait window).
 - prot_p: p-value of the protein lead variant within the aligned window.
@@ -55,9 +56,9 @@ from mecfs_bio.constants.protein_coloc_constants import (
     BETA_PROTEIN_COL,
     BETA_TRAIT_COL,
     CIS_STATUS_COL,
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_CIS_STATUS_COL,
     DISPLAY_FDR_SIGNIFICANT_COL,
-    DISPLAY_GENE_COL,
     DISPLAY_LEAD_VARIANT_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_N_SNP_COL,
@@ -88,8 +89,8 @@ from mecfs_bio.constants.protein_coloc_constants import (
 
 DISPLAY_SCHEMA = pl.Schema(
     {
-        DISPLAY_GENE_COL: pl.String,
         DISPLAY_PROTEIN_COL: pl.String,
+        DISPLAY_ASSAY_ID_COL: pl.String,
         DISPLAY_LOCUS_COL: pl.String,
         DISPLAY_LEAD_VARIANT_COL: pl.String,
         DISPLAY_CIS_STATUS_COL: pl.String,
@@ -171,8 +172,8 @@ def display_rows(
     return (
         hits.with_columns(_same_sign_column(hits, windows_dir))
         .select(
-            pl.col(GENE_COL).alias(DISPLAY_GENE_COL),
-            pl.col(PROTEIN_ID_COL).alias(DISPLAY_PROTEIN_COL),
+            pl.col(GENE_COL).alias(DISPLAY_PROTEIN_COL),
+            pl.col(PROTEIN_ID_COL).alias(DISPLAY_ASSAY_ID_COL),
             pl.col(LOCUS_ID_COL).alias(DISPLAY_LOCUS_COL),
             lead_variant.alias(DISPLAY_LEAD_VARIANT_COL),
             pl.col(CIS_STATUS_COL).alias(DISPLAY_CIS_STATUS_COL),

@@ -22,9 +22,9 @@ from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
 from mecfs_bio.constants.protein_coloc_constants import (
     BETA_PROTEIN_COL,
     BETA_TRAIT_COL,
-    DISPLAY_GENE_COL,
-    DISPLAY_LOCUS_COL,
     DISPLAY_PROTEIN_COL,
+    DISPLAY_LOCUS_COL,
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_SAME_SIGN_COL,
     SE_PROTEIN_COL,
     SE_TRAIT_COL,
@@ -38,7 +38,7 @@ if __name__ == "__main__":
     display = pl.read_parquet(DEFAULT_RUNNER.meta_to_path(group.display_task.meta))
     rows = []
     for gene, protein, locus, same_sign in display.select(
-        DISPLAY_GENE_COL, DISPLAY_PROTEIN_COL, DISPLAY_LOCUS_COL, DISPLAY_SAME_SIGN_COL
+        DISPLAY_PROTEIN_COL, DISPLAY_ASSAY_ID_COL, DISPLAY_LOCUS_COL, DISPLAY_SAME_SIGN_COL
     ).iter_rows():
         w = pl.read_parquet(
             coloc_dir / WINDOWS_DIRNAME / f"{pair_file_stem(locus, protein)}.parquet"

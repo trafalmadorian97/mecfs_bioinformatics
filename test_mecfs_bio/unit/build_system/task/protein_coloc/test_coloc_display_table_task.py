@@ -13,11 +13,11 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_display_table_task import (
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.protein_coloc_constants import (
     DISPLAY_FDR_SIGNIFICANT_COL,
-    DISPLAY_GENE_COL,
     DISPLAY_LEAD_VARIANT_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_N_SNP_COL,
     DISPLAY_PP_H4_COL,
+    DISPLAY_PROTEIN_COL,
     DISPLAY_PROTEIN_P_COL,
     DISPLAY_Q_VALUE_COL,
     DISPLAY_SAME_SIGN_COL,
@@ -55,7 +55,7 @@ def _display(
 
 def test_display_keeps_only_rows_above_threshold_sorted(tmp_path: Path) -> None:
     display = _display(tmp_path, h4_threshold=0.8)
-    assert display[DISPLAY_GENE_COL].to_list() == ["AAA", "BBB"]
+    assert display[DISPLAY_PROTEIN_COL].to_list() == ["AAA", "BBB"]
     assert display[DISPLAY_PP_H4_COL].to_list() == [0.95, 0.85]
     assert display[DISPLAY_LOCUS_COL].to_list() == ["chr1:1000-3000"] * 2
     assert display[DISPLAY_LEAD_VARIANT_COL].to_list() == ["chr1:2000:G:A"] * 2
@@ -69,7 +69,9 @@ def test_display_integer_columns_are_int32(tmp_path: Path) -> None:
 def test_empty_display_when_nothing_passes(tmp_path: Path) -> None:
     display = _display(tmp_path, h4_threshold=0.99)
     assert display.height == 0
-    assert DISPLAY_GENE_COL in display.columns and DISPLAY_PP_H4_COL in display.columns
+    assert (
+        DISPLAY_PROTEIN_COL in display.columns and DISPLAY_PP_H4_COL in display.columns
+    )
 
 
 def test_q_value_is_running_mean_of_one_minus_pp_h4(tmp_path: Path) -> None:

@@ -44,8 +44,8 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import (
+    DISPLAY_ASSAY_ID_COL,
     DISPLAY_CIS_STATUS_COL,
-    DISPLAY_GENE_COL,
     DISPLAY_LOCUS_COL,
     DISPLAY_PP_H4_COL,
     DISPLAY_PROTEIN_COL,
@@ -87,15 +87,15 @@ def _table_task(asset_id: str) -> FakeTask:
 def _write_display(path: Path, rows: list[tuple[str, str, str, float]]) -> None:
     pl.DataFrame(
         {
-            DISPLAY_GENE_COL: [r[0] for r in rows],
-            DISPLAY_PROTEIN_COL: [r[1] for r in rows],
+            DISPLAY_PROTEIN_COL: [r[0] for r in rows],
+            DISPLAY_ASSAY_ID_COL: [r[1] for r in rows],
             DISPLAY_LOCUS_COL: [r[2] for r in rows],
             DISPLAY_CIS_STATUS_COL: ["trans"] * len(rows),
             DISPLAY_PP_H4_COL: [r[3] for r in rows],
         },
         schema={
-            DISPLAY_GENE_COL: pl.String,
             DISPLAY_PROTEIN_COL: pl.String,
+            DISPLAY_ASSAY_ID_COL: pl.String,
             DISPLAY_LOCUS_COL: pl.String,
             DISPLAY_CIS_STATUS_COL: pl.String,
             DISPLAY_PP_H4_COL: pl.Float64,
@@ -105,8 +105,8 @@ def _write_display(path: Path, rows: list[tuple[str, str, str, float]]) -> None:
             pl.col(c)
             if c
             in (
-                DISPLAY_GENE_COL,
                 DISPLAY_PROTEIN_COL,
+                DISPLAY_ASSAY_ID_COL,
                 DISPLAY_LOCUS_COL,
                 DISPLAY_CIS_STATUS_COL,
                 DISPLAY_PP_H4_COL,
