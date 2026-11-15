@@ -46,14 +46,38 @@ class _RetryableHttpError(Exception):
     """A server-side (5xx) HTTP failure, which a later identical request may survive."""
 
 
+class _ThreadLocalSessions:
+    """
+    One requests.Session per thread, created on first use.
+
+    A session keeps its HTTPS connections open between requests, so consecutive range reads
+    of the same host skip connection setup (several network round trips each). The
+    pre-signed URLs of all Synapse files point at the same S3 host, so the connections also
+    carry over from one file to the next. requests.Session is not guaranteed thread-safe,
+    hence one per thread.
+    """
+
+    def __init__(self) -> None:
+        self._local = threading.local()
+
+    def get(self) -> requests.Session:
+        session: requests.Session | None = getattr(self._local, "session", None)
+        if session is None:
+            session = requests.Session()
+            self._local.session = session
+        return session
+
+
 @frozen(slots=True)
 class _PresignedUrlRangeReader:
-    """Reads byte ranges of a pre-signed S3 URL with HTTP Range requests."""
+    """Reads byte ranges of a pre-signed S3 URL with HTTP Range requests, each on the
+    calling thread's session."""
 
     presigned_url: str
+    sessions: _ThreadLocalSessions
 
     def _get(self, start: int, length: int) -> bytes:
-        response = requests.get(
+        response = self.sessions.get().get(
             self.presigned_url,
             headers={"Range": f"bytes={start}-{start + length - 1}"},
             timeout=_RANGE_TIMEOUT_SECONDS,
@@ -86,6 +110,7 @@ class SharedClientSynapseDownloader(SynapseDownloader):
     def __init__(self) -> None:
         self._client: synapseclient.Synapse | None = None
         self._login_lock = threading.Lock()
+        self._sessions = _ThreadLocalSessions()
 
     def _client_or_login(self) -> synapseclient.Synapse:
         with self._login_lock:
@@ -109,4 +134,6 @@ class SharedClientSynapseDownloader(SynapseDownloader):
         client = self._client_or_login()
         entity = client.get(synid, downloadFile=False)
         download_info = client._getFileHandleDownload(entity.dataFileHandleId, synid)
-        return _PresignedUrlRangeReader(presigned_url=download_info["preSignedURL"])
+        return _PresignedUrlRangeReader(
+            presigned_url=download_info["preSignedURL"], sessions=self._sessions
+        )

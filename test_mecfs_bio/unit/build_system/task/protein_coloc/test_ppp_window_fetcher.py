@@ -9,8 +9,8 @@ from attrs import frozen
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
-    LocusWindow,
     PppWindowFetcher,
 )
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
@@ -135,7 +135,9 @@ _WINDOWS = [
 
 def test_fetch_returns_only_window_rows_in_common_schema(tmp_path: Path) -> None:
     _, wf, scratch = _setup(tmp_path)
-    frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch("OID1", _WINDOWS, scratch, wf)
+    frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
+        "OID1", _WINDOWS, scratch, wf
+    )
     assert set(frames) == {"L1", "L2"}
     l1 = frames["L1"]
     assert l1.schema == WINDOW_SCHEMA
@@ -150,7 +152,7 @@ def test_fetch_returns_only_window_rows_in_common_schema(tmp_path: Path) -> None
 
 def test_fetch_reads_chromosome_x_as_23(tmp_path: Path) -> None:
     _, wf, scratch = _setup(tmp_path)
-    frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch(
+    frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
         "OID1", [LocusWindow(locus_id="LX", chrom=23, start=0, end=1000)], scratch, wf
     )
     assert frames["LX"][GWASLAB_POS_COL].to_list() == [400]
@@ -164,7 +166,7 @@ def _member_data_range(tar_path: Path, chrom_tag: str) -> _ByteRange:
 
 def test_fetch_does_not_read_an_unneeded_chromosome_file(tmp_path: Path) -> None:
     downloader, wf, scratch = _setup(tmp_path)
-    PppWindowFetcher(proteins=(_PROTEIN,)).fetch(
+    PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
         "OID1", [LocusWindow(locus_id="L1", chrom=1, start=50, end=250)], scratch, wf
     )
     unneeded = _member_data_range(downloader.tar_path, "_chr2_")
@@ -175,7 +177,7 @@ def test_fetch_does_not_read_an_unneeded_chromosome_file(tmp_path: Path) -> None
 
 def test_window_with_no_rows_returns_empty_frame_with_schema(tmp_path: Path) -> None:
     _, wf, scratch = _setup(tmp_path)
-    frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch(
+    frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
         "OID1", [LocusWindow(locus_id="E", chrom=1, start=1000, end=2000)], scratch, wf
     )
     assert frames["E"].height == 0

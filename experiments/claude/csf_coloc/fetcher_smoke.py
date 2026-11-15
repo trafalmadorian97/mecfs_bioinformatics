@@ -15,7 +15,7 @@ from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task im
 from mecfs_bio.build_system.task.protein_coloc.csf_window_fetcher import (
     CsfWindowFetcher,
 )
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.csf_database_constants import (
     Analyte,
@@ -40,7 +40,7 @@ def main() -> None:
     window = LocusWindow("apoe", chrom=19, start=44_400_000, end=45_400_000)
     start = time.time()
     with tempfile.TemporaryDirectory() as tmp:
-        frame = fetcher.fetch("2418-55", [window], Path(tmp), make_wf())["apoe"]
+        frame = fetcher.fetch_protein("2418-55", [window], Path(tmp), make_wf())["apoe"]
     print(f"fetched {frame.height} rows in {time.time() - start:.1f}s")
     print(frame.head())
     print(frame.null_count())
