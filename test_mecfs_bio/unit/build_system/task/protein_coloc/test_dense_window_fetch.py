@@ -6,6 +6,7 @@ import polars as pl
 import pytest
 
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    ParallelWindowFetcher,
     ProteinWindowRequest,
     fetch_proteins_in_parallel,
 )
@@ -156,3 +157,10 @@ def test_duplicate_proteins_are_rejected() -> None:
     requests = _requests(1) * 2
     with pytest.raises(AssertionError):
         _fetch_all(_FakeSource(), requests, max_parallel=1)
+
+
+def test_parallel_window_fetcher_fetches_through_its_source() -> None:
+    requests = _requests(3)
+    fetcher = ParallelWindowFetcher(source=_FakeSource(), max_parallel=2)
+    results = list(fetcher.fetch_all(requests, Path("unused"), make_wf()))
+    assert [r.frames[_WINDOW]["protein"].item() for r in results] == ["P0", "P1", "P2"]

@@ -35,8 +35,12 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_abf import TraitModel
 from mecfs_bio.build_system.task.protein_coloc.csf_gene_coords_reader import (
     CsfGeneCoordsReader,
 )
-from mecfs_bio.build_system.task.protein_coloc.csf_window_fetcher import (
-    CsfWindowFetcher,
+from mecfs_bio.build_system.task.protein_coloc.csf_window_source import (
+    CSF_MAX_PARALLEL_FETCHES,
+    CsfWindowSource,
+)
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    ParallelWindowFetcher,
 )
 from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
     ColocRunConfig,
@@ -65,7 +69,10 @@ def generate_csf_coloc_tasks(
         hit_table_task=HAPMAP_3_CSF_HIT_TABLE_5E8,
         gene_coords_task=MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
         gene_coords_reader=CsfGeneCoordsReader(aptamers=aptamers),
-        fetcher=CsfWindowFetcher(aptamers=aptamers),
+        fetcher=ParallelWindowFetcher(
+            source=CsfWindowSource(aptamers=aptamers),
+            max_parallel=CSF_MAX_PARALLEL_FETCHES,
+        ),
     )
     return generate_protein_coloc_tasks(
         base_name=base_name,

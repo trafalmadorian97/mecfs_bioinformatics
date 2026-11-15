@@ -7,11 +7,10 @@ interval [start, end] on chromosome chrom (X coded as 23). Fetched frames are in
 window schema (WINDOW_SCHEMA, positions in GRCh38) but NOT yet oriented to the reference
 genome: EA/NEA are whatever the source reports, and orientation happens downstream.
 
-How a source gets its data (concurrency, retries) is its own business. Sources that fetch one
-protein at a time through a ProteinWindowSource can use fetch_proteins_in_parallel, which runs
-up to max_parallel of those single-protein fetches at once, ahead of the consumer, and still
-yields results in request order. A fetch mostly waits on the network, so running several at
-once overlaps the waits.
+A data source implements ProteinWindowSource, which fetches one protein. ParallelWindowFetcher
+turns a source into a DenseWindowFetcher: it runs up to max_parallel single-protein fetches at
+once, ahead of the consumer, retries transient errors, and still yields results in request
+order. A fetch mostly waits on the network, so running several at once overlaps the waits.
 """
 
 import time
@@ -149,3 +148,31 @@ def fetch_proteins_in_parallel(
             yield future.result()
     finally:
         pool.shutdown(wait=True, cancel_futures=True)
+
+
+@frozen(slots=True)
+class ParallelWindowFetcher:
+    """
+    DenseWindowFetcher over a ProteinWindowSource.
+
+    source: fetches one protein's windows.
+    max_parallel: how many proteins are fetched at once.
+    """
+
+    source: ProteinWindowSource
+    max_parallel: int
+
+    def __attrs_post_init__(self) -> None:
+        assert self.max_parallel >= 1, (
+            f"max_parallel must be >= 1, got {self.max_parallel}"
+        )
+
+    def fetch_all(
+        self,
+        requests: Sequence[ProteinWindowRequest],
+        scratch_dir: Path,
+        wf: WF,
+    ) -> Generator[ProteinWindowFrames]:
+        return fetch_proteins_in_parallel(
+            self.source, requests, scratch_dir, wf, max_parallel=self.max_parallel
+        )

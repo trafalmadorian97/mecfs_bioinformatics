@@ -10,9 +10,9 @@ from attrs import frozen
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
     CsfAptamerFile,
 )
-from mecfs_bio.build_system.task.protein_coloc.csf_window_fetcher import (
+from mecfs_bio.build_system.task.protein_coloc.csf_window_source import (
     CSF_HARMONISED_COLUMNS,
-    CsfWindowFetcher,
+    CsfWindowSource,
     HarmonisedLocation,
     UrlIndexFetcher,
 )
@@ -96,12 +96,12 @@ def _tabix_fixture(tmp_path: Path, rows: list[list[str]]) -> str:
 
 
 def _fetch(source: str, window: GenomicInterval, tmp_path: Path) -> pl.DataFrame:
-    fetcher = CsfWindowFetcher(
+    csf = CsfWindowSource(
         aptamers=(_APTAMER,),
         resolver=_PathResolver(source),
         index_fetcher=_CopyThenRemoveIndex(),
     )
-    frames = fetcher.fetch_protein(_SEQ_ID, [window], tmp_path, make_wf())
+    frames = csf.fetch_protein(_SEQ_ID, [window], tmp_path, make_wf())
     return frames[window]
 
 
@@ -151,9 +151,9 @@ def test_fetch_unreachable_source_raises_oserror(tmp_path: Path) -> None:
 
 def test_fetch_unknown_protein_id_asserts(tmp_path: Path) -> None:
     source = _tabix_fixture(tmp_path, [_row(100)])
-    fetcher = CsfWindowFetcher(aptamers=(_APTAMER,), resolver=_PathResolver(source))
+    csf = CsfWindowSource(aptamers=(_APTAMER,), resolver=_PathResolver(source))
     with pytest.raises(AssertionError):
-        fetcher.fetch_protein(
+        csf.fetch_protein(
             "9999-99",
             [GenomicInterval(chrom=19, start=1, end=10)],
             tmp_path,

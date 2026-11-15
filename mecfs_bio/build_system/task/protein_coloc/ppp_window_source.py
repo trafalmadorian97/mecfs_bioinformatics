@@ -1,8 +1,9 @@
 """
-DenseWindowFetcher for UKB-PPP: fetch dense protein summary statistics for a few locus windows
-per protein, several proteins at once.
+ProteinWindowSource for UKB-PPP: fetch one protein's dense summary statistics for a few locus
+windows. Wrap it in a ParallelWindowFetcher, PPP_MAX_PARALLEL_FETCHES at once, to fetch many
+proteins.
 
-PppWindowFetcher never downloads a protein's whole UKB-PPP tar (about 550 MB, one gzipped
+PppWindowSource never downloads a protein's whole UKB-PPP tar (about 550 MB, one gzipped
 regenie file per chromosome). It lists the tar's members with one small HTTP Range read per
 member header, then range-reads only the chromosome files the windows need, one at a time,
 decompressing each in memory and keeping only the needed columns. A chromosome file is 1-8%
@@ -14,7 +15,7 @@ is the other allele.
 import fnmatch
 import gzip
 import io
-from collections.abc import Generator, Sequence
+from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 
 import polars as pl
@@ -22,11 +23,6 @@ from attrs import frozen
 
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
-)
-from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
-    ProteinWindowFrames,
-    ProteinWindowRequest,
-    fetch_proteins_in_parallel,
 )
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -110,40 +106,27 @@ def _slice_windows_on_chromosome(
     return {w: _slice_window(chromosome_rows, w) for w in windows if w.chrom == chrom}
 
 
+# How many PPP proteins to fetch at once. Timed on 12-protein batches, 2, 4 and 8 at once were
+# 2.0, 3.4 and 4.6 times faster than one at a time, with 8 near CPU-bound (gzip decompression
+# and CSV parsing) and peak memory about 1 GB.
+PPP_MAX_PARALLEL_FETCHES = 4
+
+
 @frozen(slots=True)
-class PppWindowFetcher:
+class PppWindowSource:
     """
-    DenseWindowFetcher for UKB-PPP.
+    ProteinWindowSource for UKB-PPP.
 
     proteins: the manifest rows of every protein that may be requested, looked up by OID.
-    max_parallel_fetches: how many proteins are fetched at once. Timed on 12-protein batches,
-        2, 4 and 8 at once were 2.0, 3.4 and 4.6 times faster than one at a time, with 8 near
-        CPU-bound (gzip decompression and CSV parsing) and peak memory about 1 GB.
     Nothing is written to scratch_dir.
     """
 
     proteins: tuple[PppProteinFile, ...]
-    max_parallel_fetches: int = 4
-
-    def __attrs_post_init__(self) -> None:
-        assert self.max_parallel_fetches >= 1, (
-            f"max_parallel_fetches must be >= 1, got {self.max_parallel_fetches}"
-        )
 
     def _protein(self, protein_id: str) -> PppProteinFile:
         matches = [p for p in self.proteins if p.oid == protein_id]
         assert len(matches) == 1, f"expected one manifest row for {protein_id}"
         return matches[0]
-
-    def fetch_all(
-        self,
-        requests: Sequence[ProteinWindowRequest],
-        scratch_dir: Path,
-        wf: WF,
-    ) -> Generator[ProteinWindowFrames]:
-        return fetch_proteins_in_parallel(
-            self, requests, scratch_dir, wf, max_parallel=self.max_parallel_fetches
-        )
 
     def fetch_protein(
         self,
