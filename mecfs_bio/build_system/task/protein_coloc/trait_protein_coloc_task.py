@@ -7,7 +7,7 @@ The algorithm, for one trait:
 2. Pair each locus with every protein whose hit segment (from the protein hit table) overlaps
    it, and select pairs by score within the pair budget (see candidate_selection).
 3. For each selected protein, fetch its dense summary statistics for all its selected windows
-   in one download, orient each window to GRCh38 with the untrusted genome-reference path,
+   in one fetch, orient each window to GRCh38 with the untrusted genome-reference path,
    align it exactly to the trait window, and run the colocalization method.
 4. Write the raw results table and the aligned window of every tested pair.
 
@@ -34,7 +34,7 @@ Output directory:
 """
 
 from collections.abc import Mapping, Sequence
-from functools import partial
+from contextlib import closing
 from pathlib import Path
 from typing import get_args
 
@@ -79,6 +79,12 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_abf import (
     QuantitativeTraitModel,
     TraitModel,
 )
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    DenseWindowFetcher,
+    LocusWindow,
+    ProteinWindowFrames,
+    ProteinWindowRequest,
+)
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
 )
@@ -86,10 +92,6 @@ from mecfs_bio.build_system.task.protein_coloc.orient_and_align import (
     OrientedWindow,
     align_windows,
     orient_window,
-)
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
-    DenseWindowFetcher,
-    LocusWindow,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
     ProteinHitTableTask,
@@ -150,14 +152,11 @@ from mecfs_bio.constants.protein_coloc_constants import (
     WINDOWS_DIRNAME,
     pair_file_stem,
 )
-from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 logger = structlog.get_logger()
 
 # UKB-PPP protein levels are inverse-rank normalized, so their phenotypic SD is 1.
 PROTEIN_TRAIT_MODEL = QuantitativeTraitModel(sd_y=1.0)
-# Dense fetches hit remote services; network and filesystem errors are worth retrying.
-_FETCH_TRANSIENT_ERRORS: tuple[type[Exception], ...] = (OSError,)
 _RESULT_STATUS_COL = "_result_status"
 DROP_REASONS: tuple[str, ...] = get_args(DropReason)
 
@@ -386,28 +385,18 @@ def _test_pair(
 
 
 def _test_protein(
-    protein_id: str,
-    windows: Sequence[LocusWindow],
+    fetched: ProteinWindowFrames,
     trait: pl.LazyFrame,
     task: "TraitProteinColocTask",
     reference: _OrientationReference,
-    scratch_dir: Path,
     windows_dir: Path,
-    wf: WF,
 ) -> list[_PairOutcome]:
-    """One dense fetch for all of a protein's selected windows, then test each pair."""
-    frames = call_with_retries(
-        partial(task.fetcher.fetch, protein_id, windows, scratch_dir, wf),
-        retry_on=_FETCH_TRANSIENT_ERRORS,
-    )
-    logger.info(
-        "fetched dense protein windows", protein_id=protein_id, n_windows=len(windows)
-    )
+    """Test each of a protein's selected pairs on its fetched dense windows."""
     return [
         _test_pair(
             window=window,
-            protein_id=protein_id,
-            protein_rows=frames.get(window.locus_id, WINDOW_SCHEMA.to_frame()),
+            protein_id=fetched.request.protein_id,
+            protein_rows=fetched.frames.get(window.locus_id, WINDOW_SCHEMA.to_frame()),
             trait_rows=_trait_window(trait, window),
             trait_model=task.trait_model,
             method=task.method,
@@ -415,18 +404,22 @@ def _test_protein(
             min_aligned_variants=task.config.min_aligned_variants,
             windows_dir=windows_dir,
         )
-        for window in windows
+        for window in fetched.request.windows
     ]
 
 
-def _windows_by_protein(
+def _fetch_requests(
     ranked: pl.DataFrame, loci: pl.DataFrame
-) -> dict[str, list[LocusWindow]]:
+) -> list[ProteinWindowRequest]:
+    """One request per selected protein, with all its selected windows."""
     selected = ranked.filter(pl.col(STATUS_COL) == STATUS_SELECTED)
     by_protein: dict[str, list[LocusWindow]] = {}
     for protein_id, locus_id in selected.select(PROTEIN_ID_COL, LOCUS_ID_COL).rows():
         by_protein.setdefault(protein_id, []).append(_locus_window(loci, locus_id))
-    return by_protein
+    return [
+        ProteinWindowRequest(protein_id=protein_id, windows=tuple(windows))
+        for protein_id, windows in by_protein.items()
+    ]
 
 
 def _test_selected_pairs(
@@ -440,13 +433,13 @@ def _test_selected_pairs(
     wf: WF,
 ) -> list[_PairOutcome]:
     """Test every selected pair, fetching each selected protein once."""
-    return [
-        outcome
-        for protein_id, windows in _windows_by_protein(ranked, loci).items()
-        for outcome in _test_protein(
-            protein_id, windows, trait, task, reference, scratch_dir, windows_dir, wf
-        )
-    ]
+    requests = _fetch_requests(ranked, loci)
+    with closing(task.fetcher.fetch_all(requests, scratch_dir, wf)) as fetched:
+        return [
+            outcome
+            for protein in fetched
+            for outcome in _test_protein(protein, trait, task, reference, windows_dir)
+        ]
 
 
 def _outcome_row(outcome: _PairOutcome, method: ColocMethod) -> dict[str, object]:

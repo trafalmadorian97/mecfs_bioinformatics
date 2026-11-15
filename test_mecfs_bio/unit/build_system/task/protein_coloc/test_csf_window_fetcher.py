@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.protein_coloc.csf_window_fetcher import (
     HarmonisedLocation,
     UrlIndexFetcher,
 )
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.csf_database_constants import (
     Analyte,
@@ -101,7 +101,7 @@ def _fetch(source: str, window: LocusWindow, tmp_path: Path) -> pl.DataFrame:
         resolver=_PathResolver(source),
         index_fetcher=_CopyThenRemoveIndex(),
     )
-    frames = fetcher.fetch(_SEQ_ID, [window], tmp_path, make_wf())
+    frames = fetcher.fetch_protein(_SEQ_ID, [window], tmp_path, make_wf())
     return frames[window.locus_id]
 
 
@@ -153,7 +153,7 @@ def test_fetch_unknown_protein_id_asserts(tmp_path: Path) -> None:
     source = _tabix_fixture(tmp_path, [_row(100)])
     fetcher = CsfWindowFetcher(aptamers=(_APTAMER,), resolver=_PathResolver(source))
     with pytest.raises(AssertionError):
-        fetcher.fetch(
+        fetcher.fetch_protein(
             "9999-99",
             [LocusWindow("L1", chrom=19, start=1, end=10)],
             tmp_path,

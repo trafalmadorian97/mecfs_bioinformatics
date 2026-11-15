@@ -46,12 +46,12 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_locus_stack_plot_task impor
 from mecfs_bio.build_system.task.protein_coloc.coloc_protein_info_task import (
     ColocProteinInfoTask,
 )
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    DenseWindowFetcher,
+)
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
     St3GeneCoordsReader,
-)
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
-    DenseWindowFetcher,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import (
     St3ProteinAccessionsReader,

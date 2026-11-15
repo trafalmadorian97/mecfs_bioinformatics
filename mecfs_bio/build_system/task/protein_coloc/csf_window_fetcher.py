@@ -12,13 +12,13 @@ the reference genome happens downstream, as for every source.
 The tabix index is downloaded into the call's scratch directory and handed to pysam
 explicitly; left to itself, htslib would save every remote index into the process's working
 directory. Failures to download the index (including a stalled connection, after timeout_s)
-or to open or read the source surface as OSError, so the coloc task's retry wrapper retries
+or to open or read the source surface as OSError, so fetch_all's retry wrapper retries
 them; a region pysam rejects is a programming error and stays a ValueError, failing at once.
 """
 
 import shutil
 import urllib.request
-from collections.abc import Sequence
+from collections.abc import Generator, Sequence
 from pathlib import Path, PurePosixPath
 from typing import Final, Protocol
 from urllib.parse import urlparse
@@ -33,7 +33,12 @@ from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task im
 from mecfs_bio.build_system.task.csf_database.gwas_catalog_url import (
     gwas_catalog_harmonised_url,
 )
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    LocusWindow,
+    ProteinWindowFrames,
+    ProteinWindowRequest,
+    fetch_proteins_in_parallel,
+)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.csf_database_constants import GcstAccession
 from mecfs_bio.constants.gwaslab_constants import (
@@ -179,6 +184,7 @@ class CsfWindowFetcher:
         (the coloc protein id).
     resolver: where an aptamer's harmonised file lives; the GWAS Catalog FTP by default.
     index_fetcher: brings the tabix index into the scratch directory.
+    Aptamers are fetched one at a time, sparing the GWAS Catalog server.
     """
 
     aptamers: tuple[CsfAptamerFile, ...]
@@ -190,13 +196,24 @@ class CsfWindowFetcher:
         assert len(matches) == 1, f"expected one manifest row for {protein_id}"
         return matches[0]
 
-    def fetch(
+    def fetch_all(
+        self,
+        requests: Sequence[ProteinWindowRequest],
+        scratch_dir: Path,
+        wf: WF,
+    ) -> Generator[ProteinWindowFrames]:
+        return fetch_proteins_in_parallel(
+            self, requests, scratch_dir, wf, max_parallel=1
+        )
+
+    def fetch_protein(
         self,
         protein_id: str,
         windows: Sequence[LocusWindow],
         scratch_dir: Path,
         wf: WF,
     ) -> dict[str, pl.DataFrame]:
+        """One aptamer's windows, keyed by locus_id."""
         aptamer = self._aptamer(protein_id)
         location = self.resolver(aptamer.accession)
         index_dir = scratch_dir / f"tabix_index_{protein_id}"

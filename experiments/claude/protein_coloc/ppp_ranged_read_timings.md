@@ -93,7 +93,7 @@ showed no consistent gain. At best it saves about a second on the largest chromo
 
 ## Fetching several proteins at once
 
-probe_parallel_ppp_window_fetch.py: PppWindowFetcher.fetch (ranged reads, one session per
+probe_parallel_ppp_window_fetch.py: PppWindowFetcher.fetch_protein (ranged reads, one session per
 thread) over batches of 12 proteins, one 1 Mb window each on a fixed mix of 12 chromosomes,
 with a thread pool of 1, 2, 4 or 8 workers. Every batch uses different proteins, and each
 worker count runs twice in the order 1, 4, 2, 8, 8, 2, 4, 1.
@@ -144,3 +144,10 @@ bandwidth cap at roughly 30-60 MB/s:
 
 At about 25 MB of compressed data per protein, 8 parallel fetches every 1.3 s come to about
 19 MB/s, below those caps. So bandwidth is not yet the limit; CPU is.
+
+## Implemented: fetch_all
+
+PppWindowFetcher.fetch_all now fetches 4 proteins at once (max_parallel_fetches), through
+fetch_proteins_in_parallel in dense_window_fetch.py; the coloc task no longer fetches one
+protein at a time. verify_ppp_ranged_window_fetch.py checks it live: 6 proteins took 16.1 s
+through fetch_all versus 42.7 s one at a time, with identical frames in request order.

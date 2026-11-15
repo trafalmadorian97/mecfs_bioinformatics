@@ -1,7 +1,7 @@
 """
 Would fetching several proteins' dense windows at once speed up PPP colocalization?
 
-Runs PppWindowFetcher.fetch (production downloader, ranged reads) over batches of 12 proteins
+Runs PppWindowFetcher.fetch_protein (production downloader, ranged reads) over batches of 12 proteins
 with a thread pool of 1, 2, 4 or 8 workers. Each protein gets one 1 Mb window, on a chromosome
 from a fixed mix of sizes, so every fetch costs what a typical coloc fetch costs: URL lookup,
 tar header walk, then reading and decompressing one chromosome file. Every batch uses
@@ -29,8 +29,8 @@ from mecfs_bio.asset_generator.ukbb_ppp_slim_protein_asset_generator import (
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
-    LocusWindow,
     PppWindowFetcher,
 )
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
@@ -90,7 +90,7 @@ def _fetch_one(
         end=_WINDOW_START + _WINDOW_LENGTH,
     )
     with tempfile.TemporaryDirectory() as scratch:
-        frames = fetcher.fetch(protein.oid, [window], Path(scratch), wf)
+        frames = fetcher.fetch_protein(protein.oid, [window], Path(scratch), wf)
     return frames["w"].height
 
 
