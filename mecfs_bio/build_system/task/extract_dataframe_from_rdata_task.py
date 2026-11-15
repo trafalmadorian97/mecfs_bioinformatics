@@ -48,7 +48,7 @@ class ExtractDataFrameFromRDataTask(Task):
         assert isinstance(rdata_asset, FileAsset)
         pth = rdata_asset.path
         load = robjects.r["load"]
-        load(str(pth))  # type: ignore[operator] # ty: ignore[call-non-callable]
+        load(str(pth))  # type: ignore[operator] # ty: ignore[not-callable]
         r_dataframe = robjects.r[self.r_dataframe_name]
         with localconverter(conv):
             py_dataframe: pd.DataFrame = ro.conversion.get_conversion().rpy2py(
