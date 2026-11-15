@@ -379,7 +379,7 @@ $$
 $$
 
 
-To produce an expression for the Bayes factor, we need to integrate the above over all possible values of $\beta_i$, weighting by the prior on $\beta_i$ from $\(ref{effect_prior})$. We can apply the Gaussian integral from $(\ref{gaussian_integral})$ with
+To produce an expression for the Bayes factor, we need to integrate the above over all possible values of $\beta_i$, weighting by the prior on $\beta_i$ from $(\ref{effect_prior})$. We can apply the Gaussian integral from $(\ref{gaussian_integral})$ with
 
 $$
 \begin{align}
@@ -431,6 +431,9 @@ as desired
 
 
 **end of proof**
+
+
+### Interpreting the Bayes Factor
 
 To be continued
 
