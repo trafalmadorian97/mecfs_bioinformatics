@@ -29,9 +29,9 @@ from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     St3GeneCoordsReader,
 )
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_source import (
+from mecfs_bio.build_system.task.protein_coloc.ppp_window_reader import (
     PPP_MAX_PARALLEL_FETCHES,
-    PppWindowSource,
+    PppWindowReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
     ProteinHitTableTask,
@@ -63,7 +63,7 @@ def generate_ppp_coloc_tasks(
         gene_coords_task=SUN_ET_AL_2023_ST3_EXTRACTED,
         gene_coords_reader=St3GeneCoordsReader(),
         fetcher=ParallelWindowFetcher(
-            source=PppWindowSource(proteins=load_ppp_protein_files(manifest_path)),
+            reader=PppWindowReader(proteins=load_ppp_protein_files(manifest_path)),
             max_parallel=PPP_MAX_PARALLEL_FETCHES,
         ),
     )

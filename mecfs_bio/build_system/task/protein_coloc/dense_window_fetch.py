@@ -7,8 +7,8 @@ interval [start, end] on chromosome chrom (X coded as 23). Fetched frames are in
 window schema (WINDOW_SCHEMA, positions in GRCh38) but NOT yet oriented to the reference
 genome: EA/NEA are whatever the source reports, and orientation happens downstream.
 
-A data source implements ProteinWindowSource, which fetches one protein. ParallelWindowFetcher
-turns a source into a DenseWindowFetcher: it runs up to max_parallel single-protein fetches at
+Each source has a ProteinWindowReader, which fetches one protein. ParallelWindowFetcher turns
+a reader into a DenseWindowFetcher: it runs up to max_parallel single-protein fetches at
 once, ahead of the consumer, retries transient errors, and still yields results in request
 order. A fetch mostly waits on the network, so running several at once overlaps the waits.
 """
@@ -80,7 +80,7 @@ class DenseWindowFetcher(Protocol):
         ...
 
 
-class ProteinWindowSource(Protocol):
+class ProteinWindowReader(Protocol):
     def fetch_protein(
         self,
         protein_id: str,
@@ -97,7 +97,7 @@ class SleepFn(Protocol):
 
 
 def _fetch_with_retries(
-    source: ProteinWindowSource,
+    reader: ProteinWindowReader,
     request: ProteinWindowRequest,
     scratch_dir: Path,
     wf: WF,
@@ -105,7 +105,7 @@ def _fetch_with_retries(
 ) -> ProteinWindowFrames:
     frames = call_with_retries(
         partial(
-            source.fetch_protein, request.protein_id, request.windows, scratch_dir, wf
+            reader.fetch_protein, request.protein_id, request.windows, scratch_dir, wf
         ),
         retry_on=FETCH_TRANSIENT_ERRORS,
         sleep=sleep,
@@ -119,7 +119,7 @@ def _fetch_with_retries(
 
 
 def fetch_proteins_in_parallel(
-    source: ProteinWindowSource,
+    reader: ProteinWindowReader,
     requests: Sequence[ProteinWindowRequest],
     scratch_dir: Path,
     wf: WF,
@@ -127,7 +127,7 @@ def fetch_proteins_in_parallel(
     sleep: SleepFn = time.sleep,
 ) -> Generator[ProteinWindowFrames]:
     """
-    Fetch every request through source, up to max_parallel at once, retrying transient
+    Fetch every request through reader, up to max_parallel at once, retrying transient
     errors (backing off with sleep), and yield the results in request order.
 
     All fetches are queued at once and run ahead of the consumer. Fetched windows are small,
@@ -141,7 +141,7 @@ def fetch_proteins_in_parallel(
     pool = ThreadPoolExecutor(max_workers=max_parallel)
     try:
         futures: list[Future[ProteinWindowFrames]] = [
-            pool.submit(_fetch_with_retries, source, request, scratch_dir, wf, sleep)
+            pool.submit(_fetch_with_retries, reader, request, scratch_dir, wf, sleep)
             for request in requests
         ]
         for future in futures:
@@ -153,13 +153,13 @@ def fetch_proteins_in_parallel(
 @frozen(slots=True)
 class ParallelWindowFetcher:
     """
-    DenseWindowFetcher over a ProteinWindowSource.
+    DenseWindowFetcher over a ProteinWindowReader.
 
-    source: fetches one protein's windows.
+    reader: fetches one protein's windows.
     max_parallel: how many proteins are fetched at once.
     """
 
-    source: ProteinWindowSource
+    reader: ProteinWindowReader
     max_parallel: int
 
     def __attrs_post_init__(self) -> None:
@@ -174,5 +174,5 @@ class ParallelWindowFetcher:
         wf: WF,
     ) -> Generator[ProteinWindowFrames]:
         return fetch_proteins_in_parallel(
-            self.source, requests, scratch_dir, wf, max_parallel=self.max_parallel
+            self.reader, requests, scratch_dir, wf, max_parallel=self.max_parallel
         )

@@ -1,5 +1,5 @@
 """
-Check live that PppWindowSource's ranged reads give the same windows as the full download.
+Check live that PppWindowReader's ranged reads give the same windows as the full download.
 
 Uses AMY1A_AMY1B_AMY1C, whose tar stores member names in GNU long-name entries. Fetches two
 windows on two chromosomes with the ranged fetcher, then downloads and extracts the whole tar
@@ -30,10 +30,10 @@ from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
     ParallelWindowFetcher,
     ProteinWindowRequest,
 )
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_source import (
+from mecfs_bio.build_system.task.protein_coloc.ppp_window_reader import (
     _REGENIE_TO_WINDOW,
     PPP_MAX_PARALLEL_FETCHES,
-    PppWindowSource,
+    PppWindowReader,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_POS_COL
@@ -69,11 +69,11 @@ def _full_download_windows(
 def main() -> None:
     proteins = load_ppp_protein_files(EUR_DISCOVERY_PPP_MANIFEST_PATH)
     (protein,) = [p for p in proteins if p.tar_filename.startswith(_GENE_PREFIX)]
-    source = PppWindowSource(proteins=(protein,))
+    reader = PppWindowReader(proteins=(protein,))
     with tempfile.TemporaryDirectory() as tmp:
         scratch = Path(tmp)
         start = time.monotonic()
-        ranged = source.fetch_protein(protein.oid, _WINDOWS, scratch, make_wf())
+        ranged = reader.fetch_protein(protein.oid, _WINDOWS, scratch, make_wf())
         print(f"ranged fetch: {time.monotonic() - start:.1f}s")
         start = time.monotonic()
         full = _full_download_windows(protein.synid, protein.tar_filename, scratch)
@@ -93,8 +93,8 @@ def _check_fetch_all(
     proteins: tuple[PppProteinFile, ...], amy1: PppProteinFile
 ) -> None:
     batch = (amy1, *proteins[20 : 20 + _N_EXTRA_PROTEINS])
-    source = PppWindowSource(proteins=batch)
-    fetcher = ParallelWindowFetcher(source=source, max_parallel=PPP_MAX_PARALLEL_FETCHES)
+    reader = PppWindowReader(proteins=batch)
+    fetcher = ParallelWindowFetcher(reader=reader, max_parallel=PPP_MAX_PARALLEL_FETCHES)
     requests = [
         ProteinWindowRequest(protein_id=p.oid, windows=_WINDOWS) for p in batch
     ]
@@ -105,7 +105,7 @@ def _check_fetch_all(
         print(f"fetch_all, {len(batch)} proteins, 4 at once: {time.monotonic() - start:.1f}s")
         start = time.monotonic()
         serial = [
-            source.fetch_protein(r.protein_id, r.windows, scratch, make_wf())
+            reader.fetch_protein(r.protein_id, r.windows, scratch, make_wf())
             for r in requests
         ]
         print(f"fetch_protein one at a time: {time.monotonic() - start:.1f}s")

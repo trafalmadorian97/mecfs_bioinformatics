@@ -1,9 +1,9 @@
 """
-ProteinWindowSource for UKB-PPP: fetch one protein's dense summary statistics for a few locus
+ProteinWindowReader for UKB-PPP: fetch one protein's dense summary statistics for a few locus
 windows. Wrap it in a ParallelWindowFetcher, PPP_MAX_PARALLEL_FETCHES at once, to fetch many
 proteins.
 
-PppWindowSource never downloads a protein's whole UKB-PPP tar (about 550 MB, one gzipped
+PppWindowReader never downloads a protein's whole UKB-PPP tar (about 550 MB, one gzipped
 regenie file per chromosome). It lists the tar's members with one small HTTP Range read per
 member header, then range-reads only the chromosome files the windows need, one at a time,
 decompressing each in memory and keeping only the needed columns. A chromosome file is 1-8%
@@ -113,9 +113,9 @@ PPP_MAX_PARALLEL_FETCHES = 4
 
 
 @frozen(slots=True)
-class PppWindowSource:
+class PppWindowReader:
     """
-    ProteinWindowSource for UKB-PPP.
+    ProteinWindowReader for UKB-PPP.
 
     proteins: the manifest rows of every protein that may be requested, looked up by OID.
     Nothing is written to scratch_dir.

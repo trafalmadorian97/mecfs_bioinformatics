@@ -1,5 +1,5 @@
 """
-ProteinWindowSource for the Western et al. 2024 CSF pQTL GWAS: reads trait-locus windows of one
+ProteinWindowReader for the Western et al. 2024 CSF pQTL GWAS: reads trait-locus windows of one
 aptamer's GWAS Catalog harmonised summary statistics by tabix range requests, without
 downloading the file. Wrap it in a ParallelWindowFetcher, CSF_MAX_PARALLEL_FETCHES at once, to
 fetch many aptamers.
@@ -178,7 +178,7 @@ CSF_MAX_PARALLEL_FETCHES = 1
 
 
 @frozen(slots=True)
-class CsfWindowSource:
+class CsfWindowReader:
     """
     aptamers: the manifest rows of every aptamer that may be requested, looked up by seq id
         (the coloc protein id).
