@@ -9,7 +9,6 @@ from attrs import frozen
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
-from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
     PppWindowFetcher,
 )
@@ -24,6 +23,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 from mecfs_bio.constants.ppp_database_constants import Oid, SynID
 from mecfs_bio.constants.protein_coloc_constants import WINDOW_SCHEMA
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.util.file_io.ranged_tar import RangeReader
 
 _REGENIE_HEADER = (
@@ -128,8 +128,8 @@ def _setup(tmp_path: Path) -> tuple[_TarServingDownloader, WF, Path]:
 
 
 _WINDOWS = [
-    LocusWindow(locus_id="L1", chrom=1, start=50, end=250),
-    LocusWindow(locus_id="L2", chrom=2, start=0, end=1000),
+    GenomicInterval(chrom=1, start=50, end=250),
+    GenomicInterval(chrom=2, start=0, end=1000),
 ]
 
 
@@ -138,8 +138,8 @@ def test_fetch_returns_only_window_rows_in_common_schema(tmp_path: Path) -> None
     frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
         "OID1", _WINDOWS, scratch, wf
     )
-    assert set(frames) == {"L1", "L2"}
-    l1 = frames["L1"]
+    assert set(frames) == set(_WINDOWS)
+    l1 = frames[_WINDOWS[0]]
     assert l1.schema == WINDOW_SCHEMA
     assert l1[GWASLAB_POS_COL].to_list() == [100, 200]
     first = l1.row(0, named=True)
@@ -147,15 +147,16 @@ def test_fetch_returns_only_window_rows_in_common_schema(tmp_path: Path) -> None
     assert first[GWASLAB_NON_EFFECT_ALLELE_COL] == "G"
     assert first[GWASLAB_EFFECT_ALLELE_FREQ_COL] == 0.2
     assert first[GWASLAB_BETA_COL] == 0.5
-    assert frames["L2"][GWASLAB_POS_COL].to_list() == [300]
+    assert frames[_WINDOWS[1]][GWASLAB_POS_COL].to_list() == [300]
 
 
 def test_fetch_reads_chromosome_x_as_23(tmp_path: Path) -> None:
     _, wf, scratch = _setup(tmp_path)
+    window = GenomicInterval(chrom=23, start=0, end=1000)
     frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
-        "OID1", [LocusWindow(locus_id="LX", chrom=23, start=0, end=1000)], scratch, wf
+        "OID1", [window], scratch, wf
     )
-    assert frames["LX"][GWASLAB_POS_COL].to_list() == [400]
+    assert frames[window][GWASLAB_POS_COL].to_list() == [400]
 
 
 def _member_data_range(tar_path: Path, chrom_tag: str) -> _ByteRange:
@@ -167,7 +168,7 @@ def _member_data_range(tar_path: Path, chrom_tag: str) -> _ByteRange:
 def test_fetch_does_not_read_an_unneeded_chromosome_file(tmp_path: Path) -> None:
     downloader, wf, scratch = _setup(tmp_path)
     PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
-        "OID1", [LocusWindow(locus_id="L1", chrom=1, start=50, end=250)], scratch, wf
+        "OID1", [GenomicInterval(chrom=1, start=50, end=250)], scratch, wf
     )
     unneeded = _member_data_range(downloader.tar_path, "_chr2_")
     bytes_read = sum(read.overlap_length(unneeded) for read in downloader.reads)
@@ -177,9 +178,10 @@ def test_fetch_does_not_read_an_unneeded_chromosome_file(tmp_path: Path) -> None
 
 def test_window_with_no_rows_returns_empty_frame_with_schema(tmp_path: Path) -> None:
     _, wf, scratch = _setup(tmp_path)
+    window = GenomicInterval(chrom=1, start=1000, end=2000)
     frames = PppWindowFetcher(proteins=(_PROTEIN,)).fetch_protein(
-        "OID1", [LocusWindow(locus_id="E", chrom=1, start=1000, end=2000)], scratch, wf
+        "OID1", [window], scratch, wf
     )
-    assert frames["E"].height == 0
-    assert frames["E"].schema == WINDOW_SCHEMA
-    assert isinstance(frames["E"], pl.DataFrame)
+    assert frames[window].height == 0
+    assert frames[window].schema == WINDOW_SCHEMA
+    assert isinstance(frames[window], pl.DataFrame)

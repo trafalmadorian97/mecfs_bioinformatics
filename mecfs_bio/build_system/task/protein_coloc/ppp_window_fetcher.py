@@ -24,7 +24,6 @@ from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task im
     PppProteinFile,
 )
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
-    LocusWindow,
     ProteinWindowFrames,
     ProteinWindowRequest,
     fetch_proteins_in_parallel,
@@ -52,6 +51,7 @@ from mecfs_bio.constants.regenie_constants import (
     REGENIE_N_COL,
     REGENIE_SE_COL,
 )
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.util.file_io.ranged_tar import (
     RangeReader,
     TarMemberExtent,
@@ -95,7 +95,9 @@ def _read_chromosome(reader: RangeReader, member: TarMemberExtent) -> pl.DataFra
     )
 
 
-def _slice_window(chromosome_rows: pl.DataFrame, window: LocusWindow) -> pl.DataFrame:
+def _slice_window(
+    chromosome_rows: pl.DataFrame, window: GenomicInterval
+) -> pl.DataFrame:
     return chromosome_rows.filter(
         pl.col(GWASLAB_CHROM_COL) == window.chrom,
         pl.col(GWASLAB_POS_COL).is_between(window.start, window.end),
@@ -103,13 +105,9 @@ def _slice_window(chromosome_rows: pl.DataFrame, window: LocusWindow) -> pl.Data
 
 
 def _slice_windows_on_chromosome(
-    chromosome_rows: pl.DataFrame, windows: Sequence[LocusWindow], chrom: int
-) -> dict[str, pl.DataFrame]:
-    return {
-        w.locus_id: _slice_window(chromosome_rows, w)
-        for w in windows
-        if w.chrom == chrom
-    }
+    chromosome_rows: pl.DataFrame, windows: Sequence[GenomicInterval], chrom: int
+) -> dict[GenomicInterval, pl.DataFrame]:
+    return {w: _slice_window(chromosome_rows, w) for w in windows if w.chrom == chrom}
 
 
 @frozen(slots=True)
@@ -150,15 +148,15 @@ class PppWindowFetcher:
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
-        """One protein's windows, keyed by locus_id."""
+    ) -> dict[GenomicInterval, pl.DataFrame]:
+        """One protein's windows, keyed by window."""
         protein = self._protein(protein_id)
         reader = wf.open_synapse_range_reader(protein.synid)
         members = list_tar_members(reader)
-        frames: dict[str, pl.DataFrame] = {}
+        frames: dict[GenomicInterval, pl.DataFrame] = {}
         for chrom in sorted({w.chrom for w in windows}):
             rows = _read_chromosome(reader, _chromosome_member(members, chrom))
             frames.update(_slice_windows_on_chromosome(rows, windows, chrom))

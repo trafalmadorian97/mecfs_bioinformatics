@@ -34,7 +34,6 @@ from mecfs_bio.build_system.task.csf_database.gwas_catalog_url import (
     gwas_catalog_harmonised_url,
 )
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
-    LocusWindow,
     ProteinWindowFrames,
     ProteinWindowRequest,
     fetch_proteins_in_parallel,
@@ -52,6 +51,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import WINDOW_SCHEMA
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 # Column contract of the Western et al. harmonised files (verified 2026-11-05).
 CSF_HARMONISED_COLUMNS: Final = (
@@ -145,13 +145,13 @@ def _rows_to_window_frame(rows: list[list[str]]) -> pl.DataFrame:
     )
 
 
-def _tabix_start(window: LocusWindow) -> int:
+def _tabix_start(window: GenomicInterval) -> int:
     """0-based start of the closed 1-based window, clipped at the chromosome start (a trait
     locus near a chromosome end has a negative start, which pysam rejects)."""
     return max(window.start - 1, 0)
 
 
-def _read_window(tabix: pysam.TabixFile, window: LocusWindow) -> pl.DataFrame:
+def _read_window(tabix: pysam.TabixFile, window: GenomicInterval) -> pl.DataFrame:
     if str(window.chrom) not in set(tabix.contigs):
         return _rows_to_window_frame([])
     # Building the iterator validates the region: a ValueError here is a bad request.
@@ -171,10 +171,10 @@ def _open_tabix(source: str, index: Path) -> pysam.TabixFile:
 
 
 def _fetch_windows(
-    source: str, index: Path, windows: Sequence[LocusWindow]
-) -> dict[str, pl.DataFrame]:
+    source: str, index: Path, windows: Sequence[GenomicInterval]
+) -> dict[GenomicInterval, pl.DataFrame]:
     with _open_tabix(source, index) as tabix:
-        return {window.locus_id: _read_window(tabix, window) for window in windows}
+        return {window: _read_window(tabix, window) for window in windows}
 
 
 @frozen(slots=True)
@@ -209,11 +209,11 @@ class CsfWindowFetcher:
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
-        """One aptamer's windows, keyed by locus_id."""
+    ) -> dict[GenomicInterval, pl.DataFrame]:
+        """One aptamer's windows, keyed by window."""
         aptamer = self._aptamer(protein_id)
         location = self.resolver(aptamer.accession)
         index_dir = scratch_dir / f"tabix_index_{protein_id}"

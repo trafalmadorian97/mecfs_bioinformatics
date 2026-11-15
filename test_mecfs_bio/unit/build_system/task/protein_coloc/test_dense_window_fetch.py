@@ -6,15 +6,15 @@ import polars as pl
 import pytest
 
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
-    LocusWindow,
     ProteinWindowRequest,
     fetch_proteins_in_parallel,
 )
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 _BARRIER_TIMEOUT_SECONDS = 10
 _GATE_RELEASE_SECONDS = 0.2
-_WINDOW = LocusWindow(locus_id="L", chrom=1, start=1, end=100)
+_WINDOW = GenomicInterval(chrom=1, start=1, end=100)
 
 
 def _requests(n: int) -> list[ProteinWindowRequest]:
@@ -23,8 +23,8 @@ def _requests(n: int) -> list[ProteinWindowRequest]:
     ]
 
 
-def _frames_for(protein_id: str) -> dict[str, pl.DataFrame]:
-    return {_WINDOW.locus_id: pl.DataFrame({"protein": [protein_id]})}
+def _frames_for(protein_id: str) -> dict[GenomicInterval, pl.DataFrame]:
+    return {_WINDOW: pl.DataFrame({"protein": [protein_id]})}
 
 
 class _FakeSource:
@@ -51,10 +51,10 @@ class _FakeSource:
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
+    ) -> dict[GenomicInterval, pl.DataFrame]:
         with self._condition:
             self.calls.append(protein_id)
             n_calls = self.calls.count(protein_id)
@@ -107,7 +107,7 @@ def test_results_come_in_request_order_when_fetches_finish_out_of_order() -> Non
         )
     )
     assert [r.request for r in results] == requests
-    assert [r.frames["L"]["protein"].item() for r in results] == ["P0", "P1", "P2"]
+    assert [r.frames[_WINDOW]["protein"].item() for r in results] == ["P0", "P1", "P2"]
 
 
 def test_transient_errors_are_retried() -> None:
@@ -127,10 +127,10 @@ class _GatedSource:
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
+    ) -> dict[GenomicInterval, pl.DataFrame]:
         self.calls.append(protein_id)
         if protein_id == self.gated_protein:
             assert self.gate.wait(timeout=_BARRIER_TIMEOUT_SECONDS)

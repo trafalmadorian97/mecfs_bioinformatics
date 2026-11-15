@@ -22,6 +22,7 @@ from pathlib import Path
 
 from attrs import frozen
 
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.asset_generator.ukbb_ppp_slim_protein_asset_generator import (
     EUR_DISCOVERY_PPP_MANIFEST_PATH,
     load_ppp_protein_files,
@@ -29,7 +30,6 @@ from mecfs_bio.asset_generator.ukbb_ppp_slim_protein_asset_generator import (
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
-from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
     PppWindowFetcher,
 )
@@ -83,15 +83,13 @@ class _BatchResult:
 def _fetch_one(
     fetcher: PppWindowFetcher, protein: PppProteinFile, chrom: int, wf: WF
 ) -> int:
-    window = LocusWindow(
-        locus_id="w",
-        chrom=chrom,
+    window = GenomicInterval(chrom=chrom,
         start=_WINDOW_START,
         end=_WINDOW_START + _WINDOW_LENGTH,
     )
     with tempfile.TemporaryDirectory() as scratch:
         frames = fetcher.fetch_protein(protein.oid, [window], Path(scratch), wf)
-    return frames["w"].height
+    return frames[window].height
 
 
 def _run_batch(

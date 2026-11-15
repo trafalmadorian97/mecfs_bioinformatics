@@ -16,7 +16,6 @@ from mecfs_bio.build_system.task.protein_coloc.csf_window_fetcher import (
     HarmonisedLocation,
     UrlIndexFetcher,
 )
-from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.csf_database_constants import (
     Analyte,
@@ -32,6 +31,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
 )
 from mecfs_bio.constants.protein_coloc_constants import WINDOW_SCHEMA
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 _ACCESSION = GcstAccession("GCST90421540")
 _SEQ_ID = "2418-55"
@@ -95,21 +95,21 @@ def _tabix_fixture(tmp_path: Path, rows: list[list[str]]) -> str:
     )
 
 
-def _fetch(source: str, window: LocusWindow, tmp_path: Path) -> pl.DataFrame:
+def _fetch(source: str, window: GenomicInterval, tmp_path: Path) -> pl.DataFrame:
     fetcher = CsfWindowFetcher(
         aptamers=(_APTAMER,),
         resolver=_PathResolver(source),
         index_fetcher=_CopyThenRemoveIndex(),
     )
     frames = fetcher.fetch_protein(_SEQ_ID, [window], tmp_path, make_wf())
-    return frames[window.locus_id]
+    return frames[window]
 
 
 def test_fetch_returns_window_rows_in_window_schema(tmp_path: Path) -> None:
     source = _tabix_fixture(
         tmp_path, [_row(100, n="3100"), _row(200, n="3200"), _row(300, n="3300")]
     )
-    frame = _fetch(source, LocusWindow("L1", chrom=19, start=150, end=300), tmp_path)
+    frame = _fetch(source, GenomicInterval(chrom=19, start=150, end=300), tmp_path)
     assert frame.schema == WINDOW_SCHEMA
     assert frame[GWASLAB_POS_COL].to_list() == [200, 300]
     assert frame[GWASLAB_SAMPLE_SIZE_COLUMN].to_list() == [3200.0, 3300.0]
@@ -117,7 +117,7 @@ def test_fetch_returns_window_rows_in_window_schema(tmp_path: Path) -> None:
 
 def test_fetch_window_on_absent_contig_is_empty(tmp_path: Path) -> None:
     source = _tabix_fixture(tmp_path, [_row(100)])
-    frame = _fetch(source, LocusWindow("LX", chrom=23, start=1, end=1000), tmp_path)
+    frame = _fetch(source, GenomicInterval(chrom=23, start=1, end=1000), tmp_path)
     assert frame.height == 0
     assert frame.schema == WINDOW_SCHEMA
 
@@ -125,20 +125,20 @@ def test_fetch_window_on_absent_contig_is_empty(tmp_path: Path) -> None:
 def test_fetch_window_starting_before_chromosome_start(tmp_path: Path) -> None:
     # A trait locus near a chromosome end: lead minus the half-width is negative.
     source = _tabix_fixture(tmp_path, [_row(100), _row(200)])
-    frame = _fetch(source, LocusWindow("L0", chrom=19, start=-400, end=150), tmp_path)
+    frame = _fetch(source, GenomicInterval(chrom=19, start=-400, end=150), tmp_path)
     assert frame[GWASLAB_POS_COL].to_list() == [100]
 
 
 def test_fetch_na_fields_become_null(tmp_path: Path) -> None:
     source = _tabix_fixture(tmp_path, [_row(100, beta="NA", eaf="NA")])
-    frame = _fetch(source, LocusWindow("L1", chrom=19, start=1, end=1000), tmp_path)
+    frame = _fetch(source, GenomicInterval(chrom=19, start=1, end=1000), tmp_path)
     assert frame[GWASLAB_BETA_COL].to_list() == [None]
     assert frame[GWASLAB_EFFECT_ALLELE_FREQ_COL].to_list() == [None]
 
 
 def test_fetch_reads_the_index_it_downloaded_to_scratch(tmp_path: Path) -> None:
     source = _tabix_fixture(tmp_path, [_row(100)])
-    frame = _fetch(source, LocusWindow("L1", chrom=19, start=1, end=1000), tmp_path)
+    frame = _fetch(source, GenomicInterval(chrom=19, start=1, end=1000), tmp_path)
     assert not Path(f"{source}.tbi").exists()
     assert frame.height == 1
 
@@ -146,7 +146,7 @@ def test_fetch_reads_the_index_it_downloaded_to_scratch(tmp_path: Path) -> None:
 def test_fetch_unreachable_source_raises_oserror(tmp_path: Path) -> None:
     missing = str(tmp_path / "missing.h.tsv.gz")
     with pytest.raises(OSError):
-        _fetch(missing, LocusWindow("L1", chrom=19, start=1, end=1000), tmp_path)
+        _fetch(missing, GenomicInterval(chrom=19, start=1, end=1000), tmp_path)
 
 
 def test_fetch_unknown_protein_id_asserts(tmp_path: Path) -> None:
@@ -155,7 +155,7 @@ def test_fetch_unknown_protein_id_asserts(tmp_path: Path) -> None:
     with pytest.raises(AssertionError):
         fetcher.fetch_protein(
             "9999-99",
-            [LocusWindow("L1", chrom=19, start=1, end=10)],
+            [GenomicInterval(chrom=19, start=1, end=10)],
             tmp_path,
             make_wf(),
         )
@@ -164,7 +164,7 @@ def test_fetch_unknown_protein_id_asserts(tmp_path: Path) -> None:
 def test_fetch_region_pysam_rejects_is_not_retried_as_io_error(tmp_path: Path) -> None:
     # An end beyond what htslib can address is a programming error, not a read failure.
     source = _tabix_fixture(tmp_path, [_row(100)])
-    window = LocusWindow("LBIG", chrom=19, start=1, end=2**63)
+    window = GenomicInterval(chrom=19, start=1, end=2**63)
     with pytest.raises(ValueError):
         _fetch(source, window, tmp_path)
 

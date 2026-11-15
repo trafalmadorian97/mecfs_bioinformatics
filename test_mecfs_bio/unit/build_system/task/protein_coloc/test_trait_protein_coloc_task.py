@@ -233,7 +233,7 @@ class _FakeFetcher:
             yield ProteinWindowFrames(
                 request=request,
                 frames={
-                    w.locus_id: frame.filter(
+                    w: frame.filter(
                         pl.col(GWASLAB_CHROM_COL) == w.chrom,
                         pl.col(GWASLAB_POS_COL).is_between(w.start, w.end),
                     )

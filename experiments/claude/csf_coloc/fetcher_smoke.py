@@ -9,13 +9,13 @@ import tempfile
 import time
 from pathlib import Path
 
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
     CsfAptamerFile,
 )
 from mecfs_bio.build_system.task.protein_coloc.csf_window_fetcher import (
     CsfWindowFetcher,
 )
-from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.csf_database_constants import (
     Analyte,
@@ -37,7 +37,7 @@ APOE = CsfAptamerFile(
 
 def main() -> None:
     fetcher = CsfWindowFetcher(aptamers=(APOE,))
-    window = LocusWindow("apoe", chrom=19, start=44_400_000, end=45_400_000)
+    window = GenomicInterval(chrom=19, start=44_400_000, end=45_400_000)
     start = time.time()
     with tempfile.TemporaryDirectory() as tmp:
         frame = fetcher.fetch_protein("2418-55", [window], Path(tmp), make_wf())["apoe"]

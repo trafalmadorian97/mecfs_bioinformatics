@@ -2,9 +2,10 @@
 The interface between the colocalization Task and a proteomics GWAS source.
 
 The Task hands a DenseWindowFetcher every selected protein with its locus windows, and reads
-back one result per protein, in request order. Fetched frames are in the common window schema
-(WINDOW_SCHEMA, positions in GRCh38) but NOT yet oriented to the reference genome: EA/NEA are
-whatever the source reports, and orientation happens downstream.
+back one result per protein, in request order. A window is a GenomicInterval: a closed GRCh38
+interval [start, end] on chromosome chrom (X coded as 23). Fetched frames are in the common
+window schema (WINDOW_SCHEMA, positions in GRCh38) but NOT yet oriented to the reference
+genome: EA/NEA are whatever the source reports, and orientation happens downstream.
 
 How a source gets its data (concurrency, retries) is its own business. Sources that fetch one
 protein at a time through a ProteinWindowSource can use fetch_proteins_in_parallel, which runs
@@ -25,6 +26,7 @@ import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 logger = structlog.get_logger()
@@ -34,35 +36,33 @@ _MAX_CHROM = 23
 FETCH_TRANSIENT_ERRORS: tuple[type[Exception], ...] = (OSError,)
 
 
-@frozen(slots=True)
-class LocusWindow:
-    """A closed GRCh38 interval [start, end] on chromosome chrom (X coded as 23)."""
-
-    locus_id: str
-    chrom: int
-    start: int
-    end: int
-
-    def __attrs_post_init__(self) -> None:
-        assert self.start <= self.end, f"window start > end: {self}"
-        assert 1 <= self.chrom <= _MAX_CHROM, f"chromosome out of range: {self}"
+def _check_window(window: GenomicInterval) -> None:
+    assert window.start <= window.end, f"window start > end: {window}"
+    assert 1 <= window.chrom <= _MAX_CHROM, f"chromosome out of range: {window}"
 
 
 @frozen(slots=True)
 class ProteinWindowRequest:
-    """One protein and the locus windows to fetch for it."""
+    """One protein and the distinct locus windows to fetch for it."""
 
     protein_id: str
-    windows: tuple[LocusWindow, ...]
+    windows: tuple[GenomicInterval, ...]
+
+    def __attrs_post_init__(self) -> None:
+        for window in self.windows:
+            _check_window(window)
+        assert len(set(self.windows)) == len(self.windows), (
+            f"duplicate window in request for {self.protein_id}"
+        )
 
 
 @frozen(slots=True)
 class ProteinWindowFrames:
     """The fetched windows of one request: one WINDOW_SCHEMA frame per window, keyed by
-    locus_id."""
+    window."""
 
     request: ProteinWindowRequest
-    frames: dict[str, pl.DataFrame]
+    frames: dict[GenomicInterval, pl.DataFrame]
 
 
 class DenseWindowFetcher(Protocol):
@@ -85,11 +85,11 @@ class ProteinWindowSource(Protocol):
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
-        """Return one WINDOW_SCHEMA frame per window, keyed by locus_id."""
+    ) -> dict[GenomicInterval, pl.DataFrame]:
+        """Return one WINDOW_SCHEMA frame per window, keyed by window."""
         ...
 
 
