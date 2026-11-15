@@ -43,6 +43,7 @@ import polars as pl
 import structlog
 from attrs import frozen
 from scipy.stats import norm
+from tqdm import tqdm
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -432,12 +433,17 @@ def _test_selected_pairs(
     windows_dir: Path,
     wf: WF,
 ) -> list[_PairOutcome]:
-    """Test every selected pair, fetching each selected protein once."""
+    """
+    Test every selected pair, fetching each selected protein once. A progress bar counts
+    proteins whose pairs have all been tested.
+    """
     requests = _fetch_requests(ranked, loci)
     with closing(task.fetcher.fetch_all(requests, scratch_dir, wf)) as fetched:
         return [
             outcome
-            for protein in fetched
+            for protein in tqdm(
+                fetched, total=len(requests), desc="coloc proteins", unit="protein"
+            )
             for outcome in _test_protein(protein, trait, task, reference, windows_dir)
         ]
 
