@@ -222,6 +222,9 @@ from mecfs_bio.assets.gwas.myocardial_infarction.analysis.mi_ppp_rg import (
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seronegative.analysis.ra_seronegative_standard_analysis import (
     SERONEGATIVE_RA_STANDARD_ANALYSIS,
 )
+from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_coloc import (
+    RA_SEROPOSITIVE_COLOC_FULL,
+)
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_rg import (
     SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED,
 )
@@ -541,6 +544,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap,
     SERONEGATIVE_RA_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.extracted_plot_task,
+    RA_SEROPOSITIVE_COLOC_FULL.display_task,
     # KEATON DBP
     KEATON_DBP_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # Million Veterans Program MI GWAS
