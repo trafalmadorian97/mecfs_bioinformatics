@@ -445,7 +445,11 @@ def _test_selected_pairs(
         return [
             outcome
             for protein in tqdm(
-                fetched, total=len(requests), desc="coloc proteins", unit="protein"
+                fetched,
+                total=len(requests),
+                desc="coloc proteins",
+                unit="protein",
+                smoothing=0.05,
             )
             for outcome in _test_protein(protein, trait, task, reference, windows_dir)
         ]
