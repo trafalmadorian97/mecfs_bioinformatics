@@ -24,8 +24,8 @@ Assume initially that both traits are quantitative.  Assume the following genera
 - $y_k\in\mathbb{R}^{N_k}$ is the vector of phenotypes for participants in GWAS $k$.
 - $G_k \in \mathbb{R}^{N_k \times Q}$ is the genotype matrix for GWAS $k$ at the locus.
 - $g_{k,i}\in\mathbb{R}^{N_k}$ is the $i$th column of $G_k$.
-- $\beta_{k}\in\mathbb{R}^{Q}$ is the vector of true variant effect sizes for $k$.
-- $\hat\beta_{k,i}\in\mathbb{R}$ i the GWAS marginal regression coefficient of variant $i$ in GWAS $k$.
+- $\beta_{k}\in\mathbb{R}^{Q}$ is the vector of true (joint) variant effect sizes for trait $k$.
+- $\hat\beta_{k,i}\in\mathbb{R}$ is the GWAS marginal regression coefficient of variant $i$ in GWAS $k$.
 - $V_{k,i}\in\mathbb{R}$ is the squared standard error of $\hat\beta_{k,i}$.
 - $\epsilon_k\in\mathbb{R}^{N_k}$ is the part of $y_k$ not determined by variants at the locus.  $\epsilon_k$ includes both the environment and other loci.
 - $c_k$ is the number of covariates in the trait $k$ GWAS model.
@@ -59,11 +59,11 @@ Variant $i$ is causal for trait $k$ if $\beta_{k,i}\ne 0$.  Use $\mathcal{C}=\{0
 
 Call $\mathcal{C}^Q$ the set of category vectors.  Each category vector assigns a causal status to each variant.  Assume the causal status of the $Q$ variants are independent and the probabilities of the four possibilities are $p_0,p_1,p_2,p_{1,2}$.
 
-Thus, the prior probability of category vector $c\in\mathcal{C}^Q$ is :
+The prior probability of category vector $c\in\mathcal{C}^Q$ is then:
 
 $$
 \begin{align}
-P(c) = \prod_{i=1}^Q p_{c_i}. \label{P_def}
+P(c) := \prod_{i=1}^Q p_{c_i}. \label{P_def}
 \end{align}
 $$
 
@@ -72,17 +72,17 @@ Conditional on variant $i$ being causal for trait $k$, we assume the following p
 
 $$
 \begin{align}
-$\beta_{k,i}$ | (i \text{ is causal for }$k$) \sim \mathcal{N}(0,\omega_k) \label{effect_prior}
+\beta_{k,i} | (i \text{ is causal for }k) \sim \mathcal{N}(0,\omega_k) \label{effect_prior}
 \end{align}
 $$ 
 
-for $\omega_k>0$.
+for some $\omega_k>0$.
 
 
 ### The single causal variant assumption
 
 
-Let $\mathcal{A}$ denote the event that at most one variant is causal for each of the two traits.  Define the function $\overline{S}$, whose domain is the set of category vectors corresponding to $\mathcal{A}$.  Define $\overline{S}(c):=(S_1,S_2)$, where $S_1$ is the index of the causal variant for trait 1, or 0 if there is no causal variant, and $S_2$ is the index of the causal variant for trait $2$, or 0 if there is no causal variant. A pair $(S_1,S_2)$ is called a configuration. There are $(Q+1)^2$ configurations.
+Let $\mathcal{A}$ denote the event that at most one variant is causal for each of the two traits.  We next define the function $\overline{S}$, whose domain is the set of category vectors corresponding to $\mathcal{A}$.  Let $\overline{S}(c):=(S_1,S_2)$, where $S_1$ is the index of the causal variant for trait 1, or 0 if trait $1$ has no causal variant, and $S_2$ is the index of the causal variant for trait $2$, or 0 if trait $2$ has no causal variant. A pair $(S_1,S_2)$ is called a configuration. There are $(Q+1)^2$ configurations.
  
 Bayes factor colocalization operates conditional on  $\mathcal{A}$, the assumption that at most one variant is causal.  This assumption is unrealistic for some loci, but permits significant simplification.
 
@@ -94,7 +94,7 @@ We define 5 hypothesis, which partition the configurations:
 
 - $H_0$ corresponds to the configurations $\mathcal{S}_0=\{ (0,0) \}$.  There are no causal variants at the locus.
 - $H_1$ corresponds to the configurations $\mathcal{S}_1=\{ (i,0) : i \ge  1 \}$.  There is a causal variant for trait 1 but not trait 2.
-- $H_2$ corresponds to the configurations $\mathcal{S}_2=\{ (0,j) : j \ge  1 \}$.  There is a causal variant for trait 2 but not trait 1 at the locus.
+- $H_2$ corresponds to the configurations $\mathcal{S}_2=\{ (0,j) : j \ge  1 \}$.  There is a causal variant for trait 2 but not trait 1.
 - $H_3$ corresponds to the configurations $\mathcal{S}_3=\{ (i,j) : i,j \ge  1 ,i\ne j\}$. Both traits have causal variants at the locus, but they are different.
 - $H_4$ corresponds to the configurations $\mathcal{S}_4=\{ (i,i) : i \ge  1\}$. The same variant is causal for both traits.
 
@@ -144,7 +144,7 @@ $$
 &\frac{P(S|\mathcal{A})}{P(S^0|\mathcal{A})}\\
 &=\frac{P(S \cap \mathcal{A}) / P(\mathcal{A})}{P(S^0 \cap \mathcal{A})/ P(\mathcal{A})}\\
 &=\frac{P(S)}{P(S^0)}\\
-&=\frac{P(S)}{p_0^Q} & \text{by \ref{P_def},}\\
+&=\frac{P(S)}{p_0^Q} & \text{by (\ref{P_def}),}\\
 &=\begin{cases}
 1 & h=0\\
 \rho_1 & h=1\\
@@ -287,7 +287,7 @@ By the principles of ordinary linear regression, note that the marginal GWAS reg
 
 $$
 \begin{align}
-\hat\beta_{i}&=\frac{g_{k,i}^T y}{\lVert g_{i}\rVert^2}\\
+\hat\beta_{i}&=\frac{g_{i}^T y}{\lVert g_{i}\rVert^2}\\
 V_{i}&= \frac{\sigma^2}{\lVert g_{i}\rVert^2 } \label{v_rewrite}.
 \end{align}
 $$
@@ -323,12 +323,16 @@ It can be proved by standard integration techniques.
 
 As the name suggests, a central quantity in the study of Bayes factor colocalization is the Bayes factor.  Suppressing the study index $k$ for now, the Bayes factor for variant $i$ is defined as
 
+
 $$
 \begin{align}
 BF(i):=\frac{p(y|S=i)}{p(y|S=0)}
 \end{align}
 $$
-where $p$ denotes probability density, and $\{S=i\}$ is the event that $i$ is the sole causal variant, while $\{s=0\}$ is the event that there are no causal variants.  Note that both these events are subsets of the event $\mathcal{A}$ defined above.
+
+
+
+where $p$ denotes probability density, and $\{S=i\}$ is the event that $i$ is the sole causal variant, while $\{S=0\}$ is the event that there are no causal variants.  Note that both these events are subsets of the event $\mathcal{A}$ defined above.
 
 Define the quantities
 
@@ -375,7 +379,7 @@ $$
 $$
 
 
-To produce an expression for the Bayes factor, we need to integrate the above over all possible values of $\beta_i$, weighting by the prior on $\beta_i$ from $\(ref{effect_prior})$. We can apply the Gaussian integral from $(\ref{gaussian_integral})$ with
+To produce an expression for the Bayes factor, we need to integrate the above over all possible values of $\beta_i$, weighting by the prior on $\beta_i$ from $(\ref{effect_prior})$. We can apply the Gaussian integral from $(\ref{gaussian_integral})$ with
 
 $$
 \begin{align}
@@ -427,6 +431,9 @@ as desired
 
 
 **end of proof**
+
+
+### Interpreting the Bayes Factor
 
 To be continued
 
