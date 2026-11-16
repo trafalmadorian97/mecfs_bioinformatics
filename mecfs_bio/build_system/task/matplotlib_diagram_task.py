@@ -36,9 +36,19 @@ class MatplotlibDiagramTask(GeneratingTask):
     Builds a matplotlib figure and saves it as an SVG diagram.
 
     Text is written as paths (svg.fonttype = path), so the SVG renders
-    identically without the fonts installed. The creation date is omitted and
-    the SVG element ids are salted with the asset id, so rebuilding unchanged
-    code yields byte-identical output.
+    identically without the fonts installed.
+
+    By default, matplotlib's SVG output differs from run to run even when the
+    figure is unchanged, for two reasons. First, it records the creation date
+    in the file's metadata. Second, the ids it gives to reusable elements
+    (glyphs, clip paths, markers) are hashes that mix in a random value drawn
+    afresh on every save. Byte-level changes like these would make an unchanged
+    figure look new to anything that compares file contents, such as the
+    figures manifest. This task omits the date (metadata Date = None) and
+    replaces the random value with the asset id (svg.hashsalt), so rebuilding
+    unchanged code yields byte-identical output. Using the asset id rather than
+    one shared constant also keeps ids distinct between different figures, in
+    case several SVGs are inlined into one HTML page, where ids must be unique.
     """
 
     meta: DiagramFileMeta
