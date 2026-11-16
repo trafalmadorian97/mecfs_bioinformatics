@@ -1,4 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_coloc import \
+    RA_SEROPOSITIVE_COLOC_FULL
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_rg import \
     SEROPOSITIVE_RA_PPP_RG_TASKS, SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_standard_analysis import \
@@ -9,19 +11,27 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.raw.download_
     DECODE_SEROPOSITIVE_RA_RAW
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.eur_ld_scores_thousand_genomes_phase_3_v1_consolidated import \
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_CONSOLIDATE
+from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
 
 
 def go():
-    DEFAULT_RUNNER.run(
-        targets=[
-            # SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap
-            # SEROPOSITIVE_RA_PPP_RG_TASKS.rg_task
-            SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED.rg_task
-        ],
-        must_rebuild_transitive=[
-            THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_CONSOLIDATE
-            # SEROPOS_RA_FILTERED_FOR_FREQ,
-        ],
+    # DEFAULT_RUNNER.run(
+    #     targets=[
+    #         # SEROPOSITIVE_RA_STANDARD_ANALYSIS.tasks.heritability_markdown_task_unwrap
+    #         # SEROPOSITIVE_RA_PPP_RG_TASKS.rg_task
+    #         # SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED.rg_task
+    #         RA_SEROPOSITIVE_COLOC_FULL.display_task
+    #     ],
+    #     must_rebuild_transitive=[
+    #         # THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_CONSOLIDATE
+    #         # SEROPOS_RA_FILTERED_FOR_FREQ,
+    #     ],
+    # )
+    regenerate_figures(
+        [
+
+            RA_SEROPOSITIVE_COLOC_FULL.display_task
+        ]
     )
 
 
