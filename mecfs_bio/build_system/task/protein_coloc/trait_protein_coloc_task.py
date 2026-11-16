@@ -82,7 +82,6 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_abf import (
 )
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
     DenseWindowFetcher,
-    LocusWindow,
     ProteinWindowFrames,
     ProteinWindowRequest,
 )
@@ -151,8 +150,10 @@ from mecfs_bio.constants.protein_coloc_constants import (
     STATUS_TESTED,
     WINDOW_SCHEMA,
     WINDOWS_DIRNAME,
+    format_locus_id,
     pair_file_stem,
 )
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 logger = structlog.get_logger()
 
@@ -264,17 +265,18 @@ def _read_table(task: Task, fetch: Fetch) -> pl.DataFrame:
     return lazy.collect()
 
 
-def _locus_window(loci: pl.DataFrame, locus_id: str) -> LocusWindow:
+def _locus_window(loci: pl.DataFrame, locus_id: str) -> GenomicInterval:
     row = loci.filter(pl.col(LOCUS_ID_COL) == locus_id).row(0, named=True)
-    return LocusWindow(
-        locus_id=locus_id,
-        chrom=row[LOCUS_CHR_COL],
-        start=row[LOCUS_START_COL],
-        end=row[LOCUS_END_COL],
+    window = GenomicInterval(
+        chrom=row[LOCUS_CHR_COL], start=row[LOCUS_START_COL], end=row[LOCUS_END_COL]
     )
+    assert format_locus_id(window) == locus_id, (
+        f"locus id {locus_id} does not match its window {window}"
+    )
+    return window
 
 
-def _trait_window(trait: pl.LazyFrame, window: LocusWindow) -> pl.DataFrame:
+def _trait_window(trait: pl.LazyFrame, window: GenomicInterval) -> pl.DataFrame:
     return trait.filter(
         pl.col(GWASLAB_CHROM_COL) == window.chrom,
         pl.col(GWASLAB_POS_COL).is_between(window.start, window.end),
@@ -313,7 +315,7 @@ def _coloc_input(window: pl.DataFrame, trait_model: TraitModel) -> ColocInput:
 
 
 def _orient(
-    rows: pl.DataFrame, window: LocusWindow, reference: _OrientationReference
+    rows: pl.DataFrame, window: GenomicInterval, reference: _OrientationReference
 ) -> OrientedWindow:
     if rows.height == 0:
         return OrientedWindow(frame=WINDOW_SCHEMA.to_frame(), n_input=0, drop_counts={})
@@ -348,7 +350,7 @@ def _protein_lead(window: pl.DataFrame) -> _ProteinLead:
 
 
 def _test_pair(
-    window: LocusWindow,
+    window: GenomicInterval,
     protein_id: str,
     protein_rows: pl.DataFrame,
     trait_rows: pl.DataFrame,
@@ -363,12 +365,13 @@ def _test_pair(
     usable = _usable_variants(aligned.frame)
     lead = _protein_lead(usable)
     enough = usable.height >= min_aligned_variants
+    locus_id = format_locus_id(window)
     if enough:
         usable.write_parquet(
-            windows_dir / f"{pair_file_stem(window.locus_id, protein_id)}.parquet"
+            windows_dir / f"{pair_file_stem(locus_id, protein_id)}.parquet"
         )
     return _PairOutcome(
-        locus_id=window.locus_id,
+        locus_id=locus_id,
         protein_id=protein_id,
         oriented=oriented,
         n_trait=aligned.n_trait,
@@ -397,7 +400,7 @@ def _test_protein(
         _test_pair(
             window=window,
             protein_id=fetched.request.protein_id,
-            protein_rows=fetched.frames.get(window.locus_id, WINDOW_SCHEMA.to_frame()),
+            protein_rows=fetched.frames.get(window, WINDOW_SCHEMA.to_frame()),
             trait_rows=_trait_window(trait, window),
             trait_model=task.trait_model,
             method=task.method,
@@ -414,7 +417,7 @@ def _fetch_requests(
 ) -> list[ProteinWindowRequest]:
     """One request per selected protein, with all its selected windows."""
     selected = ranked.filter(pl.col(STATUS_COL) == STATUS_SELECTED)
-    by_protein: dict[str, list[LocusWindow]] = {}
+    by_protein: dict[str, list[GenomicInterval]] = {}
     for protein_id, locus_id in selected.select(PROTEIN_ID_COL, LOCUS_ID_COL).rows():
         by_protein.setdefault(protein_id, []).append(_locus_window(loci, locus_id))
     return [

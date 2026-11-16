@@ -2,15 +2,15 @@
 The interface between the colocalization Task and a proteomics GWAS source.
 
 The Task hands a DenseWindowFetcher every selected protein with its locus windows, and reads
-back one result per protein, in request order. Fetched frames are in the common window schema
-(WINDOW_SCHEMA, positions in GRCh38) but NOT yet oriented to the reference genome: EA/NEA are
-whatever the source reports, and orientation happens downstream.
+back one result per protein, in request order. A window is a GenomicInterval: a closed GRCh38
+interval [start, end] on chromosome chrom (X coded as 23). Fetched frames are in the common
+window schema (WINDOW_SCHEMA, positions in GRCh38) but NOT yet oriented to the reference
+genome: EA/NEA are whatever the source reports, and orientation happens downstream.
 
-How a source gets its data (concurrency, retries) is its own business. Sources that fetch one
-protein at a time through a ProteinWindowSource can use fetch_proteins_in_parallel, which runs
-up to max_parallel of those single-protein fetches at once, ahead of the consumer, and still
-yields results in request order. A fetch mostly waits on the network, so running several at
-once overlaps the waits.
+Each source has a ProteinWindowReader, which fetches one protein. ParallelWindowFetcher turns
+a reader into a DenseWindowFetcher: it runs up to max_parallel single-protein fetches at
+once, ahead of the consumer, retries transient errors, and still yields results in request
+order. A fetch mostly waits on the network, so running several at once overlaps the waits.
 """
 
 import time
@@ -25,6 +25,7 @@ import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.wf.base_wf import WF
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.util.retry.call_with_retries import call_with_retries
 
 logger = structlog.get_logger()
@@ -34,35 +35,33 @@ _MAX_CHROM = 23
 FETCH_TRANSIENT_ERRORS: tuple[type[Exception], ...] = (OSError,)
 
 
-@frozen(slots=True)
-class LocusWindow:
-    """A closed GRCh38 interval [start, end] on chromosome chrom (X coded as 23)."""
-
-    locus_id: str
-    chrom: int
-    start: int
-    end: int
-
-    def __attrs_post_init__(self) -> None:
-        assert self.start <= self.end, f"window start > end: {self}"
-        assert 1 <= self.chrom <= _MAX_CHROM, f"chromosome out of range: {self}"
+def _check_window(window: GenomicInterval) -> None:
+    assert window.start <= window.end, f"window start > end: {window}"
+    assert 1 <= window.chrom <= _MAX_CHROM, f"chromosome out of range: {window}"
 
 
 @frozen(slots=True)
 class ProteinWindowRequest:
-    """One protein and the locus windows to fetch for it."""
+    """One protein and the distinct locus windows to fetch for it."""
 
     protein_id: str
-    windows: tuple[LocusWindow, ...]
+    windows: tuple[GenomicInterval, ...]
+
+    def __attrs_post_init__(self) -> None:
+        for window in self.windows:
+            _check_window(window)
+        assert len(set(self.windows)) == len(self.windows), (
+            f"duplicate window in request for {self.protein_id}"
+        )
 
 
 @frozen(slots=True)
 class ProteinWindowFrames:
     """The fetched windows of one request: one WINDOW_SCHEMA frame per window, keyed by
-    locus_id."""
+    window."""
 
     request: ProteinWindowRequest
-    frames: dict[str, pl.DataFrame]
+    frames: dict[GenomicInterval, pl.DataFrame]
 
 
 class DenseWindowFetcher(Protocol):
@@ -81,15 +80,15 @@ class DenseWindowFetcher(Protocol):
         ...
 
 
-class ProteinWindowSource(Protocol):
+class ProteinWindowReader(Protocol):
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
-        """Return one WINDOW_SCHEMA frame per window, keyed by locus_id."""
+    ) -> dict[GenomicInterval, pl.DataFrame]:
+        """Return one WINDOW_SCHEMA frame per window, keyed by window."""
         ...
 
 
@@ -98,7 +97,7 @@ class SleepFn(Protocol):
 
 
 def _fetch_with_retries(
-    source: ProteinWindowSource,
+    reader: ProteinWindowReader,
     request: ProteinWindowRequest,
     scratch_dir: Path,
     wf: WF,
@@ -106,7 +105,7 @@ def _fetch_with_retries(
 ) -> ProteinWindowFrames:
     frames = call_with_retries(
         partial(
-            source.fetch_protein, request.protein_id, request.windows, scratch_dir, wf
+            reader.fetch_protein, request.protein_id, request.windows, scratch_dir, wf
         ),
         retry_on=FETCH_TRANSIENT_ERRORS,
         sleep=sleep,
@@ -120,7 +119,7 @@ def _fetch_with_retries(
 
 
 def fetch_proteins_in_parallel(
-    source: ProteinWindowSource,
+    reader: ProteinWindowReader,
     requests: Sequence[ProteinWindowRequest],
     scratch_dir: Path,
     wf: WF,
@@ -128,7 +127,7 @@ def fetch_proteins_in_parallel(
     sleep: SleepFn = time.sleep,
 ) -> Generator[ProteinWindowFrames]:
     """
-    Fetch every request through source, up to max_parallel at once, retrying transient
+    Fetch every request through reader, up to max_parallel at once, retrying transient
     errors (backing off with sleep), and yield the results in request order.
 
     All fetches are queued at once and run ahead of the consumer. Fetched windows are small,
@@ -142,10 +141,38 @@ def fetch_proteins_in_parallel(
     pool = ThreadPoolExecutor(max_workers=max_parallel)
     try:
         futures: list[Future[ProteinWindowFrames]] = [
-            pool.submit(_fetch_with_retries, source, request, scratch_dir, wf, sleep)
+            pool.submit(_fetch_with_retries, reader, request, scratch_dir, wf, sleep)
             for request in requests
         ]
         for future in futures:
             yield future.result()
     finally:
         pool.shutdown(wait=True, cancel_futures=True)
+
+
+@frozen(slots=True)
+class ParallelWindowFetcher:
+    """
+    DenseWindowFetcher over a ProteinWindowReader.
+
+    reader: fetches one protein's windows.
+    max_parallel: how many proteins are fetched at once.
+    """
+
+    reader: ProteinWindowReader
+    max_parallel: int
+
+    def __attrs_post_init__(self) -> None:
+        assert self.max_parallel >= 1, (
+            f"max_parallel must be >= 1, got {self.max_parallel}"
+        )
+
+    def fetch_all(
+        self,
+        requests: Sequence[ProteinWindowRequest],
+        scratch_dir: Path,
+        wf: WF,
+    ) -> Generator[ProteinWindowFrames]:
+        return fetch_proteins_in_parallel(
+            self.reader, requests, scratch_dir, wf, max_parallel=self.max_parallel
+        )

@@ -1,7 +1,7 @@
 """
 Would fetching several proteins' dense windows at once speed up PPP colocalization?
 
-Runs PppWindowFetcher.fetch_protein (production downloader, ranged reads) over batches of 12 proteins
+Runs PppWindowReader.fetch_protein (production downloader, ranged reads) over batches of 12 proteins
 with a thread pool of 1, 2, 4 or 8 workers. Each protein gets one 1 Mb window, on a chromosome
 from a fixed mix of sizes, so every fetch costs what a typical coloc fetch costs: URL lookup,
 tar header walk, then reading and decompressing one chromosome file. Every batch uses
@@ -22,6 +22,7 @@ from pathlib import Path
 
 from attrs import frozen
 
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.asset_generator.ukbb_ppp_slim_protein_asset_generator import (
     EUR_DISCOVERY_PPP_MANIFEST_PATH,
     load_ppp_protein_files,
@@ -29,9 +30,8 @@ from mecfs_bio.asset_generator.ukbb_ppp_slim_protein_asset_generator import (
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
-from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import LocusWindow
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import (
-    PppWindowFetcher,
+from mecfs_bio.build_system.task.protein_coloc.ppp_window_reader import (
+    PppWindowReader,
 )
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
 
@@ -81,27 +81,25 @@ class _BatchResult:
 
 
 def _fetch_one(
-    fetcher: PppWindowFetcher, protein: PppProteinFile, chrom: int, wf: WF
+    reader: PppWindowReader, protein: PppProteinFile, chrom: int, wf: WF
 ) -> int:
-    window = LocusWindow(
-        locus_id="w",
-        chrom=chrom,
+    window = GenomicInterval(chrom=chrom,
         start=_WINDOW_START,
         end=_WINDOW_START + _WINDOW_LENGTH,
     )
     with tempfile.TemporaryDirectory() as scratch:
-        frames = fetcher.fetch_protein(protein.oid, [window], Path(scratch), wf)
-    return frames["w"].height
+        frames = reader.fetch_protein(protein.oid, [window], Path(scratch), wf)
+    return frames[window].height
 
 
 def _run_batch(
     proteins: tuple[PppProteinFile, ...], n_workers: int, wf: WF
 ) -> _BatchResult:
-    fetcher = PppWindowFetcher(proteins=proteins)
+    reader = PppWindowReader(proteins=proteins)
     wall_start, cpu_start = time.monotonic(), time.process_time()
     with _PeakRss() as rss, ThreadPoolExecutor(max_workers=n_workers) as pool:
         heights = list(
-            pool.map(lambda pc: _fetch_one(fetcher, pc[0], pc[1], wf), zip(proteins, _CHROMS))
+            pool.map(lambda pc: _fetch_one(reader, pc[0], pc[1], wf), zip(proteins, _CHROMS))
         )
     return _BatchResult(
         n_workers=n_workers,

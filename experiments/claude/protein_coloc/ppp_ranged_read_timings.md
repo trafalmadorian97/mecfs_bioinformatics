@@ -147,7 +147,7 @@ At about 25 MB of compressed data per protein, 8 parallel fetches every 1.3 s co
 
 ## Implemented: fetch_all
 
-PppWindowFetcher.fetch_all now fetches 4 proteins at once (max_parallel_fetches), through
-fetch_proteins_in_parallel in dense_window_fetch.py; the coloc task no longer fetches one
-protein at a time. verify_ppp_ranged_window_fetch.py checks it live: 6 proteins took 16.1 s
+The PPP coloc fetcher is now a ParallelWindowFetcher (dense_window_fetch.py) over
+PppWindowReader (formerly PppWindowFetcher), fetching PPP_MAX_PARALLEL_FETCHES = 4 proteins at
+once; the coloc task no longer fetches one protein at a time. verify_ppp_ranged_window_fetch.py checks it live: 6 proteins took 16.1 s
 through fetch_all versus 42.7 s one at a time, with identical frames in request order.

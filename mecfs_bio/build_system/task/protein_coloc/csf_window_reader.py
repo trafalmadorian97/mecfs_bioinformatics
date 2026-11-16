@@ -1,7 +1,8 @@
 """
-DenseWindowFetcher for the Western et al. 2024 CSF pQTL GWAS: reads trait-locus windows of one
+ProteinWindowReader for the Western et al. 2024 CSF pQTL GWAS: reads trait-locus windows of one
 aptamer's GWAS Catalog harmonised summary statistics by tabix range requests, without
-downloading the file.
+downloading the file. Wrap it in a ParallelWindowFetcher, CSF_MAX_PARALLEL_FETCHES at once, to
+fetch many aptamers.
 
 Every study has a bgzipped, tabix-indexed GRCh38 harmonised file with a header line and the
 columns in CSF_HARMONISED_COLUMNS. Contigs are "1".."22": there is no chrX, so a window on a
@@ -12,13 +13,13 @@ the reference genome happens downstream, as for every source.
 The tabix index is downloaded into the call's scratch directory and handed to pysam
 explicitly; left to itself, htslib would save every remote index into the process's working
 directory. Failures to download the index (including a stalled connection, after timeout_s)
-or to open or read the source surface as OSError, so fetch_all's retry wrapper retries
+or to open or read the source surface as OSError, so ParallelWindowFetcher retries
 them; a region pysam rejects is a programming error and stays a ValueError, failing at once.
 """
 
 import shutil
 import urllib.request
-from collections.abc import Generator, Sequence
+from collections.abc import Sequence
 from pathlib import Path, PurePosixPath
 from typing import Final, Protocol
 from urllib.parse import urlparse
@@ -33,12 +34,6 @@ from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task im
 from mecfs_bio.build_system.task.csf_database.gwas_catalog_url import (
     gwas_catalog_harmonised_url,
 )
-from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
-    LocusWindow,
-    ProteinWindowFrames,
-    ProteinWindowRequest,
-    fetch_proteins_in_parallel,
-)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.csf_database_constants import GcstAccession
 from mecfs_bio.constants.gwaslab_constants import (
@@ -52,6 +47,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SE_COL,
 )
 from mecfs_bio.constants.protein_coloc_constants import WINDOW_SCHEMA
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 # Column contract of the Western et al. harmonised files (verified 2026-11-05).
 CSF_HARMONISED_COLUMNS: Final = (
@@ -145,13 +141,13 @@ def _rows_to_window_frame(rows: list[list[str]]) -> pl.DataFrame:
     )
 
 
-def _tabix_start(window: LocusWindow) -> int:
+def _tabix_start(window: GenomicInterval) -> int:
     """0-based start of the closed 1-based window, clipped at the chromosome start (a trait
     locus near a chromosome end has a negative start, which pysam rejects)."""
     return max(window.start - 1, 0)
 
 
-def _read_window(tabix: pysam.TabixFile, window: LocusWindow) -> pl.DataFrame:
+def _read_window(tabix: pysam.TabixFile, window: GenomicInterval) -> pl.DataFrame:
     if str(window.chrom) not in set(tabix.contigs):
         return _rows_to_window_frame([])
     # Building the iterator validates the region: a ValueError here is a bad request.
@@ -171,20 +167,23 @@ def _open_tabix(source: str, index: Path) -> pysam.TabixFile:
 
 
 def _fetch_windows(
-    source: str, index: Path, windows: Sequence[LocusWindow]
-) -> dict[str, pl.DataFrame]:
+    source: str, index: Path, windows: Sequence[GenomicInterval]
+) -> dict[GenomicInterval, pl.DataFrame]:
     with _open_tabix(source, index) as tabix:
-        return {window.locus_id: _read_window(tabix, window) for window in windows}
+        return {window: _read_window(tabix, window) for window in windows}
+
+
+# Aptamers are fetched one at a time, sparing the GWAS Catalog server.
+CSF_MAX_PARALLEL_FETCHES = 1
 
 
 @frozen(slots=True)
-class CsfWindowFetcher:
+class CsfWindowReader:
     """
     aptamers: the manifest rows of every aptamer that may be requested, looked up by seq id
         (the coloc protein id).
     resolver: where an aptamer's harmonised file lives; the GWAS Catalog FTP by default.
     index_fetcher: brings the tabix index into the scratch directory.
-    Aptamers are fetched one at a time, sparing the GWAS Catalog server.
     """
 
     aptamers: tuple[CsfAptamerFile, ...]
@@ -196,24 +195,14 @@ class CsfWindowFetcher:
         assert len(matches) == 1, f"expected one manifest row for {protein_id}"
         return matches[0]
 
-    def fetch_all(
-        self,
-        requests: Sequence[ProteinWindowRequest],
-        scratch_dir: Path,
-        wf: WF,
-    ) -> Generator[ProteinWindowFrames]:
-        return fetch_proteins_in_parallel(
-            self, requests, scratch_dir, wf, max_parallel=1
-        )
-
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
-        """One aptamer's windows, keyed by locus_id."""
+    ) -> dict[GenomicInterval, pl.DataFrame]:
+        """One aptamer's windows, keyed by window."""
         aptamer = self._aptamer(protein_id)
         location = self.resolver(aptamer.accession)
         index_dir = scratch_dir / f"tabix_index_{protein_id}"

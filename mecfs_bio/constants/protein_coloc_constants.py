@@ -19,6 +19,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 # Identifier of one protein measurement in a proteomics GWAS, as the coloc layer sees it: the
 # Olink id for UKB-PPP, the SomaScan seq id for the Western et al. CSF aptamers.
@@ -128,6 +129,11 @@ FAILURE_REASON_COL: Final = "FAILURE_REASON"
 # Files inside a colocalization result directory.
 RAW_RESULTS_FILENAME: Final = "raw_results.parquet"
 WINDOWS_DIRNAME: Final = "windows"
+
+
+def format_locus_id(window: GenomicInterval) -> str:
+    """The locus id of a trait locus window, e.g. chr1:1000-2000 (X coded as chr23)."""
+    return f"chr{window.chrom}:{window.start}-{window.end}"
 
 
 def pair_file_stem(locus_id: str, protein_id: str) -> str:

@@ -6,15 +6,16 @@ import polars as pl
 import pytest
 
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
-    LocusWindow,
+    ParallelWindowFetcher,
     ProteinWindowRequest,
     fetch_proteins_in_parallel,
 )
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 _BARRIER_TIMEOUT_SECONDS = 10
 _GATE_RELEASE_SECONDS = 0.2
-_WINDOW = LocusWindow(locus_id="L", chrom=1, start=1, end=100)
+_WINDOW = GenomicInterval(chrom=1, start=1, end=100)
 
 
 def _requests(n: int) -> list[ProteinWindowRequest]:
@@ -23,11 +24,11 @@ def _requests(n: int) -> list[ProteinWindowRequest]:
     ]
 
 
-def _frames_for(protein_id: str) -> dict[str, pl.DataFrame]:
-    return {_WINDOW.locus_id: pl.DataFrame({"protein": [protein_id]})}
+def _frames_for(protein_id: str) -> dict[GenomicInterval, pl.DataFrame]:
+    return {_WINDOW: pl.DataFrame({"protein": [protein_id]})}
 
 
-class _FakeSource:
+class _FakeReader:
     """
     barrier: when given, every fetch waits on it, so fetches complete only if that many run
         at once.
@@ -51,10 +52,10 @@ class _FakeSource:
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
+    ) -> dict[GenomicInterval, pl.DataFrame]:
         with self._condition:
             self.calls.append(protein_id)
             n_calls = self.calls.count(protein_id)
@@ -79,10 +80,10 @@ def _no_sleep(seconds: float) -> None:
 
 
 def _fetch_all(
-    source: _FakeSource, requests: list[ProteinWindowRequest], max_parallel: int
+    reader: _FakeReader, requests: list[ProteinWindowRequest], max_parallel: int
 ) -> list[str]:
     results = fetch_proteins_in_parallel(
-        source,
+        reader,
         requests,
         Path("unused"),
         make_wf(),
@@ -94,29 +95,29 @@ def _fetch_all(
 
 def test_fetches_run_at_once_up_to_max_parallel() -> None:
     requests = _requests(3)
-    source = _FakeSource(barrier=threading.Barrier(3, timeout=_BARRIER_TIMEOUT_SECONDS))
-    assert _fetch_all(source, requests, max_parallel=3) == ["P0", "P1", "P2"]
+    reader = _FakeReader(barrier=threading.Barrier(3, timeout=_BARRIER_TIMEOUT_SECONDS))
+    assert _fetch_all(reader, requests, max_parallel=3) == ["P0", "P1", "P2"]
 
 
 def test_results_come_in_request_order_when_fetches_finish_out_of_order() -> None:
     requests = _requests(3)
-    source = _FakeSource(release_order=["P2", "P0", "P1"])
+    reader = _FakeReader(release_order=["P2", "P0", "P1"])
     results = list(
         fetch_proteins_in_parallel(
-            source, requests, Path("unused"), make_wf(), max_parallel=3
+            reader, requests, Path("unused"), make_wf(), max_parallel=3
         )
     )
     assert [r.request for r in results] == requests
-    assert [r.frames["L"]["protein"].item() for r in results] == ["P0", "P1", "P2"]
+    assert [r.frames[_WINDOW]["protein"].item() for r in results] == ["P0", "P1", "P2"]
 
 
 def test_transient_errors_are_retried() -> None:
-    source = _FakeSource(n_failures_before_success=1)
-    assert _fetch_all(source, _requests(2), max_parallel=1) == ["P0", "P1"]
-    assert sorted(source.calls) == ["P0", "P0", "P1", "P1"]
+    reader = _FakeReader(n_failures_before_success=1)
+    assert _fetch_all(reader, _requests(2), max_parallel=1) == ["P0", "P1"]
+    assert sorted(reader.calls) == ["P0", "P0", "P1", "P1"]
 
 
-class _GatedSource:
+class _GatedReader:
     """Fetches of gated_protein block until gate is set; other fetches return at once."""
 
     def __init__(self, gated_protein: str) -> None:
@@ -127,10 +128,10 @@ class _GatedSource:
     def fetch_protein(
         self,
         protein_id: str,
-        windows: Sequence[LocusWindow],
+        windows: Sequence[GenomicInterval],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
+    ) -> dict[GenomicInterval, pl.DataFrame]:
         self.calls.append(protein_id)
         if protein_id == self.gated_protein:
             assert self.gate.wait(timeout=_BARRIER_TIMEOUT_SECONDS)
@@ -139,20 +140,27 @@ class _GatedSource:
 
 def test_closing_early_cancels_fetches_not_yet_started() -> None:
     # One worker: P1 runs (blocked on the gate) while P2-P4 wait in the queue.
-    source = _GatedSource(gated_protein="P1")
+    reader = _GatedReader(gated_protein="P1")
     results = fetch_proteins_in_parallel(
-        source, _requests(5), Path("unused"), make_wf(), max_parallel=1
+        reader, _requests(5), Path("unused"), make_wf(), max_parallel=1
     )
     assert next(results).request.protein_id == "P0"
     # Release P1 shortly after close() has cancelled the queue, so close() can finish.
-    release = threading.Timer(_GATE_RELEASE_SECONDS, source.gate.set)
+    release = threading.Timer(_GATE_RELEASE_SECONDS, reader.gate.set)
     release.start()
     results.close()
     release.join()
-    assert source.calls == ["P0", "P1"]
+    assert reader.calls == ["P0", "P1"]
 
 
 def test_duplicate_proteins_are_rejected() -> None:
     requests = _requests(1) * 2
     with pytest.raises(AssertionError):
-        _fetch_all(_FakeSource(), requests, max_parallel=1)
+        _fetch_all(_FakeReader(), requests, max_parallel=1)
+
+
+def test_parallel_window_fetcher_fetches_through_its_reader() -> None:
+    requests = _requests(3)
+    fetcher = ParallelWindowFetcher(reader=_FakeReader(), max_parallel=2)
+    results = list(fetcher.fetch_all(requests, Path("unused"), make_wf()))
+    assert [r.frames[_WINDOW]["protein"].item() for r in results] == ["P0", "P1", "P2"]

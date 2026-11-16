@@ -52,6 +52,14 @@ class _HopReader:
     buffer: bytes = b""
 
     def read(self, offset: int, length: int) -> bytes:
+        """
+        Return length bytes of the archive starting at offset.
+
+        Served from the buffer when it covers the request. Otherwise one range read refills
+        the buffer from offset, fetching at least _HOP_BYTES, so that small reads which
+        follow (e.g. a GNU long-name entry, then the header it names) need no further
+        request. Asserts if the archive ends before offset + length.
+        """
         buffer_end = self.buffer_start + len(self.buffer)
         if not (self.buffer_start <= offset and offset + length <= buffer_end):
             self.buffer_start = offset
