@@ -8,7 +8,7 @@ stored swapped, so orientation has to fix them. OID2 is served with too few rows
 OID3 is a weak candidate that the pair budget leaves out.
 """
 
-from collections.abc import Sequence
+from collections.abc import Generator, Sequence
 from pathlib import Path, PurePath
 
 import numpy as np
@@ -54,11 +54,14 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_abf import (
 from mecfs_bio.build_system.task.protein_coloc.csf_gene_coords_reader import (
     CsfGeneCoordsReader,
 )
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    ProteinWindowFrames,
+    ProteinWindowRequest,
+)
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
     St3GeneCoordsReader,
 )
-from mecfs_bio.build_system.task.protein_coloc.ppp_window_fetcher import LocusWindow
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
     ProteinHitTableTask,
 )
@@ -211,28 +214,32 @@ def _swap_every_other_row(frame: pl.DataFrame) -> pl.DataFrame:
 
 
 class _FakeFetcher:
-    """Serves prepared dense protein data and counts fetches per protein."""
+    """Serves prepared dense protein data, one protein at a time, and counts fetches per
+    protein."""
 
     def __init__(self, dense: dict[str, pl.DataFrame]) -> None:
         self.dense = dense
         self.calls: dict[str, int] = {}
 
-    def fetch(
+    def fetch_all(
         self,
-        protein_id: str,
-        windows: Sequence[LocusWindow],
+        requests: Sequence[ProteinWindowRequest],
         scratch_dir: Path,
         wf: WF,
-    ) -> dict[str, pl.DataFrame]:
-        self.calls[protein_id] = self.calls.get(protein_id, 0) + 1
-        frame = self.dense[protein_id]
-        return {
-            w.locus_id: frame.filter(
-                pl.col(GWASLAB_CHROM_COL) == w.chrom,
-                pl.col(GWASLAB_POS_COL).is_between(w.start, w.end),
+    ) -> Generator[ProteinWindowFrames]:
+        for request in requests:
+            self.calls[request.protein_id] = self.calls.get(request.protein_id, 0) + 1
+            frame = self.dense[request.protein_id]
+            yield ProteinWindowFrames(
+                request=request,
+                frames={
+                    w: frame.filter(
+                        pl.col(GWASLAB_CHROM_COL) == w.chrom,
+                        pl.col(GWASLAB_POS_COL).is_between(w.start, w.end),
+                    )
+                    for w in request.windows
+                },
             )
-            for w in windows
-        }
 
 
 def _hit_segments() -> pl.DataFrame:
