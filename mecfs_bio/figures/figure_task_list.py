@@ -222,8 +222,9 @@ from mecfs_bio.assets.gwas.myocardial_infarction.analysis.mi_ppp_rg import (
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seronegative.analysis.ra_seronegative_standard_analysis import (
     SERONEGATIVE_RA_STANDARD_ANALYSIS,
 )
-from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_coloc import \
-    RA_SEROPOSITIVE_COLOC_FULL
+from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_coloc import (
+    RA_SEROPOSITIVE_COLOC_FULL,
+)
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_seropositive_ppp_rg import (
     SEROPOSITIVE_RA_PPP_RG_TASKS_CIS_EXCLUDED,
 )
