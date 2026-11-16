@@ -347,7 +347,7 @@ The following result is key:
 
 $$
 \begin{align}
-BF(i)&=\sqrt{1-r_i}\exp \left( \frac{r_i z_i^2}{2} \right).
+BF(i)&=\sqrt{1-r_i}\exp \left( \frac{r_i z_i^2}{2} \right). \label{bf_formula}
 \end{align}
 $$
 
@@ -435,8 +435,18 @@ as desired
 
 ### Interpreting the Bayes Factor
 
-To be continued
+The plot below shows the relationship between the p value of a GWAS variant and the Bayes factor given by $(\ref{bf_formula})$ for a few different values of $\hat\beta$.
 
+{{
+static_img_embed("docs/_figs/coloc_bf_vs_pvalue_diagram.svg",alt="image illustrating relationship between p values and Bayes factors", width="100%")
+}}
+
+
+Notable points from the plot:
+
+- In slope of the $\log\mathrm{BF}$ versus $-\log p$ curve approaches 1 as sample size grows.
+- However,  $\log\mathrm{BF}$ is not monotonic in $-\log p$.  Initially, $BF$ actually declines as $p$ shrinks.  This effect can be understood as follows when the data weights against the alternative hypothesis, the alternative hypothesis is more likely at a small sample size (when the data may be unreliable) than at a moderate sample size.
+- $\mathrm{BF}$ is not monotonic in $\hat\beta$
 
 ## SUSIE colocalization
 
