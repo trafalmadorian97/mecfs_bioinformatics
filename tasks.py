@@ -12,7 +12,9 @@ import re
 import shutil
 import subprocess
 import sys
-from pathlib import Path
+from collections.abc import Sequence
+from pathlib import Path, PurePath
+from typing import TYPE_CHECKING
 
 import yaml
 from invoke import Context, task
@@ -23,6 +25,15 @@ from mecfs_bio.util.link_check_streak import (
     read_lychee_report,
     update_streaks,
 )
+from mecfs_bio.util.subproc.rsync_output import is_permission_only_partial_transfer
+
+if TYPE_CHECKING:
+    from mecfs_bio.build_system.rebuilder.metadata_to_path.remap_globs import (
+        StoreMove,
+    )
+    from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
+        PathRemapRule,
+    )
 
 NEW_UNIT_TEST_PATH = Path("test_mecfs_bio/unit")
 SRC_PATH = Path("mecfs_bio")
@@ -626,7 +637,9 @@ def build_docs(c: Context) -> None:
 # Windows drives mounted in WSL) that reject utime and chmod, which makes a metadata
 # preserving copy fail after the data has already been transferred.  Asset integrity is
 # tracked by the build system's verifying trace, not by filesystem metadata.  --size-only
-# then keeps a re-run cheap despite the missing timestamps.
+# then keeps a re-run cheap despite the missing timestamps.  Even so, rsync 3.5.x still
+# reports the refused chmod of each new file and exits 23; _run_store_moves tolerates
+# exactly that case, see the rsync_output module.
 _RSYNC_ARGS = (
     "-r --size-only --no-perms --no-times --no-group --no-owner "
     "--human-readable --info=progress2"
@@ -642,102 +655,61 @@ def _dir_size(path: Path) -> str:
     return result.stdout.split("\t")[0]
 
 
-@task(
-    help={
-        "execute": "Actually move data.  Without this the task only reports what it would do.",
-        "reverse": "Move data back from the remap roots to the default asset root.  Run this BEFORE deleting a rule from the config, since the task only knows about subtrees the config still declares.",
-        "only": "Restrict the run to configured prefixes containing this substring, so a large migration can be staged one subtree at a time without editing the config.",
-    }
-)
-def migrate_asset_store(
-    c: Context, execute: bool = False, reverse: bool = False, only: str | None = None
-) -> None:
+def _run_store_moves(
+    c: Context, moves: Sequence["StoreMove"], execute: bool
+) -> set[PurePath]:
     """
-    Reconcile the asset store on disk with the path_remap rules in
-    default_runner_config.yaml.
+    Print what each StoreMove in moves would do and, if execute, carry it out by copying
+    with rsync, verifying the copy, and only then deleting the source.  Shared by
+    migrate-asset-store and reconcile-globs so both move data with the same safeguards.
 
-    Remapping where an asset lives does not invalidate its verifying trace, because traces
-    are content hashes and carry no location.  Changing the config without moving the data
-    does, however, hide the existing assets from the build system, which then rebuilds them
-    at the new location while the old copy keeps occupying the disk.  This task performs
-    that move.
-
-    It is a dry run by default, since a single invocation can move tens of gigabytes.  Pass
-    --execute to do the work, --only to stage a large migration one subtree at a time, or
-    --reverse --execute to bring a subtree back to the default root.
+    Returns the prefixes whose data did not end up at the destination: those present under
+    both roots, and those whose copy could not be verified.  reconcile-globs uses this to
+    record failed subtrees where their data still is.  A prefix with no data at the source, or already at the
+    destination, counts as done.  In a dry run nothing is moved and nothing is reported as
+    failed.
 
     A subtree that is present under BOTH roots is reported and skipped: the two copies may
     have diverged, and picking a winner is not something this task should decide.
     """
-    # Imported here rather than at module scope because importing the default runner takes
-    # ~1.5s and has side effects: it reads default_runner_config.yaml, logs it, and stats
-    # the asset store to warn about unmigrated subtrees.  tasks.py is the entry point for
-    # every repo command, so at module scope that noise and delay would land on unrelated
-    # ones like `invoke format`.
-    from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
-    from mecfs_bio.build_system.runner.check_roots_available import (
-        RemapRootUnavailableError,
-        check_remap_roots_available,
-    )
-
-    asset_root = DEFAULT_RUNNER.asset_root
-    rules = DEFAULT_RUNNER.path_remap
-    if not rules:
-        print("No path_remap rules configured; nothing to migrate.")
-        return
-
-    # Checked here as well as in the runner, and before rsync gets a chance to mkdir the
-    # destination.  Copying to an absent remap root would materialize it on the local disk,
-    # after which it exists and the runner's identical check passes forever, sending the
-    # very assets this task moves back onto the disk being relieved.
-    try:
-        check_remap_roots_available(rules)
-    except RemapRootUnavailableError as error:
-        print(error)
-        sys.exit(1)
-
-    print(f"default asset root: {asset_root}")
-    print(f"mode: {'REVERSE (remap root -> default)' if reverse else 'remap'}")
-    if not execute:
-        print("DRY RUN -- pass --execute to actually move data.\n")
-
-    if only is not None:
-        print(f"restricted to prefixes containing: {only}")
-
-    planned: list[tuple[Path, Path]] = []
-    for rule in rules:
-        for prefix in rule.prefixes:
-            if only is not None and only not in str(prefix):
-                continue
-            default_side = asset_root / prefix
-            remap_side = rule.root / prefix
-            src, dst = (
-                (remap_side, default_side) if reverse else (default_side, remap_side)
+    failed: set[PurePath] = set()
+    planned: list[tuple[PurePath, Path, Path]] = []
+    for move in moves:
+        src = move.source_root / move.prefix
+        dst = move.dest_root / move.prefix
+        if src.exists() and dst.exists():
+            print(
+                f"  DIVERGED {move.prefix}: present under both {src} and {dst}.  "
+                f"Skipping -- resolve by hand."
             )
-            if src.exists() and dst.exists():
-                print(
-                    f"  DIVERGED {prefix}: present under both {src} and {dst}.  "
-                    f"Skipping -- resolve by hand."
-                )
-                continue
-            if not src.exists():
-                status = "already in place" if dst.exists() else "no data"
-                print(f"  SKIP     {prefix}: {status}.")
-                continue
-            print(f"  MOVE     {prefix} ({_dir_size(src)}): {src} -> {dst}")
-            planned.append((src, dst))
+            failed.add(move.prefix)
+            continue
+        if not src.exists():
+            status = "already in place" if dst.exists() else "no data"
+            print(f"  SKIP     {move.prefix}: {status}.")
+            continue
+        print(f"  MOVE     {move.prefix} ({_dir_size(src)}): {src} -> {dst}")
+        planned.append((move.prefix, src, dst))
 
     if not planned:
-        print("\nNothing to do.")
-        return
+        print("\nNo data to move.")
+        return failed
     if not execute:
         print(f"\n{len(planned)} subtree(s) would be moved.  Re-run with --execute.")
-        return
+        return failed
 
-    for src, dst in planned:
+    for prefix, src, dst in planned:
         print(f"\nmoving {src} -> {dst}")
         dst.parent.mkdir(parents=True, exist_ok=True)
-        c.run(f'rsync {_RSYNC_ARGS} "{src}/" "{dst}/"', pty=True)
+        copy = c.run(f'rsync {_RSYNC_ARGS} "{src}/" "{dst}/"', pty=True, warn=True)
+        if copy.exited != 0 and not is_permission_only_partial_transfer(
+            exit_code=copy.exited, output=copy.stdout
+        ):
+            print(
+                f"REFUSING to delete {src}: rsync failed with exit code {copy.exited}."
+            )
+            failed.add(prefix)
+            continue
         # Confirm the copy is complete before deleting anything.  A second pass that
         # reports no remaining transfers is the check.
         verify = c.run(
@@ -752,11 +724,188 @@ def migrate_asset_store(
                 f"REFUSING to delete {src}: {len(remaining)} file(s) still differ after "
                 f"the copy.  First few: {remaining[:5]}"
             )
+            failed.add(prefix)
             continue
         shutil.rmtree(src)
         print(f"moved and removed source {src}")
+    return failed
 
-    print("\nDone.  Re-run without --execute to confirm the store is consistent.")
+
+@task(
+    help={
+        "execute": "Actually move data.  Without this the task only reports what it would do.",
+        "reverse": "Move data back from the remap roots to the default asset root.  Run this BEFORE deleting a literal prefix from the config, since the task only knows about subtrees the config still declares.  To undo a glob, delete it and run reconcile-globs instead.",
+        "only": "Restrict the run to configured prefixes containing this substring, so a large migration can be staged one subtree at a time without editing the config.",
+        "glob": "Restrict the run to the recorded expansions of this exact glob pattern, as written in the config.",
+    }
+)
+def migrate_asset_store(
+    c: Context,
+    execute: bool = False,
+    reverse: bool = False,
+    only: str | None = None,
+    glob: str | None = None,
+) -> None:
+    """
+    Reconcile the asset store on disk with the path_remap rules in
+    default_runner_config.yaml, including the glob expansions recorded by reconcile-globs.
+
+    Remapping where an asset lives does not invalidate its verifying trace, because traces
+    are content hashes and carry no location.  Changing the config without moving the data
+    does, however, hide the existing assets from the build system, which then rebuilds them
+    at the new location while the old copy keeps occupying the disk.  This task performs
+    that move.
+
+    It is a dry run by default, since a single invocation can move tens of gigabytes.  Pass
+    --execute to do the work, --only or --glob to stage a large migration one subtree at a
+    time, or --reverse --execute to bring a subtree back to the default root.
+    """
+    # Imported here rather than at module scope because importing the default runner takes
+    # ~1.5s and has side effects: it reads default_runner_config.yaml, logs it, and stats
+    # the asset store to warn about unmigrated subtrees.  tasks.py is the entry point for
+    # every repo command, so at module scope that noise and delay would land on unrelated
+    # ones like `invoke format`.
+    from mecfs_bio.analysis.runner.default_runner import (
+        DEFAULT_RUNNER,
+        GLOB_EXPANSIONS_PATH,
+    )
+    from mecfs_bio.build_system.rebuilder.metadata_to_path.remap_globs import (
+        StoreMove,
+        read_glob_expansions,
+    )
+
+    asset_root = DEFAULT_RUNNER.asset_root
+    rules = DEFAULT_RUNNER.path_remap
+    if not rules:
+        print("No path_remap rules configured; nothing to migrate.")
+        return
+    _exit_if_remap_roots_unavailable(rules)
+
+    print(f"default asset root: {asset_root}")
+    print(f"mode: {'REVERSE (remap root -> default)' if reverse else 'remap'}")
+    if not execute:
+        print("DRY RUN -- pass --execute to actually move data.\n")
+    if only is not None:
+        print(f"restricted to prefixes containing: {only}")
+    glob_prefixes: set[PurePath] | None = None
+    if glob is not None:
+        print(f"restricted to expansions of glob: {glob}")
+        glob_prefixes = {
+            prefix
+            for expansion in read_glob_expansions(GLOB_EXPANSIONS_PATH)
+            if expansion.pattern == glob
+            for prefix in expansion.prefixes
+        }
+
+    moves = [
+        StoreMove(
+            prefix=prefix,
+            source_root=rule.root if reverse else asset_root,
+            dest_root=asset_root if reverse else rule.root,
+        )
+        for rule in rules
+        for prefix in rule.prefixes
+        if (only is None or only in str(prefix))
+        and (glob_prefixes is None or prefix in glob_prefixes)
+    ]
+    failed = _run_store_moves(c, moves, execute=execute)
+    if failed:
+        print(f"\n{len(failed)} subtree(s) were not moved: {sorted(map(str, failed))}")
+    if execute:
+        print("\nDone.  Re-run without --execute to confirm the store is consistent.")
+
+
+@task(
+    help={
+        "execute": "Actually move data and record the new expansions.  Without this the task only reports what it would do.",
+    }
+)
+def reconcile_globs(c: Context, execute: bool = False) -> None:
+    """
+    Expand the globs in the path_remap section of default_runner_config.yaml into literal
+    prefixes, move the data so that it matches, and record the expansions in the generated
+    file read by the runner.
+
+    Run it after adding, narrowing, widening or removing a glob, and periodically to pick
+    up assets built since the last run, which land on the default root.  Removing a glob
+    and reconciling moves its data back to the default root, so unlike a literal prefix
+    there is no need to reverse-migrate first.
+
+    It is a dry run by default.  A subtree whose move is skipped or fails stays recorded
+    where its data actually is, so re-running after fixing the cause picks it up.
+    """
+    from mecfs_bio.analysis.runner.default_runner import (
+        DEFAULT_RUNNER,
+        GLOB_EXPANSIONS_PATH,
+        get_path_remap_entries,
+    )
+    from mecfs_bio.build_system.rebuilder.metadata_to_path.remap_globs import (
+        globs_from_config,
+        plan_glob_reconcile,
+        read_glob_expansions,
+        rules_with_expansions,
+        write_glob_expansions,
+    )
+    from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
+        PathRemapRule,
+    )
+
+    asset_root = DEFAULT_RUNNER.asset_root
+    entries = get_path_remap_entries()
+    literal_rules = PathRemapRule.tuple_from_config(entries)
+    plan = plan_glob_reconcile(
+        asset_root=asset_root,
+        literal_rules=literal_rules,
+        globs=globs_from_config(entries),
+        previous=read_glob_expansions(GLOB_EXPANSIONS_PATH),
+    )
+    _exit_if_remap_roots_unavailable(
+        rules_with_expansions(
+            literal_rules=literal_rules, expansions=plan.previous + plan.expansions
+        )
+    )
+
+    print(f"default asset root: {asset_root}")
+    if not execute:
+        print("DRY RUN -- pass --execute to actually move data.\n")
+    for expansion in plan.expansions:
+        print(
+            f"glob {expansion.pattern} -> {expansion.root}: "
+            f"{len(expansion.prefixes)} prefix(es)"
+        )
+    print()
+    failed = _run_store_moves(c, plan.moves, execute=execute)
+    if not execute:
+        return
+    write_glob_expansions(GLOB_EXPANSIONS_PATH, plan.expansions_after(failed))
+    print(f"\nRecorded glob expansions in {GLOB_EXPANSIONS_PATH}.")
+    if failed:
+        print(
+            f"{len(failed)} subtree(s) were not moved and stay recorded where their data "
+            f"is: {sorted(map(str, failed))}"
+        )
+
+
+def _exit_if_remap_roots_unavailable(rules: Sequence["PathRemapRule"]) -> None:
+    """
+    Print the error and exit if any root in rules is missing, for example because the
+    external drive is not mounted.
+
+    Checked here as well as in the runner, and before rsync gets a chance to mkdir the
+    destination.  Copying to an absent remap root would materialize it on the local disk,
+    after which it exists and the runner's identical check passes forever, sending the
+    very assets this task moves back onto the disk being relieved.
+    """
+    from mecfs_bio.build_system.runner.check_roots_available import (
+        RemapRootUnavailableError,
+        check_remap_roots_available,
+    )
+
+    try:
+        check_remap_roots_available(rules)
+    except RemapRootUnavailableError as error:
+        print(error)
+        sys.exit(1)
 
 
 # initialization
