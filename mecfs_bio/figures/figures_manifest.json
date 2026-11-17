@@ -132,6 +132,7 @@
     "decode_ra_seronegative_ldsc_heritability_markdown.mdx": "aa1ffde954d4a4da4057204cd76ebd27106f1a5064e65f93c8b66162193474de",
     "decode_ra_seronegative_magma_bar_plot/magma_gene_set_plot.html": "a7a9bb6517eca4c94db1aad2fe24bed2c72c483400601991c8c99e7b2e7c17b3",
     "decode_ra_seronegative_magma_gene_manhattan_plot.html": "3859586248bc88c3881ed7ab1cab9dbfa0062165109175255c4a03e9992951d3",
+    "decode_ra_seropositive_2000_ppp_coloc_display.parquet": "fcc213051805b4390e3163537408643fa7a5218cb28e165e074d57986f12ac4c",
     "decode_ra_seropositive_cahoy_cns_s_ldsc_cell_analysis_md_table_vec.mdx": "490cbbcbdb5d1765a60cb1b5a7669a5d2b01295c84bd3004e530c5497920a7c8",
     "decode_ra_seropositive_corces_atac_s_ldsc_cell_analysis_md_table_vec.mdx": "0a94bf3c87f607dbd4864ae0fc1e311cdc047f4b308a8c52e639524fbbc21213",
     "decode_ra_seropositive_gtex_brain_s_ldsc_cell_analysis_md_table_vec.mdx": "1eaa19546f38b65f7d79a590f42ecd3917fed8366ac41cf139d9637c149364a7",

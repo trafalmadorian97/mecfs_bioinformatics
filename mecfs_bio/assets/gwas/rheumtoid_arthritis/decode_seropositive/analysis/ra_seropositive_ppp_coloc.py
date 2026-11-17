@@ -7,10 +7,28 @@ from mecfs_bio.asset_generator.ppp_coloc_asset_generator import generate_ppp_col
 from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.processed.ra_seropositive_build_38_harmonized import (
     SEROPOS_RA_BUILD_38_HARMONIZED,
 )
+from mecfs_bio.build_system.task.protein_coloc.candidate_selection import (
+    SelectionConfig,
+)
 from mecfs_bio.build_system.task.protein_coloc.coloc_abf import CaseControlTraitModel
+from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
+    ColocRunConfig,
+)
 
 RA_SEROPOSITIVE_PPP_COLOC = generate_ppp_coloc_tasks(
     base_name="decode_ra_seropositive",
     trait_task=SEROPOS_RA_BUILD_38_HARMONIZED,
     trait_model=CaseControlTraitModel(case_fraction=0.5),
+)
+
+RA_SEROPOSITIVE_COLOC_FULL = generate_ppp_coloc_tasks(
+    base_name="decode_ra_seropositive_2000",
+    trait_task=SEROPOS_RA_BUILD_38_HARMONIZED,
+    trait_model=CaseControlTraitModel(
+        case_fraction=0.5,
+    ),
+    config=ColocRunConfig(
+        exclude_mhc=True,
+        selection=SelectionConfig(max_pairs=2000, max_per_locus=30),
+    ),
 )

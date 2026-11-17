@@ -424,6 +424,7 @@ def define_env(env: MacrosPlugin) -> None:
             page_size=page_size,
             precision=precision,
             caption=PROTEIN_COLOC_RESULTS_TABLE_CAPTION,
+            hidden_columns=[DISPLAY_LEAD_VARIANT_COL],
         )
 
     @env.macro
@@ -882,7 +883,7 @@ PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
             DISPLAY_PROTEIN_COL: "name of the protein",
             DISPLAY_ASSAY_ID_COL: "ID of proteomic assay",
             DISPLAY_LOCUS_COL: "genomic interval used for colocalization",
-            DISPLAY_LEAD_VARIANT_COL: "most significant trait variant in locus",
+            # DISPLAY_LEAD_VARIANT_COL: "most significant trait variant in locus",
             DISPLAY_CIS_STATUS_COL: "cis means the locus is within 1 Mb of the gene coding for the protein.  Trans means the locus is more than 1Mb from that gene.  Unknown means data required to make this determination is missing",
             DISPLAY_PP_H4_COL: "posterior probability that the trait and protein GWAS share a causal variant at the locus.  Note that this is prior-dependent",
             DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",

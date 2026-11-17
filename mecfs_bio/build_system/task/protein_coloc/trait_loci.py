@@ -43,6 +43,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     STATUS_CANDIDATE,
     STATUS_COL,
     STATUS_EXCLUDED_MHC,
+    format_locus_id,
 )
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
@@ -165,7 +166,9 @@ def find_trait_loci(
     return pl.DataFrame(
         [
             {
-                LOCUS_ID_COL: f"chr{lead.chrom}:{lead.start}-{lead.end}",
+                LOCUS_ID_COL: format_locus_id(
+                    GenomicInterval(chrom=lead.chrom, start=lead.start, end=lead.end)
+                ),
                 LOCUS_CHR_COL: lead.chrom,
                 LOCUS_START_COL: lead.start,
                 LOCUS_END_COL: lead.end,
