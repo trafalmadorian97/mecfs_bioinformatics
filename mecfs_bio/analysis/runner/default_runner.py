@@ -14,6 +14,9 @@ so a config may set only the ones it wants to change:
                  the schema and for guidance on which subtrees are worth remapping.  Every
                  configured root must be present when a run starts, so a detached drive
                  aborts the run instead of silently rebuilding its assets elsewhere.
+                 Entries may also list globs, which take effect only once the
+                 reconcile-globs invoke command has expanded them into the generated file
+                 GLOB_EXPANSIONS_PATH; see the remap_globs module.
 """
 
 import functools
@@ -22,6 +25,10 @@ from pathlib import Path
 import structlog
 import yaml
 
+from mecfs_bio.build_system.rebuilder.metadata_to_path.remap_globs import (
+    read_glob_expansions,
+    rules_with_expansions,
+)
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path import (
     PathRemapRule,
 )
@@ -42,6 +49,10 @@ logger = structlog.get_logger(__name__)
 
 CONFIG_FILE_NAME = "default_runner_config.yaml"
 _DEFAULT_RUNNER_CONFIG_PATH = Path(CONFIG_FILE_NAME)
+# Written by the reconcile-globs invoke command and gitignored, because it describes where
+# data sits on this machine.
+GLOB_EXPANSIONS_FILE_NAME = "path_remap_glob_expansions.yaml"
+GLOB_EXPANSIONS_PATH = Path(GLOB_EXPANSIONS_FILE_NAME)
 
 _ASSET_ROOT_KEY = "asset_root"
 _INFO_STORE_KEY = "info_store"
@@ -78,11 +89,28 @@ def _get_info_store_path() -> Path:
     return Path(config[_INFO_STORE_KEY])
 
 
-def get_path_remap_rules() -> tuple[PathRemapRule, ...]:
+def get_path_remap_entries() -> list[dict]:
+    """
+    Return the path_remap section of the runner config as parsed yaml, or an empty list
+    if the config has none.  Both the literal prefixes and the globs are read from it, so
+    callers that need both parse this once rather than loading the config twice.
+    """
     config = load_runner_config()
     if config is None or _PATH_REMAP_KEY not in config:
-        return ()
-    return PathRemapRule.tuple_from_config(config[_PATH_REMAP_KEY])
+        return []
+    return config[_PATH_REMAP_KEY]
+
+
+def get_path_remap_rules() -> tuple[PathRemapRule, ...]:
+    """
+    Return the rules the runner routes assets by: the literal prefixes from the config
+    plus the prefixes that reconcile-globs recorded for globs.  The globs themselves are
+    not used here, because a glob only moves data once reconcile-globs has run.
+    """
+    return rules_with_expansions(
+        literal_rules=PathRemapRule.tuple_from_config(get_path_remap_entries()),
+        expansions=read_glob_expansions(GLOB_EXPANSIONS_PATH),
+    )
 
 
 DEFAULT_RUNNER = SimpleRunner(
