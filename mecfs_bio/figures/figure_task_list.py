@@ -234,6 +234,9 @@ from mecfs_bio.assets.gwas.rheumtoid_arthritis.decode_seropositive.analysis.ra_s
 from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.pgc2022_ppp_rg import (
     PGC2022_SCH_PPP_RG_CIS_EXCLUDED,
 )
+from mecfs_bio.assets.gwas.schizophrenia.pgc2022.analysis.pgc_2022_ppp_coloc import (
+    PGC2022_PPP_COLOC_FULL,
+)
 from mecfs_bio.assets.gwas.sleep.portas_et_al_2026.analysis.portas_sleep_standard_analysis import (
     PORTAS_SLEEP_DURATION_STANDARD_ANALYSIS,
 )
@@ -553,6 +556,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # PGC 2022 Schizophrenai
     PGC2022_SCH_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    PGC2022_PPP_COLOC_FULL.display_task,
     # asthma
     ASTHMA_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # Fibro
