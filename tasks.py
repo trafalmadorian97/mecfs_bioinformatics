@@ -25,6 +25,7 @@ from mecfs_bio.util.link_check_streak import (
     read_lychee_report,
     update_streaks,
 )
+from mecfs_bio.util.subproc.rsync_output import is_permission_only_partial_transfer
 
 if TYPE_CHECKING:
     from mecfs_bio.build_system.rebuilder.metadata_to_path.remap_globs import (
@@ -636,7 +637,9 @@ def build_docs(c: Context) -> None:
 # Windows drives mounted in WSL) that reject utime and chmod, which makes a metadata
 # preserving copy fail after the data has already been transferred.  Asset integrity is
 # tracked by the build system's verifying trace, not by filesystem metadata.  --size-only
-# then keeps a re-run cheap despite the missing timestamps.
+# then keeps a re-run cheap despite the missing timestamps.  Even so, rsync 3.5.x still
+# reports the refused chmod of each new file and exits 23; _run_store_moves tolerates
+# exactly that case, see the rsync_output module.
 _RSYNC_ARGS = (
     "-r --size-only --no-perms --no-times --no-group --no-owner "
     "--human-readable --info=progress2"
@@ -698,7 +701,15 @@ def _run_store_moves(
     for prefix, src, dst in planned:
         print(f"\nmoving {src} -> {dst}")
         dst.parent.mkdir(parents=True, exist_ok=True)
-        c.run(f'rsync {_RSYNC_ARGS} "{src}/" "{dst}/"', pty=True)
+        copy = c.run(f'rsync {_RSYNC_ARGS} "{src}/" "{dst}/"', pty=True, warn=True)
+        if copy.exited != 0 and not is_permission_only_partial_transfer(
+            exit_code=copy.exited, output=copy.stdout
+        ):
+            print(
+                f"REFUSING to delete {src}: rsync failed with exit code {copy.exited}."
+            )
+            failed.add(prefix)
+            continue
         # Confirm the copy is complete before deleting anything.  A second pass that
         # reports no remaining transfers is the check.
         verify = c.run(
