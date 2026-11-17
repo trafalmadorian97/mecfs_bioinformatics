@@ -656,9 +656,13 @@ def _run_store_moves(
     c: Context, moves: Sequence["StoreMove"], execute: bool
 ) -> set[PurePath]:
     """
-    Report and, if execute, perform a list of StoreMove.  Returns the prefixes whose data
-    did not end up at the destination: those present under both roots, and those whose
-    copy could not be verified.  A prefix with no data at the source, or already at the
+    Print what each StoreMove in moves would do and, if execute, carry it out by copying
+    with rsync, verifying the copy, and only then deleting the source.  Shared by
+    migrate-asset-store and reconcile-globs so both move data with the same safeguards.
+
+    Returns the prefixes whose data did not end up at the destination: those present under
+    both roots, and those whose copy could not be verified.  reconcile-globs uses this to
+    record failed subtrees where their data still is.  A prefix with no data at the source, or already at the
     destination, counts as done.  In a dry run nothing is moved and nothing is reported as
     failed.
 
@@ -845,7 +849,9 @@ def reconcile_globs(c: Context, execute: bool = False) -> None:
         previous=read_glob_expansions(GLOB_EXPANSIONS_PATH),
     )
     _exit_if_remap_roots_unavailable(
-        rules_with_expansions(literal_rules, plan.previous + plan.expansions)
+        rules_with_expansions(
+            literal_rules=literal_rules, expansions=plan.previous + plan.expansions
+        )
     )
 
     print(f"default asset root: {asset_root}")
@@ -871,6 +877,9 @@ def reconcile_globs(c: Context, execute: bool = False) -> None:
 
 def _exit_if_remap_roots_unavailable(rules: Sequence["PathRemapRule"]) -> None:
     """
+    Print the error and exit if any root in rules is missing, for example because the
+    external drive is not mounted.
+
     Checked here as well as in the runner, and before rsync gets a chance to mkdir the
     destination.  Copying to an absent remap root would materialize it on the local disk,
     after which it exists and the runner's identical check passes forever, sending the

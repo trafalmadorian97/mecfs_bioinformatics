@@ -14,9 +14,9 @@ Globs have no effect on where the build system looks for assets.  Only literal p
 do, so lookup stays a cheap in-memory comparison and the overlap check of
 remapping_meta_to_path keeps its guarantee that an asset's location never depends on rule
 order.  A glob takes effect when the reconcile-globs invoke command expands it into
-literal prefixes, moves the matching data, and records the expansion in the generated
-file named by GLOB_EXPANSIONS_FILE_NAME.  The runner merges the recorded expansions into
-the configured prefixes.
+literal prefixes, moves the matching data, and records the expansion in a generated
+expansions file.  The runner merges the recorded expansions into the configured prefixes.
+Where that file lives is decided by the caller, not by this module.
 
 The generated file records where glob-selected data currently lives, not what the config
 asks for.  That is what makes removing a glob safe: until reconcile has moved the data
@@ -44,8 +44,6 @@ from mecfs_bio.build_system.rebuilder.metadata_to_path.remapping_meta_to_path im
     PathRemapRule,
 )
 
-GLOB_EXPANSIONS_FILE_NAME = "path_remap_glob_expansions.yaml"
-
 _ROOT_KEY = "root"
 _GLOBS_KEY = "globs"
 _GLOB_KEY = "glob"
@@ -60,13 +58,24 @@ _GENERATED_FILE_HEADER = (
 
 
 def _has_glob_metacharacter(component: str) -> bool:
+    """
+    Return True if the path component contains a character with special meaning in glob
+    syntax.  Used to split a pattern into the literal directory where expansion can start
+    walking and the wildcard part that has to be searched for.
+    """
     return any(char in _GLOB_METACHARACTERS for char in component)
 
 
 @frozen(slots=True)
 class RemapGlob:
     """
-    A glob pattern whose matching store subtrees should live under root.
+    One glob from the config: every store subtree whose path matches pattern should live
+    under root.
+
+    Construction rejects a pattern that is empty, absolute, or that begins with a
+    wildcard.  The last restriction exists because expansion walks the filesystem from the
+    pattern's literal head; a leading wildcard would force a walk of the entire store,
+    which is slow when parts of it sit on an external drive.
     """
 
     root: Path
@@ -86,7 +95,9 @@ class RemapGlob:
     @property
     def literal_head(self) -> PurePath:
         """
-        The leading components of the pattern that contain no glob metacharacters.
+        The leading components of the pattern, up to but not including the first one that
+        contains a wildcard.  For gwas/**/raw this is gwas.  Every match must lie inside
+        this directory, so expansion only needs to walk it.
         """
         head: list[str] = []
         for part in PurePath(self.pattern).parts:
@@ -96,13 +107,19 @@ class RemapGlob:
         return PurePath(*head)
 
     def matches(self, prefix: PurePath) -> bool:
+        """
+        Return True if the whole store-relative path prefix matches the pattern, not
+        merely some trailing part of it.
+        """
         return prefix.full_match(self.pattern)
 
 
 def globs_from_config(entries: Sequence[Mapping[str, Any]]) -> tuple[RemapGlob, ...]:
     """
-    Collect the globs from the path_remap section of a parsed yaml config.  Key
-    validation is done by PathRemapRule.tuple_from_config.
+    Collect the globs from the path_remap section of a parsed yaml config, pairing each
+    with the root of the entry that lists it.  This is the globs counterpart of
+    PathRemapRule.tuple_from_config, which reads the literal prefixes and also validates
+    the entry keys, so that validation is not repeated here.
     """
     return tuple(
         RemapGlob(root=Path(entry[_ROOT_KEY]), pattern=pattern)
@@ -114,7 +131,9 @@ def globs_from_config(entries: Sequence[Mapping[str, Any]]) -> tuple[RemapGlob, 
 @frozen(slots=True)
 class GlobExpansion:
     """
-    The literal prefixes that a glob was expanded into, all of which live under root.
+    The literal prefixes that the glob pattern was expanded into, together with the root
+    their data lives under.  This is one entry of the generated expansions file; the
+    runner turns it into an ordinary PathRemapRule.
     """
 
     root: Path
@@ -124,11 +143,14 @@ class GlobExpansion:
 
 def expand_glob(asset_root: Path, glob: RemapGlob) -> tuple[PurePath, ...]:
     """
-    Find the directories under asset_root whose store-relative path matches glob.
+    Walk the default asset root and return, as store-relative paths, the directories that
+    glob matches.  This is how a glob becomes a set of literal prefixes the build system
+    can route with a cheap comparison.
 
     Only the outermost match on each branch is returned: a matching directory is not
     descended into, since a prefix already covers its whole subtree, and nested prefixes
-    would be rejected as overlapping.  Symlinks are not followed.
+    would be rejected as overlapping.  Files are never returned, because a prefix selects
+    a subtree.  Symlinks are not followed.
     """
     start = asset_root / glob.literal_head
     if not start.is_dir():
@@ -144,8 +166,9 @@ def expand_glob(asset_root: Path, glob: RemapGlob) -> tuple[PurePath, ...]:
 
 def read_glob_expansions(path: Path) -> tuple[GlobExpansion, ...]:
     """
-    Read the generated expansions file.  A missing file means no glob has been
-    reconciled yet.
+    Read the generated expansions file written by write_glob_expansions.  A missing or
+    empty file means no glob has been reconciled yet, so no subtree has been moved by a
+    glob and there is nothing to route.
     """
     if not path.exists():
         return ()
@@ -164,6 +187,12 @@ def read_glob_expansions(path: Path) -> tuple[GlobExpansion, ...]:
 
 
 def write_glob_expansions(path: Path, expansions: Sequence[GlobExpansion]) -> None:
+    """
+    Write expansions to the generated expansions file, replacing its contents.  This
+    records where reconcile left the glob-selected data, so later runs, and the next
+    reconcile, can find it.  Expansions with no prefixes are left out, since they route
+    nothing.
+    """
     content = {
         _EXPANSIONS_KEY: [
             {
@@ -182,16 +211,21 @@ def rules_with_expansions(
     literal_rules: Sequence[PathRemapRule], expansions: Sequence[GlobExpansion]
 ) -> tuple[PathRemapRule, ...]:
     """
-    Merge recorded glob expansions into the configured rules, one rule per root.  An
-    expansion whose root no longer appears in the config still gets a rule, because its
-    data still lives there until reconcile moves it.
+    Combine the literal prefixes from the config with the prefixes recorded for globs,
+    giving the full set of rules the runner routes by.  Prefixes are grouped into one rule
+    per root, with duplicates removed and first-seen order kept.
+
+    An expansion whose root no longer appears in the config still gets a rule.  Its data
+    still lives under that root until reconcile moves it, and dropping the rule would make
+    those assets invisible and trigger a rebuild.
     """
-    prefixes_by_root: dict[Path, list[PurePath]] = {}
+    # A dict with None values serves as an insertion-ordered set.
+    prefixes_by_root: dict[Path, dict[PurePath, None]] = {}
     for rule in literal_rules:
-        _extend_unique(prefixes_by_root.setdefault(rule.root, []), rule.prefixes)
+        prefixes_by_root.setdefault(rule.root, {}).update(dict.fromkeys(rule.prefixes))
     for expansion in expansions:
-        _extend_unique(
-            prefixes_by_root.setdefault(expansion.root, []), expansion.prefixes
+        prefixes_by_root.setdefault(expansion.root, {}).update(
+            dict.fromkeys(expansion.prefixes)
         )
     return tuple(
         PathRemapRule(root=root, prefixes=tuple(prefixes))
@@ -200,16 +234,11 @@ def rules_with_expansions(
     )
 
 
-def _extend_unique(target: list[PurePath], items: Iterable[PurePath]) -> None:
-    for item in items:
-        if item not in target:
-            target.append(item)
-
-
-@frozen(slots=True)
+@frozen(slots=True, kw_only=True)
 class StoreMove:
     """
-    Move the subtree prefix from source_root / prefix to dest_root / prefix.
+    Move the subtree prefix from source_root / prefix to dest_root / prefix.  This is the
+    unit of work shared by migrate-asset-store and reconcile-globs.
     """
 
     prefix: PurePath
@@ -217,9 +246,12 @@ class StoreMove:
     dest_root: Path
 
 
-@frozen(slots=True)
+@frozen(slots=True, kw_only=True)
 class GlobReconcilePlan:
     """
+    What reconcile-globs will do, worked out before any data is touched, so that a dry run
+    can report it and a real run can record the right expansions even if some moves fail.
+
     previous: the expansions recorded before this reconcile.
     expansions: the expansions to record once every move has succeeded.
     moves: the data moves that take the store from previous to expansions.  Moves back to
@@ -233,10 +265,14 @@ class GlobReconcilePlan:
 
     def expansions_after(self, failed: Iterable[PurePath]) -> tuple[GlobExpansion, ...]:
         """
-        The expansions to record when the moves of the prefixes in failed did not happen.
-        Each failed prefix is recorded where its data still is: under its previous
-        expansion if it had one, and otherwise nowhere, which leaves it on the default
-        root or under a literal prefix.
+        Return the expansions to record when the moves of the prefixes in failed did not
+        happen, so the file describes where the data actually is rather than where the
+        plan meant to put it.  Recording a failed move as done would hide its data from
+        the build system.
+
+        Each failed prefix is recorded under its previous expansion if it had one, since
+        its data is still there.  If it had none, it was a new match whose data is still on
+        the default root or under a literal prefix, so it is not recorded at all.
         """
         failed_set = frozenset(failed)
         result: dict[tuple[Path, str], list[PurePath]] = {}
@@ -257,12 +293,23 @@ class GlobReconcilePlan:
 
 @frozen(slots=True)
 class _Claim:
+    """
+    A request by the glob pattern for the subtree prefix to live under root.  Claims from
+    all globs are pooled so that overlaps between different globs can be detected before
+    any data moves.
+    """
+
     prefix: PurePath
     root: Path
     pattern: str
 
 
-def _is_ancestor_or_equal(ancestor: PurePath, descendant: PurePath) -> bool:
+def _is_ancestor_or_equal(*, ancestor: PurePath, descendant: PurePath) -> bool:
+    """
+    Return True if descendant is ancestor or lies inside it, comparing whole path
+    components so that a/b is not treated as an ancestor of a/bc.  This is the test for
+    whether one remap prefix covers another.
+    """
     return descendant.parts[: len(ancestor.parts)] == ancestor.parts
 
 
@@ -270,10 +317,19 @@ def _literal_root_for(
     prefix: PurePath, literal_rules: Sequence[PathRemapRule]
 ) -> Path | None:
     """
-    The root of the literal prefix covering prefix, if any.
+    Return the root that the configured literal prefixes send prefix to, or None if no
+    literal prefix contains it.
+
+    This answers where a subtree lives when no glob claims it.  The answer decides
+    whether a glob match is already handled by a literal prefix, and where data goes when
+    a glob stops selecting it: back under a covering literal prefix's root if there is
+    one, and otherwise to the default root.
     """
     for rule in literal_rules:
-        if any(_is_ancestor_or_equal(p, prefix) for p in rule.prefixes):
+        if any(
+            _is_ancestor_or_equal(ancestor=literal, descendant=prefix)
+            for literal in rule.prefixes
+        ):
             return rule.root
     return None
 
@@ -285,10 +341,19 @@ def _claims_for_glob(
     literal_rules: Sequence[PathRemapRule],
 ) -> list[_Claim]:
     """
-    The prefixes glob selects: matching directories on the default root, plus previously
-    recorded prefixes that still match.  The latter live under a remap root, where
-    expansion does not look, and would otherwise be moved back to the default root.
-    Prefixes already covered by a literal prefix routed to the same root are dropped.
+    Work out which subtrees glob should place under its root.
+
+    The candidates are the matching directories on the default root, plus the prefixes
+    recorded in previous that still match.  The second group is needed because data a
+    glob has already moved is no longer on the default root, where expansion looks; if it
+    were left out, reconcile would treat it as dropped and move it back.
+
+    Candidates are then checked against the literal prefixes.  A candidate that overlaps a
+    literal prefix with a different root raises AssertionError, because the two would
+    send the same assets to different places.  So does a literal prefix nested inside a
+    candidate, since recording the candidate would create overlapping prefixes.  A
+    candidate already inside a literal prefix with the same root is dropped, because the
+    literal prefix already puts it where the glob wants it.
     """
     candidates = set(expand_glob(asset_root, glob)) | {
         prefix
@@ -300,14 +365,15 @@ def _claims_for_glob(
     for prefix in sorted(candidates):
         for rule in literal_rules:
             for literal in rule.prefixes:
-                if not (
-                    _is_ancestor_or_equal(literal, prefix)
-                    or _is_ancestor_or_equal(prefix, literal)
-                ):
+                literal_covers_prefix = _is_ancestor_or_equal(
+                    ancestor=literal, descendant=prefix
+                )
+                prefix_covers_literal = _is_ancestor_or_equal(
+                    ancestor=prefix, descendant=literal
+                )
+                if not (literal_covers_prefix or prefix_covers_literal):
                     continue
-                assert rule.root == glob.root and _is_ancestor_or_equal(
-                    literal, prefix
-                ), (
+                assert rule.root == glob.root and literal_covers_prefix, (
                     f"Glob {glob.pattern} (root {glob.root}) selects {prefix}, which "
                     f"overlaps the literal prefix {literal} (root {rule.root}).  Narrow "
                     f"the glob or remove the literal prefix."
@@ -319,12 +385,21 @@ def _claims_for_glob(
 
 def _resolve_claim_overlaps(claims: Sequence[_Claim]) -> list[_Claim]:
     """
-    Drop claims made redundant by an equal or enclosing claim on the same root, and
-    reject overlapping claims on different roots.
+    Reduce the pooled claims of all globs to a set of non-overlapping prefixes, which is
+    what RemappingMetaToPath requires.
+
+    Two globs may select the same subtree, or one may select a subtree inside another's
+    match.  If both want the same root, the outermost claim is kept and the others are
+    dropped as redundant.  If they want different roots, AssertionError is raised, since
+    an asset's location would otherwise depend on rule order.
     """
     kept: list[_Claim] = []
     for claim in sorted(claims, key=lambda c: len(c.prefix.parts)):
-        overlapping = [k for k in kept if _is_ancestor_or_equal(k.prefix, claim.prefix)]
+        overlapping = [
+            k
+            for k in kept
+            if _is_ancestor_or_equal(ancestor=k.prefix, descendant=claim.prefix)
+        ]
         for other in overlapping:
             assert other.root == claim.root, (
                 f"Globs {other.pattern} (root {other.root}) and {claim.pattern} (root "
@@ -339,6 +414,10 @@ def _resolve_claim_overlaps(claims: Sequence[_Claim]) -> list[_Claim]:
 def _location_by_prefix(
     expansions: Iterable[GlobExpansion],
 ) -> dict[PurePath, Path]:
+    """
+    Map each prefix in expansions to the root its data lives under.  Comparing this map
+    before and after a reconcile shows which subtrees have to move.
+    """
     return {
         prefix: expansion.root
         for expansion in expansions
@@ -353,12 +432,18 @@ def plan_glob_reconcile(
     previous: Sequence[GlobExpansion],
 ) -> GlobReconcilePlan:
     """
-    Expand globs against the default root and work out which subtrees must move so that
-    the data matches the new expansions.
+    Compute what reconcile-globs must do to bring the store in line with the globs now in
+    the config: the new expansions to record, and the data moves needed to get there from
+    the previous expansions.  Nothing is moved here, so a dry run can show the plan and
+    an assertion failure leaves the store untouched.
 
-    A prefix that leaves every glob goes to whichever root the literal prefixes give it,
-    which is usually the default root.  Raises AssertionError if the globs and literal
-    prefixes would route overlapping subtrees to different roots.
+    Each prefix moves from where previous says it lives to where the new expansions say
+    it should live.  A prefix absent from one side lives wherever the literal prefixes
+    send it, which is usually the default root.  This one rule covers adding, widening,
+    narrowing, removing, and re-rooting a glob.
+
+    Raises AssertionError if the globs and literal prefixes would send overlapping
+    subtrees to different roots.
     """
     claims = _resolve_claim_overlaps(
         [
@@ -383,14 +468,14 @@ def plan_glob_reconcile(
     old_location = _location_by_prefix(previous)
     new_location = _location_by_prefix(expansions)
 
-    def fallback(prefix: PurePath) -> Path:
+    def location_without_glob(prefix: PurePath) -> Path:
         return _literal_root_for(prefix, literal_rules) or asset_root
 
     moves = [
         StoreMove(
             prefix=prefix,
-            source_root=old_location.get(prefix) or fallback(prefix),
-            dest_root=new_location.get(prefix) or fallback(prefix),
+            source_root=old_location.get(prefix) or location_without_glob(prefix),
+            dest_root=new_location.get(prefix) or location_without_glob(prefix),
         )
         for prefix in sorted(set(old_location) | set(new_location))
     ]

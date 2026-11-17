@@ -26,7 +26,6 @@ import structlog
 import yaml
 
 from mecfs_bio.build_system.rebuilder.metadata_to_path.remap_globs import (
-    GLOB_EXPANSIONS_FILE_NAME,
     read_glob_expansions,
     rules_with_expansions,
 )
@@ -50,6 +49,9 @@ logger = structlog.get_logger(__name__)
 
 CONFIG_FILE_NAME = "default_runner_config.yaml"
 _DEFAULT_RUNNER_CONFIG_PATH = Path(CONFIG_FILE_NAME)
+# Written by the reconcile-globs invoke command and gitignored, because it describes where
+# data sits on this machine.
+GLOB_EXPANSIONS_FILE_NAME = "path_remap_glob_expansions.yaml"
 GLOB_EXPANSIONS_PATH = Path(GLOB_EXPANSIONS_FILE_NAME)
 
 _ASSET_ROOT_KEY = "asset_root"
@@ -89,7 +91,9 @@ def _get_info_store_path() -> Path:
 
 def get_path_remap_entries() -> list[dict]:
     """
-    The raw path_remap section of the config, empty if there is none.
+    Return the path_remap section of the runner config as parsed yaml, or an empty list
+    if the config has none.  Both the literal prefixes and the globs are read from it, so
+    callers that need both parse this once rather than loading the config twice.
     """
     config = load_runner_config()
     if config is None or _PATH_REMAP_KEY not in config:
@@ -99,11 +103,13 @@ def get_path_remap_entries() -> list[dict]:
 
 def get_path_remap_rules() -> tuple[PathRemapRule, ...]:
     """
-    The configured literal prefixes merged with the recorded glob expansions.
+    Return the rules the runner routes assets by: the literal prefixes from the config
+    plus the prefixes that reconcile-globs recorded for globs.  The globs themselves are
+    not used here, because a glob only moves data once reconcile-globs has run.
     """
     return rules_with_expansions(
-        PathRemapRule.tuple_from_config(get_path_remap_entries()),
-        read_glob_expansions(GLOB_EXPANSIONS_PATH),
+        literal_rules=PathRemapRule.tuple_from_config(get_path_remap_entries()),
+        expansions=read_glob_expansions(GLOB_EXPANSIONS_PATH),
     )
 
 
