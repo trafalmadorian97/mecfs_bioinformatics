@@ -23,7 +23,7 @@ class CountingTask(GeneratingTask):
     run_count: int = 0
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return self.wrapped.deps
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

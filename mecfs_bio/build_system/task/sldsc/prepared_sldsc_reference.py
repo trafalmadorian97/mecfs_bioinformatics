@@ -91,7 +91,7 @@ class LdScoreTable:
     def column_index(self, column_id: str) -> int:
         return self.column_ids.index(column_id)
 
-    def take_rows(self, rows: np.ndarray) -> "LdScoreTable":
+    def take_rows(self, rows: np.ndarray) -> LdScoreTable:
         """The table restricted to the given row indices, in that order."""
         return LdScoreTable(
             snps=self.snps.select(pl.all().gather(rows)),

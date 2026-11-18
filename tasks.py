@@ -656,7 +656,7 @@ def _dir_size(path: Path) -> str:
 
 
 def _run_store_moves(
-    c: Context, moves: Sequence["StoreMove"], execute: bool
+    c: Context, moves: Sequence[StoreMove], execute: bool
 ) -> set[PurePath]:
     """
     Print what each StoreMove in moves would do and, if execute, carry it out by copying
@@ -886,7 +886,7 @@ def reconcile_globs(c: Context, execute: bool = False) -> None:
         )
 
 
-def _exit_if_remap_roots_unavailable(rules: Sequence["PathRemapRule"]) -> None:
+def _exit_if_remap_roots_unavailable(rules: Sequence[PathRemapRule]) -> None:
     """
     Print the error and exit if any root in rules is missing, for example because the
     external drive is not mounted.

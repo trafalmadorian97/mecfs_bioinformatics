@@ -37,7 +37,7 @@ class DiscardDepsWrapper(Task):
         )
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return []
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

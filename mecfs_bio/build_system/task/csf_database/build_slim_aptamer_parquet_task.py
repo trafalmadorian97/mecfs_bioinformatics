@@ -314,7 +314,7 @@ class BuildSlimCsfAptamerParquetTask(GeneratingTask):
         asset_id: str,
         index_name: str,
         md5_hash: str | None = None,
-    ) -> "BuildSlimCsfAptamerParquetTask":
+    ) -> BuildSlimCsfAptamerParquetTask:
         # No aptamer asset dependency (by design, to avoid materializing the full
         # sumstats), so trait/project come from the aptamer's gene, not a dep.
         meta = GWASSummaryDataFileMeta(

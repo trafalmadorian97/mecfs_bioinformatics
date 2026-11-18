@@ -150,7 +150,7 @@ class MixerTask(Task):
     reps_to_perform: Sequence[int] = tuple(range(1, 21))
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         result: list[Task] = [
             self.trait_1_source.task,
             self.reference_data_directory_task,
@@ -369,7 +369,7 @@ class MixerLDGenerationTask(Task):
     ld_window_kb: str = "10000"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.plink_data_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

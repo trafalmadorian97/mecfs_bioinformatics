@@ -157,7 +157,7 @@ class PolyfunExplainPlotTask(Task):
         )
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         prior_deps = [
             task
             for run in self.prior_runs
@@ -211,7 +211,7 @@ class PolyfunExplainPlotTask(Task):
         genome_build: GenomeBuild = "19",
         gene_info_pipe: DataProcessingPipe = IdentityPipe(),
         axis_label_fontsize: float = DEFAULT_AXIS_LABEL_FONTSIZE,
-    ) -> "PolyfunExplainPlotTask":
+    ) -> PolyfunExplainPlotTask:
         source_meta = susie_uniform_task.meta
         if not isinstance(source_meta, ResultDirectoryMeta):
             raise ValueError(f"Unknown meta for uniform susie task: {source_meta}")

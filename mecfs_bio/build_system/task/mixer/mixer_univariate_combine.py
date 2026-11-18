@@ -53,7 +53,7 @@ class MixerUnivariateCombine(Task):
     trait_name: str
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [item.task for item in self.mixer_source_runs]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

@@ -61,7 +61,7 @@ class MixerBivariateCombine(Task):
         return self.mixer_source_runs[0].task.trait_2_source.alias
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [item.task for item in self.mixer_source_runs]
 
     def __attrs_post_init__(self) -> None:

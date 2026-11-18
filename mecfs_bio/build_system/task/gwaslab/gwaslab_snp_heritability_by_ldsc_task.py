@@ -74,7 +74,7 @@ class SNPHeritabilityByLDSCTask(Task):
         return self.ld_ref_task.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_sumstats_task, self.ld_ref_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

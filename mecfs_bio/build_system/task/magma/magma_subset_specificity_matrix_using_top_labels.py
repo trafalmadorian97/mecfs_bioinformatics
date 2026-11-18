@@ -63,7 +63,7 @@ class MagmaSubsetSpecificityMatrixWithTopLabels(Task):
         return self.specificity_matrix_task.meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.specificity_matrix_task, self.magma_gene_covar_analysis_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

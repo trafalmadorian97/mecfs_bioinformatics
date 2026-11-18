@@ -60,7 +60,7 @@ class IndexedFastaTask(Task):
     @classmethod
     def create(
         cls, fasta_gz_task: Task, asset_id: str, build: GenomeBuild
-    ) -> "IndexedFastaTask":
+    ) -> IndexedFastaTask:
         source_meta = fasta_gz_task.meta
         assert isinstance(source_meta, ReferenceFileMeta), (
             f"expected a ReferenceFileMeta source for {asset_id}, got {type(source_meta).__name__}"

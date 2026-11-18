@@ -136,7 +136,7 @@ class PolyfunPriorSource:
         pos_col: str = POLYFUN_BP_COL,
         nea_col: str = POLYFUN_A1_COL,
         ea_col: str = POLYFUN_A2_COL,
-    ) -> "PolyfunPriorSource":
+    ) -> PolyfunPriorSource:
         """A source whose prior is explained by the same coefficients on every
         chromosome."""
         return cls(
@@ -161,7 +161,7 @@ class PolyfunPriorSource:
         pos_col: str = POLYFUN_BP_COL,
         nea_col: str = POLYFUN_A1_COL,
         ea_col: str = POLYFUN_A2_COL,
-    ) -> "PolyfunPriorSource":
+    ) -> PolyfunPriorSource:
         """A source whose prior is explained by different coefficients on odd and
         even chromosomes, e.g. one that scores each half of the genome with
         coefficients fit on the other half. Each task explains the prior on the

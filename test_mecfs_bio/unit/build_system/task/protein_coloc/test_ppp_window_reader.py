@@ -45,7 +45,7 @@ class _ByteRange:
     start: int
     end: int
 
-    def overlap_length(self, other: "_ByteRange") -> int:
+    def overlap_length(self, other: _ByteRange) -> int:
         return max(0, min(self.end, other.end) - max(self.start, other.start))
 
 

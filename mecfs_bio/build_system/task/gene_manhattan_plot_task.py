@@ -593,7 +593,7 @@ class GeneManhattanPlotTask(Task):
         source: GeneManhattanSource,
         sig_threshold: float | None = None,
         title: str | None = None,
-    ) -> "GeneManhattanPlotTask":
+    ) -> GeneManhattanPlotTask:
         meta = GWASPlotFileMeta(
             trait=source.trait,
             project=source.project,

@@ -85,7 +85,7 @@ class MagmaGeneSetAnalysisTask(Task):
         return self.gene_set_or_covar_task.gene_set_task.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         deps = [self.magma_binary_task, self.magma_gene_analysis_task]
         if isinstance(self.gene_set_or_covar_task, Task):
             deps.append(self.gene_set_or_covar_task)

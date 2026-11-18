@@ -37,7 +37,7 @@ class ExtractDataFrameFromRDataTask(Task):
     r_package_list: Sequence[str]
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.rdata_file_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

@@ -217,7 +217,7 @@ class ConstructCsfVariantIndexTask(GeneratingTask):
         template_aptamer_task: Task,
         membership_task: Task,
         asset_id: str,
-    ) -> "ConstructCsfVariantIndexTask":
+    ) -> ConstructCsfVariantIndexTask:
         meta = ReferenceFileMeta(
             group="csf_pqtl_variant_index",
             # Derived from the membership list so distinct modes get distinct paths

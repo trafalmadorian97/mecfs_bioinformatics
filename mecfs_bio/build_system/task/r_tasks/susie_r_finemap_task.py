@@ -161,7 +161,7 @@ class SusieRFinemapTask(Task):
     prior_info: PriorInfo | None = None
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         dep_results = [
             self.gwas_data_task,
             self.ld_labels_task,

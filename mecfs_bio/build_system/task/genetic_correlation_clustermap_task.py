@@ -236,7 +236,7 @@ class GeneticCorrelationClustermapTask(Task):
     save_mode: bool | str = "cdn"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.genetic_corr_source.task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

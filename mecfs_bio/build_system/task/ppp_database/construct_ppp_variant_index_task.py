@@ -220,7 +220,7 @@ class ConstructPppVariantIndexTask(GeneratingTask):
         template_protein_task: Task,
         membership_task: Task,
         asset_id: str,
-    ) -> "ConstructPppVariantIndexTask":
+    ) -> ConstructPppVariantIndexTask:
         meta = ReferenceFileMeta(
             group="ukbb_ppp_variant_index",
             # Derived from the membership list so the two modes get distinct paths

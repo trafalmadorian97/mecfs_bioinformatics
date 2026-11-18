@@ -46,7 +46,7 @@ class PrepareSpecificityFraction(Task):
     post_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.long_count_df_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

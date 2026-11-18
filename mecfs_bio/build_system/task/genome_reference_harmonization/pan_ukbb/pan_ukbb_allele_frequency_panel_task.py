@@ -161,7 +161,7 @@ class PanUkbbAlleleFrequencyPanelTask(Task):
         groups: Sequence[PanUkbbGroup],
         chromosomes: Sequence[int],
         expected_ref_mismatches: int,
-    ) -> "PanUkbbAlleleFrequencyPanelTask":
+    ) -> PanUkbbAlleleFrequencyPanelTask:
         fasta_meta = fasta_task.meta
         assert isinstance(fasta_meta, FASTAMeta), (
             f"fasta_task must carry FASTAMeta, got {type(fasta_meta).__name__}"

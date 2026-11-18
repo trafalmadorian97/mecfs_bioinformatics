@@ -227,7 +227,7 @@ class ProteinHitTableTask(GeneratingTask):
         project: str,
         p_threshold: float = 5e-8,
         merge_gap_bp: int = 250_000,
-    ) -> "ProteinHitTableTask":
+    ) -> ProteinHitTableTask:
         """trait, project: where the table lives in the asset store (the proteomics source)."""
         assert 0 < p_threshold < 1, f"p_threshold must be in (0, 1): {p_threshold}"
         assert merge_gap_bp >= 0, f"merge_gap_bp must be non-negative: {merge_gap_bp}"

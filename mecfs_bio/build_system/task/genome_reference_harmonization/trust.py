@@ -59,7 +59,7 @@ class TrustCounts:
     consistent_indels: int
     inconsistent_indels: int
 
-    def __add__(self, other: "TrustCounts") -> "TrustCounts":
+    def __add__(self, other: TrustCounts) -> TrustCounts:
         return TrustCounts(
             consistent_snvs=self.consistent_snvs + other.consistent_snvs,
             inconsistent_snvs=self.inconsistent_snvs + other.inconsistent_snvs,
@@ -68,7 +68,7 @@ class TrustCounts:
         )
 
     @classmethod
-    def zero(cls) -> "TrustCounts":
+    def zero(cls) -> TrustCounts:
         return cls(
             consistent_snvs=0,
             inconsistent_snvs=0,
@@ -84,14 +84,14 @@ class SuspiciousIndelCounts:
     )
     checkable: int  # ambiguous indels with EAF and at least one panel record
 
-    def __add__(self, other: "SuspiciousIndelCounts") -> "SuspiciousIndelCounts":
+    def __add__(self, other: SuspiciousIndelCounts) -> SuspiciousIndelCounts:
         return SuspiciousIndelCounts(
             suspicious=self.suspicious + other.suspicious,
             checkable=self.checkable + other.checkable,
         )
 
     @classmethod
-    def zero(cls) -> "SuspiciousIndelCounts":
+    def zero(cls) -> SuspiciousIndelCounts:
         return cls(suspicious=0, checkable=0)
 
     @property

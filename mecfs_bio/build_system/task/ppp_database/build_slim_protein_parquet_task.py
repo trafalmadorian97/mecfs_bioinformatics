@@ -356,7 +356,7 @@ class BuildSlimProteinParquetTask(GeneratingTask):
         asset_id: str,
         index_name: str,
         include_sample_size: bool = True,
-    ) -> "BuildSlimProteinParquetTask":
+    ) -> BuildSlimProteinParquetTask:
         # No protein asset dependency (by design, to avoid materializing the full
         # sumstats), so trait/project come from the protein's gene, not a dep.
         meta = GWASSummaryDataFileMeta(

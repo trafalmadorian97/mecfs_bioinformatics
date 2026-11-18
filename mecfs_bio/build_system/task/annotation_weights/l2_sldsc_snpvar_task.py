@@ -246,7 +246,7 @@ class L2RegularizedSldscSnpvarTask(Task):
         annotation_ldscore_members_task: Task,
         annotation_matrix_task: Task,
         alphas: tuple[float, ...] = DEFAULT_L2_SLDSC_ALPHAS,
-    ) -> "L2RegularizedSldscSnpvarTask":
+    ) -> L2RegularizedSldscSnpvarTask:
         source_meta = sumstats_task.meta
         assert isinstance(source_meta, (FilteredGWASDataMeta, ResultTableMeta)), (
             f"sumstats task must carry trait/project metadata, got {type(source_meta)}"

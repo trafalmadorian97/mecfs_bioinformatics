@@ -79,7 +79,7 @@ class BivariateMixerTask(Task):
         return self.trait_1_univariate_task.reps_to_perform[0]
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         result: list[Task] = [
             self.trait_1_source.task,
             self.trait_2_source.task,

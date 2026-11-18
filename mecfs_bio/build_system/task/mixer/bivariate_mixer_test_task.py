@@ -52,7 +52,7 @@ class BivariateMixerTestTask(Task):
         return self.fit_task.rep
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         result: list[Task] = [
             self.trait_1_source.task,
             self.trait_2_source.task,

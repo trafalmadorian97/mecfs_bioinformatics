@@ -58,7 +58,7 @@ class CombineGeneListsTask(Task):
         assert len(names) == len(self.src_gene_lists)
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [gl.task for gl in self.src_gene_lists]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

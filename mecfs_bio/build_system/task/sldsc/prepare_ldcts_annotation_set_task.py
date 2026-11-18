@@ -75,7 +75,7 @@ class PrepareLdctsAnnotationSetTask(Task):
     @classmethod
     def create(
         cls, asset_id: str, source_directory_task: Task, ldcts_filename: str
-    ) -> "PrepareLdctsAnnotationSetTask":
+    ) -> PrepareLdctsAnnotationSetTask:
         source_meta = source_directory_task.meta
         assert isinstance(source_meta, ReferenceDataDirectoryMeta)
         return cls(

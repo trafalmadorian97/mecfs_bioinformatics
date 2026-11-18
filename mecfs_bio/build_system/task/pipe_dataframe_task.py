@@ -53,7 +53,7 @@ class PipeDataFrameTask(Task):
             assert self.backend in ("polars",), "Can only read text data with polars"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_data_task]
 
     @property
@@ -85,7 +85,7 @@ class PipeDataFrameTask(Task):
         out_format: OutFormat,
         pipes: Sequence[DataProcessingPipe],
         backend: ValidBackend = "ibis",
-    ) -> "PipeDataFrameTask":
+    ) -> PipeDataFrameTask:
         source_meta = source_task.meta
         extension, read_spec = get_extension_and_read_spec_from_format(
             out_format=out_format

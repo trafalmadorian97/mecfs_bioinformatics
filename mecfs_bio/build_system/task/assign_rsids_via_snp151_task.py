@@ -81,7 +81,7 @@ class AssignRSIDSToSNPsViaSNP151Task(Task):
         return self.snp_data_meta.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.snp151_database_file_task, self.raw_snp_data_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

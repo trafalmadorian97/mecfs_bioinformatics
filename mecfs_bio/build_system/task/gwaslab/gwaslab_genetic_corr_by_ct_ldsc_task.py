@@ -190,7 +190,7 @@ class GeneticCorrelationByCTLDSCTask(Task):
         return self.ld_ref_task.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         result = [self.ld_ref_task]
         for item in self.source_sumstats_tasks:
             result.append(item.task)

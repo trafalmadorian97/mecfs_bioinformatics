@@ -46,7 +46,7 @@ class ExtractTarGzipTask(Task):
     read_mode: ReadMode = "r:gz"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_file_task]
 
     @property
@@ -80,7 +80,7 @@ class ExtractTarGzipTask(Task):
         sub_folder: PurePath = PurePath("extracted"),
         sub_folder_name_inside_tar: str | None = None,
         read_mode: ReadMode = "r:gz",
-    ) -> "ExtractTarGzipTask":
+    ) -> ExtractTarGzipTask:
         source_meta = source_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
             return cls(

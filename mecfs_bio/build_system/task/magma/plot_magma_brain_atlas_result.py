@@ -83,7 +83,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
         return self.result_table_task.meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.result_table_task, self.cluster_annotation_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

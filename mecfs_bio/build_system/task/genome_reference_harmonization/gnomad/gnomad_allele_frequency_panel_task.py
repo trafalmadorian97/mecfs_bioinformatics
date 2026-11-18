@@ -96,7 +96,7 @@ class GnomadAlleleFrequencyPanelTask(Task):
         asset_id: str,
         release: GnomadRelease,
         part_tasks: Sequence[GnomadChromosomeAlleleFrequencyTask],
-    ) -> "GnomadAlleleFrequencyPanelTask":
+    ) -> GnomadAlleleFrequencyPanelTask:
         return cls(
             meta=HarmonizableReferenceTableMeta(
                 group=GNOMAD_GROUP,

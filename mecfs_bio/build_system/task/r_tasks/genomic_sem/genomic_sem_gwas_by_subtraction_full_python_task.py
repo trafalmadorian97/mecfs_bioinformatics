@@ -225,7 +225,7 @@ class GenomicSEMGWASBySubtractionFullPythonTask(Task):
         hapmap_snps_task: Task,
         sumstats_ref_task: Task,
         config: GWASBySubtractionFullPythonConfig = GWASBySubtractionFullPythonConfig(),
-    ) -> "GenomicSEMGWASBySubtractionFullPythonTask":
+    ) -> GenomicSEMGWASBySubtractionFullPythonTask:
         meta = ResultDirectoryMeta(
             id=AssetId(asset_id),
             trait=MULTI_TRAIT,

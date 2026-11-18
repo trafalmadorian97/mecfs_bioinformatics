@@ -80,7 +80,7 @@ class RenameColsTask(Task):
         renames: Mapping[str, str],
         out_format: OutFormat = ParquetOutFormat(),
         backend: ValidBackend = "polars",
-    ) -> "RenameColsTask":
+    ) -> RenameColsTask:
         source_meta = source_task.meta
         extension, read_spec = get_extension_and_read_spec_from_format(
             out_format=out_format

@@ -41,7 +41,7 @@ class MAGMAPlotGeneSetResult(Task):
         return self.gene_set_analysis_task.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.gene_set_analysis_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

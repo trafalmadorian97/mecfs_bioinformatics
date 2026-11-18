@@ -52,7 +52,7 @@ class GWASLabAssignRSIDSViaSweepTask(Task):
         return FileAsset(out_path)
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.sumstats_task, self.vcf_dir_task]
 
     @classmethod

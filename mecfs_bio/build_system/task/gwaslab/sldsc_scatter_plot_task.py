@@ -44,7 +44,7 @@ class SLDSCScatterPlotTask(Task):
         return self.df_source_task.meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.df_source_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

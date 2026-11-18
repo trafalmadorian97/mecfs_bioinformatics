@@ -43,7 +43,7 @@ class GWASLabManhattanAndQQPlotTask(Task):
     anno_mode: AnnoMode = "GENENAME"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.sumstats_task]
 
     @property

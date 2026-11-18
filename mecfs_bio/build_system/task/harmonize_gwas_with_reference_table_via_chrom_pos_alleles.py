@@ -107,7 +107,7 @@ class HarmonizeGWASWithReferenceViaAlleles(Task):
         return self.reference_task.meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.gwas_data_task, self.reference_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

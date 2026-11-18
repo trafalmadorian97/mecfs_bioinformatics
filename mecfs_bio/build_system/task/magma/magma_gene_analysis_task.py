@@ -71,7 +71,7 @@ class MagmaGeneAnalysisTask(Task):
         return self.magma_ld_ref_task.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [
             self.magma_binary_task,
             self.magma_annotation_task,

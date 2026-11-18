@@ -46,7 +46,7 @@ class ConcatFramesTask(Task):
             assert len(self.frames_pipes) == len(self.frames_tasks)
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return list(self.frames_tasks)
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

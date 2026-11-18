@@ -44,7 +44,7 @@ class MagmaSNPFileTask(Task):
         return self.source_meta.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.gwas_parquet_with_rsid_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

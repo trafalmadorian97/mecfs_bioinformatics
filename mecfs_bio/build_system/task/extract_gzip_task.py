@@ -30,7 +30,7 @@ class ExtractGzipTextFileTask(Task):
     source_file_task: Task
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_file_task]
 
     @property

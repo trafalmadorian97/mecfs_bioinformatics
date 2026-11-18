@@ -228,7 +228,7 @@ class ColocDisplayTableTask(Task):
         coloc_task: Task,
         h4_threshold: float = 0.8,
         fdr_alpha: float = 0.05,
-    ) -> "ColocDisplayTableTask":
+    ) -> ColocDisplayTableTask:
         """coloc_task: a TraitProteinColocTask (any Task producing its result directory)."""
         assert 0 < h4_threshold < 1, f"h4_threshold must be in (0, 1): {h4_threshold}"
         assert 0 < fdr_alpha < 1, f"fdr_alpha must be in (0, 1): {fdr_alpha}"

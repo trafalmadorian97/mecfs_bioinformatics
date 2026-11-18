@@ -32,7 +32,7 @@ class FilterSNPsTask(Task):
     col_in_filter_data: str = "ID"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.raw_gwas_task, self.snp_list_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> FileAsset:

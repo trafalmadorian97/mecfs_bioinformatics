@@ -85,7 +85,7 @@ class RidgeAnnotationWeightsTask(Task):
     alphas: tuple[float, ...] = _DEFAULT_ALPHAS
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.annotation_parquet_task, self.snpvar_meta_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -149,7 +149,7 @@ class RidgeAnnotationWeightsTask(Task):
         annotation_parquet_task: Task,
         snpvar_meta_task: Task,
         alphas: tuple[float, ...] = _DEFAULT_ALPHAS,
-    ) -> "RidgeAnnotationWeightsTask":
+    ) -> RidgeAnnotationWeightsTask:
         # Derive the output directory meta from the primary dependency (the
         # annotation parquet), reusing group/sub_group/sub_folder - the
         # CompressedCSVToParquetTask.create pattern applied to a DirMeta.

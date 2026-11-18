@@ -379,7 +379,7 @@ class ColocProteinInfoTask(Task):
         uniprot_task: Task,
         uniprot_genes_task: Task,
         max_loci: int = 10,
-    ) -> "ColocProteinInfoTask":
+    ) -> ColocProteinInfoTask:
         source_meta = display_task.meta
         assert isinstance(source_meta, ResultTableMeta), (
             f"display_task must carry ResultTableMeta, got {type(source_meta).__name__}"

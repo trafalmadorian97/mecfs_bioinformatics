@@ -25,7 +25,7 @@ class MakeExecutableWrapperTask(Task):
         return self.inner.meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return self.inner.deps
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

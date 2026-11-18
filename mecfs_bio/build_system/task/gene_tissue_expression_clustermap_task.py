@@ -72,7 +72,7 @@ class ExpressionMatrixClusterMapTaskV2(Task):
     plot_spec: XRHeatmapPlotSpec
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         result = [self.specificity_matrix_source.task]
         for gi in self.gene_info_sources:
             result.append(gi.task)

@@ -134,7 +134,7 @@ class GnomadChromosomeAlleleFrequencyTask(Task):
     @classmethod
     def create(
         cls, release: GnomadRelease, chrom: int, fasta_task: Task
-    ) -> "GnomadChromosomeAlleleFrequencyTask":
+    ) -> GnomadChromosomeAlleleFrequencyTask:
         fasta_meta = fasta_task.meta
         assert isinstance(fasta_meta, FASTAMeta), (
             f"fasta_task must carry FASTAMeta, got {type(fasta_meta).__name__}"

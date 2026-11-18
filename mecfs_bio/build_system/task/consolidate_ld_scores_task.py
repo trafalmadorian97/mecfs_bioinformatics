@@ -119,7 +119,7 @@ class ConsolidateLDScoresTask(Task):
     extracted_ld_scores_task: Task
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.extracted_ld_scores_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

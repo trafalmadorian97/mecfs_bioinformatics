@@ -21,7 +21,7 @@ class ZipDirTask(Task):
     meta: Meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_dir_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -36,7 +36,7 @@ class ZipDirTask(Task):
         cls,
         source_dir_task: Task,
         asset_id: str,
-    ) -> "ZipDirTask":
+    ) -> ZipDirTask:
         source_meta = source_dir_task.meta
         if isinstance(source_meta, ResultDirectoryMeta):
             meta = ResultArchiveMeta(

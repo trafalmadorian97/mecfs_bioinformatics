@@ -48,7 +48,7 @@ class ExtractSheetFromExelFileTask(Task):
         return self.excel_file_task.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.excel_file_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

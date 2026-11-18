@@ -59,7 +59,7 @@ class WhitespaceSepTextToParquetTask(Task):
         self._whitespace_format()
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_task]
 
     @property
@@ -149,7 +149,7 @@ class WhitespaceSepTextToParquetTask(Task):
         chunk_size: int = 2_000_000,
         compression: str = "zstd",
         dtype: Mapping[str, str] | None = None,
-    ) -> "WhitespaceSepTextToParquetTask":
+    ) -> WhitespaceSepTextToParquetTask:
         source_meta = source_task.meta
         assert isinstance(
             source_meta, (GWASSummaryDataFileMeta, FilteredGWASDataMeta)

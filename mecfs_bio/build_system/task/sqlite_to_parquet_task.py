@@ -45,7 +45,7 @@ class SqliteToParquetTask(Task):
     target_compression: str = "zstd"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -73,7 +73,7 @@ class SqliteToParquetTask(Task):
         query: str,
         target_compression: str = "zstd",
         override_subfolder: PurePath | None = None,
-    ) -> "SqliteToParquetTask":
+    ) -> SqliteToParquetTask:
         source_meta = source_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
             if override_subfolder is None:
