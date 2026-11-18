@@ -391,7 +391,7 @@ def _test_pair(
 def _test_protein(
     fetched: ProteinWindowFrames,
     trait: pl.LazyFrame,
-    task: "TraitProteinColocTask",
+    task: TraitProteinColocTask,
     reference: _OrientationReference,
     windows_dir: Path,
 ) -> list[_PairOutcome]:
@@ -430,7 +430,7 @@ def _test_selected_pairs(
     ranked: pl.DataFrame,
     loci: pl.DataFrame,
     trait: pl.LazyFrame,
-    task: "TraitProteinColocTask",
+    task: TraitProteinColocTask,
     reference: _OrientationReference,
     scratch_dir: Path,
     windows_dir: Path,
@@ -636,7 +636,7 @@ class TraitProteinColocTask(Task):
         fetcher: DenseWindowFetcher,
         method: ColocMethod = ColocAbf(),
         config: ColocRunConfig = ColocRunConfig(),
-    ) -> "TraitProteinColocTask":
+    ) -> TraitProteinColocTask:
         trait_meta = trait_task.meta
         assert isinstance(trait_meta, FilteredGWASDataMeta), (
             f"trait_task must carry FilteredGWASDataMeta, got {type(trait_meta).__name__}"

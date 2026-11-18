@@ -41,11 +41,11 @@ class FigureManifest:
     figures: dict[PurePath, str]
 
     @classmethod
-    def empty(cls) -> "FigureManifest":
+    def empty(cls) -> FigureManifest:
         return cls(figures={})
 
     @classmethod
-    def load(cls, manifest_path: Path) -> "FigureManifest":
+    def load(cls, manifest_path: Path) -> FigureManifest:
         if not manifest_path.exists():
             return cls.empty()
         with open(manifest_path) as f:
@@ -72,12 +72,12 @@ class FigureManifest:
             json.dump(payload, f, indent=2, sort_keys=False)
             f.write("\n")
 
-    def with_entry(self, rel_path: PurePath, sha256: str) -> "FigureManifest":
+    def with_entry(self, rel_path: PurePath, sha256: str) -> FigureManifest:
         new = dict(self.figures)
         new[rel_path] = sha256
         return FigureManifest(figures=new)
 
-    def without_entry(self, rel_path: PurePath) -> "FigureManifest":
+    def without_entry(self, rel_path: PurePath) -> FigureManifest:
         new = dict(self.figures)
         new.pop(rel_path, None)
         return FigureManifest(figures=new)

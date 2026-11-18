@@ -148,7 +148,7 @@ class SusieStackPlotTask(Task):
     heatmap_options: HeatmapOptions
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         deps = [self.susie_task, self.gene_info_task]
         return deps
 

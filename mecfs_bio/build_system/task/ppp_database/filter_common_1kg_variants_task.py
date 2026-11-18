@@ -169,7 +169,7 @@ class FilterCommon1kgVariantsTask(GeneratingTask):
         thousand_genomes: Task,
         asset_id: str,
         maf_threshold: float = DEFAULT_MAF_THRESHOLD,
-    ) -> "FilterCommon1kgVariantsTask":
+    ) -> FilterCommon1kgVariantsTask:
         # The panel this was filtered from is what distinguishes one of these assets
         # from another, so it comes from the source's meta rather than an argument.
         source_meta = thousand_genomes.meta

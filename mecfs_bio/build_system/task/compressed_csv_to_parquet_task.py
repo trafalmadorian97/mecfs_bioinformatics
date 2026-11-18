@@ -56,7 +56,7 @@ class CompressedCSVToParquetTask(Task):
         return self.csv_task.meta.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.csv_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -109,7 +109,7 @@ class CompressedCSVToParquetTask(Task):
         source_compression: str | None = "gzip",
         select_list: list[str] | None = None,
         type_dict: Mapping[str, str] | None = None,
-    ) -> "CompressedCSVToParquetTask":
+    ) -> CompressedCSVToParquetTask:
         source_meta = csv_task.meta
         if isinstance(source_meta, ReferenceFileMeta):
             meta = ReferenceFileMeta(

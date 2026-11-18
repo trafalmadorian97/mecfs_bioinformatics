@@ -27,7 +27,7 @@ class VerifyingTraceInfo:
     must_rebuild: set[AssetId] = field(factory=set)
 
     @classmethod
-    def empty(cls) -> "VerifyingTraceInfo":
+    def empty(cls) -> VerifyingTraceInfo:
         return cls(
             trace_store={},
             must_rebuild=set(),
@@ -40,7 +40,7 @@ class VerifyingTraceInfo:
         atomic_write_yaml(path=path, data=unstructured)
 
     @classmethod
-    def deserialize(cls, path: Path) -> "VerifyingTraceInfo":
+    def deserialize(cls, path: Path) -> VerifyingTraceInfo:
         conv = CONVERTER_FOR_SERIALIZATION
         with open(path) as infile:
             unstructured = yaml.load(infile, Loader=yaml.CSafeLoader)

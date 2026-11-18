@@ -45,7 +45,7 @@ class MixerBivariateSummarizeResultsTask(Task):
         return self.combine_task.trait_2_name
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.combine_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

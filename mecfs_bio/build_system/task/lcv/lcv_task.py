@@ -88,7 +88,7 @@ class LCVTask(Task):
     trait_2_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.trait_1_data, self.trait_2_data, self.consolidated_ld_scores]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

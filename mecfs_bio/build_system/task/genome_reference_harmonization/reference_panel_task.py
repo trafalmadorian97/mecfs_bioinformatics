@@ -186,7 +186,7 @@ class ReferencePanelAlleleFrequencyTask(Task):
         asset_id: str,
         build: GenomeBuild,
         ancestry: PanelAncestry,
-    ) -> "ReferencePanelAlleleFrequencyTask":
+    ) -> ReferencePanelAlleleFrequencyTask:
         source_meta = vcf_task.meta
         assert isinstance(source_meta, ReferenceFileMeta), (
             f"expected a ReferenceFileMeta source for {asset_id}, got {type(source_meta).__name__}"

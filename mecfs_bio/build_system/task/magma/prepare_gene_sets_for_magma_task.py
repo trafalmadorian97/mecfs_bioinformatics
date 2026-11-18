@@ -108,7 +108,7 @@ class PrepareGeneSetsForMagmaTask(Task):
         asset_id: str,
         gene_sets: Sequence[MSigDBGeneSetSpec],
         parquet_db_task: Task,
-    ) -> "PrepareGeneSetsForMagmaTask":
+    ) -> PrepareGeneSetsForMagmaTask:
         source_meta = parquet_db_task.meta
         meta: Meta
         if isinstance(source_meta, ReferenceFileMeta):

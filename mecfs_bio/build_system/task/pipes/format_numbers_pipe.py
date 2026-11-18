@@ -33,5 +33,5 @@ def _convertible_to_float(val: str) -> bool:
     try:
         float(val)
         return True
-    except (ValueError, TypeError):
+    except ValueError, TypeError:
         return False

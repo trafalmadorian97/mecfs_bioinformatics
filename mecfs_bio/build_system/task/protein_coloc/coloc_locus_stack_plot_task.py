@@ -325,7 +325,7 @@ class ColocLocusStackPlotTask(Task):
         genetic_map_task: Task,
         max_loci: int = 10,
         trait_name: str | None = None,
-    ) -> "ColocLocusStackPlotTask":
+    ) -> ColocLocusStackPlotTask:
         source_meta = coloc_task.meta
         assert isinstance(source_meta, ResultDirectoryMeta), (
             f"coloc_task must carry ResultDirectoryMeta, got {type(source_meta).__name__}"

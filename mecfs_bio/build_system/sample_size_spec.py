@@ -35,7 +35,7 @@ class PerVariantSampleSize:
 SampleSizeSpec = ScalarSampleSize | PerVariantSampleSize
 
 
-def coerce_sample_size(value: "int | SampleSizeSpec") -> SampleSizeSpec:
+def coerce_sample_size(value: int | SampleSizeSpec) -> SampleSizeSpec:
     """Wrap a bare ``int`` as a :class:`ScalarSampleSize` for backwards
     compatibility with call sites that pass a scalar sample size directly."""
     if isinstance(value, int):

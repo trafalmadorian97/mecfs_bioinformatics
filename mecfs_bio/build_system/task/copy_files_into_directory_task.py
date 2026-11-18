@@ -28,7 +28,7 @@ class CopyFilesIntoDirectoryTask(Task):
     meta: Meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [item.task for item in self.sources]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

@@ -55,7 +55,7 @@ class StreamExtractAnnotationParquetsTask(Task):
     dest_stem: str = "baselineLF2.2.UKB.{chrom}.annot"
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return []
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> DirectoryAsset:

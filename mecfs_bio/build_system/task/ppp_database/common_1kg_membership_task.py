@@ -131,7 +131,7 @@ class Common1kgMembershipTask(GeneratingTask):
     @classmethod
     def create(
         cls, filtered_variants_task: Task, asset_id: str
-    ) -> "Common1kgMembershipTask":
+    ) -> Common1kgMembershipTask:
         return cls(
             meta=ReferenceFileMeta(
                 group="ppp_variant_index_membership",

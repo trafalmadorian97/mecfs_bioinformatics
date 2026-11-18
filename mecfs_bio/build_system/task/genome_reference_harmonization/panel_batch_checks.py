@@ -67,10 +67,10 @@ class PanelBatchCounts:
     ref_mismatch: int
 
     @classmethod
-    def zero(cls) -> "PanelBatchCounts":
+    def zero(cls) -> PanelBatchCounts:
         return cls(rows_in=0, fasta_ambiguous=0, ref_mismatch=0)
 
-    def __add__(self, other: "PanelBatchCounts") -> "PanelBatchCounts":
+    def __add__(self, other: PanelBatchCounts) -> PanelBatchCounts:
         return PanelBatchCounts(
             rows_in=self.rows_in + other.rows_in,
             fasta_ambiguous=self.fasta_ambiguous + other.fasta_ambiguous,

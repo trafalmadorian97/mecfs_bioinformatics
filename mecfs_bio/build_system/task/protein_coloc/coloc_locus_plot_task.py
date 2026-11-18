@@ -234,7 +234,7 @@ class ColocLocusPlotTask(Task):
         coloc_task: Task,
         gene_info_task: Task,
         pairs: tuple[ColocPair, ...],
-    ) -> "ColocLocusPlotTask":
+    ) -> ColocLocusPlotTask:
         source_meta = coloc_task.meta
         assert isinstance(source_meta, ResultDirectoryMeta), (
             f"coloc_task must carry ResultDirectoryMeta, got {type(source_meta).__name__}"

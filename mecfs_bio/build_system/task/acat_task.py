@@ -49,7 +49,7 @@ class AcatTask(Task):
     excluded_models: list[str]
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.source_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -91,7 +91,7 @@ class AcatTask(Task):
         p_value_col: str,
         model_col: str,
         excluded_models: Sequence[str] = (),
-    ) -> "AcatTask":
+    ) -> AcatTask:
         source_meta = source_task.meta
         assert isinstance(source_meta, (GWASSummaryDataFileMeta, FilteredGWASDataMeta))
         meta = FilteredGWASDataMeta(

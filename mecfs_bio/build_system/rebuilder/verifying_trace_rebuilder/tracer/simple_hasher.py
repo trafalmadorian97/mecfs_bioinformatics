@@ -39,5 +39,5 @@ class SimpleHasher(Tracer):
         raise ValueError(f"Unknown asset {a} of type{type(a)}")
 
     @classmethod
-    def md5_hasher(cls) -> "SimpleHasher":
+    def md5_hasher(cls) -> SimpleHasher:
         return cls(hashlib.md5)

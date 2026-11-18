@@ -71,7 +71,7 @@ class CellAnalysisByLDSCTask(Task):
     pre_pipe: DataProcessingPipe = IdentityPipe()
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [
             self.source_sumstats_task,
             self.ref_ld_chr_cts_task,
@@ -205,7 +205,7 @@ class LDCTSFileEntry:
             f"{self.label}\t{self.target_gene_data_path},{self.control_gene_data_path}"
         )
 
-    def prepend_to_paths(self, prefix: Path) -> "LDCTSFileEntry":
+    def prepend_to_paths(self, prefix: Path) -> LDCTSFileEntry:
         return LDCTSFileEntry(
             label=self.label,
             target_gene_data_path=prefix / self.target_gene_data_path,
@@ -213,7 +213,7 @@ class LDCTSFileEntry:
         )
 
     @classmethod
-    def from_text(cls, text: str) -> "LDCTSFileEntry":
+    def from_text(cls, text: str) -> LDCTSFileEntry:
         label, rest = text.split("\t", maxsplit=1)
         target, control = rest.split(",", maxsplit=1)
         return cls(

@@ -103,7 +103,7 @@ class UpSetPlotTask(Task):
     set_sources: Sequence[SetSource]
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         result = [item.task for item in self.set_sources]
         return result
 

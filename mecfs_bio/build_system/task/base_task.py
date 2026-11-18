@@ -27,7 +27,7 @@ class GeneratingTask(ABC):
 
     @property
     @abstractmethod
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         """
         List of tasks whose assets are needed to produce the target asset.
         """

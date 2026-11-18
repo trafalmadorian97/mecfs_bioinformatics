@@ -233,7 +233,7 @@ class TwoSampleMRTask(Task):
         return self.outcome_data_task.meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.exposure_data_task, self.outcome_data_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:

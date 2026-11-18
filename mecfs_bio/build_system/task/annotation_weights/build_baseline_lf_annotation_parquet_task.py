@@ -65,7 +65,7 @@ class BuildBaselineLFAnnotationParquetTask(Task):
     annot_members_task: Task
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.annot_members_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -94,7 +94,7 @@ class BuildBaselineLFAnnotationParquetTask(Task):
     @classmethod
     def create(
         cls, asset_id: str, annot_members_task: Task
-    ) -> "BuildBaselineLFAnnotationParquetTask":
+    ) -> BuildBaselineLFAnnotationParquetTask:
         # Derive the output file meta from the members directory dependency's
         # meta (reuse group/sub_group/sub_folder); only id/extension/read_spec
         # differ.

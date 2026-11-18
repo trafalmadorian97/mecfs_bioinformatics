@@ -112,7 +112,7 @@ class VectorizedCellAnalysisBySLDSCTask(Task):
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
         duplicate_rsids: SLDSCDuplicateRsidPolicy = "raise",
-    ) -> "VectorizedCellAnalysisBySLDSCTask":
+    ) -> VectorizedCellAnalysisBySLDSCTask:
         sumstats_meta = source_sumstats_task.meta
         assert isinstance(sumstats_meta, GWASLabSumStatsMeta)
         return cls(

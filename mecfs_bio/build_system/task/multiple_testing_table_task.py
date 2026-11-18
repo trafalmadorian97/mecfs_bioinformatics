@@ -81,7 +81,7 @@ class MultipleTestingTableTask(Task):
         return self.table_source_task.meta
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.table_source_task]
 
     def _get_frame_from_source_asset(self, asset: Asset) -> pd.DataFrame:

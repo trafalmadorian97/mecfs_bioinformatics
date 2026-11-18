@@ -47,13 +47,13 @@ class PanelAlleleFrequencyColumns:
     @classmethod
     def single(
         cls, ancestry: PanelAncestry, column: str
-    ) -> "PanelAlleleFrequencyColumns":
+    ) -> PanelAlleleFrequencyColumns:
         return cls((PanelAncestryColumn(ancestry=ancestry, column=column),))
 
     @classmethod
     def prefixed(
         cls, ancestries: Sequence[PanelAncestry]
-    ) -> "PanelAlleleFrequencyColumns":
+    ) -> PanelAlleleFrequencyColumns:
         """One AF_<ancestry> column per ancestry, as multi-ancestry panels name them."""
         return cls(
             tuple(

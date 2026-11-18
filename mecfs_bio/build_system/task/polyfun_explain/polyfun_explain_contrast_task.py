@@ -198,7 +198,7 @@ class PolyfunExplainContrastTask(Task):
     secondary_position: SecondaryPositionFromSnpid | None = None
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [
             self.susie_uniform_task,
             self.susie_polyfun_task,
@@ -350,7 +350,7 @@ class PolyfunExplainContrastTask(Task):
         annotation_parquet_task: Task,
         n_important_families: int = 3,
         secondary_position: SecondaryPositionFromSnpid | None = None,
-    ) -> "PolyfunExplainContrastTask":
+    ) -> PolyfunExplainContrastTask:
         source_meta = susie_polyfun_task.meta
         if not isinstance(source_meta, ResultDirectoryMeta):
             raise ValueError(f"Unknown meta for polyfun susie task: {source_meta}")

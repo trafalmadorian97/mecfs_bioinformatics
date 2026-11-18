@@ -113,7 +113,7 @@ class PathRemapRule:
     @classmethod
     def tuple_from_config(
         cls, entries: Sequence[Mapping[str, Any]]
-    ) -> tuple["PathRemapRule", ...]:
+    ) -> tuple[PathRemapRule, ...]:
         """
         Build rules from the literal prefixes in the path_remap section of a parsed yaml
         config.  Unrecognized keys are an error rather than being ignored, so a typo in a

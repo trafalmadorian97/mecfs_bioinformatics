@@ -82,7 +82,7 @@ class PrepareSLDSCBaselineTask(Task):
         baseline_pattern: str,
         weights_directory_task: Task,
         weights_pattern: str,
-    ) -> "PrepareSLDSCBaselineTask":
+    ) -> PrepareSLDSCBaselineTask:
         source_meta = baseline_directory_task.meta
         assert isinstance(source_meta, ReferenceDataDirectoryMeta)
         return cls(

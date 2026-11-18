@@ -430,7 +430,7 @@ class GenomeReferenceHarmonizationTask(Task):
         panel_ancestry: PanelAncestry,
         options: GenomeReferenceHarmonizationOptions = GenomeReferenceHarmonizationOptions(),
         pipe: DataProcessingPipe = IdentityPipe(),
-    ) -> "GenomeReferenceHarmonizationTask":
+    ) -> GenomeReferenceHarmonizationTask:
         """Build the Task; trait, project and genome build come from the inputs' metas.
 
         panel_ancestry is required, never defaulted: a silent default is how the wrong

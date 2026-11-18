@@ -51,7 +51,7 @@ class PolyfunPriorComparisonTableTask(Task):
     secondary_position: SecondaryPositionFromSnpid | None = None
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return self.runs.tasks
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -78,7 +78,7 @@ class PolyfunPriorComparisonTableTask(Task):
         asset_id: str,
         runs: PriorComparisonRuns,
         secondary_position: SecondaryPositionFromSnpid | None = None,
-    ) -> "PolyfunPriorComparisonTableTask":
+    ) -> PolyfunPriorComparisonTableTask:
         source_meta = runs.susie_uniform_task.meta
         if not isinstance(source_meta, ResultDirectoryMeta):
             raise ValueError(f"Unknown meta for uniform susie task: {source_meta}")

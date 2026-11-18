@@ -96,7 +96,7 @@ class Hapmap3MembershipTask(GeneratingTask):
         return FileAsset(out_path)
 
     @classmethod
-    def create(cls, asset_id: str) -> "Hapmap3MembershipTask":
+    def create(cls, asset_id: str) -> Hapmap3MembershipTask:
         return cls(
             meta=ReferenceFileMeta(
                 group="ppp_variant_index_membership",

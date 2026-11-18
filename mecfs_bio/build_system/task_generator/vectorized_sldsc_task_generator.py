@@ -58,7 +58,7 @@ class VectorizedSLDSCTaskGenerator:
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         min_hapmap3_snps: int = SLDSC_DEFAULT_MIN_HAPMAP3_SNPS,
         duplicate_rsids: SLDSCDuplicateRsidPolicy = "raise",
-    ) -> "VectorizedSLDSCTaskGenerator":
+    ) -> VectorizedSLDSCTaskGenerator:
         return cls(
             {
                 entry.entry_name: build_cell_analysis_task_group(

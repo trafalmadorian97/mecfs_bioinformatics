@@ -45,7 +45,7 @@ class MagmaAnnotateTask(Task):
         return self.gene_loc_file_task.asset_id
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         return [self.magma_binary_task, self.snp_loc_file_task, self.gene_loc_file_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -87,7 +87,7 @@ class MagmaAnnotateTask(Task):
         snp_loc_file_task: Task,
         gene_loc_file_task: Task,
         window: tuple[int, int] | None = None,
-    ) -> "MagmaAnnotateTask":
+    ) -> MagmaAnnotateTask:
         snp_loc_meta = snp_loc_file_task.meta
         assert isinstance(snp_loc_meta, FilteredGWASDataMeta)
         meta = FilteredGWASDataMeta(

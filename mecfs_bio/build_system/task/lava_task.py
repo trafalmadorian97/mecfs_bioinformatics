@@ -158,7 +158,7 @@ class LavaTask(Task):
     )
 
     @property
-    def deps(self) -> list["Task"]:
+    def deps(self) -> list[Task]:
         result: list[Task] = [item.task for item in self.sources]
         result.append(self.ld_reference_info.ld_ref_task)
         result.append(self.lava_locus_definitions_task)
@@ -286,7 +286,7 @@ class LavaTask(Task):
         heritability_task_for_overlap: Task | None = None,
         univ_p_threshold: float = 0.05,
         max_loci: int | None = None,
-    ) -> "LavaTask":
+    ) -> LavaTask:
         meta = ResultDirectoryMeta(
             id=asset_id,
             trait="multi_trait",

@@ -66,7 +66,7 @@ class IndexedFasta:
     entries: Mapping[int, FaiEntry]
 
     @classmethod
-    def open(cls, directory: Path) -> "IndexedFasta":
+    def open(cls, directory: Path) -> IndexedFasta:
         fasta_path = directory / FASTA_FILENAME
         fai_path = directory / (FASTA_FILENAME + FAI_SUFFIX)
         assert fasta_path.is_file(), f"missing {fasta_path}"
