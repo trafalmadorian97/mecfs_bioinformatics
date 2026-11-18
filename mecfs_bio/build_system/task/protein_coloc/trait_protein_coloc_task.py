@@ -449,7 +449,7 @@ def _test_selected_pairs(
                 total=len(requests),
                 desc="coloc proteins",
                 unit="protein",
-                smoothing=0.05,
+                smoothing=0.00,
             )
             for outcome in _test_protein(protein, trait, task, reference, windows_dir)
         ]
