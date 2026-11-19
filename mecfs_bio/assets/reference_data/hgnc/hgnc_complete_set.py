@@ -9,6 +9,10 @@ dropped, and so are readthrough genes (a transcript spanning two adjacent genes,
 PTGES3L-AARSD1, which HGNC lists under the accession of one of the genes it spans). An accession
 encoded by duplicated genes (for example P59665, by DEFA1 and DEFA1B) has one row per gene.
 
+HGNC_ENSEMBL_GENES keeps every gene with an Ensembl gene id, coding or not: one row per (Ensembl
+gene id, symbol), with the gene's name. A few Ensembl ids (for example ENSG00000230417, of
+LINC00595 and LINC00856) are listed under two symbols.
+
 Source: https://www.genenames.org/download/archive/
 """
 
@@ -106,5 +110,19 @@ HGNC_UNIPROT_GENES = PipeDataFrameTask.create(
         ),
         DropNullsPipe(subset=[HGNC_UNIPROT_ID_COL]),
         UniquePipe(by=[HGNC_UNIPROT_ID_COL, HGNC_SYMBOL_COL], keep="any"),
+    ],
+)
+
+HGNC_ENSEMBL_GENES = PipeDataFrameTask.create(
+    source_task=HGNC_COMPLETE_SET,
+    asset_id="hgnc_ensembl_genes",
+    out_format=ParquetOutFormat(),
+    backend="polars",
+    pipes=[
+        SelectColPipe(
+            cols_to_select=[HGNC_ENSEMBL_ID_COL, HGNC_SYMBOL_COL, HGNC_NAME_COL]
+        ),
+        DropNullsPipe(subset=[HGNC_ENSEMBL_ID_COL]),
+        UniquePipe(by=[HGNC_ENSEMBL_ID_COL, HGNC_SYMBOL_COL], keep="any"),
     ],
 )

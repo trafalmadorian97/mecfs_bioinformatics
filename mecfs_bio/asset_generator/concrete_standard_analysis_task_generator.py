@@ -30,6 +30,9 @@ from mecfs_bio.asset_generator.magma_curated_gene_set_analysis_generator import 
     CuratedGeneSetAnalysisTasks,
     curated_gene_set_analysis_magma_tasks_from_gene_analysis,
 )
+from mecfs_bio.assets.reference_data.gene_info.gene_info_reference import (
+    GENE_INFO_REFERENCE,
+)
 from mecfs_bio.assets.reference_data.linkage_disequilibrium_score_reference_data.extracted.eur_ld_scores_thousand_genome_phase_3_v1_extracted import (
     THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_EXTRACTED,
 )
@@ -82,7 +85,6 @@ from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 from mecfs_bio.build_system.task.pipes.set_col_pipe import SetColToConstantPipe
 from mecfs_bio.build_system.task.pipes.transpose_pipe import TransposePipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
-    GGetSettings,
     MagmaTaskGeneratorFromRaw,
 )
 from mecfs_bio.build_system.task_generator.master_gene_list_task_generator import (
@@ -186,7 +188,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
     hba_plot_settings: PlotSettings = PlotSettings(plot_mode="plotly_white"),
     gtex_magma_number_of_bars: int = 20,
     hba_indep_plot_options: HBAIndepPlotOptions = HBAIndepPlotOptions(),
-    gget_settings: GGetSettings | None = GGetSettings(limit_genes=20),
+    include_gene_info: bool = True,
     manhattan_settings: ManhattanPlotSettings | None = None,
     phenotype_info_for_ldsc: PhenotypeInfo | None = None,
     include_gene_set_analysis: bool = True,
@@ -217,7 +219,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
         sample_size=sample_size,
         pre_pipe=pre_pipe,
         number_of_bars=gtex_magma_number_of_bars,
-        gget_settings=gget_settings,
+        include_gene_info=include_gene_info,
     )
     sldsc_ss = (
         coerce_sample_size(sample_size_for_sldsc)
@@ -256,6 +258,7 @@ def concrete_standard_analysis_generator_assume_already_has_rsid(
                     ensemble_id_column="Gene stable ID",
                 ),
             ],
+            gene_info_reference=GENE_INFO_REFERENCE,
         )
     else:
         master_gene_list_tasks = None
