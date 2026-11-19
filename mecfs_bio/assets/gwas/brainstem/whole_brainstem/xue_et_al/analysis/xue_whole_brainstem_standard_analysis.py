@@ -32,6 +32,6 @@ XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS = (
         include_independent_cluster_plot_in_hba=True,
         manhattan_settings=ManhattanPlotSettings(),
         phenotype_info_for_ldsc=QuantPhenotype(),
-        gget_settings=None,
+        include_gene_info=False,
     )
 )
