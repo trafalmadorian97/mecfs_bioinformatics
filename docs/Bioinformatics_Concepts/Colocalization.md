@@ -503,7 +503,7 @@ $$
 \end{align}
 $$
 
-to be contiued
+to be continued
 
 **End of proof of main result**
 
