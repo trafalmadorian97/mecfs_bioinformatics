@@ -1,4 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.kerrebijn_fibro_ppp_coloc import \
+    KERREBIJN_FIBRO_PPP_COLOC_FULL
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_csf_coloc import WILLER_LDL_CSF_COLOC
 from mecfs_bio.assets.gwas.ldl.willer_et_al.analysis.willer_ldl_ppp_coloc import WILLER_LDL_PPP_COLOC
 from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.decode_me_ppp_coloc import DECODE_ME_PPP_COLOC, \
@@ -24,7 +26,8 @@ def go():
        [
            # DECODE_ME_PPP_COLOC_EXPLORATORY_2_STACK_PLOTS.png_task,
            # DECODE_ME_PPP_COLOC_EXPLORATORY_2_PROTEIN_INFO,
-           PGC2022_PPP_COLOC_FULL.display_task
+           KERREBIJN_FIBRO_PPP_COLOC_FULL.display_task,
+           # PGC2022_PPP_COLOC_FULL.display_task
 
        ]
    )
