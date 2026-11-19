@@ -8,6 +8,9 @@ from mecfs_bio.assets.executable.extracted.magma_binary_extracted import (
 from mecfs_bio.assets.reference_data.ensembl_biomart.gene_thesaurus import (
     GENE_THESAURUS,
 )
+from mecfs_bio.assets.reference_data.gene_info.gene_info_reference import (
+    GENE_INFO_REFERENCE,
+)
 from mecfs_bio.assets.reference_data.magma_gene_locations.raw.magma_ensembl_gene_location_reference_data_build_37 import (
     MAGMA_ENSEMBL_GENE_LOCATION_REFERENCE_DATA_BUILD_37_RAW,
 )
@@ -25,7 +28,6 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task_generator.magma_task_generator import (
-    GGetSettings,
     MagmaTaskGeneratorFromRaw,
 )
 
@@ -36,7 +38,7 @@ def concrete_magma_assets_generate(
     fmt: ValidGwaslabFormat,
     sample_size: int | SampleSizeSpec,
     pre_pipe: DataProcessingPipe = IdentityPipe(),
-    gget_settings: GGetSettings | None = GGetSettings(50),
+    include_gene_info: bool = True,
     number_of_bars: int = 20,
 ) -> MagmaTaskGeneratorFromRaw:
     """
@@ -53,6 +55,6 @@ def concrete_magma_assets_generate(
         fmt=fmt,
         pre_pipe=pre_pipe,
         gene_thesaurus_task=GENE_THESAURUS,
-        gget_settings=gget_settings,
+        gene_info_reference=GENE_INFO_REFERENCE if include_gene_info else None,
         number_of_bars=number_of_bars,
     )
