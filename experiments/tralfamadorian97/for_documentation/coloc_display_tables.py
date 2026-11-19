@@ -13,15 +13,22 @@ from mecfs_bio.figures.key_scripts.regenerate_figures import regenerate_figures
 
 
 def go():
-   DEFAULT_RUNNER.run(
+   # DEFAULT_RUNNER.run(
+   #     [
+   #         BELLENGUEZ_PPP_COLOC_FULL.display_task
+   #         # DECODE_ME_PPP_COLOC.display_task
+   #         # DECODE_ME_PPP_COLOC_EXPLORATORY.display_task
+   #      ],
+   #     must_rebuild_transitive=[
+   #         # DECODE_ME_PPP_COLOC.display_task
+   #                              ],
+   # )
+   regenerate_figures(
        [
+
            BELLENGUEZ_PPP_COLOC_FULL.display_task
-           # DECODE_ME_PPP_COLOC.display_task
-           # DECODE_ME_PPP_COLOC_EXPLORATORY.display_task
-        ],
-       must_rebuild_transitive=[
-           # DECODE_ME_PPP_COLOC.display_task
-                                ],
+
+       ]
    )
    # regenerate_figures(
    #     [

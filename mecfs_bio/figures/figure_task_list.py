@@ -15,6 +15,9 @@ from mecfs_bio.assets.diagrams.liability_threshold_ascertained_sample import (
 from mecfs_bio.assets.diagrams.liability_threshold_model import (
     LIABILITY_THRESHOLD_MODEL_DIAGRAM,
 )
+from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_alzhiemers_ppp_coloc import (
+    BELLENGUEZ_PPP_COLOC_FULL,
+)
 from mecfs_bio.assets.gwas.alzheimers.bellenguez_et_al.analysis.bellenguez_pp_rg import (
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED,
 )
@@ -554,6 +557,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     MV_MI_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # Bellenguez Alzheimer's GWAS
     BELLENGUEZ_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    BELLENGUEZ_PPP_COLOC_FULL.display_task,
     # PGC 2022 Schizophrenai
     PGC2022_SCH_PPP_RG_CIS_EXCLUDED.display_frame_task,
     PGC2022_PPP_COLOC_FULL.display_task,
