@@ -92,7 +92,7 @@ Bayes factor colocalization operates conditional on  $\mathcal{A}$, the assumpti
 
 We define 5 hypothesis, which partition the configurations:
 
-- $H_0$ corresponds to the configurations $\mathcal{S}_0=\{ (0,0) \}$.  There are no causal variants at the locus.
+- $H_0$ corresponds to the configuration $\mathcal{S}_0=\{ (0,0) \}$.  There are no causal variants at the locus.
 - $H_1$ corresponds to the configurations $\mathcal{S}_1=\{ (i,0) : i \ge  1 \}$.  There is a causal variant for trait 1 but not trait 2.
 - $H_2$ corresponds to the configurations $\mathcal{S}_2=\{ (0,j) : j \ge  1 \}$.  There is a causal variant for trait 2 but not trait 1.
 - $H_3$ corresponds to the configurations $\mathcal{S}_3=\{ (i,j) : i,j \ge  1 ,i\ne j\}$. Both traits have causal variants at the locus, but they are different.
@@ -444,9 +444,69 @@ static_img_embed("docs/_figs/coloc_bf_vs_pvalue_diagram.svg",alt="image illustra
 
 Notable points from the plot:
 
-- In slope of the $\log\mathrm{BF}$ versus $-\log p$ curve approaches 1 as sample size grows.
-- However,  $\log\mathrm{BF}$ is not monotonic in $-\log p$.  Initially, $BF$ actually declines as $p$ shrinks.  This effect can be understood as follows when the data weights against the alternative hypothesis, the alternative hypothesis is more likely at a small sample size (when the data may be unreliable) than at a moderate sample size.
-- $\mathrm{BF}$ is not monotonic in $\hat\beta$
+- In ratio of $\log\mathrm{BF}$ to $-\log p$ approaches 1 as sample size grows.
+- However,  $\log\mathrm{BF}$ is not monotonic in $-\log p$.  Initially, $BF$ actually declines as $p$ shrinks.  This effect can be understood as follows: when the data provides evidence against the alternative hypothesis, the alternative hypothesis is more likely at a small sample size (when the data may be unreliable) than at a moderate sample size.
+- $\mathrm{BF}$ is not monotonic in $\hat\beta$.  This can be understood as an effect of the prior.  Very large values of $\hat\beta$ are downweighted by the prior.
+
+### Posterior
+
+Next, we are interested in how observing the data affects the probability of the hypotheses. 
+
+Define the following quantities
+
+$$
+\begin{align}
+L_1 &:= \sum_{i=1}^Q B_1(i)\\
+L_2 &:= \sum_{i=1}^Q B_2(i)\\
+L_{1,2} &:= \sum_{i=1}^Q B_1(i) B_2(i)
+\end{align}
+$$
+
+Let $D:=(y_1,y_2)$ denote the observed phenotypic data.
+
+Our main result follows.
+
+**Main result**
+
+$$
+\begin{align}
+P(H_h|D,\mathcal{A})&=\frac{w_h}{\sum_{l=0}^4w_l}
+\end{align}
+$$
+
+where 
+
+$$
+\begin{align}
+w_0&:=1\\
+w_1&:=\rho_1 L_1\\
+w_2&:=\rho_2 L_2\\
+w_3&:= \rho_1\rho_2(L_1L_2 -L_{1,2})\\
+w_4&:= \rho_{1,2}L_{1,2}
+\end{align}
+$$
+
+
+**Proof of main result**
+
+First, let $E$ denote any event whose intersection with $\mathcal{A}$ has nonzero probability. We have:
+
+
+$$
+\begin{align}
+&P(E|D,\mathcal{A})\\%\frac{P(S|\mathcal{A})}{P(S^0|\mathcal{A})}
+&=\frac{P(E\cap \mathcal{A}|D)}{P(\mathcal{A}|D)} & \text{Def of cond prob}\\
+&=\frac{p(E\cap \mathcal{A}\cap D)/p(D)}{p(\mathcal{A}\cap D)/p(D)     } & \text{Density ratio} \\
+&=\frac{p(E\cap \mathcal{A}\cap D)P(E\cap A)/(p(D)P(E\cap A))}{p(\mathcal{A}\cap D)P(\mathcal{A})/(p(D)P(\mathcal{A}))     } & \text{Multiply and divide}\\
+&=\frac{p(D| E, \mathcal{A})P(E\cap A)}{p( D|\mathcal{A})P(\mathcal{A})     }\\
+&=\frac{p(D| E, \mathcal{A})P(E| A)}{p( D|\mathcal{A})     }
+\end{align}
+$$
+
+to be contiued
+
+**End of proof of main result**
+
 
 ## SUSIE colocalization
 
