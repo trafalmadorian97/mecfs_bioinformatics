@@ -55,6 +55,11 @@ from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import 
     PROTEIN_ACCESSIONS_UNIPROT_COL,
     ProteinAccessionsReader,
 )
+from mecfs_bio.build_system.task.uniprot_comment_text import (
+    EVIDENCE_BLOCK_PATTERN,
+    null_if_blank,
+    uniprot_comment_text,
+)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.hgnc_constants import (
     HGNC_ENSEMBL_ID_COL,
@@ -95,16 +100,6 @@ SUBCELLULAR_LOCALISATION_COL = INFO_SUBCELLULAR_LOCALISATION_COL
 EVIDENCE_COL = INFO_EVIDENCE_COL
 _ROW_INDEX_COL = "_row"
 
-# Consecutive comments of one field are joined by "; " after a full stop; inside a comment, "; "
-# separates items (for example "Cell membrane; Single-pass type I membrane protein").
-_COMMENT_SEPARATOR_PATTERN = r"\.;\s+"
-
-# One evidence block, e.g. {ECO:0000269|PubMed:5, ECO:0000250|UniProtKB:Q8R4Y0}, with the space
-# before it. Inside a block, ", " separates items; each item is "ECO:<code>" optionally followed
-# by "|<source>".
-_EVIDENCE_BLOCK_PATTERN = r"\s*\{ECO:[^}]*\}"
-# A block between two full stops ("Binds X. {ECO:...}."), dropped with one of them.
-_EVIDENCE_SENTENCE_PATTERN = r"\.\s*\{ECO:[^}]*\}\."
 _EVIDENCE_ITEM_SEPARATOR = ", "
 _EVIDENCE_SOURCE_SEPARATOR = "|"
 
@@ -171,31 +166,13 @@ def _read_table(fetch: Fetch, task: Task) -> pl.DataFrame:
     )
 
 
-def _null_if_blank(expr: pl.Expr) -> pl.Expr:
-    stripped = expr.str.strip_chars()
-    return pl.when(stripped == "").then(None).otherwise(stripped)
-
-
-def _without_label(column: str, label: str) -> pl.Expr:
-    """A UniProt comment field with its label (e.g. "FUNCTION:") and evidence blocks dropped."""
-    return _null_if_blank(
-        pl.col(column)
-        .cast(pl.String)
-        .str.replace_all(f"{label}:", "", literal=True)
-        .str.replace_all(_EVIDENCE_SENTENCE_PATTERN, ".")
-        .str.replace_all(_EVIDENCE_BLOCK_PATTERN, "")
-        .str.replace_all(_COMMENT_SEPARATOR_PATTERN, ". ")
-        .str.replace_all(r"\s+", " ")
-    )
-
-
 def _evidence_blocks(columns: list[str]) -> pl.Expr:
     """All evidence blocks of the given UniProt comment fields, in order, as a list."""
     return pl.concat_list(
         [
             pl.col(column)
             .cast(pl.String)
-            .str.extract_all(_EVIDENCE_BLOCK_PATTERN)
+            .str.extract_all(EVIDENCE_BLOCK_PATTERN)
             .fill_null(pl.lit([], dtype=pl.List(pl.String)))
             for column in columns
         ]
@@ -283,15 +260,15 @@ def _uniprot_by_accession(uniprot: pl.DataFrame, accessions: list[str]) -> pl.Da
     ]
     found = found.select(
         pl.col(UNIPROT_DAT_ID_COL).cast(pl.String).alias(UNIPROT_ID_COL),
-        _null_if_blank(pl.col(UNIPROT_DAT_PROTEIN_NAMES_COL).cast(pl.String)).alias(
+        null_if_blank(pl.col(UNIPROT_DAT_PROTEIN_NAMES_COL).cast(pl.String)).alias(
             PROTEIN_NAMES_COL
         ),
-        _without_label(UNIPROT_DAT_FUNCTION_COL, "FUNCTION").alias(
+        uniprot_comment_text(UNIPROT_DAT_FUNCTION_COL, "FUNCTION").alias(
             UNIPROT_DESCRIPTION_COL
         ),
-        _without_label(UNIPROT_DAT_SUBCELLULAR_LOC_COL, "SUBCELLULAR LOCATION").alias(
-            SUBCELLULAR_LOCALISATION_COL
-        ),
+        uniprot_comment_text(
+            UNIPROT_DAT_SUBCELLULAR_LOC_COL, "SUBCELLULAR LOCATION"
+        ).alias(SUBCELLULAR_LOCALISATION_COL),
     ).with_columns(pl.Series(EVIDENCE_COL, evidence, dtype=pl.String))
     for accession in sorted(set(accessions) - set(found[UNIPROT_ID_COL].to_list())):
         logger.warning(f"UniProt accession {accession} is not in the UniProt table")
