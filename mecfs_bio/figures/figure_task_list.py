@@ -45,6 +45,9 @@ from mecfs_bio.assets.gwas.ebv_dna.nyeo_et_al.analysis.ebv_dna_standard_analysis
 from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.kerrebeijin_ppp_rg import (
     KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED,
 )
+from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.kerrebijn_fibro_ppp_coloc import (
+    KERREBIJN_FIBRO_PPP_COLOC_FULL,
+)
 from mecfs_bio.assets.gwas.fibromyalgia.Kerrebijn_et_al.analysis.standard_analysis_kerrebijin_fibro import (
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS,
 )
@@ -206,6 +209,9 @@ from mecfs_bio.assets.gwas.multi_trait.genetic_correlation.ct_ldsc.ct_ldsc_fast_
 from mecfs_bio.assets.gwas.multi_trait.lcv.mi_lcv_analysis import MI_LCV_TASK_GROUP
 from mecfs_bio.assets.gwas.multi_trait.polygenic_overlap.bivariate_mixer.mecfs_pain_bivariate_mixer import (
     MECFS_PAIN_BIVARIATE_MIXER,
+)
+from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_pain_ppp_coloc import (
+    JOHNSTON_PAIN_PPP_COLOC_FULL,
 )
 from mecfs_bio.assets.gwas.multisite_pain.johnston_et_al.analysis.johnston_ppp_rg import (
     JOHNSTON_ET_AL_PPP_RG_CIS_EXCLUDED,
@@ -463,6 +469,7 @@ ALL_FIGURE_TASKS: list[Task] = [
         "ipsc_derived_neuro"
     ].gene_manhattan_plot_task,
     JOHNSTON_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
+    JOHNSTON_PAIN_PPP_COLOC_FULL.display_task,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.hba_magma_tasks_unwrap.independent_clusters_markdown_task_unwrap,
     KAMITAKI_ET_AL_STANDARD_ANALYSIS.tasks.magma_tasks.inner.bar_plot_task,
     XUE_WHOLE_BRAINSTEM_STANDARD_ANALYSIS.magma_tasks.inner.bar_plot_task,
@@ -564,6 +571,7 @@ ALL_FIGURE_TASKS: list[Task] = [
     # asthma
     ASTHMA_PPP_RG_CIS_EXCLUDED.display_frame_task,
     # Fibro
+    KERREBIJN_FIBRO_PPP_COLOC_FULL.display_task,
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.magma_independent_cluster_plot_svg_unwrap,
     KERREBIJN_ET_AL_FIBRO_STANDARD_ANALYSIS.hba_magma_tasks_unwrap.extracted_plot_task,
     KERREBEIJIN_ET_AL_PPP_RG_CIS_EXCLUDED.display_frame_task,
