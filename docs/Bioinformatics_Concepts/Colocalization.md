@@ -569,7 +569,18 @@ $$
 \end{align}
 $$
 
-We are now in a position to compute the 
+We are now in a position to compute the posterior probabilities
+
+We have
+
+$$
+\begin{align}
+&P(H_h|D,\mathcal{A})\\
+&=\sum_{s\in\mathcal{S}_h}P(S=s|D,\mathcal{A})\\
+&=\sum_{s\in\mathcal{S}_h} \frac{1}{K}\frac{P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})}B_1(s_1)B_2(s_2)\\
+&=\frac{1}{K} \rho^h  \sum_{s\in\mathcal{S}_h} B_1(s_1)B_2(s_2)
+\end{align}
+$$
 
 
 
