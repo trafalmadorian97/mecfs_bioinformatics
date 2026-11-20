@@ -12,11 +12,7 @@ def go():
         [
             KERREBIJN_FIBRO_PPP_COLOC_FULL.display_task,
             JOHNSTON_PAIN_PPP_COLOC_FULL.display_task,
-        ],
-        must_rebuild_transitive=[
-            KERREBIJN_FIBRO_PPP_COLOC_FULL.coloc_task,
-            JOHNSTON_PAIN_PPP_COLOC_FULL.coloc_task,
-        ],
+        ]
     )
 
 
