@@ -24,7 +24,7 @@ KERREBIJN_FIBRO_PPP_COLOC_FULL = generate_ppp_coloc_tasks(
         exclude_mhc=True,
         selection=SelectionConfig(
             max_pairs=4000,
-            max_per_locus=30,
+            max_per_locus=200,
         ),
         lead_p_threshold=1e-5,
     ),
