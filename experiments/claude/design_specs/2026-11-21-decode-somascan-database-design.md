@@ -42,7 +42,10 @@ AWS profile. The server is NetApp StorageGRID 12.1.
 | `variant_info_iceland.txt.gz` | 1 | 442 MB | `Chrom Pos A1 ImpFreqA1 ImpInfo` |
 | `proteomics2023README_20240517.txt` | 1 | 1 KB | column definitions |
 
-Both groups list the same 5,284 SomaScan seq ids, one file per seq id.
+Both groups list the same 5,284 SomaScan seq ids, one file per seq id. Eldjarn et al. analysed
+only **4,907** of them. Their supplementary table ST29 lists exactly those 4,907 seq ids, and
+all 4,907 are in the bucket. The other 377 are presumably the non-human and defective aptamers
+the paper excludes. The database covers the paper's 4,907 assays only (§3).
 
 **File format.** Each file (~970 MB) is one plain gzip stream, not BGZF and with no tabix index,
 holding tab-separated text (3.32 GB uncompressed, 33,449,999 variants, GRCh38):
@@ -83,11 +86,52 @@ parallel range requests took 38–43 s (22–27 MB/s), and its md5 matched.
 takes **53.8 s** (43 s download, 2 s md5, 8 s processing), with peak memory 4.2 GB. Remote window
 reads take 1.4–1.7 s and fetch ~6 MB each, and both matched a brute-force scan of the file.
 
+## Choice of SomaScan normalization: SMP first
+
+Sources: Eldjarn et al. 2023 main text, Supplementary Note 4, and supplementary tables ST19,
+ST20, ST29 and ST36. They were read on 2026-11-21; see the project memory
+`project_decode_somascan_smp_vs_pc0`.
+
+**What SMP normalization is.** SomaLogic's manufacturer-recommended last step. Each sample is
+rescaled to a reference, using one scaling factor per dilution group. Ferkingstad et al. 2021
+skipped it ("non-normalized", files `Proteomics_PC0_*`). Eldjarn et al. ran every analysis both
+ways and report SMP in the main text.
+
+| | Non-normalized | SMP |
+|---|---|---|
+| Individuals | 36,136 | 35,892 |
+| Assays with a cis pQTL | 1,889 | **2,120** |
+| Median top cis −log10 p, assays with a cis pQTL in both (1,880) | 83 | **131** |
+| Median correlation between assays (within platform) | 0.42 | −0.08 |
+| Median correlation with matching Olink assays | 0.39 | 0.33 |
+
+The cis rows were computed from ST19/ST20. Of the assays with a cis pQTL, 1,880 have one in both
+versions, 240 only under SMP and 9 only non-normalized. SMP gives the stronger signal for 1,685
+of the 1,880.
+
+**Decision (user, 2026-11-21): build the SMP group first.** Coloc is driven mostly by cis pQTLs,
+and SMP has clearly more cis power. The authors say SMP "tends to increase" power for
+associations that are not pleiotropic.
+
+**What SMP costs, carried into the risks below:**
+- It removes a shared global factor of protein levels. The authors suggest part of that is
+  biological.
+- It reshapes trans signals at pleiotropic variants. The ASGR1 del12 variant raises 556 proteins
+  and lowers none in non-normalized data, but raises 288 and lowers 331 under SMP.
+- 18% of protein–phenotype associations significant in both versions flip direction, mostly for
+  BMI, blood counts, inflammation, and kidney and liver traits.
+
+The **non-normalized group** is defined by the same code and built later, as a sensitivity
+analysis. It is the natural check for genetic correlation (both versions are affected by the
+global factor, in opposite ways) and for any important trans coloc.
+
 ## Goals
 
 1. **Credentials** in a user-local, uncommitted place that is easy to rotate. Tasks never contain
    keys or URLs that expire.
-2. A **deCODE SomaScan database per group** (SMP and non-normalized), each built the same way:
+2. A **deCODE SomaScan database per group** (SMP and non-normalized), each built the same way.
+   The SMP group is built first; the non-normalized one is defined but built later as a
+   sensitivity analysis. Each group has:
    - a shared HapMap3 variant index;
    - one slim per-protein parquet (BETA, SE, N; float32; index row order), usable by the same
      consumers as the PPP/CSF slim files: hit table and, later, LDSC;
@@ -208,22 +252,41 @@ slightly, so the builder may measure and pick.
 
 ### 3. Manifests (committed)
 
-A one-off regeneration script (like `regenerate_ppp_manifest.py`) lists both prefixes, sends a
-HEAD to each object (for size and md5), parses file names, and writes one committed CSV per
-group under `mecfs_bio/assets/reference_data/decode_somascan_sumstats/`. Columns:
-- `seq_id`, in dash form (`10000-28`, from `Proteomics_*_PC0_10000_28_…`);
-- `gene_symbol` from the file name;
-- `target_name`, the rest of the file name;
-- `key`, `size`, `md5`;
-- `uniprot` and `entrez_gene_id`, from the annotation below.
+**Assay set and annotation from Eldjarn et al. 2023, table ST29.** Table ST29
+(`ST29_protein_classification` in the supplementary workbook
+`41586_2023_6563_MOESM3_ESM.xlsx`) gives, for each assay:
+- `SeqId`, in underscore form (`10001_7`);
+- `UniProt` (comma-separated for multi-protein targets) and `Gene`;
+- `Targeted Soma`, `cis pQTL soma` and `confidence tier`.
 
-**Protein annotation** (UniProt and Entrez per seq id): the CSF manifest
-(`csf_aptamer_manifest.csv`, SomaScan 7k) already covers **4,813 of the 5,284** deCODE seq ids.
-The rest need deCODE's own aptamer table (Ferkingstad et al. 2021 / Eldjarn et al. 2023
-supplementary tables). The builder reads those papers' supplements (per repo practice: read
-the PDF, don't work from memory), uses deCODE's table as the primary source, and records
-disagreements with the CSF manifest. Seq ids left without UniProt get no accession rows and an
-"unknown" cis status in coloc, as CSF already handles.
+It lists exactly the paper's 4,907 analysed SomaScan assays, so it serves both as the **filter**
+(the 377 other files are not built) and as the **UniProt source**. A small committed CSV extract
+is kept with its provenance in the module docstring: the paper DOI, the workbook file name and
+the sheet name. That extract has SeqId, UniProt, Gene, the cis pQTL flags for both versions
+where the table gives them, and the confidence tier.
+
+ST2 (`ST2_soma_assays`, 5,032 rows) has fuller assay details. The builder checks it for an
+Entrez id column. Otherwise the gene-coordinate reader keys on UniProt and the gene symbol, as
+the existing readers allow (§10). The CSF manifest (`csf_aptamer_manifest.csv`, SomaScan 7k,
+4,813 of the seq ids) is a cross-check, not a source. The builder records disagreements on
+UniProt or gene and does not resolve them silently.
+
+**Generating the manifests.** A one-off regeneration script (like `regenerate_ppp_manifest.py`):
+1. lists both S3 prefixes;
+2. keeps the files whose seq id is in the ST29 extract;
+3. sends a HEAD to each kept object (for size and md5);
+4. parses the file names;
+5. writes one committed CSV per group under
+   `mecfs_bio/assets/reference_data/decode_somascan_sumstats/`.
+
+Columns:
+- `seq_id`, in dash form (`10000-28`, from `Proteomics_*_PC0_10000_28_…`), matching the CSF
+  convention;
+- `gene_symbol` and `target_name` from the file name;
+- `key`, `size`, `md5`;
+- `uniprot` from ST29.
+
+The script asserts there are 4,907 rows per group, each seq id appearing once.
 
 ### 4. Variant info asset (effect-allele frequency)
 
@@ -288,7 +351,7 @@ is my proposal.
 the smallest generic way to read a dataframe stored as a named file inside a `DirectoryAsset`,
 for example a read-spec or meta field naming the member file, which `scan_dataframe_asset`
 honours. The hit table then works unchanged with deCODE tasks. Copying the slim file into its
-own task is rejected because it duplicates ~42 GB.
+own task is rejected because it duplicates ~39 GB.
 
 ### 7. Asset generators and asset layout
 
@@ -300,7 +363,8 @@ own task is rejected because it duplicates ~42 GB.
 - **Modules:** `mecfs_bio/assets/gwas/decode_somascan/` gets `raw/` (manifest-driven
   specifics), `decode_somascan_database/hapmap3/` (index, protein files, hit table), and a coloc
   asset-generator group mirroring CSF's.
-- Both groups are defined. The user picks which to build first (open decision).
+- Both groups are defined. The SMP group is built first. The non-normalized group's tasks
+  exist but are not built until the sensitivity analysis is wanted.
 
 ### 8. Hit table
 
@@ -357,12 +421,12 @@ Implements `ProteinWindowReader`. It is built with:
 
 ## Performance and storage budget (per SomaScan group)
 
-| | Per protein | 5,284 proteins |
+| | Per protein | 4,907 assays |
 |---|---|---|
-| Build time (download-bound) | ~54 s | ~3.3 days |
-| Slim parquet | 7.9 MB | ~42 GB |
-| Seek index (zstd) | 0.92 MB | ~4.9 GB |
-| Position map | 0.03 MB | ~0.2 GB |
+| Build time (download-bound) | ~54 s | ~3.1 days |
+| Slim parquet | 7.9 MB | ~39 GB |
+| Seek index (zstd) | 0.92 MB | ~4.5 GB |
+| Position map | 0.03 MB | ~0.15 GB |
 | Coloc window read | ~1.5 s, ~6 MB | — |
 
 The build will hit transient errors and expiring presigned URLs. Presign a URL per task (6 h
@@ -400,7 +464,18 @@ end to end, mirroring the mockup).
   round-trip property (rapidgzip export, indexed_gzip import, seek and read) gets a unit test.
 - **Credential expiry mid-build.** Tasks fail fast with a renewal message, and completed
   proteins are kept.
-- **Annotation gaps** for the ~471 seq ids missing from the CSF manifest (§3).
+- **SMP artifacts** (see "Choice of SomaScan normalization").
+  - Trans pQTLs at highly pleiotropic variants can be reshaped or sign-flipped by the
+    normalization. The coloc results already record cis status. The builder also flags coloc
+    pairs whose protein lead sits at a variant listed in ST36 (highly pleiotropic in SMP or PC0),
+    for example an `is_pleiotropic_variant` column. Mitigation is follow-up analysis, not
+    filtering.
+  - Genetic correlation with traits tied to overall protein levels (BMI, kidney, liver,
+    inflammation) is distorted in both versions, in opposite ways. Interpret it with the
+    non-normalized group as a sensitivity check.
+- **Comparing plasma and CSF results.** How Western et al. normalized their SomaScan 7k data
+  hasn't been checked. Check before comparing deCODE (SMP) and CSF effect sizes or
+  correlations directly.
 
 ## Left to the builder
 
@@ -410,10 +485,13 @@ end to end, mirroring the mockup).
 - The exact form of the directory-member dataframe read (§6), kept minimal and generic.
 - Module and class names beyond those given here.
 
+## Decisions
+
+- **2026-11-21 (user):** SomaScan only; build the SMP group first, with non-normalized as a later
+  sensitivity build; database restricted to the paper's 4,907 assays, annotated from ST29.
+
 ## Open decisions for the user
 
-1. **Which SomaScan group to build first** (SMP or not normalized). Both are defined; building
-   one takes about 3.3 days.
-2. **Scope:** the proposal stops at a working `DecodeWindowReader` plus coloc wiring, with no
+1. **Scope:** the proposal stops at a working `DecodeWindowReader` plus coloc wiring, with no
    trait runs and no LDSC. Should a first trait run (e.g. DecodeME) or LDSC h²/rg over the deCODE
    database be included?
