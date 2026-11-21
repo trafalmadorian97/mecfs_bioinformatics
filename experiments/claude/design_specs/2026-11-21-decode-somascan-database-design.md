@@ -1,7 +1,7 @@
 # deCODE SomaScan proteomics database and coloc window reader — design
 
 **Date:** 2026-11-21
-**Status:** draft, awaiting user review
+**Status:** draft, under user review
 **Branch:** `decode-somascan-database`
 
 ## Intent
@@ -143,12 +143,16 @@ global factor, in opposite ways) and for any important trans coloc.
    can run against deCODE like PPP and CSF.
 5. The serial build system as it is, with no concurrent-task support, and **resumable** builds:
    one task per protein, so an interruption costs at most one protein.
+6. **LDSC heritability** (all-variants and cis-excluded) for every protein of the SMP group, as
+   the PPP pipeline produces for UKB-PPP (§11).
+7. An **exploratory DecodeME × deCODE coloc run** at trait lead p < 1e-5, with selection
+   budgets set so that **no trait-locus × protein candidate pair is dropped for budget** (§12).
 
 ## Non-goals
 
 - deCODE's UK Biobank Olink files.
-- Running coloc or LDSC for specific traits. That is follow-up work once the database exists;
-  this design only makes it possible. *(Proposal; see open decisions.)*
+- Genetic correlation (rg) between traits and deCODE proteins, LCV, and coloc runs for traits
+  other than the exploratory DecodeME run. These are follow-ups.
 - Keeping any full dense summary-statistics file on disk.
 - Concurrent task execution in the build system.
 - Any text under `docs/`.
@@ -170,7 +174,8 @@ global factor, in opposite ways) and for any important trans coloc.
   - external services via `WF`, injected and faked in tests (no monkeypatching);
   - `call_with_retries` as the one backoff loop;
   - polars;
-  - specifics (bucket, prefixes, profile name) under `assets/`, classes in `build_system/`;
+  - specifics (endpoint, bucket, prefixes, profile name) under `assets/`, classes in
+    `build_system/`;
   - new dependencies in the pixi analysis feature;
   - Task-level unit tests;
   - imports at top of file.
@@ -214,23 +219,52 @@ global factor, in opposite ways) and for any important trans coloc.
 
 ## Design
 
-### 1. Credentials and the S3 capability (WF)
+### 1. Credentials and S3 access
+
+**Split (user decision 2026-11-21, "option A").** Tasks name *what* they fetch: endpoint,
+bucket, key and the name of the credentials profile. `WF` supplies *how* to reach any S3
+endpoint. This mirrors Synapse, where tasks hold a `synid` and `WF`'s
+`SharedClientSynapseDownloader` logs in once for all of them. `WF` holds no bucket or endpoint,
+so one run can read any number of buckets.
 
 - **Credentials** live in a named AWS profile, `decode-download`, in `~/.aws/credentials` and
-  `~/.aws/config`, exactly as deCODE's instructions set it up. The config gets
-  `region = us-east-1`, and `endpoint_url = https://s3-ext.decode.is` is optional; we pass the
-  endpoint explicitly. Rotating keys means rerunning `aws configure --profile decode-download`.
-  The profile name, endpoint and bucket are constants under `assets/` (they are deCODE
-  specifics).
-- **New WF capability** `s3_access: S3Access` (Protocol in `build_system/wf/`), defaulted in
-  `make_wf`. It names a profile, endpoint and bucket and provides:
-  - `head(key) -> S3ObjectInfo` (size, deCODE md5 from `md5chksum`);
-  - `presigned_url(key, expires_s) -> str`.
+  `~/.aws/config`, exactly as deCODE's instructions set it up (region `us-east-1`). Rotating keys
+  means rerunning `aws configure --profile decode-download`. The profile name is a public label,
+  not a secret, so it can sit in task fields.
+- **Value types** (`build_system/`, attrs frozen):
 
-  The production implementation uses `boto3` with SigV4 and path-style addressing. Tasks get
-  presigned URLs at execution time only.
-- **Failure messages.** A missing profile, or a 403 from expired keys, fails fast with a message
-  naming the profile and the `aws configure` command.
+  ```python
+  @frozen
+  class S3Endpoint:
+      url: str                  # "https://s3-ext.decode.is"
+      region: str               # "us-east-1"
+      credentials_profile: str  # "decode-download": AWS profile name, not a secret
+
+  @frozen
+  class S3ObjectRef:
+      endpoint: S3Endpoint
+      bucket: str
+      key: str
+  ```
+
+  The deCODE values (`DECODE_S3_ENDPOINT` and the bucket name) are constants under `assets/`.
+  Every deCODE task holds the `S3ObjectRef`s it reads: the template and per-protein tasks one
+  each, the variant info task its file, and `DecodeWindowReader` one per protein.
+- **New WF capability** `s3_access: S3Access` (Protocol in `build_system/wf/`), defaulted in
+  `make_wf`. It is generic and knows nothing about deCODE:
+  - `head(ref: S3ObjectRef) -> S3ObjectInfo` (size, and the md5 from `x-amz-meta-md5chksum`
+    when present);
+  - `presigned_url(ref: S3ObjectRef, expires_s: int) -> str`.
+
+  The production implementation creates one `boto3` S3 client per
+  `(endpoint url, region, profile)` the first time it sees one (SigV4, path-style addressing),
+  caches it behind a lock, and reuses it. Tasks get presigned URLs only at execution time.
+  Tests inject a fake `S3Access` that maps refs to local files.
+- **Rotating keys mid-run.** A cached client keeps the credentials it was created with. On a 403,
+  `S3Access` drops that client, rebuilds it once (re-reading the profile), and retries the call.
+  So keys renewed with `aws configure` during a long build take effect without a restart.
+- **Failure messages.** A missing profile, or a 403 that persists after the rebuild, fails fast.
+  The message names the profile and the `aws configure --profile …` command.
 - **New dependencies:** `boto3`, `rapidgzip` (0.16.2), `indexed_gzip` (1.10.3) and `zstandard`
   (0.25.0), all in the pixi analysis feature. All four install from conda-forge for Python 3.13
   (checked). The system `aws` CLI is not used by production code. Python 3.13 has no stdlib
@@ -318,9 +352,11 @@ The sumstats only carry `ImpMAF`. `variant_info_iceland.txt.gz` (442 MB) has `Im
 
 ### 6. Per-protein task: `BuildDecodeSomascanProteinTask`
 
-Inputs: the group's index task, the manifest row, the S3 key and md5. In `execute`:
-1. HEAD the object, check its size and md5 against the manifest, get a presigned URL, and
-   download with parallel ranges into `scratch_dir`. Check the md5.
+Inputs: the group's index task and the manifest row, which gives the protein's `S3ObjectRef`,
+size and md5. In `execute`:
+1. `wf.s3_access.head(ref)` and check the size and md5 against the manifest. Then get
+   `wf.s3_access.presigned_url(ref, …)`, download with parallel ranges into `scratch_dir`, and
+   check the md5.
 2. **One `rapidgzip` pass** (`parallelization=8`, `chunk_size=16 MiB`, reading 16 MiB blocks):
    - **Line boundaries:** a numpy newline scan per block gives row numbers and offsets.
    - **Position map:** a row for the first line starting at or after each 1 MiB of
@@ -377,8 +413,11 @@ own task is rejected because it duplicates ~39 GB.
 Implements `ProteinWindowReader`. It is built with:
 - the group's per-protein tasks (to find each protein's seek index and position map in the local
   asset store, via `fetch`);
-- the S3 key per protein;
+- the `S3ObjectRef` per protein (from the manifest);
 - the variant info asset (for EAF).
+
+Credentials are reached only through `wf.s3_access` at fetch time. The reader holds no keys or
+URLs.
 
 `fetch_protein(protein_id, windows, scratch_dir, wf)`:
 1. **Load** the protein's position map and seek index. Decompress the index into memory;
@@ -416,8 +455,62 @@ Implements `ProteinWindowReader`. It is built with:
   gene coordinates by Entrez id against the GRCh38 MAGMA table, with the same conflict rules as
   `csf_gene_coords_reader.py`. The deCODE readers should reuse that logic, generalised if
   needed.
-- **An asset-generator group** (like CSF's) producing the three coloc outputs for a trait, plus
-  a driver module ready for `run_*` functions per trait. Running traits is follow-up work.
+- **An asset-generator group** (like CSF's) producing the three coloc outputs for a trait (raw
+  results, PP.H4 display table, stacked locus plots), plus a `mecfs_bio/analysis/` driver module
+  with one `run_*` function per trait. This design adds one run, the exploratory DecodeME run
+  (§12).
+
+### 11. LDSC heritability (SMP group)
+
+All-variants and cis-excluded LDSC h² for every protein, as `PppProteinHeritabilityTask`
+produces for UKB-PPP (`eur_discovery_hapmap3_ppp_heritability.py`).
+
+- **Reuse the computation, generalize the inputs.** The batched kernel (`batched_ldsc_h2.py`),
+  the shared regression context (`PppLdscContext`) and the cis-exclusion logic are
+  source-independent. The PPP task's inputs are not:
+  - its proteins are `BuildSlimProteinParquetTask`s keyed by Olink id;
+  - its N comes from the PPP sample-size table or a constant-N slim column;
+  - its gene coordinates come from Sun et al. ST3.
+
+  The builder generalizes it the way `HitTableProtein` already did for the hit table: a source-
+  neutral protein entry with the slim task, `ProteinId` and gene, plus a gene-coordinate mapping
+  `ProteinId -> GenomicInterval` passed in. The PPP asset (ids, paths, numbers) must come out
+  unchanged. If generalizing in place is too invasive, a sibling deCODE task that calls the same
+  kernel and context functions is acceptable.
+- **Sample size (my call).** The kernel takes one N per protein (`n: (K,)`), but deCODE's N
+  varies per variant (about 30.4k–35.7k, roughly ±8%). Use each protein's **median N over its
+  regression SNPs**, so the validated kernel stays unchanged. The builder reports the per-protein
+  spread of N, for example the 5th to 95th percentile ratio. If it is much wider than in the
+  profiled file, they stop and raise it, rather than extending the kernel to per-SNP N.
+- **Gene coordinates for cis exclusion** come from the deCODE gene-coordinate reader (§10).
+  Proteins without coordinates get all-variants h² only, as PPP handles missing coordinates.
+- **LD scores and population:** the same reference as PPP
+  (`THOUSAND_GENOME_EUR_LD_REFERENCE_DATA_V1_CONSOLIDATE`, 1000G EUR). Icelanders are European,
+  but they are not the reference's population, which is a modest, standard approximation.
+- **Output:** the same table shape as the PPP heritability asset, under a deCODE asset id
+  (e.g. `decode_somascan_smp_heritability_hapmap_3`).
+
+### 12. Exploratory DecodeME × deCODE coloc run
+
+One `TraitProteinColocTask` run of DecodeME GWAS-1 against the SMP group, in the style of
+`decode_me_csf_coloc_exploratory.py`:
+- `ColocRunConfig.lead_p_threshold = 1e-5`. `exclude_mhc` follows the existing exploratory
+  DecodeME runs (`False` in the CSF exploratory run).
+- **Budgets never bind (user decision).** Windows are cheap with the seek index (~1.5 s and
+  ~6 MB each), so the run tests every trait-locus × protein candidate pair the hit table
+  produces. `SelectionConfig.max_pairs` and `max_per_locus` are set well above the number of
+  candidates, for example 10⁶; both must be ≥ 1 integers. The builder adds a check, a log line
+  plus an assertion in the run or a column in the outputs, that **no candidate was dropped for
+  budget**. A number that only looks big enough is not proof.
+- **Expected size.** SomaScan has trans pQTLs for 96% of assays (Table 1), and a DecodeME locus
+  near a highly pleiotropic variant can pull in hundreds of proteins. The builder logs candidate
+  counts per locus. Run time stays reasonable even at a few thousand pairs: proteins are fetched
+  in parallel, and each needs one HEAD plus ~6 MB per window.
+- **Interpretation:** pairs at ST36 pleiotropic variants are flagged (see Risks). The module
+  docstring labels the run exploratory.
+- **Asset ids** are namespaced as the existing exploratory runs are (e.g.
+  `decode_me_gwas_1_lead_p_1e-05_x_decode_somascan_smp`, following the established pattern),
+  with a `run_*` function in the driver.
 
 ## Performance and storage budget (per SomaScan group)
 
@@ -445,7 +538,13 @@ All unit tests run offline:
 - **`DecodeWindowReader`:** windows at the start and end of the file, spanning a seek point, on
   a short chromosome and on chrX, compared with a brute-force filter. A fake range source counts
   bytes, so the "prefetch covers the reads" property is checked.
+- **`S3Access`:** client reuse per (endpoint, region, profile), and the rebuild-once-on-403 path,
+  both with an injected fake client factory.
 - **Directory-asset dataframe read** (§6): a small build-system test.
+- **Heritability (§11):** if the PPP task is generalized, the existing PPP heritability tests must
+  pass unchanged. A deCODE-shaped synthetic test covers per-variant N and the median-N rule.
+- **Budget check (§12):** a unit test in which a candidate would be dropped makes the
+  no-drop check fail.
 - **Index compatibility round trip:** a `rapidgzip` export, imported by `indexed_gzip`, then
   seeks and reads at random offsets, compared with plain zlib. This guards the two libraries'
   format compatibility, which the design relies on, against version bumps.
@@ -489,9 +588,19 @@ end to end, mirroring the mockup).
 
 - **2026-11-21 (user):** SomaScan only; build the SMP group first, with non-normalized as a later
   sensitivity build; database restricted to the paper's 4,907 assays, annotated from ST29.
+- **2026-11-21 (user):** S3 access follows option A. Tasks hold an `S3ObjectRef` (endpoint with
+  credentials profile name, bucket, key); `WF` provides a generic `S3Access` with no
+  bucket or endpoint of its own.
+- **2026-11-21 (user):** scope includes LDSC heritability (§11) and an exploratory DecodeME coloc
+  run at lead p < 1e-5 with budgets that never bind (§12). rg, LCV and other traits are
+  follow-ups.
 
-## Open decisions for the user
+## Calls made by Claude (for the user to check)
 
-1. **Scope:** the proposal stops at a working `DecodeWindowReader` plus coloc wiring, with no
-   trait runs and no LDSC. Should a first trait run (e.g. DecodeME) or LDSC h²/rg over the deCODE
-   database be included?
+- N for LDSC is each protein's median N over its regression SNPs (§11).
+- The profile name `decode-download` is a task-level constant taken from deCODE's instructions
+  (§1).
+- Directory-asset output with a generic member-file read for slim consumers (§6).
+- EAF from `variant_info_iceland`, gated on an all-rows `A1 == effectAllele` check (§4).
+- Peak-memory target ≤ 2 GB per protein task (§6).
+- Pleiotropic-variant flag (ST36) on coloc results (Risks).
