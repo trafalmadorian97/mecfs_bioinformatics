@@ -58,7 +58,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/actionlint-1.7.12-h8bc977c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-auth-1.0.0-h7648d90_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-cal-1.0.0-hcf7459e_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-common-1.0.5-hebe6cf0_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-common-1.0.6-hebe6cf0_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-compression-1.0.0-ha404f16_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-event-stream-1.0.0-h0f17bb3_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-http-1.0.0-h392d1a3_1.conda
@@ -317,7 +317,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-tzdb-0.5.0-r45h3697838_2.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-utf8-1.2.6-r45h54b55ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-uwot-0.2.5-r45hfa9885e_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/r-v8-8.2.0-r45h3697838_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/r-v8-8.3.0-r45hfa9885e_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-vctrs-0.7.3-r45h3697838_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-xfun-0.61-r45hddc5280_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/r-xml2-1.6.0-r45he78afff_0.conda
@@ -1698,20 +1698,19 @@ packages:
     - aws-c-cal >=1.0.0,<1.1.0a0
   size: 59184
   timestamp: 1790949934601
-- conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-common-1.0.5-hebe6cf0_0.conda
-  sha256: d921167849562b01cb98b56acd459180ffd69f9c7f14412f5b2dc4e7233c0a19
-  md5: 05dc8c6456a12986f94344b1a89ae2e5
+- conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-common-1.0.6-hebe6cf0_0.conda
+  sha256: 8940f3757dd09288d297a926157a0b420eb15bb54c79c8b89f7a691578a97b3c
+  md5: 963e7f5baa8ddad3526fc338e1cb0e8d
   depends:
-  - libgcc >=15
   - __glibc >=2.17,<3.0.a0
+  - libgcc >=15
   license: Apache-2.0
-  license_family: APACHE
   purls: []
   run_exports:
     weak:
-    - aws-c-common >=1.0.5,<1.1.0a0
-  size: 278713
-  timestamp: 1793155456236
+    - aws-c-common >=1.0.6,<1.1.0a0
+  size: 278931
+  timestamp: 1795235260237
 - conda: https://conda.anaconda.org/conda-forge/linux-64/aws-c-compression-1.0.0-ha404f16_1.conda
   sha256: 486b614563ca593b1660e46c986e0e8f4fbafb08ce6c2b45acc8dc909aafe84e
   md5: da0c7b86d5379eb44acfa084897e8b98
@@ -6637,13 +6636,13 @@ packages:
   run_exports: {}
   size: 1020903
   timestamp: 1788028527732
-- conda: https://conda.anaconda.org/conda-forge/linux-64/r-v8-8.2.0-r45h3697838_0.conda
-  sha256: 2b75e6212f6dffc95db5e849f70b0c4fbd8d46c6e47a12ef1d0333d546c030bd
-  md5: 7213d13aca5320213904f45f6f036ba4
+- conda: https://conda.anaconda.org/conda-forge/linux-64/r-v8-8.3.0-r45hfa9885e_0.conda
+  sha256: 202c8d1ee422481573c60e7d9d17155d3814b952affbe1b64b666a6ebe452f77
+  md5: 274806ffb273ec868d86e9f84f7747f5
   depends:
   - __glibc >=2.17,<3.0.a0
-  - libgcc >=14
-  - libstdcxx >=14
+  - libgcc >=15
+  - libstdcxx >=15
   - r-base >=4.5,<4.6.0a0
   - r-curl >=1.0
   - r-jsonlite >=1.0
@@ -6652,8 +6651,8 @@ packages:
   license_family: MIT
   purls: []
   run_exports: {}
-  size: 10378215
-  timestamp: 1776752794671
+  size: 10387304
+  timestamp: 1795228005129
 - conda: https://conda.anaconda.org/conda-forge/linux-64/r-vctrs-0.7.3-r45h3697838_0.conda
   sha256: 73b0cdea9f85496b80e75ffa20f94aa4ab746f4b7af566742e22381bffa6772d
   md5: 372cefc1b05a567d1fbe19633766ab0c
