@@ -134,7 +134,7 @@ global factor, in opposite ways) and for any important trans coloc.
    sensitivity analysis. Each group has:
    - a shared HapMap3 variant index;
    - one slim per-protein parquet (BETA, SE, N; float32; index row order), usable by the same
-     consumers as the PPP/CSF slim files: hit table and, later, LDSC;
+     consumers as the PPP/CSF slim files: hit table and LDSC heritability;
    - a per-protein **gzip seek index** and **position map**, so coloc can read dense windows from
      deCODE's remote files without downloading them.
 3. A **hit table** asset per group (p < 5e-8, as for PPP/CSF).
