@@ -14,6 +14,7 @@ order. A fetch mostly waits on the network, so running several at once overlaps 
 """
 
 import time
+from abc import ABC, abstractmethod
 from collections.abc import Generator, Sequence
 from concurrent.futures import Future, ThreadPoolExecutor
 from functools import partial
@@ -64,7 +65,8 @@ class ProteinWindowFrames:
     frames: dict[GenomicInterval, pl.DataFrame]
 
 
-class DenseWindowFetcher(Protocol):
+class DenseWindowFetcher(ABC):
+    @abstractmethod
     def fetch_all(
         self,
         requests: Sequence[ProteinWindowRequest],
@@ -80,7 +82,8 @@ class DenseWindowFetcher(Protocol):
         ...
 
 
-class ProteinWindowReader(Protocol):
+class ProteinWindowReader(ABC):
+    @abstractmethod
     def fetch_protein(
         self,
         protein_id: str,
@@ -151,7 +154,7 @@ def fetch_proteins_in_parallel(
 
 
 @frozen(slots=True)
-class ParallelWindowFetcher:
+class ParallelWindowFetcher(DenseWindowFetcher):
     """
     DenseWindowFetcher over a ProteinWindowReader.
 
