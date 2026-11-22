@@ -507,10 +507,17 @@ URLs.
   gene coordinates by Entrez id against the GRCh38 MAGMA table, with the same conflict rules as
   `csf_gene_coords_reader.py`. The deCODE readers should reuse that logic, generalised if
   needed.
-- **An asset-generator group** (like CSF's) producing the three coloc outputs for a trait (raw
-  results, PP.H4 display table, stacked locus plots), plus a `mecfs_bio/analysis/` driver module
-  with one `run_*` function per trait. This design adds one run, the exploratory DecodeME run
+- **A `ProteomicsColocSource` for deCODE** (hit table, `DecodeWindowReader` fetcher, gene
+  coordinates), passed to the existing `generate_protein_coloc_tasks` in
+  `asset_generator/protein_coloc_asset_generator.py`. A run produces only the raw results
+  (`TraitProteinColocTask`) and the PP.H4 display table. A `mecfs_bio/analysis/` driver module
+  has one `run_*` function per trait. This design adds one run, the exploratory DecodeME run
   (§12).
+- **No locus plots per run.** A researcher wants plots for a few loci of interest, not for every
+  display-table locus. They come from the existing separate generator,
+  `generate_coloc_locus_plot_task(asset_id, group, pairs)`, pointed at hand-picked pairs once
+  someone chooses them. That works unchanged for deCODE, since it reads only the coloc task's
+  outputs. No plot assets are part of this design.
 
 ### 11. LDSC heritability (SMP group)
 
