@@ -411,7 +411,8 @@ own task is rejected because it duplicates ~39 GB.
 
 ### 9. `DecodeWindowReader` (coloc)
 
-Implements `ProteinWindowReader`. It is built with:
+Subclasses the `ProteinWindowReader` abstract base class. PR #1416 turns that class (and
+`DenseWindowFetcher`) from a Protocol into an ABC and is merged before implementation starts. It is built with:
 - the group's per-protein tasks (to find each protein's seek index and position map in the local
   asset store, via `fetch`);
 - the `S3ObjectRef` per protein (from the manifest);
