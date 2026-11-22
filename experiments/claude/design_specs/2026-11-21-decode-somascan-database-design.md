@@ -165,6 +165,11 @@ global factor, in opposite ways) and for any important trans coloc.
   reads need valid keys.
 - Silently assuming the shared row order. A protein whose rows differ must fail its task loudly.
 - A long-running batch task whose interruption restarts the whole download.
+- A column that holds something other than what its name says, e.g. MAF in an
+  effect-allele-frequency column. Where the true value is unknown the column is null.
+  Orientation already depends on it: `orient_and_align.py` resolves palindromic SNVs and
+  ambiguous indels by allele frequency, and orientation-aware methods such as SuSiE-coloc would
+  too.
 
 ## Constraints
 
@@ -351,13 +356,30 @@ ETag is the plain md5 (single-part upload, checked) and is what we verify agains
 - **Task:** download it once (parallel range downloader + ETag md5), drop exact duplicate rows,
   and write parquet (`Chrom` code, `Pos`, `A1`, `ImpFreqA1`, `ImpInfo`). Credentials are needed
   only once.
-- **Index construction:** join on (Chrom, Pos, A1 == effectAllele) and set `EAF = ImpFreqA1`.
-  Assert that each index row has exactly one match, and that `|min(EAF, 1 - EAF) - ImpMAF|`
-  is at most 1e-5. Both held on every index row of AP4M1. If either fails for the template, the
-  build stops and reports.
-- **Outside the index** (dense coloc windows) the effect allele alone cannot always pick the
-  row, so the window reader uses ImpMAF and does not read variant_info. Coloc needs only
-  f(1 - f), so MAF serves (§9).
+- **Index construction:** apply the EAF rule and assert that it determines EAF for every index
+  row; it did for all 1,197,450 index rows of AP4M1. If it fails for the template, the build
+  stops and reports.
+**Disambiguating with ImpMAF** (`check_variant_info_maf_disambiguation.py`, same protein).
+Call a candidate (same position, A1 == effectAllele) *agreeing* when
+`|min(f, 1 - f) - ImpMAF| <= 1e-5`. Then:
+- 92.996% of rows have one candidate, and it agrees;
+- 6.709% have several candidates, of which exactly one agrees;
+- 0.279% have several agreeing candidates, all with the same f;
+- 0.016% (5,206 rows) have several agreeing candidates with different f, e.g. f and 1 - f;
+- 7 rows have no candidate.
+
+So 99.98% of rows get a determined EAF; the last ~5.2k cannot be determined from these files.
+
+**One EAF rule** (`resolve_effect_allele_frequency` in the deCODE module, used by both the index
+and the window reader): EAF = f when the agreeing candidates all have the same f (within 1e-5),
+else null. It never falls back to ImpMAF.
+
+- **Outside the index** (dense coloc windows) the reader applies the same rule to the window's
+  rows, so about 0.02% of window rows carry a null EAF. Orientation already handles a missing
+  frequency: a palindrome it cannot resolve is dropped and counted, and a non-palindromic SNV is
+  oriented by the FASTA alone. The builder confirms both on a fixture.
+- **The variant info parquet is written for window lookups:** sorted by (Chrom code, Pos),
+  with small row groups (about 64k rows), so a window read scans only a few row groups.
 
 ### 5. Shared variant index (one per group)
 
@@ -440,7 +462,8 @@ Subclasses the `ProteinWindowReader` abstract base class. PR #1416 turns that cl
 `DenseWindowFetcher`) from a Protocol into an ABC and is merged before implementation starts. It is built with:
 - the group's per-protein tasks (to find each protein's seek index and position map in the local
   asset store, via `fetch`);
-- the `S3ObjectRef` per protein (from the manifest).
+- the `S3ObjectRef` per protein (from the manifest);
+- the variant info asset, for the EAF rule (§4).
 
 Credentials are reached only through `wf.s3_access` at fetch time. The reader holds no keys or
 URLs.
@@ -467,9 +490,8 @@ URLs.
    - `chrN` becomes an integer, with X = 23;
    - effectAllele becomes EA and otherAllele becomes NEA;
    - Beta, SE and N map across;
-   - the frequency column carries ImpMAF. Coloc uses only f(1 - f) of it, which is symmetric
-     (`_coloc_input` in `trait_protein_coloc_task.py`), and variant_info cannot always identify
-     the row outside the index (§4);
+   - EAF comes from the §4 rule, reading the variant info rows for the window's span; it is
+     null where the rule cannot determine it, never ImpMAF;
    - `!` rows are dropped.
 
    Orientation to the reference genome stays downstream, as for every source.
@@ -560,7 +582,11 @@ All unit tests run offline:
   file.
 - The synthetic data is a small file in deCODE's format: several chromosomes in text order, a
   `!` row, multiple blocks per seek point (small `chunk_size` and spacing).
-- **Index task:** HapMap3 rows, `SOURCE_ROW`, `total_rows`, EAF join and the A1 assertion.
+- **Index task:** HapMap3 rows, `SOURCE_ROW`, `total_rows`, and the EAF rule with its
+  every-row-determined assertion.
+- **EAF rule:** one fixture with each case (single candidate; several, one agreeing; several
+  agreeing with equal f; several agreeing with f and 1 - f, giving null; no candidate, giving
+  null) and the window reader's output on it.
 - **Per-protein task:** output files and values against a brute-force parse. It fails loudly on
   a shuffled row, a wrong total, or an md5 mismatch.
 - **`DecodeWindowReader`:** windows at the start and end of the file, spanning a seek point, on
@@ -629,7 +655,8 @@ end to end, mirroring the mockup).
 - The profile name `decode-download` is a task-level constant taken from deCODE's instructions
   (§1).
 - Directory-asset output with a generic member-file read for slim consumers (§6).
-- EAF from deduplicated `variant_info_iceland` for index rows only, with an exactly-one-match and
-  MAF-agreement assertion; windows use ImpMAF (§4, §9). Measured on AP4M1: every index row passes.
+- One EAF rule for index and windows: candidates on (position, A1 == effectAllele) in the
+  deduplicated variant info, narrowed by agreement with ImpMAF; null when undetermined, never MAF
+  (§4, §9). On AP4M1 it determines every index row and 99.98% of all rows.
 - Peak-memory target ≤ 2 GB per protein task (§6).
 - Pleiotropic-variant flag (ST36) on coloc results (Risks).
