@@ -250,8 +250,9 @@ so one run can read any number of buckets.
   The deCODE values (`DECODE_S3_ENDPOINT` and the bucket name) are constants under `assets/`.
   Every deCODE task holds the `S3ObjectRef`s it reads: the template and per-protein tasks one
   each, the variant info task its file, and `DecodeWindowReader` one per protein.
-- **New WF capability** `s3_access: S3Access` (Protocol in `build_system/wf/`), defaulted in
-  `make_wf`. It is generic and knows nothing about deCODE:
+- **New WF capability** `s3_access: S3Access`, an abstract base class in `build_system/wf/`
+  (like `WFDownloader` and `SynapseDownloader`), defaulted in `make_wf`. The production class and
+  the test fake both subclass it, so an IDE's go-to-base leads from either one to the interface. It is generic and knows nothing about deCODE:
   - `head(ref: S3ObjectRef) -> S3ObjectInfo` (size, and the md5 from `x-amz-meta-md5chksum`
     when present);
   - `presigned_url(ref: S3ObjectRef, expires_s: int) -> str`.
