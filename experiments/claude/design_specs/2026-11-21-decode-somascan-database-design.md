@@ -426,9 +426,11 @@ size and md5. In `execute`:
 4. The raw download is deleted along with the scratch directory.
 
 Budget per protein: about 54 s wall time, about 8.8 MB on disk. Peak memory was 4.2 GB in the
-mockup. The builder should bring it down, for example with fewer `rapidgzip` workers, smaller
-blocks and no 16 MiB buffer concatenation, and record the trade-off. A target of 2 GB or less
-is my proposal.
+mockup. **Speed comes first; memory only has to stay clear of OOM** on the 16 GB machine,
+alongside whatever else a build holds in memory. 4.2 GB already does. The builder may lower peak
+memory, e.g. by dropping the 16 MiB buffer concatenation, only where that costs no measurable
+time. Any setting that trades speed for memory, such as fewer `rapidgzip` workers or smaller
+blocks, is not taken. The builder records peak memory and wall time for the chosen settings.
 
 **Consumers of the slim file.** `scan_dataframe_asset` requires a `FileAsset`, but
 `ProteinHitTableTask` (and the PPP LDSC tasks) read `task` outputs through it. The builder adds
@@ -658,5 +660,6 @@ end to end, mirroring the mockup).
 - One EAF rule for index and windows: candidates on (position, A1 == effectAllele) in the
   deduplicated variant info, narrowed by agreement with ImpMAF; null when undetermined, never MAF
   (§4, §9). On AP4M1 it determines every index row and 99.98% of all rows.
-- Peak-memory target ≤ 2 GB per protein task (§6).
+- Per-protein memory: speed first; reduce memory only at no speed cost; 4.2 GB measured is
+  acceptable (§6). (The user set this; it replaces the earlier ≤ 2 GB proposal.)
 - Pleiotropic-variant flag (ST36) on coloc results (Risks).
