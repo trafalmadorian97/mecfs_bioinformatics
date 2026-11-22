@@ -24,6 +24,9 @@ from attrs import frozen
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    ProteinWindowReader,
+)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
@@ -113,7 +116,7 @@ PPP_MAX_PARALLEL_FETCHES = 4
 
 
 @frozen(slots=True)
-class PppWindowReader:
+class PppWindowReader(ProteinWindowReader):
     """
     ProteinWindowReader for UKB-PPP.
 

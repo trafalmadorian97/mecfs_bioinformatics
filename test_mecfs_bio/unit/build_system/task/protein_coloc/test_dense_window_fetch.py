@@ -7,6 +7,7 @@ import pytest
 
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
     ParallelWindowFetcher,
+    ProteinWindowReader,
     ProteinWindowRequest,
     fetch_proteins_in_parallel,
 )
@@ -28,7 +29,7 @@ def _frames_for(protein_id: str) -> dict[GenomicInterval, pl.DataFrame]:
     return {_WINDOW: pl.DataFrame({"protein": [protein_id]})}
 
 
-class _FakeReader:
+class _FakeReader(ProteinWindowReader):
     """
     barrier: when given, every fetch waits on it, so fetches complete only if that many run
         at once.
@@ -117,7 +118,7 @@ def test_transient_errors_are_retried() -> None:
     assert sorted(reader.calls) == ["P0", "P0", "P1", "P1"]
 
 
-class _GatedReader:
+class _GatedReader(ProteinWindowReader):
     """Fetches of gated_protein block until gate is set; other fetches return at once."""
 
     def __init__(self, gated_protein: str) -> None:

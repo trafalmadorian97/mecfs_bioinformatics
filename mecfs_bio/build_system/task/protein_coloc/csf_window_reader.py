@@ -34,6 +34,9 @@ from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task im
 from mecfs_bio.build_system.task.csf_database.gwas_catalog_url import (
     gwas_catalog_harmonised_url,
 )
+from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    ProteinWindowReader,
+)
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.csf_database_constants import GcstAccession
 from mecfs_bio.constants.gwaslab_constants import (
@@ -178,7 +181,7 @@ CSF_MAX_PARALLEL_FETCHES = 1
 
 
 @frozen(slots=True)
-class CsfWindowReader:
+class CsfWindowReader(ProteinWindowReader):
     """
     aptamers: the manifest rows of every aptamer that may be requested, looked up by seq id
         (the coloc protein id).
