@@ -325,14 +325,39 @@ The script asserts there are 4,907 rows per group, each seq id appearing once.
 
 ### 4. Variant info asset (effect-allele frequency)
 
-The sumstats only carry `ImpMAF`. `variant_info_iceland.txt.gz` (442 MB) has `ImpFreqA1`.
-- **Task:** download it once (parallel range downloader + md5) and convert it to parquet
-  (`Chrom` code, `Pos`, `A1`, `ImpFreqA1`, `ImpInfo`). This is cheap and needs credentials only
-  once.
-- **Index construction:** join it in on chromosome, position and effect allele. Assert that
-  `A1 == effectAllele` for every index row; only one row was spot-checked so far. If that holds,
-  the index has a true `EAF`. If it doesn't, the builder stops and reports: we would fall back to
-  MAF and name the column honestly.
+The sumstats only carry `ImpMAF`. `variant_info_iceland.txt.gz` (442 MB) has `Chrom`, `Pos`, `A1`,
+`ImpFreqA1` and `ImpInfo`, with no second allele. Its S3 object has no `x-amz-meta-md5chksum`; the
+ETag is the plain md5 (single-part upload, checked) and is what we verify against.
+
+**Measured on AP4M1 (SMP) against the whole file**
+(`check_variant_info_alleles.py`, 2026-11-22):
+- **Layout.** 90,467,532 rows. 52,626,660 of them (58%) are exact duplicates, leaving 37,840,872.
+  At biallelic sites there is one row. At multi-allelic sites there is one row per allele, with
+  frequencies that sum to 1 over the alleles. The positions are exactly the protein file's, apart
+  from 7 protein rows with no row at their position.
+- **Join on (Chrom, Pos, A1 == effectAllele) after dedup.** All but 7 protein rows match; A1 never
+  matches only otherAllele.
+  - 93.0% match exactly one row, and the frequency there agrees with ImpMAF to within 5e-6 (the
+    files' rounding) for every one of those rows.
+  - 7.0% (2.34M rows) match several rows with different frequencies. These are multi-allelic
+    sites, including odd `chr:pos:C:C` records where the effect and other alleles are equal.
+    There the effect allele alone does not identify the row.
+- **HapMap3 index rows (1,197,450): every one matches exactly one row**, and `min(f, 1 - f)`
+  agrees with ImpMAF to within 5e-6 on all of them. The effect allele is the minor allele for
+  70% of index rows, so EAF really does differ from MAF.
+- No `!` appears in `otherAllele` in this file, despite the README.
+
+**Design**
+- **Task:** download it once (parallel range downloader + ETag md5), drop exact duplicate rows,
+  and write parquet (`Chrom` code, `Pos`, `A1`, `ImpFreqA1`, `ImpInfo`). Credentials are needed
+  only once.
+- **Index construction:** join on (Chrom, Pos, A1 == effectAllele) and set `EAF = ImpFreqA1`.
+  Assert that each index row has exactly one match, and that `|min(EAF, 1 - EAF) - ImpMAF|`
+  is at most 1e-5. Both held on every index row of AP4M1. If either fails for the template, the
+  build stops and reports.
+- **Outside the index** (dense coloc windows) the effect allele alone cannot always pick the
+  row, so the window reader uses ImpMAF and does not read variant_info. Coloc needs only
+  f(1 - f), so MAF serves (§9).
 
 ### 5. Shared variant index (one per group)
 
@@ -415,8 +440,7 @@ Subclasses the `ProteinWindowReader` abstract base class. PR #1416 turns that cl
 `DenseWindowFetcher`) from a Protocol into an ABC and is merged before implementation starts. It is built with:
 - the group's per-protein tasks (to find each protein's seek index and position map in the local
   asset store, via `fetch`);
-- the `S3ObjectRef` per protein (from the manifest);
-- the variant info asset (for EAF).
+- the `S3ObjectRef` per protein (from the manifest).
 
 Credentials are reached only through `wf.s3_access` at fetch time. The reader holds no keys or
 URLs.
@@ -443,7 +467,9 @@ URLs.
    - `chrN` becomes an integer, with X = 23;
    - effectAllele becomes EA and otherAllele becomes NEA;
    - Beta, SE and N map across;
-   - EAF is joined from the variant info asset on chromosome, position and EA;
+   - the frequency column carries ImpMAF. Coloc uses only f(1 - f) of it, which is symmetric
+     (`_coloc_input` in `trait_protein_coloc_task.py`), and variant_info cannot always identify
+     the row outside the index (§4);
    - `!` rows are dropped.
 
    Orientation to the reference genome stays downstream, as for every source.
@@ -603,6 +629,7 @@ end to end, mirroring the mockup).
 - The profile name `decode-download` is a task-level constant taken from deCODE's instructions
   (§1).
 - Directory-asset output with a generic member-file read for slim consumers (§6).
-- EAF from `variant_info_iceland`, gated on an all-rows `A1 == effectAllele` check (§4).
+- EAF from deduplicated `variant_info_iceland` for index rows only, with an exactly-one-match and
+  MAF-agreement assertion; windows use ImpMAF (§4, §9). Measured on AP4M1: every index row passes.
 - Peak-memory target ≤ 2 GB per protein task (§6).
 - Pleiotropic-variant flag (ST36) on coloc results (Risks).
