@@ -499,11 +499,94 @@ $$
 &=\frac{p(E\cap \mathcal{A}\cap D)/p(D)}{p(\mathcal{A}\cap D)/p(D)     } & \text{Density ratio} \\
 &=\frac{p(E\cap \mathcal{A}\cap D)P(E\cap A)/(p(D)P(E\cap A))}{p(\mathcal{A}\cap D)P(\mathcal{A})/(p(D)P(\mathcal{A}))     } & \text{Multiply and divide}\\
 &=\frac{p(D| E, \mathcal{A})P(E\cap A)}{p( D|\mathcal{A})P(\mathcal{A})     }\\
-&=\frac{p(D| E, \mathcal{A})P(E| A)}{p( D|\mathcal{A})     }
+&=\frac{p(D| E, \mathcal{A})P(E| A)}{p( D|\mathcal{A})     } \label{e_prob_breakdown}
 \end{align}
 $$
 
-to be continued
+
+Let $S$ denote the random variable whose value corresponds to the one of the $(Q+1)^2$ configurations that describes the true causal structure.  Note that $S$ is only defined on the event $\mathcal{A}$.  Now, apply $(\ref{e_prob_breakdown})$ with the event $E$ equal to $S=s$.
+
+
+$$
+\begin{align}
+P(S=s|D,\mathcal{A})&=\frac{p(D|S=s) P(S=s|\mathcal{A})}{p(D|\mathcal{A}|)} \label{s_prob}
+\end{align}
+$$
+
+Now, we break down the denominator in $(\ref{s_prob})$.
+
+$$
+\begin{align}
+p(D|\mathcal{A})&=\frac{p(D\cap \mathcal{A})}{P(\mathcal{A})}\\
+&=\sum_{s'}\frac{p(D\cap \mathcal{A}\cap\{S=s'\} )}{P(\mathcal{A})}\\
+&=\sum_{s'}\frac{p(D\cap \mathcal{A}\cap\{S=s'\} )}{P(\mathcal{A})}\frac{P(\mathcal{A} \cap \{S=s' \})}{P(\mathcal{A} \cap S=s')}\\
+&=\sum_{s'} p(D| \mathcal{A},\{S=s' \})P(\{S=s' \}|\mathcal{A})\\
+&=\sum_{s'} p(D| \mathcal{A})P(S=s' |\mathcal{A})\\
+\end{align}
+$$
+
+where we have used the fact that the $(Q+1)^2$ configurations partition $\mathcal{A}$.
+
+In the next step, we divide both the numerator and the denominator by $P(S=S^0|\mathcal{A})p(D|S=S^0)$.
+
+
+This produces,
+
+
+$$
+\begin{align}
+&P(\{ S=s \} |D,\mathcal{A})\\
+&=\frac{p(D|S=s)P(S=s|\mathcal{A})}{p(D|\mathcal{A})}\\
+&=\frac{p(D|S=s)P(S=s|\mathcal{A})}{\sum_{s'} p(D| S=s')P(S=s' |\mathcal{A})}\\
+&=\frac{(p(D|S=s)P(S=s|\mathcal{A})/(P(S=S^0|\mathcal{A})p(D|S=S^0)))}{\sum_{s'} p(D| S=S')P(S=s' |\mathcal{A})/(P(S=S^0|\mathcal{A})p(D|S=S^0))}\\
+&=\frac{p(D|S=s)P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})p(D|S=S^0)}\frac{P(S=S^0|\mathcal{A})p(D|S=S^0) }{\sum_{s'} p(D| S=s')P(S=s' |\mathcal{A})}
+\\
+&=\frac{1}{K}\frac{p(D|S=s)P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})p(D|S=S^0)}\\
+&=\frac{1}{K}\frac{P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})}\frac{p(D|S=s)}{p(D|S=S^0)} \label{conf_prob}
+\end{align}
+$$
+
+Where we have defined $1/K:=\frac{P(S=S^0|\mathcal{A})p(D|S=S^0) }{\sum_{s'} p(D| S=s')P(S=s' |\mathcal{A})}$.
+
+Note that in $\ref{unconditional_prob}$ we have already derived an expression for $\frac{P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})}$.
+
+It remains to derive an expression for $\frac{p(D|S=s)}{p(D|S=S^0)}$.
+
+Note that by our assumption of the conditional independence of the two GWAS, we have
+
+$$
+\begin{align}
+p(D|S=s)&=p(D_1|S_1=s_1) p(D_2|S_2=s_2)\\
+\end{align}
+$$
+
+Thus $(\ref{conf_prob})$ becomes
+
+$$
+\begin{align}
+&P(\{ S=s \} |D,\mathcal{A})\\
+&=\frac{1}{K}\frac{P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})}B_1(s_1)B_2(S_2).
+\end{align}
+$$
+
+We are now in a position to compute the posterior probabilities
+
+We have
+
+$$
+\begin{align}
+&P(H_h|D,\mathcal{A})\\
+&=\sum_{s\in\mathcal{S}_h}P(S=s|D,\mathcal{A})\\
+&=\sum_{s\in\mathcal{S}_h} \frac{1}{K}\frac{P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})}B_1(s_1)B_2(s_2)\\
+&=\frac{1}{K} \rho^h  \sum_{s\in\mathcal{S}_h} B_1(s_1)B_2(s_2)
+\end{align}
+$$
+
+
+
+
+
+to be continued.
 
 **End of proof of main result**
 
