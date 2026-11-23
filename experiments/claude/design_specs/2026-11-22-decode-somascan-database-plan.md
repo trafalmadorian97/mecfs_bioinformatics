@@ -188,7 +188,9 @@ Port it into production style; don't re-derive it.
     chunk_bytes) -> None` downloads and then checks the md5. `HttpParallelRangeDownloader` is the
     production class. `WF.parallel_range_downloader` is wired in `make_wf`, with
     `WF.download_url_parallel(...)` delegating to it.
-  - `md5_of_file(path: Path) -> str` lives in the util module; use it, and don't duplicate it in later tasks.
+  - md5 checks reuse `mecfs_bio/util/download/verify.py`: `verify_hash(path, expected_hash)`
+    after the download, and `calc_md5_checksum(path)` wherever a later task needs the value.
+    No new md5 helper.
 
 - [ ] **Step 1: Write the failing tests** with a fake `RangeGetter` over an in-memory 10 MB byte string:
   - `test_reassembles_exact_bytes`: with `n_connections=8, chunk_bytes=1 MiB+7`, the output
@@ -308,7 +310,7 @@ Port it into production style; don't re-derive it.
     - `FakeS3Access(S3Access)` maps `S3ObjectRef` to a local path. Its `head` returns the size
       and md5, and `md5=None` with the md5 as etag when built with `etag_only=True`. Its
       `presigned_url` returns `file://` paths.
-    - `FakeParallelRangeDownloader` copies `file://` sources and checks the md5.
+    - `FakeParallelRangeDownloader` copies `file://` sources and checks the md5 with `verify_hash`.
     - `CountingRangeSource` serves byte ranges of a local file and counts bytes.
   - `BuildDecodeVariantInfoTask(GeneratingTask)` has fields `meta`, `ref: S3ObjectRef` and
     `n_connections: int = 128`, built by `create(asset_id: str, ref: S3ObjectRef)`.
