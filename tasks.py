@@ -91,10 +91,6 @@ def _set_use_gh_token() -> None:
     os.environ["HAVE_GH_TOKEN"] = "True"
 
 
-def _set_enable_api_autonav() -> None:
-    os.environ["ENABLE_API_AUTONAV"] = "True"
-
-
 # dev tasks
 @task
 def test(c: Context) -> None:
@@ -586,7 +582,6 @@ def serve_docs(
     c: Context,
     strict: bool = True,
     include_authors: bool = False,
-    enable_api_autonav: bool = False,
     live_reload: bool = False,
 ) -> None:
     """
@@ -595,8 +590,6 @@ def serve_docs(
     if include_authors:
         _set_gh_token()
         _set_use_gh_token()
-    if enable_api_autonav:
-        _set_enable_api_autonav()
     cmd = " mkdocs serve "
     if strict:
         cmd += " --strict"
@@ -612,15 +605,11 @@ def serve_docs(
         pfig,
     ]
 )
-def sdocs(
-    c: Context, include_authors: bool = False, enable_api_autonav: bool = False
-) -> None:
+def sdocs(c: Context, include_authors: bool = False) -> None:
     """
     Retrieve figures, then serve docs
     """
-    serve_docs(
-        c, include_authors=include_authors, enable_api_autonav=enable_api_autonav
-    )
+    serve_docs(c, include_authors=include_authors)
 
 
 @task
