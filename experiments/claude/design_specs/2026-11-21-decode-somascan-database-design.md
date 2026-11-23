@@ -154,8 +154,9 @@ global factor, in opposite ways) and for any important trans coloc.
 - Genetic correlation (rg) between traits and deCODE proteins, LCV, and coloc runs for traits
   other than the exploratory DecodeME run. These are follow-ups.
 - Keeping any full dense summary-statistics file on disk.
-- chrX in the hit table, LDSC or coloc candidates. The HapMap3 index is autosomal, and the
-  DecodeME GWAS-1 is too. The chrX supplement (§6) keeps the option open.
+- A hit table beyond HapMap3: chrX, rare-variant loci and common loci whose HapMap3 proxies
+  fall just short of 5e-8. The index is autosomal HapMap3, and the DecodeME GWAS-1 is
+  autosomal too. The significant-rows file (§6) keeps the option open.
 - Concurrent task execution in the build system.
 - Any text under `docs/`.
 
@@ -425,11 +426,21 @@ size and md5. In `execute`:
    - `seek_index.gzidx.zst`: the GZIDX v1 export, zstd-compressed (0.92 MB);
    - `posmap.parquet`, whose parquet metadata holds the source key, compressed size, md5, the
      header's end offset, and the format versions;
-   - `chrx_supplement.parquet`: every chrX row with p <= 1e-5 (by `minus_log10_pval`), with all
-     columns except rsids and Pval. The HapMap3 membership list has no chrX, so the index, slim
-     and hit table don't either. This file is insurance against rebuilding the database if chrX
-     is wanted later (user decision, 2026-11-23). It adds ~1.2M rows of parsing per protein.
-     Nothing reads it yet.
+   - `significant_rows.parquet`: every row, on any chromosome, with p <= 1e-5 (by
+     `minus_log10_pval`), with all columns except rsids and Pval. It's insurance against a
+     rebuild if a later hit table wants loci a HapMap3-only screen misses (user decisions,
+     2026-11-23). Nothing reads it yet.
+     - What HapMap3 misses: in 25 SMP proteins (`hapmap3_hit_coverage.py`), 320 of 471
+       autosomal loci at p < 5e-8 have no significant HapMap3 variant. Most are single
+       variants or very rare leads, i.e. noise. About 60 look real:
+       - rare Icelandic variants up to p = 1e-31, including the ASGR1 trans hotspot at
+         chr17:7.18 Mb in 4 of the 25 proteins;
+       - common loci whose HapMap3 proxies fall just short of 5e-8;
+       - MHC loci.
+       Only 2 of the 58 loci at p < 1e-20 are missed. chrX is missed entirely, since HapMap3 has
+       none.
+     - Cost: KBs per protein (849 rows for AP4M1), and ~0.8 s of p-value parsing over all rows,
+       about 2% of the build.
 4. The raw download is deleted along with the scratch directory.
 
 Budget per protein: about 54 s wall time, about 8.8 MB on disk. Peak memory was 4.2 GB in the
