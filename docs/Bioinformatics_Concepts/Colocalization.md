@@ -571,25 +571,133 @@ $$
 
 We are now in a position to compute the posterior probabilities
 
-We have
+Since each hypothesis is a disjoint union of configurations, we have
 
 $$
 \begin{align}
 &P(H_h|D,\mathcal{A})\\
 &=\sum_{s\in\mathcal{S}_h}P(S=s|D,\mathcal{A})\\
 &=\sum_{s\in\mathcal{S}_h} \frac{1}{K}\frac{P(S=s|\mathcal{A})}{P(S=S^0|\mathcal{A})}B_1(s_1)B_2(s_2)\\
-&=\frac{1}{K} \rho^h  \sum_{s\in\mathcal{S}_h} B_1(s_1)B_2(s_2)
+&=\frac{1}{K} \rho^h  \sum_{s\in\mathcal{S}_h} B_1(s_1)B_2(s_2)\label{posterior_prob_1}
+\end{align}
+$$
+
+where 
+
+
+
+$$
+\begin{align}
+\rho^h&:=\begin{cases}
+1 & h=0\\
+\rho_1 & h=1\\
+\rho_2 & h=1\\
+\rho_1\rho_2 & h=3\\
+\rho_{1,2} & h=4
+\end{cases}
 \end{align}
 $$
 
 
+Now let us consider $(\ref{posterior_prob_1})$ for each of the possible values of $h$.
+
+For $h=0$, we have
+
+
+$$
+\begin{align}
+&P(H_0|D,\mathcal{A})\\
+&=\frac{1}{K} \sum_{s\in\mathcal{S}_0} B_1(s_1)B_2(s_2)\\
+&=\frac{1}{K}
+&=\frac{1}{K} w_0.
+\end{align}
+$$
+
+For $h=1$, we have
+
+$$
+\begin{align}
+&P(H_1|D,\mathcal{A})\\
+&=\frac{1}{K}\rho_1 \sum_{s\in\mathcal{S}_1} B_1(s_1)B_2(s_2)\\
+&=\frac{1}{K}\rho_1 \sum_{1\le s_1 \le Q} B_1(s_1)\\
+&=\frac{1}{K}\rho_1 L_1\\
+&=\frac{1}{K} w_1.
+\end{align}
+$$
+
+For $h=2$, we have
+
+$$
+\begin{align}
+&P(H_2|D,\mathcal{A})\\
+&=\frac{1}{K}\rho_2 \sum_{s\in\mathcal{S}_2} B_1(s_1)B_2(s_2)\\
+&=\frac{1}{K}\rho_2 \sum_{1\le s_2 \le Q} B_2(s_2)\\
+&=\frac{1}{K}\rho_2 L_2\\
+&=\frac{1}{K} w_2.
+\end{align}
+$$
+
+
+For $h=3$, we have
+
+
+$$
+\begin{align}
+&P(H_3|D,\mathcal{A})\\
+&=\frac{1}{K}\rho_1\rho_2 \sum_{s\in\mathcal{S}_3} B_1(s_1)B_2(s_2)\\
+&=\frac{1}{K}\rho_1 \rho_2 \sum_{1\le s_1,s_2 \le Q, s_1\ne s_2} B_1(s_1) B_2(s_2)\\
+&=\frac{1}{K}\rho_1 \rho_2 \left( \sum_{1\le s_1,s_2 \le Q} B_1(s_1) B_2(s_2) - \sum_{1\le s \le Q}B_1(s)B_2(s) \right)\\
+&=\frac{1}{K}\rho_1\rho_2 (L_1L_2 - L_{1,2})\\
+&=\frac{1}{K} w_3.
+\end{align}
+$$
+
+Finally, for $h=4$, we have
+
+
+
+$$
+\begin{align}
+&P(H_3|D,\mathcal{A})\\
+&=\frac{1}{K}\rho_{12} \sum_{s\in\mathcal{S}_4} B_1(s_1)B_2(s_2)\\
+&=\frac{1}{K}\rho_{12} \sum_{1\le s \le Q} B_1(s)B_2(s)\\
+&=\frac{1}{K}\rho_{12} L_{1,2}\\
+&=\frac{1}{K} w_4
+\end{align}
+$$
+
+
+Now, let us study $K$.
+
+$$
+\begin{align}
+K&= \sum_{s'}\frac{p(D|S=s')}{P(D|S=S^0)}\frac{P(S=s'|\mathcal{A})}{P(S=S^0|\mathcal{A})}\\
+&= \sum_{s'}B_1(s'_1)B_2(S'_2)\frac{P(S=s'|\mathcal{A})}{P(S=S^0|\mathcal{A})}\\
+&= \sum_{s'\in H_0} B_1(s'_1)B_2(S'_2)\frac{P(S=s'|\mathcal{A})}{P(S=S^0|\mathcal{A})} + \sum_{s'\in H_1} B_1(s'_1)B_2(S'_2)\frac{P(S=s'|\mathcal{A})}{P(S=S^0|\mathcal{A})} \\
+&+ \sum_{s'\in H_2} B_1(s'_1)B_2(S'_2)\frac{P(S=s'|\mathcal{A})}{P(S=S^0|\mathcal{A})} + \sum_{s'\in H_3} B_1(s'_1)B_2(S'_2)\frac{P(S=s'|\mathcal{A})}{P(S=S^0|\mathcal{A})} \\
+&+ \sum_{s'\in H_4} B_1(s'_1)B_2(S'_2)\frac{P(S=s'|\mathcal{A})}{P(S=S^0|\mathcal{A})}\\
+&=w_1+w_2+w_3+w_4
+\end{align}
+$$
+
+
+Thus we have
+
+
+$$
+\begin{align}
+P(H_h|D,\mathcal{A})&=\frac{w_h}{\sum_{l=0}^4w_l}
+\end{align}
+$$
+
+as desired
+
+
+**End of proof of main result**
 
 
 
 to be continued.
-
-**End of proof of main result**
-
 
 ## SUSIE colocalization
 
