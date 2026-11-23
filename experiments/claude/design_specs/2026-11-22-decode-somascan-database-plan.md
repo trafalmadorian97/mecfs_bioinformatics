@@ -308,7 +308,8 @@ settings, with a small attrs object naming the file and its format.
       text with header as plain gzip, with `compresslevel=1` so that blocks span seek points.
     - `synthetic_rows(seed: int) -> pl.DataFrame` gives ~20k rows (~1.3 MB of text) over chr1,
       chr10, chr2, chr22 and chrX in text order. It includes one `!` row, one multi-allelic site
-      with f/1−f, rows at `minus_log10_pval` 4.9, 5.0 and 12 (the significant-rows boundary) on
+      with f/1−f, rows at `minus_log10_pval` 7.29, 7.31 and 12 (around the significant-rows
+      threshold, -log10(5e-8) ≈ 7.30103) on
       chrX and on a non-index autosomal position, and
       positions dense enough for several windows.
     - `write_synthetic_variant_info(path, rows) -> None` writes 5 columns, each row written
@@ -476,9 +477,9 @@ settings, with a small attrs object naming the file and its format.
     (e.g. the ASGR1 trans hotspot at chr17:7.18 Mb) and common loci whose HapMap3 proxies fall
     just short of 5e-8. To avoid a rebuild if a later hit table wants them, the pass keeps
     every row, on any chromosome, with `minus_log10_pval >= DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P`
-    (= 5.0, i.e. p <= 1e-5, in `decode_somascan_constants.py`).
-    - The threshold is looser than the hit table's 5e-8, so a later hit table at any p up to
-      1e-5 can use the file. AP4M1 keeps 849 rows, so the file is KBs.
+    (= `-math.log10(5e-8)` ≈ 7.30103, i.e. p <= 5e-8, in `decode_somascan_constants.py`).
+    - The threshold is the hit table's 5e-8 (user decision, 2026-11-23): only strong protein
+      signals matter. AP4M1 keeps 192 rows, so the file is KBs.
     - Columns are all deCODE columns except `rsids` and `Pval`, plus `row_number` UInt64, with
       Chrom kept as text. Rows are in file order.
     - Parquet metadata: `rows_scanned` and `min_mlog10p`.
@@ -532,9 +533,9 @@ settings, with a small attrs object naming the file and its format.
   - `test_protein_fails_on_wrong_total_rows`: drop one non-index row.
   - `test_protein_fails_on_md5_mismatch`: the manifest md5 differs from `head`.
   - `test_significant_rows_match_brute_force`: it equals the synthetic rows with
-    `minus_log10_pval >= 5`, on autosomes and chrX, including rows outside the index. They are
-    in file order with correct `row_number`. `rows_scanned` equals the data row count, the row
-    at 5.0 is present and the row at 4.9 is absent.
+    `minus_log10_pval >= DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P`, on autosomes and chrX, including
+    rows outside the index. They are in file order with correct `row_number`. `rows_scanned`
+    equals the data row count, the row at 7.31 is present and the row at 7.29 is absent.
   - `test_slim_reads_through_directory_member`: `scan_directory_member(output, DECODE_SLIM_MEMBER)`
     reads the slim on the real output.
 - [ ] **Step 2:** Run the tests. Expected: FAIL.

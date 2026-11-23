@@ -426,7 +426,7 @@ size and md5. In `execute`:
    - `seek_index.gzidx.zst`: the GZIDX v1 export, zstd-compressed (0.92 MB);
    - `posmap.parquet`, whose parquet metadata holds the source key, compressed size, md5, the
      header's end offset, and the format versions;
-   - `significant_rows.parquet`: every row, on any chromosome, with p <= 1e-5 (by
+   - `significant_rows.parquet`: every row, on any chromosome, with p <= 5e-8 (by
      `minus_log10_pval`), with all columns except rsids and Pval. It's insurance against a
      rebuild if a later hit table wants loci a HapMap3-only screen misses (user decisions,
      2026-11-23). Nothing reads it yet.
@@ -439,7 +439,8 @@ size and md5. In `execute`:
        - MHC loci.
        Only 2 of the 58 loci at p < 1e-20 are missed. chrX is missed entirely, since HapMap3 has
        none.
-     - Cost: KBs per protein (849 rows for AP4M1), and ~0.8 s of p-value parsing over all rows,
+     - Threshold 5e-8: only strong protein signals are of interest (user decision, 2026-11-23).
+     - Cost: KBs per protein (192 rows for AP4M1), and ~0.8 s of p-value parsing over all rows,
        about 2% of the build.
 4. The raw download is deleted along with the scratch directory.
 
