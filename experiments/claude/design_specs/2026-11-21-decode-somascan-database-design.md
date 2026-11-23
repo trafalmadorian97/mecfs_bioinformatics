@@ -433,10 +433,12 @@ time. Any setting that trades speed for memory, such as fewer `rapidgzip` worker
 blocks, is not taken. The builder records peak memory and wall time for the chosen settings.
 
 **Consumers of the slim file.** `scan_dataframe_asset` requires a `FileAsset`, but
-`ProteinHitTableTask` (and the PPP LDSC tasks) read `task` outputs through it. The builder adds
-the smallest generic way to read a dataframe stored as a named file inside a `DirectoryAsset`,
-for example a read-spec or meta field naming the member file, which `scan_dataframe_asset`
-honours. The hit table then works unchanged with deCODE tasks. Copying the slim file into its
+`ProteinHitTableTask` (and the PPP LDSC tasks) read `task` outputs through it. The read spec and
+metas stay unchanged (user decision, 2026-11-23). A `DataFrameReadSpec` describes a format only,
+and a directory asset can hold several dataframes. Instead, a consumer that reads from inside a
+directory dependency says so in its own settings, with a small attrs object
+`DirectoryMemberDataFrame(file_name, read_spec)`. `HitTableProtein` gets an optional field of
+that type, and the deCODE heritability task reads through it. Copying the slim file into its
 own task is rejected because it duplicates ~39 GB.
 
 ### 7. Asset generators and asset layout
@@ -603,7 +605,7 @@ All unit tests run offline:
   bytes, so the "prefetch covers the reads" property is checked.
 - **`S3Access`:** client reuse per (endpoint, region, profile), and the rebuild-once-on-403 path,
   both with an injected fake client factory.
-- **Directory-asset dataframe read** (§6): a small build-system test.
+- **Directory-member slim read** (§6): a hit-table test reading a slim inside a directory dependency.
 - **Heritability (§11):** if the PPP task is generalized, the existing PPP heritability tests must
   pass unchanged. A deCODE-shaped synthetic test covers per-variant N and the median-N rule.
 - **Budget check (§12):** a unit test in which a candidate would be dropped makes the
@@ -644,7 +646,6 @@ end to end, mirroring the mockup).
 - Exact defaults: download chunk size and connection count, `rapidgzip` workers and chunk size,
   `DECODE_MAX_PARALLEL_FETCHES`.
 - Reducing memory, against the target above.
-- The exact form of the directory-member dataframe read (§6), kept minimal and generic.
 - Module and class names beyond those given here.
 
 ## Decisions
@@ -663,7 +664,7 @@ end to end, mirroring the mockup).
 - N for LDSC is each protein's median N over its regression SNPs (§11).
 - The profile name `decode-download` is a task-level constant taken from deCODE's instructions
   (§1).
-- Directory-asset output with a generic member-file read for slim consumers (§6).
+- Directory-asset output; slim consumers name the member file in their own settings (§6).
 - One EAF rule for index and windows: candidates on (position, A1 == effectAllele) in the
   deduplicated variant info, narrowed by agreement with ImpMAF; null when undetermined, never MAF
   (§4, §9). On AP4M1 it determines every index row and 99.98% of all rows.

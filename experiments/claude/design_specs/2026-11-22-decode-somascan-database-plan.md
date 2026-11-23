@@ -206,42 +206,46 @@ Port it into production style; don't re-derive it.
 - [ ] **Step 4:** Run the tests. Expected: PASS. Run green.
 - [ ] **Step 5:** Commit `feat: parallel HTTP range downloader as a WF capability`.
 
-### Task 4: Dataframe read of a file inside a `DirectoryAsset` (§6)
+### Task 4: Slim consumers read a named file of a directory dependency (§6)
+
+The build system's read spec and metas stay unchanged. A `DataFrameReadSpec` describes a format
+only, and a directory asset can hold several dataframes, so the meta doesn't declare one of them.
+A consumer that reads a dataframe from inside a directory dependency says so in its own
+settings, with a small attrs object naming the file and its format.
 
 **Files:**
-- Modify:
-  - `mecfs_bio/build_system/meta/read_spec/dataframe_read_spec.py`;
-  - `mecfs_bio/build_system/meta/base_meta.py`;
-  - `mecfs_bio/build_system/meta/read_spec/read_dataframe.py`;
-  - `mecfs_bio/build_system/task/task_util.py`;
-  - `mecfs_bio/build_system/rebuilder/metadata_to_path/simple_meta_to_path.py`.
-- Create: `mecfs_bio/build_system/meta/gwas_summary_directory_meta.py`
-- Test: `test_mecfs_bio/unit/build_system/meta/test_directory_member_read.py`
+- Create: `mecfs_bio/build_system/task/directory_member_dataframe.py`
+- Modify: `mecfs_bio/build_system/task/protein_coloc/protein_hit_table_task.py`
+- Test: `test_mecfs_bio/unit/build_system/task/protein_coloc/test_protein_hit_table_task.py`
 
 **Interfaces:**
 - Produces:
-  - `DataFrameReadSpec.directory_member: PurePath | None = None`. It names the file inside a
-    directory asset, and is None for file assets.
-  - `DirMeta.read_spec` is a non-abstract property that returns None, like `FileMeta`.
-  - `GWASSummaryDataDirectoryMeta(DirMeta)` is frozen, with fields
-    `id: AssetId, trait: str, project: str, sub_dir: str, project_path: PurePath,
-    read_spec: DataFrameReadSpec | None`. Its path is resolved like `GWASSummaryDataFileMeta`'s,
-    minus the extension. Add the dispatch branch next to that one.
-  - `scan_dataframe_asset` also accepts `DirectoryAsset` + `DirMeta`. It asserts
-    `read_spec.directory_member is not None` and reads `asset.path / directory_member`.
-    A `FileAsset` with `directory_member` set is an assertion error.
-  - `produces_dataframe` is also true for a `DirMeta` whose `read_spec` is a `DataFrameReadSpec`.
+  - `DirectoryMemberDataFrame(file_name: PurePath, read_spec: DataFrameReadSpec)` (frozen).
+    It says that a dependency's output is a `DirectoryAsset` and that the dataframe wanted is
+    the file `file_name` inside it, in format `read_spec`. Its `__attrs_post_init__` asserts
+    that `file_name` is relative and a single path component.
+  - `scan_directory_member(asset: Asset, member: DirectoryMemberDataFrame,
+    parquet_backend: ValidBackend = "polars") -> nw.LazyFrame` asserts
+    `isinstance(asset, DirectoryAsset)` and that the file exists. It then returns the existing
+    `scan_dataframe(asset.path / member.file_name, member.read_spec, parquet_backend)`.
+  - `HitTableProtein.slim_member: DirectoryMemberDataFrame | None = None`. When None,
+    `_significant_variants` reads as today (`scan_dataframe_asset`). When set, it reads through
+    `scan_directory_member`. PPP and CSF hit tables are unchanged.
+- Consumers later in this plan: Task 10 sets `slim_member` on every deCODE `HitTableProtein`,
+  and Task 15 reads the slim through `scan_directory_member`. The constant
+  `DECODE_SLIM_MEMBER = DirectoryMemberDataFrame(PurePath(DECODE_SLIM_FILENAME),
+  DataFrameReadSpec(DataFrameParquetFormat()))` lives next to the Task 9 file-name constants.
 
-- [ ] **Step 1: Write the failing tests:**
-  - `test_scan_reads_member_parquet_of_directory_asset`: write `d/slim.parquet` and scan it
-    via `DirectoryAsset(d)` and the meta with `directory_member=PurePath("slim.parquet")`. The
-    frame equals what was written.
-  - `test_produces_dataframe_for_directory_meta_with_member`.
-  - `test_file_asset_with_member_is_rejected`: `pytest.raises(AssertionError)`.
-- [ ] **Step 2:** Run the tests. Expected: FAIL.
+- [ ] **Step 1: Write the failing test**
+  `test_hit_table_reads_slim_member_of_directory_dependency`. Use the existing hit-table test
+  fixture. For one protein, wrap its slim parquet as `slim.parquet` inside a directory produced
+  by a small test task returning `DirectoryAsset`, with `slim_member` set. The hit table equals
+  the one built from the plain file version of the same slim.
+- [ ] **Step 2:** Run `pixi r pytest test_mecfs_bio/unit/build_system/task/protein_coloc/test_protein_hit_table_task.py -v`.
+  Expected: the new test FAILS and the existing ones PASS.
 - [ ] **Step 3:** Implement.
-- [ ] **Step 4:** Run the tests and the existing meta/read-spec tests. Expected: PASS. Run green.
-- [ ] **Step 5:** Commit `feat: dataframe reads of a named member file of a directory asset`.
+- [ ] **Step 4:** Run the tests. Expected: all PASS. Run green.
+- [ ] **Step 5:** Commit `feat: hit table reads a slim file inside a directory dependency`.
 
 ### Task 5: deCODE format helpers and the EAF rule (§4)
 
@@ -475,11 +479,12 @@ Port it into production style; don't re-derive it.
     - no gathered `!`.
 
     Port `line_blocks`, `posmap_rows`, `gather_lines` and `one_pass` from the mockup.
-  - `BuildDecodeSomascanProteinTask(GeneratingTask)` has fields `meta: GWASSummaryDataDirectoryMeta`,
+  - `BuildDecodeSomascanProteinTask(GeneratingTask)` has fields `meta: ResultDirectoryMeta`,
     `index_task: Task` and `protein: DecodeSomascanProtein`, with `deps` = [index_task].
-    `create(index_task, protein, asset_id, index_name, group)` sets
-    `read_spec=DataFrameReadSpec(DataFrameParquetFormat(), directory_member=PurePath(DECODE_SLIM_FILENAME))`,
-    `trait="decode_somascan_<group>"` and `project=gene_symbol`.
+    `create(index_task, protein, asset_id, index_name, group)` builds
+    `ResultDirectoryMeta(id=asset_id, trait="decode_somascan_<group>", project=gene_symbol,
+    sub_dir=PurePath(f"aligned/{index_name}_index"))`. That is an existing meta, so there are no
+    meta or path-resolution changes. `DECODE_SLIM_MEMBER` (Task 4) lives in this module.
   - `execute`:
     1. `head` and assert the size and md5 equal the manifest;
     2. `presigned_url(ref, 6 * 3600)`;
@@ -502,7 +507,8 @@ Port it into production style; don't re-derive it.
     `pytest.raises(AssertionError)`.
   - `test_protein_fails_on_wrong_total_rows`: drop one non-index row.
   - `test_protein_fails_on_md5_mismatch`: the manifest md5 differs from `head`.
-  - `test_slim_reads_through_scan_dataframe_asset`: Task 4's path on the real output.
+  - `test_slim_reads_through_directory_member`: `scan_directory_member(output, DECODE_SLIM_MEMBER)`
+    reads the slim on the real output.
 - [ ] **Step 2:** Run the tests. Expected: FAIL.
 - [ ] **Step 3:** Implement.
 - [ ] **Step 4:** Run the tests. Expected: PASS. Run green.
@@ -527,8 +533,8 @@ Port it into production style; don't re-derive it.
 **Interfaces:**
 - Produces:
   - `DecodeSomascanTaskCollection(group, protein_tasks: tuple[BuildDecodeSomascanProteinTask, ...])`,
-    with `hit_table_proteins() -> tuple[HitTableProtein, ...]` using `ProteinId(seq_id)` and
-    `gene=gene_symbol`.
+    with `hit_table_proteins() -> tuple[HitTableProtein, ...]` using `ProteinId(seq_id)`,
+    `gene=gene_symbol` and `slim_member=DECODE_SLIM_MEMBER`.
   - `generate_decode_somascan_protein_tasks(group, index_task, index_name) -> DecodeSomascanTaskCollection`.
   - Asset ids: index `decode_somascan_<group>_hapmap_3_index`, proteins
     `decode_somascan_<group>_hapmap_3_<GENE>_<seq_id with - → _>`, hit table
@@ -730,6 +736,7 @@ SynID and sample-size paths, which the spec calls acceptable to avoid.
     `ld_scores_task`, `gene_coords_task` (the MAGMA GRCh38 table) and `config: PppHeritabilityConfig`.
   - Gene coordinates come from `DecodeGeneCoordsReader`.
   - N is the **median of the slim N over the context SNPs** per protein.
+  - It reads each slim through `scan_directory_member(fetch(task.asset_id), DECODE_SLIM_MEMBER)`.
   - Output columns are those of the PPP table, except that the id column is `protein_id`
     (constant `DECODE_H2_PROTEIN_ID_COL`) holding the seq id, because these are not Olink ids. It
     adds `n_p05` and `n_p95` columns, which are the 5th and 95th percentiles of N.
