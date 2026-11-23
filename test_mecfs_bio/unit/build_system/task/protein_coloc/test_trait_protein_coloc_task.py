@@ -55,6 +55,7 @@ from mecfs_bio.build_system.task.protein_coloc.csf_gene_coords_reader import (
     CsfGeneCoordsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
+    DenseWindowFetcher,
     ProteinWindowFrames,
     ProteinWindowRequest,
 )
@@ -213,7 +214,7 @@ def _swap_every_other_row(frame: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-class _FakeFetcher:
+class _FakeFetcher(DenseWindowFetcher):
     """Serves prepared dense protein data, one protein at a time, and counts fetches per
     protein."""
 
