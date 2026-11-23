@@ -54,7 +54,9 @@ Port it into production style; don't re-derive it.
   fine). Never trade speed for memory (no fewer rapidgzip workers, no smaller blocks).
 - After each task: `pixi r invoke green 2>&1 | tee <scratchpad>/green.log`. Check the exit code and
   the log, because the tail alone proves nothing. Stage explicit paths only, and never commit logs.
-- Unit tests are offline. In targeted pytest runs, list explicit unit-test paths and never the
+- Unit tests are offline and fast, about 1 s or less each. Size synthetic data by the seek
+  points and chunks a test needs, not by realism: rapidgzip `chunk_size` 32 KiB gives ~30
+  seek points per 2 MB. Build expensive fixtures once per module. In targeted pytest runs, list explicit unit-test paths and never the
   `test_mecfs_bio` root.
 
 ## Review Focus
@@ -97,12 +99,16 @@ Port it into production style; don't re-derive it.
   versions, then run `pixi r python -c "import boto3, rapidgzip, indexed_gzip, zstandard"`.
   Expected: no output.
 - [ ] **Step 2: Write the failing test** `test_rapidgzip_export_imports_into_indexed_gzip`:
-  - write a ~40 MB synthetic gzip of random text lines with plain `gzip`;
-  - export with `parallelization=4, chunk_size=1 MiB`;
-  - for 200 random `(offset, length)` pairs, seek and read through `IndexedGzipFile` with the
+  - write a ~2 MB synthetic gzip of random tab-separated text lines with plain `gzip`
+    (`compresslevel=1`);
+  - export with `parallelization=4, chunk_size=32 KiB`. Small chunks give ~30 seek points
+    from 2 MB, so the test stays small;
+  - for 50 random `(offset, length)` pairs, seek and read through `IndexedGzipFile` with the
     imported index;
-  - `assert` the bytes equal `zlib`-decompressed `data[offset:offset+length]`;
+  - `assert` the bytes equal `data[offset:offset+length]`;
   - `assert len(points) > 10`.
+
+  Measured 2026-11-23: 0.13 s. A 40 MB file with 1 MiB chunks took 5–6 s for the same check.
 - [ ] **Step 3:** Run `pixi r pytest test_mecfs_bio/unit/util/file_io/test_gzip_seek_index.py -v`.
   Expected: FAIL (module missing).
 - [ ] **Step 4:** Implement the functions, porting `one_pass` (export part) and the import code
@@ -294,8 +300,8 @@ Port it into production style; don't re-derive it.
   - Fixtures, used by every later deCODE test:
     - `write_synthetic_decode_file(path, rows: pl.DataFrame) -> None` writes the exact deCODE
       text with header as plain gzip, with `compresslevel=1` so that blocks span seek points.
-    - `synthetic_rows(seed: int) -> pl.DataFrame` gives ~200k rows over chr1, chr10, chr2, chr22
-      and chrX in text order. It includes one `!` row, one multi-allelic site with f/1−f, and
+    - `synthetic_rows(seed: int) -> pl.DataFrame` gives ~20k rows (~1.3 MB of text) over chr1,
+      chr10, chr2, chr22 and chrX in text order. It includes one `!` row, one multi-allelic site with f/1−f, and
       positions dense enough for several windows.
     - `write_synthetic_variant_info(path, rows) -> None` writes 5 columns, each row written
       twice (the duplicates), plus multi-allelic rows.
@@ -485,7 +491,8 @@ Port it into production style; don't re-derive it.
     Log the peak RSS (`resource.getrusage`) and the wall time per step.
 
 - [ ] **Step 1: Write the failing tests**, building through the fakes with a small
-  `chunk_size` (64 KiB) and `posmap_step` (16 KiB):
+  `chunk_size` (32 KiB, giving ~20 seek points) and `posmap_step` (8 KiB). Build the outputs
+  once in a module-scoped fixture that Task 12's tests also use:
   - `test_protein_outputs_match_brute_force`: the slim BETA/SE/N equal a brute-force parse joined on
     `SOURCE_ROW`. Every posmap row's `line_offset` starts a line whose (chrom, pos) match. The
     seek index round-trips through `seek_points`.
