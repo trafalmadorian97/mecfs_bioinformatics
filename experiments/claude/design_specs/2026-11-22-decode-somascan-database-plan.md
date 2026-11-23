@@ -307,7 +307,8 @@ settings, with a small attrs object naming the file and its format.
     - `write_synthetic_decode_file(path, rows: pl.DataFrame) -> None` writes the exact deCODE
       text with header as plain gzip, with `compresslevel=1` so that blocks span seek points.
     - `synthetic_rows(seed: int) -> pl.DataFrame` gives ~20k rows (~1.3 MB of text) over chr1,
-      chr10, chr2, chr22 and chrX in text order. It includes one `!` row, one multi-allelic site with f/1−f, and
+      chr10, chr2, chr22 and chrX in text order. It includes one `!` row, one multi-allelic site
+      with f/1−f, chrX rows at `minus_log10_pval` 4.9, 5.0 and 12 (the supplement boundary), and
       positions dense enough for several windows.
     - `write_synthetic_variant_info(path, rows) -> None` writes 5 columns, each row written
       twice (the duplicates), plus multi-allelic rows.
@@ -466,19 +467,38 @@ settings, with a small attrs object naming the file and its format.
 - Produces:
   - File-name constants `DECODE_SLIM_FILENAME = "slim.parquet"`,
     `DECODE_SEEK_INDEX_FILENAME = "seek_index.gzidx.zst"` and
-    `DECODE_POSMAP_FILENAME = "posmap.parquet"`.
+    `DECODE_POSMAP_FILENAME = "posmap.parquet"` and
+    `DECODE_CHRX_SUPPLEMENT_FILENAME = "chrx_supplement.parquet"`.
+  - **chrX supplement.** HapMap3 has no chrX, so neither do the index and the slim. To avoid
+    rebuilding the database if chrX is ever wanted, the pass also keeps every chrX row with
+    `minus_log10_pval >= DECODE_CHRX_SUPPLEMENT_MIN_MLOG10P` (= 5.0, i.e. p <= 1e-5, in
+    `decode_somascan_constants.py`).
+    - The threshold is looser than the hit table's 5e-8 so that a later hit table at any p up to
+      1e-5 can use it. Under the null that adds ~12 rows per protein.
+    - Columns are all deCODE columns except `rsids` and `Pval`, plus `row_number` UInt64, with
+      Chrom kept as text. Rows are in file order.
+    - Parquet metadata: `chrx_rows_scanned` and `min_mlog10p`.
+    - Filter on `minus_log10_pval`, not `Pval`, which underflows to 0 for strong hits.
+    - Nothing reads the supplement yet: the hit table ignores it (user decision, 2026-11-23).
   - Posmap columns: `chrom` Int8, `pos` Int64, `line_offset` UInt64, `row_number` UInt64.
     Posmap metadata keys: `source_key`, `compressed_size`, `md5`, `header_end_offset`,
     `posmap_format_version` = "1" and `gzidx_format_version` = "1".
-  - `OnePassResult(slim: pl.DataFrame, posmap: pl.DataFrame, header_end_offset: int, seek_index: bytes)`.
+  - `OnePassResult(slim: pl.DataFrame, posmap: pl.DataFrame, chrx_supplement: pl.DataFrame,
+    chrx_rows_scanned: int, header_end_offset: int, seek_index: bytes)`.
   - `one_pass(gz_path: Path, index: pl.DataFrame, total_rows: int, parallelization: int = 8,
     chunk_size: int = 16 * MIB, posmap_step: int = 1 * MIB) -> OnePassResult` asserts:
     - the header;
     - the total row count;
     - gathered `Name` == index `NAME`, row for row;
-    - no gathered `!`.
+    - no gathered `!`;
+    - chrX rows are one contiguous run at the end of the file (it is last in text order), and
+      `chrx_rows_scanned > 0`.
 
-    Port `line_blocks`, `posmap_rows`, `gather_lines` and `one_pass` from the mockup.
+    Port `line_blocks`, `posmap_rows`, `gather_lines` and `one_pass` from the mockup. For chrX,
+    find the first line starting with `chrX\t` in the block stream. From there, parse each
+    block's lines with `parse_decode_lines` and filter, keeping the filtered rows only. That
+    parses ~1.2M extra rows per protein, which the mockup's full-parse timing puts at well under
+    1 s. Task 17 measures it.
   - `BuildDecodeSomascanProteinTask(GeneratingTask)` has fields `meta: ResultDirectoryMeta`,
     `index_task: Task` and `protein: DecodeSomascanProtein`, with `deps` = [index_task].
     `create(index_task, protein, asset_id, index_name, group)` builds
@@ -490,7 +510,7 @@ settings, with a small attrs object naming the file and its format.
     2. `presigned_url(ref, 6 * 3600)`;
     3. `download_url_parallel`;
     4. `one_pass`;
-    5. write the three files into `scratch_dir/out`, with slim BETA/SE/N as float32 and
+    5. write the four files into `scratch_dir/out`, with slim BETA/SE/N as float32 and
        byte-stream-split zstd;
     6. delete the download;
     7. return `DirectoryAsset`.
@@ -507,12 +527,16 @@ settings, with a small attrs object naming the file and its format.
     `pytest.raises(AssertionError)`.
   - `test_protein_fails_on_wrong_total_rows`: drop one non-index row.
   - `test_protein_fails_on_md5_mismatch`: the manifest md5 differs from `head`.
+  - `test_chrx_supplement_matches_brute_force`: it equals the synthetic chrX rows with
+    `minus_log10_pval >= 5`, in file order with correct `row_number`.
+    `chrx_rows_scanned` equals the synthetic chrX row count, and a chrX row at
+    `minus_log10_pval` 4.9 is absent.
   - `test_slim_reads_through_directory_member`: `scan_directory_member(output, DECODE_SLIM_MEMBER)`
     reads the slim on the real output.
 - [ ] **Step 2:** Run the tests. Expected: FAIL.
 - [ ] **Step 3:** Implement.
 - [ ] **Step 4:** Run the tests. Expected: PASS. Run green.
-- [ ] **Step 5:** Commit `feat: per-protein deCODE task (slim, seek index, position map)`.
+- [ ] **Step 5:** Commit `feat: per-protein deCODE task (slim, seek index, position map, chrX supplement)`.
 
 ### Task 10: Asset generator, asset modules, hit tables (§7, §8)
 
@@ -788,7 +812,11 @@ measuring from the Olink position plus or minus the SMP distance.
   - index 1,197,450 rows;
   - ~54 s per protein;
   - peak below 5 GB;
-  - the slim matches the mockup's slim for AP4M1 (`assert_frame_equal`).
+  - the slim matches a brute-force parse of the downloaded AP4M1 file joined on `SOURCE_ROW`
+    (`assert_frame_equal`). The mockup's outputs were in a scratch directory that has since
+    been cleared;
+  - the time the chrX supplement adds to the pass (time the pass with and without it) and its
+    row count and file size. Expected: under 1 s, and KBs.
 - [ ] **Step 2:** Measure download `chunk_bytes` at 2, 4 and 8 MiB on one protein, and keep the
   fastest. Measure `DECODE_MAX_PARALLEL_FETCHES` ∈ {4, 6, 8} on 24 proteins × 1 window. Set the
   constants and record the numbers.

@@ -154,6 +154,8 @@ global factor, in opposite ways) and for any important trans coloc.
 - Genetic correlation (rg) between traits and deCODE proteins, LCV, and coloc runs for traits
   other than the exploratory DecodeME run. These are follow-ups.
 - Keeping any full dense summary-statistics file on disk.
+- chrX in the hit table, LDSC or coloc candidates. The HapMap3 index is autosomal, and the
+  DecodeME GWAS-1 is too. The chrX supplement (§6) keeps the option open.
 - Concurrent task execution in the build system.
 - Any text under `docs/`.
 
@@ -422,7 +424,12 @@ size and md5. In `execute`:
      per the docs-parquet convention; 7.9 MB in the mockup, with N per variant as for CSF);
    - `seek_index.gzidx.zst`: the GZIDX v1 export, zstd-compressed (0.92 MB);
    - `posmap.parquet`, whose parquet metadata holds the source key, compressed size, md5, the
-     header's end offset, and the format versions.
+     header's end offset, and the format versions;
+   - `chrx_supplement.parquet`: every chrX row with p <= 1e-5 (by `minus_log10_pval`), with all
+     columns except rsids and Pval. The HapMap3 membership list has no chrX, so the index, slim
+     and hit table don't either. This file is insurance against rebuilding the database if chrX
+     is wanted later (user decision, 2026-11-23). It adds ~1.2M rows of parsing per protein.
+     Nothing reads it yet.
 4. The raw download is deleted along with the scratch directory.
 
 Budget per protein: about 54 s wall time, about 8.8 MB on disk. Peak memory was 4.2 GB in the
