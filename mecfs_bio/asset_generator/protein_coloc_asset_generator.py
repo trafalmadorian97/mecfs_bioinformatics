@@ -46,6 +46,9 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_locus_stack_plot_task impor
 from mecfs_bio.build_system.task.protein_coloc.coloc_protein_info_task import (
     ColocProteinInfoTask,
 )
+from mecfs_bio.build_system.task.protein_coloc.decode_gene_coords_reader import (
+    DecodeGeneCoordsReader,
+)
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
     DenseWindowFetcher,
 )
@@ -54,6 +57,8 @@ from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     St3GeneCoordsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import (
+    DecodeProteinAccessionsReader,
+    ProteinAccessionsReader,
     St3ProteinAccessionsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
@@ -64,7 +69,9 @@ from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
     TraitProteinColocTask,
 )
 
-ProteomicsSourceInfix = Literal["ppp", "csf"]
+ProteomicsSourceInfix = Literal[
+    "ppp", "csf", "decode_somascan_smp", "decode_somascan_raw"
+]
 
 
 @frozen(slots=True)
@@ -194,20 +201,31 @@ def generate_coloc_protein_info_task(
 ) -> ColocProteinInfoTask:
     """UniProt and Ensembl annotations of the colocalizing proteins at the top display-table loci.
 
-    Only UKB-PPP runs are supported: the UniProt accessions of each protein are read from the
-    Sun et al. 2023 ST3 sheet, the run's gene-coordinate table.
+    UKB-PPP and deCODE SomaScan runs are supported. PPP accessions are read from the Sun et al.
+    2023 ST3 sheet (the run's gene-coordinate table); deCODE accessions from the manifest rows
+    of the run's gene-coordinate reader.
     """
     coloc_task = group.coloc_task
-    assert isinstance(coloc_task.gene_coords_reader, St3GeneCoordsReader), (
-        "generate_coloc_protein_info_task supports UKB-PPP runs only, got gene coords reader "
-        f"{type(coloc_task.gene_coords_reader).__name__}"
-    )
     return ColocProteinInfoTask.create(
         asset_id=asset_id,
         display_task=group.display_task,
         protein_table_task=coloc_task.gene_coords_task,
-        protein_accessions_reader=St3ProteinAccessionsReader(),
+        protein_accessions_reader=_protein_accessions_reader(coloc_task),
         uniprot_task=UNIPROT_LOOKUP,
         uniprot_genes_task=HGNC_UNIPROT_GENES,
         max_loci=max_loci,
+    )
+
+
+def _protein_accessions_reader(
+    coloc_task: TraitProteinColocTask,
+) -> ProteinAccessionsReader:
+    reader = coloc_task.gene_coords_reader
+    if isinstance(reader, St3GeneCoordsReader):
+        return St3ProteinAccessionsReader()
+    if isinstance(reader, DecodeGeneCoordsReader):
+        return DecodeProteinAccessionsReader(proteins=reader.proteins)
+    raise AssertionError(
+        "generate_coloc_protein_info_task supports UKB-PPP and deCODE runs only, got gene "
+        f"coords reader {type(reader).__name__}"
     )
