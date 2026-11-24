@@ -19,12 +19,30 @@ import numpy as np
 import polars as pl
 from attrs import field, frozen
 
+from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
+from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
+from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
+from mecfs_bio.build_system.task.base_task import Task
+from mecfs_bio.build_system.task.decode_database.build_decode_somascan_protein_task import (
+    BuildDecodeSomascanProteinTask,
+)
 from mecfs_bio.build_system.task.decode_database.build_decode_variant_info_task import (
     write_variant_info_parquet,
+)
+from mecfs_bio.build_system.task.decode_database.construct_decode_variant_index_task import (
+    ConstructDecodeVariantIndexTask,
 )
 from mecfs_bio.build_system.task.decode_database.decode_somascan_protein import (
     DecodeSomascanProtein,
 )
+from mecfs_bio.build_system.task.fake_task import FakeTask
+from mecfs_bio.build_system.wf.base_wf import WF, make_wf
 from mecfs_bio.build_system.wf.parallel_range_downloader import ParallelRangeDownloader
 from mecfs_bio.build_system.wf.s3_access import (
     S3Access,
@@ -311,4 +329,129 @@ def synthetic_protein(
         ref=fake_ref(key),
         size=path.stat().st_size,
         md5=file_md5(path),
+    )
+
+
+KIB = 1024
+# Small rapidgzip chunks and position-map steps give a 2 MB fixture many seek points.
+TEST_CHUNK_SIZE = 32 * KIB
+TEST_POSMAP_STEP = 8 * KIB
+_TEMPLATE_KEY = "final_somascan_smp/template.txt.gz"
+
+
+def table_meta(asset_id: str) -> ResultTableMeta:
+    return ResultTableMeta(
+        id=AssetId(asset_id),
+        trait="t",
+        project="p",
+        sub_dir=Path("x"),
+        extension=".parquet",
+        read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
+    )
+
+
+@frozen(slots=True)
+class DecodeDatabaseFixture:
+    """
+    A synthetic group: template rows, the index and variant_info assets, and the fake S3.
+    assets maps asset ids to materialized assets, for a fetch.
+    """
+
+    root: Path
+    rows: pl.DataFrame
+    index_task: Task
+    variant_info_task: Task
+    assets: dict[AssetId, Asset]
+    objects: dict[S3ObjectRef, Path]
+
+    def fetch(self, asset_id: AssetId) -> Asset:
+        return self.assets[asset_id]
+
+    def wf(self, access: S3Access | None = None) -> WF:
+        return make_wf(
+            s3_access=FakeS3Access(objects=self.objects) if access is None else access,
+            parallel_range_downloader=FakeParallelRangeDownloader(),
+        )
+
+    def protein_task(
+        self, protein_rows: pl.DataFrame, key: str, md5: str | None = None
+    ) -> BuildDecodeSomascanProteinTask:
+        """Write protein_rows as the object at key; md5 overrides the manifest's md5."""
+        path = self.root / Path(key).name
+        write_synthetic_decode_file(path, protein_rows)
+        ref = fake_ref(key)
+        self.objects[ref] = path
+        protein = synthetic_protein(path, key)
+        if md5 is not None:
+            protein = DecodeSomascanProtein(
+                seq_id=protein.seq_id,
+                gene_symbol=protein.gene_symbol,
+                target_name=protein.target_name,
+                uniprot=protein.uniprot,
+                entrez_gene_id=protein.entrez_gene_id,
+                ref=protein.ref,
+                size=protein.size,
+                md5=md5,
+            )
+        return BuildDecodeSomascanProteinTask.create(
+            index_task=self.index_task,
+            protein=protein,
+            asset_id=f"protein_{Path(key).stem.split('.')[0]}",
+            index_name="test",
+            group="smp",
+            parallelization=2,
+            chunk_size=TEST_CHUNK_SIZE,
+            posmap_step=TEST_POSMAP_STEP,
+        )
+
+    def build_protein(self, task: BuildDecodeSomascanProteinTask) -> DirectoryAsset:
+        scratch = self.root / f"scratch_{task.asset_id}"
+        scratch.mkdir()
+        asset = task.execute(scratch, fetch=self.fetch, wf=self.wf())
+        assert isinstance(asset, DirectoryAsset)
+        self.assets[task.asset_id] = asset
+        return asset
+
+
+def decode_database_fixture(root: Path, seed: int) -> DecodeDatabaseFixture:
+    """Build the variant_info parquet and the index of a synthetic template (seed)."""
+    rows = synthetic_rows(seed)
+    template_path = root / "template.txt.gz"
+    write_synthetic_decode_file(template_path, rows)
+    membership_path = root / "membership.parquet"
+    synthetic_membership(membership_rows(rows)).write_parquet(membership_path)
+    vi_path = root / "variant_info.parquet"
+    write_variant_info_asset(vi_path, rows)
+    membership_task = FakeTask(meta=table_meta("membership"))
+    variant_info_task = FakeTask(meta=table_meta("variant_info"))
+    assets: dict[AssetId, Asset] = {
+        membership_task.asset_id: FileAsset(membership_path),
+        variant_info_task.asset_id: FileAsset(vi_path),
+    }
+    template = synthetic_protein(template_path, _TEMPLATE_KEY)
+    objects = {template.ref: template_path}
+    index_task = ConstructDecodeVariantIndexTask.create(
+        "index",
+        template,
+        membership_task=membership_task,
+        variant_info_task=variant_info_task,
+    )
+    scratch = root / "scratch_index"
+    scratch.mkdir()
+    index_asset = index_task.execute(
+        scratch,
+        fetch=lambda asset_id: assets[asset_id],
+        wf=make_wf(
+            s3_access=FakeS3Access(objects=objects),
+            parallel_range_downloader=FakeParallelRangeDownloader(),
+        ),
+    )
+    assets[index_task.asset_id] = index_asset
+    return DecodeDatabaseFixture(
+        root=root,
+        rows=rows,
+        index_task=index_task,
+        variant_info_task=variant_info_task,
+        assets=assets,
+        objects=objects,
     )
