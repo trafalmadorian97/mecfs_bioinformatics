@@ -70,3 +70,16 @@ DECODE_INDEX_NAME_COL = "NAME"
 DECODE_H2_PROTEIN_ID_COL = "protein_id"
 DECODE_H2_N_P05_COL = "n_p05"
 DECODE_H2_N_P95_COL = "n_p95"
+
+# Columns of st36_pleiotropic_pqtls.csv, extracted from Eldjarn et al. 2023 ST36 (highly
+# pleiotropic pQTLs): chromosome code, positions (hg38) and pleiotropy flags.
+ST36_CHROM_COL = "chrom"
+ST36_OLINK_POS_COL = "olink_pos"
+ST36_PLEIOTROPIC_OLINK_COL = "highly_pleiotropic_olink"
+ST36_PLEIOTROPIC_SMP_COL = "highly_pleiotropic_soma_smp"
+ST36_PLEIOTROPIC_PC0_COL = "highly_pleiotropic_soma_pc0"
+ST36_SMP_POS_COL = "soma_smp_pos"
+ST36_SMP_NAME_COL = "soma_smp_name"
+ST36_SMP_RSNAME_COL = "soma_smp_rsname"
+ST36_SMP_NPROT_COL = "soma_smp_nprot"
+ST36_PC0_POS_COL = "soma_pc0_pos"

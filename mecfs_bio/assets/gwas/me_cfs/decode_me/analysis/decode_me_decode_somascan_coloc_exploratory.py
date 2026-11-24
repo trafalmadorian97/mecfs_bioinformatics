@@ -8,7 +8,8 @@ Loci in the extended MHC are tested too: its long-range LD strains coloc.abf's
 single-causal-variant assumption, so an MHC colocalization here is weaker evidence still.
 
 The budgets are set so that they never bind, and require_no_budget_drop makes the run fail if
-one does: every candidate pair is tested.
+one does: every candidate pair is tested. The raw results are also written with a flag for
+pairs whose protein lead lies near a highly pleiotropic SMP pQTL (ST36).
 """
 
 from mecfs_bio.asset_generator.decode_somascan_coloc_asset_generator import (
@@ -20,10 +21,16 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_gwas_1_build_38_harmonized import (
     DECODE_ME_GWAS_1_BUILD_38_HARMONIZED,
 )
+from mecfs_bio.assets.reference_data.decode_somascan_sumstats.extract_st29 import (
+    ST36_CSV_PATH,
+)
 from mecfs_bio.build_system.task.protein_coloc.candidate_selection import (
     SelectionConfig,
 )
 from mecfs_bio.build_system.task.protein_coloc.coloc_abf import CaseControlTraitModel
+from mecfs_bio.build_system.task.protein_coloc.coloc_pleiotropy_flag_task import (
+    ColocPleiotropyFlagTask,
+)
 from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
     ColocRunConfig,
 )
@@ -40,4 +47,12 @@ DECODE_ME_DECODE_SOMASCAN_SMP_COLOC_LEAD_P_1E_5 = generate_decode_somascan_coloc
         selection=SelectionConfig(max_pairs=1_000_000, max_per_locus=1_000_000),
         require_no_budget_drop=True,
     ),
+)
+
+DECODE_ME_DECODE_SOMASCAN_SMP_COLOC_LEAD_P_1E_5_PLEIOTROPY = (
+    ColocPleiotropyFlagTask.create(
+        asset_id="decode_me_gwas_1_lead_p_1e_5_decode_somascan_smp_coloc_pleiotropy",
+        coloc_task=DECODE_ME_DECODE_SOMASCAN_SMP_COLOC_LEAD_P_1E_5.coloc_task,
+        pleiotropic_csv=ST36_CSV_PATH,
+    )
 )

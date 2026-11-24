@@ -18,9 +18,14 @@ Writes st29_soma_assays.csv next to this script, with columns seq_id (dash form,
 10001-7; ST29 writes 10001_7), uniprot (as ST29 writes it, several accessions comma
 separated), gene, cis_pqtl_soma and confidence_tier.
 
+With --st36, extracts sheet ST36_pleiotropic_pQTLs instead: one row per highly pleiotropic
+pQTL (Olink, SomaScan SMP or SomaScan PC0), with the chromosome as a code (chrX = 23), the
+Olink, SMP and PC0 lead positions (hg38), the three pleiotropy flags as booleans, and the SMP
+lead's name, rsName and number of proteins. Writes st36_pleiotropic_pqtls.csv.
+
 Usage (from the repo root), with the workbook downloaded from the paper:
   pixi r python mecfs_bio/assets/reference_data/decode_somascan_sumstats/extract_st29.py \
-      <41586_2023_6563_MOESM3_ESM.xlsx>
+      [--st36] <41586_2023_6563_MOESM3_ESM.xlsx>
 """
 
 import sys
@@ -29,10 +34,46 @@ from pathlib import Path
 import openpyxl
 import polars as pl
 
+from mecfs_bio.constants.decode_somascan_constants import (
+    DECODE_CHR_X_CODE,
+    ST36_CHROM_COL,
+    ST36_OLINK_POS_COL,
+    ST36_PC0_POS_COL,
+    ST36_PLEIOTROPIC_OLINK_COL,
+    ST36_PLEIOTROPIC_PC0_COL,
+    ST36_PLEIOTROPIC_SMP_COL,
+    ST36_SMP_NAME_COL,
+    ST36_SMP_NPROT_COL,
+    ST36_SMP_POS_COL,
+    ST36_SMP_RSNAME_COL,
+)
+
 _DIR = Path(__file__).parent
 ST29_CSV_PATH = _DIR / "st29_soma_assays.csv"
 _ST29_SHEET = "ST29_protein_classification"
 _HEADER_ROW = 3
+ST36_CSV_PATH = _DIR / "st36_pleiotropic_pqtls.csv"
+_ST36_SHEET = "ST36_pleiotropic_pQTLs"
+# ST36 headers wrap onto several lines; they are matched with newlines replaced by spaces.
+_ST36_COLUMNS = {
+    "Chrom": ST36_CHROM_COL,
+    "Olink Pos (hg38)": ST36_OLINK_POS_COL,
+    "Highly Pleiotropic Olink": ST36_PLEIOTROPIC_OLINK_COL,
+    "Highly Pleiotropic Soma SMP": ST36_PLEIOTROPIC_SMP_COL,
+    "Highly Pleiotropic Soma PC0": ST36_PLEIOTROPIC_PC0_COL,
+    "Soma SMP Pos": ST36_SMP_POS_COL,
+    "Soma SMP Name": ST36_SMP_NAME_COL,
+    "Soma SMP rsName": ST36_SMP_RSNAME_COL,
+    "Soma SMP nprot": ST36_SMP_NPROT_COL,
+    "Soma PC0 Pos": ST36_PC0_POS_COL,
+}
+_ST36_FLAGS = (
+    ST36_PLEIOTROPIC_OLINK_COL,
+    ST36_PLEIOTROPIC_SMP_COL,
+    ST36_PLEIOTROPIC_PC0_COL,
+)
+_ST36_SOURCE_FLAGS = [k for k, v in _ST36_COLUMNS.items() if v in _ST36_FLAGS]
+_ST36_POSITIONS = (ST36_OLINK_POS_COL, ST36_SMP_POS_COL, ST36_PC0_POS_COL)
 EXPECTED_SOMA_ASSAYS = 4_907
 
 ST29_SEQ_ID_COL = "seq_id"
@@ -87,7 +128,39 @@ def one_row_per_assay(assays: pl.DataFrame) -> pl.DataFrame:
     )
 
 
+def st36_pleiotropic_pqtls(st36: pl.DataFrame) -> pl.DataFrame:
+    renamed = st36.rename(lambda c: c.replace("\n", " ")).select(list(_ST36_COLUMNS))
+    flag_values = set(
+        renamed.select(pl.concat_list(_ST36_SOURCE_FLAGS).explode())
+        .to_series()
+        .drop_nulls()
+        .to_list()
+    )
+    assert flag_values <= {"Y", "N"}, f"unexpected ST36 flag values {flag_values}"
+    table = renamed.rename(_ST36_COLUMNS).with_columns(
+        pl.col(ST36_CHROM_COL)
+        .str.strip_prefix("chr")
+        .replace("X", str(DECODE_CHR_X_CODE))
+        .cast(pl.Int32),
+        *(pl.col(c).cast(pl.Float64).cast(pl.Int64) for c in _ST36_POSITIONS),
+        pl.col(ST36_SMP_NPROT_COL).cast(pl.Float64).cast(pl.Int32),
+        *((pl.col(c) == "Y").fill_null(False) for c in _ST36_FLAGS),
+    )
+    smp = table.filter(pl.col(ST36_PLEIOTROPIC_SMP_COL))
+    assert smp[ST36_SMP_POS_COL].null_count() == 0, (
+        "an SMP-pleiotropic row has no SMP Pos"
+    )
+    return table
+
+
 def main() -> None:
+    if sys.argv[1] == "--st36":
+        st36 = st36_pleiotropic_pqtls(
+            read_sheet(Path(sys.argv[2]), _ST36_SHEET, _HEADER_ROW)
+        )
+        st36.write_csv(ST36_CSV_PATH)
+        print(f"wrote {st36.height} rows to {ST36_CSV_PATH}")
+        return
     workbook = Path(sys.argv[1])
     assays = one_row_per_assay(
         soma_assays(read_sheet(workbook, _ST29_SHEET, _HEADER_ROW))
