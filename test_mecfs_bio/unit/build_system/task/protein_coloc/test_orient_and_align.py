@@ -152,3 +152,18 @@ def test_alignment_is_exact_on_ordered_alleles() -> None:
     assert aligned.frame[BETA_TRAIT_COL].to_list() == [0.1]
     assert aligned.frame[BETA_PROTEIN_COL].to_list() == [0.5]
     assert aligned.n_trait == 2 and aligned.n_protein == 2
+
+
+def test_null_eaf_rows_survive_orientation(tmp_path: Path) -> None:
+    # Position 1 is A: A/T is a palindrome, unresolvable without a frequency. Position 2 is C:
+    # C/T (stored flipped) is oriented by the reference allele alone.
+    rows = _window([(1, "T", "A", 0.2, 0.0), (2, "C", "T", 0.1, 0.0)]).with_columns(
+        pl.lit(None, dtype=pl.Float64).alias(GWASLAB_EFFECT_ALLELE_FREQ_COL)
+    )
+    oriented = _orient(tmp_path, rows)
+    assert oriented.frame.select(
+        GWASLAB_POS_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+    ).rows() == [(2, "T", "C")]
+    assert oriented.frame[GWASLAB_BETA_COL].item() == pytest.approx(-0.1)
+    assert oriented.frame[GWASLAB_EFFECT_ALLELE_FREQ_COL].is_null().all()
+    assert sum(oriented.drop_counts.values()) == 1

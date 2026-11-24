@@ -42,6 +42,10 @@ from mecfs_bio.build_system.task.decode_database.decode_somascan_protein import 
     DecodeSomascanProtein,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
+from mecfs_bio.build_system.task.protein_coloc.decode_window_reader import (
+    RangeSource,
+    RangeSourceFactory,
+)
 from mecfs_bio.build_system.wf.base_wf import WF, make_wf
 from mecfs_bio.build_system.wf.parallel_range_downloader import ParallelRangeDownloader
 from mecfs_bio.build_system.wf.s3_access import (
@@ -455,3 +459,30 @@ def decode_database_fixture(root: Path, seed: int) -> DecodeDatabaseFixture:
         assets=assets,
         objects=objects,
     )
+
+
+@frozen(slots=True)
+class CountingRangeSource(RangeSource):
+    """Reads ranges of a local file:// object, recording each (start, length) in reads."""
+
+    path: Path
+    reads: list[tuple[int, int]]
+
+    def read_range(self, start: int, length: int) -> bytes:
+        self.reads.append((start, length))
+        with open(self.path, "rb") as f:
+            f.seek(start)
+            return f.read(length)
+
+
+@frozen(slots=True)
+class CountingRangeSourceFactory(RangeSourceFactory):
+    """Opens file:// URLs as CountingRangeSources sharing one reads list."""
+
+    reads: list[tuple[int, int]] = field(factory=list)
+
+    def open(self, url: str, size: int) -> RangeSource:
+        assert url.startswith("file://"), url
+        path = Path(url.removeprefix("file://"))
+        assert path.stat().st_size == size
+        return CountingRangeSource(path=path, reads=self.reads)
