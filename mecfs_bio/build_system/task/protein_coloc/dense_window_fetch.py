@@ -25,6 +25,8 @@ import polars as pl
 import structlog
 from attrs import frozen
 
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
+from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from mecfs_bio.util.retry.call_with_retries import call_with_retries
@@ -66,11 +68,17 @@ class ProteinWindowFrames:
 
 
 class DenseWindowFetcher(ABC):
+    @property
+    def deps(self) -> list[Task]:
+        """Tasks whose assets the fetcher reads through fetch (none by default)."""
+        return []
+
     @abstractmethod
     def fetch_all(
         self,
         requests: Sequence[ProteinWindowRequest],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> Generator[ProteinWindowFrames]:
         """
@@ -83,12 +91,18 @@ class DenseWindowFetcher(ABC):
 
 
 class ProteinWindowReader(ABC):
+    @property
+    def deps(self) -> list[Task]:
+        """Tasks whose assets the reader reads through fetch (none by default)."""
+        return []
+
     @abstractmethod
     def fetch_protein(
         self,
         protein_id: str,
         windows: Sequence[GenomicInterval],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> dict[GenomicInterval, pl.DataFrame]:
         """Return one WINDOW_SCHEMA frame per window, keyed by window."""
@@ -103,12 +117,18 @@ def _fetch_with_retries(
     reader: ProteinWindowReader,
     request: ProteinWindowRequest,
     scratch_dir: Path,
+    fetch: Fetch,
     wf: WF,
     sleep: SleepFn,
 ) -> ProteinWindowFrames:
     frames = call_with_retries(
         partial(
-            reader.fetch_protein, request.protein_id, request.windows, scratch_dir, wf
+            reader.fetch_protein,
+            request.protein_id,
+            request.windows,
+            scratch_dir,
+            fetch,
+            wf,
         ),
         retry_on=FETCH_TRANSIENT_ERRORS,
         sleep=sleep,
@@ -125,6 +145,7 @@ def fetch_proteins_in_parallel(
     reader: ProteinWindowReader,
     requests: Sequence[ProteinWindowRequest],
     scratch_dir: Path,
+    fetch: Fetch,
     wf: WF,
     max_parallel: int,
     sleep: SleepFn = time.sleep,
@@ -144,7 +165,9 @@ def fetch_proteins_in_parallel(
     pool = ThreadPoolExecutor(max_workers=max_parallel)
     try:
         futures: list[Future[ProteinWindowFrames]] = [
-            pool.submit(_fetch_with_retries, reader, request, scratch_dir, wf, sleep)
+            pool.submit(
+                _fetch_with_retries, reader, request, scratch_dir, fetch, wf, sleep
+            )
             for request in requests
         ]
         for future in futures:
@@ -170,12 +193,22 @@ class ParallelWindowFetcher(DenseWindowFetcher):
             f"max_parallel must be >= 1, got {self.max_parallel}"
         )
 
+    @property
+    def deps(self) -> list[Task]:
+        return self.reader.deps
+
     def fetch_all(
         self,
         requests: Sequence[ProteinWindowRequest],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> Generator[ProteinWindowFrames]:
         return fetch_proteins_in_parallel(
-            self.reader, requests, scratch_dir, wf, max_parallel=self.max_parallel
+            self.reader,
+            requests,
+            scratch_dir,
+            fetch,
+            wf,
+            max_parallel=self.max_parallel,
         )

@@ -434,6 +434,7 @@ def _test_selected_pairs(
     reference: _OrientationReference,
     scratch_dir: Path,
     windows_dir: Path,
+    fetch: Fetch,
     wf: WF,
 ) -> list[_PairOutcome]:
     """
@@ -441,7 +442,7 @@ def _test_selected_pairs(
     proteins whose pairs have all been tested.
     """
     requests = _fetch_requests(ranked, loci)
-    with closing(task.fetcher.fetch_all(requests, scratch_dir, wf)) as fetched:
+    with closing(task.fetcher.fetch_all(requests, scratch_dir, fetch, wf)) as fetched:
         return [
             outcome
             for protein in tqdm(
@@ -582,6 +583,7 @@ class TraitProteinColocTask(Task):
             self.gene_coords_task,
             self.fasta_task,
             self.panel_task,
+            *self.fetcher.deps,
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -614,7 +616,7 @@ class TraitProteinColocTask(Task):
         fetch_dir = scratch_dir / "dense"
         fetch_dir.mkdir()
         outcomes = _test_selected_pairs(
-            ranked, loci, trait, self, reference, fetch_dir, windows_dir, wf
+            ranked, loci, trait, self, reference, fetch_dir, windows_dir, fetch, wf
         )
         results = _assemble_results(loci, ranked, outcomes, self.method)
         _log_summary(loci, results)
