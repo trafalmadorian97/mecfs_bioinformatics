@@ -337,7 +337,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tbb-devel-2023.0.0-hfd44327_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h1df4ec4_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tktable-2.10-h0eb2ad0_11.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.107-h39d0f39_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.108-h39d0f39_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.52.2-hf19af3b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typst-0.15.1-h2d90d6e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/uriparser-0.9.8-hac33072_0.conda
@@ -471,12 +471,9 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/18/53/84099323c2ec4be98d935f63c033ac4151ee83836ca1050ede3b3aadf155/joblib-1.6.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/86/9204441dd9e224f1dc3f1a32edf6a474e84696bfa493c7df067dcde36366/mkdocs_material-9.8.2-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/18/8d/39885564eefa43f6181acfa3d698af2f6b5fe3e64c86dce3f1b955f6397f/opentelemetry_util_http-0.66b2-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/19/5e/4df7a2290e97c60a3ba410084966e5ab84aa89d15c8c98c195acbaefa8f4/mkdocstrings-1.0.8-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1a/f1/b474e930c4d910328780e3940da76f5aa5cbc48ce1fc14e44d239d9ea9db/cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/1e/cf/3dfc07ec910553bfb1e5c9009c1854bd9d2efa7f3dda03f007a77db0e63a/mkdocs_autorefs-1.4.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/1f/43/a679bf6508e6b89bfc3dc40f298f00067f0504558b9e1fcc9697d93113fd/scikit_allel-1.3.13-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/1f/7f/13cd798d180af4bf4c0ceddeefba2b864a63c71645abc0308b768d67bb81/hjson-3.1.0-py3-none-any.whl
-      - pypi: https://files.pythonhosted.org/packages/1f/e8/2516ba2594649a9ea25874831f700c76b73cd8c603989b6ffb8610abc651/mkdocstrings_python-2.0.11-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/20/70/cd3cf5cff538323076a879edef02cce6f13f7d75e03d12f211b0a0dbd178/patsy-1.0.3-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/21/18/c667ef09738d1ede5402f2c042d228adcf0ea00ca9d3042942d2af906660/rpy2_rinterface-3.6.7.tar.gz
       - pypi: https://files.pythonhosted.org/packages/22/5b/dbc6a8cddc9cfa9c4971d59fb12bb8d42e161b7e7f8cc89e49137c5b279c/mkdocs-1.6.1-py3-none-any.whl
@@ -621,7 +618,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/db/ae/6c0b0751ff2bf4e47d207a433d7458a1c247977baf4bf0f37d936e9fe456/rpy2-3.6.9-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/bc/83e112abc66cd466c6b83f99118035867cecd41802f8d044638aa78a106e/locket-1.0.0-py2.py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/db/f3/3996583dd2906297a637af12114deddf7658af6e683fedb83be061983fb5/protobuf-7.36.2-cp310-abi3-manylinux2014_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/de/02/1156d5f5307f573b901b14373848b84e69ca6cab09169b8cc97d16a181f9/griffelib-2.4.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/0c/ea2544850a7c135e15033a5c7a8e7211136184b7ae63e2239d557c2b3019/typing_inspection-0.4.5-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/de/98/dc154a7f0bb25827d988dc31992917606d1ca9f5349077db045bb5cd9dbc/mkdocs_awesome_nav-3.3.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/e1/e3/c164c88b2e5ce7b24d667b9bd83589cf4f3520d97cad01534cd3c4f55fdb/setuptools-81.0.0-py3-none-any.whl
@@ -634,7 +630,6 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/ec/60/2645de23088abc90f1201f7339412c281e2b7766a52e7ccf795e0d3ac73c/wcmatch-12.0.4-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/82/7a9d0550484a62c6da82858ee9419f3dd1ccc9aa1c26a1e43da3ecd20b0d/natsort-8.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/ef/fe/f5cdaa2d1c4086e757430f368c271a58ee29cfe7378e7ae7b9d964015c25/pillow-13.0.0-cp313-cp313-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl
-      - pypi: https://files.pythonhosted.org/packages/f0/37/e1413281aec69994a0ecb8baaff523b7b7da3119ae7d495b7dc659e630b0/mkdocs_api_autonav-0.4.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f1/d2/7b3340e6b74c39c1139dbfb0bc94e6dcc6f750717cc1b870fbbe03e9072a/pyreadr-0.5.9-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/f2/a2/20e9274b9f3adb1894c513f35b55c88cd85ceecdf29ba898f6096317faa9/types_seaborn-0.13.2.20261115-py3-none-any.whl
@@ -6979,12 +6974,12 @@ packages:
   run_exports: {}
   size: 103903
   timestamp: 1789042709956
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.107-h39d0f39_0.conda
-  sha256: 444aaa9771dcc5d1212bff2fc17dac3296fd85e2dc278eba55d69c67199d8db9
-  md5: 13ec9a277af8acb5775c7d8c28ba5b62
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.108-h39d0f39_0.conda
+  sha256: 1940fc277bcad8dc804f463a33a32fad3bcd46d8eae5a31d0be6341aa1a1c7a5
+  md5: d48f80b97919a1464333c8c440ba4691
   depends:
-  - libgcc >=15
   - __glibc >=2.17,<3.0.a0
+  - libgcc >=15
   constrains:
   - __glibc >=2.17
   license: MIT
@@ -6992,8 +6987,8 @@ packages:
   purls:
   - pkg:pypi/ty?source=compressed-mapping
   run_exports: {}
-  size: 13659397
-  timestamp: 1795055961812
+  size: 13812591
+  timestamp: 1795393752799
 - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.52.2-hf19af3b_0.conda
   sha256: e7397a20b9c1faa495d84a0e083edd32923f91a1f82753ff2da174ce55fd0c20
   md5: 84ee442bb73a11eaad0ef91a61a2ddfd
@@ -9047,21 +9042,6 @@ packages:
   version: 0.66b2
   sha256: c4bb5d6744e60353bcaa3e325bc529a1515346b51cb4d9c8e5b730579337e06d
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/19/5e/4df7a2290e97c60a3ba410084966e5ab84aa89d15c8c98c195acbaefa8f4/mkdocstrings-1.0.8-py3-none-any.whl
-  name: mkdocstrings
-  version: 1.0.8
-  sha256: 4b03ed2b863009f1153f0d04aacb22a85b92afc28a0636d85717c92eecca638c
-  requires_dist:
-  - jinja2>=3.1
-  - markdown>=3.6
-  - markupsafe>=1.1
-  - mkdocs>=1.6
-  - mkdocs-autorefs>=1.4
-  - pymdown-extensions>=6.3
-  - mkdocstrings-crystal>=0.3.4 ; extra == 'crystal'
-  - mkdocstrings-python-legacy>=0.2.1 ; extra == 'python-legacy'
-  - mkdocstrings-python>=1.16.2 ; extra == 'python'
-  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/1a/f1/b474e930c4d910328780e3940da76f5aa5cbc48ce1fc14e44d239d9ea9db/cryptography-50.0.2-cp311-abi3-manylinux_2_28_x86_64.whl
   name: cryptography
   version: 50.0.2
@@ -9071,15 +9051,6 @@ packages:
   - typing-extensions>=4.13.2 ; python_full_version < '3.11'
   - bcrypt>=3.1.5 ; extra == 'ssh'
   requires_python: '!=3.9.0,>=3.9,!=3.9.1'
-- pypi: https://files.pythonhosted.org/packages/1e/cf/3dfc07ec910553bfb1e5c9009c1854bd9d2efa7f3dda03f007a77db0e63a/mkdocs_autorefs-1.4.5-py3-none-any.whl
-  name: mkdocs-autorefs
-  version: 1.4.5
-  sha256: 68ee484e0800f3ba50cda1bc4a94293adbdfcc010243c322b3f5d66e15d06770
-  requires_dist:
-  - markdown>=3.3
-  - markupsafe>=2.0.1
-  - mkdocs>=1.1
-  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/1f/43/a679bf6508e6b89bfc3dc40f298f00067f0504558b9e1fcc9697d93113fd/scikit_allel-1.3.13-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
   name: scikit-allel
   version: 1.3.13
@@ -9103,16 +9074,6 @@ packages:
   name: hjson
   version: 3.1.0
   sha256: 65713cdcf13214fb554eb8b4ef803419733f4f5e551047c9b711098ab7186b89
-- pypi: https://files.pythonhosted.org/packages/1f/e8/2516ba2594649a9ea25874831f700c76b73cd8c603989b6ffb8610abc651/mkdocstrings_python-2.0.11-py3-none-any.whl
-  name: mkdocstrings-python
-  version: 2.0.11
-  sha256: 86ba14ea584a838e144b40d131b0780452e8abee57d90db6c84c9a9ac114c527
-  requires_dist:
-  - mkdocstrings>=1.0.8
-  - mkdocs-autorefs>=1.4
-  - griffelib>=2.4
-  - typing-extensions>=4.0 ; python_full_version < '3.11'
-  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/20/70/cd3cf5cff538323076a879edef02cce6f13f7d75e03d12f211b0a0dbd178/patsy-1.0.3-py2.py3-none-any.whl
   name: patsy
   version: 1.0.3
@@ -11063,16 +11024,6 @@ packages:
   version: 7.36.2
   sha256: 89f23aa53c24553a2416fd4fd1ec06f74fa42b14b546d8883128813f775bbfd2
   requires_python: '>=3.10'
-- pypi: https://files.pythonhosted.org/packages/de/02/1156d5f5307f573b901b14373848b84e69ca6cab09169b8cc97d16a181f9/griffelib-2.4.1-py3-none-any.whl
-  name: griffelib
-  version: 2.4.1
-  sha256: 76bc562f936ad1ce198d2cf6d0731bd5c92a7d934b69ef828ef22ee0ffdb62ce
-  requires_dist:
-  - prune-source>=0.1.6 ; extra == 'faster'
-  - pip>=24.0 ; extra == 'pypi'
-  - platformdirs>=4.2 ; extra == 'pypi'
-  - wheel>=0.42 ; extra == 'pypi'
-  requires_python: '>=3.11'
 - pypi: https://files.pythonhosted.org/packages/de/0c/ea2544850a7c135e15033a5c7a8e7211136184b7ae63e2239d557c2b3019/typing_inspection-0.4.5-py3-none-any.whl
   name: typing-inspection
   version: 0.4.5
@@ -11335,15 +11286,6 @@ packages:
   - trove-classifiers>=2024.10.12 ; extra == 'tests'
   - defusedxml ; extra == 'xmp'
   requires_python: '>=3.11'
-- pypi: https://files.pythonhosted.org/packages/f0/37/e1413281aec69994a0ecb8baaff523b7b7da3119ae7d495b7dc659e630b0/mkdocs_api_autonav-0.4.0-py3-none-any.whl
-  name: mkdocs-api-autonav
-  version: 0.4.0
-  sha256: 87474e7919664fca75648a05e79de238dd5b39a0f711910d3638626b016acfe3
-  requires_dist:
-  - mkdocs>=1.6
-  - mkdocstrings-python>=1.11.0
-  - pyyaml>=5
-  requires_python: '>=3.9'
 - pypi: https://files.pythonhosted.org/packages/f1/d2/7b3340e6b74c39c1139dbfb0bc94e6dcc6f750717cc1b870fbbe03e9072a/pyreadr-0.5.9-cp313-cp313-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
   name: pyreadr
   version: 0.5.9

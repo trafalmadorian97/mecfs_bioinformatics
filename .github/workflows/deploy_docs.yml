@@ -40,7 +40,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HAVE_GH_TOKEN: "True"
-          ENABLE_API_AUTONAV: "True"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: site
