@@ -1,10 +1,14 @@
 """
-deCODE's variant_info_iceland table (allele frequencies per allele) as a sorted parquet.
+deCODE's variant_info_iceland table (allele frequencies per allele): the raw download, and a
+sorted parquet built from it.
 
-The source (about 2 GB gzipped, 90M rows) writes most rows several times; the output keeps each
+DownloadDecodeVariantInfoTask keeps the source as published (gzipped tab-separated text,
+Chrom Pos A1 ImpFreqA1 ImpInfo), in its original row order. The object carries no md5
+metadata; its ETag (a single-part upload) is its md5 and is checked after the download.
+
+BuildDecodeVariantInfoTask: the source writes most rows several times; the parquet keeps each
 distinct (CHR, POS, A1, ImpFreqA1, ImpInfo) row once, sorted by (CHR, POS) in small row groups
-so that readers of one window can skip most of the file. The object carries no md5 metadata;
-its ETag (a single-part upload) is its md5 and is checked after the download.
+so that readers of one window can skip most of the file.
 """
 
 from pathlib import Path, PurePath
@@ -18,6 +22,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
+    DataFrameTextFormat,
 )
 from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
     ReferenceFileMeta,
@@ -45,7 +50,7 @@ _PRESIGN_EXPIRES_S = 6 * 3600
 
 
 @frozen(slots=True)
-class BuildDecodeVariantInfoTask(GeneratingTask):
+class DownloadDecodeVariantInfoTask(GeneratingTask):
     """
     ref: the variant_info_iceland.txt.gz object.
     n_connections: parallel range requests for the download.
@@ -62,13 +67,44 @@ class BuildDecodeVariantInfoTask(GeneratingTask):
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         download = scratch_dir / "variant_info_iceland.txt.gz"
         _download_etag_verified(self.ref, download, self.n_connections, wf)
+        return FileAsset(download)
+
+    @classmethod
+    def create(cls, asset_id: str, ref: S3ObjectRef) -> "DownloadDecodeVariantInfoTask":
+        return cls(
+            meta=ReferenceFileMeta(
+                group="decode_somascan",
+                sub_group="variant_info",
+                sub_folder=PurePath("raw"),
+                id=AssetId(asset_id),
+                filename="variant_info_iceland",
+                extension=".txt.gz",
+                read_spec=DataFrameReadSpec(DataFrameTextFormat(separator="\t")),
+            ),
+            ref=ref,
+        )
+
+
+@frozen(slots=True)
+class BuildDecodeVariantInfoTask(GeneratingTask):
+    """source_task: the DownloadDecodeVariantInfoTask of the raw text."""
+
+    meta: ReferenceFileMeta
+    source_task: Task
+
+    @property
+    def deps(self) -> list[Task]:
+        return [self.source_task]
+
+    def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
+        source = fetch(self.source_task.asset_id)
+        assert isinstance(source, FileAsset)
         out_path = scratch_dir / "variant_info_iceland.parquet"
-        write_variant_info_parquet(download, out_path)
-        download.unlink()
+        write_variant_info_parquet(source.path, out_path)
         return FileAsset(out_path)
 
     @classmethod
-    def create(cls, asset_id: str, ref: S3ObjectRef) -> "BuildDecodeVariantInfoTask":
+    def create(cls, asset_id: str, source_task: Task) -> "BuildDecodeVariantInfoTask":
         return cls(
             meta=ReferenceFileMeta(
                 group="decode_somascan",
@@ -79,7 +115,7 @@ class BuildDecodeVariantInfoTask(GeneratingTask):
                 extension=".parquet",
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             ),
-            ref=ref,
+            source_task=source_task,
         )
 
 

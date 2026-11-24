@@ -4,9 +4,12 @@ import polars as pl
 import pyarrow.parquet as pq
 import pytest
 
+from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.decode_database.build_decode_variant_info_task import (
     BuildDecodeVariantInfoTask,
+    DownloadDecodeVariantInfoTask,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.decode_somascan_constants import VI_CHR_COL, VI_POS_COL
@@ -23,15 +26,25 @@ _REF = fake_ref("variant_info_iceland.txt.gz")
 
 
 def _run(tmp_path: Path, access: FakeS3Access) -> Path:
-    task = BuildDecodeVariantInfoTask.create("vi", _REF)
-    scratch = tmp_path / "scratch"
-    scratch.mkdir()
+    """Download the raw text, then build the parquet from it; returns the parquet path."""
+    download = DownloadDecodeVariantInfoTask.create("vi_raw", _REF)
+    build = BuildDecodeVariantInfoTask.create("vi", download)
     wf = make_wf(
         s3_access=access, parallel_range_downloader=FakeParallelRangeDownloader()
     )
-    asset = task.execute(scratch, fetch=lambda asset_id: None, wf=wf)  # type: ignore[arg-type,return-value] # ty: ignore[invalid-argument-type]
-    assert isinstance(asset, FileAsset)
-    return asset.path
+    assets: dict[AssetId, Asset] = {}
+    for task in (download, build):
+        scratch = tmp_path / f"scratch_{task.asset_id}"
+        scratch.mkdir()
+        assets[task.asset_id] = task.execute(
+            scratch, fetch=lambda asset_id: assets[asset_id], wf=wf
+        )
+    raw = assets[download.asset_id]
+    assert isinstance(raw, FileAsset)
+    assert raw.path.read_bytes() == access.objects[_REF].read_bytes()
+    out = assets[build.asset_id]
+    assert isinstance(out, FileAsset)
+    return out.path
 
 
 def test_variant_info_dedups_sorts_and_checks_etag(tmp_path: Path) -> None:
