@@ -14,6 +14,7 @@ from pathlib import Path, PurePath
 import numpy as np
 import polars as pl
 import pytest
+from attrs import evolve
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -359,6 +360,7 @@ def _create(
     fetcher: DenseWindowFetcher,
     trait_task: FakeTask,
     gene_coords_reader: GeneCoordsReader = St3GeneCoordsReader(),
+    config: ColocRunConfig = _CONFIG,
 ) -> TraitProteinColocTask:
     return TraitProteinColocTask.create(
         asset_id="coloc",
@@ -371,7 +373,7 @@ def _create(
         panel_task=_panel_task(),
         panel_ancestry="eur",
         fetcher=fetcher,
-        config=_CONFIG,
+        config=config,
     )
 
 
@@ -384,6 +386,7 @@ def _run(
     tmp_path: Path,
     gene_coords: pl.DataFrame | None = None,
     gene_coords_reader: GeneCoordsReader = St3GeneCoordsReader(),
+    config: ColocRunConfig = _CONFIG,
 ) -> tuple[_FakeFetcher, Path]:
     """gene_coords, gene_coords_reader: the gene-coordinate table and its reader; the ST3
     table placing OID1 at chr1:900-1100 by default."""
@@ -437,7 +440,9 @@ def _run(
         AssetId("fasta"): DirectoryAsset(fasta_dir),
         AssetId("panel"): _write(tmp_path / "panel.parquet", panel),
     }
-    task = _create(fetcher, FakeTask(_trait_meta(harmonized=True)), gene_coords_reader)
+    task = _create(
+        fetcher, FakeTask(_trait_meta(harmonized=True)), gene_coords_reader, config
+    )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     result = task.execute(
@@ -580,3 +585,15 @@ def test_coloc_task_deps_include_fetcher_deps() -> None:
     fetcher = ParallelWindowFetcher(_ReaderWithDeps(sentinel), max_parallel=1)
     coloc_task = _create(fetcher, FakeTask(_trait_meta(harmonized=True)))
     assert sentinel in coloc_task.deps
+
+
+def test_require_no_budget_drop_fails_when_budget_binds(tmp_path: Path) -> None:
+    # _CONFIG's budget of 3 pairs leaves OID3 not selected.
+    strict = evolve(_CONFIG, require_no_budget_drop=True)
+    for name in ("binding", "roomy"):
+        (tmp_path / name).mkdir()
+    with pytest.raises(AssertionError):
+        _run(tmp_path / "binding", config=strict)
+    roomy = evolve(strict, selection=SelectionConfig(max_pairs=100, max_per_locus=100))
+    _, out_dir = _run(tmp_path / "roomy", config=roomy)
+    assert STATUS_NOT_SELECTED_BUDGET not in _results(out_dir)[STATUS_COL].to_list()

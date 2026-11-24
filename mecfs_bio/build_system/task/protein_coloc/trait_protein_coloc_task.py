@@ -146,6 +146,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     STATUS_EXCLUDED_MHC,
     STATUS_FAILED,
     STATUS_NO_CANDIDATES,
+    STATUS_NOT_SELECTED_BUDGET,
     STATUS_SELECTED,
     STATUS_TESTED,
     WINDOW_SCHEMA,
@@ -176,6 +177,8 @@ class ColocRunConfig:
     selection: the pair budget and scoring.
     min_aligned_variants: a pair with fewer usable aligned variants fails instead of being tested.
     harmonization: options of the untrusted orientation of protein windows.
+    require_no_budget_drop: fail if the selection budget leaves any candidate untested, for
+        runs whose budgets are meant never to bind.
     """
 
     lead_p_threshold: float = 5e-8
@@ -186,6 +189,7 @@ class ColocRunConfig:
     harmonization: GenomeReferenceHarmonizationOptions = (
         GenomeReferenceHarmonizationOptions()
     )
+    require_no_budget_drop: bool = False
 
     def __attrs_post_init__(self) -> None:
         assert 0 < self.lead_p_threshold < 1
@@ -604,6 +608,7 @@ class TraitProteinColocTask(Task):
             cis_window_bp=self.config.selection.cis_window_bp,
         )
         ranked = select_candidates(candidates, loci, self.config.selection)
+        _check_budget(ranked, self.config)
         reference = _OrientationReference(
             fasta=load_fasta(fetch, self.fasta_task),
             panel_path=load_panel_path(fetch, self.panel_task),
@@ -668,6 +673,23 @@ class TraitProteinColocTask(Task):
             method=method,
             config=config,
         )
+
+
+def _check_budget(ranked: pl.DataFrame, config: ColocRunConfig) -> None:
+    """Log the candidates per locus; with require_no_budget_drop, assert none was dropped."""
+    logger.info(
+        "coloc candidates per locus",
+        n_candidates_by_locus=dict(
+            ranked.group_by(LOCUS_ID_COL).len().sort(LOCUS_ID_COL).rows()
+        ),
+    )
+    if not config.require_no_budget_drop:
+        return
+    dropped = int((ranked[STATUS_COL] == STATUS_NOT_SELECTED_BUDGET).sum())
+    assert dropped == 0, (
+        f"{dropped} candidates were not selected for budget (max_pairs "
+        f"{config.selection.max_pairs}, max_per_locus {config.selection.max_per_locus})"
+    )
 
 
 def _log_summary(loci: pl.DataFrame, results: pl.DataFrame) -> None:
