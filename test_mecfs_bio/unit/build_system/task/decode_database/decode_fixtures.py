@@ -19,6 +19,12 @@ import numpy as np
 import polars as pl
 from attrs import field, frozen
 
+from mecfs_bio.build_system.task.decode_database.build_decode_variant_info_task import (
+    write_variant_info_parquet,
+)
+from mecfs_bio.build_system.task.decode_database.decode_somascan_protein import (
+    DecodeSomascanProtein,
+)
 from mecfs_bio.build_system.wf.parallel_range_downloader import ParallelRangeDownloader
 from mecfs_bio.build_system.wf.s3_access import (
     S3Access,
@@ -26,6 +32,7 @@ from mecfs_bio.build_system.wf.s3_access import (
     S3ObjectInfo,
     S3ObjectRef,
 )
+from mecfs_bio.constants.csf_database_constants import SeqId, UniProtId
 from mecfs_bio.constants.decode_somascan_constants import (
     DECODE_CHROM_COL,
     DECODE_EFFECT_ALLELE_COL,
@@ -37,6 +44,13 @@ from mecfs_bio.constants.decode_somascan_constants import (
     DECODE_OTHER_ALLELE_COL,
     DECODE_POS_COL,
     DECODE_PVAL_COL,
+)
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_CHROM_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
+    GWASLAB_RSID_COL,
 )
 from mecfs_bio.util.download.verify import verify_hash
 
@@ -243,3 +257,58 @@ class FakeParallelRangeDownloader(ParallelRangeDownloader):
         assert source.stat().st_size == size
         shutil.copyfile(source, local_path)
         verify_hash(local_path, md5_hash)
+
+
+def membership_rows(rows: pl.DataFrame, every: int = 3) -> pl.DataFrame:
+    """
+    The rows a synthetic HapMap3-like membership list selects: every every-th autosomal row
+    that is not special.
+    """
+    return (
+        rows.with_row_index("_i")
+        .filter(
+            (pl.col("_i") % every == 0)
+            & ~pl.col(FX_SPECIAL_COL)
+            & (pl.col(DECODE_CHROM_COL) != "chrX")
+        )
+        .drop("_i")
+    )
+
+
+def synthetic_membership(selected: pl.DataFrame) -> pl.DataFrame:
+    """Membership frame (CHR, POS, EA, NEA, rsID) for selected rows, alternate rows swapped."""
+    swap = pl.int_range(pl.len()) % 2 == 1
+    ea, oa = pl.col(DECODE_EFFECT_ALLELE_COL), pl.col(DECODE_OTHER_ALLELE_COL)
+    return selected.select(
+        pl.col(DECODE_CHROM_COL)
+        .str.strip_prefix("chr")
+        .cast(pl.Int32)
+        .alias(GWASLAB_CHROM_COL),
+        pl.col(DECODE_POS_COL).cast(pl.Int32).alias(GWASLAB_POS_COL),
+        pl.when(swap).then(oa).otherwise(ea).alias(GWASLAB_EFFECT_ALLELE_COL),
+        pl.when(swap).then(ea).otherwise(oa).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
+        (pl.lit("rs") + pl.col(DECODE_POS_COL).cast(pl.String)).alias(GWASLAB_RSID_COL),
+    )
+
+
+def write_variant_info_asset(path: Path, rows: pl.DataFrame) -> None:
+    """The parquet BuildDecodeVariantInfoTask would produce for rows."""
+    source = path.with_suffix(".txt.gz")
+    write_synthetic_variant_info(source, rows)
+    write_variant_info_parquet(source, path)
+
+
+def synthetic_protein(
+    path: Path, key: str, gene: str = "GENE1"
+) -> DecodeSomascanProtein:
+    """A manifest row for the local file at path, with the file's true size and md5."""
+    return DecodeSomascanProtein(
+        seq_id=SeqId("10000-1"),
+        gene_symbol=gene,
+        target_name=gene,
+        uniprot=UniProtId("P00001"),
+        entrez_gene_id=None,
+        ref=fake_ref(key),
+        size=path.stat().st_size,
+        md5=file_md5(path),
+    )

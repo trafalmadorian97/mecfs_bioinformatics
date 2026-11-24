@@ -59,3 +59,8 @@ EAF_TOLERANCE = 1e-5
 
 # The per-protein task keeps every row with p <= 5e-8 (any chromosome) in a supplement file.
 DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P = -math.log10(5e-8)
+
+# Variant index columns beyond the gwaslab ones: the row's data row number in every protein
+# file (0 = first line after the header), and deCODE's variant Name, checked on every gather.
+DECODE_INDEX_SOURCE_ROW_COL = "SOURCE_ROW"
+DECODE_INDEX_NAME_COL = "NAME"

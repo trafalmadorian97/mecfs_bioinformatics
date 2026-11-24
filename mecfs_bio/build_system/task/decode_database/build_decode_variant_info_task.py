@@ -63,7 +63,7 @@ class BuildDecodeVariantInfoTask(GeneratingTask):
         download = scratch_dir / "variant_info_iceland.txt.gz"
         _download_etag_verified(self.ref, download, self.n_connections, wf)
         out_path = scratch_dir / "variant_info_iceland.parquet"
-        _write_sorted_unique(download, out_path)
+        write_variant_info_parquet(download, out_path)
         download.unlink()
         return FileAsset(out_path)
 
@@ -99,7 +99,8 @@ def _download_etag_verified(
     )
 
 
-def _write_sorted_unique(source: Path, out_path: Path) -> None:
+def write_variant_info_parquet(source: Path, out_path: Path) -> None:
+    """Deduplicate, code, cast and sort the variant_info text at source into out_path."""
     (
         pl.scan_csv(source, separator="\t")
         .select(
