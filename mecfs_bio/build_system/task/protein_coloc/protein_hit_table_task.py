@@ -37,6 +37,10 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
+from mecfs_bio.build_system.task.directory_member_dataframe import (
+    DirectoryMemberDataFrame,
+    scan_directory_member,
+)
 from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -99,32 +103,35 @@ class HitTableProtein:
     task: the protein's slim BETA/SE file, aligned row for row to the shared variant index.
     protein_id: the protein's id in the coloc layer (Olink id, SomaScan seq id).
     gene: the gene label shown alongside it; several proteins may share one.
+    slim_member: set when task produces a directory and the slim is a file inside it;
+        None when task's output is the slim dataframe itself.
     """
 
     task: Task
     protein_id: ProteinId
     gene: str
+    slim_member: DirectoryMemberDataFrame | None = None
+
+
+def _scan_slim(protein: HitTableProtein, fetch: Fetch) -> pl.LazyFrame:
+    asset = fetch(protein.task.asset_id)
+    if protein.slim_member is None:
+        return scan_dataframe_asset(
+            asset, meta=protein.task.meta, parquet_backend="polars"
+        ).to_native()
+    return scan_directory_member(asset, protein.slim_member).to_native()
 
 
 def _significant_variants(
-    protein_task: Task,
+    protein: HitTableProtein,
     index: pl.DataFrame,
     min_mlog10p: float,
     fetch: Fetch,
 ) -> pl.DataFrame:
     """Index CHR/POS plus MLOG10P of the protein's variants passing the threshold."""
-    slim = (
-        scan_dataframe_asset(
-            fetch(protein_task.asset_id),
-            meta=protein_task.meta,
-            parquet_backend="polars",
-        )
-        .to_native()
-        .select(GWASLAB_BETA_COL, GWASLAB_SE_COL)
-        .collect()
-    )
+    slim = _scan_slim(protein, fetch).select(GWASLAB_BETA_COL, GWASLAB_SE_COL).collect()
     assert slim.height == index.height, (
-        f"{protein_task.asset_id} has {slim.height} rows but the index has {index.height}"
+        f"{protein.task.asset_id} has {slim.height} rows but the index has {index.height}"
     )
     beta = slim[GWASLAB_BETA_COL].to_numpy().astype(np.float64)
     se = slim[GWASLAB_SE_COL].to_numpy().astype(np.float64)
@@ -170,7 +177,7 @@ def _protein_segments(
     fetch: Fetch,
 ) -> pl.DataFrame:
     segments = merge_into_segments(
-        _significant_variants(protein.task, index, min_mlog10p, fetch), merge_gap_bp
+        _significant_variants(protein, index, min_mlog10p, fetch), merge_gap_bp
     )
     return segments.with_columns(
         pl.lit(str(protein.protein_id)).alias(HIT_PROTEIN_ID_COL),

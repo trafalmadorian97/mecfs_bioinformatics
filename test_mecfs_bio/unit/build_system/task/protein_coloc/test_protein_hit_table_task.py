@@ -3,6 +3,7 @@ from pathlib import Path, PurePath
 import polars as pl
 
 from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -10,6 +11,10 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
 )
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
+from mecfs_bio.build_system.meta.simple_directory_meta import SimpleDirectoryMeta
+from mecfs_bio.build_system.task.directory_member_dataframe import (
+    DirectoryMemberDataFrame,
+)
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     BuildSlimProteinParquetTask,
@@ -79,9 +84,11 @@ def _run(
     p_threshold: float = 5e-8,
     merge_gap_bp: int = 250_000,
     labels: list[tuple[ProteinId, str]] | None = None,
+    slim_member: DirectoryMemberDataFrame | None = None,
 ) -> pl.DataFrame:
     """variants: (CHR, POS) in index order; z_by_protein: one z per variant per protein;
-    labels: (protein id, gene) per protein, PPP-style OIDn / Gn by default."""
+    labels: (protein id, gene) per protein, PPP-style OIDn / Gn by default;
+    slim_member: when set, each slim is that file inside a directory asset."""
     tmp_path.mkdir(parents=True, exist_ok=True)
     assets: dict[AssetId, Asset] = {}
     index_task = FakeTask(meta=_meta("index"))
@@ -96,13 +103,21 @@ def _run(
     assets[index_task.asset_id] = FileAsset(index_path)
     protein_tasks = []
     for n, zs in enumerate(z_by_protein):
-        task = BuildSlimProteinParquetTask.create(
-            index_task=index_task,
-            protein=_protein(n),
-            asset_id=f"slim_{n}",
-            index_name="test",
+        task = (
+            BuildSlimProteinParquetTask.create(
+                index_task=index_task,
+                protein=_protein(n),
+                asset_id=f"slim_{n}",
+                index_name="test",
+            )
+            if slim_member is None
+            else FakeTask(meta=SimpleDirectoryMeta(f"slim_dir_{n}"))
         )
-        path = tmp_path / f"slim_{n}.parquet"
+        if slim_member is None:
+            path = tmp_path / f"slim_{n}.parquet"
+        else:
+            (tmp_path / f"slim_dir_{n}").mkdir()
+            path = tmp_path / f"slim_dir_{n}" / slim_member.file_name
         pl.DataFrame(
             {
                 GWASLAB_BETA_COL: [z * _SE for z in zs],
@@ -110,10 +125,14 @@ def _run(
             },
             schema={GWASLAB_BETA_COL: pl.Float32, GWASLAB_SE_COL: pl.Float32},
         ).write_parquet(path)
-        assets[task.asset_id] = FileAsset(path)
+        assets[task.asset_id] = (
+            FileAsset(path) if slim_member is None else DirectoryAsset(path.parent)
+        )
         protein_id, gene = _ppp_label(n) if labels is None else labels[n]
         protein_tasks.append(
-            HitTableProtein(task=task, protein_id=protein_id, gene=gene)
+            HitTableProtein(
+                task=task, protein_id=protein_id, gene=gene, slim_member=slim_member
+            )
         )
     task = ProteinHitTableTask.create(
         asset_id="hits",
@@ -206,3 +225,15 @@ def test_hit_table_keeps_aptamers_of_one_gene_distinct(tmp_path: Path) -> None:
     )
     assert sorted(table[HIT_PROTEIN_ID_COL].to_list()) == ["2418-55", "2937-10"]
     assert table[HIT_GENE_COL].to_list() == ["APOE", "APOE"]
+
+
+def test_hit_table_reads_slim_member_of_directory_dependency(tmp_path: Path) -> None:
+    variants = [(1, 1_000_000), (1, 1_200_000), (2, 5_000_000)]
+    zs = [[_HIT_Z, _NULL_Z, -9.0], [_NULL_Z, _NULL_Z, _NULL_Z]]
+    member = DirectoryMemberDataFrame(
+        PurePath("slim.parquet"), DataFrameReadSpec(DataFrameParquetFormat())
+    )
+    plain = _run(tmp_path / "plain", variants, zs)
+    from_directory = _run(tmp_path / "dir", variants, zs, slim_member=member)
+    assert plain.height == 2
+    assert from_directory.equals(plain)
