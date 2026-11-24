@@ -41,28 +41,25 @@ from mecfs_bio.build_system.task.ppp_database.protein_sample_size_task import (
     PppProteinSampleSizeTask,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.batched_ldsc_h2 import (
-    DEFAULT_N_BLOCKS,
     BatchedH2Result,
     batched_h2,
 )
 from mecfs_bio.build_system.task.ppp_ldsc.gene_coords import read_gene_coords
-from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import (
-    PppLdscContext,
-    build_cis_mask,
-    build_ppp_ldsc_context,
+from mecfs_bio.build_system.task.ppp_ldsc.heritability_common import (
+    PppHeritabilityConfig,
+    build_cis_exclude,
+    build_context,
+    read_table,
 )
+from mecfs_bio.build_system.task.ppp_ldsc.ppp_ldsc_context import PppLdscContext
 from mecfs_bio.build_system.task.task_util import produces_dataframe
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
-    GWASLAB_CHROM_COL,
-    GWASLAB_POS_COL,
-    GWASLAB_RSID_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
 from mecfs_bio.constants.ppp_database_constants import (
-    PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
     Oid,
     SynID,
 )
@@ -85,25 +82,6 @@ from mecfs_bio.constants.ppp_ldsc_constants import (
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 
 logger = structlog.get_logger()
-
-_INDEX_CONTEXT_COLUMNS = [
-    GWASLAB_CHROM_COL,
-    GWASLAB_POS_COL,
-    GWASLAB_RSID_COL,
-    PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
-]
-
-
-@frozen(slots=True)
-class PppHeritabilityConfig:
-    drop_strand_ambiguous: bool = True
-    exclude_mhc: bool = True
-    cis_window_bp: int = 1_000_000
-    n_blocks: int = DEFAULT_N_BLOCKS
-    # Proteins processed together per batched regression. Peak memory ~ n_snps * batch *
-    # a few float64 arrays
-    batch_size: int = 50
-
 
 # Stable phrase in constant_sample_size's failure message, shared with the test so the
 # wording lives in one place.
@@ -158,7 +136,7 @@ class PppProteinHeritabilityTask(GeneratingTask):
         return tasks
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        context = _build_context(
+        context = build_context(
             self.index_task, self.ld_scores_task, self.config, fetch
         )
         sample_sizes = (
@@ -166,7 +144,7 @@ class PppProteinHeritabilityTask(GeneratingTask):
             if self.sample_size_task is not None
             else None
         )
-        gene_coords = read_gene_coords(_read_table(self.gene_coords_task, fetch))
+        gene_coords = read_gene_coords(read_table(self.gene_coords_task, fetch))
         logger.info(
             "built ppp ldsc context",
             n_snps=context.n_snps,
@@ -225,30 +203,6 @@ class PppProteinHeritabilityTask(GeneratingTask):
         )
 
 
-def _build_context(
-    index_task: Task,
-    ld_scores_task: Task,
-    config: PppHeritabilityConfig,
-    fetch: Fetch,
-) -> PppLdscContext:
-    index_df = (
-        scan_dataframe_asset(
-            fetch(index_task.asset_id),
-            meta=index_task.meta,
-            parquet_backend="polars",
-        )
-        .to_native()
-        .select(_INDEX_CONTEXT_COLUMNS)
-        .collect()
-    )
-    return build_ppp_ldsc_context(
-        index_df=index_df,
-        ld_df=_read_table(ld_scores_task, fetch),
-        drop_strand_ambiguous=config.drop_strand_ambiguous,
-        exclude_mhc=config.exclude_mhc,
-    )
-
-
 def _read_sample_sizes(
     sample_size_task: PppProteinSampleSizeTask, fetch: Fetch
 ) -> dict[SynID, int]:
@@ -267,19 +221,6 @@ def _read_sample_sizes(
         row[PPP_N_SYNID_COL]: int(row[PPP_N_SAMPLE_SIZE_COL])
         for row in table.iter_rows(named=True)
     }
-
-
-def _read_table(task: Task, fetch: Fetch) -> pl.DataFrame:
-    """A dependency's whole dataframe asset, in memory."""
-    return (
-        scan_dataframe_asset(
-            fetch(task.asset_id),
-            meta=task.meta,
-            parquet_backend="polars",
-        )
-        .to_native()
-        .collect()
-    )
 
 
 def _process_batch(
@@ -308,7 +249,7 @@ def _process_batch(
     chi2 = np.column_stack(chi2_cols)
     n_arr = np.asarray(n_vec)
 
-    cis_exclude = _build_cis_exclude(oids, context, gene_coords, config.cis_window_bp)
+    cis_exclude = build_cis_exclude(oids, context, gene_coords, config.cis_window_bp)
     has_coords = [oid in gene_coords for oid in oids]
 
     all_res = batched_h2(chi2, context.ld, n_arr, context.m, n_blocks=config.n_blocks)
@@ -378,26 +319,6 @@ def _read_protein_chi2(
         )
         n = constant_sample_size(n_at_context, protein_task.asset_id)
     return chi2, n
-
-
-def _build_cis_exclude(
-    oids: list[Oid],
-    context: PppLdscContext,
-    gene_coords: dict[Oid, GenomicInterval],
-    cis_window_bp: int,
-) -> np.ndarray:
-    exclude = np.zeros((context.n_snps, len(oids)), dtype=bool)
-    for j, oid in enumerate(oids):
-        coords = gene_coords.get(oid)
-        if coords is not None:
-            exclude[:, j] = build_cis_mask(
-                context,
-                coords.chrom,
-                coords.start,
-                coords.end,
-                cis_window_bp,
-            )
-    return exclude
 
 
 def _make_row(

@@ -64,3 +64,9 @@ DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P = -math.log10(5e-8)
 # file (0 = first line after the header), and deCODE's variant Name, checked on every gather.
 DECODE_INDEX_SOURCE_ROW_COL = "SOURCE_ROW"
 DECODE_INDEX_NAME_COL = "NAME"
+
+# Per-protein heritability table columns beyond the PPP ones: the protein id (seq id), and the
+# 5th and 95th percentiles of the per-variant N over the regression variants.
+DECODE_H2_PROTEIN_ID_COL = "protein_id"
+DECODE_H2_N_P05_COL = "n_p05"
+DECODE_H2_N_P95_COL = "n_p95"
