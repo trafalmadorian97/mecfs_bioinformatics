@@ -2,6 +2,7 @@ from pathlib import Path
 
 from attrs import frozen
 
+from mecfs_bio.build_system.wf.s3_access import Boto3S3Access, S3Access
 from mecfs_bio.build_system.wf.synapse_downloader import (
     SharedClientSynapseDownloader,
     SynapseDownloader,
@@ -24,6 +25,7 @@ class WF:
 
     downloader: WFDownloader
     synapse_downloader: SynapseDownloader
+    s3_access: S3Access
 
     def download_from_url(
         self,
@@ -65,6 +67,7 @@ class WF:
 def make_wf(
     downloader: WFDownloader | None = None,
     synapse_downloader: SynapseDownloader | None = None,
+    s3_access: S3Access | None = None,
 ) -> WF:
     """Construct a WF, defaulting any capability not explicitly supplied."""
     return WF(
@@ -74,4 +77,5 @@ def make_wf(
             if synapse_downloader is not None
             else SharedClientSynapseDownloader()
         ),
+        s3_access=s3_access if s3_access is not None else Boto3S3Access(),
     )
