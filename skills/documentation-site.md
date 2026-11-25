@@ -1,13 +1,20 @@
 # Documentation site
 
-The docs are a Material for MkDocs site built from `docs/` and configured in `mkdocs.yml`. Run
-`pixi r mkdocs serve` or `pixi r mkdocs build`. CI builds with `--strict`, so a broken reference,
-a missing nav target, or a disallowed tag fails CI.
+The docs are a Material for MkDocs site built from `docs/` and configured in `mkdocs.yml`. CI
+builds with `--strict`, so a broken reference, a missing nav target, or a disallowed tag fails CI.
+
+## Building locally
+
+- **Fetch the figures before building the docs: `pixi r invoke pfig`.** Figures are stored on
+  GitHub, not in the repo, and the site won't build without them. Run `pfig` again after pulling
+  changes that add figures.
+- Then run `pixi r invoke serve-docs` (strict, like CI) or `pixi r mkdocs build --strict`.
+  `pixi r invoke sdocs` runs `pfig` and then serves the docs in one step.
 
 ## Who edits `docs/`
 
 - **AI agents do not edit prose in `docs/`.** It is human-written. When a code change should
-  change what a page says (new expected values, new figures), propose the edit in general terms to a human 
+  change what a page says (new expected values, new figures), propose the edit in general terms to a human
   instead of making it. Specs and plans never go in `docs/` (see [workflow.md](workflow.md)).
 
 ## Analysis pages carry a technique tag
