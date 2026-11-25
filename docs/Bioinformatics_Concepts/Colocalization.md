@@ -1,6 +1,6 @@
 # Colocalization
 
-Colocalization is a biostatistical technique to evaluate the evidence that two GWAS share a causal variant at a locus.  
+Colocalization is a biostatistical technique to evaluate support for the hypothesis that two GWAS share a causal variant at a locus.  
 
 Because it evaluates commonality between GWAS signals, colocalization is somewhat similar in spirit to [genetic correlation](Genetic_Correlation.md) techniques like [CT-LDSC](Cross_Trait_LDSC.md).  However, whereas genetic correlation evaluates global overlap, colocalization focuses on a single locus.  Two GWAS may strongly colocalize at one locus, but not at another. Colocalization techniques facilitate nuanced understanding of where two traits share biological pathways and where they do not.
 
@@ -10,7 +10,7 @@ Colocalization is often paired with [Mendelian Randomization](Mendelian_Randomiz
 
 ## Bayes factor colocalization
 
-Bayes factor colocalization[@giambartolomei2014bayesian] is simple, but requires assumptions.  It is used as a basis for more advanced colocalization methods.
+Bayes factor colocalization[@giambartolomei2014bayesian] is simple, but requires assumptions.  It forms the basis for more advanced colocalization methods.
 
 
 
@@ -20,7 +20,7 @@ Assume initially that both traits are quantitative.  Assume the following genera
 
 
 - There are $Q$ genetic variants at the locus of interest.
-- We have two GWAS.  There are $N_1$ participants in the first GWAS and $N_2$ participants in the second GWAS.
+- There are two GWAS.  There are $N_1$ participants in the first GWAS and $N_2$ participants in the second GWAS.
 - $y_k\in\mathbb{R}^{N_k}$ is the vector of phenotypes for participants in GWAS $k$.
 - $G_k \in \mathbb{R}^{N_k \times Q}$ is the genotype matrix for GWAS $k$ at the locus.
 - $g_{k,i}\in\mathbb{R}^{N_k}$ is the $i$th column of $G_k$.
@@ -28,7 +28,7 @@ Assume initially that both traits are quantitative.  Assume the following genera
 - $\hat\beta_{k,i}\in\mathbb{R}$ is the GWAS marginal regression coefficient of variant $i$ in GWAS $k$.
 - $V_{k,i}\in\mathbb{R}$ is the squared standard error of $\hat\beta_{k,i}$.
 - $\epsilon_k\in\mathbb{R}^{N_k}$ is the part of $y_k$ not determined by variants at the locus.  $\epsilon_k$ includes both the environment and other loci.
-- $c_k$ is the number of covariates in the trait $k$ GWAS model.
+- $\sigma^2_k>0$ is the variance of the components of $\epsilon_k$.
 
 
 Our data generating model is:
@@ -39,6 +39,7 @@ y_k &= G_k \beta_k + \epsilon_k  \label{dg_model} \\
 \epsilon_k &\sim N(0,\sigma^2_k I).
 \end{align}
 $$
+
 
 
 
@@ -63,7 +64,7 @@ The prior probability of category vector $c\in\mathcal{C}^Q$ is then:
 
 $$
 \begin{align}
-P(c) := \prod_{i=1}^Q p_{c_i}. \label{P_def}
+\prod_{i=1}^Q p_{c_i}. \label{P_def}
 \end{align}
 $$
 
@@ -158,7 +159,7 @@ $$
 
 ### Prior on the hypotheses
 
-We compute the probability of each of the hypotheses.  We begin with the unconditional probability, then move the probability conditional on $\mathcal{A}$.
+We compute the probability of each of the hypotheses.  We begin with unconditional probability, then move to probability conditional on $\mathcal{A}$.
 
 There is one configuration corresponding to $H_0$, $Q$ configurations corresponding to $H_1$, $Q$ configurations corresponding to $H_2$, $Q(Q-1)$  configurations corresponding to $H_3$, and $Q$ configurations corresponding to $H_4$.  Thus, by $(\ref{unconditional_prob})$,
 
@@ -200,90 +201,24 @@ $$
 \frac{Q(Q-1)p_1 p_2 p_{0}^{Q-2}}{P(\mathcal{A})} & h=3\\
 \frac{Qp_{12} p_{0}^{Q-1}}{P(\mathcal{A})} & h=4\\
 \end{cases} &\text{By (\ref{hy_prob})}\\
-&=\frac{n_h \rho_h}{Z}, \label{cond_h_prob}
+&=\begin{cases}
+\frac{1}{Z} & h=0\\
+\frac{Q\rho_1}{Z} & h=1\\
+\frac{Q\rho_2}{Z} & h=2\\
+\frac{Q(Q-1)\rho_1\rho_2}{Z} & h=3\\
+\frac{Q\rho_{1,2}}{Z} & h=4\\
+\end{cases} \label{cond_h_prob} \\
 \end{align}
 $$
 
-where we have defined $\rho_0:=1$ and $Z:=1+Q\rho_1 +Q\rho_2 +Q(Q-1)\rho_{1}\rho_2 + Q\rho_{1,2}$ and 
+where we have defined $Z:=1+Q\rho_1 +Q\rho_2 +Q(Q-1)\rho_{1}\rho_2 + Q\rho_{1,2}$ and where in $(\ref{cond_h_prob})$ we divided the numerator and denominator by $p_0^Q$.
 
-$$
-\begin{align}
-n_h:=\begin{cases}
-1 & h=0\\
-Q &h \in \{1,2,4\}\\
-Q(Q-1) & h=3
-\end{cases}
-\end{align}
-$$
-
-and where in $(\ref{cond_h_prob})$ we divided the numerator and denominator by $p_0^Q$.
-
-
-[//]: # (### Elimination of covariates)
-
-[//]: # ()
-[//]: # (The next step is to simplify the data-generating model $&#40;\ref{dg_model}&#41;$ by eliminating the covariate matrix $X$.  The derivations of this section apply separately to the two GWAS, so we suppress the  per-GWAS $k$-subscript.  Let $U\in\mathbb{R}^{&#40;N-c&#41;\times N}$ be a matrix whose rows form an orthonormal basis for the orthogonal complement of the column space of $X$. Define)
-
-[//]: # ()
-[//]: # ()
-[//]: # ($$)
-
-[//]: # (\begin{align})
-
-[//]: # (\tilde{y}&:=Uy\in\mathbb{R}^{N-c}\\)
-
-[//]: # (\tilde{G}&:=UG\in\mathbb{R}^{&#40;N-c&#41;\times Q}.)
-
-[//]: # (\end{align})
-
-[//]: # ($$)
-
-[//]: # ()
-[//]: # (Note that )
-
-[//]: # ()
-[//]: # ($$)
-
-[//]: # (\begin{align})
-
-[//]: # (UU^T &= I \in \mathbb{R}^{&#40;N-c&#41;\times &#40;N_c&#41;}\\)
-
-[//]: # (U^TU &= M_X:= I-X&#40;X^TX&#41;^{-1}X^T \in \mathbb{R}^{N \times N}\\)
-
-[//]: # (U\epsilon & \sim \mathcal{N}&#40;0,\omega^2UU^T&#41;=\mathcal{N}&#40;0,\sigma^2I&#41;)
-
-[//]: # (\end{align})
-
-[//]: # ($$)
-
-[//]: # ()
-[//]: # (Where $M_X$ is the projection onto the orthogonal complement of the column space of $X$.)
-
-[//]: # ()
-[//]: # (Let multiplying equation $&#40;\ref{dg_model}&#41;$ by $U$ produces)
-
-[//]: # ()
-[//]: # ($$)
-
-[//]: # (\begin{align})
-
-[//]: # (\tilde{y} &= \tilde{G} \beta + \delta\\)
-
-[//]: # (\delta &\sim \mathcal{N}&#40;0, \sigma^2 I &#41;.)
-
-[//]: # (\end{align})
-
-[//]: # ($$)
-
-[//]: # ()
-[//]: # ()
-[//]: # (We next relate the )
 
 
 
 ### Marginal GWAS regression coefficients
 
-By the principles of ordinary linear regression, note that the marginal GWAS regression coefficient $\hat\beta_{i}$ and its standard error $V_{i}$ are given by
+By the principles of ordinary linear regression, the marginal GWAS regression coefficient $\hat\beta_{i}$ and its standard error $V_{i}$ are given by
 
 $$
 \begin{align}
@@ -370,8 +305,8 @@ Now take the ratio of the densities of the two distributions.  We get
 
 $$
 \begin{align}
-&\exp\left( -\frac{1}{2\sigma^2}( \lVert  y -  g_i \beta_i\rVert^2 -  \lVert  y_i \rVert^2)  \right)\\
-&=\exp\left( -\frac{1}{2\sigma^2}( \lVert y \rVert^2 - 2\beta_i y^T  g_i + \beta_i^2\lVert  g_i \rVert^2 -  \lVert  y_i \rVert^2)  \right)\\
+&\exp\left( -\frac{1}{2\sigma^2}( \lVert  y -  g_i \beta_i\rVert^2 -  \lVert  y \rVert^2)  \right)\\
+&=\exp\left( -\frac{1}{2\sigma^2}( \lVert y \rVert^2 - 2\beta_i y^T  g_i + \beta_i^2\lVert  g_i \rVert^2 -  \lVert  y \rVert^2)  \right)\\
 &=\exp\left( -\frac{1}{2\sigma^2}( \beta_i^2\lVert  g_i \rVert^2 - 2\beta_i y^T  g_i )  \right)\\
 &=\exp \left( \frac{\beta_i}{\sigma^2} y^T  g_i- \beta_i^2\frac{\lVert g_i \rVert^2}{2\sigma^2} \right)\\
 &=  \exp \left( \beta_i \hat \beta_i \sigma^2 \frac{1}{V_i\sigma^2} -\beta_i^2 \frac{1}{2V_i}\right) & \text{by (\ref{v_rewrite}) and (\ref{beta_rewrite})  }
