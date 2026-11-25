@@ -4,8 +4,8 @@ Checks of the smoke-run outputs against brute-force parses of a local copy of th
 
   pixi r python experiments/claude/decode_proteomics_survey/verify_smoke.py <AP4M1.txt.gz>
 
-1. slim == Beta/SE/N of the file's rows at the index's SOURCE_ROW (assert_frame_equal);
-   significant_rows row count and size; time significant_rows adds to a pass.
+1. slim == Beta/SE/N of the file's row with each index NAME (assert_frame_equal);
+   significant_rows row count and size.
 2. three DecodeWindowReader windows == an awk scan of the file (EAF aside).
 3. the spread of N (p05, p95) over the slim.
 """
@@ -19,7 +19,6 @@ from pathlib import Path
 
 import numpy as np
 import polars as pl
-import rapidgzip
 from polars.testing import assert_frame_equal
 
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
@@ -41,14 +40,12 @@ from mecfs_bio.build_system.task.decode_database.build_decode_somascan_protein_t
 from mecfs_bio.build_system.task.decode_database.decode_sumstats_format import (
     parse_decode_lines,
 )
-from mecfs_bio.build_system.task.decode_database.line_blocks import line_blocks
-from mecfs_bio.build_system.task.decode_database.one_pass import significant_rows
 from mecfs_bio.build_system.task.protein_coloc.decode_window_reader import (
     DecodeProteinEntry,
     DecodeWindowReader,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
-from mecfs_bio.constants.decode_somascan_constants import DECODE_INDEX_SOURCE_ROW_COL
+from mecfs_bio.constants.decode_somascan_constants import DECODE_INDEX_NAME_COL
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
     GWASLAB_CHROM_COL,
@@ -76,14 +73,20 @@ def _log(msg: str) -> None:
 def check_slim(local: Path, index_path: Path, protein_dir: Path) -> None:
     t0 = time.perf_counter()
     cols = subprocess.run(
-        f"gzip -dc {local} | cut -f7,10,11",
+        f"gzip -dc {local} | cut -f3,7,10,11",
         shell=True,
         check=True,
         capture_output=True,
     ).stdout
     full = pl.read_csv(io.BytesIO(cols), separator="\t", null_values=["."])
-    rows = pl.read_parquet(index_path, columns=[DECODE_INDEX_SOURCE_ROW_COL])
-    expected = full[rows[DECODE_INDEX_SOURCE_ROW_COL].to_numpy()].select(
+    index = pl.read_parquet(index_path, columns=[DECODE_INDEX_NAME_COL])
+    expected = index.join(
+        full,
+        left_on=DECODE_INDEX_NAME_COL,
+        right_on="Name",
+        how="left",
+        maintain_order="left",
+    ).select(
         pl.col("Beta").cast(pl.Float32).alias(GWASLAB_BETA_COL),
         pl.col("SE").cast(pl.Float32).alias(GWASLAB_SE_COL),
         pl.col("N").cast(pl.Float32).alias(GWASLAB_SAMPLE_SIZE_COLUMN),
@@ -99,20 +102,6 @@ def check_slim(local: Path, index_path: Path, protein_dir: Path) -> None:
     sig = protein_dir / DECODE_SIGNIFICANT_ROWS_FILENAME
     _log(
         f"significant_rows: {pl.read_parquet(sig).height} rows, {sig.stat().st_size} bytes"
-    )
-
-
-def time_significant_screen(local: Path) -> None:
-    screen = 0.0
-    total_start = time.perf_counter()
-    with rapidgzip.RapidgzipFile(str(local), parallelization=8) as f:
-        for block in line_blocks(f).blocks:
-            t0 = time.perf_counter()
-            significant_rows(block)
-            screen += time.perf_counter() - t0
-    _log(
-        f"significant-rows screen: {screen:.2f}s of a {time.perf_counter() - total_start:.1f}s "
-        "decompress-and-block pass"
     )
 
 
@@ -145,7 +134,7 @@ def check_windows(local: Path, protein_task, assets) -> None:  # noqa: ANN001
     with tempfile.TemporaryDirectory() as scratch:
         t0 = time.perf_counter()
         frames = reader.fetch_protein(
-            SEQ_ID, WINDOWS, Path(scratch), lambda a: assets[a], make_wf()
+            SEQ_ID, WINDOWS, Path(scratch), lambda asset_id: assets[asset_id], make_wf()
         )
         _log(f"read {len(WINDOWS)} remote windows in {time.perf_counter() - t0:.1f}s")
     for window in WINDOWS:
@@ -154,15 +143,15 @@ def check_windows(local: Path, protein_task, assets) -> None:  # noqa: ANN001
             got.drop(GWASLAB_EFFECT_ALLELE_FREQ_COL), _awk_window(local, window)
         )
         eaf = got[GWASLAB_EFFECT_ALLELE_FREQ_COL]
-        _log(
-            f"window {window}: {got.height} rows == awk; EAF null {eaf.null_count()}"
-        )
+        _log(f"window {window}: {got.height} rows == awk; EAF null {eaf.null_count()}")
 
 
 def main() -> None:
     local = Path(sys.argv[1])
     (protein_task,) = [
-        t for t in HAPMAP_3_DECODE_SMP_DATABASE.protein_tasks if t.protein.seq_id == SEQ_ID
+        t
+        for t in HAPMAP_3_DECODE_SMP_DATABASE.protein_tasks
+        if t.protein.seq_id == SEQ_ID
     ]
     assets = DEFAULT_RUNNER.run(
         [protein_task, HAPMAP_3_DECODE_SMP_INDEX, DECODE_VARIANT_INFO]
@@ -172,7 +161,6 @@ def main() -> None:
     assert isinstance(index, FileAsset) and isinstance(protein, DirectoryAsset)
     _log(f"index rows: {pl.read_parquet(index.path, columns=[GWASLAB_POS_COL]).height}")
     check_slim(local, index.path, protein.path)
-    time_significant_screen(local)
     check_windows(local, protein_task, assets)
 
 

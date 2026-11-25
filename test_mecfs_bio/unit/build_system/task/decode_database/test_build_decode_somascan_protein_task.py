@@ -15,6 +15,7 @@ from mecfs_bio.build_system.task.decode_database.build_decode_somascan_protein_t
     DECODE_SLIM_FILENAME,
     DECODE_SLIM_MEMBER,
     SIGNIFICANT_ROWS_SCANNED_KEY,
+    SLIM_INDEX_ROWS_MISSING_KEY,
 )
 from mecfs_bio.build_system.task.decode_database.decode_sumstats_format import (
     chrom_code,
@@ -31,7 +32,7 @@ from mecfs_bio.build_system.task.directory_member_dataframe import (
     scan_directory_member,
 )
 from mecfs_bio.constants.decode_somascan_constants import (
-    DECODE_INDEX_SOURCE_ROW_COL,
+    DECODE_INDEX_NAME_COL,
     DECODE_MLOG10P_COL,
     DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P,
 )
@@ -66,17 +67,39 @@ def _index(database: DecodeDatabaseFixture) -> pl.DataFrame:
     return pl.read_parquet(asset.path)
 
 
+def _expected_slim(index: pl.DataFrame, protein_rows: pl.DataFrame) -> pl.DataFrame:
+    """Beta/SE/N of the protein's row with each index NAME, null where it has none."""
+    return (
+        index.select(DECODE_INDEX_NAME_COL)
+        .join(
+            protein_rows,
+            left_on=DECODE_INDEX_NAME_COL,
+            right_on="Name",
+            how="left",
+            maintain_order="left",
+        )
+        .select(
+            pl.col("Beta").cast(pl.Float32).alias(GWASLAB_BETA_COL),
+            pl.col("SE").cast(pl.Float32).alias(GWASLAB_SE_COL),
+            pl.col("N").cast(pl.Float32).alias(GWASLAB_SAMPLE_SIZE_COLUMN),
+        )
+    )
+
+
+def _slim_missing(built: DirectoryAsset) -> int:
+    metadata = pq.read_schema(built.path / DECODE_SLIM_FILENAME).metadata
+    assert metadata is not None
+    return int(metadata[SLIM_INDEX_ROWS_MISSING_KEY.encode()])
+
+
 def test_protein_outputs_match_brute_force(
     database: DecodeDatabaseFixture, built: DirectoryAsset
 ) -> None:
     rows = database.rows
-    source_rows = _index(database)[DECODE_INDEX_SOURCE_ROW_COL]
-    expected = rows[source_rows].select(
-        pl.col("Beta").cast(pl.Float32).alias(GWASLAB_BETA_COL),
-        pl.col("SE").cast(pl.Float32).alias(GWASLAB_SE_COL),
-        pl.col("N").cast(pl.Float32).alias(GWASLAB_SAMPLE_SIZE_COLUMN),
+    assert pl.read_parquet(built.path / DECODE_SLIM_FILENAME).equals(
+        _expected_slim(_index(database), rows)
     )
-    assert pl.read_parquet(built.path / DECODE_SLIM_FILENAME).equals(expected)
+    assert _slim_missing(built) == 0
 
     text = decode_text(rows)
     posmap = pl.read_parquet(built.path / DECODE_POSMAP_FILENAME)
@@ -124,27 +147,55 @@ def test_significant_rows_match_brute_force(
     assert int(metadata[SIGNIFICANT_ROWS_SCANNED_KEY.encode()]) == database.rows.height
 
 
-def _swap_two_index_rows(database: DecodeDatabaseFixture) -> pl.DataFrame:
-    source_rows = _index(database)[DECODE_INDEX_SOURCE_ROW_COL].to_numpy()
-    i, j = int(source_rows[10]), int(source_rows[11])
-    order = np.arange(database.rows.height)
-    order[i], order[j] = j, i
-    return database.rows[order]
+def _index_row_numbers(database: DecodeDatabaseFixture) -> np.ndarray:
+    names = _index(database)[DECODE_INDEX_NAME_COL]
+    return np.flatnonzero(database.rows["Name"].is_in(names.implode()).to_numpy())
 
 
-def test_protein_fails_on_swapped_rows(database: DecodeDatabaseFixture) -> None:
-    task = database.protein_task(
-        _swap_two_index_rows(database), "final_somascan_smp/swapped.txt.gz"
+def test_protein_with_reordered_and_deleted_rows(
+    database: DecodeDatabaseFixture,
+) -> None:
+    """
+    Rows outside the index deleted and two index rows swapped: each index row still gets its
+    own row's values.
+    """
+    in_index = _index_row_numbers(database)
+    outside = np.setdiff1d(np.arange(database.rows.height), in_index)
+    order = np.setdiff1d(np.arange(database.rows.height), outside[[5, 40, 41, 300]])
+    i, j = (int(np.flatnonzero(order == r)[0]) for r in in_index[[10, 11]])
+    order[i], order[j] = order[j], order[i]
+    protein_rows = database.rows[order]
+    built = database.build_protein(
+        database.protein_task(protein_rows, "final_somascan_smp/reordered.txt.gz")
     )
-    with pytest.raises(AssertionError):
-        database.build_protein(task)
-
-
-def test_protein_fails_on_wrong_total_rows(database: DecodeDatabaseFixture) -> None:
-    task = database.protein_task(
-        database.rows.head(-1), "final_somascan_smp/short.txt.gz"
+    assert pl.read_parquet(built.path / DECODE_SLIM_FILENAME).equals(
+        _expected_slim(_index(database), protein_rows)
     )
-    with pytest.raises(AssertionError):
+    assert _slim_missing(built) == 0
+
+
+def test_missing_index_rows_are_null(database: DecodeDatabaseFixture) -> None:
+    in_index = _index_row_numbers(database)
+    dropped = in_index[[3, 200]]
+    protein_rows = database.rows[np.setdiff1d(np.arange(database.rows.height), dropped)]
+    built = database.build_protein(
+        database.protein_task(protein_rows, "final_somascan_smp/missing.txt.gz")
+    )
+    slim = pl.read_parquet(built.path / DECODE_SLIM_FILENAME)
+    assert slim.equals(_expected_slim(_index(database), protein_rows))
+    assert slim[GWASLAB_BETA_COL].null_count() == 2
+    assert _slim_missing(built) == 2
+
+
+def test_protein_fails_on_duplicated_index_name(
+    database: DecodeDatabaseFixture,
+) -> None:
+    in_index = _index_row_numbers(database)
+    order = np.sort(np.concatenate([np.arange(database.rows.height), in_index[[7]]]))
+    task = database.protein_task(
+        database.rows[order], "final_somascan_smp/duplicated.txt.gz"
+    )
+    with pytest.raises(pl.exceptions.ComputeError):
         database.build_protein(task)
 
 

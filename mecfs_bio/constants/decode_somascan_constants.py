@@ -44,9 +44,6 @@ DECODE_MISSING_ALLELE = "!"
 # Chromosome code for chrX (chr1..chr22 map to 1..22).
 DECODE_CHR_X_CODE = 23
 
-# Parquet key-value metadata key of the variant index: data rows in every protein file.
-DECODE_TOTAL_ROWS_METADATA_KEY = "total_rows"
-
 # Columns of the deduplicated variant_info_iceland table (allele frequencies per allele).
 VI_CHR_COL = "CHR"
 VI_POS_COL = "POS"
@@ -60,9 +57,8 @@ EAF_TOLERANCE = 1e-5
 # The per-protein task keeps every row with p <= 5e-8 (any chromosome) in a supplement file.
 DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P = -math.log10(5e-8)
 
-# Variant index columns beyond the gwaslab ones: the row's data row number in every protein
-# file (0 = first line after the header), and deCODE's variant Name, checked on every gather.
-DECODE_INDEX_SOURCE_ROW_COL = "SOURCE_ROW"
+# Variant index column beyond the gwaslab ones: deCODE's variant Name
+# (chrom:pos:effectAllele:otherAllele), by which protein files are matched to the index.
 DECODE_INDEX_NAME_COL = "NAME"
 
 # Per-protein heritability table columns beyond the PPP ones: the protein id (seq id), and the

@@ -2,10 +2,9 @@
 The shared variant index of a deCODE SomaScan group: the rows of a template protein file whose
 variant is in a membership list (for example HapMap3), in file order.
 
-Every deCODE protein file of a group lists the same variants in the same order, so a row's
-number in the template (SOURCE_ROW) locates the variant in every other file, and its NAME is
-checked whenever a protein's rows are gathered. The index records the template's data row count
-as parquet metadata (total_rows) so a protein file with a different row count fails loudly.
+Protein files are matched to the index by NAME (deCODE's chrom:pos:effectAllele:otherAllele),
+which is unique in the index. Protein files mostly list the template's rows in the template's
+order, but some lack a few rows, so a row's number in the template does not locate it elsewhere.
 
 Matching to the membership list is on (CHR, POS, unordered {EA, NEA}), so a swapped orientation
 still matches, and the deCODE orientation is adopted. Rows with the missing-allele marker "!"
@@ -17,7 +16,6 @@ from pathlib import Path, PurePath
 
 import numpy as np
 import polars as pl
-import pyarrow.parquet as pq
 import rapidgzip
 from attrs import frozen
 
@@ -59,12 +57,10 @@ from mecfs_bio.constants.decode_somascan_constants import (
     DECODE_EFFECT_ALLELE_COL,
     DECODE_IMP_MAF_COL,
     DECODE_INDEX_NAME_COL,
-    DECODE_INDEX_SOURCE_ROW_COL,
     DECODE_MISSING_ALLELE,
     DECODE_NAME_COL,
     DECODE_OTHER_ALLELE_COL,
     DECODE_POS_COL,
-    DECODE_TOTAL_ROWS_METADATA_KEY,
     VI_CHR_COL,
     VI_POS_COL,
 )
@@ -89,9 +85,10 @@ INDEX_COLUMNS = [
     GWASLAB_RSID_COL,
     GWASLAB_EFFECT_ALLELE_FREQ_COL,
     PPP_INDEX_IS_STRAND_AMBIGUOUS_COL,
-    DECODE_INDEX_SOURCE_ROW_COL,
     DECODE_INDEX_NAME_COL,
 ]
+# Row number in the template, to keep the index in file order.
+_ROW_COL = "__template_row__"
 _JOIN_KEYS = [GWASLAB_CHROM_COL, GWASLAB_POS_COL, PPP_INDEX_ALLELE_KEY_COL]
 _PRESIGN_EXPIRES_S = 6 * 3600
 _DECOMPRESS_PARALLELIZATION = 8
@@ -120,15 +117,18 @@ class ConstructDecodeVariantIndexTask(GeneratingTask):
         membership = _read_membership(self.membership_task, fetch)
         matched = _match_template_rows(download, membership)
         download.unlink()
-        eaf = _effect_allele_frequency(matched.rows, self.variant_info_task, fetch)
+        assert matched[DECODE_INDEX_NAME_COL].is_unique().all(), (
+            f"{self.template.key}: index NAME values are not unique"
+        )
+        eaf = _effect_allele_frequency(matched, self.variant_info_task, fetch)
         undetermined = eaf.null_count()
         assert undetermined == 0, (
             f"{undetermined} index rows of {self.template.key} have no determined EAF"
         )
-        index = _index_frame(matched.rows, eaf)
+        index = _index_frame(matched, eaf)
         assert_all_snv(index, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL)
         out_path = scratch_dir / "decode_variant_index.parquet"
-        _write_index(index, matched.total_rows, out_path)
+        _write_index(index, out_path)
         return FileAsset(out_path)
 
     @classmethod
@@ -173,13 +173,6 @@ def download_protein_file(
     )
 
 
-def read_index_total_rows(path: Path) -> int:
-    """The data row count of the protein files, stored in the index's parquet metadata."""
-    metadata = pq.read_schema(path).metadata
-    assert metadata is not None
-    return int(metadata[DECODE_TOTAL_ROWS_METADATA_KEY.encode()])
-
-
 def _read_membership(membership_task: Task, fetch: Fetch) -> pl.DataFrame:
     return (
         scan_dataframe_asset(
@@ -201,31 +194,23 @@ def _read_membership(membership_task: Task, fetch: Fetch) -> pl.DataFrame:
     )
 
 
-@frozen(slots=True)
-class _MatchedRows:
-    rows: pl.DataFrame
-    total_rows: int
-
-
-def _match_template_rows(gz_path: Path, membership: pl.DataFrame) -> _MatchedRows:
+def _match_template_rows(gz_path: Path, membership: pl.DataFrame) -> pl.DataFrame:
     """Parse the whole template block by block, keeping the rows in membership."""
     parts: list[pl.DataFrame] = []
-    total = 0
     with rapidgzip.RapidgzipFile(
         str(gz_path), parallelization=_DECOMPRESS_PARALLELIZATION
     ) as f:
         for block in line_blocks(f).blocks:
             parsed = parse_decode_lines(block.text).with_columns(
                 pl.Series(
-                    DECODE_INDEX_SOURCE_ROW_COL,
+                    _ROW_COL,
                     np.arange(block.first_row, block.first_row + block.n_rows),
                     dtype=pl.UInt64,
                 )
             )
             assert parsed.height == block.n_rows
             parts.append(_keep_members(parsed, membership))
-            total += block.n_rows
-    return _MatchedRows(rows=pl.concat(parts), total_rows=total)
+    return pl.concat(parts)
 
 
 def _keep_members(parsed: pl.DataFrame, membership: pl.DataFrame) -> pl.DataFrame:
@@ -237,7 +222,7 @@ def _keep_members(parsed: pl.DataFrame, membership: pl.DataFrame) -> pl.DataFram
             pl.col(DECODE_EFFECT_ALLELE_COL).alias(GWASLAB_EFFECT_ALLELE_COL),
             pl.col(DECODE_OTHER_ALLELE_COL).alias(GWASLAB_NON_EFFECT_ALLELE_COL),
             pl.col(DECODE_IMP_MAF_COL),
-            pl.col(DECODE_INDEX_SOURCE_ROW_COL),
+            pl.col(_ROW_COL),
             pl.col(DECODE_NAME_COL).alias(DECODE_INDEX_NAME_COL),
         )
         .with_columns(
@@ -277,17 +262,14 @@ def _index_frame(rows: pl.DataFrame, eaf: pl.Series) -> pl.DataFrame:
                 GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
             ).alias(PPP_INDEX_IS_STRAND_AMBIGUOUS_COL),
         )
-        .sort(DECODE_INDEX_SOURCE_ROW_COL)
+        .sort(_ROW_COL)
         .select(INDEX_COLUMNS)
     )
 
 
-def _write_index(index: pl.DataFrame, total_rows: int, out_path: Path) -> None:
-    table = index.to_arrow().replace_schema_metadata(
-        {DECODE_TOTAL_ROWS_METADATA_KEY: str(total_rows)}
-    )
+def _write_index(index: pl.DataFrame, out_path: Path) -> None:
     write_parquet_table(
-        table=table,
+        table=index.to_arrow(),
         out_path=out_path,
         compression="zstd",
         compression_level=None,

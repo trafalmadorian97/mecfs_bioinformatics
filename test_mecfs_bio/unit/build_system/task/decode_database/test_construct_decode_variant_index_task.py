@@ -13,13 +13,11 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.task.decode_database.construct_decode_variant_index_task import (
     ConstructDecodeVariantIndexTask,
-    read_index_total_rows,
 )
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 from mecfs_bio.constants.decode_somascan_constants import (
     DECODE_INDEX_NAME_COL,
-    DECODE_INDEX_SOURCE_ROW_COL,
     DECODE_MISSING_ALLELE,
 )
 from mecfs_bio.constants.gwaslab_constants import (
@@ -88,16 +86,14 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> tuple[pl.DataFrame, Path]
     return rows, path
 
 
-def test_index_rows_source_row_and_total_rows(built: tuple[pl.DataFrame, Path]) -> None:
+def test_index_rows_are_the_members_in_file_order(
+    built: tuple[pl.DataFrame, Path],
+) -> None:
     rows, path = built
     index = pl.read_parquet(path)
-    names = rows["Name"]
-    assert index[DECODE_INDEX_SOURCE_ROW_COL].is_sorted()
-    assert index.height == membership_rows(rows).height
-    assert (
-        names.gather(index[DECODE_INDEX_SOURCE_ROW_COL]) == index[DECODE_INDEX_NAME_COL]
-    ).all()
-    assert read_index_total_rows(path) == rows.height
+    assert index[DECODE_INDEX_NAME_COL].equals(
+        membership_rows(rows)["Name"], check_names=False
+    )
     bang = rows.filter(pl.col("otherAllele") == DECODE_MISSING_ALLELE)["Name"]
     assert not index[DECODE_INDEX_NAME_COL].is_in(bang.implode()).any()
 

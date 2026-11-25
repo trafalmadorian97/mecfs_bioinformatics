@@ -1,7 +1,8 @@
 """
 The stored form of one deCODE SomaScan protein: a directory with
 
-  slim.parquet: BETA, SE, N (float32) of the shared variant index's rows, in index order;
+  slim.parquet: BETA, SE, N (float32) of the shared variant index's rows, in index order, null
+      for an index row the file lacks; the number of such rows is in its metadata;
   seek_index.gzidx.zst: the GZIDX seek index of the remote file, for window reads;
   posmap.parquet: the position map (see one_pass) with the remote object's key, size and md5
       and the header length in its metadata, so a reader can detect a changed object;
@@ -33,7 +34,6 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.task.dataframe_output import write_parquet_table
 from mecfs_bio.build_system.task.decode_database.construct_decode_variant_index_task import (
     download_protein_file,
-    read_index_total_rows,
 )
 from mecfs_bio.build_system.task.decode_database.decode_somascan_protein import (
     DecodeSomascanProtein,
@@ -47,7 +47,6 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.decode_somascan_constants import (
     DECODE_BETA_COL,
     DECODE_INDEX_NAME_COL,
-    DECODE_INDEX_SOURCE_ROW_COL,
     DECODE_N_COL,
     DECODE_SE_COL,
     DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P,
@@ -55,6 +54,7 @@ from mecfs_bio.constants.decode_somascan_constants import (
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
+    GWASLAB_POS_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
@@ -78,6 +78,8 @@ POSMAP_FORMAT_VERSION_KEY = "posmap_format_version"
 GZIDX_FORMAT_VERSION_KEY = "gzidx_format_version"
 POSMAP_FORMAT_VERSION = "1"
 GZIDX_FORMAT_VERSION = "1"
+# Slim metadata key: index rows the file lacks (null in the slim).
+SLIM_INDEX_ROWS_MISSING_KEY = "index_rows_missing"
 # Significant-rows metadata keys.
 SIGNIFICANT_ROWS_SCANNED_KEY = "rows_scanned"
 SIGNIFICANT_MIN_MLOG10P_KEY = "min_mlog10p"
@@ -116,23 +118,25 @@ class BuildDecodeSomascanProteinTask(GeneratingTask):
         index_asset = fetch(self.index_task.asset_id)
         assert isinstance(index_asset, FileAsset)
         index = _read_index(index_asset, self.index_task)
-        total_rows = read_index_total_rows(index_asset.path)
         download = scratch_dir / "protein.txt.gz"
         download_protein_file(self.protein, download, wf, self.n_connections)
         timer.step("download")
         result = one_pass(
             download,
             index,
-            total_rows,
             parallelization=self.parallelization,
             chunk_size=self.chunk_size,
             posmap_step=self.posmap_step,
         )
         timer.step("one pass")
+        logger.info(
+            f"{self.protein.key}: {result.index_rows_missing} of {index.height} index rows "
+            "missing from the file"
+        )
         download.unlink()
         out_dir = scratch_dir / "out"
         out_dir.mkdir()
-        _write_outputs(result, self.protein, total_rows, out_dir)
+        _write_outputs(result, self.protein, out_dir)
         timer.step("write")
         return DirectoryAsset(out_dir)
 
@@ -183,7 +187,7 @@ def _read_index(index_asset: FileAsset, index_task: Task) -> pl.DataFrame:
             index_asset, meta=index_task.meta, parquet_backend="polars"
         )
         .to_native()
-        .select(DECODE_INDEX_SOURCE_ROW_COL, DECODE_INDEX_NAME_COL)
+        .select(GWASLAB_POS_COL, DECODE_INDEX_NAME_COL)
         .collect()
     )
 
@@ -191,7 +195,6 @@ def _read_index(index_asset: FileAsset, index_task: Task) -> pl.DataFrame:
 def _write_outputs(
     result: OnePassResult,
     protein: DecodeSomascanProtein,
-    rows_scanned: int,
     out_dir: Path,
 ) -> None:
     slim = result.slim.select(
@@ -199,7 +202,9 @@ def _write_outputs(
         for source, name in SLIM_COLUMNS.items()
     )
     write_parquet_table(
-        table=slim.to_arrow(),
+        table=slim.to_arrow().replace_schema_metadata(
+            {SLIM_INDEX_ROWS_MISSING_KEY: str(result.index_rows_missing)}
+        ),
         out_path=out_dir / DECODE_SLIM_FILENAME,
         compression="zstd",
         compression_level=None,
@@ -222,7 +227,7 @@ def _write_outputs(
         result.significant_rows,
         out_dir / DECODE_SIGNIFICANT_ROWS_FILENAME,
         {
-            SIGNIFICANT_ROWS_SCANNED_KEY: str(rows_scanned),
+            SIGNIFICANT_ROWS_SCANNED_KEY: str(result.rows_scanned),
             SIGNIFICANT_MIN_MLOG10P_KEY: repr(DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P),
         },
     )
