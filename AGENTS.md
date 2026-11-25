@@ -1,0 +1,7 @@
+- This is a bioinformatics repo.
+- We use the pixi package manager, so all commands should be run via `pixi r <command>`.  Python files should be run via `pixi r python <script>`.
+- Bioinformatics workflows are executed via a build system described here: `docs/Codebase_Concepts/Build_System.md`.  The central class is the `Task`.
+- `tasks.py` stores repo-level commands for running tasks, typechecking, generating documentation, etc.
+- After making any significant change, always run `pixi r invoke green` to lint, format, and test.  Note that `pytest-testmon` will skip tests unaffected by the latest changes.
+- In module/class/function doc strings, do not use backticks to enclose inline code.  Do not use RST.
+- Coding preferences, style guidelines, and architecture rules for this repo live under `skills/`.  Start at `skills/index.md`, which routes to the relevant page (Python style, build system & Tasks, genomic data, testing, workflow, documentation site).  Consult the page relevant to what you are about to do.
