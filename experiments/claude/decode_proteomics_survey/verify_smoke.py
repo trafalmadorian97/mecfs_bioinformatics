@@ -6,7 +6,8 @@ Checks of the smoke-run outputs against brute-force parses of a local copy of th
 
 1. slim == Beta/SE/N of the file's row with each index NAME (assert_frame_equal);
    significant_rows row count and size.
-2. three DecodeWindowReader windows == an awk scan of the file (EAF aside).
+2. three DecodeWindowReader windows == an awk scan of the file, restricted to the rows whose
+   (Pos, effectAllele) is an entry of the clean variant_info table (EAF aside).
 3. the spread of N (p05, p95) over the slim.
 """
 
@@ -29,7 +30,7 @@ from mecfs_bio.assets.gwas.decode_somascan.decode_somascan_database.hapmap3.hapm
     HAPMAP_3_DECODE_SMP_INDEX,
 )
 from mecfs_bio.assets.gwas.decode_somascan.raw.decode_variant_info import (
-    DECODE_VARIANT_INFO,
+    DECODE_CLEAN_VARIANT_INFO,
 )
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
@@ -105,7 +106,7 @@ def check_slim(local: Path, index_path: Path, protein_dir: Path) -> None:
     )
 
 
-def _awk_window(local: Path, window: GenomicInterval) -> pl.DataFrame:
+def _awk_window(local: Path, clean_vi: Path, window: GenomicInterval) -> pl.DataFrame:
     chrom = "chrX" if window.chrom == 23 else f"chr{window.chrom}"
     awk = f'$1=="{chrom}" && $2>={window.start} && $2<={window.end} && $6!="!"'
     out = subprocess.run(
@@ -114,7 +115,18 @@ def _awk_window(local: Path, window: GenomicInterval) -> pl.DataFrame:
         check=True,
         capture_output=True,
     ).stdout
-    rows = parse_decode_lines(out)
+    clean = (
+        pl.scan_parquet(clean_vi)
+        .filter(
+            (pl.col("CHR") == window.chrom)
+            & pl.col("POS").is_between(window.start, window.end)
+        )
+        .select(pl.col("POS").alias("Pos"), pl.col("A1").alias("effectAllele"))
+        .collect()
+    )
+    rows = parse_decode_lines(out).join(
+        clean, on=["Pos", "effectAllele"], how="semi", maintain_order="left"
+    )
     return rows.select(
         pl.lit(window.chrom, dtype=pl.Int64).alias(GWASLAB_CHROM_COL),
         pl.col("Pos").alias(GWASLAB_POS_COL),
@@ -127,9 +139,11 @@ def _awk_window(local: Path, window: GenomicInterval) -> pl.DataFrame:
 
 
 def check_windows(local: Path, protein_task, assets) -> None:  # noqa: ANN001
+    clean_vi = assets[DECODE_CLEAN_VARIANT_INFO.asset_id]
+    assert isinstance(clean_vi, FileAsset)
     reader = DecodeWindowReader(
         proteins=(DecodeProteinEntry(protein_task),),
-        variant_info_task=DECODE_VARIANT_INFO,
+        clean_variant_info_task=DECODE_CLEAN_VARIANT_INFO,
     )
     with tempfile.TemporaryDirectory() as scratch:
         t0 = time.perf_counter()
@@ -140,7 +154,8 @@ def check_windows(local: Path, protein_task, assets) -> None:  # noqa: ANN001
     for window in WINDOWS:
         got = frames[window]
         assert_frame_equal(
-            got.drop(GWASLAB_EFFECT_ALLELE_FREQ_COL), _awk_window(local, window)
+            got.drop(GWASLAB_EFFECT_ALLELE_FREQ_COL),
+            _awk_window(local, clean_vi.path, window),
         )
         eaf = got[GWASLAB_EFFECT_ALLELE_FREQ_COL]
         _log(f"window {window}: {got.height} rows == awk; EAF null {eaf.null_count()}")
@@ -154,7 +169,7 @@ def main() -> None:
         if t.protein.seq_id == SEQ_ID
     ]
     assets = DEFAULT_RUNNER.run(
-        [protein_task, HAPMAP_3_DECODE_SMP_INDEX, DECODE_VARIANT_INFO]
+        [protein_task, HAPMAP_3_DECODE_SMP_INDEX, DECODE_CLEAN_VARIANT_INFO]
     )
     index = assets[HAPMAP_3_DECODE_SMP_INDEX.asset_id]
     protein = assets[protein_task.asset_id]

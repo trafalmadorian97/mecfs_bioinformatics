@@ -30,7 +30,9 @@ def main() -> None:
     raw = assets[DECODE_SMP_AP4M1_RAW_FILE.asset_id]
     index_asset = assets[HAPMAP_3_DECODE_SMP_INDEX.asset_id]
     assert isinstance(raw, FileAsset) and isinstance(index_asset, FileAsset)
-    index = pl.read_parquet(index_asset.path, columns=[GWASLAB_POS_COL, DECODE_INDEX_NAME_COL])
+    index = pl.read_parquet(
+        index_asset.path, columns=[GWASLAB_POS_COL, DECODE_INDEX_NAME_COL]
+    )
     t0 = time.perf_counter()
     result = one_pass(raw.path, index, chunk_size=4 * MIB)
     elapsed = time.perf_counter() - t0

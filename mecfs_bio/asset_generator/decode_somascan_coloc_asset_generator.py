@@ -26,7 +26,7 @@ from mecfs_bio.assets.gwas.decode_somascan.decode_somascan_database.hapmap3.hapm
     HAPMAP_3_DECODE_SMP_HIT_TABLE_5E8,
 )
 from mecfs_bio.assets.gwas.decode_somascan.raw.decode_variant_info import (
-    DECODE_VARIANT_INFO,
+    DECODE_CLEAN_VARIANT_INFO,
 )
 from mecfs_bio.assets.reference_data.magma_gene_locations.processed.magma_entrez_gene_locations_data_build_38_unzipped import (
     MAGMA_ENTREZ_GENE_LOCATION_REFERENCE_DATA_BUILD_38_EXTRACTED,
@@ -91,7 +91,7 @@ def generate_decode_somascan_coloc_tasks(
         fetcher=ParallelWindowFetcher(
             reader=DecodeWindowReader(
                 proteins=tuple(DecodeProteinEntry(task) for task in protein_tasks),
-                variant_info_task=DECODE_VARIANT_INFO,
+                clean_variant_info_task=DECODE_CLEAN_VARIANT_INFO,
             ),
             max_parallel=DECODE_MAX_PARALLEL_FETCHES,
         ),

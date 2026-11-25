@@ -8,8 +8,10 @@ order, but some lack a few rows, so a row's number in the template does not loca
 
 Matching to the membership list is on (CHR, POS, unordered {EA, NEA}), so a swapped orientation
 still matches, and the deCODE orientation is adopted. Rows with the missing-allele marker "!"
-are dropped. EAF is the true effect allele frequency from variant_info_iceland (see
-effect_allele_frequency); the task fails if any index row's EAF is undetermined.
+are dropped, and so are rows that are not clean (see BuildDecodeCleanVariantInfoTask): only
+two-allele tests enter the index. EAF is the true effect allele frequency from the clean
+variant_info entries (see effect_allele_frequency); the task fails if any index row's EAF is
+undetermined.
 """
 
 from pathlib import Path, PurePath
@@ -17,6 +19,7 @@ from pathlib import Path, PurePath
 import numpy as np
 import polars as pl
 import rapidgzip
+import structlog
 from attrs import frozen
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -33,6 +36,9 @@ from mecfs_bio.build_system.meta.reference_meta.reference_file_meta import (
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.task.dataframe_output import write_parquet_table
+from mecfs_bio.build_system.task.decode_database.build_decode_variant_info_task import (
+    keep_clean_rows,
+)
 from mecfs_bio.build_system.task.decode_database.decode_somascan_protein import (
     DecodeSomascanProtein,
 )
@@ -90,6 +96,8 @@ INDEX_COLUMNS = [
 # Row number in the template, to keep the index in file order.
 _ROW_COL = "__template_row__"
 _JOIN_KEYS = [GWASLAB_CHROM_COL, GWASLAB_POS_COL, PPP_INDEX_ALLELE_KEY_COL]
+logger = structlog.get_logger()
+
 _PRESIGN_EXPIRES_S = 6 * 3600
 _DECOMPRESS_PARALLELIZATION = 8
 
@@ -99,33 +107,38 @@ class ConstructDecodeVariantIndexTask(GeneratingTask):
     """
     template: the protein file whose rows define the index.
     membership_task: a normalized membership list (CHR, POS, EA, NEA, rsID).
-    variant_info_task: the deduplicated variant_info parquet (BuildDecodeVariantInfoTask).
+    clean_variant_info_task: the clean variant_info entries (BuildDecodeCleanVariantInfoTask).
     """
 
     meta: ReferenceFileMeta
     template: DecodeSomascanProtein
     membership_task: Task
-    variant_info_task: Task
+    clean_variant_info_task: Task
 
     @property
     def deps(self) -> list[Task]:
-        return [self.membership_task, self.variant_info_task]
+        return [self.membership_task, self.clean_variant_info_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         download = scratch_dir / "template.txt.gz"
         download_protein_file(self.template, download, wf)
         membership = _read_membership(self.membership_task, fetch)
-        matched = _match_template_rows(download, membership)
+        members = _match_template_rows(download, membership)
         download.unlink()
-        assert matched[DECODE_INDEX_NAME_COL].is_unique().all(), (
+        variant_info = _variant_info_at(members, self.clean_variant_info_task, fetch)
+        clean = keep_clean_rows(members, variant_info)
+        logger.info(
+            f"{self.template.key}: {clean.height} of {members.height} member rows are clean"
+        )
+        assert clean[DECODE_INDEX_NAME_COL].is_unique().all(), (
             f"{self.template.key}: index NAME values are not unique"
         )
-        eaf = _effect_allele_frequency(matched, self.variant_info_task, fetch)
+        eaf = resolve_effect_allele_frequency(clean, variant_info)
         undetermined = eaf.null_count()
         assert undetermined == 0, (
             f"{undetermined} index rows of {self.template.key} have no determined EAF"
         )
-        index = _index_frame(matched, eaf)
+        index = _index_frame(clean, eaf)
         assert_all_snv(index, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL)
         out_path = scratch_dir / "decode_variant_index.parquet"
         _write_index(index, out_path)
@@ -137,7 +150,7 @@ class ConstructDecodeVariantIndexTask(GeneratingTask):
         asset_id: str,
         template: DecodeSomascanProtein,
         membership_task: Task,
-        variant_info_task: Task,
+        clean_variant_info_task: Task,
     ) -> "ConstructDecodeVariantIndexTask":
         return cls(
             meta=ReferenceFileMeta(
@@ -151,7 +164,7 @@ class ConstructDecodeVariantIndexTask(GeneratingTask):
             ),
             template=template,
             membership_task=membership_task,
-            variant_info_task=variant_info_task,
+            clean_variant_info_task=clean_variant_info_task,
         )
 
 
@@ -234,14 +247,15 @@ def _keep_members(parsed: pl.DataFrame, membership: pl.DataFrame) -> pl.DataFram
     )
 
 
-def _effect_allele_frequency(
+def _variant_info_at(
     rows: pl.DataFrame, variant_info_task: Task, fetch: Fetch
-) -> pl.Series:
+) -> pl.DataFrame:
+    """The variant_info_task table's entries at the rows' positions."""
     positions = rows.select(
         pl.col(GWASLAB_CHROM_COL).alias(VI_CHR_COL),
         pl.col(GWASLAB_POS_COL).alias(VI_POS_COL),
     ).unique()
-    variant_info = (
+    return (
         scan_dataframe_asset(
             fetch(variant_info_task.asset_id),
             meta=variant_info_task.meta,
@@ -251,7 +265,6 @@ def _effect_allele_frequency(
         .join(positions.lazy(), on=[VI_CHR_COL, VI_POS_COL], how="semi")
         .collect()
     )
-    return resolve_effect_allele_frequency(rows, variant_info)
 
 
 def _index_frame(rows: pl.DataFrame, eaf: pl.Series) -> pl.DataFrame:

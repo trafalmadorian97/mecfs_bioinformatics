@@ -7,7 +7,7 @@ from mecfs_bio.asset_generator.decode_somascan_manifest import (
     load_decode_somascan_proteins,
 )
 from mecfs_bio.assets.gwas.decode_somascan.raw.decode_variant_info import (
-    DECODE_VARIANT_INFO,
+    DECODE_CLEAN_VARIANT_INFO,
 )
 from mecfs_bio.assets.gwas.ukbb_ppp.ppp_database.hapmap3.hapmap3_ppp_membership_list import (
     HAPMAP_3_MEMBERSHIP_LIST,
@@ -22,11 +22,11 @@ HAPMAP_3_DECODE_SMP_INDEX = ConstructDecodeVariantIndexTask.create(
     asset_id="decode_somascan_smp_hapmap_3_index",
     template=load_decode_somascan_proteins("smp")[0],
     membership_task=HAPMAP_3_MEMBERSHIP_LIST,
-    variant_info_task=DECODE_VARIANT_INFO,
+    clean_variant_info_task=DECODE_CLEAN_VARIANT_INFO,
 )
 HAPMAP_3_DECODE_RAW_INDEX = ConstructDecodeVariantIndexTask.create(
     asset_id="decode_somascan_raw_hapmap_3_index",
     template=load_decode_somascan_proteins("raw")[0],
     membership_task=HAPMAP_3_MEMBERSHIP_LIST,
-    variant_info_task=DECODE_VARIANT_INFO,
+    clean_variant_info_task=DECODE_CLEAN_VARIANT_INFO,
 )

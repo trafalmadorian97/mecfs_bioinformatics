@@ -43,6 +43,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 from mecfs_bio.constants.protein_coloc_constants import WINDOW_SCHEMA
 from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from test_mecfs_bio.unit.build_system.task.decode_database.decode_fixtures import (
+    FX_CLEAN_COL,
     FX_TRUE_EAF_COL,
     CountingRangeSourceFactory,
     DecodeDatabaseFixture,
@@ -73,7 +74,7 @@ def _reader(
 ) -> DecodeWindowReader:
     return DecodeWindowReader(
         proteins=(DecodeProteinEntry(task),),
-        variant_info_task=database.variant_info_task,
+        clean_variant_info_task=database.clean_variant_info_task,
         range_source_factory=factory,
         prefetch_connections=2,
         prefetch_piece_bytes=_BIG_PIECE,
@@ -97,6 +98,12 @@ def _pos(database: DecodeDatabaseFixture, chrom: str, i: int) -> int:
     return database.rows.filter(pl.col(DECODE_CHROM_COL) == chrom)[DECODE_POS_COL][i]
 
 
+def _n_clean(database: DecodeDatabaseFixture, chrom: str, lo: int, hi: int) -> int:
+    """Clean rows among the chromosome's rows lo..hi-1."""
+    rows = database.rows.filter(pl.col(DECODE_CHROM_COL) == chrom)[lo:hi]
+    return int(rows[FX_CLEAN_COL].sum())
+
+
 def _brute_force(rows: pl.DataFrame, window: GenomicInterval) -> pl.DataFrame:
     return (
         rows.with_columns(chrom_code_expr(DECODE_CHROM_COL).alias("_code"))
@@ -104,6 +111,7 @@ def _brute_force(rows: pl.DataFrame, window: GenomicInterval) -> pl.DataFrame:
             (pl.col("_code") == window.chrom)
             & pl.col(DECODE_POS_COL).is_between(window.start, window.end)
             & (pl.col(DECODE_OTHER_ALLELE_COL) != DECODE_MISSING_ALLELE)
+            & pl.col(FX_CLEAN_COL)
         )
         .select(
             pl.col("_code").alias(GWASLAB_CHROM_COL),
@@ -151,7 +159,7 @@ def test_windows_match_brute_force(
         GenomicInterval(3, 1, 10**9),
     ]
     frames = _read(database, built, windows, tmp_path)
-    assert frames[windows[0]].height > 200
+    assert frames[windows[0]].height == _n_clean(database, "chr1", 0, 251) - 1
     assert frames[windows[-1]].height == 0
     _assert_matches_brute_force(database, frames, windows)
 
@@ -168,8 +176,8 @@ def test_window_at_text_order_chromosome_boundary(
         GenomicInterval(1, _pos(database, "chr1", 3_995), 10**9),
     ]
     frames = _read(database, built, windows, tmp_path)
-    assert frames[windows[0]].height == 10
-    assert frames[windows[1]].height == 21
+    assert frames[windows[0]].height == _n_clean(database, "chr10", 3_990, 4_000)
+    assert frames[windows[1]].height == _n_clean(database, "chr2", 0, 21)
     _assert_matches_brute_force(database, frames, windows)
 
 

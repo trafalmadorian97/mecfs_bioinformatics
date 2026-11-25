@@ -5,9 +5,11 @@ synthetic_rows gives a small protein file in the exact deCODE layout: chromosome
 (chr1, chr10, chr2, chr22, chrX), positions ascending within each. Besides the deCODE columns
 it carries fixture-only columns (prefix "_fx_") that the writers drop:
   _fx_true_eaf: the effect allele frequency the variant_info writer encodes; null marks the
-      ambiguous site whose variant_info has both f and 1 - f for the effect allele;
+      undetermined site, whose only variant_info entry disagrees with its ImpMAF;
+  _fx_clean: whether variant_info lists only the row's effect allele at its position (one
+      entry), as at a two-allele record; every 7th and 11th row is not clean;
   _fx_special: rows that tests rely on staying outside any synthetic index (the "!" row,
-      the ambiguous site, and the rows placed around the significant-rows threshold).
+      the undetermined site, and the rows placed around the significant-rows threshold).
 """
 
 import gzip
@@ -33,6 +35,7 @@ from mecfs_bio.build_system.task.decode_database.build_decode_somascan_protein_t
     BuildDecodeSomascanProteinTask,
 )
 from mecfs_bio.build_system.task.decode_database.build_decode_variant_info_task import (
+    write_clean_variant_info_parquet,
     write_variant_info_parquet,
 )
 from mecfs_bio.build_system.task.decode_database.construct_decode_variant_index_task import (
@@ -78,6 +81,7 @@ from mecfs_bio.util.download.verify import verify_hash
 
 FX_TRUE_EAF_COL = "_fx_true_eaf"
 FX_SPECIAL_COL = "_fx_special"
+FX_CLEAN_COL = "_fx_clean"
 SYNTHETIC_CHROMS = ("chr1", "chr10", "chr2", "chr22", "chrX")
 ROWS_PER_CHROM = 4_000
 MEAN_GAP_BP = 1_000
@@ -169,7 +173,13 @@ def synthetic_rows(seed: int) -> pl.DataFrame:
                     },
                 )
         parts.append(part)
-    return pl.concat(parts)
+    i = pl.int_range(pl.len())
+    return pl.concat(parts).with_columns(
+        pl.when(pl.col(FX_SPECIAL_COL) & pl.col(FX_TRUE_EAF_COL).is_null())
+        .then(True)
+        .otherwise((i % 7 != 0) & (i % 11 != 0))
+        .alias(FX_CLEAN_COL)
+    )
 
 
 def decode_text(rows: pl.DataFrame) -> bytes:
@@ -184,16 +194,17 @@ def write_synthetic_decode_file(path: Path, rows: pl.DataFrame) -> None:
 
 def synthetic_variant_info(rows: pl.DataFrame) -> pl.DataFrame:
     """
-    variant_info_iceland rows (Chrom, Pos, A1, ImpFreqA1, ImpInfo) for rows: A1 = EA with the
-    true EAF and A1 = other allele with 1 - EAF. The ambiguous site (null true EAF) gets
-    A1 = EA twice, with f = ImpMAF and f = 1 - ImpMAF. Every 7th row also gets a disagreeing
-    A1 = EA candidate (f = 0.5), as at a multi-allelic site.
+    variant_info_iceland rows (Chrom, Pos, A1, ImpFreqA1, ImpInfo) for rows. A clean row gets
+    one entry, A1 = EA with the true EAF (as a two-allele record lists only its ALT; deCODE's
+    otherAllele is the reference allele); the undetermined site's one entry has f = 0.5,
+    against ImpMAF 0.3. A row that is not clean also gets, if its index is a multiple of 7,
+    A1 = other allele with 1 - EAF (a multi-allelic record lists every allele), and otherwise
+    a second A1 = EA entry with a different f (an overlapping record).
     """
     base = rows.with_row_index("_i").filter(
         pl.col(DECODE_OTHER_ALLELE_COL) != DECODE_MISSING_ALLELE
     )
     eaf = pl.col(FX_TRUE_EAF_COL)
-    maf = pl.col(DECODE_IMP_MAF_COL)
 
     def vi(a1: str | pl.Expr, f: pl.Expr, frame: pl.DataFrame) -> pl.DataFrame:
         return frame.select(
@@ -205,17 +216,22 @@ def synthetic_variant_info(rows: pl.DataFrame) -> pl.DataFrame:
         )
 
     known = base.filter(eaf.is_not_null())
-    ambiguous = base.filter(eaf.is_null())
+    undetermined = base.filter(eaf.is_null())
+    unclean = known.filter(~pl.col(FX_CLEAN_COL))
+    multi_allelic = pl.col("_i") % 7 == 0
     return pl.concat(
         [
             vi(DECODE_EFFECT_ALLELE_COL, eaf, known),
-            vi(DECODE_OTHER_ALLELE_COL, (1 - eaf).round(6), known),
-            vi(DECODE_EFFECT_ALLELE_COL, maf, ambiguous),
-            vi(DECODE_EFFECT_ALLELE_COL, (1 - maf).round(6), ambiguous),
+            vi(DECODE_EFFECT_ALLELE_COL, pl.lit(0.5), undetermined),
+            vi(
+                DECODE_OTHER_ALLELE_COL,
+                (1 - eaf).round(6),
+                unclean.filter(multi_allelic),
+            ),
             vi(
                 DECODE_EFFECT_ALLELE_COL,
-                pl.lit(0.5),
-                known.filter(pl.col("_i") % 7 == 0),
+                (eaf * 0.9).round(6),
+                unclean.filter(~multi_allelic),
             ),
         ]
     )
@@ -320,6 +336,13 @@ def write_variant_info_asset(path: Path, rows: pl.DataFrame) -> None:
     write_variant_info_parquet(source, path)
 
 
+def write_clean_variant_info_asset(path: Path, rows: pl.DataFrame) -> None:
+    """The parquet BuildDecodeCleanVariantInfoTask would produce for rows."""
+    full = path.with_name(f"{path.stem}_full.parquet")
+    write_variant_info_asset(full, rows)
+    write_clean_variant_info_parquet(full, path)
+
+
 def synthetic_protein(
     path: Path, key: str, gene: str = "GENE1"
 ) -> DecodeSomascanProtein:
@@ -357,14 +380,15 @@ def table_meta(asset_id: str) -> ResultTableMeta:
 @frozen(slots=True)
 class DecodeDatabaseFixture:
     """
-    A synthetic group: template rows, the index and variant_info assets, and the fake S3.
+    A synthetic group: template rows, the index and clean variant_info assets, and the fake
+    S3.
     assets maps asset ids to materialized assets, for a fetch.
     """
 
     root: Path
     rows: pl.DataFrame
     index_task: Task
-    variant_info_task: Task
+    clean_variant_info_task: Task
     assets: dict[AssetId, Asset]
     objects: dict[S3ObjectRef, Path]
 
@@ -418,19 +442,19 @@ class DecodeDatabaseFixture:
 
 
 def decode_database_fixture(root: Path, seed: int) -> DecodeDatabaseFixture:
-    """Build the variant_info parquet and the index of a synthetic template (seed)."""
+    """Build the clean variant_info parquet and the index of a synthetic template (seed)."""
     rows = synthetic_rows(seed)
     template_path = root / "template.txt.gz"
     write_synthetic_decode_file(template_path, rows)
     membership_path = root / "membership.parquet"
     synthetic_membership(membership_rows(rows)).write_parquet(membership_path)
-    vi_path = root / "variant_info.parquet"
-    write_variant_info_asset(vi_path, rows)
+    vi_path = root / "clean_variant_info.parquet"
+    write_clean_variant_info_asset(vi_path, rows)
     membership_task = FakeTask(meta=table_meta("membership"))
-    variant_info_task = FakeTask(meta=table_meta("variant_info"))
+    clean_variant_info_task = FakeTask(meta=table_meta("clean_variant_info"))
     assets: dict[AssetId, Asset] = {
         membership_task.asset_id: FileAsset(membership_path),
-        variant_info_task.asset_id: FileAsset(vi_path),
+        clean_variant_info_task.asset_id: FileAsset(vi_path),
     }
     template = synthetic_protein(template_path, _TEMPLATE_KEY)
     objects = {template.ref: template_path}
@@ -438,7 +462,7 @@ def decode_database_fixture(root: Path, seed: int) -> DecodeDatabaseFixture:
         "index",
         template,
         membership_task=membership_task,
-        variant_info_task=variant_info_task,
+        clean_variant_info_task=clean_variant_info_task,
     )
     scratch = root / "scratch_index"
     scratch.mkdir()
@@ -455,7 +479,7 @@ def decode_database_fixture(root: Path, seed: int) -> DecodeDatabaseFixture:
         root=root,
         rows=rows,
         index_task=index_task,
-        variant_info_task=variant_info_task,
+        clean_variant_info_task=clean_variant_info_task,
         assets=assets,
         objects=objects,
     )

@@ -25,6 +25,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_EFFECT_ALLELE_FREQ_COL,
 )
 from test_mecfs_bio.unit.build_system.task.decode_database.decode_fixtures import (
+    FX_CLEAN_COL,
     FX_SPECIAL_COL,
     FX_TRUE_EAF_COL,
     FakeParallelRangeDownloader,
@@ -33,8 +34,8 @@ from test_mecfs_bio.unit.build_system.task.decode_database.decode_fixtures impor
     synthetic_membership,
     synthetic_protein,
     synthetic_rows,
+    write_clean_variant_info_asset,
     write_synthetic_decode_file,
-    write_variant_info_asset,
 )
 
 _KEY = "final_somascan_smp/template.txt.gz"
@@ -57,7 +58,7 @@ def _build(tmp_path: Path, rows: pl.DataFrame, selected: pl.DataFrame) -> Path:
     membership_path = tmp_path / "membership.parquet"
     synthetic_membership(selected).write_parquet(membership_path)
     vi_path = tmp_path / "vi.parquet"
-    write_variant_info_asset(vi_path, rows)
+    write_clean_variant_info_asset(vi_path, rows)
     membership_task = FakeTask(meta=_meta("membership"))
     vi_task = FakeTask(meta=_meta("vi"))
     assets: dict[AssetId, Asset] = {
@@ -66,7 +67,10 @@ def _build(tmp_path: Path, rows: pl.DataFrame, selected: pl.DataFrame) -> Path:
     }
     template = synthetic_protein(source, _KEY)
     task = ConstructDecodeVariantIndexTask.create(
-        "index", template, membership_task=membership_task, variant_info_task=vi_task
+        "index",
+        template,
+        membership_task=membership_task,
+        clean_variant_info_task=vi_task,
     )
     wf = make_wf(
         s3_access=FakeS3Access(objects={template.ref: source}),
@@ -86,13 +90,15 @@ def built(tmp_path_factory: pytest.TempPathFactory) -> tuple[pl.DataFrame, Path]
     return rows, path
 
 
-def test_index_rows_are_the_members_in_file_order(
+def test_index_rows_are_the_clean_members_in_file_order(
     built: tuple[pl.DataFrame, Path],
 ) -> None:
     rows, path = built
     index = pl.read_parquet(path)
+    members = membership_rows(rows)
+    assert not members[FX_CLEAN_COL].all()
     assert index[DECODE_INDEX_NAME_COL].equals(
-        membership_rows(rows)["Name"], check_names=False
+        members.filter(FX_CLEAN_COL)["Name"], check_names=False
     )
     bang = rows.filter(pl.col("otherAllele") == DECODE_MISSING_ALLELE)["Name"]
     assert not index[DECODE_INDEX_NAME_COL].is_in(bang.implode()).any()

@@ -12,10 +12,13 @@ For each window, in file order:
      prefetched with parallel range requests, then indexed_gzip decodes the span from the
      prefetched bytes (any read outside them costs one more range request);
   3. the lines are parsed and filtered to the window. Rows whose other allele is the
-     missing-allele marker are dropped.
+     missing-allele marker are dropped, and so are rows that are not clean (keep_clean_rows):
+     at multi-allelic and overlapping-record positions deCODE tests one allele against the
+     pooled rest, which a trait GWAS row does not measure, so such rows must not enter coloc.
 
-EAF is the true effect allele frequency from variant_info_iceland (resolve_effect_allele_
-frequency), null where the rule does not determine it; deCODE's ImpMAF is never used as EAF.
+EAF is the true effect allele frequency from the clean variant_info entries (resolve_effect_
+allele_frequency), null where the rule does not determine it; deCODE's ImpMAF is never used as
+EAF.
 
 Before reading, the object's size and md5 are checked against the position map's metadata. A
 changed object raises RemoteObjectChanged, which is not an OSError, so ParallelWindowFetcher
@@ -44,6 +47,9 @@ from mecfs_bio.build_system.task.decode_database.build_decode_somascan_protein_t
     POSMAP_COMPRESSED_SIZE_KEY,
     POSMAP_MD5_KEY,
     BuildDecodeSomascanProteinTask,
+)
+from mecfs_bio.build_system.task.decode_database.build_decode_variant_info_task import (
+    keep_clean_rows,
 )
 from mecfs_bio.build_system.task.decode_database.decode_sumstats_format import (
     chrom_code_expr,
@@ -356,6 +362,7 @@ def _to_window_frame(rows: pl.DataFrame, variant_info: pl.DataFrame) -> pl.DataF
         pl.col(DECODE_N_COL).alias(GWASLAB_SAMPLE_SIZE_COLUMN),
         pl.col(DECODE_IMP_MAF_COL),
     )
+    frame = keep_clean_rows(frame, variant_info)
     eaf = resolve_effect_allele_frequency(frame, variant_info)
     return (
         frame.with_columns(eaf.alias(GWASLAB_EFFECT_ALLELE_FREQ_COL))
@@ -372,21 +379,22 @@ def _in_file_order(windows: Sequence[GenomicInterval]) -> list[GenomicInterval]:
 class DecodeWindowReader(ProteinWindowReader):
     """
     proteins: every protein that may be requested, looked up by seq id (the coloc protein id).
-    variant_info_task: the BuildDecodeVariantInfoTask whose table gives true EAFs.
+    clean_variant_info_task: the BuildDecodeCleanVariantInfoTask whose entries decide which
+        rows are clean and give their true EAFs.
     range_source_factory: how range requests reach the presigned URL.
     prefetch_connections, prefetch_piece_bytes: parallel range requests per window prefetch,
         and the bytes each requests.
     """
 
     proteins: tuple[DecodeProteinEntry, ...]
-    variant_info_task: Task
+    clean_variant_info_task: Task
     range_source_factory: RangeSourceFactory = PresignedRangeSourceFactory()
     prefetch_connections: int = 16
     prefetch_piece_bytes: int = 512 * 1024
 
     @property
     def deps(self) -> list[Task]:
-        return [entry.task for entry in self.proteins] + [self.variant_info_task]
+        return [entry.task for entry in self.proteins] + [self.clean_variant_info_task]
 
     def _task(self, protein_id: str) -> BuildDecodeSomascanProteinTask:
         matches = [e.task for e in self.proteins if e.seq_id == protein_id]
@@ -415,8 +423,8 @@ class DecodeWindowReader(ProteinWindowReader):
             stored.size,
         )
         variant_info = scan_dataframe_asset(
-            fetch(self.variant_info_task.asset_id),
-            meta=self.variant_info_task.meta,
+            fetch(self.clean_variant_info_task.asset_id),
+            meta=self.clean_variant_info_task.meta,
             parquet_backend="polars",
         ).to_native()
         assert isinstance(variant_info, pl.LazyFrame)

@@ -21,7 +21,7 @@ from mecfs_bio.assets.gwas.decode_somascan.decode_somascan_database.hapmap3.hapm
     HAPMAP_3_DECODE_SMP_DATABASE,
 )
 from mecfs_bio.assets.gwas.decode_somascan.raw.decode_variant_info import (
-    DECODE_VARIANT_INFO,
+    DECODE_CLEAN_VARIANT_INFO,
 )
 from mecfs_bio.build_system.task.protein_coloc.decode_window_reader import (
     DecodeProteinEntry,
@@ -46,7 +46,9 @@ def _log(msg: str) -> None:
 
 def chunk(scratch: Path) -> None:
     (task,) = [
-        t for t in HAPMAP_3_DECODE_SMP_DATABASE.protein_tasks if t.protein.seq_id == AP4M1
+        t
+        for t in HAPMAP_3_DECODE_SMP_DATABASE.protein_tasks
+        if t.protein.seq_id == AP4M1
     ]
     wf = make_wf()
     protein = task.protein
@@ -82,10 +84,10 @@ def build() -> None:
 
 def parallel() -> None:
     tasks = _tasks()
-    assets = DEFAULT_RUNNER.run([*tasks, DECODE_VARIANT_INFO])
+    assets = DEFAULT_RUNNER.run([*tasks, DECODE_CLEAN_VARIANT_INFO])
     reader = DecodeWindowReader(
         proteins=tuple(DecodeProteinEntry(t) for t in tasks),
-        variant_info_task=DECODE_VARIANT_INFO,
+        clean_variant_info_task=DECODE_CLEAN_VARIANT_INFO,
     )
     requests = [
         ProteinWindowRequest(protein_id=str(t.protein.seq_id), windows=(WINDOW,))
