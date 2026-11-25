@@ -1,40 +1,40 @@
-# Documentation site conventions
+# Documentation site
 
-Docs are a Material for MkDocs site built from `docs/` (config `mkdocs.yml`); serve/build with
-`pixi r mkdocs serve` / `build`. CI runs `mkdocs build --strict`, so any broken reference, missing
-nav target, or disallowed tag fails the build.
+The docs are a Material for MkDocs site built from `docs/` and configured in `mkdocs.yml`. Run
+`pixi r mkdocs serve` or `pixi r mkdocs build`. CI builds with `--strict`, so a broken reference,
+a missing nav target, or a disallowed tag fails CI.
+
+## Who edits `docs/`
+
+- **AI agents do not edit prose in `docs/`.** It is human-written. When a code change should
+  change what a page says (new expected values, new figures), propose the edit to a maintainer
+  instead of making it. Specs and plans never go in `docs/` (see [workflow.md](workflow.md)).
 
 ## Analysis pages carry a technique tag
 
-Every page under `docs/Analysis` carries at most one `tags:` entry in its front matter naming its
-main analysis technique, and `docs/Analysis/Index_of_Techniques.md` renders them grouped by tag.
-The allow list lives in `mkdocs.yml` under the `tags` plugin (`tags_allowed`) — e.g. LDSC, S-LDSC,
-CT-LDSC, MAGMA, H-MAGMA, Mendelian randomization, MiXeR, SuSiE, LCV. One `MAGMA` tag covers
-gene-level, GTEx, HBA, and gene-set analyses; `H-MAGMA` is separate. Pages that are not about a
-technique (overviews, gene lists, Manhattan plots) stay untagged on purpose.
+- Each page under `docs/Analysis` has at most one front-matter `tags:` entry naming its main
+  technique. `docs/Analysis/Index_of_Techniques.md` lists pages grouped by tag. Overview pages and
+  other pages not about a technique stay untagged.
+- Tags must come from `tags_allowed` in `mkdocs.yml`. A tag outside that list (including a typo)
+  fails the strict build. A *missing* tag fails nothing, so an untagged page silently drops out of
+  the index. For a new technique, extend `tags_allowed` first.
 
-- **A tag outside the allow list — including a typo — fails `mkdocs build --strict`, and therefore
-  CI.** A *missing* tag fails nothing, so a new analysis page just silently never appears in the
-  index.
-- When adding an analysis page, add the tag. When adding a genuinely new technique, extend
-  `tags_allowed` first.
-- `docs_hooks.py` supplies the disambiguated `<technique> (<Study>, <Trait>)` titles the index
-  displays (the study segment comes from path part 2), so page H1s can stay short.
+## `.nav.yml` rest-patterns are bare strings
 
-## `.nav.yml` rest-patterns must be bare strings
+In mkdocs-awesome-nav `.nav.yml` files, write `- "*"`, never `- glob: "*"`. The one-key mapping is
+parsed as a link titled "glob" pointing at a page named `*`, which fails `--strict`. The mapping
+form is valid only when it also carries options such as `sort:` or `ignore:`.
 
-In mkdocs-awesome-nav `.nav.yml` files, write a rest-pattern as a bare string, never as a
-single-key mapping:
+## Embedding Plotly figures
 
-```yaml
-nav:
-  - Index_of_Techniques.md
-  - "*"        # correct
-  # - glob: "*"  # WRONG — silently misparsed
-```
+Use the `plotly_embed` macro (`docs_macros/macros.py`):
+`{{ plotly_embed("path/plot.html", id="unique-id") }}`, with an `id` unique within the page.
+Don't wrap Plotly iframes in GLightbox; they render black.
 
-Writing `- glob: "*"` builds but does the wrong thing: pydantic resolves the one-key mapping as a
-title→target link, producing a nav entry *titled* "glob" pointing at a page named `*`. The symptom
-is `WARNING - A reference to '*' is included in the 'nav' configuration, which is not found ...`,
-which fails `--strict`. The dict form is only valid when it also carries pattern options (`sort:`,
-`ignore:`) that disambiguate it.
+## Parquet tables for the docs
+
+Write docs-facing parquet tables with zstd compression and byte-stream-split floats. Use
+`write_parquet_table(..., compression="zstd", byte_stream_split_columns=float_column_names(table))`
+from `mecfs_bio/build_system/task/dataframe_output.py`, or
+`ParquetOutFormat(ParquetWriteOptions(byte_stream_split_floats=True))` where a Task takes an
+`OutFormat`. Don't call `pl.DataFrame.write_parquet` directly for these.

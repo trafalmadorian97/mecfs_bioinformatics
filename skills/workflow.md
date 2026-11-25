@@ -1,66 +1,56 @@
-# Workflow conventions
+# Workflow
 
-How to run commands, verify changes, and where different kinds of working files belong.
+How to run and verify changes, manage dependencies, and where working files belong.
 
-## Running commands
+## Running and verifying
 
-- All commands run through the pixi package manager: `pixi r <command>`; Python scripts via
-  `pixi r python <script>`. Repo-level commands (running tasks, typechecking, docs, lint) live in
-  `tasks.py` and are invoked via `pixi r invoke <name>`.
-- After any significant change, run `pixi r invoke green` (lint, format, spellcheck, link-check,
-  import-check, typecheck, test). Note it runs pytest with `--testmon`, which skips tests unaffected
-  by the latest *source* change.
-
-## Verifying `invoke green` — check the summary line, not just the exit code
-
-- **Never inspect `pixi r invoke green` with `| tail -N`.** R-backed tests (TwoSampleMR,
-  GenomicSEM, susieR via rpy2) emit hundreds of `R callback write-console:` warning lines, so the
-  tail is almost always R noise rather than the pytest verdict. Redirect the whole run to a logfile
-  and grep it:
+- Run everything through pixi: `pixi r <command>`, `pixi r python <script>`. Repo commands live in
+  `tasks.py` and run as `pixi r invoke <name>`.
+- **After any significant change, run `pixi r invoke green`** (lint, format, spellcheck,
+  link-check, import-check, typecheck, test). Redirect the output to a log file and grep for the
+  verdict; don't pipe it through `tail`, because tests that call R through rpy2 flood the end of the
+  output with console noise:
   ```bash
-  LOG=<scratchpad>/green.log
-  pixi r invoke green > "$LOG" 2>&1; echo "EXIT=$?"
-  grep -aE 'passed|failed|error|All checks passed' "$LOG" | tail
+  pixi r invoke green > green.log 2>&1; echo "EXIT=$?"
+  grep -aE 'passed|failed|error|All checks passed' green.log | tail
   ```
-  Use `grep -a` — the log has ANSI escapes / progress-bar control chars that can make grep treat it
-  as binary.
-- **`EXIT=0` alone does not prove tests ran.** Because green uses `--testmon` (selects tests by
-  *source* change), an environment-only change (editing `pyproject.toml`, re-solving with
-  `pixi install`) makes testmon report "no tests ran" and green still exits 0. To actually verify an
-  environment change, bypass testmon with a full run:
-  ```bash
-  pixi r python -m pytest --typeguard-packages=mecfs_bio test_mecfs_bio/unit -q
-  ```
+- **`EXIT=0` does not prove tests ran.** `green` runs pytest with `--testmon`, which selects tests
+  by *source* changes. After an environment-only change (`pyproject.toml`, `pixi.lock`), it runs
+  nothing and still exits 0. To verify such a change, run the full unit suite:
+  `pixi r python -m pytest --typeguard-packages=mecfs_bio test_mecfs_bio/unit -q`.
+
+## Dependencies
+
+- **Add a new dependency to the `analysis` feature in `pyproject.toml`**:
+  `[tool.pixi.feature.analysis.pypi-dependencies]` if it is on PyPI, otherwise
+  `[tool.pixi.feature.analysis.dependencies]` (conda). Put it elsewhere only for a stated reason.
+  `pixi add --pypi` defaults to `[project].dependencies`, which is wrong here, so check where the
+  entry landed. Match the neighboring pin style (`">=3.8.0,<4"`), run `pixi lock`, and review
+  `git diff pixi.lock`.
 
 ## Where working files go
 
-- **Exploratory analysis that establishes facts for a design decision → a committed script under
-  `experiments/claude/`** (its own subdirectory for a multi-step probe), not throwaway terminal
-  one-liners. Tee output to `experiments/claude/logs/`. A committed script is reproducible and
-  auditable; add asserts on the expected conclusion so it fails loudly if upstream data changes.
-  Follow the existing convention there: module docstring stating what/why (no backticks/RST per
-  CLAUDE.md), `from __future__ import annotations`, run via
-  `pixi r python experiments/claude/<dir>/<script>.py`.
-- **Design / brainstorming spec documents → `experiments/claude/design_specs/`**, named
-  `YYYY-MM-DD-<topic>-design.md`. Do NOT put them under `docs/` — that is the published Material for
-  MkDocs site (see [documentation-site.md](documentation-site.md)), and working specs would pollute
-  the built site.
+- **Exploratory analysis that informs a decision goes in a committed script under
+  `experiments/claude/`**, not in throwaway one-liners. Use a subdirectory for a multi-step probe.
+  Assert the expected conclusion so the script fails loudly if upstream data changes. Tee output
+  to `experiments/claude/logs/`.
+- **Design specs and plans go in `experiments/claude/design_specs/`**, named
+  `YYYY-MM-DD-<topic>-design.md`. Never put them in `docs/`.
+- **Write equation-heavy notes in Typst** (`.typ`, compiled with `pixi r typst compile <file>.typ`),
+  not Markdown math. Render to PNG (`--format png`) and inspect the pages; the compiler misses
+  layout bugs. Common pitfall: a one-character subscript followed by `(` swallows the parenthesis
+  (`K_t(x)` renders as K_{t(x)}); write `K_t (x)`.
 
-## Reading papers before deciding
+## Committing
 
-Whenever an important decision hinges on what a paper actually says, **download the paper and read
-it** with PDF tools — do not infer its contents from abstracts, memory, or web summaries. (An
-indirect argument once produced a confidently wrong conclusion about a cohort definition that the
-paper's own text plainly contradicted.)
+- **Stage explicit paths**, never `git add -A` or a whole directory.
+- **Never commit log files or PDFs.** Commit the source (`.typ`, the script), not its output.
 
-- The default pixi env has no PDF libraries — use the dedicated **`pdf-env`** environment (feature
-  `pdf` in pyproject.toml):
-  - `pymupdf` (import `fitz`) — preferred for finding facts; preserves phrases better than
-    pdftotext. `pixi r -e pdf-env python -c "import fitz,sys; d=fitz.open(sys.argv[1]); ..." "<pdf>"`.
-  - `poppler`'s `pdftotext` CLI for quick dumps: `pixi r -e pdf-env pdftotext "<pdf>" -`.
-- Pass PDF paths as an argument and quote paths with spaces; `pixi r` may not resolve a bare
-  relative filename.
-- Supplementary tables (.xlsx) often hold the definitive cohort/sample-size definitions — read them
-  with openpyxl (available in the default env).
-- State clearly which conclusions come from the primary text vs. inference, and correct the record
-  when a source overturns an earlier claim.
+## Reading papers
+
+- **When a decision depends on what a paper says, read the paper**, not an abstract, a summary, or
+  your memory of it. Supplementary tables (.xlsx, readable with openpyxl) often hold the definitive
+  cohort and sample-size definitions. Say which conclusions come from the text and which are
+  inference.
+- The default environment has no PDF tools; use `pdf-env`:
+  `pixi r -e pdf-env pdftotext "<pdf>" -`, or PyMuPDF (`import fitz`) for more faithful text.

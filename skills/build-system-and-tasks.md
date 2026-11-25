@@ -1,91 +1,86 @@
-# Build system & Task conventions
+# Build system and Tasks
 
-The build system is described in `docs/Codebase_Concepts/Build_System.md`; the central class is the
-`Task`. This page collects the conventions for writing Tasks, plus two important properties of the
-cache and the asset store that affect how you reason about changes.
+The build system is described in `docs/Codebase_Concepts/Build_System.md`; its central class is
+the `Task`. This page covers how to write Tasks, where code belongs, and how the cache and asset
+store behave.
+
+## Layering: where code goes
+
+`mecfs_bio` is layered `analysis` > `assets` / `asset_generator` > `build_system` > `util` >
+`constants`. A layer imports only from layers below it; import-linter enforces this
+(`.importlinter`).
+
+- **Classes go in `build_system`; the specifics that instantiate them go in `assets`.** Tasks and
+  configuration classes (e.g. a release descriptor) live in `build_system`. URLs, URL templates,
+  per-release constants, and chosen column lists live in `assets`, next to where the class is
+  instantiated. Never hardcode a URL in `build_system`.
+- **A vocabulary that both layers type against** (e.g. a `Literal` of group codes) goes in
+  `constants`.
+- **No repo-relative paths in `build_system`.** A file name or path relative to the repo root (a
+  config file, a generated YAML) is defined by the caller that knows the repo layout, usually
+  `mecfs_bio/analysis/runner/default_runner.py` or `tasks.py`, and passed into `build_system` code
+  as a parameter.
 
 ## Writing a Task
 
-- **`.create()` derives identifying metadata from input deps — it does not accept it.** Do not
-  take `trait`, `project`, or similar identifying fields as direct parameters. Instead read them
-  from an input task's `.meta`, asserting the expected meta type first. This is standard across the
-  codebase (`UpSetPlotTask.create`, `GWASLabManhattanAndQQPlotTask.create`,
-  `GeneticCorrelationClustermapTask.create_std_with_clustering`). Letting callers pass `trait` /
-  `project` directly invites drift between an output's labels and its source data's labels.
-  - Inside `create()`, read `some_task.meta`, `assert isinstance(meta, ExpectedMetaType)` (e.g.
-    `ProcessedGwasDataDirectoryMeta`, `ResultTableMeta`, `GWASLabSumStatsMeta`,
-    `ResultDirectoryMeta`), then build the output meta from `meta.trait` / `meta.project`.
-  - When the primary input is wrapped in a source object, expose `trait` / `project` as properties
-    on the source class that assert-and-extract internally.
-- **`SimpleFileMeta` / `SimpleDirectoryMeta` are test-only.** Production Tasks must pick a
-  domain-appropriate `Meta` subtype — the Meta carries the asset's organizational identity
-  (group / sub_group / sub_folder / extension / read_spec) the build system uses to place and read
-  the asset; the "Simple" variants' bare id is a test convenience that loses that structure.
-  - For reference data, use `ReferenceFileMeta(group, sub_group, sub_folder: PurePath, extension,
-    id, read_spec?)`; model the Task on `GetUniProtReferenceDataTask` (a no-deps source task with a
-    `meta: Meta` field and a `.create()` that constructs the meta internally). Consult the `Meta`
-    union in `meta/meta.py` for the right subtype.
-- **Read tabular inputs via `scan_dataframe_asset`, not `pl.read_csv` with a hardcoded separator.**
-  Use `scan_dataframe_asset(asset, task.meta)` (from
-  `mecfs_bio/build_system/meta/read_spec/read_dataframe.py`), which consults the asset's metadata
-  `read_spec` (`DataFrameReadSpec` with a text / whitespace-sep / parquet format) to decide how to
-  parse, and returns a narwhals LazyFrame — collect with `.collect().to_polars()`. This decouples
-  the downstream reader from the upstream's on-disk format (tsv, space-delimited, or parquet, read
-  the same way); hardcoding a separator bakes in a format assumption that silently breaks if the
-  producer changes. If the upstream has no read_spec, add one to its meta. Exception: multi-file
-  directory assets (e.g. per-chromosome LD scores) aren't a single dataframe — keep those
-  path-based.
-- **Acquire dependencies explicitly; minimize assumptions about the runtime machine.** Builds must
-  be reproducible on a fresh machine, not just the developer's box.
-  - Do not read files from ad-hoc local caches like `~/.gwaslab/`. Wrap acquisition as a task (e.g.
-    wrap gwaslab `download_ref("1kg_eur_hg38")`; helper at
-    `mecfs_bio/build_system/task/gwaslab/gwaslab_util.py`).
-  - Invoke external CLI tools through pixi (`pixi run bcftools ...`), not a bare binary on PATH.
-  - Exception: a file bundled inside a pinned pyproject.toml package dependency is guaranteed
-    present, so resolving it from the installed package path (e.g. gwaslab's bundled hapmap3 snplist
-    under `Path(gwaslab.__file__).parent / "data"`) is fine — no rehosting needed.
+- **`.create()` derives identifying metadata from its inputs.** Don't accept `trait`, `project`,
+  or similar fields as parameters. Read the input task's `.meta`, assert its type, and build the
+  output meta from `meta.trait` and `meta.project`. This keeps an output's labels consistent with
+  its source data.
+- **Production Tasks use a domain `Meta` subtype.** `SimpleFileMeta` and `SimpleDirectoryMeta`
+  are for tests only. Pick a subtype from the `Meta` union in `mecfs_bio/build_system/meta/meta.py`;
+  for reference data use `ReferenceFileMeta`, modeled on `GetUniProtReferenceDataTask`.
+- **Write `execute()` as a high-level specification of the algorithm.** Each line is one named
+  step (fetch inputs, pass A, fit, write outputs) that delegates to a module-level helper. No raw
+  loops in `execute()`: wrap a per-item loop in a helper. Details such as JSON indentation belong
+  in helpers.
+- **Read tabular inputs with `scan_dataframe_asset(asset, task.meta)`**
+  (`mecfs_bio/build_system/meta/read_spec/read_dataframe.py`), not `pl.read_csv` with a hardcoded
+  separator. It uses the asset's `read_spec`, so the reader doesn't depend on the producer's
+  on-disk format. If the upstream meta has no `read_spec`, add one. Multi-file directory assets
+  stay path-based.
+- **Docstrings of a Task or asset module say only what is specific to it.** If a sentence would be
+  equally true of any Task, leave it out.
 
-## The build cache does NOT see code changes
+## External data and reproducibility
 
-The cache decides an asset is up to date by asset id, comparing the hash of the on-disk file and
-its dependencies' hashes against recorded values. **Task implementation code is not part of the
-trace** (see `verify_trace` in
-`mecfs_bio/build_system/rebuilder/verifying_trace_rebuilder/verifying_trace_rebuilder_core.py`).
+- **Acquire every input through a Task.** Builds must work on a fresh machine. Don't read from
+  ad-hoc local caches such as `~/.gwaslab/`; wrap the download as a Task. Exception: a file bundled
+  inside a pinned Python dependency may be resolved from the installed package path.
+- **Run external CLI tools through pixi** (`pixi run bcftools ...`), not a binary assumed to be on
+  `PATH`.
+- **Normalize external data once, as its own asset**, next to the download. This is usually a
+  `PipeDataFrameTask` built from the generic pipes in `mecfs_bio/build_system/task/pipes/`; check
+  for an existing pipe before writing one. Analysis Tasks consume the normalized table. They never
+  split delimited lists, drop source-specific row kinds, or rename raw columns themselves.
 
-Consequences:
+## How the cache behaves
 
-- Refactoring how a task writes its output (swapping a pandas writer for polars, changing parquet
-  encoding) causes **no** rebuild and no invalidation. **Do not argue against a refactor on the
-  grounds that it will force expensive recomputation — that reasoning is wrong here.**
-- The real consequence of an output-writing change is *drift*: stored assets keep the old bytes
-  until something independently forces a rebuild, at which point the new writer produces different
-  bytes and downstream rebuilds then. Assess such a change on whether new and old output are
-  semantically equivalent, not on cache cost.
-- Corollary gotcha: because traces are byte-content hashes, a **polars/pandas version bump can
-  silently invalidate traces** of affected assets even when the data is unchanged (parquet row
-  order, pandas Categorical code ordering). See [environment-gotchas.md](environment-gotchas.md).
+- **Task code is not part of the cache key.** An asset is up to date when its file hash and its
+  dependencies' hashes match the recorded trace (`verify_trace` in
+  `mecfs_bio/build_system/rebuilder/verifying_trace_rebuilder/verifying_trace_rebuilder_core.py`).
+  Changing how a Task writes its output therefore triggers no rebuild. Judge such a change by
+  whether old and new output are semantically equivalent, not by recomputation cost. The real
+  risk is drift: stored assets keep the old bytes until something else forces a rebuild.
+- **Building a target materializes all of its transitive dependencies.** A hand-deleted
+  intermediate is rebuilt the next time anything downstream is built, so deleting intermediates
+  does not save disk. To keep an intermediate off the main disk, give it its own meta `sub_folder`
+  and move it with a `path_remap` rule.
 
-## Asset store architecture
+## The asset store
 
-- Traces are location-independent content hashes, so relocating or copying assets never invalidates
-  the cache — a moved asset trace-verifies at its new root with zero rebuilds.
-- The asset store can be **split across disks via a `path_remap` section in the gitignored,
-  machine-local `default_runner_config.yaml`** — so the current split is not derivable from the
-  repo; check the file, or run `pixi r invoke migrate-asset-store` (dry run by default) to see the
-  declared rules.
-- **Selection rule for what to remap onto a slower/secondary mount: large, FEW-file, rarely-read
-  subtrees only.** The cost of a secondary mount (e.g. a Windows drive under WSL) is per-file
-  latency, not throughput — so a 51G tree spread over 186k files stays local, while a 13G tree in
-  179 files is a fine candidate.
+- **Traces are location-independent**, so moving or copying assets never invalidates the cache.
+- **The store can be split across disks** with a `path_remap` section in the gitignored,
+  machine-local `default_runner_config.yaml`. `pixi r invoke migrate-asset-store` (a dry run by
+  default) shows the declared rules. Remap only large subtrees with few files: a secondary mount's
+  cost is per-file latency, not throughput.
+- **To find an asset on disk, compute its path; don't `find` the store**, which is huge and slow.
+  Take the defining Task's `.meta`, call `simple_meta_to_relative_path`
+  (`mecfs_bio/build_system/rebuilder/metadata_to_path/simple_meta_to_path.py`), and join the result
+  onto the root (and any `path_remap`) from `default_runner_config.yaml`.
 
-## The 16GB runner is an intentional constraint, not a CI problem
+## Memory budget: 16 GB
 
-System tests run on the standard 16GB `ubuntu-latest` GitHub runner **deliberately**: the design
-intent is that the main analysis be runnable on a 16GB laptop, and CI is the regression guard for
-that property. **When a system test OOMs in CI, do not propose a larger runner (or re-enabling
-swap) as the fix** — the OOM is a true regression for end users; find and fix the memory
-regression. Suggest a larger runner only if explicitly told the constraint was relaxed for that
-test.
-
-See [python-style.md](python-style.md) for `PurePath`, `Literal`, and column-constant conventions
-referenced here, and [testing.md](testing.md) for how to test Tasks.
+The main analysis must run on a 16 GB laptop, and CI's standard 16 GB GitHub runner enforces this
+on purpose. **When a system test runs out of memory in CI, fix the memory regression.** Don't
+propose a larger runner or swap.

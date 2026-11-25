@@ -1,114 +1,66 @@
-# Testing conventions
+# Testing
 
-The guiding principle: a test should fail only when observable behavior changes, never when a
-behavior-preserving refactor moves internals around. Tests that break under refactoring impose
-cost without catching bugs.
+Guiding principle: a test should fail when observable behavior changes, and only then. A test
+that breaks under a behavior-preserving refactor costs effort without catching bugs.
 
-## Test at the Task level (the public API)
+## What to test
 
-- **Unit-test the Task, not its private helpers.** The `Task` is the unit a user of the build
-  system operates on, so it is the public API (in the "test via public APIs" sense from *Software
-  Engineering at Google*). Refactoring a Task's internals while preserving behavior should not
-  break its tests.
-- Default to constructing the Task and calling `execute` with `FakeTask` dependencies, synthetic
-  input dataframes written to `tmp_path`, and a `fetch` that maps asset id → Asset. See
-  `test_ppp_protein_rg_task.py` and `test_consolidate_ld_scores_task.py`.
-- Reserve helper-level tests for logic genuinely hard to reach through the Task, or a numerical
-  kernel needing an exact reference check (e.g. `test_batched_ldsc_rg.py`).
-- **If a Task cannot be tested at its own level, that is a signal about the Task's interface, not
-  a reason to drop down a level.** Refactoring its dependencies to make it testable (e.g. taking
-  plain dataframes instead of a bespoke directory layout or an .xlsx sheet) is usually worthwhile
-  on its own — the simplification is the point, and testability follows.
+- **Test the Task, not its private helpers.** The Task is the public API of the build system.
+  Construct it, call `execute` with `FakeTask` dependencies (`mecfs_bio/build_system/task/fake_task.py`),
+  synthetic inputs written to `tmp_path`, and a `fetch` that maps asset ids to assets. Example:
+  `test_mecfs_bio/unit/build_system/task/ppp_ldsc/test_ppp_protein_rg_task.py`.
+- Test a helper directly only when its logic is hard to reach through the Task, or when it is a
+  numerical kernel that needs an exact reference check.
+- **If a Task is hard to test, simplify its interface.** For example, have it take plain
+  dataframes instead of a bespoke directory layout. Don't drop down to testing internals.
+- **Don't write structural tests for asset generators.** Code in `mecfs_bio/asset_generator/`
+  that only constructs and wires Tasks runs at import time, so an import already catches wiring
+  errors.
 
-## Every assertion needs a cost/benefit case
+## What to assert
 
-Each assertion has a cost (friction when refactoring) and a benefit (bugs caught); it earns its
-place only when the benefit exceeds the cost. Before adding an assertion, name the bug it would
-catch — if the honest answer is "someone reworded a string," drop it.
+Every assertion costs refactoring friction, so it must catch a real bug. Before adding one, name
+the bug it would catch.
 
-- **Don't assert on error-message text or log wording.** When a function raises, assert *that* it
-  raises, not what the message says:
-  ```python
-  # no
-  with pytest.raises(RemapRootUnavailableError) as raised:
-      check_remap_roots_available((rule,))
-  assert str(missing_root) in str(raised.value)
+- **Assert that an exception is raised, not what its message says.** Likewise, assert that a
+  warning was logged, not its wording. Don't copy message text into `pytest.raises(match=...)`. If
+  two errors of the same type must be told apart, define the message as a constant in the source
+  module and import it into the test.
+- **Don't assert what you just set**, and don't test plain constants.
+- **Avoid fragile counts** (`assert len(calls) == 3`) that a harmless extra call would break.
+  Assert the essential invariant instead (`assert any("--flag" in c for c in calls)`).
+- When the code and the test both need the same literal, share one constant.
 
-  # yes
-  with pytest.raises(RemapRootUnavailableError):
-      check_remap_roots_available((rule,))
-  ```
-  Same for logs: assert that a warning was emitted, not the words in it. If a test's *only* content
-  is message composition, delete it. Prefer asserting on the return value, the raised type, the
-  state left on disk, or a call count.
-- **Don't duplicate an error-message substring in `pytest.raises(match=...)`.** It copies the
-  wording across two files. Prefer omitting `match=` entirely; only when a test must tell two
-  same-type errors apart, define a module-level string constant in the *source* module, use it in
-  the f-string assert message, and import it into the test for `match=`.
+## How to write tests
 
-## Avoid brittle / cargo-cult tests
+- **Never use `monkeypatch`, `unittest.mock`, or any mocking library.** Make the dependency a
+  parameter with a production default, and pass a fake from the test. Example:
+  `robust_download` (`mecfs_bio/util/download/`) takes a `Downloader`, and its test passes a
+  `FakeDownloader`.
+- **Don't skip tests based on whether a library is installed** (`skipif` or try-import probes).
+  pixi guarantees declared dependencies, and a skip guard hides real breakage. Put tests that need
+  heavy dependencies in their own module instead.
+- **Keep unit tests fast**, about a second each. Size synthetic data by the structure the test
+  needs (blocks, row groups, seek points), not by realism; shrink tunable knobs such as chunk sizes
+  instead of growing data. Build expensive fixtures once per module. If you're unsure how fast a
+  test is, time it.
 
-Don't add tests that mechanically follow TDD form but catch no real bug, and don't write
-assertions that break under behavior-preserving refactors.
+## Running tests
 
-- Don't unit-test plain constants, or construct a struct and immediately assert a field you just
-  set. Trust the type system / fail-fast invariants.
-- Avoid fragile count assertions (`sum("gctb" in c for c in cmds) == 3`) that a non-bug change (an
-  extra call) would break; assert the essential invariant instead (`any("--gwfm RC" in c ...)`).
-- When a literal appears in both the code-under-test and the assertion, define ONE shared constant
-  used in both places. Define local constants at the top of a test rather than retyping the same
-  number in setup and assertion.
-- Prefer `isinstance(asset, DirectoryAsset)` over re-deriving the same fact
-  (`Path(asset.path).is_dir()`).
-- **Asset-generator / wiring builders don't warrant dedicated structural tests.** Functions in
-  `mecfs_bio/asset_generator/` (`generate_assets_*`, `build_*_groups`) that just construct and wire
-  Tasks together should not get tests that assert facts the builder set directly (group counts,
-  distinct asset ids, deps membership) — those break on refactors and catch nothing. A
-  demonstrator/asset module constructs at import time, so a wiring error surfaces on import; that
-  is enough coverage. Reserve tests for Tasks with real `execute()` logic.
-
-## Inject dependencies — never monkeypatch or mock
-
-Never use pytest `monkeypatch`, `unittest.mock`, or any mocking library. Instead make the
-dependency an injectable parameter with a sensible production default, so a test passes its own
-implementation:
-
-```python
-def execute_command_with_retries(
-    cmd, ...,
-    executor: Callable[[list[str]], str] = execute_command,
-    sleep: Callable[[float], None] = time.sleep,
-): ...
-```
-
-The test passes its own `flaky_executor` and a list-appending `sleep` — no monkeypatch. Mirror the
-existing `FakeDownloader` / `robust_download(downloader=...)` pattern in `mecfs_bio/util/download/`.
-Functional injection keeps the seams explicit in the signature and avoids brittle patching of
-module internals.
-
-## Don't gate tests on library presence
-
-Avoid `@pytest.mark.skipif(not _have_rpy2(...), ...)` or try/except import probes that skip. The
-environment is fully managed by pixi, so declared dependencies are always present. Such guards are
-unnecessary and let a *real* failure (a genuinely broken library, an erroring test) masquerade as a
-harmless "skip" nobody notices. If some tests genuinely need a heavy/optional dependency (e.g.
-R-comparison tests via rpy2), separate them into their own module (`test_*_r_comparison.py`) —
-still no skipif.
+- `pixi r invoke green` is the full check (see [workflow.md](workflow.md)).
+- **For a targeted run, list explicit paths under `test_mecfs_bio/unit/`.** Never pass the
+  `test_mecfs_bio` root with a `-k` filter: it also matches slow system tests (Docker, R, real
+  data). Add `--durations=5` so slow tests are visible.
 
 ## System tests for Docker-based tools
 
-For Tasks that invoke external tools via Docker (MiXeR, LAVA, SBayesRC):
+For Tasks that wrap a tool run through Docker (e.g. MiXeR, LAVA, SBayesRC); `test_mecfs_bio/system/test_lava.py`
+is the model:
 
-1. **Use hello-world/vignette data from the tool's repo** — download a small tarball via
-   `DownloadFileTask` + `ExtractTarGzipTask`, then prepare reference data via a preprocessing Task.
-2. **Docker mount gotcha** — the asset store (under `tmp_path`) is not under `$PWD`, so
-   `-v $PWD:/home` can't see it. Mount the reference dir explicitly via `extra_mounts` at a
-   container path like `/ref_data`; use relative paths (under `$PWD`) for output files.
-3. **Add `PreformattedDataSource` variants** when test data is already in the tool's native format,
-   to skip column conversion.
-4. **Define the Task inside the test function** (not at module level) if its `__attrs_post_init__`
-   invokes Docker — otherwise collection fails on machines without Docker.
-5. **Use fast/demo args** (`--fit-sequence diffevo-fast`, `--chr2use 21-22`) to keep tests under
-   ~30 seconds. Pattern follows `test_lava.py`.
-
-See also [python-style.md](python-style.md) for the injection and typing conventions these build on.
+1. Use the tool's own hello-world or vignette data, downloaded with `DownloadFileTask` and
+   `ExtractTarGzipTask`.
+2. The asset store under `tmp_path` is outside `$PWD`, so a `-v $PWD:...` mount can't see it.
+   Mount reference data explicitly with `extra_mounts`.
+3. If the Task's `__attrs_post_init__` calls Docker, define it inside the test function so test
+   collection doesn't need Docker.
+4. Use the tool's fast or demo settings (e.g. a couple of chromosomes) to stay under about 30 s.

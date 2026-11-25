@@ -1,93 +1,83 @@
-# Python & coding conventions
+# Python style
 
-General style rules for new code in this repo. These favor type safety, self-documenting
-call sites, and making invalid states unrepresentable.
+Rules for new Python code. The common thread: let the type checker and runtime asserts catch
+mistakes, and make call sites self-documenting.
 
 ## Paths
 
-- **Represent filesystem paths as `pathlib.Path`, not `str`** — including dict keys, function
-  parameters, return types, and in-memory data structures. Convert to `str` (usually via
-  `.as_posix()`) only at the last moment, when serializing to JSON / text / another format that
-  requires a string. Mixing `str` and `Path` for the same conceptual value invites silent bugs
-  and forces every consumer to re-derive POSIX semantics.
-  - For directory-coverage checks prefer `Path.parents` over string-prefix tricks:
-    `child == parent or parent in child.parents`. This rejects false-prefix matches automatically
-    (`Path("foo_extra.html")` is not under `Path("foo")`).
-  - When loading a path from JSON, convert with `Path(s)` at the deserialization site, not at
-    every downstream call site.
-- **Use `PurePath` for a path that is relative to a currently-unspecified base directory** (e.g.
-  a location relative to a package dir). `PurePath` gives type safety while correctly withholding
-  filesystem operations (`write_text`, `unlink`, `is_file`) that only make sense once concretized.
-  It signals "join me onto a base before use." Concretize via `Path(base) / the_purepath`.
-  Example: `GWASLAB_HAPMAP3_HG38_SNPLIST_RELPATH = PurePath("data/...")`, resolved at use as
-  `Path(os.path.dirname(gl.__file__)) / GWASLAB_HAPMAP3_HG38_SNPLIST_RELPATH`.
+- **Use `pathlib.Path`, not `str`**, for every filesystem path: parameters, return types, dict
+  keys, fields. Convert to `str` only when serializing (JSON, text, a CLI argument), and convert
+  back with `Path(s)` at the deserialization site.
+- **Use `PurePath` for a path relative to a base that is not yet known** (e.g. a file inside an
+  installed package). It withholds filesystem methods until you concretize it with
+  `Path(base) / relpath`.
+- Test containment with `child == parent or parent in child.parents`, not string prefixes.
 
-## Types & invariants
+## Types
 
-- **Type a string parameter with a small fixed value set as a `Literal`, not bare `str`.** Define
-  a named alias once, near the values it describes, and reuse it on both the attrs field and the
-  `create()` param. Makes invalid states unrepresentable at the type level, documents allowed
-  values at the call site, and lets the typechecker catch typos. Example:
-  `NanPolicy = Literal["raise", "ignore", "mean", "zero"]`.
-- **Make invalid states unrepresentable via `__attrs_post_init__`.** When an attrs class has
-  fields whose validity depends on each other, enforce the relationship in `__attrs_post_init__`
-  rather than leaving an attribute that is sometimes silently unused. If a value can be ignored in
-  some configurations, the type is too loose — widen it to admit the absent case (`str | None`)
-  and assert the cross-field rule at construction.
-- **Enforce numpy shape/dtype invariants in `__attrs_post_init__`.** When an attrs class holds
-  numpy arrays that must satisfy shape/dtype invariants (all 1-D and the same length, a specific
-  dtype kind), assert them — loop over `(name, arr, expected_kind)` tuples asserting `arr.ndim`,
-  `arr.shape[0] == expected_length`, and `arr.dtype.kind == expected_kind` with clear messages.
-  Comments describing dimensionality/dtype drift and are not enforced.
-- **Shift left: assert and fail fast on invalid input.** When a code path depends on a
-  precondition (e.g. "the input frame already carries an N column"), do not silently assume it —
-  assert it (or explicitly raise) as early as possible, with a message naming what was expected vs.
-  seen. Surfacing a problem at the boundary is cheaper than letting invalid input flow downstream
-  and fail somewhere confusing, or produce wrong results silently.
+- **Type a string parameter with a fixed set of values as a `Literal` alias**, defined once near
+  the values and reused everywhere: `NanPolicy = Literal["raise", "ignore", "mean", "zero"]`.
+- **Avoid `Any` and `Callable[...]`.** Give an injected callable its full signature
+  (`Callable[[LdscSumstats, str], LdscFit]`). Instead of `Any` for an object you use through a few
+  members, define an interface.
+- **For an interface, prefer an `ABC` over a `Protocol`.** Implementations subclass it explicitly,
+  so an IDE's go-to-base finds the interface. Use a `Protocol` only for what an ABC cannot do, such
+  as describing a third-party class you cannot subclass.
+- **Narrow with `assert isinstance(x, T)`, not `typing.cast`.** The assert fails loudly when the
+  assumption is wrong; `cast` silently lies. Reserve `cast` for a third-party value whose
+  annotation is wrong, with a comment saying so.
 
-## Function signatures
+## Invariants: fail fast
 
-- **Don't return bare/anonymous tuples** (`-> tuple[float, float, float]`). Return an `@frozen`
-  attrs class (or a `NamedTuple` for many fields) whose attributes have meaningful names, so the
-  call site is self-documenting and positional-swap bugs are impossible. Define the small class
-  next to the function. The one acceptable exception is a nested/local helper whose tuple is
-  consumed a line or two later, where the reader sees both ends at once.
-- **Pass same-typed parameters as named kwargs.** When a call passes two or more args of the same
-  type (several `str` or `Path` params), name them: `f(source_url=..., uri=...)`, not `f(a, b)`.
-  Positional args of identical type can be transposed silently — the typechecker won't catch it.
-- **Prefer module-level helper free functions over helper methods.** When a class (e.g. a Task)
-  accumulates several `def _helper(self, ...)` methods, hoist them to module-level free functions
-  that accept only the fields they actually use (pass `config`, `index_task`, `fetch`, not `self`).
-  A helper method implicitly receives all of `self`; a free function's signature reveals its real,
-  narrow dependencies. Keep on the class only what genuinely needs the whole object (`execute`,
-  `create`).
+- **Assert preconditions at the boundary**, with a message naming what was expected and what was
+  found. Don't let invalid input flow downstream to fail confusingly or produce wrong results.
+- **Make invalid states unrepresentable.** If an attrs field is meaningful only in some
+  configurations, type it as optional (`str | None`) and assert the cross-field rule in
+  `__attrs_post_init__`.
+- **Assert numpy invariants in `__attrs_post_init__`** for attrs classes holding arrays (`ndim`,
+  shared length, `dtype.kind`), including private helper classes. A shape comment is not enforced;
+  an assert is.
 
-## Dataframes & I/O
+## Functions
 
-- **Prefer polars over pandas for new dataframe code** (`pl.DataFrame` / `pl.LazyFrame`, `scan_*`).
-  This is the approved default for new work (performance, lazy scans, cleaner expression API) — not
-  a mandate to rewrite existing pandas (e.g. the genomic_sem port can stay pandas).
-- **When converting a narwhals frame to polars, use `.to_polars()`, not `.to_native()`.**
-  `to_native()` returns whatever backend narwhals wraps (pandas, pyarrow, polars), so polars-only
-  downstream code breaks whenever the backend isn't polars. `to_polars()` always yields a genuine
-  polars DataFrame.
-- **Use shared string constants for common dataframe column names, not repeated literals.** Put
-  each constant in the file matching the source/tool that *defines* that column. Known homes:
-  `mecfs_bio/constants/gwaslab_constants.py` for gwaslab output columns (strictly gwaslab's own),
-  `ldsc_constants.py` for LDSC-internal names, `regenie_constants.py` for raw regenie columns,
-  `ppp_index_constants.py` for PPP-variant-index columns. Create a new file when a source has no
-  home. Only genuinely one-off local id columns may stay as literals.
+- **Don't return bare tuples.** Return a small `@frozen` attrs class with named attributes,
+  defined next to the function. Exception: a local helper whose tuple is unpacked a line or two
+  later.
+- **Pass same-typed arguments by keyword** (`f(source_url=..., dest=...)`). The type checker
+  cannot catch two transposed `str` or `Path` arguments.
+- **Prefer module-level free functions to helper methods.** A free function takes only what it
+  uses, so its signature shows its real dependencies; a method silently receives all of `self`.
+- **Inject dependencies instead of hard-wiring them**: make the collaborator (a command runner, a
+  downloader, `time.sleep`) a parameter with the production default. This is also how tests
+  replace it (see [testing.md](testing.md)).
 
-## Subprocess
+## Imports, comments, docstrings
 
-- **Prefer `execute_command` (`mecfs_bio/util/subproc/run_command.py`) over raw
-  `subprocess.run`/`Popen`.** It's the repo's standard wrapper — streams+logs output via structlog,
-  asserts args are strings, returns combined stdout+stderr, and raises `CalledProcessError` on
-  non-zero exit. `execute_command_with_retries` adds injectable backoff for flaky remote services.
-- For a **new flaky remote call**, use `call_with_retries`
-  (`mecfs_bio/util/retry/call_with_retries.py`) — the repo's single retry-with-backoff loop. It
-  takes a no-arg callable (bind arguments with `functools.partial`) and an explicit `retry_on`
-  tuple so exceptions outside it propagate immediately and genuine bugs are never retried. Do not
-  write another backoff loop.
+- **Put all imports at the top of the module.** Never import inside a function, method, or test.
+  The only exception is `tasks.py`.
+- **Comments describe the current code, not its history.** Don't write "mirrors the old ...",
+  "extracted from ...", or "replaces the previous ...": a reader of the current tree can't see the
+  old one. Migration rationale goes in the commit message or PR description.
+- **Docstrings follow AGENTS.md**: no backticks around inline code, no RST.
+- **In numerical or statistical code, define every symbol.** Each dimension letter used in a
+  shape such as `(S, q)` is defined in a nearby docstring (a module-level dimension glossary works
+  well). Define acronyms and terse library names in every file that uses them. For code that
+  assembles linear-algebra objects, write out the equations and map each parameter to its term.
 
-See also [testing.md](testing.md) and [build-system-and-tasks.md](build-system-and-tasks.md).
+## Dataframes
+
+- **Use polars for new dataframe code.** Existing pandas code need not be rewritten.
+- **Convert a narwhals frame with `.to_polars()`, never `.to_native()`.** `to_native()` returns
+  whatever backend narwhals happens to wrap.
+- **Use named constants for column names**, not repeated string literals. Each constant lives in
+  `mecfs_bio/constants/` in the file for the tool or source that defines the column (e.g.
+  `gwaslab_constants.py` for gwaslab's own columns, `ldsc_constants.py` for LDSC's). Add a new file
+  for a new source. Only a genuinely local, one-off column may stay a literal.
+
+## Subprocesses and retries
+
+- **Run external commands with `execute_command`** (`mecfs_bio/util/subproc/run_command.py`), not
+  raw `subprocess.run` or `Popen`. It logs output and raises on non-zero exit.
+- **Retry flaky remote calls with `call_with_retries`** (`mecfs_bio/util/retry/call_with_retries.py`),
+  the repo's single backoff loop. Pass an explicit `retry_on` tuple of exception types so that
+  genuine bugs are never retried. Don't write another backoff loop.
