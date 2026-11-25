@@ -189,3 +189,20 @@ def test_eaf_discordant_variants_are_dropped_and_counted() -> None:
     unchecked = align_windows(trait=trait, protein=protein, max_eaf_difference=None)
     assert unchecked.frame.height == 3
     assert unchecked.n_eaf_discordant_dropped == 0
+
+
+def test_multi_record_trait_positions_are_dropped_only_when_asked() -> None:
+    # Position 2 has two trait records (a split multi-allelic site); 5 has one.
+    trait = _window(
+        [(2, "T", "C", 0.1, 0.3), (2, "G", "C", 0.2, 0.1), (5, "G", "T", 0.3, 0.3)]
+    )
+    protein = _window([(2, "T", "C", 0.5, 0.3), (5, "G", "T", 0.6, 0.3)])
+    strict = align_windows(
+        trait=trait, protein=protein, drop_multi_record_trait_positions=True
+    )
+    assert strict.frame[GWASLAB_POS_COL].to_list() == [5]
+    assert strict.n_trait_multi_record_dropped == 2
+
+    default = align_windows(trait=trait, protein=protein)
+    assert default.frame[GWASLAB_POS_COL].to_list() == [2, 5]
+    assert default.n_trait_multi_record_dropped == 0

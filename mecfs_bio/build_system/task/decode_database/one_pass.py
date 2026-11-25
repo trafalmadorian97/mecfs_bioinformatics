@@ -5,7 +5,8 @@ per-protein task stores:
   slim: Beta, SE and N of the shared index's rows, in index order, matched by Name (left join
       of the index's NAME on the file's Name). Protein files are not row-for-row copies of the
       index's template: some lack rows. An index row the file lacks gets nulls. A Name occurring
-      twice among the matched rows fails the pass (the join is validated one-to-one).
+      twice among the matched rows fails the pass (the join is validated one-to-one), and so
+      does a matched row whose effectAllele/otherAllele differ from the index's EA/NEA.
       To avoid parsing all ~33M lines, each block first parses only its Pos field and keeps the
       lines at a position of some index row (any chromosome); only those are parsed fully.
   posmap: the first line starting at or after every posmap_step bytes of uncompressed text, with
@@ -38,18 +39,24 @@ from mecfs_bio.build_system.task.decode_database.line_blocks import (
 )
 from mecfs_bio.constants.decode_somascan_constants import (
     DECODE_BETA_COL,
+    DECODE_EFFECT_ALLELE_COL,
     DECODE_HEADER,
     DECODE_INDEX_NAME_COL,
     DECODE_MLOG10P_COL,
     DECODE_N_COL,
     DECODE_NAME_COL,
+    DECODE_OTHER_ALLELE_COL,
     DECODE_POS_COL,
     DECODE_PVAL_COL,
     DECODE_RSIDS_COL,
     DECODE_SE_COL,
     DECODE_SIGNIFICANT_ROWS_MIN_MLOG10P,
 )
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_POS_COL
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
+)
 from mecfs_bio.util.file_io.gzip_seek_index import export_index_from_open_file
 
 POSMAP_CHROM_COL = "chrom"
@@ -116,7 +123,7 @@ def one_pass(
     chunk_size: int = 16 * MIB,
     posmap_step: int = 1 * MIB,
 ) -> OnePassResult:
-    """index: the shared variant index's POS and NAME (NAME unique)."""
+    """index: the shared variant index's POS, EA, NEA and NAME (NAME unique)."""
     index_positions = np.unique(index[GWASLAB_POS_COL].cast(pl.Int64).to_numpy())
     outputs: list[_BlockOutputs] = []
     rows = 0
@@ -149,14 +156,22 @@ def match_index_rows(index: pl.DataFrame, candidates: pl.DataFrame) -> pl.DataFr
     """
     For each index NAME, in index order, the Beta, SE and N of the candidate row with that
     Name (nulls when there is none), and whether there was one. Fails when a NAME matches two
-    candidate rows.
+    candidate rows, or a row whose alleles are not the index's EA (effect) and NEA.
     """
     names = index[DECODE_INDEX_NAME_COL]
     matched = candidates.filter(pl.col(DECODE_NAME_COL).is_in(names.implode())).select(
-        DECODE_NAME_COL, *_SLIM_SOURCE_COLUMNS, pl.lit(True).alias(_MATCHED_COL)
+        DECODE_NAME_COL,
+        DECODE_EFFECT_ALLELE_COL,
+        DECODE_OTHER_ALLELE_COL,
+        *_SLIM_SOURCE_COLUMNS,
+        pl.lit(True).alias(_MATCHED_COL),
     )
-    return (
-        index.select(DECODE_INDEX_NAME_COL)
+    joined = (
+        index.select(
+            DECODE_INDEX_NAME_COL,
+            GWASLAB_EFFECT_ALLELE_COL,
+            GWASLAB_NON_EFFECT_ALLELE_COL,
+        )
         .join(
             matched,
             left_on=DECODE_INDEX_NAME_COL,
@@ -167,6 +182,17 @@ def match_index_rows(index: pl.DataFrame, candidates: pl.DataFrame) -> pl.DataFr
         )
         .with_columns(pl.col(_MATCHED_COL).fill_null(False))
     )
+    disagreeing = joined.filter(
+        pl.col(_MATCHED_COL)
+        & (
+            (pl.col(DECODE_EFFECT_ALLELE_COL) != pl.col(GWASLAB_EFFECT_ALLELE_COL))
+            | (pl.col(DECODE_OTHER_ALLELE_COL) != pl.col(GWASLAB_NON_EFFECT_ALLELE_COL))
+        )
+    ).height
+    assert disagreeing == 0, (
+        f"{disagreeing} rows match an index Name but not its effect and other alleles"
+    )
+    return joined
 
 
 def _process_block(

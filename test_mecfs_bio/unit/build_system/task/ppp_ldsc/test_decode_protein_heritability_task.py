@@ -104,17 +104,27 @@ def _protein_task(
     )
 
 
-def _slim(rng: np.random.Generator, ld: np.ndarray) -> pl.DataFrame:
-    """SE = 1 and BETA = Z with Z^2 following the LDSC expectation; N varies by +-8%."""
+def _slim(
+    rng: np.random.Generator, ld: np.ndarray, null_rows: list[int]
+) -> pl.DataFrame:
+    """
+    SE = 1 and BETA = Z with Z^2 following the LDSC expectation; N varies by +-8%. The
+    null_rows are null in every column, as for index rows the protein's file lacks.
+    """
     n = _N_CENTER * (1 + rng.uniform(-0.08, 0.08, size=_N_SNPS))
     chi2 = 1 + _N_CENTER * _H2 / _M * ld + rng.normal(0, 0.1, size=_N_SNPS)
-    return pl.DataFrame(
-        {
-            GWASLAB_BETA_COL: np.sqrt(np.maximum(chi2, 0.0)),
-            GWASLAB_SE_COL: np.ones(_N_SNPS),
-            GWASLAB_SAMPLE_SIZE_COLUMN: n,
-        }
-    ).cast(pl.Float32)
+    is_null = pl.int_range(pl.len()).is_in(null_rows)
+    return (
+        pl.DataFrame(
+            {
+                GWASLAB_BETA_COL: np.sqrt(np.maximum(chi2, 0.0)),
+                GWASLAB_SE_COL: np.ones(_N_SNPS),
+                GWASLAB_SAMPLE_SIZE_COLUMN: n,
+            }
+        )
+        .with_columns(pl.when(~is_null).then(pl.all()))
+        .cast(pl.Float32)
+    )
 
 
 def test_decode_h2_uses_median_n_and_matches_ppp_kernel(tmp_path: Path) -> None:
@@ -170,10 +180,10 @@ def test_decode_h2_uses_median_n_and_matches_ppp_kernel(tmp_path: Path) -> None:
         ),
     )
     slims = {}
-    for task in (with_coords, without_coords):
+    for task, null_rows in ((with_coords, [3, 50]), (without_coords, [])):
         directory = tmp_path / task.asset_id
         directory.mkdir()
-        slims[task.asset_id] = _slim(rng, ld)
+        slims[task.asset_id] = _slim(rng, ld, null_rows)
         slims[task.asset_id].write_parquet(directory / DECODE_SLIM_FILENAME)
         assets[task.asset_id] = DirectoryAsset(directory)
 
@@ -194,7 +204,7 @@ def test_decode_h2_uses_median_n_and_matches_ppp_kernel(tmp_path: Path) -> None:
 
     for protein_task in (with_coords, without_coords):
         slim = slims[protein_task.asset_id]
-        n = slim[GWASLAB_SAMPLE_SIZE_COLUMN].to_numpy().astype(float)
+        n = slim[GWASLAB_SAMPLE_SIZE_COLUMN].drop_nulls().to_numpy().astype(float)
         chi2 = (
             slim[GWASLAB_BETA_COL].to_numpy().astype(float)
             / slim[GWASLAB_SE_COL].to_numpy().astype(float)

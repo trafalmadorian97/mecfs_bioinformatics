@@ -22,7 +22,11 @@ from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.task.decode_database.line_blocks import MIB
 from mecfs_bio.build_system.task.decode_database.one_pass import one_pass
 from mecfs_bio.constants.decode_somascan_constants import DECODE_INDEX_NAME_COL
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_POS_COL
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
+    GWASLAB_POS_COL,
+)
 
 
 def main() -> None:
@@ -31,7 +35,12 @@ def main() -> None:
     index_asset = assets[HAPMAP_3_DECODE_SMP_INDEX.asset_id]
     assert isinstance(raw, FileAsset) and isinstance(index_asset, FileAsset)
     index = pl.read_parquet(
-        index_asset.path, columns=[GWASLAB_POS_COL, DECODE_INDEX_NAME_COL]
+        index_asset.path, columns=[
+            GWASLAB_POS_COL,
+            GWASLAB_EFFECT_ALLELE_COL,
+            GWASLAB_NON_EFFECT_ALLELE_COL,
+            DECODE_INDEX_NAME_COL,
+        ]
     )
     t0 = time.perf_counter()
     result = one_pass(raw.path, index, chunk_size=4 * MIB)

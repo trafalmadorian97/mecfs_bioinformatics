@@ -199,6 +199,26 @@ def test_protein_fails_on_duplicated_index_name(
         database.build_protein(task)
 
 
+def test_protein_fails_when_name_alleles_disagree(
+    database: DecodeDatabaseFixture,
+) -> None:
+    """A row keeping an index Name but with its alleles swapped must not be copied."""
+    row = int(_index_row_numbers(database)[9])
+    swapped = database.rows.with_columns(
+        pl.when(pl.int_range(pl.len()) == row)
+        .then(pl.col(col))
+        .otherwise(pl.col(other))
+        .alias(other)
+        for col, other in (
+            ("effectAllele", "otherAllele"),
+            ("otherAllele", "effectAllele"),
+        )
+    )
+    task = database.protein_task(swapped, "final_somascan_smp/swapped_alleles.txt.gz")
+    with pytest.raises(AssertionError):
+        database.build_protein(task)
+
+
 def test_protein_fails_on_md5_mismatch(database: DecodeDatabaseFixture) -> None:
     task = database.protein_task(
         database.rows, "final_somascan_smp/stale.txt.gz", md5="0" * 32

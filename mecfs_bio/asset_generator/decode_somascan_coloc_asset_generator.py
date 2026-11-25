@@ -95,6 +95,9 @@ def generate_decode_somascan_coloc_tasks(
             ),
             max_parallel=DECODE_MAX_PARALLEL_FETCHES,
         ),
+        # deCODE windows hold clean (two-allele) rows only; a trait row at a position with
+        # several trait records may measure a different contrast.
+        drop_multi_record_trait_positions=True,
     )
     return generate_protein_coloc_tasks(
         base_name=base_name,

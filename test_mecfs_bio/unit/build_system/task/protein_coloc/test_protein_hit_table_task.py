@@ -1,3 +1,4 @@
+from collections.abc import Sequence
 from pathlib import Path, PurePath
 
 import polars as pl
@@ -80,13 +81,14 @@ def _ppp_label(n: int) -> tuple[ProteinId, str]:
 def _run(
     tmp_path: Path,
     variants: list[tuple[int, int]],
-    z_by_protein: list[list[float]],
+    z_by_protein: Sequence[Sequence[float | None]],
     p_threshold: float = 5e-8,
     merge_gap_bp: int = 250_000,
     labels: list[tuple[ProteinId, str]] | None = None,
     slim_member: DirectoryMemberDataFrame | None = None,
 ) -> pl.DataFrame:
-    """variants: (CHR, POS) in index order; z_by_protein: one z per variant per protein;
+    """variants: (CHR, POS) in index order; z_by_protein: one z per variant per protein
+    (None: the slim row is null, as for an index row the protein's file lacks);
     labels: (protein id, gene) per protein, PPP-style OIDn / Gn by default;
     slim_member: when set, each slim is that file inside a directory asset."""
     tmp_path.mkdir(parents=True, exist_ok=True)
@@ -120,8 +122,8 @@ def _run(
             path = tmp_path / f"slim_dir_{n}" / slim_member.file_name
         pl.DataFrame(
             {
-                GWASLAB_BETA_COL: [z * _SE for z in zs],
-                GWASLAB_SE_COL: [_SE] * len(zs),
+                GWASLAB_BETA_COL: [None if z is None else z * _SE for z in zs],
+                GWASLAB_SE_COL: [None if z is None else _SE for z in zs],
             },
             schema={GWASLAB_BETA_COL: pl.Float32, GWASLAB_SE_COL: pl.Float32},
         ).write_parquet(path)
@@ -237,3 +239,9 @@ def test_hit_table_reads_slim_member_of_directory_dependency(tmp_path: Path) -> 
     from_directory = _run(tmp_path / "dir", variants, zs, slim_member=member)
     assert plain.height == 2
     assert from_directory.equals(plain)
+
+
+def test_null_slim_rows_are_not_significant(tmp_path: Path) -> None:
+    variants = [(1, 1_000_000), (1, 1_100_000), (1, 1_200_000)]
+    table = _run(tmp_path, variants, [[_HIT_Z, None, _HIT_Z]])
+    assert table[HIT_N_SIG_VARIANTS_COL].to_list() == [2]

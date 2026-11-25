@@ -243,14 +243,16 @@ class RemoteGzipSource(io.RawIOBase):
         self._cache = b""
 
     def prefetch(
-        self, span: CompressedSpan, connections: int, piece_bytes: int
+        self, span: CompressedSpan, pool: ThreadPoolExecutor, piece_bytes: int
     ) -> None:
-        """Fetch [span.lo, span.hi) in pieces of piece_bytes, connections at once."""
+        """
+        Fetch [span.lo, span.hi) in pieces of piece_bytes on pool's threads. Reusing one pool
+        across windows reuses each thread's HTTP connection.
+        """
         pieces = chunk_bounds(span.lo, span.hi, piece_bytes)
-        with ThreadPoolExecutor(connections) as pool:
-            parts = list(
-                pool.map(lambda c: self._source.read_range(c.start, c.length), pieces)
-            )
+        parts = list(
+            pool.map(lambda c: self._source.read_range(c.start, c.length), pieces)
+        )
         self._cache_lo, self._cache = span.lo, b"".join(parts)
 
     def readable(self) -> bool:
@@ -437,12 +439,13 @@ class DecodeWindowReader(ProteinWindowReader):
             points = [
                 SeekPoint(uncompressed=u, compressed=c) for u, c in f.raw.seek_points()
             ]
-            return {
-                window: self._read_window(
-                    f, source, stored, points, window, variant_info
-                )
-                for window in _in_file_order(windows)
-            }
+            with ThreadPoolExecutor(self.prefetch_connections) as pool:
+                return {
+                    window: self._read_window(
+                        f, source, pool, stored, points, window, variant_info
+                    )
+                    for window in _in_file_order(windows)
+                }
         finally:
             f.close()
 
@@ -450,6 +453,7 @@ class DecodeWindowReader(ProteinWindowReader):
         self,
         f: indexed_gzip.IndexedGzipFile,
         source: RemoteGzipSource,
+        pool: ThreadPoolExecutor,
         stored: _StoredIndex,
         points: list[SeekPoint],
         window: GenomicInterval,
@@ -458,7 +462,7 @@ class DecodeWindowReader(ProteinWindowReader):
         span = uncompressed_span(stored.posmap, window)
         source.prefetch(
             compressed_span(points, span, stored.size),
-            connections=self.prefetch_connections,
+            pool=pool,
             piece_bytes=self.prefetch_piece_bytes,
         )
         rows = _window_rows(_read_text(f, span), window)

@@ -81,6 +81,8 @@ class ProteomicsColocSource:
     hit_table_task: the source's protein hit-segment table.
     gene_coords_task, gene_coords_reader: the GRCh38 gene-coordinate table and its reader.
     fetcher: dense window source of the proteomics GWAS.
+    drop_multi_record_trait_positions: drop trait positions holding more than one record,
+        for a source whose rows are all two-allele tests (see orient_and_align).
     """
 
     asset_infix: ProteomicsSourceInfix
@@ -88,6 +90,7 @@ class ProteomicsColocSource:
     gene_coords_task: Task
     gene_coords_reader: GeneCoordsReader
     fetcher: DenseWindowFetcher
+    drop_multi_record_trait_positions: bool = False
 
 
 @frozen(slots=True)
@@ -125,6 +128,7 @@ def generate_protein_coloc_tasks(
         panel_ancestry="nfe",
         fetcher=source.fetcher,
         config=config,
+        drop_multi_record_trait_positions=source.drop_multi_record_trait_positions,
     )
     display_task = ColocDisplayTableTask.create(
         asset_id=f"{prefix}_coloc_display",

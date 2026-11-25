@@ -128,6 +128,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     N_PROTEIN_COL,
     N_PROTEIN_VARIANTS_COL,
     N_TRAIT_COL,
+    N_TRAIT_MULTI_RECORD_DROPPED_COL,
     N_TRAIT_VARIANTS_COL,
     PP_H0_COL,
     PP_H1_COL,
@@ -222,6 +223,7 @@ class _PairOutcome:
     n_aligned: int
     n_duplicate_keys_dropped: int
     n_eaf_discordant_dropped: int
+    n_trait_multi_record_dropped: int
     posteriors: ColocPosteriors | None
     failure_reason: str | None
     protein_lead_pos: int | None
@@ -369,6 +371,7 @@ def _test_pair(
     method: ColocMethod,
     reference: _OrientationReference,
     config: ColocRunConfig,
+    drop_multi_record_trait_positions: bool,
     windows_dir: Path,
 ) -> _PairOutcome:
     oriented = _orient(protein_rows, window, reference)
@@ -376,6 +379,7 @@ def _test_pair(
         trait=trait_rows,
         protein=oriented.frame,
         max_eaf_difference=config.max_eaf_difference,
+        drop_multi_record_trait_positions=drop_multi_record_trait_positions,
     )
     min_aligned_variants = config.min_aligned_variants
     usable = _usable_variants(aligned.frame)
@@ -394,6 +398,7 @@ def _test_pair(
         n_aligned=usable.height,
         n_duplicate_keys_dropped=aligned.n_duplicate_keys_dropped,
         n_eaf_discordant_dropped=aligned.n_eaf_discordant_dropped,
+        n_trait_multi_record_dropped=aligned.n_trait_multi_record_dropped,
         posteriors=method.run(_coloc_input(usable, trait_model)) if enough else None,
         failure_reason=(
             None
@@ -423,6 +428,7 @@ def _test_protein(
             method=task.method,
             reference=reference,
             config=task.config,
+            drop_multi_record_trait_positions=task.drop_multi_record_trait_positions,
             windows_dir=windows_dir,
         )
         for window in fetched.request.windows
@@ -485,6 +491,7 @@ def _outcome_row(outcome: _PairOutcome, method: ColocMethod) -> dict[str, object
         N_ALIGNED_COL: outcome.n_aligned,
         N_DUPLICATE_KEYS_DROPPED_COL: outcome.n_duplicate_keys_dropped,
         N_EAF_DISCORDANT_DROPPED_COL: outcome.n_eaf_discordant_dropped,
+        N_TRAIT_MULTI_RECORD_DROPPED_COL: outcome.n_trait_multi_record_dropped,
         PROTEIN_LEAD_POS_COL: outcome.protein_lead_pos,
         PROTEIN_LEAD_MLOG10P_COL: outcome.protein_lead_mlog10p,
         PP_H0_COL: post.pp_h0 if post is not None else None,
@@ -513,6 +520,7 @@ _OUTCOME_SCHEMA = pl.Schema(
         N_ALIGNED_COL: pl.Int32,
         N_DUPLICATE_KEYS_DROPPED_COL: pl.Int32,
         N_EAF_DISCORDANT_DROPPED_COL: pl.Int32,
+        N_TRAIT_MULTI_RECORD_DROPPED_COL: pl.Int32,
         PROTEIN_LEAD_POS_COL: pl.Int32,
         PROTEIN_LEAD_MLOG10P_COL: pl.Float64,
         PP_H0_COL: pl.Float64,
@@ -579,6 +587,8 @@ class TraitProteinColocTask(Task):
         used to orient protein windows.
     fetcher: the dense window source of the proteomics GWAS.
     method: the colocalization method.
+    drop_multi_record_trait_positions: drop trait positions holding more than one record before
+        alignment (see orient_and_align); for sources whose rows are all two-allele tests.
     """
 
     meta: ResultDirectoryMeta
@@ -593,6 +603,7 @@ class TraitProteinColocTask(Task):
     fetcher: DenseWindowFetcher
     method: ColocMethod
     config: ColocRunConfig
+    drop_multi_record_trait_positions: bool = False
 
     @property
     def deps(self) -> list[Task]:
@@ -658,6 +669,7 @@ class TraitProteinColocTask(Task):
         fetcher: DenseWindowFetcher,
         method: ColocMethod = ColocAbf(),
         config: ColocRunConfig = ColocRunConfig(),
+        drop_multi_record_trait_positions: bool = False,
     ) -> "TraitProteinColocTask":
         trait_meta = trait_task.meta
         assert isinstance(trait_meta, FilteredGWASDataMeta), (
@@ -687,6 +699,7 @@ class TraitProteinColocTask(Task):
             fetcher=fetcher,
             method=method,
             config=config,
+            drop_multi_record_trait_positions=drop_multi_record_trait_positions,
         )
 
 

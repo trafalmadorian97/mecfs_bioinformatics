@@ -54,6 +54,8 @@ from mecfs_bio.constants.decode_somascan_constants import (
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_BETA_COL,
+    GWASLAB_EFFECT_ALLELE_COL,
+    GWASLAB_NON_EFFECT_ALLELE_COL,
     GWASLAB_POS_COL,
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
@@ -187,7 +189,12 @@ def _read_index(index_asset: FileAsset, index_task: Task) -> pl.DataFrame:
             index_asset, meta=index_task.meta, parquet_backend="polars"
         )
         .to_native()
-        .select(GWASLAB_POS_COL, DECODE_INDEX_NAME_COL)
+        .select(
+            GWASLAB_POS_COL,
+            GWASLAB_EFFECT_ALLELE_COL,
+            GWASLAB_NON_EFFECT_ALLELE_COL,
+            DECODE_INDEX_NAME_COL,
+        )
         .collect()
     )
 

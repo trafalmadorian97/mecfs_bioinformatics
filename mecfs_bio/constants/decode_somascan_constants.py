@@ -3,8 +3,9 @@ Constants for the deCODE Iceland SomaScan proteomics GWAS (Eldjarn et al. 2023,
 doi 10.1038/s41586-023-06563-x) and the database built from it.
 
 Two groups of per-protein files exist: "smp" (SMP-normalized SomaScan levels) and "raw"
-(non-normalized, PC0). Every file has the same 33.4M rows in the same order (chromosomes in
-text order: chr1, chr10, ..., chr9, chrX), GRCh38.
+(non-normalized, PC0). Each file has about 33.4M rows, GRCh38, with chromosomes in text order
+(chr1, chr10, ..., chr9, chrX). Files mostly share one row list and order, but some lack a few
+rows, so rows are matched across files by Name, never by row number.
 """
 
 import math
