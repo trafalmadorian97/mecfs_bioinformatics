@@ -89,6 +89,7 @@ from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.orient_and_align import (
+    DEFAULT_MAX_EAF_DIFFERENCE,
     OrientedWindow,
     align_windows,
     orient_window,
@@ -123,6 +124,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     N_ALIGNED_COL,
     N_DROPPED_PREFIX,
     N_DUPLICATE_KEYS_DROPPED_COL,
+    N_EAF_DISCORDANT_DROPPED_COL,
     N_PROTEIN_COL,
     N_PROTEIN_VARIANTS_COL,
     N_TRAIT_COL,
@@ -179,6 +181,8 @@ class ColocRunConfig:
     harmonization: options of the untrusted orientation of protein windows.
     require_no_budget_drop: fail if the selection budget leaves any candidate untested, for
         runs whose budgets are meant never to bind.
+    max_eaf_difference: aligned variants whose trait and protein EAFs differ by more than this
+        are dropped (see orient_and_align); None disables the check.
     """
 
     lead_p_threshold: float = 5e-8
@@ -190,11 +194,13 @@ class ColocRunConfig:
         GenomeReferenceHarmonizationOptions()
     )
     require_no_budget_drop: bool = False
+    max_eaf_difference: float | None = DEFAULT_MAX_EAF_DIFFERENCE
 
     def __attrs_post_init__(self) -> None:
         assert 0 < self.lead_p_threshold < 1
         assert self.half_window_bp > 0
         assert self.min_aligned_variants >= 1
+        assert self.max_eaf_difference is None or 0 < self.max_eaf_difference < 1
 
 
 @frozen(slots=True)
@@ -215,6 +221,7 @@ class _PairOutcome:
     n_trait: int
     n_aligned: int
     n_duplicate_keys_dropped: int
+    n_eaf_discordant_dropped: int
     posteriors: ColocPosteriors | None
     failure_reason: str | None
     protein_lead_pos: int | None
@@ -361,11 +368,16 @@ def _test_pair(
     trait_model: TraitModel,
     method: ColocMethod,
     reference: _OrientationReference,
-    min_aligned_variants: int,
+    config: ColocRunConfig,
     windows_dir: Path,
 ) -> _PairOutcome:
     oriented = _orient(protein_rows, window, reference)
-    aligned = align_windows(trait=trait_rows, protein=oriented.frame)
+    aligned = align_windows(
+        trait=trait_rows,
+        protein=oriented.frame,
+        max_eaf_difference=config.max_eaf_difference,
+    )
+    min_aligned_variants = config.min_aligned_variants
     usable = _usable_variants(aligned.frame)
     lead = _protein_lead(usable)
     enough = usable.height >= min_aligned_variants
@@ -381,6 +393,7 @@ def _test_pair(
         n_trait=aligned.n_trait,
         n_aligned=usable.height,
         n_duplicate_keys_dropped=aligned.n_duplicate_keys_dropped,
+        n_eaf_discordant_dropped=aligned.n_eaf_discordant_dropped,
         posteriors=method.run(_coloc_input(usable, trait_model)) if enough else None,
         failure_reason=(
             None
@@ -409,7 +422,7 @@ def _test_protein(
             trait_model=task.trait_model,
             method=task.method,
             reference=reference,
-            min_aligned_variants=task.config.min_aligned_variants,
+            config=task.config,
             windows_dir=windows_dir,
         )
         for window in fetched.request.windows
@@ -471,6 +484,7 @@ def _outcome_row(outcome: _PairOutcome, method: ColocMethod) -> dict[str, object
         N_PROTEIN_VARIANTS_COL: outcome.oriented.n_input,
         N_ALIGNED_COL: outcome.n_aligned,
         N_DUPLICATE_KEYS_DROPPED_COL: outcome.n_duplicate_keys_dropped,
+        N_EAF_DISCORDANT_DROPPED_COL: outcome.n_eaf_discordant_dropped,
         PROTEIN_LEAD_POS_COL: outcome.protein_lead_pos,
         PROTEIN_LEAD_MLOG10P_COL: outcome.protein_lead_mlog10p,
         PP_H0_COL: post.pp_h0 if post is not None else None,
@@ -498,6 +512,7 @@ _OUTCOME_SCHEMA = pl.Schema(
         N_PROTEIN_VARIANTS_COL: pl.Int32,
         N_ALIGNED_COL: pl.Int32,
         N_DUPLICATE_KEYS_DROPPED_COL: pl.Int32,
+        N_EAF_DISCORDANT_DROPPED_COL: pl.Int32,
         PROTEIN_LEAD_POS_COL: pl.Int32,
         PROTEIN_LEAD_MLOG10P_COL: pl.Float64,
         PP_H0_COL: pl.Float64,

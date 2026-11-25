@@ -191,8 +191,9 @@ def _with_stats(
     return variants.with_columns(
         pl.Series(GWASLAB_BETA_COL, z * _SE),
         pl.lit(_SE).alias(GWASLAB_SE_COL),
-        pl.Series(
-            GWASLAB_EFFECT_ALLELE_FREQ_COL, rng.uniform(0.1, 0.4, variants.height)
+        # A function of the position, so a variant has one EAF on both sides.
+        (0.1 + 0.3 * ((pl.col(GWASLAB_POS_COL) * 7919) % 1000) / 1000).alias(
+            GWASLAB_EFFECT_ALLELE_FREQ_COL
         ),
         pl.lit(n).alias(GWASLAB_SAMPLE_SIZE_COLUMN),
     ).cast(WINDOW_SCHEMA)
