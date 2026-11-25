@@ -18,7 +18,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_combine_gene_lists(tmp_path: Path):
+def test_combine_gene_lists(tmp_path: Path) -> None:
     df_1_loc = tmp_path / "df_1.csv"
     df_2_loc = tmp_path / "df_2.csv"
     df_1 = pd.DataFrame({"gene1": ["A", "B", "C"]})

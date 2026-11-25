@@ -72,7 +72,7 @@ _ROWS = [
 ]
 
 
-def test_valid_specs_pass(tmp_path: Path):
+def test_valid_specs_pass(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     specs = [
         MSigDBGeneSetSpec(
@@ -87,14 +87,14 @@ def test_valid_specs_pass(tmp_path: Path):
     verify_gene_set_specs(path, specs)  # should not raise
 
 
-def test_no_match_raises(tmp_path: Path):
+def test_no_match_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     specs = [MSigDBGeneSetSpec(standard_name="NONEXISTENT_SET", exact_source=None)]
     with pytest.raises(ValueError, match="no match"):
         verify_gene_set_specs(path, specs)
 
 
-def test_wrong_exact_source_raises(tmp_path: Path):
+def test_wrong_exact_source_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     specs = [
         MSigDBGeneSetSpec(
@@ -105,7 +105,7 @@ def test_wrong_exact_source_raises(tmp_path: Path):
         verify_gene_set_specs(path, specs)
 
 
-def test_wrong_systematic_name_raises(tmp_path: Path):
+def test_wrong_systematic_name_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     specs = [
         MSigDBGeneSetSpec(
@@ -118,14 +118,14 @@ def test_wrong_systematic_name_raises(tmp_path: Path):
         verify_gene_set_specs(path, specs)
 
 
-def test_ambiguous_standard_name_resolved_by_exact_source(tmp_path: Path):
+def test_ambiguous_standard_name_resolved_by_exact_source(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     # exact_source disambiguates
     specs = [MSigDBGeneSetSpec(standard_name="DUPLICATE_SET", exact_source="SRC:001")]
     verify_gene_set_specs(path, specs)  # should not raise
 
 
-def test_ambiguous_match_raises(tmp_path: Path):
+def test_ambiguous_match_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     # no disambiguating fields — both rows match
     specs = [MSigDBGeneSetSpec(standard_name="DUPLICATE_SET", exact_source=None)]
@@ -133,7 +133,7 @@ def test_ambiguous_match_raises(tmp_path: Path):
         verify_gene_set_specs(path, specs)
 
 
-def test_multiple_failures_reported_together(tmp_path: Path):
+def test_multiple_failures_reported_together(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     specs = [
         MSigDBGeneSetSpec(standard_name="MISSING_ONE", exact_source=None),
@@ -147,7 +147,7 @@ def test_multiple_failures_reported_together(tmp_path: Path):
     assert "2 spec(s)" in msg
 
 
-def test_empty_spec_list_passes(tmp_path: Path):
+def test_empty_spec_list_passes(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     verify_gene_set_specs(path, [])  # should not raise
 
@@ -165,7 +165,7 @@ _SPEC_GLYCOLYSIS = MSigDBGeneSetSpec(
 )
 
 
-def test_jaccard_correct_value(tmp_path: Path):
+def test_jaccard_correct_value(tmp_path: Path) -> None:
     # HYPOXIA={A,B,C}, VIRUS={B,C,D}  -> intersection=2, union=4, jaccard=0.5
     path = _write_parquet(tmp_path, _ROWS)
     df = gene_set_jaccard_index(path, [_SPEC_HYPOXIA, _SPEC_VIRUS])
@@ -176,7 +176,7 @@ def test_jaccard_correct_value(tmp_path: Path):
     assert row[JACCARD_COL_INDEX] == pytest.approx(0.5)
 
 
-def test_jaccard_output_columns(tmp_path: Path):
+def test_jaccard_output_columns(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     df = gene_set_jaccard_index(path, [_SPEC_HYPOXIA, _SPEC_VIRUS])
     assert set(df.columns) == {
@@ -188,41 +188,41 @@ def test_jaccard_output_columns(tmp_path: Path):
     }
 
 
-def test_jaccard_sorted_descending(tmp_path: Path):
+def test_jaccard_sorted_descending(tmp_path: Path) -> None:
     # HYPOXIA/VIRUS share B,C (jaccard=0.5); HYPOXIA/GLYCOLYSIS share nothing (0.0)
     path = _write_parquet(tmp_path, _ROWS)
     df = gene_set_jaccard_index(path, [_SPEC_HYPOXIA, _SPEC_VIRUS, _SPEC_GLYCOLYSIS])
     assert df[JACCARD_COL_INDEX].is_monotonic_decreasing
 
 
-def test_jaccard_n_pairs(tmp_path: Path):
+def test_jaccard_n_pairs(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     specs = [_SPEC_HYPOXIA, _SPEC_VIRUS, _SPEC_GLYCOLYSIS]
     df = gene_set_jaccard_index(path, specs)
     assert len(df) == 3  # C(3,2) = 3
 
 
-def test_jaccard_disjoint_sets_is_zero(tmp_path: Path):
+def test_jaccard_disjoint_sets_is_zero(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     df = gene_set_jaccard_index(path, [_SPEC_HYPOXIA, _SPEC_GLYCOLYSIS])
     assert df.iloc[0][JACCARD_COL_INDEX] == pytest.approx(0.0)
     assert df.iloc[0][JACCARD_COL_N_INTERSECTION] == 0
 
 
-def test_jaccard_empty_spec_list_returns_empty_df(tmp_path: Path):
+def test_jaccard_empty_spec_list_returns_empty_df(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     df = gene_set_jaccard_index(path, [])
     assert isinstance(df, pd.DataFrame)
     assert len(df) == 0
 
 
-def test_jaccard_single_spec_returns_empty_df(tmp_path: Path):
+def test_jaccard_single_spec_returns_empty_df(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     df = gene_set_jaccard_index(path, [_SPEC_HYPOXIA])
     assert len(df) == 0
 
 
-def test_jaccard_bad_spec_raises(tmp_path: Path):
+def test_jaccard_bad_spec_raises(tmp_path: Path) -> None:
     path = _write_parquet(tmp_path, _ROWS)
     bad = MSigDBGeneSetSpec(standard_name="NONEXISTENT", exact_source=None)
     with pytest.raises(ValueError):

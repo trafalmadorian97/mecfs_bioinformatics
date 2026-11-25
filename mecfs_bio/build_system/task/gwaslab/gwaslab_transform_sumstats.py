@@ -3,6 +3,7 @@ Contains a task for transforming gwaslab Sumstats objefts.
 """
 
 from pathlib import Path
+from typing import Self
 
 import gwaslab as gl
 from attrs import frozen
@@ -19,6 +20,7 @@ from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GwasLabTransformSpec,
+    resolve_output_genome_build,
     transform_gwaslab_sumstats,
 )
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
@@ -26,7 +28,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class GWASLabTransformSumstatsTask(Task):
     """
     Task to read a pickled GWASlab sumstats object, apply transformations to it, write it out as a new GWASLab sumstats object.
@@ -68,7 +70,7 @@ class GWASLabTransformSumstatsTask(Task):
         asset_id: str,
         spec: GwasLabTransformSpec,
         post_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         source_meta = source_tsk.meta
         assert isinstance(source_meta, GWASLabSumStatsMeta)
         meta = GWASLabSumStatsMeta(
@@ -76,6 +78,11 @@ class GWASLabTransformSumstatsTask(Task):
             trait=source_meta.trait,
             project=source_meta.project,
             sub_dir=source_meta.sub_dir,
+            genome_build=resolve_output_genome_build(
+                source_build=source_meta.genome_build,
+                genome_build=spec.genome_build,
+                liftover_to=spec.liftover_to,
+            ),
         )
         return cls(
             meta=meta,

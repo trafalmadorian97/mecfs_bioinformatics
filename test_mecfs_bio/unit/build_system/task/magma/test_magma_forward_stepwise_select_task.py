@@ -28,7 +28,7 @@ from mecfs_bio.constants.magma_constants import (
 )
 
 
-def test_proportional_significance():
+def test_proportional_significance() -> None:
     """
     Test that a proportional significance value is consistent with manual calculation
     """
@@ -47,7 +47,7 @@ def test_proportional_significance():
     )
 
 
-def test_forward_stepwise_when_missing_data(tmp_path: Path):
+def test_forward_stepwise_when_missing_data(tmp_path: Path) -> None:
     empty_cond_df = pd.DataFrame(
         {MAGMA_VARIABLE_COLUMN: [], MAGMA_MODEL_COLUMN: [], MAGMA_P_COLUMN: []}
     )
@@ -89,7 +89,7 @@ def test_forward_stepwise_when_missing_data(tmp_path: Path):
     assert len(result_df) == 0
 
 
-def test_forward_stepwise_single_significant_cluster(tmp_path: Path):
+def test_forward_stepwise_single_significant_cluster(tmp_path: Path) -> None:
     """
     When only one cluster is significant the pairwise conditional analysis has no
     pairs and produces an empty output.  The lone significant cluster should still

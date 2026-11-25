@@ -4,7 +4,8 @@ from mecfs_bio.assets.gwas.migraine.multistudy.ct_ldsc_migraine_studies import M
 
 def go():
     DEFAULT_RUNNER.run(
-        MIGRAINE_CROSS_STUDY_CT_LDSC_ASSET_GENERATOR.terminal_tasks()
+        MIGRAINE_CROSS_STUDY_CT_LDSC_ASSET_GENERATOR.terminal_tasks(),
+        must_rebuild_transitive=MIGRAINE_CROSS_STUDY_CT_LDSC_ASSET_GENERATOR.terminal_tasks()
     )
 
 if __name__ == '__main__':

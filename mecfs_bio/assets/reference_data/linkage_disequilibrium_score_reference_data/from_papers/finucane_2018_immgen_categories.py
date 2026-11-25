@@ -28,6 +28,6 @@ FICUANE_2018_IMMGEN_CATEGORIES = DownloadFileTask(
         extension=".csv",
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
     ),
-    url="https://www.dropbox.com/scl/fi/587e0eypohr2azdlt0x54/Finucane_2018_Immgen_categories.csv?rlkey=nmjm7nrrpinqpm78q9wrbfft0&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/587e0eypohr2azdlt0x54/Finucane_2018_Immgen_categories.csv?rlkey=nmjm7nrrpinqpm78q9wrbfft0&dl=1",
     md5_hash="6a1d3c65ace87be0be6f56bd493eb3db",
 )

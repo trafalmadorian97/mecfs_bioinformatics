@@ -1,13 +1,25 @@
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from mecfs_bio.build_system.wf.base_wf import make_wf
-from mecfs_bio.build_system.wf.synapse_downloader import SynapseDownloader
+from mecfs_bio.build_system.wf.synapse_downloader import (
+    SynapseDownloader,
+    _ThreadLocalSessions,
+)
+from mecfs_bio.util.file_io.ranged_tar import RangeReader
+
+
+class _BytesRangeReader:
+    def __init__(self, data: bytes) -> None:
+        self.data = data
+
+    def read_range(self, start: int, length: int) -> bytes:
+        return self.data[start : start + length]
 
 
 class _RecordingDownloader(SynapseDownloader):
     def __init__(self) -> None:
         self.calls: list[tuple[str, Path, str]] = []
-        self.head_calls: list[tuple[str, int]] = []
 
     def download(self, synid: str, dest_dir: Path, expected_name: str) -> Path:
         self.calls.append((synid, dest_dir, expected_name))
@@ -15,12 +27,11 @@ class _RecordingDownloader(SynapseDownloader):
         out.write_text("payload")
         return out
 
-    def fetch_file_head(self, synid: str, n_bytes: int) -> bytes:
-        self.head_calls.append((synid, n_bytes))
-        return b"header-bytes"[:n_bytes]
+    def open_range_reader(self, synid: str) -> RangeReader:
+        return _BytesRangeReader(b"header-bytes")
 
 
-def test_wf_delegates_download_from_synapse(tmp_path: Path):
+def test_wf_delegates_download_from_synapse(tmp_path: Path) -> None:
     fake = _RecordingDownloader()
     wf = make_wf(synapse_downloader=fake)
 
@@ -31,11 +42,20 @@ def test_wf_delegates_download_from_synapse(tmp_path: Path):
     assert fake.calls == [("syn123", tmp_path, "protein.tar")]
 
 
-def test_wf_delegates_fetch_synapse_file_head():
+def test_wf_delegates_fetch_synapse_file_head() -> None:
     fake = _RecordingDownloader()
     wf = make_wf(synapse_downloader=fake)
 
     head = wf.fetch_synapse_file_head("syn123", 6)
 
     assert head == b"header"
-    assert fake.head_calls == [("syn123", 6)]
+
+
+def test_sessions_are_reused_within_a_thread_and_separate_across_threads() -> None:
+    sessions = _ThreadLocalSessions()
+    main_session = sessions.get()
+    with ThreadPoolExecutor(max_workers=1) as pool:
+        other_session = pool.submit(sessions.get).result()
+
+    assert sessions.get() is main_session
+    assert other_session is not main_session

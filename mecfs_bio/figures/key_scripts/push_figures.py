@@ -57,7 +57,7 @@ def push_figures(
     prune: bool = False,
     figure_tasks: Sequence[Task] = ALL_FIGURE_TASKS,
     max_workers: int = DEFAULT_UPLOAD_WORKERS,
-):
+) -> None:
     """
     Update the manifest from the local figure directory and upload any new
     blobs to the GitHub release.

@@ -1,4 +1,5 @@
 from pathlib import PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -18,6 +19,10 @@ from mecfs_bio.build_system.sample_size_spec import (
     coerce_sample_size,
     per_variant_column,
 )
+from mecfs_bio.build_system.task.annotate_genes_from_reference_task import (
+    AnnotateGenesFromReferenceTask,
+    GeneInfoReferenceTasks,
+)
 from mecfs_bio.build_system.task.assign_rsids_via_snp151_task import (
     AssignRSIDSToSNPsViaSNP151Task,
 )
@@ -28,7 +33,6 @@ from mecfs_bio.build_system.task.convert_dataframe_to_markdown_task import (
 from mecfs_bio.build_system.task.copy_file_from_directory_task import (
     CopyFileFromDirectoryTask,
 )
-from mecfs_bio.build_system.task.fetch_gget_info_task import FetchGGetInfoTask
 from mecfs_bio.build_system.task.gene_manhattan_plot_task import (
     GeneManhattanPlotTask,
     MagmaGeneSource,
@@ -61,15 +65,16 @@ from mecfs_bio.build_system.task.multiple_testing_table_task import (
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
+from mecfs_bio.constants.gene_info_constants import (
+    GENE_INFO_NAME_COL,
+    GENE_INFO_SUBCELLULAR_LOCALISATION_COL,
+    GENE_INFO_SYMBOL_COL,
+    GENE_INFO_UNIPROT_DESCRIPTION_COL,
+)
 from mecfs_bio.constants.gwaslab_constants import GwaslabKnownFormat
 
 
-@frozen
-class GGetSettings:
-    limit_genes: int | None = None
-
-
-@frozen
+@frozen(slots=True)
 class StandardMagmaTaskGenerator:
     """
     A Task Generator that generates all the Tasks required to perform the main steps of the MAGMA workflow, up to plotting the results of tissue-specific gene-set analysis
@@ -84,14 +89,14 @@ class StandardMagmaTaskGenerator:
     bar_plot_task: Task
     filtered_gene_analysis_task: Task
     thesaurus_labeled_filtered_gene_analysis_task: Task | None = None
-    gget_labeled_filtered_gene_analysis_task: Task | None = None
-    markdown_gget_labeled_filtered_gene_analysis_task: Task | None = None
+    gene_info_labeled_filtered_gene_analysis_task: Task | None = None
+    markdown_gene_info_labeled_filtered_gene_analysis_task: Task | None = None
     gene_manhattan_plot_task: Task | None = None
 
     def terminal_tasks(self) -> list[Task]:
         result = [self.bar_plot_task, self.gene_analysis_task]
-        if self.markdown_gget_labeled_filtered_gene_analysis_task is not None:
-            result.append(self.markdown_gget_labeled_filtered_gene_analysis_task)
+        if self.markdown_gene_info_labeled_filtered_gene_analysis_task is not None:
+            result.append(self.markdown_gene_info_labeled_filtered_gene_analysis_task)
         if self.gene_manhattan_plot_task is not None:
             result.append(self.gene_manhattan_plot_task)
         return result
@@ -108,9 +113,9 @@ class StandardMagmaTaskGenerator:
         sample_size: int | SampleSizeSpec,
         ld_ref_file_stem: str = "g1000_eur",
         gene_thesaurus_task: Task | None = None,
-        gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
+        gene_info_reference: GeneInfoReferenceTasks | None = None,
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sample_size = coerce_sample_size(sample_size)
         p_value_task = (
             MagmaSNPFileTask.create_for_magma_snp_p_value_file_compute_if_needed(
@@ -189,34 +194,34 @@ class StandardMagmaTaskGenerator:
         else:
             labeled_filtered_gene_task = None
 
-        if gget_settings is not None:
-            gget_labeled_gene_task = FetchGGetInfoTask.create(
+        if gene_info_reference is not None:
+            gene_info_labeled_task = AnnotateGenesFromReferenceTask.create(
                 source_df_task=filtered_gene_task,
                 ensembl_id_col="GENE",
-                asset_id=base_name + "_magma_gene_analysis_with_gget_info",
-                genes_to_use=gget_settings.limit_genes,
+                asset_id=base_name + "_magma_gene_analysis_with_gene_info",
+                reference=gene_info_reference,
             )
-            markdown_gget_labeled_task = (
+            markdown_gene_info_labeled_task = (
                 ConvertDataFrameToMarkdownTask.create_from_result_table_task(
-                    source_task=gget_labeled_gene_task,
+                    source_task=gene_info_labeled_task,
                     asset_id=base_name
-                    + "_magma_gene_analysis_with_gget_info_markdown_table",
+                    + "_magma_gene_analysis_with_gene_info_markdown_table",
                     pipe=SelectColPipe(
                         [
                             "GENE",
                             "CHR",
                             "P",
-                            "subcellular_localisation",
-                            "ncbi_description",
-                            "uniprot_description",
-                            "ensembl_description",
+                            GENE_INFO_SYMBOL_COL,
+                            GENE_INFO_NAME_COL,
+                            GENE_INFO_SUBCELLULAR_LOCALISATION_COL,
+                            GENE_INFO_UNIPROT_DESCRIPTION_COL,
                         ]
                     ),
                 )
             )
         else:
-            gget_labeled_gene_task = None
-            markdown_gget_labeled_task = None
+            gene_info_labeled_task = None
+            markdown_gene_info_labeled_task = None
         if gene_thesaurus_task is not None:
             gene_manhattan = GeneManhattanPlotTask.create(
                 asset_id=base_name + "_magma_gene_manhattan_plot",
@@ -238,14 +243,14 @@ class StandardMagmaTaskGenerator:
             bar_plot_task=bar_plot_task,
             filtered_gene_analysis_task=filtered_gene_task,
             thesaurus_labeled_filtered_gene_analysis_task=labeled_filtered_gene_task,
-            gget_labeled_filtered_gene_analysis_task=gget_labeled_gene_task,
-            markdown_gget_labeled_filtered_gene_analysis_task=markdown_gget_labeled_task,
+            gene_info_labeled_filtered_gene_analysis_task=gene_info_labeled_task,
+            markdown_gene_info_labeled_filtered_gene_analysis_task=markdown_gene_info_labeled_task,
             gene_analysis_extracted_result_task=extracted_gene_analysis_result_task,
             gene_manhattan_plot_task=gene_manhattan,
         )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaTaskGeneratorFromRaw:
     """
     As above, but starts from raw data.
@@ -272,9 +277,9 @@ class MagmaTaskGeneratorFromRaw:
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
         gene_thesaurus_task: Task | None = None,
-        gget_settings: GGetSettings | None = GGetSettings(50),
+        gene_info_reference: GeneInfoReferenceTasks | None = None,
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
             target_asset_id=AssetId(base_name + "_sumstats_37"),
@@ -303,13 +308,13 @@ class MagmaTaskGeneratorFromRaw:
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
                 gene_thesaurus_task=gene_thesaurus_task,
-                gget_settings=gget_settings,
+                gene_info_reference=gene_info_reference,
                 number_of_bars=number_of_bars,
             ),
         )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaTaskGeneratorFromRawCompute37RSIDs:
     """
     As above, but assumes RSIDs are either not present,
@@ -337,9 +342,9 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         ld_ref_file_stem: str = "g1000_eur",
         genome_build: GenomeBuildMode = "infer",
-        gget_settings: GGetSettings | None = GGetSettings(limit_genes=50),
+        gene_info_reference: GeneInfoReferenceTasks | None = None,
         number_of_bars: int = 20,
-    ):
+    ) -> Self:
         sumstats_task = GWASLabCreateSumstatsTask(
             df_source_task=raw_gwas_data_task,
             target_asset_id=AssetId(base_name + "_sumstats_37"),
@@ -375,7 +380,7 @@ class MagmaTaskGeneratorFromRawCompute37RSIDs:
                 base_name=base_name,
                 sample_size=sample_size,
                 ld_ref_file_stem=ld_ref_file_stem,
-                gget_settings=gget_settings,
+                gene_info_reference=gene_info_reference,
                 number_of_bars=number_of_bars,
             ),
             assign_rsids_task=assign_rsids_37_task,

@@ -67,7 +67,7 @@ PARQUET_DBSNP150_37_ANNOVAR_PROC_RENAME_UNIQUE_DIRECT_DOWNLOAD = DownloadFileTas
         extension=".parquet",
         read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
     ),
-    url="https://www.dropbox.com/scl/fi/6oglew7b7eh3zk0bn9gen/db_snp150_annovar_proc_parquet_rename_unique.parquet?rlkey=geuwlsha5icnthu3bxoyvchnm&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/6oglew7b7eh3zk0bn9gen/db_snp150_annovar_proc_parquet_rename_unique.parquet?rlkey=geuwlsha5icnthu3bxoyvchnm&dl=1",
     md5_hash="1e990169a3ff48bae01f53cc69336be3",
 )
 

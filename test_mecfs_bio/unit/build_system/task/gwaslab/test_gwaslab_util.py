@@ -11,7 +11,7 @@ _REF = "1kg_eur_hg19"
 _STALE_MD5 = "734069d895009d38c2f962bfbb6fab52"
 
 
-@define
+@define(slots=True)
 class FakeGwaslabRefStore:
     """Stands in for gwaslab's on-disk reference cache plus its config registry.
 
@@ -53,7 +53,7 @@ def _good_file_store() -> FakeGwaslabRefStore:
     return store
 
 
-def test_stale_registry_and_stale_file_forces_a_fresh_download():
+def test_stale_registry_and_stale_file_forces_a_fresh_download() -> None:
     """The registry points nowhere (a config reset) while a superseded copy of the
     reference sits under the name gwaslab downloads to."""
     store = _make_store(file_md5=_STALE_MD5)
@@ -69,7 +69,7 @@ def test_stale_registry_and_stale_file_forces_a_fresh_download():
     assert store.downloads == [False, True]
 
 
-def test_stale_registry_with_a_good_file_registers_without_overwriting():
+def test_stale_registry_with_a_good_file_registers_without_overwriting() -> None:
     store = _good_file_store()
 
     result = gwaslab_download_ref_if_missing(
@@ -83,7 +83,7 @@ def test_stale_registry_with_a_good_file_registers_without_overwriting():
     assert store.downloads == [False]
 
 
-def test_registered_reference_with_a_matching_checksum_is_not_downloaded():
+def test_registered_reference_with_a_matching_checksum_is_not_downloaded() -> None:
     store = _good_file_store()
     store.registered = Path("/fake/.gwaslab/already_here")
 
@@ -98,7 +98,7 @@ def test_registered_reference_with_a_matching_checksum_is_not_downloaded():
     assert store.downloads == []
 
 
-def test_registered_reference_with_a_stale_checksum_is_redownloaded():
+def test_registered_reference_with_a_stale_checksum_is_redownloaded() -> None:
     store = _make_store(file_md5=_STALE_MD5)
     store.registered = Path("/fake/.gwaslab/already_here")
 

@@ -11,7 +11,7 @@ from mecfs_bio.util.file_io.atomic_write import atomic_write_yaml
 TraceRecord = tuple[str, list[tuple[AssetId, str]]]
 
 
-@define
+@define(slots=True)
 class VerifyingTraceInfo:
     """
     Stores persistent data relevant to the verifying trace rebuilder
@@ -43,7 +43,7 @@ class VerifyingTraceInfo:
     def deserialize(cls, path: Path) -> "VerifyingTraceInfo":
         conv = CONVERTER_FOR_SERIALIZATION
         with open(path) as infile:
-            unstructured = yaml.load(infile, Loader=yaml.FullLoader)
+            unstructured = yaml.load(infile, Loader=yaml.CSafeLoader)
 
         trace_store = conv.structure(unstructured, dict[AssetId, TraceRecord])
 

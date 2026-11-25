@@ -18,6 +18,7 @@ DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA_DROP_COLS = PipeDat
     source_task=DECODE_ME_GWAS_1_MAGMA_FILTERED_GENE_LIST_WITH_GENE_METADATA,
     asset_id="decode_me_gwas_1_magma_filtered_gene_list_with_metadata_essential_cols",
     out_format=CSVOutFormat(sep=","),
+    backend="polars",
     pipes=[
         SelectColPipe(
             cols_to_select=["GENE", "Gene name", "CHR", "P", "Gene description"],

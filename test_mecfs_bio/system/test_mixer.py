@@ -41,7 +41,7 @@ from mecfs_bio.build_system.task.mixer.mixer_univariate_results import (
 from test_mecfs_bio.system.util import log_on_error
 
 
-def test_mixer_univariate_hello_world(tmp_path: Path):
+def test_mixer_univariate_hello_world(tmp_path: Path) -> None:
     """
     Fast system test: runs univariate fit1 + test1 on trait1 from the
     cross-trait MiXeR hello-world example.
@@ -175,7 +175,7 @@ def _make_univariate_task(
     )
 
 
-def test_mixer_bivariate_hello_world(tmp_path: Path):
+def test_mixer_bivariate_hello_world(tmp_path: Path) -> None:
     """
     Fast system test: runs bivariate (cross-trait) MiXeR on trait1 and trait2
     from the hello-world example.

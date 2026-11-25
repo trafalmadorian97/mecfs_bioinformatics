@@ -1,4 +1,5 @@
 import tempfile
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Iterator
 
@@ -16,6 +17,7 @@ from rpy2.robjects.packages import (
 )
 from scipy.sparse import csr_matrix
 
+from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
@@ -76,7 +78,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-def test_align():
+def test_align() -> None:
     """
     Verify we can correctly align GWAS data with an LD reference
     """
@@ -145,9 +147,9 @@ def test_align():
 _susie_n = 2500
 
 
-@pytest.fixture(params=[[0, -1], []])
+@pytest.fixture(params=[[0, -1], []], scope="module")
 def susie_prerequisite_file_tasks(
-    tmp_path: Path, request
+    tmp_path_factory: pytest.TempPathFactory, request: pytest.FixtureRequest
 ) -> Iterator[tuple[Task, Task, Task, list[int]]]:
     n = _susie_n
     m = 100
@@ -179,9 +181,10 @@ def susie_prerequisite_file_tasks(
     )
 
     ref_data = gwas_data.copy().iloc[::-1]
-    ld_matrix = np.corrcoef(genotypes.transpose())[
-        ::-1, ::-1
-    ]  # Flip order to ensure SUSIE task can resolve this issue
+    corr = np.corrcoef(genotypes.transpose())
+    assert isinstance(corr, np.ndarray)
+    # Flip order to ensure SUSIE task can resolve this issue
+    ld_matrix = corr[::-1, ::-1]
 
     partial_ld = ld_matrix / 2
     partial_ld_sparse = scipy.sparse.coo_matrix(partial_ld)
@@ -194,8 +197,7 @@ def susie_prerequisite_file_tasks(
         se_beta_hat = result.rx2("sebetahat")
     gwas_data[GWASLAB_BETA_COL] = beta_hat
     gwas_data[GWASLAB_SE_COL] = se_beta_hat
-    scratch = tmp_path / "scratch"
-    scratch.mkdir(parents=True, exist_ok=True)
+    scratch = tmp_path_factory.mktemp("susie_scratch")
     gwas_data_path = scratch / "gwas_data"
     ld_labels_path = scratch / "ld_labels"
     ld_matrix_path = scratch / "ld_matrix.npz"
@@ -254,7 +256,7 @@ def test_fine_mapping(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_ensmbl_data_task: Task,
-):
+) -> None:
     """
     Test that we can find the causal SNPs in a simple synthetic example
 
@@ -317,14 +319,18 @@ def test_fine_mapping(
 
 @pytest.fixture
 def dummy_prior_task(tmp_path: Path) -> Iterator[Task]:
-    """A prior table matching the synthetic GWAS variants (CHR 1, POS 0..99, alleles A/C)."""
+    """A prior table matching the synthetic GWAS variants (CHR 1, POS 0..99).
+
+    Reference-oriented like the gwas: prior A1 == REF maps (in load_prior) to the
+    gwas NEA. The gwas is EA=A, NEA=C, so the prior is A1=C, A2=A and the exact
+    (CHR, POS, EA, NEA) join lines up."""
     m = 100
     prior_data = pd.DataFrame(
         {
             "CHR": [1] * m,
             "BP": list(range(m)),
-            "A1": "A",
-            "A2": "C",
+            "A1": "C",
+            "A2": "A",
             "snpvar": np.linspace(1.0, 2.0, m),
         }
     )
@@ -343,7 +349,7 @@ def test_fine_mapping_with_explicit_prior(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_prior_task: Task,
-):
+) -> None:
     """
     Smoke test that the task runs end-to-end when an explicit prior is supplied.
 
@@ -389,14 +395,17 @@ def test_fine_mapping_with_explicit_prior(
 
 @pytest.fixture
 def dummy_prior_task_missing_one(tmp_path: Path) -> Iterator[Task]:
-    """Prior table covering only 99 of the 100 synthetic variants (POS 0 omitted)."""
+    """Prior table covering only 99 of the 100 synthetic variants (POS 0 omitted).
+
+    Reference-oriented (A1=C, A2=A) like dummy_prior_task, so the exact join covers
+    99 variants and the single gap is genuinely POS 0, not an orientation mismatch."""
     m = 100
     prior_data = pd.DataFrame(
         {
             "CHR": [1] * (m - 1),
             "BP": list(range(1, m)),  # omits BP == 0
-            "A1": "A",
-            "A2": "C",
+            "A1": "C",
+            "A2": "A",
             "snpvar": np.linspace(1.0, 2.0, m - 1),
         }
     )
@@ -411,7 +420,9 @@ def dummy_prior_task_missing_one(tmp_path: Path) -> Iterator[Task]:
     )
 
 
-def _run_susie_task_to_store(tmp_path: Path, susie_tsk: SusieRFinemapTask):
+def _run_susie_task_to_store(
+    tmp_path: Path, susie_tsk: SusieRFinemapTask
+) -> Mapping[AssetId, Asset]:
     tasks = find_tasks([susie_tsk])
     wf = make_wf()
     info = VerifyingTraceInfo.empty()
@@ -434,7 +445,7 @@ def test_prior_coverage_guard_raises_on_gap(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_prior_task_missing_one: Task,
-):
+) -> None:
     gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
     susie_tsk = SusieRFinemapTask(
         meta=SimpleDirectoryMeta(AssetId("directory")),
@@ -455,7 +466,7 @@ def test_prior_parquet_written_for_polyfun_run(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
     dummy_prior_task: Task,
-):
+) -> None:
     gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
     susie_tsk = SusieRFinemapTask(
         meta=SimpleDirectoryMeta(AssetId("directory")),
@@ -480,7 +491,7 @@ def test_prior_parquet_written_for_polyfun_run(
 def test_prior_parquet_is_constant_for_uniform_run(
     tmp_path: Path,
     susie_prerequisite_file_tasks: tuple[Task, Task, Task, list[int]],
-):
+) -> None:
     gwas_data_task, ld_labels_task, ld_matrix_task, _ = susie_prerequisite_file_tasks
     susie_tsk = SusieRFinemapTask(
         meta=SimpleDirectoryMeta(AssetId("directory")),
@@ -497,7 +508,7 @@ def test_prior_parquet_is_constant_for_uniform_run(
     assert (prior[PRIOR_WEIGHT_COLUMN].to_numpy() == 1.0).all()
 
 
-def test_extract_cs_data_tables():
+def test_extract_cs_data_tables() -> None:
     """
     Test that we can correctly extract SUSIE output
 

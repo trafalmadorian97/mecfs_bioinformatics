@@ -30,7 +30,7 @@ class RefDownloader(Protocol):
         pass
 
 
-@frozen
+@frozen(slots=True)
 class Variant:
     """
     Represents a genetic variant.

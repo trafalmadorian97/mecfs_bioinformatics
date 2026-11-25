@@ -31,7 +31,9 @@ _ROWS = [
 ]
 
 
-def test_whitespace_sep_text_to_parquet_streams_and_preserves_values(tmp_path: Path):
+def test_whitespace_sep_text_to_parquet_streams_and_preserves_values(
+    tmp_path: Path,
+) -> None:
     src = tmp_path / "gwas.txt.gz"
     with gzip.open(src, "wt") as f:
         f.write("\n".join(_ROWS) + "\n")
@@ -104,7 +106,7 @@ def _source_and_fetch(src: Path) -> tuple[FakeTask, Fetch]:
     return source_task, _Fetch()
 
 
-def test_lossy_cross_chunk_type_change_raises(tmp_path: Path):
+def test_lossy_cross_chunk_type_change_raises(tmp_path: Path) -> None:
     # Chr is int64 in the first chunk, then X/Y strings later. safe=True must turn
     # this into a loud failure rather than silently corrupting the column.
     src = tmp_path / "gwas.txt"
@@ -120,7 +122,7 @@ def test_lossy_cross_chunk_type_change_raises(tmp_path: Path):
         task.execute(scratch_dir=scratch, fetch=fetch, wf=make_wf())
 
 
-def test_dtype_override_pins_mixed_chromosome_column(tmp_path: Path):
+def test_dtype_override_pins_mixed_chromosome_column(tmp_path: Path) -> None:
     # Pinning the offending column to str via dtype makes the same input succeed.
     src = tmp_path / "gwas.txt"
     src.write_text("\n".join(_MIXED_CHR_ROWS) + "\n")

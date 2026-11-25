@@ -28,6 +28,6 @@ FICUANE_2018_FRANKE_GTEX_CATEGORIES = DownloadFileTask(
         extension=".csv",
         read_spec=DataFrameReadSpec(DataFrameTextFormat(separator=",")),
     ),
-    url="https://www.dropbox.com/scl/fi/2cr5ipddzkde6rj33tcxk/Finucane_2018_combined_gtex_franke.csv?rlkey=w5knnradpjugl2l1orml9j0g9&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/2cr5ipddzkde6rj33tcxk/Finucane_2018_combined_gtex_franke.csv?rlkey=w5knnradpjugl2l1orml9j0g9&dl=1",
     md5_hash="3f121ae8936e380828a14dc76c2fd309",
 )

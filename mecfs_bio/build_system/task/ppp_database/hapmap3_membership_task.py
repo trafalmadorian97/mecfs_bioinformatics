@@ -76,7 +76,7 @@ def normalize_hapmap3_snplist(snplist_path: Path) -> pl.DataFrame:
     )
 
 
-@frozen
+@frozen(slots=True)
 class Hapmap3MembershipTask(GeneratingTask):
     """
     Produce the normalized HapMap3 membership list (CHR, POS, EA, NEA, rsID) from

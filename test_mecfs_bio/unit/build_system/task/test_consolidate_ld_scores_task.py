@@ -25,7 +25,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def _write_ld_score_gz(path: Path, rows: list[tuple[int, str, int, float]]):
+def _write_ld_score_gz(path: Path, rows: list[tuple[int, str, int, float]]) -> None:
     lines = ["CHR\tSNP\tBP\tL2\n"]
     for chrom, snp, bp, l2 in rows:
         lines.append(f"{chrom}\t{snp}\t{bp}\t{l2}\n")
@@ -33,7 +33,7 @@ def _write_ld_score_gz(path: Path, rows: list[tuple[int, str, int, float]]):
         f.writelines(lines)
 
 
-def _write_ld_scores_with_counts(source_dir: Path):
+def _write_ld_scores_with_counts(source_dir: Path) -> None:
     """One chromosome's LD scores plus the sibling M_5_50 file the task pairs them with."""
     _write_ld_score_gz(
         source_dir / "LDscore.1.l2.ldscore.gz",
@@ -53,7 +53,7 @@ def _write_ld_scores_with_counts(source_dir: Path):
     (source_dir / "LDscore.2.l2.M_5_50").write_text("800\n")
 
 
-def test_consolidate_ld_scores(tmp_path: Path):
+def test_consolidate_ld_scores(tmp_path: Path) -> None:
     source_dir = tmp_path / "ld_scores"
     source_dir.mkdir()
     _write_ld_scores_with_counts(source_dir)
@@ -90,7 +90,7 @@ def test_consolidate_ld_scores(tmp_path: Path):
     assert total_m_5_50(narwhals.from_native(df, eager_only=True)) == 2000.0
 
 
-def test_consolidate_ld_scores_requires_matching_variant_count(tmp_path: Path):
+def test_consolidate_ld_scores_requires_matching_variant_count(tmp_path: Path) -> None:
     """A chromosome whose M_5_50 file is missing must fail rather than silently contribute
     variants that the genome-wide count does not describe."""
     source_dir = tmp_path / "ld_scores"

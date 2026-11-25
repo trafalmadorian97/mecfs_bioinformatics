@@ -7,7 +7,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me_minus_pain.analysis.standard_analysi
 )
 
 
-def run_decode_me_minus_pain_ols():
+def run_decode_me_minus_pain_ols() -> None:
     """
     Analysis of the residual after Johnston's GWAS of multisite pan is subtracted from
     DecodeME

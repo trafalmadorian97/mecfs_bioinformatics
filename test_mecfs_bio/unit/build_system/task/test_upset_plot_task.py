@@ -3,6 +3,7 @@ from pathlib import Path, PurePath
 import pandas as pd
 import pytest
 
+from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -29,13 +30,20 @@ from mecfs_bio.build_system.wf.base_wf import make_wf
             pd.DataFrame({"col1": ["B", "C", "D"]}),
         ),
         (pd.DataFrame({"col1": []}), pd.DataFrame({"col1": []})),
+        # A source may list the same member twice (e.g. a variant in two of a
+        # SUSIE run's credible sets). Each source's members are still a set, so
+        # the task must collapse the repeat rather than error on it.
+        (
+            pd.DataFrame({"col1": ["A", "B", "B"]}),
+            pd.DataFrame({"col1": ["B", "C", "D"]}),
+        ),
     ],
 )
 def test_upset_plot_task(
     tmp_path: Path,
     df_1: pd.DataFrame,
     df_2: pd.DataFrame,
-):
+) -> None:
     scratch = tmp_path / "scratch"
     scratch.mkdir(parents=True, exist_ok=True)
     path_in_dir = PurePath("file_in_dir.parquet")
@@ -66,7 +74,7 @@ def test_upset_plot_task(
         ],
     )
 
-    def fetch(asset_id: AssetId):
+    def fetch(asset_id: AssetId) -> Asset:
         if asset_id == "file1":
             return FileAsset(file1_path)
         if asset_id == "dir1":

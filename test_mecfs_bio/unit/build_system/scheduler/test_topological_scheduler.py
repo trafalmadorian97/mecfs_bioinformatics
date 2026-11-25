@@ -229,7 +229,7 @@ def test_file_copying_task(tmp_path: Path, tracer: Tracer) -> None:
     assert task3.run_count == 4
 
 
-def test_graph_generation(tmp_path: Path):
+def test_graph_generation(tmp_path: Path) -> None:
     """
     verify we can correctly calculate the dependencies and dependees of nodes in a simple
     graph

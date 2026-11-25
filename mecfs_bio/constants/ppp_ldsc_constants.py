@@ -58,3 +58,11 @@ PPP_RG_N_BAR_PROTEIN_COL = "n_bar_protein"
 # how many assay rows were combined; rg_spread is their max-min rg (a discordance diagnostic).
 PPP_RG_N_ASSAYS_COL = "n_a"
 PPP_RG_RG_SPREAD_COL = "spr"
+
+# --- Columns of the docs-facing rg display table ---
+# Multiple-testing verdicts on rg_p: True where the null hypothesis rg = 0 is rejected.
+PPP_RG_SIGNIFICANT_BH_COL = "s_bh"
+PPP_RG_SIGNIFICANT_BONFERRONI_COL = "s_bon"
+# Shortened names, so the table fits on screen in the docs.
+PPP_RG_DISPLAY_GCOV_INTERCEPT_COL = "inter"
+PPP_RG_DISPLAY_H2_PROTEIN_COL = "h2_prot"

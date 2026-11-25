@@ -10,7 +10,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-def test_compute_se_pipe():
+def test_compute_se_pipe() -> None:
     dummy_data = pd.DataFrame({GWASLAB_BETA_COL: [0.0388], GWASLAB_P_COL: [0.45056]})
     nw_data = narwhals.from_native(dummy_data).lazy()
     pipe = ComputeSEPipe()
@@ -20,7 +20,7 @@ def test_compute_se_pipe():
     )
 
 
-def test_compute_se_pipe_handles_small_pvalues():
+def test_compute_se_pipe_handles_small_pvalues() -> None:
     """
     Verify that our pipe to compute standard errors is able to handle small p values
     """

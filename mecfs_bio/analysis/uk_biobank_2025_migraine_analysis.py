@@ -4,7 +4,7 @@ from mecfs_bio.assets.gwas.migraine.uk_biobank_2025.analysis.uk_biobank_2025_mig
 )
 
 
-def run_initial_ukb_2025_migraine_analysis():
+def run_initial_ukb_2025_migraine_analysis() -> None:
     """
     Function to run initial analysis on Million Veterans CFS phenotyp.
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import narwhals
 from attrs import frozen
@@ -24,7 +25,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class PrepareSpecificityFraction(Task):
     """
     Task to compute the specificity of genes for cell types using the fractional specificity metric.
@@ -93,7 +94,7 @@ class PrepareSpecificityFraction(Task):
         out_format: OutFormat = ParquetOutFormat(),
         pre_pipe: DataProcessingPipe = IdentityPipe(),
         post_pipe: DataProcessingPipe = IdentityPipe(),
-    ):
+    ) -> Self:
         extension, read_spec = get_extension_and_read_spec_from_format(
             out_format=out_format
         )

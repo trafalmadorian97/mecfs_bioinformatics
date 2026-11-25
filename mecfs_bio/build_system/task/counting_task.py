@@ -13,7 +13,7 @@ from mecfs_bio.build_system.task.base_task import GeneratingTask, Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@define
+@define(slots=True)
 class CountingTask(GeneratingTask):
     """
     For testing.  Records the number of times a task has been executed

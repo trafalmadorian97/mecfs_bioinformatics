@@ -6,7 +6,7 @@ Attempts to match the style of the graphs from
 
 import math
 from pathlib import Path, PurePath
-from typing import Literal
+from typing import Literal, Self
 
 import numpy as np
 import pandas as pd
@@ -42,13 +42,13 @@ KEY_HBA_ANNOTATION_COLUMNS = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class PlotSettings:
     plot_mode: PlotMode = "plotly_dark"
     include_top_annotation: bool = False
 
 
-@frozen
+@frozen(slots=True)
 class PlotMagmaBrainAtlasResultTask(Task):
     """
     Task to create a plot of the results of applying MAGMA using the human brain atlas data as a reference
@@ -181,7 +181,7 @@ class PlotMagmaBrainAtlasResultTask(Task):
         cluster_annotation_task: Task,
         asset_id: str,
         plot_settings: PlotSettings = PlotSettings(),
-    ):
+    ) -> Self:
         source_meta = result_table_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(

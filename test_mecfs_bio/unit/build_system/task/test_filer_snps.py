@@ -15,7 +15,7 @@ from mecfs_bio.build_system.task.external_file_copy_task import ExternalFileCopy
 from mecfs_bio.build_system.task.filter_snps_task import FilterSNPsTask
 
 
-def test_filer_snps(tmp_path: Path):
+def test_filer_snps(tmp_path: Path) -> None:
     """
     Test that we can correctly filter a dataframe of SNPs
     Also check that we can use the must_rebuild field of the runner to force tasks to be rebuilt

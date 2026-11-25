@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objs as go
 
+from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
@@ -44,7 +45,7 @@ def _synthetic_df() -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def test_build_manhattan_plot_basic_shape():
+def test_build_manhattan_plot_basic_shape() -> None:
     df = _synthetic_df()
     fig = build_manhattan_plot(
         df=df,
@@ -71,7 +72,7 @@ def test_build_manhattan_plot_basic_shape():
     assert tickvals == sorted(tickvals)
 
 
-def test_build_manhattan_plot_alternates_colors_across_chromosomes():
+def test_build_manhattan_plot_alternates_colors_across_chromosomes() -> None:
     df = _synthetic_df()
     blue, orange = "#1f77b4", "#ff7f0e"
     fig = build_manhattan_plot(
@@ -90,7 +91,7 @@ def test_build_manhattan_plot_alternates_colors_across_chromosomes():
     assert chr_to_color["chrX"] == blue
 
 
-def test_build_manhattan_plot_sig_line_present():
+def test_build_manhattan_plot_sig_line_present() -> None:
     df = _synthetic_df()
     sig_threshold = 5e-8
     fig = build_manhattan_plot(
@@ -111,7 +112,7 @@ def test_build_manhattan_plot_sig_line_present():
     assert len(matching) == 1
 
 
-def test_build_manhattan_plot_default_sig_threshold_is_bonferroni():
+def test_build_manhattan_plot_default_sig_threshold_is_bonferroni() -> None:
     df = _synthetic_df()
     fig = build_manhattan_plot(
         df=df,
@@ -133,7 +134,7 @@ def test_build_manhattan_plot_default_sig_threshold_is_bonferroni():
     assert len(matching) == 1
 
 
-def test_build_manhattan_plot_bonferroni_uses_correction_count():
+def test_build_manhattan_plot_bonferroni_uses_correction_count() -> None:
     df = _synthetic_df()
     # Supplying a correction count larger than the plotted-row count (e.g. because
     # high-p-value genes were filtered out before plotting) must drive the
@@ -160,7 +161,7 @@ def test_build_manhattan_plot_bonferroni_uses_correction_count():
     assert len(matching) == 1
 
 
-def test_build_manhattan_plot_drops_nonpositive_and_null_pvalues():
+def test_build_manhattan_plot_drops_nonpositive_and_null_pvalues() -> None:
     df = _synthetic_df()
     # Inject a row with p == 0 and a row with p == NaN. Both should be dropped
     # rather than cause a -log10 blowup.
@@ -240,7 +241,7 @@ def _write_gene_pvalue_source(
         max_p_value=max_p_value,
     )
 
-    def fetch(asset_id: AssetId):
+    def fetch(asset_id: AssetId) -> Asset:
         if asset_id == "table":
             return FileAsset(table_path)
         if asset_id == "loc":
@@ -250,20 +251,20 @@ def _write_gene_pvalue_source(
     return source, fetch
 
 
-def test_gene_pvalue_source_filters_by_max_p_value(tmp_path: Path):
+def test_gene_pvalue_source_filters_by_max_p_value(tmp_path: Path) -> None:
     source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=0.01)
     data = source.load_df(fetch=fetch)
     # 0.5 and 0.02 are at or above 0.01 and dropped; 1e-3 and 1e-9 remain.
     assert sorted(data.df["p_value"].tolist()) == [1e-9, 1e-3]
 
 
-def test_gene_pvalue_source_no_filter_when_max_p_value_none(tmp_path: Path):
+def test_gene_pvalue_source_no_filter_when_max_p_value_none(tmp_path: Path) -> None:
     source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=None)
     data = source.load_df(fetch=fetch)
     assert len(data.df) == 4
 
 
-def test_gene_pvalue_source_correction_count_is_pre_filter(tmp_path: Path):
+def test_gene_pvalue_source_correction_count_is_pre_filter(tmp_path: Path) -> None:
     # All four genes have valid positive p-values, so the multiple-testing count
     # must be 4 regardless of how many rows survive the max_p_value filter.
     source, fetch = _write_gene_pvalue_source(tmp_path, max_p_value=0.01)
@@ -311,7 +312,7 @@ def _write_magma_source(
         max_p_value=max_p_value,
     )
 
-    def fetch(asset_id: AssetId):
+    def fetch(asset_id: AssetId) -> Asset:
         if asset_id == "magma":
             return DirectoryAsset(magma_dir)
         if asset_id == "thesaurus":
@@ -321,7 +322,7 @@ def _write_magma_source(
     return source, fetch
 
 
-def test_magma_source_filters_by_max_p_value(tmp_path: Path):
+def test_magma_source_filters_by_max_p_value(tmp_path: Path) -> None:
     source, fetch = _write_magma_source(tmp_path, max_p_value=0.01)
     data = source.load_df(fetch=fetch)
     # 0.5 and 0.02 are at or above 0.01 and dropped; 1e-3 and 1e-9 remain. The
@@ -330,7 +331,7 @@ def test_magma_source_filters_by_max_p_value(tmp_path: Path):
     assert data.num_genes_for_correction == 4
 
 
-def test_magma_source_no_filter_when_max_p_value_none(tmp_path: Path):
+def test_magma_source_no_filter_when_max_p_value_none(tmp_path: Path) -> None:
     source, fetch = _write_magma_source(tmp_path, max_p_value=None)
     data = source.load_df(fetch=fetch)
     assert len(data.df) == 4

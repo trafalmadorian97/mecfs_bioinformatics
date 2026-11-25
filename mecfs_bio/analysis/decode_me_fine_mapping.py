@@ -23,7 +23,7 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.analysis.fine_mapping.with_palindrom
 )
 
 
-def run_fine_mapping_decode_me_analysis():
+def run_fine_mapping_decode_me_analysis() -> None:
     """
     Function to fine map the main DecodeME loci using SUSIE.
     As an LD reference, use a UK biobank LD reference matrix from the Broad institute.

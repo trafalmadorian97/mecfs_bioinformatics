@@ -56,13 +56,15 @@ logger = structlog.get_logger(__name__)
 
 _ROOT_KEY = "root"
 _PREFIXES_KEY = "prefixes"
-_ALLOWED_RULE_KEYS = frozenset({_ROOT_KEY, _PREFIXES_KEY})
+# Globs are expanded into prefixes offline; see the remap_globs module.
+_GLOBS_KEY = "globs"
+_ALLOWED_RULE_KEYS = frozenset({_ROOT_KEY, _PREFIXES_KEY, _GLOBS_KEY})
 
 # Repo-level command that reconciles the store on disk with the configured rules.
 MIGRATE_COMMAND = "pixi r invoke migrate-asset-store"
 
 
-@frozen
+@frozen(slots=True)
 class PathRemapRule:
     """
     Send every asset whose store-relative path starts with one of prefixes to root
@@ -82,6 +84,10 @@ class PathRemapRule:
     Prefixes are ordinary store-relative paths, so any level of the layout can be
     selected.  gwas/<trait> works just as well as reference_data/<group>, which makes it
     possible to archive a trait that is no longer under active analysis.
+
+    An entry may also list globs, which select many subtrees at once.  They are expanded
+    into literal prefixes offline by the reconcile-globs invoke command; see the
+    remap_globs module.
     """
 
     root: Path
@@ -109,9 +115,13 @@ class PathRemapRule:
         cls, entries: Sequence[Mapping[str, Any]]
     ) -> tuple["PathRemapRule", ...]:
         """
-        Build rules from the path_remap section of a parsed yaml config.  Unrecognized
-        keys are an error rather than being ignored, so a typo in a machine-local config
-        surfaces immediately instead of silently disabling a rule.
+        Build rules from the literal prefixes in the path_remap section of a parsed yaml
+        config.  Unrecognized keys are an error rather than being ignored, so a typo in a
+        machine-local config surfaces immediately instead of silently disabling a rule.
+
+        An entry's globs are not read here: they take effect only once expanded into
+        prefixes by the remap_globs module.  An entry that lists only globs therefore
+        yields no rule.
         """
         rules = []
         for entry in entries:
@@ -121,19 +131,16 @@ class PathRemapRule:
                 f"expected only {sorted(_ALLOWED_RULE_KEYS)}."
             )
             assert _ROOT_KEY in entry, f"path_remap entry {entry} is missing a root."
-            assert _PREFIXES_KEY in entry, (
-                f"path_remap entry {entry} is missing prefixes."
+            assert entry.get(_PREFIXES_KEY) or entry.get(_GLOBS_KEY), (
+                f"path_remap entry {entry} lists neither prefixes nor globs."
             )
-            rules.append(
-                cls(
-                    root=Path(entry[_ROOT_KEY]),
-                    prefixes=tuple(PurePath(p) for p in entry[_PREFIXES_KEY]),
-                )
-            )
+            prefixes = tuple(PurePath(p) for p in entry.get(_PREFIXES_KEY) or [])
+            if prefixes:
+                rules.append(cls(root=Path(entry[_ROOT_KEY]), prefixes=prefixes))
         return tuple(rules)
 
 
-@frozen
+@frozen(slots=True)
 class RemappingMetaToPath(MetaToPath):
     """
     Place assets under default_root, except for those selected by a rule in rules, which

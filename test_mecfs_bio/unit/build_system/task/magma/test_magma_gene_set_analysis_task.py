@@ -40,7 +40,7 @@ _dummy_spec_data_2 = """GENE  Cluster132
 )
 def test_gene_set_analysis_empty_gene_sets(
     tmp_path: Path, dummy_spec_data: str, model_params: ModelParams | None
-):
+) -> None:
     """
     Verify that we can gracefully handle the case in which we are asked to perform joint gene-set analysis without any gene sets
     This situation arises in MAGMA when no gene sets are significant

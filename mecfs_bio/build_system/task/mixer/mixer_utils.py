@@ -31,7 +31,7 @@ def _get_docker_command(extra_mounts: Mapping[Path, Path]) -> list[str]:
 def invoke_mixer(
     args: Sequence[str] | str,
     extra_mounts: Mapping[Path, Path],
-):
+) -> None:
     if isinstance(args, str):
         args = [args]
     execute_command(
@@ -45,7 +45,7 @@ def invoke_mixer(
 def invoke_mixer_figures(
     args: Sequence[str] | str,
     extra_mounts: Mapping[Path, Path],
-):
+) -> None:
     if isinstance(args, str):
         args = [args]
     execute_command(

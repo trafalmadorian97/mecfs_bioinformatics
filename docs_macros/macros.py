@@ -1,0 +1,915 @@
+import html
+import json
+import os
+import string
+import textwrap
+from collections.abc import Iterable
+from pathlib import Path, PurePosixPath
+
+import polars as pl
+from mkdocs_macros.plugin import MacrosPlugin
+
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+)
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    CS_PF_EXT_COL,
+    CS_PF_INT_COL,
+    CS_U_COL,
+    DISP_ALPHA_BAR,
+    DISP_ANNOT_PREFIX,
+    DISP_CHR,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_EA,
+    DISP_GAMMA,
+    DISP_LIFT,
+    DISP_NEA,
+    DISP_PIP_PF,
+    DISP_PIP_U,
+    DISP_POS,
+    LIFT_EXT_COL,
+    LIFT_INT_COL,
+    PIP_PF_EXT_COL,
+    PIP_PF_INT_COL,
+    PIP_U_COL,
+    secondary_pos_display_col,
+)
+from mecfs_bio.constants.ppp_ldsc_constants import (
+    PPP_RG_DISPLAY_GCOV_INTERCEPT_COL,
+    PPP_RG_DISPLAY_H2_PROTEIN_COL,
+    PPP_RG_GCOV_COL,
+    PPP_RG_GENE_COL,
+    PPP_RG_H2_TRAIT_COL,
+    PPP_RG_N_SNPS_COL,
+    PPP_RG_OID_COL,
+    PPP_RG_RG_COL,
+    PPP_RG_RG_P_COL,
+    PPP_RG_RG_SE_COL,
+    PPP_RG_RG_SPREAD_COL,
+    PPP_RG_SIGNIFICANT_BH_COL,
+    PPP_RG_SIGNIFICANT_BONFERRONI_COL,
+)
+from mecfs_bio.constants.protein_coloc_constants import (
+    DISPLAY_ASSAY_ID_COL,
+    DISPLAY_CIS_STATUS_COL,
+    DISPLAY_FDR_SIGNIFICANT_COL,
+    DISPLAY_LEAD_VARIANT_COL,
+    DISPLAY_LOCUS_COL,
+    DISPLAY_N_SNP_COL,
+    DISPLAY_PP_H4_COL,
+    DISPLAY_PROTEIN_COL,
+    DISPLAY_PROTEIN_P_COL,
+    DISPLAY_Q_VALUE_COL,
+    DISPLAY_SAME_SIGN_COL,
+    DISPLAY_TRAIT_P_COL,
+    INFO_ENSEMBL_ID_COL,
+    INFO_EVIDENCE_COL,
+    INFO_GENE_NAME_COL,
+    INFO_GENE_SYMBOL_COL,
+    INFO_PROTEIN_NAMES_COL,
+    INFO_SUBCELLULAR_LOCALISATION_COL,
+    INFO_UNIPROT_DESCRIPTION_COL,
+    INFO_UNIPROT_ID_COL,
+)
+
+
+def _template_fields(templates: Iterable[str]) -> set[str]:
+    """The {placeholder} names used in URL templates."""
+    return {
+        field
+        for template in templates
+        for _, field, _, _ in string.Formatter().parse(template)
+        if field is not None
+    }
+
+
+def _site_relative_url(src: str, docs_dir: str, page_dest_uri: str) -> str:
+    """Convert a project-root-relative asset path to a URL relative to the served page.
+
+    Files under ``docs_dir`` are served from the site root, so the docs_dir
+    prefix is stripped and the result re-expressed relative to the page being
+    rendered. This avoids hard-to-read, page-relative
+    ``../../../../../_figs/...`` links in the page source: callers pass a
+    repo-root-relative path and the macro works out the URL.
+
+    Parameters
+    ----------
+    src : str
+        Path to the asset, relative to the project root
+        (e.g. "docs/_figs/my_plot.png").
+    docs_dir : str
+        The mkdocs ``docs_dir`` (``env.conf["docs_dir"]``).
+    page_dest_uri : str
+        Destination URI of the page being rendered
+        (``env.page.file.dest_uri``).
+    """
+    site_path = Path(src).resolve().relative_to(Path(docs_dir).resolve())
+    return os.path.relpath(site_path, Path(page_dest_uri).parent)
+
+
+def _columns_caption(columns: dict[str, str], sep: str = ";") -> str:
+    """Render a table caption describing each column.
+
+    Parameters
+    ----------
+    columns : dict[str, str]
+        Maps each column name, as it appears in the table, to a plain-text
+        description. Both are HTML-escaped.
+    """
+    return "Columns: " + f"{sep} ".join(
+        f"{html.escape(name)}: {html.escape(description)}"
+        for name, description in columns.items()
+    )
+
+
+SOURCE_LINK_BRANCH = "main"
+
+
+def module_path_to_source_relative_path(module_path: str) -> PurePosixPath:
+    """
+    Map a dotted Python module path to the repo-relative path of its source.
+
+    Tries, in order: a module file (a/b/c.py), a package directory (a/b/c/), and the
+    module file of the parent (a/b.py, for references to a function or class c).
+    """
+    parts = module_path.split(".")
+    package_path = PurePosixPath(*parts)
+    file_path = package_path.with_suffix(".py")
+    if Path(file_path).is_file():
+        return file_path
+    if (Path(package_path) / "__init__.py").is_file():
+        return package_path
+    if len(parts) > 1:
+        parent_file_path = PurePosixPath(*parts[:-1]).with_suffix(".py")
+        if Path(parent_file_path).is_file():
+            return parent_file_path
+    raise FileNotFoundError(
+        f"api_link: module path '{module_path}' does not correspond to any existing "
+        "module file, package, or module attribute"
+    )
+
+
+def github_source_url(repo_url: str, module_path: str) -> str:
+    """
+    Return the GitHub URL of the source for a dotted Python module path.
+
+    Packages use GitHub's tree view (directory listing); modules use the blob view.
+    """
+    relative_path = module_path_to_source_relative_path(module_path)
+    view = "blob" if relative_path.suffix == ".py" else "tree"
+    return f"{repo_url.rstrip('/')}/{view}/{SOURCE_LINK_BRANCH}/{relative_path}"
+
+
+def define_env(env: MacrosPlugin) -> None:
+    @env.macro
+    def api_link(text: str, module_path: str) -> str:
+        """
+        Return a Markdown link to the GitHub source of a dotted Python module path.
+
+        A module (mecfs_bio.analysis.ldl_analysis) links to its .py file, a package
+        (mecfs_bio.assets) links to its directory, and an attribute of a module
+        (mecfs_bio.some_module.some_function) links to the module's .py file.
+        Raises FileNotFoundError if the path matches none of these, so that broken
+        references fail the build.
+        """
+        return f"[{text}]({github_source_url(repo_url=env.conf['repo_url'], module_path=module_path)})"
+
+    @env.macro
+    def include_file(path: str) -> str:
+        """Include the contents of an external file, raising an error if it does not exist.
+
+        Parameters
+        ----------
+        path : str
+            Path to the file to include, relative to the project root.
+        """
+        file_path = Path(path)
+        if not file_path.is_file():
+            raise FileNotFoundError(f"include_file: '{path}' does not exist")
+        return file_path.read_text()
+
+    @env.macro
+    def markdown_table(
+        src: str, title: str = "Table", collapse_threshold: int = 50
+    ) -> str:
+        """Include a programmatically-generated markdown table, collapsing large ones.
+
+        Like :func:`include_file`, this returns the raw markdown of a `.mdx`
+        table file (resolved relative to the project root) so mkdocs renders it
+        as a table. When the table has ``collapse_threshold`` or more data rows
+        it is wrapped in a closed ``??? info`` admonition so long tables don't
+        dominate the page.
+
+        The ``{{ markdown_table(...) }}`` call must start at column 0: the
+        returned block-level admonition/table only parses correctly at the left
+        margin (an indented call would turn the first output line into a code
+        block). This is enforced --- an indented call fails the build (see
+        ``_assert_macro_call_at_margin``) rather than silently mis-rendering.
+
+        Parameters
+        ----------
+        src : str
+            Path to the `.mdx` table file, relative to the project root
+            (e.g. "docs/_figs/my_table.mdx").
+        title : str
+            Title shown on the collapsible block (only used when the table is
+            large enough to be collapsed).
+        collapse_threshold : int
+            Minimum number of data rows (excluding the header and separator
+            rows) at which the table is wrapped in a collapsible block.
+        """
+        file_path = Path(src)
+        if not file_path.is_file():
+            raise FileNotFoundError(
+                f"markdown_table: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+        text = file_path.read_text()
+
+        # A markdown table is a header row + a separator row + one row per record;
+        # every one of those lines starts with "|". Subtract the header and
+        # separator to get the data-row count.
+        table_lines = [ln for ln in text.splitlines() if ln.lstrip().startswith("|")]
+        n_rows = max(len(table_lines) - 2, 0)
+
+        if n_rows >= collapse_threshold:
+            body = textwrap.indent(text, "    ")
+            return f'??? info "{title}"\n\n{body}'
+        return text
+
+    @env.macro
+    def static_img_embed(
+        src: str, alt: str = "", caption: str = "", width: str = ""
+    ) -> str:
+        """
+        Embed a PNG (or other static image) using a path relative to the project
+        root, mirroring :func:`plotly_embed` so that static and interactive
+        figures are referenced the same way.
+
+        This avoids the hard-to-read, page-relative ``![](../../../../../_figs/...)``
+        links: callers pass a repo-root-relative path
+        (e.g. "docs/_figs/my_plot.png") and the macro resolves the URL relative
+        to the served page itself.
+
+        Parameters
+        ----------
+        src : str
+            Path to the image file, relative to the project root
+            (e.g. "docs/_figs/my_plot.png").
+        alt : str
+            Alt text for the image.
+        caption : str
+            Optional caption rendered as a full-width centered paragraph below
+            the image. When provided the image is wrapped in a full-width div
+            rather than a <figure>: Material styles ``.md-typeset figure`` with
+            ``width: fit-content``, which shrinks a <figure> (and its caption) to
+            the image's rendered width, so a long caption gets squished into a
+            narrow central column. The full-width div matches how plotly_embed
+            and data_table render their captions.
+        width : str
+            Optional CSS width for the image (e.g. "100%"). Left empty the image
+            renders at its natural size, capped at the page width. Set it to
+            force a rendered width -- pass "100%" to make a scalable figure (an
+            SVG with a viewBox) grow to fill the content column instead of
+            stopping at its small intrinsic pt size. Prefer this only for vector
+            images, since forcing a width larger than a raster PNG's pixel
+            dimensions upscales and blurs it.
+        """
+        if not Path(src).is_file():
+            raise FileNotFoundError(
+                f"static_img_embed: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+
+        relative_url = _site_relative_url(
+            src, env.conf["docs_dir"], env.page.file.dest_uri
+        )
+
+        # Default to max-width (not width) so the image renders at its natural
+        # size and only shrinks when it would overflow the page — matching how a
+        # plain markdown ``![](...)`` image behaves under Material's default CSS.
+        # An explicit width overrides this to force a rendered size.
+        sizing = f"width:{width};" if width else "max-width:100%;"
+        img = f'<img src="{relative_url}" alt="{alt}" style="{sizing} height:auto;">'
+        if caption:
+            return (
+                f'<div style="width:100%; margin:0; text-align:center;">\n'
+                f"{img}\n"
+                f'<p style="width:100%; text-align:center; font-style:italic; margin-top:0.5em;">{caption}</p>\n'
+                f"</div>"
+            )
+        return img
+
+    @env.macro
+    def plotly_embed(
+        src: str, id: str, height: str = "775px", caption: str = ""
+    ) -> str:
+        """
+        This is a macro function added by Claude to allow the embedding of plotly plots which can be expanded to full screen.
+
+        Embed a Plotly HTML file with a fullscreen button.
+
+        Parameters
+        ----------
+        src : str
+            Path to the Plotly HTML file, relative to the project root
+            (e.g. "docs/_figs/my_plot.html").
+        id : str
+            A unique HTML id for the iframe (must be unique per page).
+        height : str
+            CSS height of the embedded iframe, e.g. "750px" or "60vh".
+        caption : str
+            Optional caption rendered as a <figcaption> below the iframe.
+            Supports inline HTML. When provided the whole embed is wrapped in
+            a <figure> with width:100% so the iframe is never squished.
+        """
+        if not Path(src).is_file():
+            raise FileNotFoundError(
+                f"plotly_embed: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+
+        relative_url = _site_relative_url(
+            src, env.conf["docs_dir"], env.page.file.dest_uri
+        )
+
+        button = (
+            f'<div style="display:flex; justify-content:flex-end; margin:.25rem 0;">\n'
+            f"<button onclick=\"document.getElementById('{id}').requestFullscreen()\"\n"
+            f'  style="cursor:pointer; background:none; border:1px solid #ccc; padding:4px 12px; border-radius:4px;">\n'
+            f"  Fullscreen Plot &#x2922;\n"
+            f"</button>\n"
+            f"</div>\n"
+        )
+        iframe = (
+            f"<iframe\n"
+            f'  id="{id}"\n'
+            f'  src="{relative_url}"\n'
+            f'  style="width:100%; height:{height}; border:none;"\n'
+            f"  allowfullscreen></iframe>"
+        )
+        if caption:
+            return (
+                f'<div style="width:100%; margin:0;">\n'
+                f"{button}"
+                f"{iframe}\n"
+                f'<p style="width:100%; text-align:center; font-style:italic; margin-top:0.5em;">{caption}</p>\n'
+                f"</div>"
+            )
+        return button + iframe
+
+    @env.macro
+    def ppp_rg_data_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption=PPP_RG_DATA_TABLE_CAPTION,
+        )
+
+    @env.macro
+    def susie_polyfun_explain_plot(src: str, alt: str = "") -> str:
+        return static_img_embed(
+            src=src, alt=alt, caption=SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION
+        )
+
+    @env.macro
+    def susie_polyfun_internal_external_explain_plot(src: str, alt: str = "") -> str:
+        return static_img_embed(
+            src=src,
+            alt=alt,
+            caption=SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_PLOT_CAPTION,
+        )
+
+    @env.macro
+    def susie_polyfun_data_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption=SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION,
+        )
+
+    @env.macro
+    def susie_polyfun_internal_external_data_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption=SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_TABLE_CAPTION,
+        )
+
+    @env.macro
+    def susie_polyfun_variant_detail_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption=SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION,
+        )
+
+    @env.macro
+    def susie_uniform_variant_detail_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src, id=id, page_size=page_size, precision=precision, caption=""
+        )
+
+    @env.macro
+    def coloc_results_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption=PROTEIN_COLOC_RESULTS_TABLE_CAPTION,
+            hidden_columns=[DISPLAY_LEAD_VARIANT_COL],
+        )
+
+    @env.macro
+    def coloc_protein_info_table(
+        src: str, id: str, page_size: int = 20, precision: int = 4
+    ) -> str:
+        return data_table(
+            src=src,
+            id=id,
+            page_size=page_size,
+            precision=precision,
+            caption="",
+            wrap_columns={
+                INFO_GENE_NAME_COL: 130,
+                INFO_PROTEIN_NAMES_COL: 140,
+                INFO_UNIPROT_DESCRIPTION_COL: 300,
+                INFO_SUBCELLULAR_LOCALISATION_COL: 140,
+                INFO_EVIDENCE_COL: 190,
+            },
+            hidden_columns=[
+                DISPLAY_ASSAY_ID_COL,
+                DISPLAY_LOCUS_COL,
+                DISPLAY_PP_H4_COL,
+                INFO_UNIPROT_ID_COL,
+                INFO_GENE_SYMBOL_COL,
+                INFO_ENSEMBL_ID_COL,
+            ],
+            link_columns={
+                INFO_GENE_NAME_COL: "https://www.uniprot.org/uniprotkb/{"
+                + INFO_UNIPROT_ID_COL
+                + "}/entry"
+            },
+            reference_columns=[
+                INFO_UNIPROT_DESCRIPTION_COL,
+                INFO_SUBCELLULAR_LOCALISATION_COL,
+                INFO_EVIDENCE_COL,
+            ],
+        )
+
+    @env.macro
+    def ldsc_diagnostic_plot(src: str, id: str, height: str = "775px") -> str:
+        return plotly_embed(
+            src=src,
+            id=id,
+            height=height,
+            caption=LDSC_DIAGNOSTIC_PLOT_CAPTION,
+        )
+
+    @env.macro
+    def data_table(
+        src: str,
+        id: str,
+        page_size: int = 20,
+        precision: int = 4,
+        caption: str = "",
+        wrap_columns: dict[str, int] | None = None,
+        hidden_columns: list[str] | None = None,
+        link_columns: dict[str, str] | None = None,
+        reference_columns: list[str] | None = None,
+    ) -> str:
+        """Embed a large tabular asset as a sortable, filterable, paginated table.
+
+        For tables too large for markdown_table --- which renders every row into
+        the page DOM at build time, and becomes unworkable in the thousands ---
+        this instead ships the data as a parquet asset and renders it client-side
+        with Tabulator. Only the current page of rows exists in the DOM, so row
+        count barely affects page weight.
+
+        The table is paginated rather than given a fixed-height scrolling
+        viewport. It grows to fit one page of rows, so there is no inner vertical
+        scrollbar competing with the page's own for the mouse wheel. Sorting,
+        filtering and the CSV download all operate on the full dataset, not just
+        the visible page.
+
+        Parquet rather than CSV because the values stay exactly as the build
+        system produced them: full precision, no rounding decision baked
+        into the published file. Displayed values are rounded to ``precision``
+        for legibility, but the underlying data --- and therefore the table's
+        CSV download button --- remains exact.
+
+        The parquet should be written with the integer columns as Int32. Parquet
+        INT64 decodes to JavaScript BigInt, which Tabulator cannot format; the
+        script below coerces BigInt defensively, but doing it at the source
+        avoids relying on that.
+
+        Like markdown_table, the ``{{ data_table(...) }}`` call must start at
+        column 0, since an indented block-level HTML element is reinterpreted as
+        an indented code block.
+
+        Parameters
+        ----------
+        src : str
+            Path to the parquet file, relative to the project root
+            (e.g. "docs/_figs/my_table.parquet").
+        id : str
+            A unique HTML id for the table container (must be unique per page).
+        page_size : int
+            Initial number of rows per page. Readers can change it with the page
+            size selector in the table footer.
+        precision : int
+            Decimal places used when *displaying* non-integer values. Does not
+            affect the underlying data or the CSV download.
+        caption : str
+            Optional caption rendered below the table.
+        wrap_columns : dict[str, int] | None
+            Long free-text columns whose cells should wrap onto several lines
+            instead of widening the table, mapped to each column's maximum width
+            in pixels. Rows grow to fit the wrapped text, and a long word with no
+            spaces breaks mid-word rather than being clipped. The default (None)
+            wraps no column, so every column sizes to its longest value on one
+            line.
+        hidden_columns : list[str] | None
+            Columns left off the page but kept in the CSV download (which has no
+            width limit), e.g. an id used only to build links.
+        link_columns : dict[str, str] | None
+            Columns whose cells become links, mapped to a URL template. Each
+            {column_name} placeholder in the template is filled, URL-encoded,
+            from that column of the same row (it may be a hidden column). A cell
+            whose placeholders are not all filled stays plain text.
+        reference_columns : list[str] | None
+            Columns in which references written as PubMed:<id>,
+            UniProtKB:<accession> or HAMAP-Rule:<rule> become links to the
+            PubMed article, the UniProt entry or the HAMAP family rule; the rest
+            of the text stays plain.
+        """
+        if not Path(src).is_file():
+            raise FileNotFoundError(
+                f"data_table: '{src}' does not exist "
+                f"(referenced from page '{env.page.file.src_uri}')"
+            )
+        wrap_columns = wrap_columns or {}
+        hidden_columns = hidden_columns or []
+        link_columns = link_columns or {}
+        reference_columns = reference_columns or []
+        columns = set(pl.read_parquet_schema(src))
+        for argument, names in (
+            ("wrap_columns", wrap_columns),
+            ("hidden_columns", hidden_columns),
+            ("link_columns", link_columns),
+            ("link_columns templates", _template_fields(link_columns.values())),
+            ("reference_columns", reference_columns),
+        ):
+            missing = set(names) - columns
+            assert not missing, (
+                f"data_table: {argument} {sorted(missing)} are not columns of "
+                f"'{src}' (referenced from page '{env.page.file.src_uri}')"
+            )
+
+        relative_url = _site_relative_url(
+            src, env.conf["docs_dir"], env.page.file.dest_uri
+        )
+        download_name = Path(src).with_suffix(".csv").name
+
+        # Built by token substitution rather than an f-string: the script is
+        # dense with JS object literals, and doubling every brace to escape them
+        # would make it unreadable.
+        script = _DATA_TABLE_SCRIPT
+        for token, value in (
+            ("__TABLE_ID__", id),
+            ("__DATA_URL__", relative_url),
+            ("__PRECISION__", str(precision)),
+            ("__DOWNLOAD_NAME__", download_name),
+            ("__PAGE_SIZE__", str(page_size)),
+            ("__WRAP_COLUMNS__", json.dumps(wrap_columns)),
+            ("__HIDDEN_COLUMNS__", json.dumps(hidden_columns)),
+            ("__LINK_COLUMNS__", json.dumps(link_columns)),
+            ("__REFERENCE_COLUMNS__", json.dumps(reference_columns)),
+        ):
+            script = script.replace(token, value)
+
+        caption_html = (
+            f'<p style="width:100%; text-align:center; font-style:italic; '
+            f'margin-top:0.5em;">{caption}</p>\n'
+            if caption
+            else ""
+        )
+        # The frame holds the button and the table together, so that when the
+        # script narrows it to the table's natural width the button stays
+        # aligned with the table's right edge. The auto margins centre a
+        # narrowed frame; a full-width one is unaffected.
+        return (
+            f'<div id="{id}-frame" style="margin:0 auto;">\n'
+            f'<div style="display:flex; justify-content:flex-end; margin:.25rem 0;">\n'
+            f'<button id="{id}-download"\n'
+            f'  style="cursor:pointer; background:none; border:1px solid #ccc; '
+            f'padding:4px 12px; border-radius:4px;">\n'
+            f"  Download CSV &#x2913;\n"
+            f"</button>\n"
+            f"</div>\n"
+            f'<div id="{id}">'
+            f'<em id="{id}-status">Loading table…</em></div>\n'
+            f"</div>\n"
+            f"{caption_html}"
+            f"{script}"
+        )
+
+
+# Client-side loader for :func:`data_table`. Tabulator itself is loaded globally
+# via extra_javascript in mkdocs.yml (it ships UMD, so it lands on window);
+# hyparquet is ESM-only and so is imported here from a CDN that serves it as a
+# browser-consumable module.
+_DATA_TABLE_SCRIPT = """<script type="module">
+(async () => {
+  const container = document.getElementById("__TABLE_ID__");
+  const status = document.getElementById("__TABLE_ID__-status");
+  try {
+    const { parquetReadObjects } = await import("https://esm.sh/hyparquet@1.26.2");
+    const { compressors } = await import("https://esm.sh/hyparquet-compressors@1.1.1");
+
+    const response = await fetch("__DATA_URL__");
+    if (!response.ok) throw new Error(`fetch failed: ${response.status}`);
+    const rows = await parquetReadObjects({
+      file: await response.arrayBuffer(),
+      compressors,
+    });
+
+    // Parquet INT64 decodes to BigInt, which Tabulator cannot format (it throws
+    // and silently renders zero rows). Coerce to Number; the magnitudes in these
+    // tables are far inside the safe-integer range.
+    for (const row of rows) {
+      for (const key in row) {
+        if (typeof row[key] === "bigint") row[key] = Number(row[key]);
+      }
+    }
+
+    // Round only for display. The value Tabulator holds --- and downloads ---
+    // stays exact, and sorting still compares the underlying numbers.
+    const display = (cell) => {
+      const value = cell.getValue();
+      if (typeof value !== "number" || Number.isInteger(value)) return value;
+      // toFixed collapses anything smaller than the last retained decimal place
+      // to "0.0000", which is where p-values live. Switch to exponential so the
+      // magnitude survives; exact zero stays fixed, since "0.000e+0" is noise.
+      if (value !== 0 && Math.abs(value) < 10 ** -__PRECISION__) {
+        return value.toExponential(Math.max(__PRECISION__ - 1, 0));
+      }
+      return value.toFixed(__PRECISION__);
+    };
+
+    // Column name -> maximum width in pixels of the wrapped text columns;
+    // column name -> URL template of the link columns.
+    const wrapWidths = __WRAP_COLUMNS__;
+    const hiddenColumns = new Set(__HIDDEN_COLUMNS__);
+    const linkTemplates = __LINK_COLUMNS__;
+    const referenceColumns = new Set(__REFERENCE_COLUMNS__);
+    const REFERENCE_PATTERN =
+      /PubMed:(\\d+)|UniProtKB:([A-Za-z0-9]+(?:-\\d+)?)|HAMAP-Rule:(MF_\\d+)/g;
+    const referenceUrl = (match) => {
+      if (match[1]) return `https://pubmed.ncbi.nlm.nih.gov/${match[1]}/`;
+      if (match[2]) return `https://www.uniprot.org/uniprotkb/${match[2]}/entry`;
+      return `https://hamap.expasy.org/rule/${match[3]}`;
+    };
+
+    const anchor = (href, text) => {
+      const link = document.createElement("a");
+      link.href = href;
+      link.textContent = text;
+      link.target = "_blank";
+      link.rel = "noopener";
+      return link;
+    };
+    // Fill each {column} of the template from the row; null if any is empty.
+    const fillTemplate = (template, row) => {
+      let complete = true;
+      const url = template.replace(/\\{(\\w+)\\}/g, (_, field) => {
+        const value = row[field];
+        if (value === null || value === undefined || value === "") complete = false;
+        return encodeURIComponent(String(value));
+      });
+      return complete ? url : null;
+    };
+    // Text with each PubMed, UniProtKB and HAMAP-Rule reference turned into a link.
+    const withReferenceLinks = (text, container) => {
+      let last = 0;
+      for (const match of text.matchAll(REFERENCE_PATTERN)) {
+        container.append(text.slice(last, match.index));
+        container.append(anchor(referenceUrl(match), match[0]));
+        last = match.index + match[0].length;
+      }
+      container.append(text.slice(last));
+      return container;
+    };
+    // Formatter of the wrapped, link and reference columns. Wrapped cells keep
+    // newlines and break a long word with no spaces (such as
+    // ECO:0000269|PubMed:12345678) mid-word instead of clipping it, since
+    // fitDataFill would otherwise size the column to its longest value on one
+    // line. Values are inserted as text, never parsed as HTML.
+    const richText = (cell) => {
+      const field = cell.getColumn().getField();
+      if (Object.hasOwn(wrapWidths, field)) {
+        const element = cell.getElement();
+        element.style.whiteSpace = "pre-wrap";
+        element.style.overflowWrap = "anywhere";
+      }
+      const value = cell.getValue();
+      if (value === null || value === undefined) return "";
+      const text = String(value);
+      const span = document.createElement("span");
+      if (Object.hasOwn(linkTemplates, field)) {
+        const url = fillTemplate(linkTemplates[field], cell.getData());
+        span.append(url ? anchor(url, text) : text);
+        return span;
+      }
+      if (referenceColumns.has(field)) return withReferenceLinks(text, span);
+      span.append(text);
+      return span;
+    };
+    const usesRichText = (field) =>
+      Object.hasOwn(wrapWidths, field) ||
+      Object.hasOwn(linkTemplates, field) ||
+      referenceColumns.has(field);
+
+    const table = new Tabulator(container, {
+      data: rows,
+      // No fixed height: the table grows to fit one page, so the page's own
+      // scrollbar is the only vertical one.
+      pagination: true,
+      paginationSize: __PAGE_SIZE__,
+      paginationSizeSelector: [10, 20, 50, 100],
+      paginationCounter: "rows",
+      layout: "fitDataFill",
+      autoColumns: true,
+      autoColumnsDefinitions: (definitions) =>
+        definitions.map((definition) => {
+          const sample = rows[0][definition.field];
+          const numeric = typeof sample === "number";
+          return {
+            ...definition,
+            headerFilter: numeric ? "number" : "input",
+            headerFilterFunc: numeric ? ">=" : "like",
+            headerFilterPlaceholder: numeric ? ">=" : "filter",
+            sorter: numeric ? "number" : "string",
+            formatter: numeric ? display : undefined,
+            ...(usesRichText(definition.field) ? { formatter: richText } : {}),
+            ...(Object.hasOwn(wrapWidths, definition.field)
+              ? { maxWidth: wrapWidths[definition.field] }
+              : {}),
+            // Hidden on the page but kept in the CSV download.
+            ...(hiddenColumns.has(definition.field)
+              ? { visible: false, download: true }
+              : {}),
+          };
+        }),
+    });
+
+    // Row heights of wrapped columns are measured before the column widths
+    // settle, which leaves rows taller than their text. Re-measure them once
+    // built and on each page change.
+    const normalizeWrappedRowHeights = () => {
+      if (Object.keys(wrapWidths).length > 0) {
+        table.getRows("visible").forEach((row) => row.normalizeHeight());
+      }
+    };
+    table.on("pageLoaded", normalizeWrappedRowHeights);
+    table.on("tableBuilt", () => {
+      status?.remove();
+      normalizeWrappedRowHeights();
+      // fitDataFill pads a table narrower than the page out to full width with
+      // an empty filler region. Cap the frame at the columns' natural width
+      // instead; a table wider than the page is unaffected and still scrolls.
+      const holder = container.querySelector(".tabulator-tableholder");
+      const scrollbar = holder.offsetWidth - holder.clientWidth;
+      const border = container.offsetWidth - container.clientWidth;
+      const columnsWidth = table
+        .getColumns()
+        .filter((column) => column.isVisible())
+        .reduce((total, column) => total + column.getWidth(), 0);
+      document.getElementById("__TABLE_ID__-frame").style.maxWidth =
+        `${columnsWidth + scrollbar + border}px`;
+    });
+    document
+      .getElementById("__TABLE_ID__-download")
+      .addEventListener("click", () => table.download("csv", "__DOWNLOAD_NAME__"));
+  } catch (error) {
+    // Surface failures in the page rather than only the console, so a broken
+    // table is obvious when reviewing docs.
+    if (status) status.textContent = `Failed to load table: ${error.message}`;
+    throw error;
+  }
+})();
+</script>"""
+
+
+PPP_RG_DATA_TABLE_CAPTION = _columns_caption(
+    {
+        PPP_RG_OID_COL: "Olink assay ID",
+        PPP_RG_GENE_COL: "name of gene/protein under study",
+        PPP_RG_RG_COL: "CT-LDSC genetic correlation estimate",
+        PPP_RG_RG_SE_COL: "jackknife standard error of CT-LDSC genetic correlation estimate",
+        PPP_RG_RG_P_COL: "p value of test that rg is not zero",
+        PPP_RG_GCOV_COL: "estimated genetic covariance",
+        PPP_RG_DISPLAY_GCOV_INTERCEPT_COL: "intercept term in CT-LDSC regression",
+        PPP_RG_H2_TRAIT_COL: "trait heritability estimate",
+        PPP_RG_DISPLAY_H2_PROTEIN_COL: "protein heritability estimate",
+        PPP_RG_N_SNPS_COL: "number of hapmap3 variants included",
+        PPP_RG_RG_SPREAD_COL: "for cases in which multiple rows corresponding to distinct Olink assays of the same protein have been merged into a single row, this gives the maximum spread between the rg values of the merged rows",
+        PPP_RG_SIGNIFICANT_BH_COL: "True if the null hypothesis is rejected under the Benjamini-Hochberg procedure at an FDR of 0.05",
+        PPP_RG_SIGNIFICANT_BONFERRONI_COL: "True if the null hypothesis is rejected under the Bonferroni correction at a significance level of 0.05.",
+    }
+)
+
+SUSIE_POLYFUN_EXPLAIN_PLOT_CAPTION = "Plot illustrating application of SUSIE with a PolyFun prior to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs (Posterior Inclusion Probabilities) from SUSIE run with uniform prior. Third panel: PIPs from SUSIE run with PolyFun prior. Callouts: variants with the highest PIPs in the PolyFun-prior SUSIE run are marked with callouts. If such a high-PIP variant has an increased PolyFun prior due to certain functional annotations, these key annotations are listed along with the variant. Fourth Panel: genes at locus."
+SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_PLOT_CAPTION = "Plot illustrating results of applying SUSIE with two different PolyFun priors to a GWAS locus.  First panel: Manhattan plot of locus with overlaid recombination rate data.  Second panel: PIPs (Posterior Inclusion Probabilities) from SUSIE run with uniform prior. Third panel: PIPs from SUSIE run with external PolyFun prior. Fourth panel: PIPs from SUSIE run with internal PolyFun prior. Callouts: variants with the highest PIPs in the PolyFun-prior SUSIE runs are marked with callouts. If such a high-PIP variant has an increased PolyFun prior due to certain functional annotations, these key annotations are listed along with the variant. Fifth Panel: genes at locus."
+
+SUSIE_POLYFUN_EXPLAIN_TABLE_CAPTION = _columns_caption(
+    {
+        DISP_CHR: "chromosome",
+        DISP_POS: "hg19 genomic position",
+        secondary_pos_display_col("hg38"): "hg38 genomic position",
+        DISP_NEA: "non-effect allele",
+        DISP_EA: "effect allele",
+        DISP_CS_PF: "credible set number in PolyFun-prior run",
+        DISP_CS_U: "credible set number in uniform-prior run",
+        DISP_PIP_PF: "PIP (Posterior Inclusion Probability) in PolyFun-prior SUSIE run",
+        DISP_PIP_U: "PIP in uniform-prior SUSIE run",
+        DISP_LIFT: "proportional increase in prior weight when switching from uniform prior to PolyFun prior",
+        f"{DISP_ANNOT_PREFIX}X": "Approximate contribution of annotation family X to PolyFun prior minus averaged contribution of annotation family X over all variants selected by uniform-prior SUSIE run.",
+    }
+)
+SUSIE_POLYFUN_INTERNAL_EXTERNAL_EXPLAIN_TABLE_CAPTION = _columns_caption(
+    {
+        DISP_CHR: "chromosome",
+        DISP_POS: "hg19 genomic position",
+        secondary_pos_display_col("hg38"): "hg38 genomic position",
+        DISP_NEA: "non-effect allele",
+        DISP_EA: "effect allele",
+        CS_PF_EXT_COL: "credible set number in PolyFun external-prior run",
+        CS_PF_INT_COL: "credible set number in PolyFun internal-prior run",
+        CS_U_COL: "credible set number in uniform-prior run",
+        PIP_PF_EXT_COL: "PIP (Posterior Inclusion Probability) in PolyFun external-prior SUSIE run",
+        PIP_PF_INT_COL: "PIP (Posterior Inclusion Probability) in PolyFun internal-prior SUSIE run",
+        PIP_U_COL: "PIP in uniform-prior SUSIE run",
+        LIFT_EXT_COL: "proportional increase in prior weight when switching from uniform prior to PolyFun external prior",
+        LIFT_INT_COL: "proportional increase in prior weight when switching from uniform prior to PolyFun internal prior.",
+    }
+)
+
+
+SUSIE_POLYFUN_VARIANT_DETAIL_TABLE_CAPTION = _columns_caption(
+    {
+        FAMILY_COL: "name of high-level annotation family",
+        ANNOTATION_COL: "granular annotation name",
+        DISP_GAMMA: "regression coefficient of PolyFun prior weight on granular annotation, which indicates the extent to which the annotation can affect the prior",
+        DISP_ALPHA_BAR: "PIP-weighted mean value of this annotation across all variants in uniform-prior SUSIE credible sets, which can be used as a baseline against which to compare the annotation values of key variants",
+        "other columns": "the values of all annotations for key variants under consideration.",
+    }
+)
+
+LDSC_DIAGNOSTIC_PLOT_CAPTION = "LDSC diagnostic plot.  Genetic variants are binned by LD Score.  For each bin, we plot the mean LD score of variants in the bin (x axis) against Wald chi squared statistic (y axis 1) and scaled Wald chi squared statistic (y axis 2). Each plotted bin includes error bars indicating the standard error of bin chi squared mean. We also plot the LDSC regression line (solid) and the line corresponding to chi squared =1 (dashed).  If the LDSC model fits the data perfectly, we should expect that the intercept of the regression line is at chi squared=1"
+
+
+PROTEIN_COLOC_RESULTS_TABLE_CAPTION = (
+    "Results of colocalization analysis. "
+    + _columns_caption(
+        {
+            DISPLAY_PROTEIN_COL: "name of the protein",
+            DISPLAY_ASSAY_ID_COL: "ID of proteomic assay",
+            DISPLAY_LOCUS_COL: "genomic interval used for colocalization",
+            # DISPLAY_LEAD_VARIANT_COL: "most significant trait variant in locus",
+            DISPLAY_CIS_STATUS_COL: "cis means the locus is within 1 Mb of the gene coding for the protein.  Trans means the locus is more than 1Mb from that gene.  Unknown means data required to make this determination is missing",
+            DISPLAY_PP_H4_COL: "posterior probability that the trait and protein GWAS share a causal variant at the locus.  Note that this is prior-dependent",
+            DISPLAY_Q_VALUE_COL: f"The expected number of false discoveries if this row and all rows with larger {DISPLAY_PP_H4_COL} are counted as discoveries",
+            DISPLAY_FDR_SIGNIFICANT_COL: "whether this row will be included in the discovery set if we cap the Bayesian false discovery rate at 0.05",
+            DISPLAY_TRAIT_P_COL: "p value of the most significant trait variant at the locus",
+            DISPLAY_PROTEIN_P_COL: "p value of the most significant protein variant at the locus",
+            DISPLAY_SAME_SIGN_COL: "whether the trait and protein effects have the same sign at the most significant protein variant",
+            DISPLAY_N_SNP_COL: "number of variants present in trait and protein GWAS at the locus",
+        },
+        sep=".",
+    )
+    + "."
+)

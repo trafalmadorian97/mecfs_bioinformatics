@@ -80,7 +80,7 @@ H_MAGMA_ANNOTATION_TASKS: list[tuple[str, Task]] = [
 ]
 
 
-@frozen
+@frozen(slots=True)
 class HMagmaTasksForAnnotation:
     """All tasks produced for a single H-MAGMA tissue annotation."""
 
@@ -89,7 +89,7 @@ class HMagmaTasksForAnnotation:
     gene_manhattan_plot_task: GeneManhattanPlotTask
 
 
-@frozen
+@frozen(slots=True)
 class HMagmaTasks:
     """The aggregate result of running H-MAGMA against all six annotations."""
 

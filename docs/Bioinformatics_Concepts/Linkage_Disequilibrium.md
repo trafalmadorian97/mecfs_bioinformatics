@@ -1,30 +1,41 @@
 # Linkage Disequilibrium
-_Linkage disequilibrium_ (LD) refers to statistical dependence between genetic variants. LD is central to statistical genomics[^handbook_note][^name_note].
+Statistical dependence between genetic variants is called _linkage disequilibrium_ (LD). LD is central to statistical genomics[^handbook_note][^name_note].
 
-## Measures
+## The LD Matrix
 
-- When we are interested in patterns of LD across a genomic region with $n$ variants, it is common to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
-- Note, however, that this matrix $R$ reflects only pairwise dependence, and so is not a complete characterization of LD.  In particular, there are many higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
+- When we are interested in patterns of LD across a genomic region with $n$ variants, it is convenient to report the LD matrix $R\in\mathbb{R}^{n\times n}$, whose $(i,j)$ component is $r_{i,j}$ the [Pearson correlation](https://en.wikipedia.org/wiki/Pearson_correlation_coefficient) between variant $i$ and variant $j$.
+- While $R$ usefully describes the LD structure of a region, it does not fully characterize the region's LD, because it contains only pairwise dependence information.  There are many possible higher-order dependence structures consistent with any given $R$ matrix[^corr_example].
+
+
+## Haplotypes
+
+The _haplotype_ is an important concept in the study of LD.  A haplotype is defined to be a group of genetic variants that are typically inherited together.
 
 ## Drivers
 
-There are two main processes that drive LD: mutation and recombination.
+There are two main drivers of LD: mutation and recombination.
 
 ### Mutation
 
-For simplicity, first consider LD in the  absence of recombination, as in the case in mitochondrial DNA and certain regions of the Y chromosome.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD is a function of historical mutations, and the fates of populations containing these mutations.  
+First consider LD in the absence of recombination, as occurs in mitochondrial DNA, certain regions of the Y chromosome, and some other genomic regions.  In such recombination-free regions, the distance between two variants is irrelevant to their LD. Instead, LD depends on patterns of historical mutation.
 
-Figure 7 from the Hapmap paper[@international2005haplotype] illustrates the concept: variants in non-recombining regions tends to be highly correlated if they arose on the same branch of a genealogical tree.
+The diagram below illustrates this concept: variants are correlated if the mutations that produced them occurred on the same branch of the haplotype genealogical tree. Genomic position is irrelevant.
+
+{{
+static_img_embed(src="docs/_figs/ld_same_branch_correlation.svg", width="100%")
+}}
 
 
-![hapmap-mutation-fig](https://github.com/user-attachments/assets/d56eb383-5edf-4601-b4c5-a991acd25931)
+For further discussion of the LD in the absence of recombination, see Figure 7 from the HapMap paper[@international2005haplotype].
+
+
 
 
 
 ### Recombination
 
 
-Besides mutation, the other major driver of LD patterns in the eukaryotic genome is recombination. In regions subject to recombination, LD decays as the distance between variants increases, because the odds of an intervening [recombination event](https://en.wikipedia.org/wiki/Genetic_recombination) correspondingly increase. However, due to the complex structure of eukaryotic DNA, the odds of recombination events are non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant. Instead, LD displays a block-like structure, with block boundaries determined by recombination hotspots.
+Besides mutation, the other major driver of LD in the eukaryotic genome is recombination. In regions subject to recombination, LD decays as the distance between variants increases, because the odds of an intervening [recombination event](https://en.wikipedia.org/wiki/Genetic_recombination) correspondingly increase. However, due to the complex structure of eukaryotic DNA, the odds of recombination events are non-uniform across a chromosome. Thus, the rate of LD decay with genomic distance is not constant. Instead, LD displays a block structure, with block boundaries determined by recombination hotspots.
 
 
 As an illustrative example, here is a plot of the absolute value of the correlation between genetic variants in a region of chromosome 1.  This plot was generated from the [UK Biobank LD matrices stored on AWS OpenData](https://registry.opendata.aws/ukbb-ld/).  In the plot, the x and y axes correspond genomic position, while color indicates absolute correlation.
@@ -36,18 +47,18 @@ Consistent with the above, we observe irregularly spaced LD blocks.
 
 ### Other Factors
 
-Besides mutation and recombination, LD is affected broadly by historical patterns of migration, population isolation, and natural selection.
+Besides mutation and recombination, LD is affected by historical patterns of migration, population isolation, and natural selection.
 
 
 ## Genomic Distance
 
-It is frequently useful to measure distance along the genome not in terms of physical base pairs, but in terms of recombination frequency. For this purpose, the preferred unit is the [centimorgan](https://en.wikipedia.org/wiki/Centimorgan). Two genomic positions are one centimorgan apart if there is 1% chance of a recombination event between them per generation[^time_love].
+It is frequently useful to measure distance along the genome not in base pairs, but in recombination frequency. For this purpose, the preferred unit is the [centimorgan](https://en.wikipedia.org/wiki/Centimorgan). Two genomic positions are one centimorgan apart if there is 1% chance of a recombination event between them per generation[^time_love].
 
 
 
 ## Genotyping
 
-The strong linkage disequilibrium between variants in close proximity means that it is possible to capture a large proportion of common human genetic variation without sequencing all variants.  Instead, researchers can genotype a set of carefully chosen common variants called "tag variants".  Un-genotyped common variants can be imputed with high accuracy from their LD relationships with tag variants.
+The strong linkage disequilibrium between variants in close proximity means that it is possible to capture a large proportion of common human genetic variation without sequencing all variants.  Instead, researchers can genotype a set of carefully chosen common variants called "tag variants".  Un-genotyped common variants can be imputed with high accuracy from their LD with tag variants.
 
 
 
@@ -57,4 +68,4 @@ The strong linkage disequilibrium between variants in close proximity means that
 
 [^corr_example]: The following example is illustrative.  Consider 3 variants A, B and C. If all 3 variants are independent, the correlation matrix $R$ will equal the identity matrix.  If A and B are independent, but C is the [exclusive or](https://en.wikipedia.org/wiki/Exclusive_or) of A and B, their correlation matrix is also the identity matrix.
 
-[^time_love]: For a readable popular-science account of the early history of genetics, and the development of the centimorgan from the studies of fruit-fly mutants, see _Time, Love, and Memory_[@weiner2000time].
+[^time_love]: For a readable popular-science account of the early history of genetics and the development of the centimorgan from the studies of fruit-fly mutants, see _Time, Love, and Memory_[@weiner2000time].

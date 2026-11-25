@@ -10,7 +10,7 @@ _NEG_COL = "__neg_value"
 _PREV_CUM_COL = "__prev_cumulative"
 
 
-@frozen
+@frozen(slots=True)
 class MinVariantsForCumulativeMass(DataProcessingPipe):
     """Within each group_col, keep the minimal prefix of highest-value_col rows
     whose cumulative value_col first reaches threshold (the crossing row is

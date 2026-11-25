@@ -3,6 +3,7 @@ A Task that does nothing, which can be used for testing.
 """
 
 from pathlib import Path
+from typing import Self
 
 from attrs import Factory, frozen
 
@@ -15,7 +16,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class FakeTask(Task):
     meta: Meta
     deps: list[Task] = Factory(list)
@@ -27,5 +28,5 @@ class FakeTask(Task):
         raise NotImplementedError()
 
     @classmethod
-    def create_with_filemeta(cls, asset_id: str):
+    def create_with_filemeta(cls, asset_id: str) -> Self:
         return cls(SimpleFileMeta(AssetId(asset_id)))

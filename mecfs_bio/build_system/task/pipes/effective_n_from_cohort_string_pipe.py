@@ -27,7 +27,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
 
 
-@frozen
+@frozen(slots=True)
 class CohortCaseControl:
     """Case and control counts for a single cohort of a case/control meta-analysis."""
 
@@ -45,7 +45,7 @@ class CohortCaseControl:
         return 4.0 * self.n_cases * self.n_controls / (self.n_cases + self.n_controls)
 
 
-@frozen
+@frozen(slots=True)
 class EffectiveNFromCohortStringPipe(DataProcessingPipe):
     """Add a per-variant effective sample size column derived from a per-variant
     cohort-membership string.

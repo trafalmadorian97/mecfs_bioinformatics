@@ -14,4 +14,16 @@ The results are below:
 
 {{ ppp_rg_data_table("docs/_figs/kerrebeijin_et_al_pain_ppp_rg_cis_excluded_display_frame.parquet", id="ukbb-ppp-ldsc-pgc-fibro-rg" )}}
 
-There are large number of proteins whose plasma levels are genetically correlated with fibromyalgia, but at least at a glance I do not see a clear theme.  It is interesting to observe a number of inflammation-related proteins with significant genetic correlations, like RARRES2 and IL1RN.
+There are large number of proteins whose plasma levels are genetically correlated with fibromyalgia  It is interesting to observe a number of inflammation-related proteins with significant genetic correlations, such as
+
+
+- **RARRES2**: ["Acts as a chemotactic factor for leukocyte populations expressing CMKLR1"](https://www.uniprot.org/uniprotkb/Q29RS5/entry)
+- **IL1RN**:  Interleukin-1 receptor antagonist.  Important to the regulation of the immune response.
+- **CFH**: [Modulates compliment activation.](https://www.uniprot.org/uniprotkb/P08603/entry)
+
+Some significant proteins have neurological functions:
+
+- **IGSF9**: [Involved in regulation of synapse maturation](https://www.genecards.org/card/IGSF9).
+- **NTRK3**: ["neurotrophic receptor tyrosine kinase 3, a membrane-bound receptor tyrosine kinase that transduces neurotrophin signals""](https://www.genecards.org/card/NTRK3)
+
+While other significant proteins have very diverse/unclear functions, so that it is difficult to associate them with a particular pathway.

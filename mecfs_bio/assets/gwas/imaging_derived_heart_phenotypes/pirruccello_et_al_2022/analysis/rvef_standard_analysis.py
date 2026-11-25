@@ -20,6 +20,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 RVEF_STANDARD_ANALYSIS_ASSIGN_RSID = concrete_standard_analysis_generator_no_rsid(
     base_name="pirruccello_et_al_2022_rvef",
     raw_gwas_data_task=PIRRUCCELLO_EXTRACTED_RVEF_DATA,
+    gnomad_ancestry_for_harmonization="nfe_nwe",  # UK Biobank imaging cohort
     fmt=GWASLabColumnSpecifiers(
         snpid="SNP",
         chrom="CHR",

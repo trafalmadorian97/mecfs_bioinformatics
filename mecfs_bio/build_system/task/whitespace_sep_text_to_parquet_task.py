@@ -45,7 +45,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class WhitespaceSepTextToParquetTask(Task):
     meta: Meta
     source_task: Task
@@ -160,6 +160,7 @@ class WhitespaceSepTextToParquetTask(Task):
             project=source_meta.project,
             sub_dir=sub_dir,
             read_spec=DataFrameReadSpec(format=DataFrameParquetFormat()),
+            genome_build=source_meta.genome_build,
         )
         return cls(
             meta=meta,

@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.imaging_derived_heart_phenotypes.pirruccello_et_al_20
 )
 
 
-def run_initial_right_heart_analysis():
+def run_initial_right_heart_analysis() -> None:
     """
     Function to analyze imaging-derived right-heart phenotype.
     Includes:

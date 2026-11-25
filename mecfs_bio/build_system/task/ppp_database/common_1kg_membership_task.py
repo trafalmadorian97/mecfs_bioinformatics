@@ -87,7 +87,7 @@ def attach_rsid(filtered: pl.DataFrame, dbsnp: pl.DataFrame) -> pl.DataFrame:
     )
 
 
-@frozen
+@frozen(slots=True)
 class Common1kgMembershipTask(GeneratingTask):
     """
     Produce the normalized common-1kg membership list (CHR, POS, EA, NEA, rsID) by

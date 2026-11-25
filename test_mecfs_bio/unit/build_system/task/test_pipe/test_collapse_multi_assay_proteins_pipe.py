@@ -42,7 +42,7 @@ def _run() -> pl.DataFrame:
     return pipe.process(nw_df).collect().to_polars()
 
 
-def test_duplicated_protein_is_conservatively_combined():
+def test_duplicated_protein_is_conservatively_combined() -> None:
     out = _run()
     tnf = out.filter(pl.col(PPP_RG_OID_COL) == "OID_A").row(0, named=True)
 
@@ -68,7 +68,7 @@ def test_duplicated_protein_is_conservatively_combined():
     assert tnf[PPP_RG_N_SNPS_COL] == 1000
 
 
-def test_singleton_protein_passes_through_unchanged():
+def test_singleton_protein_passes_through_unchanged() -> None:
     out = _run()
     single = out.filter(pl.col(PPP_RG_OID_COL) == "OID_C").row(0, named=True)
 

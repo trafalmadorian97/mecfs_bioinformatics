@@ -36,7 +36,7 @@ from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessin
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class PipeDataFrameTask(Task):
     source_data_task: Task
     pipes: Sequence[DataProcessingPipe]
@@ -44,7 +44,7 @@ class PipeDataFrameTask(Task):
     out_format: OutFormat
     backend: ValidBackend = "ibis"
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         source_meta = self._source_meta
         assert isinstance(source_meta, FileMeta)
         read_spec = source_meta.read_spec
@@ -107,6 +107,7 @@ class PipeDataFrameTask(Task):
                 project=source_meta.project,
                 sub_dir=PurePath("processed"),
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         elif isinstance(source_meta, ResultTableMeta):
             meta = ResultTableMeta(
@@ -123,6 +124,7 @@ class PipeDataFrameTask(Task):
                 project=source_meta.project,
                 sub_dir=source_meta.sub_dir,
                 read_spec=read_spec,
+                genome_build=source_meta.genome_build,
             )
         else:
             raise ValueError("unknown source meta")

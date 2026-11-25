@@ -11,7 +11,7 @@ from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import DataFrameReadSpec
 
 
-@frozen
+@frozen(slots=True)
 class ResultTableMeta(FileMeta):
     id: str
     trait: str

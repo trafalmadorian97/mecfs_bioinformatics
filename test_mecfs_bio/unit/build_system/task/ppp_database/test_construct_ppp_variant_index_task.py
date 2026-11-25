@@ -38,7 +38,7 @@ def _parquet_meta(asset_id: str) -> SimpleFileMeta:
     )
 
 
-def test_construct_ppp_variant_index_task(tmp_path: Path):
+def test_construct_ppp_variant_index_task(tmp_path: Path) -> None:
     # Template protein (regenie columns). ID = CHROM:POS_hg19:ALLELE0:ALLELE1:imp:v1.
     protein_path = tmp_path / "protein.parquet"
     pl.DataFrame(

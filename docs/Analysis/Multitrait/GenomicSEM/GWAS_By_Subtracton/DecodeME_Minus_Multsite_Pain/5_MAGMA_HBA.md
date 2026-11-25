@@ -8,7 +8,7 @@ I applied Human Brain Atlas[@siletti2023transcriptomic] (HBA) [MAGMA](../../../.
 
 
 
-{{ png_embed("docs/_figs/decode_me_minus_johnston_ols_hba_magma_independent_cluster_plot/hba_magma_fig.png", alt="") }}
+{{ static_img_embed("docs/_figs/decode_me_minus_johnston_ols_hba_magma_independent_cluster_plot/hba_magma_fig.png", alt="") }}
 
 
 {{ plotly_embed("docs/_figs/decode_me_minus_johnston_ols_hba_magma_plot_extracted.html", id="subtraction-hba-magma") }}

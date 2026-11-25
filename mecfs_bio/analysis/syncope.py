@@ -17,7 +17,7 @@ from mecfs_bio.assets.gwas.syncope.aegisdottir_et_al.raw.raw_syncope_data import
 )
 
 
-def run_syncope_analysis():
+def run_syncope_analysis() -> None:
     """
     Analyze GWAS of syncope from Aegisdottir et al.
     Includes:

@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._genomic_sem_munge import (
 )
 
 
-def test_odds_ratio_effect_raises():
+def test_odds_ratio_effect_raises() -> None:
     """
     An effect column that looks like an odds ratio (median rounds to 1) is a
     mis-specified input here: this pipeline always feeds a log-scale beta
@@ -66,7 +66,7 @@ def _simple_matching_inputs() -> tuple[pl.DataFrame, pl.DataFrame]:
     return sumstats, ref
 
 
-def test_nan_n_keeps_file_n_column():
+def test_nan_n_keeps_file_n_column() -> None:
     """
     A NaN sample size means "not provided" (mirroring R's `!is.na(N)`), so the
     file's per-SNP N column must survive rather than be clobbered with NaN.
@@ -79,14 +79,14 @@ def test_nan_n_keeps_file_n_column():
     )
 
 
-def test_scalar_n_overrides_file_n_column():
+def test_scalar_n_overrides_file_n_column() -> None:
     """A real scalar N overrides the file's N column, as GenomicSEM does."""
     sumstats, ref = _simple_matching_inputs()
     out = munge_sumstats(sumstats, ref, n=50000.0).sort("SNP")
     np.testing.assert_array_equal(out["N"].to_numpy(), np.full(3, 50000.0))
 
 
-def test_nan_p_or_effect_rows_are_dropped():
+def test_nan_p_or_effect_rows_are_dropped() -> None:
     """
     R's is.na() drops both NA and NaN, so a NaN P or NaN effect row must be
     dropped (polars is_not_null alone would keep NaN). Regression test.

@@ -3,7 +3,7 @@ import pandas as pd
 from mecfs_bio.build_system.task.pipes.format_numbers_pipe import FormatFloatNumbersPipe
 
 
-def test_format_numbers_pipe():
+def test_format_numbers_pipe() -> None:
     df = pd.DataFrame(
         {
             "col1": ["a", "b", "c"],

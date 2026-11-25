@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.systemic_lupus_erythematosus.bentham_et_al_2015.analy
 )
 
 
-def lupus_analysis():
+def lupus_analysis() -> None:
     """
     Script to analyze the lupus GWAS of Bentham et al.
     """

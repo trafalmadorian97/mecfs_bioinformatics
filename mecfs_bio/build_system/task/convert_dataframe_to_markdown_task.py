@@ -3,6 +3,7 @@ Prepare results for presentation by converting a dataframe to markdown format.
 """
 
 from pathlib import Path
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -23,7 +24,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ConvertDataFrameToMarkdownTask(Task):
     """
     Task to convert a dataframe to markdown format.
@@ -34,7 +35,7 @@ class ConvertDataFrameToMarkdownTask(Task):
     df_task: Task
     pipe: DataProcessingPipe = IdentityPipe()
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         source_meta = self._source_meta
         assert isinstance(source_meta, FileMeta)
         assert source_meta.read_spec is not None
@@ -68,7 +69,7 @@ class ConvertDataFrameToMarkdownTask(Task):
     @classmethod
     def create_from_result_table_task(
         cls, source_task: Task, asset_id: str, pipe: DataProcessingPipe = IdentityPipe()
-    ):
+    ) -> Self:
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = MarkdownFileMeta(

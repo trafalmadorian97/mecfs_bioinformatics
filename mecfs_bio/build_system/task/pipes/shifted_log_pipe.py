@@ -6,7 +6,7 @@ from attrs import frozen
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
-@frozen
+@frozen(slots=True)
 class ShiftedLogPipe(DataProcessingPipe):
     base: int
     cols_to_exclude: Sequence[str]
@@ -25,7 +25,7 @@ class ShiftedLogPipe(DataProcessingPipe):
         return x
 
 
-@frozen
+@frozen(slots=True)
 class ShiftedLogPipeInclude(DataProcessingPipe):
     base: int
     cols_to_include: Sequence[str]

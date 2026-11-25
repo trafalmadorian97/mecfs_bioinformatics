@@ -4,7 +4,7 @@ from mecfs_bio.assets.gwas.me_cfs.million_veterans.analysis.million_veterans_cfs
 )
 
 
-def run_initial_mvp_cfs_analysis():
+def run_initial_mvp_cfs_analysis() -> None:
     """
     Function to run initial analysis on Million Veterans CFS phenotyp.
 

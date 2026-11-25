@@ -20,7 +20,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-def test_attach_rsid():
+def test_attach_rsid() -> None:
     filtered = pl.DataFrame(
         {
             GWASLAB_CHROM_COL: [1, 1],

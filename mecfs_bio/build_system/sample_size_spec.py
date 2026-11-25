@@ -14,14 +14,14 @@ from attrs import frozen
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_SAMPLE_SIZE_COLUMN
 
 
-@frozen
+@frozen(slots=True)
 class ScalarSampleSize:
     """A single sample size shared by every variant in the GWAS."""
 
     n: int
 
 
-@frozen
+@frozen(slots=True)
 class PerVariantSampleSize:
     """The sample size varies per variant and is read from ``column``.
 

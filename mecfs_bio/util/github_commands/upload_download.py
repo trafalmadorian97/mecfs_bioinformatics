@@ -19,7 +19,7 @@ logger = structlog.get_logger()
 
 def release_from_dir(
     release_tag: str, dir_path: Path, title: str, draft: bool, repo_name: str
-):
+) -> None:
     """
     Create a github release by zipping the contents of a directory
     """
@@ -60,7 +60,7 @@ def release_from_dir(
         execute_command(cmd=cmd)
 
 
-def does_release_exist(repo_name: str, release_tag: str):
+def does_release_exist(repo_name: str, release_tag: str) -> bool:
     cmd = ["gh", "release", "view", "-R", repo_name, release_tag]
     try:
         execute_command(cmd)
@@ -74,7 +74,7 @@ def does_release_exist(repo_name: str, release_tag: str):
         raise e
 
 
-def download_release_to_dir(release_tag: str, dir_path: Path, repo_name: str):
+def download_release_to_dir(release_tag: str, dir_path: Path, repo_name: str) -> None:
     """
     Download a github release, which is assumed to be a zip file. Extract it into a directory.
     """

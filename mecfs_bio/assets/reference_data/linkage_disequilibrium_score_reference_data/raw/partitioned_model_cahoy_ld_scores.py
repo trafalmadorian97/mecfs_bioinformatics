@@ -30,6 +30,6 @@ PARTITIONED_MODEL_CAHOY_LD_SCORES_RAW: DownloadFileTask = DownloadFileTask(
         filename="LDSCORE_LDSC_SEG_ldscores_Cahoy_1000Gv3_ldscores",
         extension=".tar",
     ),
-    url="https://www.dropbox.com/scl/fi/jnxzjt6wytng8xtdwkgeb/LDSCORE_LDSC_SEG_ldscores_Cahoy_1000Gv3_ldscores.tar?rlkey=ed12zeugsc6q8ddawcy1cifqm&dl=1",
+    url="https://dl.dropboxusercontent.com/scl/fi/jnxzjt6wytng8xtdwkgeb/LDSCORE_LDSC_SEG_ldscores_Cahoy_1000Gv3_ldscores.tar?rlkey=ed12zeugsc6q8ddawcy1cifqm&dl=1",
     md5_hash="15c5e5e8f056a12f1da65cd5d45b1963",
 )

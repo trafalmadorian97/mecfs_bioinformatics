@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.human_herpesvirus_7_dna.kamitaki_et_al_2025.analysis.
 )
 
 
-def run_hhv7():
+def run_hhv7() -> None:
     """
     Function to perform standard analysis on Kamitaki et al.'s GWAS of HHV7 DNA levels.
 

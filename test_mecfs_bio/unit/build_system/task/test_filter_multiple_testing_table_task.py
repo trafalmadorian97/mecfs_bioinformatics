@@ -24,7 +24,9 @@ _dummy_df = pd.DataFrame({"p": [0.02, 0.02, 1, 1, 1]})
 @pytest.mark.parametrize(
     ["procedure", "expected_passed"], [["fdr_bh", 2], ["bonferroni", 0]]
 )
-def test_multiple_testing(tmp_path: Path, procedure: Method, expected_passed: int):
+def test_multiple_testing(
+    tmp_path: Path, procedure: Method, expected_passed: int
+) -> None:
     scratch_dir = tmp_path / "scratch"
     scratch_dir.mkdir(exist_ok=True, parents=True)
     input_path = tmp_path / "input.csv"

@@ -32,10 +32,12 @@ plugins:
       - MiXeR
       - SuSiE
       - LCV
+      - ABF colocalization
 - exclude-search:
       exclude:
         - reference/* # avoid cluttering search with code files
-- macros
+- macros:
+    module_name: docs_macros/macros
 - glightbox
 - awesome-nav
 - bibtex:
@@ -50,39 +52,13 @@ plugins:
     exclude_committers:
       - web-flow
 
-- mkdocstrings:
-   handlers:
-      python:
-        inventories:
-          - https://docs.python.org/3/objects.inv
-        options:
-          extra:
-            paths: [.]
-          docstring_section_style: list # or "table"
-          docstring_style: "numpy"
-          filters: [ "!^_" ]
-          heading_level: 1
-          merge_init_into_class: true
-          parameter_headings: true
-          separate_signature: true
-          show_root_heading: true
-          show_signature_annotations: true
-          show_symbol_type_heading: true
-          show_symbol_type_toc: true
-          show_if_no_docstring: true
-          summary: true
-- api-autonav:
-    modules: ['mecfs_bio']
-    exclude: ['mecfs_bio.util']
-    enabled: !ENV [ENABLE_API_AUTONAV, false]
-
 extra_javascript:
   - javascripts/mathjax.js
   - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
   - https://unpkg.com/tablesort@5.3.0/dist/tablesort.min.js
   - javascripts/tablesort-scinum.js
   - javascripts/tablesort-init.js
-  # Backs the data_table macro in main.py. Loaded globally (UMD, so it lands on
+  # Backs the data_table macro in docs_macros. Loaded globally (UMD, so it lands on
   # window) because the macro's own script is an ES module and cannot export
   # Tabulator to the page scope itself.
   - https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js

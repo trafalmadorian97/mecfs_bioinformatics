@@ -4,7 +4,7 @@ import pandas as pd
 from mecfs_bio.build_system.task.pipes.add_average_pipe import AddAveragePipe
 
 
-def test_add_average_pipe():
+def test_add_average_pipe() -> None:
     df = pd.DataFrame(
         {
             "nm": ["c", "d", "e"],

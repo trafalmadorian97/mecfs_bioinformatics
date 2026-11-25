@@ -16,7 +16,7 @@
     "custom.regex"
   ],
   "constraints": {
-    "pixi": "0.78.0"
+    "pixi": "0.84.2"
   },
   "customManagers": [
     {
@@ -60,6 +60,7 @@
         "ibis-framework",
         "actions/cache",
         "actions/setup-python",
+        "dawidd6/action-download-artifact",
         "dorny/paths-filter",
         "actionlint",
         "narwhals",
@@ -68,7 +69,8 @@
         "tqdm",
         "invoke",
         "ruff",
-        "typeguard"
+        "typeguard",
+        "pyarrow"
       ],
       "matchUpdateTypes": ["major","minor", "patch"],
       "automerge": true
@@ -95,12 +97,12 @@
       "matchPackageNames": ["setuptools"],
       "allowedVersions": "<82"
     },
-    {
-      "description": "numpy 2.4 turns float() on a size-1 ndim>0 array into a hard TypeError, which crashes gwaslab 4.2.2's vendored LDSC rg estimator (RG.__init__ in extension/ldsc/ldsc_regressions.py). See the comment above the numpy override in pyproject.toml. Lift this ceiling only once gwaslab extracts the scalar with .item() upstream.",
-      "matchPackageNames": ["numpy"],
-      "allowedVersions": "<2.4"
-    },
 
+    {
+      "description": "ibis 12 is only partly compatible with duckdb 2.0: sqlglot still emits the removed x -> ... lambda syntax, and to_pyarrow_batches calls the removed fetch_record_batch. Lift this ceiling once an ibis release includes https://github.com/ibis-project/ibis/pull/12205 (sqlglot bump), https://github.com/ibis-project/ibis/pull/12206 (duckdb 2.0 support), and the fix for https://github.com/ibis-project/ibis/issues/12196 (to_pyarrow_batches). ",
+      "matchPackageNames": ["duckdb"],
+      "allowedVersions": "<2"
+    },
     {
       "description": "r-base>=4.6 seems currently incompatible with r-cpp11",
       "matchPackageNames": ["r-base"],

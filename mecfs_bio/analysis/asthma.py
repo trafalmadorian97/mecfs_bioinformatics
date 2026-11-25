@@ -5,7 +5,7 @@ Script to analyze asthma phenotype.
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
 
 
-def run_initial_asthma_analysis():
+def run_initial_asthma_analysis() -> None:
     """
     Function to analyze asthma phenotype
     Includes:

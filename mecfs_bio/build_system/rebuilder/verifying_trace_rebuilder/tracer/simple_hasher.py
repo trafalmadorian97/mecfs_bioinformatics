@@ -15,7 +15,7 @@ HashObject = Any
 HashConstructor = Callable[[], HashObject]
 
 
-@frozen
+@frozen(slots=True)
 class SimpleHasher(Tracer):
     hash_constructor: HashConstructor
     chunk_size: int = 8192

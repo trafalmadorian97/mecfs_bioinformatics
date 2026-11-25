@@ -45,7 +45,7 @@ def pull_figures(
     prune: bool = False,
     chunk_size: int = DEFAULT_CHUNK_SIZE,
     chunk_workers: int = DEFAULT_CHUNK_WORKERS,
-):
+) -> None:
     """
     Sync the local figure directory with the manifest by downloading any
     missing or out-of-date blobs from the GitHub release.

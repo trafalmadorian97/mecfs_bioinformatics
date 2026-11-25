@@ -21,7 +21,7 @@ from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabLeadVariantsTask(Task):
     """
     A task to generate a list of lead variants from summary statistics.

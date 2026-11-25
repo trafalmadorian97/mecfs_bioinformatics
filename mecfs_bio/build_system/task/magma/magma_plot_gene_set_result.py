@@ -1,4 +1,5 @@
 from pathlib import Path, PurePath
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -28,7 +29,7 @@ logger = structlog.get_logger()
 MAGMA_GENE_SET_PLOT_NAME = "magma_gene_set_plot"
 
 
-@frozen
+@frozen(slots=True)
 class MAGMAPlotGeneSetResult(Task):
     meta: Meta
     gene_set_analysis_task: Task
@@ -75,6 +76,7 @@ class MAGMAPlotGeneSetResult(Task):
                 "Not Significant": px.colors.qualitative.Plotly[0],
             },
         )
+        plot.update_layout(showlegend=False)
         plot.add_hline(
             -np.log10(thresh),
             line_dash="dot",
@@ -92,7 +94,7 @@ class MAGMAPlotGeneSetResult(Task):
         asset_id: str,
         number_of_bars: int = 20,
         label_col: str = "FULL_NAME",
-    ):
+    ) -> Self:
         source_meta = gene_set_analysis_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = GWASPlotDirectoryMeta(

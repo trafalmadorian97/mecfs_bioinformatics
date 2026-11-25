@@ -1,3 +1,5 @@
+from typing import Self
+
 import structlog
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -31,7 +33,7 @@ from mecfs_bio.constants.gwaslab_constants import (
 )
 
 
-@frozen
+@frozen(slots=True)
 class GwasLabRegionPlotTargetLocusTask(Task):
     """
     A task to generate region plots around arbitrary locus in genome.
@@ -89,7 +91,7 @@ class GwasLabRegionPlotTargetLocusTask(Task):
         chrom: int,
         pos: int,
         buffer: int = 500_000,
-    ):
+    ) -> Self:
         reference_meta = sumstats_task.meta
         assert isinstance(reference_meta, GWASLabSumStatsMeta)
         meta = GWASLabRegionPlotsMeta(

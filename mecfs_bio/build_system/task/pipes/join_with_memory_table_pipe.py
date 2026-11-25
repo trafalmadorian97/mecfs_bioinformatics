@@ -8,7 +8,7 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import ValidBackend
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
-@frozen
+@frozen(slots=True)
 class JoinWithMemTablePipe(DataProcessingPipe):
     mem_table: pd.DataFrame
     keys_left: list[str]

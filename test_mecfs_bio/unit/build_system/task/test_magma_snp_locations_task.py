@@ -21,7 +21,9 @@ from mecfs_bio.build_system.tasks.simple_tasks import find_tasks
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_magma_snp_locations_task(tmp_path: Path, magma_snp_locations_task: Task):
+def test_magma_snp_locations_task(
+    tmp_path: Path, magma_snp_locations_task: Task
+) -> None:
     tasks = find_tasks([magma_snp_locations_task])
 
     wf = make_wf()

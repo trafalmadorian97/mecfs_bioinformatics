@@ -77,7 +77,7 @@ from mecfs_bio.constants.magma_constants import MAGMA_P_COLUMN
 from mecfs_bio.util.type_related.unwrap import unwrap
 
 
-@frozen
+@frozen(slots=True)
 class HBAMagmaTasks:
     snp_loc_task: MagmaSNPFileTask
     magma_annotation_task: MagmaAnnotateTask

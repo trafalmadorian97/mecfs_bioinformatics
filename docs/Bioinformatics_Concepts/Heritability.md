@@ -91,7 +91,7 @@ where the last line follows from the Projection Theorem (pg. 345 in Grimmet and 
 
 
  - This approach has the **advantage** of its mathematical clarity.  Whereas the standard definition of heritability requires some fairly restrictive assumptions, this alternative definition is applicable to any phenotype representable by a random variable in $L_2$.  Mathematically, it is now crystal clear what we mean when we speak of $G$ and $E$.
- - On the other hand, the conditional expectation definition of heritability has the **disadvantage** of reduced interpretability.  In particular, $G$ now incorporates all aspects of the phenotype that can be predicted from the genotype, including artifacts of population stratification.
+ - On the other hand, the conditional expectation definition of heritability has the **disadvantage** of reduced interpretability.  In particular, $G$ now incorporates all aspects of the phenotype that can be predicted from the genotype, including artifacts of [population stratification](Population_Stratification.md).
 
 ### Counterfactual heritability
 

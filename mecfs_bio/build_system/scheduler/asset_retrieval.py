@@ -30,7 +30,7 @@ def get_asset_if_exists(
     raise ValueError("Unknown asset type")
 
 
-def _isinstance(val, expected_type):
+def _isinstance(val: object, expected_type: type) -> bool:
     try:
         typeguard.check_type(val, expected_type)
     except TypeCheckError:

@@ -17,7 +17,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 logger = structlog.getLogger()
 
 
-@frozen
+@frozen(slots=True)
 class GetFileFromSynapseTask(Task):
     """
     Task to get a file from synapse.org (see: https://docs.synapse.org/synapse-docs/faq)

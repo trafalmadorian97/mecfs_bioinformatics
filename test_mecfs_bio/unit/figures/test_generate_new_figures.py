@@ -26,7 +26,7 @@ class _RecordingExporter(AbstractFigureExporter):
 
 def test_generate_new_figures_only_passes_tasks_with_missing_outputs(
     tmp_path: Path,
-):
+) -> None:
     fig_dir = tmp_path
 
     existing_plot_task = FakeTask(

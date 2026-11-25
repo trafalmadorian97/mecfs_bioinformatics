@@ -98,7 +98,7 @@ _CANONICAL_CHROM_ORDER: list[str] = [str(i) for i in range(1, 23)] + ["X", "Y", 
 GeneIdKind = Literal["ensembl_id", "gene_name"]
 
 
-@frozen
+@frozen(slots=True)
 class GeneManhattanData:
     """The genes to plot plus the multiple-testing count for the significance line.
 
@@ -187,7 +187,7 @@ class GeneManhattanSource(ABC):
         )
 
 
-@frozen
+@frozen(slots=True)
 class MagmaGeneSource(GeneManhattanSource):
     """Load a Manhattan-plot table from a :class:`MagmaGeneAnalysisTask`.
 
@@ -273,7 +273,7 @@ class MagmaGeneSource(GeneManhattanSource):
         return merged
 
 
-@frozen
+@frozen(slots=True)
 class GenePValueTableSource(GeneManhattanSource):
     """Load a Manhattan-plot table from an arbitrary (gene, p-value) table.
 
@@ -536,7 +536,7 @@ def build_manhattan_plot(
     return fig
 
 
-@frozen
+@frozen(slots=True)
 class GeneManhattanPlotTask(Task):
     """Create an interactive HTML gene-level Manhattan plot.
 

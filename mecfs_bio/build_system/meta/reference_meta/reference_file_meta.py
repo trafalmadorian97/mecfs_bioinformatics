@@ -7,7 +7,7 @@ from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
 
 
-@frozen
+@frozen(slots=True)
 class ReferenceFileMeta(FileMeta):
     group: str
     sub_group: str
@@ -17,7 +17,7 @@ class ReferenceFileMeta(FileMeta):
     filename: str | None = None
     read_spec: ReadSpec | None = None
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.extension.startswith(".") or self.extension == ""
 
     @property

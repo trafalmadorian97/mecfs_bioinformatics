@@ -15,7 +15,7 @@ Metric = Literal["correlation", "euclidean"]
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class XRCluster(XRDataPipe):
     """
     Cluster a DataArray in an xarray dataset along a given dimension

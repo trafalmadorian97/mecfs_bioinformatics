@@ -4,4 +4,3 @@ Welcome to the ME/CFS bioinformatics repo!
 
 # Documentation
 See [here](https://trafalmadorian97.github.io/mecfs_bioinformatics/) for documentation.
-

@@ -10,7 +10,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 
 
-@frozen
+@frozen(slots=True)
 class ResultArchiveMeta(FileMeta):
     id: AssetId
     trait: str
@@ -18,7 +18,7 @@ class ResultArchiveMeta(FileMeta):
     extension: str
     sub_dir: PurePath = PurePath("analysis/result_archives")
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.extension.startswith(".")
 
     @property

@@ -17,7 +17,7 @@ from mecfs_bio.util.download.verify import verify_hash
 from mecfs_bio.util.subproc.run_command import execute_command_with_retries
 
 
-@frozen
+@frozen(slots=True)
 class OSFRetrievalTask(GeneratingTask):
     """
     A task that fetches GWAS data from the Open Science data store
@@ -28,7 +28,7 @@ class OSFRetrievalTask(GeneratingTask):
     md5_hash: str | None = None
     run_command: Callable[[list[str]], str] = execute_command_with_retries
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.meta.project_path is not None, (
             f"{type(self).__name__} needs a project_path to fetch from OSF project "
             f"{self.osf_project_id}, but meta {self.meta.asset_id} has none"

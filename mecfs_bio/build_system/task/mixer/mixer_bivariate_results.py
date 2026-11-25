@@ -1,4 +1,5 @@
 from pathlib import Path, PurePath
+from typing import Self
 
 from attrs import frozen
 
@@ -24,7 +25,7 @@ _CONTAINER_COMBINED_DIR = Path("/container_combine")
 BIVARIATE_OUTPUT_PREFIX = "bivariate_results"
 
 
-@frozen
+@frozen(slots=True)
 class MixerBivariateSummarizeResultsTask(Task):
     """
     Task to take the results of a Bivarirate MiXeR run and produce tables and plots.
@@ -92,7 +93,7 @@ class MixerBivariateSummarizeResultsTask(Task):
         combine_task: MixerBivariateCombine,
         override_trait_1_name: str | None = None,
         override_trait_2_name: str | None = None,
-    ):
+    ) -> Self:
         source_meta = combine_task.meta
         meta: Meta
         if isinstance(source_meta, ResultDirectoryMeta):

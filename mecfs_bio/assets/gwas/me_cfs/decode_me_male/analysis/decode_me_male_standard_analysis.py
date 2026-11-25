@@ -16,6 +16,7 @@ DECODE_ME_MALE_STANDARD_ANALYSIS = concrete_standard_analysis_generator_no_rsid(
     raw_gwas_data_task=DECODE_ME_MALE_FILTER_SNPS_TASK,
     fmt="regenie",
     sample_size=2_746 + 40_960,
+    gnomad_ancestry_for_harmonization="nfe_nwe",  # DecodeME recruited in the UK
     pre_pipe_after_rsid_assignment=ComputePIfNeededPipe(),
     phenotype_info_for_ldsc=DECODE_ME_MALE_PHENOTYPE_INFO,
 )

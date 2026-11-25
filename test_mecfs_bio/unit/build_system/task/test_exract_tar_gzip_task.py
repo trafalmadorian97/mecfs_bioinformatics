@@ -38,7 +38,7 @@ def _create_dummy_tar_file(
 )
 def test_extract_tar_gzip_task(
     tmp_path: Path, read_mode: ReadMode, write_mode: WriteMode
-):
+) -> None:
     tar_loc = tmp_path / "my_tar.tar.gzip"
     file_contents = "abc123"
     name_in_tar = "my_tarred_file"

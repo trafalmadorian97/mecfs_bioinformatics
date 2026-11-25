@@ -59,7 +59,7 @@ _SUM_INV_VAR = "__sum_inv_var__"
 _SUM_INV_SE = "__sum_inv_se__"
 
 
-@frozen
+@frozen(slots=True)
 class CollapseMultiAssayProteinsPipe(DataProcessingPipe):
     """Combine multi-panel assay rows of the same protein into one conservatively-meta-analysed row.
 

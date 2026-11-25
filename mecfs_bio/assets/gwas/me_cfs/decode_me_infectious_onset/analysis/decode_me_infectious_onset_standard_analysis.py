@@ -17,6 +17,7 @@ DECODE_ME_INFECTIOUS_ONSET_STANDARD_ANALYSIS = (
         raw_gwas_data_task=DECODE_ME_INFECTIOUS_ONSET_FILTER_SNPS_TASK,
         fmt="regenie",
         sample_size=9_738 + 259_909,
+        gnomad_ancestry_for_harmonization="nfe_nwe",  # DecodeME recruited in the UK
         pre_pipe_after_rsid_assignment=ComputePIfNeededPipe(),
         phenotype_info_for_ldsc=DECODE_ME_INFECTIOUS_ONSET_PHENOTYPE_INFO,
     )

@@ -26,7 +26,7 @@ _HASH_FIELD = "figures"
 _VERSION_FIELD = "version"
 
 
-@frozen
+@frozen(slots=True)
 class FigureManifest:
     """
     Mapping from figure path (relative to the figure directory) to the

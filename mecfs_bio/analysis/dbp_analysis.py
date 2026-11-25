@@ -11,7 +11,7 @@ from mecfs_bio.assets.gwas.blood_pressure.keaton_et_al_diastolic.raw.raw_dbp_dat
 )
 
 
-def run_dbp_analysis():
+def run_dbp_analysis() -> None:
     """
     Analyze Keaton meta GWAS f diastolic blood pressure
 

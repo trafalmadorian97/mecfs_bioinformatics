@@ -26,7 +26,7 @@ This analysis used standard reference datasets recommended and preprocessed by t
 
 No tissues reached significance after multiple test correction in this analysis, but the plot of the findings, and those findings with the lowest p-values are presented below.
 
-{{ plotly_embed("docs/_figs/uk_biobank_2025_migraine_eur_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot/sldsc_scatter.html", id="uk_biobank_2025_multi_tissue_gene_expression_plot" ) }}
+{{ plotly_embed("docs/_figs/uk_biobank_2025_migraine_eur_multi_tissue_gene_expression_cell_analysis_s_ldsc_plot_vec/sldsc_scatter.html", id="uk_biobank_2025_multi_tissue_gene_expression_plot" ) }}
 
 | Name                                                           |   Coefficient |   Coefficient_P_value | Reject Null   |
 |:---------------------------------------------------------------|--------------:|----------------------:|:--------------|

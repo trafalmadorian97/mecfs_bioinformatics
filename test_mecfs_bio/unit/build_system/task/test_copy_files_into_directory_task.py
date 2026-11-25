@@ -13,7 +13,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_copy_files(tmp_path: Path):
+def test_copy_files(tmp_path: Path) -> None:
     file_1_loc = tmp_path / "file_1.txt"
     file_1_loc.write_text("hello world")
     file_1_task = FakeTask(meta=SimpleFileMeta(AssetId("file1")))

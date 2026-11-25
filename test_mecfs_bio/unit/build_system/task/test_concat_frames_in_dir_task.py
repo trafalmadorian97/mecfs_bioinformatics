@@ -16,7 +16,7 @@ from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_concat_frames_in_dir_task(tmp_path: Path):
+def test_concat_frames_in_dir_task(tmp_path: Path) -> None:
     subdir = tmp_path / "subdir"
     subdir.mkdir()
     df_1_loc = subdir / "df_1.csv"

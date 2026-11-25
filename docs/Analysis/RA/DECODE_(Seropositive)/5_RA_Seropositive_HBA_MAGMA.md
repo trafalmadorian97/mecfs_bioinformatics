@@ -10,7 +10,7 @@ I applied [MAGMA](../../../Bioinformatics_Concepts/MAGMA_Overview.md)[@sey2020co
 The results are plotted below, first as a static image, then as an interactive plot:
 
 
-{{ png_embed("docs/_figs/decode_ra_seropositive_hba_magma_independent_cluster_plot/hba_magma_fig.png", alt="seropositive-ra-hba-magma-static") }}
+{{ static_img_embed("docs/_figs/decode_ra_seropositive_hba_magma_independent_cluster_plot/hba_magma_fig.png", alt="seropositive-ra-hba-magma-static") }}
 
 
 {{ plotly_embed("docs/_figs/decode_ra_seropositive_hba_magma_plot_extracted.html", id="seropositive-ra-hba-magma") }}

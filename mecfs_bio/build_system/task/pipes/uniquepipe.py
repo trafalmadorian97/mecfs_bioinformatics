@@ -7,14 +7,14 @@ from narwhals.typing import UniqueKeepStrategy
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 
 
-@frozen
+@frozen(slots=True)
 class UniquePipe(DataProcessingPipe):
     by: Sequence[str]
     keep: UniqueKeepStrategy
     order_by: str | Sequence[str] | None = None
 
-    def __attrs_post_init__(self):
-        if self.keep != "any":
+    def __attrs_post_init__(self) -> None:
+        if self.keep not in ("any", "none"):
             assert (
                 self.order_by is not None
             )  # if we have a rule for deduplication based on ordering, we need to define an order

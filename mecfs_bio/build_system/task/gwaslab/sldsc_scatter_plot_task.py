@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import numpy as np
 import plotly.express as px
@@ -20,7 +21,7 @@ from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.util.plotting.save_fig import write_plots_to_dir
 
 
-@frozen
+@frozen(slots=True)
 class SLDSCScatterPlotTask(Task):
     """
     Generate a plot from the resulting of applying S-LDSC to GWAS summary statistics
@@ -98,7 +99,7 @@ class SLDSCScatterPlotTask(Task):
         return DirectoryAsset(out_dir)
 
     @classmethod
-    def create(cls, asset_id: str, source_task: Task):
+    def create(cls, asset_id: str, source_task: Task) -> Self:
         source_meta = source_task.meta
         assert isinstance(source_meta, ResultTableMeta)
         meta = GWASPlotDirectoryMeta(

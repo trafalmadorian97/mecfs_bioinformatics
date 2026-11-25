@@ -1,5 +1,5 @@
 from pathlib import Path, PurePath
-from typing import Literal
+from typing import Literal, Self
 
 import pandas as pd
 import structlog
@@ -38,7 +38,7 @@ SynonymMode = Literal["skip", "drop", "drop-dup"]
 DuplicateMode = Literal["first", "last", "error"]
 
 
-@frozen
+@frozen(slots=True)
 class MagmaGeneAnalysisTask(Task):
     meta: Meta
     magma_binary_task: Task
@@ -135,7 +135,7 @@ class MagmaGeneAnalysisTask(Task):
         magma_ld_ref_task: Task,
         ld_ref_file_stem: str,
         sample_size: int | SampleSizeSpec,
-    ):
+    ) -> Self:
         annotation_meta = magma_annotation_task.meta  # magma_p_value_task.meta
         assert isinstance(annotation_meta, FilteredGWASDataMeta)
         meta = ProcessedGwasDataDirectoryMeta(
@@ -165,7 +165,7 @@ class MagmaGeneAnalysisTask(Task):
         ld_ref_file_stem: str,
         sample_size: int | SampleSizeSpec,
         sub_dir_suffix: PurePath | None = None,
-    ):
+    ) -> Self:
         """Create a MagmaGeneAnalysisTask that consumes a pre-built annotation file
         (e.g. an H-MAGMA tissue-specific .genes.annot reference file) instead of
         an annotation produced by an upstream MagmaAnnotateTask. trait/project are

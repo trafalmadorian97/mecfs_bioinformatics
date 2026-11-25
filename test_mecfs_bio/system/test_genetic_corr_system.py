@@ -65,7 +65,7 @@ CT_LDSC_SYSTEM_TEST_TASK = GeneticCorrelationByCTLDSCTask.create(
 )
 
 
-def test_genetic_corr_by_ct_ldsc(tmp_path: Path):
+def test_genetic_corr_by_ct_ldsc(tmp_path: Path) -> None:
     info_store = tmp_path / "info_store.yaml"
     asset_root = tmp_path / "asset_store"
     with log_on_error(info_store):

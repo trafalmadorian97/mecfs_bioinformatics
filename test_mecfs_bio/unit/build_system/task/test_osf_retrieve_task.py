@@ -1,5 +1,6 @@
 import hashlib
 import shlex
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path, PurePath
 from subprocess import CalledProcessError
@@ -16,7 +17,9 @@ PAYLOAD = b"chr pos beta\n1 100 0.5\n"
 PAYLOAD_MD5 = hashlib.md5(PAYLOAD).hexdigest()
 
 
-def make_fake_osf_cli(attempts: list[list[str]], failures: int):
+def make_fake_osf_cli(
+    attempts: list[list[str]], failures: int
+) -> Callable[[list[str]], str]:
     """
     Build a stand-in for the osf CLI that reproduces the two behaviours the
     retry logic has to cope with, both read off osfclient 0.0.5:
@@ -57,7 +60,7 @@ def fake_fetch(asset_id: AssetId) -> Asset:
     raise NotImplementedError("OSFRetrievalTask has no dependencies to fetch")
 
 
-def test_transient_download_failure_is_retried(tmp_path: Path):
+def test_transient_download_failure_is_retried(tmp_path: Path) -> None:
     """
     A fetch that fails once and then succeeds produces the asset.
 

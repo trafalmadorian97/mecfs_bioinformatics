@@ -10,6 +10,9 @@ from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
+from mecfs_bio.build_system.meta.gwaslab_meta.gwaslab_sumstats_meta import (
+    GWASLabSumStatsMeta,
+)
 from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameReadSpec,
     DataFrameTextFormat,
@@ -18,18 +21,20 @@ from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.gwaslab.gwaslab_create_sumstats_task import (
     GWASLabCreateSumstatsTask,
+    _drop_duplicate_variant_keys,
     _validate_eaf_in_range,
 )
 from mecfs_bio.build_system.task.gwaslab.gwaslab_sumstats_to_table_task import (
     GwasLabSumstatsToTableTask,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 from mecfs_bio.constants.gwaslab_constants import GWASLAB_STATUS_COL
 
 
 def test_gwaslab_sumstats(
     tmp_path: Path,
-):
+) -> None:
     scratch_loc = tmp_path / "scratch"
     scratch_loc.mkdir(exist_ok=True, parents=True)
     task = GWASLabCreateSumstatsTask(
@@ -61,7 +66,7 @@ def test_gwaslab_sumstats(
     assert loaded.data[GWASLAB_STATUS_COL].dtype == pd.Int64Dtype(), (
         f"Expected gwaslab STATUS column to be Int64, got {loaded.data[GWASLAB_STATUS_COL].dtype}. "
         "If gwaslab changed this dtype, update the STATUS column handling in "
-        "gwaslab_create_sumstats_task.py (_do_harmonization and _sumstats_raise_on_error)."
+        "gwaslab_create_sumstats_task.py (_sumstats_raise_on_error)."
     )
     scratch_loc_2 = tmp_path / "scratch_2"
     scratch_loc_2.mkdir(exist_ok=True, parents=True)
@@ -95,7 +100,7 @@ def _regenie_sumstats_with_a1freq(a1freq: list[float]) -> gl.Sumstats:
     return gl.Sumstats(df, fmt="regenie", verbose=False)
 
 
-def test_validate_eaf_in_range_rejects_percentage():
+def test_validate_eaf_in_range_rejects_percentage() -> None:
     """
     EAF supplied as a percentage (0-100) must fail fast, even via a named format where
     gwaslab renames the source column (A1FREQ) to its standard EAF column.
@@ -105,12 +110,12 @@ def test_validate_eaf_in_range_rejects_percentage():
         _validate_eaf_in_range(sumstats)
 
 
-def test_validate_eaf_in_range_accepts_fraction():
+def test_validate_eaf_in_range_accepts_fraction() -> None:
     sumstats = _regenie_sumstats_with_a1freq([0.001, 0.25, 0.5, 0.999])
     _validate_eaf_in_range(sumstats)
 
 
-def test_validate_eaf_in_range_no_eaf_column_is_noop():
+def test_validate_eaf_in_range_no_eaf_column_is_noop() -> None:
     """A sumstats with no EAF column must not raise."""
     df = pd.DataFrame(
         {
@@ -127,3 +132,95 @@ def test_validate_eaf_in_range_no_eaf_column_is_noop():
     )
     sumstats = gl.Sumstats(df, fmt="regenie", verbose=False)
     _validate_eaf_in_range(sumstats)
+
+
+def _sumstats_with_variant_keys(
+    keys: list[tuple[int, int, str, str]],
+) -> gl.Sumstats:
+    df = pd.DataFrame(
+        {
+            "CHROM": [chrom for chrom, _, _, _ in keys],
+            "GENPOS": [pos for _, pos, _, _ in keys],
+            "ID": [f"rs{i}" for i in range(len(keys))],
+            "ALLELE0": [nea for _, _, _, nea in keys],  # regenie ALLELE0 -> NEA
+            "ALLELE1": [ea for _, _, ea, _ in keys],  # regenie ALLELE1 -> EA
+            "A1FREQ": [0.3] * len(keys),
+            "BETA": [0.1 * (i + 1) for i in range(len(keys))],
+            "SE": [0.01] * len(keys),
+            "LOG10P": [2.0] * len(keys),
+            "N": [1000] * len(keys),
+        }
+    )
+    return gl.Sumstats(df, fmt="regenie", verbose=False)
+
+
+def test_drop_duplicate_variant_keys_drops_every_colliding_row() -> None:
+    # Two rows share (CHR, POS, EA, NEA) with different stats (a liftover collision); both
+    # are dropped, not deduplicated to one, because neither can be trusted at that key.
+    sumstats = _sumstats_with_variant_keys(
+        [
+            (1, 100, "T", "A"),
+            (1, 100, "T", "A"),
+            (1, 200, "G", "C"),
+            (1, 300, "T", "A"),
+        ]
+    )
+    _drop_duplicate_variant_keys(sumstats)
+    assert sumstats.data["POS"].tolist() == [200, 300]
+
+
+def test_drop_duplicate_variant_keys_keeps_distinct_variants() -> None:
+    # Same position, different alleles is not a collision and is kept.
+    sumstats = _sumstats_with_variant_keys([(1, 100, "A", "C"), (1, 100, "A", "G")])
+    _drop_duplicate_variant_keys(sumstats)
+    assert sumstats.data["POS"].tolist() == [100, 100]
+
+
+def _source_with_build(genome_build: GenomeBuild | None) -> FakeTask:
+    return FakeTask(
+        meta=FilteredGWASDataMeta(
+            id=AssetId("input"),
+            trait="dummy_trait",
+            project="dummy_project",
+            sub_dir="processed",
+            genome_build=genome_build,
+        )
+    )
+
+
+def test_liftover_target_determines_output_genome_build() -> None:
+    task = GWASLabCreateSumstatsTask(
+        df_source_task=_source_with_build("38"),
+        target_asset_id=AssetId("sumstats"),
+        basic_check=True,
+        genome_build="infer",
+        liftover_to="19",
+    )
+    assert isinstance(task.meta, GWASLabSumStatsMeta)
+    assert task.meta.genome_build == "19"
+
+
+def test_source_genome_build_carries_over_when_inferred() -> None:
+    task = GWASLabCreateSumstatsTask(
+        df_source_task=_source_with_build("38"),
+        target_asset_id=AssetId("sumstats"),
+        basic_check=True,
+        genome_build="infer",
+    )
+    assert isinstance(task.meta, GWASLabSumStatsMeta)
+    assert task.meta.genome_build == "38"
+    table_task = GwasLabSumstatsToTableTask.create_from_source_task(
+        source_tsk=task, asset_id="table", sub_dir="processed"
+    )
+    assert isinstance(table_task.meta, FilteredGWASDataMeta)
+    assert table_task.meta.genome_build == "38"
+
+
+def test_forced_genome_build_contradicting_source_raises() -> None:
+    with pytest.raises(AssertionError):
+        GWASLabCreateSumstatsTask(
+            df_source_task=_source_with_build("38"),
+            target_asset_id=AssetId("sumstats"),
+            basic_check=True,
+            genome_build="19",
+        )

@@ -29,7 +29,7 @@ logger = structlog.get_logger()
 _DB_ALIAS = "_src"
 
 
-@frozen
+@frozen(slots=True)
 class SqliteToParquetTask(Task):
     """
     Attaches a SQLite database as alias '_src', executes `query` against it,

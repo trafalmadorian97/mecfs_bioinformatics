@@ -11,7 +11,7 @@ from mecfs_bio.build_system.rebuilder.metadata_to_path.simple_meta_to_path impor
 from mecfs_bio.build_system.scheduler.asset_retrieval import get_asset_if_exists
 
 
-def test_get_asset_if_exists(tmp_path: Path):
+def test_get_asset_if_exists(tmp_path: Path) -> None:
     meta = SimpleFileMeta(AssetId("test_item"))
     meta_to_path = SimpleMetaToPath(tmp_path)
     expected_path = meta_to_path(meta)
@@ -25,7 +25,7 @@ def test_get_asset_if_exists(tmp_path: Path):
     assert actual_asset == expected_asset
 
 
-def test_get_directory_asset_if_exists(tmp_path: Path):
+def test_get_directory_asset_if_exists(tmp_path: Path) -> None:
     meta = SimpleDirectoryMeta(AssetId("test_item"))
     meta_to_path = SimpleMetaToPath(tmp_path)
     expected_path = meta_to_path(meta)

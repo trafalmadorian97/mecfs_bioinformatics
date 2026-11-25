@@ -21,7 +21,7 @@ def write_plots_to_dir(
     plotly_js_mode: bool | PlotlyWriteMode = "cdn",
     plotly_mathjax_mode: bool | PlotlyWriteMode = False,
     matplotlib_format: MatplotLibFormat = "png",
-):
+) -> None:
     path.mkdir(exist_ok=True, parents=True)
     for name, plot in plots.items():
         if isinstance(plot, Figure):

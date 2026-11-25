@@ -10,18 +10,18 @@ from mecfs_bio.constants.polyfun_annotation_families import (
 )
 
 
-def test_names_constant_is_187_unique():
+def test_names_constant_is_187_unique() -> None:
     assert len(BASELINE_LF_ANNOTATION_NAMES) == 187
     assert len(set(BASELINE_LF_ANNOTATION_NAMES)) == 187
 
 
-def test_every_annotation_maps_to_a_valid_family():
+def test_every_annotation_maps_to_a_valid_family() -> None:
     valid = set(get_args(AnnotationFamily))
     for name in BASELINE_LF_ANNOTATION_NAMES:
         assert family_for_annotation(name) in valid
 
 
-def test_representative_family_assignments():
+def test_representative_family_assignments() -> None:
     cases = {
         "non_synonymous_lowfreq": "non_synonymous",
         "Coding_UCSC_common": "coding",
@@ -57,11 +57,11 @@ def test_representative_family_assignments():
         assert family_for_annotation(name) == family
 
 
-def test_short_labels_cover_every_family():
+def test_short_labels_cover_every_family() -> None:
     assert set(FAMILY_SHORT_LABELS) == set(get_args(AnnotationFamily))
 
 
-def test_open_chromatin_membership_is_exactly_dhs_and_dgf():
+def test_open_chromatin_membership_is_exactly_dhs_and_dgf() -> None:
     open_chrom = {
         n
         for n in BASELINE_LF_ANNOTATION_NAMES

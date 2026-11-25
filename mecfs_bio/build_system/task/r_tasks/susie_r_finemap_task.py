@@ -4,6 +4,7 @@ Finemap a GWAS locus using SUSIE
 
 import gc
 from pathlib import Path, PurePath
+from typing import Self
 
 import numpy as np
 import pandas as pd
@@ -13,11 +14,10 @@ import scipy.sparse
 import structlog
 import yaml
 from attrs import frozen
+from rpy2.rinterface import FloatSexpVector
+from rpy2.rinterface_lib.sexp import SexpVector
 from rpy2.robjects import numpy2ri, pandas2ri
 from rpy2.robjects.conversion import localconverter
-from rpy2.robjects.packages import (
-    importr,
-)
 from scipy.sparse import csr_matrix
 
 from mecfs_bio.build_system.asset.base_asset import Asset
@@ -27,12 +27,14 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.meta import Meta
 from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.pipes.data_processing_pipe import DataProcessingPipe
 from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
-from mecfs_bio.build_system.task.ppp_database.allele_key import unordered_allele_key
 from mecfs_bio.build_system.task.two_sample_mr_task import RPackageType
 from mecfs_bio.build_system.wf.base_wf import WF
 from mecfs_bio.constants.gwaslab_constants import (
@@ -43,11 +45,18 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_POS_COL,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.constants.polyfun_constants import (
+    POLYFUN_A1_COL,
+    POLYFUN_A2_COL,
+    POLYFUN_BP_COL,
+    POLYFUN_CHR_COL,
+)
+from mecfs_bio.util.r_packages.cached_importr import cached_importr
 
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class BroadInstituteFormatLDMatrix:
     """
     Wraps a task to recovery an LD matrix stored in Broad Institute Format.
@@ -92,18 +101,43 @@ CS_COLUMN = "cs"
 _PRIOR_COL = "prior_col"
 
 
-@frozen
+@frozen(slots=True)
 class PriorInfo:
     prior_task: Task
     prior_col: str
-    prior_chr_col: str = "CHR"
-    prior_bp_cp: str = "BP"
-    prior_a1_col: str = "A1"
-    prior_a2_col: str = "A2"
+    prior_chr_col: str = POLYFUN_CHR_COL
+    prior_bp_cp: str = POLYFUN_BP_COL
+    prior_a1_col: str = POLYFUN_A1_COL
+    prior_a2_col: str = POLYFUN_A2_COL
     prior_pipe: DataProcessingPipe = IdentityPipe()
 
 
-@frozen
+def assert_gwas_harmonized_to_ld(gwas_task: Task, ld_labels_task: Task) -> None:
+    """Fail fast at construction if the gwas and the LD panel are not both harmonized to
+    the same genome build. Both must carry harmonization_info (threaded through the metadata
+    by the harmonization-provenance layer); a build mismatch means SUSIE would be aligning
+    positions across genome builds."""
+    gwas_meta = gwas_task.meta
+    ld_meta = ld_labels_task.meta
+    assert (
+        isinstance(gwas_meta, FilteredGWASDataMeta)
+        and gwas_meta.harmonization_info is not None
+    ), (
+        "SUSIE gwas input must be a harmonized FilteredGWASDataMeta (run genome-reference harmonization)"
+    )
+    assert (
+        isinstance(ld_meta, HarmonizableReferenceTableMeta)
+        and ld_meta.harmonization_info is not None
+    ), (
+        "SUSIE ld_labels must be a HarmonizableReferenceTableMeta with harmonization_info"
+    )
+    assert gwas_meta.harmonization_info.build == ld_meta.harmonization_info.build, (
+        f"gwas harmonized to build {gwas_meta.harmonization_info.build} but LD panel is "
+        f"build {ld_meta.harmonization_info.build}"
+    )
+
+
+@frozen(slots=True)
 class SusieRFinemapTask(Task):
     """
     This task uses susie_rss function from the R library susieR to fine map a GWAS at a locus.
@@ -138,8 +172,8 @@ class SusieRFinemapTask(Task):
         return dep_results
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
-        susie_package = importr("susieR")
-        ggplot2 = importr("ggplot2")
+        susie_package = cached_importr("susieR")
+        ggplot2 = cached_importr("ggplot2")
         conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
 
         gwas_asset = fetch(self.gwas_data_task.asset_id)
@@ -285,7 +319,8 @@ class SusieRFinemapTask(Task):
         log_lr_filtering_threshold: float = 2.0,
         z_score_filtering_threshold: float = 2.0,
         prior_info: PriorInfo | None = None,
-    ):
+    ) -> Self:
+        assert_gwas_harmonized_to_ld(gwas_data_task, ld_labels_task)
         source_meta = gwas_data_task.meta
         meta: Meta
         if isinstance(source_meta, FilteredGWASDataMeta):
@@ -336,19 +371,17 @@ def align_data(
         maintain_order="left",
     )
     if prior is not None:
-        joined = joined.with_columns(
-            unordered_allele_key(
-                GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
-            ).alias("allele_key")
-        )
         n_before = len(joined)
+        # The prior is reference-oriented (its A1 == REF, renamed to NEA in
+        # load_prior) exactly like the gwas, so the join is exact on the 4-tuple;
         joined = joined.join(
-            prior.with_columns(
-                unordered_allele_key(
-                    GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
-                ).alias("allele_key")
-            ),
-            on=[GWASLAB_CHROM_COL, GWASLAB_POS_COL, "allele_key"],
+            prior,
+            on=[
+                GWASLAB_CHROM_COL,
+                GWASLAB_POS_COL,
+                GWASLAB_EFFECT_ALLELE_COL,
+                GWASLAB_NON_EFFECT_ALLELE_COL,
+            ],
             how="left",
         )
         missing = joined.filter(pl.col(_PRIOR_COL).is_null())
@@ -460,11 +493,11 @@ def apply_subsample(
     )
 
 
-def convert_r_named_list_to_python_dict(rdata) -> dict:
+def convert_r_named_list_to_python_dict(rdata: ro.ListVector) -> dict:
     return dict(zip(rdata.names, list(rdata)))
 
 
-def r_to_py_recursive(r_obj):
+def r_to_py_recursive(r_obj: object) -> object:
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
     if isinstance(r_obj, ro.DataFrame):
         with localconverter(conv):
@@ -480,7 +513,7 @@ def r_to_py_recursive(r_obj):
         return {name: r_to_py_recursive(r_obj.rx2(name)) for name in names}
 
     try:
-        if hasattr(r_obj, "__len__"):
+        if isinstance(r_obj, SexpVector):
             if len(r_obj) == 1:
                 return r_obj[0]
             return list(r_obj)
@@ -490,7 +523,7 @@ def r_to_py_recursive(r_obj):
     return r_obj
 
 
-def _check_converged(py_result: dict):
+def _check_converged(py_result: dict) -> None:
     conv = ro.default_converter
     with localconverter(conv):
         converged = ro.conversion.get_conversion().rpy2py(py_result["converged"])
@@ -530,6 +563,7 @@ def write_result(
     conv = ro.default_converter + pandas2ri.converter + numpy2ri.converter
 
     sets = r_to_py_recursive(py_result["sets"])
+    assert isinstance(sets, dict)
     with localconverter(conv):
         alpha = ro.conversion.get_conversion().rpy2py(py_result["alpha"])
         pip = ro.conversion.get_conversion().rpy2py(py_result["pip"])
@@ -627,11 +661,11 @@ def extract_cs_data_tables(
     return cs_data_tables
 
 
-def check_symmetric(array: np.ndarray, tol=1e-6):
+def check_symmetric(array: np.ndarray, tol: float = 1e-6) -> None:
     assert np.max(np.abs(array - array.T)) <= tol
 
 
-def _save_adjustment(adjustment: float, scratch_dir: Path):
+def _save_adjustment(adjustment: float, scratch_dir: Path) -> None:
     adjustment_df = pd.DataFrame(
         {"Adjustment": [float(adjustment)]},
     )
@@ -660,8 +694,8 @@ def _load_partial_ld_matrix(path: Path) -> csr_matrix:
 
 
 def _make_diagnostic_plot_and_table(
-    zscores_r,
-    ld_matrix_r,
+    zscores_r: FloatSexpVector,
+    ld_matrix_r: FloatSexpVector,
     effective_sample_size: int,
     susie_package: RPackageType,
     ggplot2_package: RPackageType,

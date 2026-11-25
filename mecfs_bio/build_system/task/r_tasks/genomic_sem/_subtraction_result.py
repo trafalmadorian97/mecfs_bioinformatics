@@ -33,7 +33,7 @@ _MODEL_OP = "~"
 _MODEL_RHS = "SNP"
 
 
-@frozen
+@frozen(slots=True)
 class SubtractionFrames:
     """The two per-factor result tables written by a subtraction task."""
 

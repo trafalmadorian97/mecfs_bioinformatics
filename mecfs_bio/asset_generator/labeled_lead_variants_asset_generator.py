@@ -22,7 +22,7 @@ from mecfs_bio.build_system.task.pipes.identity_pipe import IdentityPipe
 from mecfs_bio.build_system.task.pipes.select_pipe import SelectColPipe
 
 
-@frozen
+@frozen(slots=True)
 class LabelLeadVariantsTasks:
     raw_sumstats_task: Task
     lead_variants_task: Task

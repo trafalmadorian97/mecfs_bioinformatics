@@ -14,7 +14,7 @@ from mecfs_bio.assets.gwas.educational_attainment.lee_et_al_2018.processed_gwas_
 )
 
 
-def run_edu_analysis():
+def run_edu_analysis() -> None:
     """
     Function to run initial analysis on the Lee et al. Educational Attainment GWAS
     Includes:

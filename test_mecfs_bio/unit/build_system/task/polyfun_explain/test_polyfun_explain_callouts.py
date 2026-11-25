@@ -2,18 +2,18 @@ from pathlib import Path
 
 import polars as pl
 
-from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_task import (
-    FAMILY_COL,
-)
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
-    _CS_NUMBER_COL,
+    CS_NUMBER_COL,
     FAMILY_CONTRAST_COL,
     _callout_families,
     _format_callout_label,
-    _load_cs_numbers,
+    load_cs_numbers,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
+)
+from mecfs_bio.constants.annotation_weights_constants import (
+    FAMILY_COL,
 )
 from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_CHROM_COL,
@@ -32,7 +32,7 @@ def _key(pos: int) -> dict:
     }
 
 
-def test_callout_families_buckets_and_orders_by_z():
+def test_callout_families_buckets_and_orders_by_z() -> None:
     focal = _key(123)
     per_family = pl.DataFrame(
         [
@@ -60,7 +60,26 @@ def test_callout_families_buckets_and_orders_by_z():
     assert result == [("conserved", "++"), ("coding", "+")]
 
 
-def test_callout_families_skips_degenerate_sd():
+def test_callout_families_drops_negligible_runner_up() -> None:
+    # When one family dominates a variant's PIP lift, a runner-up whose per-family
+    # contrast is below _CALLOUT_FAMILY_RELATIVE_MIN of the top contrast is dropped
+    # even if it clears the background-SD bar on its own.
+    focal = _key(123)
+    per_family = pl.DataFrame(
+        [
+            {**focal, FAMILY_COL: "conserved", FAMILY_CONTRAST_COL: 10.0},
+            {**focal, FAMILY_COL: "coding", FAMILY_CONTRAST_COL: 0.3},
+        ]
+    )
+    # coding's z = 0.3 / 0.1 = 3 would normally earn a "++", but 0.3 is below 5% of
+    # the dominant 10.0 contrast, so only conserved survives.
+    family_sd = {"conserved": 1.0, "coding": 0.1}
+    assert _callout_families(per_family, focal, family_sd, max_families=3) == [
+        ("conserved", "++")
+    ]
+
+
+def test_callout_families_skips_degenerate_sd() -> None:
     focal = _key(123)
     per_family = pl.DataFrame(
         [{**focal, FAMILY_COL: "conserved", FAMILY_CONTRAST_COL: 3.0}]
@@ -68,9 +87,9 @@ def test_callout_families_skips_degenerate_sd():
     assert _callout_families(per_family, focal, {"conserved": 0.0}, 3) == []
 
 
-def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path):
+def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path) -> None:
     # A SUSIE run that finds no credible set writes an empty combined_cs whose
-    # parquet key columns default to Float64. _load_cs_numbers must still return
+    # parquet key columns default to Float64. load_cs_numbers must still return
     # canonical Int64 keys (+ a cs_number column) so union_keys/joins line up
     # with runs that did find a credible set.
     pl.DataFrame(
@@ -81,13 +100,13 @@ def test_load_cs_numbers_empty_yields_canonical_key_types(tmp_path: Path):
             GWASLAB_NON_EFFECT_ALLELE_COL: pl.String,
         }
     ).write_parquet(tmp_path / COMBINED_CS_FILENAME)
-    out = _load_cs_numbers(tmp_path)
+    out = load_cs_numbers(tmp_path)
     assert out.schema[GWASLAB_CHROM_COL] == pl.Int64
     assert out.schema[GWASLAB_POS_COL] == pl.Int64
-    assert _CS_NUMBER_COL in out.columns
+    assert CS_NUMBER_COL in out.columns
 
 
-def test_format_label_with_and_without_families():
+def test_format_label_with_and_without_families() -> None:
     focal = _key(174128548)
     assert (
         _format_callout_label(focal, [("conserved", "++"), ("coding", "+")])

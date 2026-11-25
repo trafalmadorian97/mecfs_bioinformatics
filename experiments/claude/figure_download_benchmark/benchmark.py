@@ -84,7 +84,7 @@ def download_chunked_batch(
         list(pool.map(_one_chunk, chunks))
 
 
-@frozen
+@frozen(slots=True)
 class Config:
     name: str
     run: object  # callable (assets, dest) -> None

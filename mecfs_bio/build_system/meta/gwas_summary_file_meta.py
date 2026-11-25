@@ -9,9 +9,10 @@ from attrs import field, frozen
 from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 from mecfs_bio.build_system.meta.read_spec.read_spec import ReadSpec
+from mecfs_bio.constants.genomic_coordinate_constants import GenomeBuild
 
 
-@frozen
+@frozen(slots=True)
 class GWASSummaryDataFileMeta(FileMeta):
     @property
     def asset_id(self) -> AssetId:
@@ -24,3 +25,4 @@ class GWASSummaryDataFileMeta(FileMeta):
     project_path: PurePath | None
     read_spec: ReadSpec | None = None
     extension: str | None = None
+    genome_build: GenomeBuild | None = None

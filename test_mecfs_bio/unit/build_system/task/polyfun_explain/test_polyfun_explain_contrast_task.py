@@ -25,14 +25,13 @@ from mecfs_bio.build_system.task.annotation_weights.ridge_annotation_weights_tas
 from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.polyfun_explain.polyfun_explain_contrast_task import (
-    DISP_CS_PF,
-    DISP_CS_U,
-    DISP_LIFT,
-    DISP_PIP_PF,
-    DISPLAY_TABLE_FILENAME,
+    DETAILED_DISPLAY_TABLE_FILENAME,
     PER_FAMILY_CONTRAST_FILENAME,
+    PER_VARIANT_ANNOTATION_TABLE_FILENAME,
     SELECTION_JSON_FILENAME,
+    TOP_LINE_DISPLAY_TABLE_FILENAME,
     PolyfunExplainContrastTask,
+    SecondaryPositionFromSnpid,
 )
 from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     COMBINED_CS_FILENAME,
@@ -45,7 +44,23 @@ from mecfs_bio.build_system.task.r_tasks.susie_r_finemap_task import (
     PRIOR_WEIGHT_COLUMN,
 )
 from mecfs_bio.build_system.wf.base_wf import make_wf
-from mecfs_bio.constants.gwaslab_constants import GWASLAB_BETA_COL, GWASLAB_SE_COL
+from mecfs_bio.constants.annotation_weights_constants import (
+    ANNOTATION_COL,
+    FAMILY_COL,
+)
+from mecfs_bio.constants.gwaslab_constants import (
+    GWASLAB_BETA_COL,
+    GWASLAB_SE_COL,
+    GWASLAB_SNPID_COL,
+)
+from mecfs_bio.constants.polyfun_annotation_families import FAMILY_SHORT_LABELS
+from mecfs_bio.constants.polyfun_explain_display_columns import (
+    DISP_ANNOT_PREFIX,
+    DISP_CS_PF,
+    DISP_CS_U,
+    DISP_LIFT,
+    DISP_PIP_PF,
+)
 
 # Two real baseline-LF annotations from different families so family aggregation
 # is exercised: Coding_UCSC_common -> coding, GERP.NS -> conserved.
@@ -62,6 +77,9 @@ _PRIOR_WEIGHTS: tuple[float, ...] = (8.0, 1.0, 1.0, 1.0, 1.0, 1.0)
 # the plot task (Task 3), harmless extra columns for the contrast task.
 _BETAS: tuple[float, ...] = (2.0, 0.1, 0.1, 0.1, 0.1, 0.1)
 _SES: tuple[float, ...] = (0.1, 0.1, 0.1, 0.1, 0.1, 0.1)
+# The synthetic SNPID encodes a "secondary build" position offset from the hg19
+# POS, mimicking gwaslab's SNPID keeping the pre-liftover coordinate.
+_SECONDARY_POS_OFFSET = 1000
 
 
 def _write_run_dir(
@@ -77,6 +95,17 @@ def _write_run_dir(
     gwas = variants.with_columns(
         pl.Series(name=GWASLAB_BETA_COL, values=_BETAS[: variants.height]),
         pl.Series(name=GWASLAB_SE_COL, values=_SES[: variants.height]),
+        # SNPID as CHR:POS:NEA:EA with the position field offset from the hg19
+        # POS, so a parsed secondary position is distinguishable from POS.
+        (
+            pl.col("CHR").cast(pl.String)
+            + ":"
+            + (pl.col("POS") + _SECONDARY_POS_OFFSET).cast(pl.String)
+            + ":"
+            + pl.col("NEA")
+            + ":"
+            + pl.col("EA")
+        ).alias(GWASLAB_SNPID_COL),
     )
     gwas.write_parquet(directory / FILTERED_GWAS_FILENAME)
     # Identity LD matrix (only the plot task, Task 3, reads this).
@@ -121,8 +150,10 @@ def _make_contrast_fixture(
             "NEA": ["C"] * _N_VARIANTS,
         }
     )
-    # Annotation values (by CHR/BP). BP == POS. Alleles (A1/A2) match the run
-    # variants' EA/NEA so the allele-aware join lines up.
+    # Annotation values (by CHR/BP). BP == POS. Alleles are reference-oriented:
+    # annotation A1 == REF maps to the run's NEA, A2 maps to EA. The run variants
+    # are EA="A", NEA="C", so A1="C", A2="A" makes the exact (CHR,POS,EA,NEA) join
+    # line up.
     a = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # coding: focal only
     b = np.array([2.0, 1.0, 1.0, 1.0, 1.0, 1.0])  # conserved: focal higher
     annot = pl.DataFrame(
@@ -130,8 +161,8 @@ def _make_contrast_fixture(
             "CHR": [1] * _N_VARIANTS,
             "BP": [10, 20, 30, 40, 50, 60],
             "SNP": [f"rs{i}" for i in range(_N_VARIANTS)],
-            "A1": ["A"] * _N_VARIANTS,
-            "A2": ["C"] * _N_VARIANTS,
+            "A1": ["C"] * _N_VARIANTS,
+            "A2": ["A"] * _N_VARIANTS,
             _ANNOT_A: a,
             _ANNOT_B: b,
         }
@@ -172,6 +203,7 @@ def _build_contrast_task_and_fetch_map(
     weights_dir: Path,
     annot_path: Path,
     n_important_families: int = 2,
+    secondary_position: SecondaryPositionFromSnpid | None = None,
 ) -> tuple[PolyfunExplainContrastTask, dict[str, Asset]]:
     """Build a PolyfunExplainContrastTask plus its {asset_id: Asset} fetch map
     over a fixture produced by _make_contrast_fixture. Shared by every test in
@@ -199,6 +231,7 @@ def _build_contrast_task_and_fetch_map(
         ridge_weights_task=weights_task,
         annotation_parquet_task=annot_task,
         n_important_families=n_important_families,
+        secondary_position=secondary_position,
     )
 
     fetch_map: dict[str, Asset] = {
@@ -218,11 +251,17 @@ def _run_contrast_task(
     weights_dir: Path,
     annot_path: Path,
     n_important_families: int = 2,
+    secondary_position: SecondaryPositionFromSnpid | None = None,
 ) -> DirectoryAsset:
     """Build and execute a PolyfunExplainContrastTask over a fixture produced by
     _make_contrast_fixture. Shared by every test in this module."""
     task, fetch_map = _build_contrast_task_and_fetch_map(
-        uni_dir, pf_dir, weights_dir, annot_path, n_important_families
+        uni_dir,
+        pf_dir,
+        weights_dir,
+        annot_path,
+        n_important_families,
+        secondary_position=secondary_position,
     )
 
     def fetch(asset_id: AssetId) -> Asset:
@@ -235,7 +274,7 @@ def _run_contrast_task(
     return result
 
 
-@frozen
+@frozen(slots=True)
 class _ExplainInputs:
     """Shared synthetic fixture for the polyfun-explain contrast and plot
     tasks: the task objects (so a caller can wire them as deps into a
@@ -279,7 +318,7 @@ def build_synthetic_explain_inputs(tmp_path: Path) -> _ExplainInputs:
     )
 
 
-def test_contrast_closed_form(tmp_path: Path):
+def test_contrast_closed_form(tmp_path: Path) -> None:
     inputs = build_synthetic_explain_inputs(tmp_path)
     result = dict(inputs.fetch_map)["contrast"]
 
@@ -298,24 +337,42 @@ def test_contrast_closed_form(tmp_path: Path):
     )["family_contrast"][0]
     assert abs(focal_coding - 2.4) < 1e-9
 
-    # Display table: union of both CS (rows 0,1,2,3), sorted desc by pip_pf.
-    display = pl.read_parquet(result.path / DISPLAY_TABLE_FILENAME)
-    assert display.height == 4
-    assert display[DISP_PIP_PF].to_list() == sorted(
-        display[DISP_PIP_PF].to_list(), reverse=True
+    # Top-line table: union of both CS (rows 0,1,2,3), sorted desc by pip_pf, and
+    # carries no annotation-family columns.
+    top_line = pl.read_parquet(result.path / TOP_LINE_DISPLAY_TABLE_FILENAME)
+    assert top_line.height == 4
+    assert top_line[DISP_PIP_PF].to_list() == sorted(
+        top_line[DISP_PIP_PF].to_list(), reverse=True
     )
-    assert display.schema["chr"] == pl.Int32
-    assert display.schema["pos"] == pl.Int32
+    assert top_line.schema["chr"] == pl.Int32
+    assert top_line.schema["pos"] == pl.Int32
+    assert not any(c.startswith(DISP_ANNOT_PREFIX) for c in top_line.columns)
     # Focal lift = m * pi = 6 * (8/13) ~= 3.692
-    focal_lift = display.filter(pl.col("pos") == 10)[DISP_LIFT][0]
+    focal_lift = top_line.filter(pl.col("pos") == 10)[DISP_LIFT][0]
     assert abs(focal_lift - 6.0 * (8.0 / 13.0)) < 1e-6
     # cs columns present, focal in both runs' CS
-    focal_row = display.filter(pl.col("pos") == 10)
+    focal_row = top_line.filter(pl.col("pos") == 10)
     assert focal_row[DISP_CS_PF][0] == 1
     assert focal_row[DISP_CS_U][0] == 1
 
+    # Detailed table: same rows, plus a prefixed contrast column per family. The
+    # family columns carry the local contrast gamma_raw_c*(a_ic-abar_c), NOT the
+    # raw scaled value, so the focal coding column equals the closed-form 2.4.
+    detailed = pl.read_parquet(result.path / DETAILED_DISPLAY_TABLE_FILENAME)
+    assert detailed.height == 4
+    # All eleven families are emitted regardless of what this locus carries.
+    annot_cols = [c for c in detailed.columns if c.startswith(DISP_ANNOT_PREFIX)]
+    assert len(annot_cols) == len(FAMILY_SHORT_LABELS)
+    coding_col = f"{DISP_ANNOT_PREFIX}coding"
+    focal_detail = detailed.filter(pl.col("pos") == 10)
+    assert abs(focal_detail[coding_col][0] - 2.4) < 1e-9
+    # A family with no annotations at this locus is an all-null column.
+    assert (
+        detailed[f"{DISP_ANNOT_PREFIX}non_synonymous"].null_count() == detailed.height
+    )
 
-def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
+
+def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path) -> None:
     # When the uniform run finds no signal (all PIPs 0), abar_c falls back to an
     # unweighted mean, so contrasts are still well-defined (not NaN).
     uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(
@@ -333,16 +390,16 @@ def test_contrast_uniform_all_zero_pip_uses_equal_weights(tmp_path: Path):
     assert abs(focal_coding - 2.5) < 1e-9
 
 
-def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path):
-    # The annotation matrix is built unique on (CHR, BP, unordered-allele-key).
+def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path) -> None:
+    # The annotation matrix is built unique on exact (CHR, BP, A1, A2).
     # A duplicate at the same position AND same alleles would cross-multiply a
     # run's variant rows into doubled/misattributed contrast values, so the task
-    # must fail fast. (A genuine multiallelic site has a distinct allele key and
+    # must fail fast. (A genuine multiallelic site has a distinct (A1, A2) and
     # is fine - see test_contrast_resolves_co_located_variants_by_allele.)
     uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
     annot = pl.read_parquet(annot_path)
     dup_row = annot.filter(pl.col("BP") == 10).with_columns(
-        pl.lit("rs0_dup").alias("SNP")  # same A1/A2 -> same allele key
+        pl.lit("rs0_dup").alias("SNP")  # same A1/A2 -> same exact key
     )
     pl.concat([annot, dup_row], how="vertical").write_parquet(annot_path)
 
@@ -350,7 +407,7 @@ def test_contrast_raises_on_duplicate_annotation_allele_key(tmp_path: Path):
         _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
 
 
-def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
+def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path) -> None:
     # Two variants at the same (CHR, POS) with different alleles must each pick
     # up their OWN annotation row (allele-aware join), not cross-multiply or
     # mispair. Focal is variant 0 (A/C, coding a=1); a second variant (A/G) at
@@ -364,13 +421,15 @@ def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
             "NEA": ["C", "G"],
         }
     )
+    # Reference-oriented alleles: annotation A1 == REF -> run NEA, A2 -> run EA.
+    # The run variants are (EA=A, NEA=C) and (EA=A, NEA=G), so A1=[C, G], A2=[A, A].
     annot = pl.DataFrame(
         {
             "CHR": [1, 1],
             "BP": [10, 10],
             "SNP": ["rsAC", "rsAG"],
-            "A1": ["A", "A"],
-            "A2": ["C", "G"],
+            "A1": ["C", "G"],
+            "A2": ["A", "A"],
             _ANNOT_A: [1.0, 4.0],  # coding: A/C -> 1, A/G -> 4
             _ANNOT_B: [0.0, 0.0],
         }
@@ -409,3 +468,131 @@ def test_contrast_resolves_co_located_variants_by_allele(tmp_path: Path):
     # contrast A/C = 3*(1-2.2) = -3.6 ; A/G = 3*(4-2.2) = 5.4
     assert abs(ac["family_contrast"][0] - (-3.6)) < 1e-9
     assert abs(ag["family_contrast"][0] - 5.4) < 1e-9
+
+
+def test_secondary_position_from_snpid_adds_pos_column(tmp_path: Path) -> None:
+    # With a SecondaryPositionFromSnpid config, both display tables gain a
+    # build-labelled position column parsed from the SNPID's position field,
+    # placed immediately after pos, holding POS + the synthetic offset.
+    uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
+    result = _run_contrast_task(
+        tmp_path,
+        uni_dir,
+        pf_dir,
+        weights_dir,
+        annot_path,
+        secondary_position=SecondaryPositionFromSnpid(build_label="hg38"),
+    )
+    for filename in (TOP_LINE_DISPLAY_TABLE_FILENAME, DETAILED_DISPLAY_TABLE_FILENAME):
+        table = pl.read_parquet(result.path / filename)
+        assert table.columns.index("pos_hg38") == table.columns.index("pos") + 1
+        for row in table.iter_rows(named=True):
+            assert row["pos_hg38"] == row["pos"] + _SECONDARY_POS_OFFSET
+
+
+def test_per_variant_annotation_table(tmp_path: Path) -> None:
+    # The per-variant annotation table characterizes the top variants of each
+    # polyfun credible set: rows are the detailed annotations, columns are the
+    # selected variants (chr:pos:nea:ea, hg19), cells the raw annotation values.
+    variants = pl.DataFrame(
+        {
+            "CHR": [1] * _N_VARIANTS,
+            "POS": [10, 20, 30, 40, 50, 60],
+            "EA": ["A"] * _N_VARIANTS,
+            "NEA": ["C"] * _N_VARIANTS,
+        }
+    )
+    a = np.array([1.0, 0.0, 0.0, 0.0, 0.0, 0.0])  # coding: variant 0 only
+    b = np.array([2.0, 1.0, 1.0, 1.0, 1.0, 1.0])  # conserved
+    # Reference-oriented alleles: annotation A1 == REF -> run NEA="C", A2 -> EA="A".
+    annot = pl.DataFrame(
+        {
+            "CHR": [1] * _N_VARIANTS,
+            "BP": [10, 20, 30, 40, 50, 60],
+            "SNP": [f"rs{i}" for i in range(_N_VARIANTS)],
+            "A1": ["C"] * _N_VARIANTS,
+            "A2": ["A"] * _N_VARIANTS,
+            _ANNOT_A: a,
+            _ANNOT_B: b,
+        }
+    )
+    annot_path = tmp_path / "annot.parquet"
+    annot.write_parquet(annot_path)
+
+    weights = pl.DataFrame(
+        {
+            "annotation": [_ANNOT_A, _ANNOT_B],
+            "gamma_raw": [3.0, 0.5],
+            "gamma_standardized": [0.0, 0.0],
+            "family": ["coding", "conserved"],
+        }
+    )
+    weights_dir = tmp_path / "weights"
+    weights_dir.mkdir()
+    weights.write_parquet(weights_dir / WEIGHTS_PARQUET_FILENAME)
+
+    # Polyfun PIP + two credible sets chosen to exercise every selection branch:
+    #   L1 top=var0 (0.5): var1 (0.4) within the 0.2 gap and above the 0.1 floor
+    #   -> kept; var2 (0.2) outside the gap -> dropped; var3 (0.05) below the floor
+    #   -> dropped. L2 top=var4 (0.05) kept despite being below the floor (it is the
+    #   set's max); var5 (0.03) dropped. Selected: var0, var1, var4.
+    pip_pf = np.array([0.5, 0.4, 0.2, 0.05, 0.05, 0.03])
+    pf_dir = tmp_path / "polyfun"
+    _write_run_dir(
+        pf_dir,
+        variants,
+        pip_pf,
+        {"L1": [0, 1, 2, 3], "L2": [4, 5]},
+        prior_weights=np.ones(_N_VARIANTS),
+    )
+    uni_dir = tmp_path / "uniform"
+    _write_run_dir(
+        uni_dir, variants, np.array(_DEFAULT_UNIFORM_PIP), {"L1": [0, 1]}, None
+    )
+
+    result = _run_contrast_task(tmp_path, uni_dir, pf_dir, weights_dir, annot_path)
+    table = pl.read_parquet(result.path / PER_VARIANT_ANNOTATION_TABLE_FILENAME)
+
+    # Leading columns are the family/annotation labels plus the per-annotation
+    # gamma and alpha_bar context; the variant columns follow in (credible set,
+    # descending PIP) order. Gap-/floor-excluded variants (POS 30, 40, 60) absent.
+    assert table.columns[:4] == [FAMILY_COL, ANNOTATION_COL, "gamma", "alpha_bar"]
+    assert table.columns[4:] == ["1:10:C:A", "1:20:C:A", "1:50:C:A"]
+    # One row per detailed annotation.
+    assert table.height == len(weights)
+    # Raw annotation values (no gamma) per selected variant, plus gamma (the ridge
+    # coefficient) and alpha_bar (uniform PIP-weighted mean over the locus). With
+    # uniform PIP summing to 1: alpha_bar_A = 0.2*1 = 0.2; alpha_bar_B = 0.2*2 +
+    # (0.2+0.2+0.2+0.1+0.1)*1 = 1.2.
+    coding = table.filter(pl.col(ANNOTATION_COL) == _ANNOT_A)
+    assert coding[FAMILY_COL][0] == "coding"
+    assert coding["gamma"][0] == 3.0
+    assert abs(coding["alpha_bar"][0] - 0.2) < 1e-9
+    assert coding.select("1:10:C:A", "1:20:C:A", "1:50:C:A").row(0) == (1.0, 0.0, 0.0)
+    conserved = table.filter(pl.col(ANNOTATION_COL) == _ANNOT_B)
+    assert conserved["gamma"][0] == 0.5
+    assert abs(conserved["alpha_bar"][0] - 1.2) < 1e-9
+    assert conserved.select("1:10:C:A", "1:20:C:A", "1:50:C:A").row(0) == (
+        2.0,
+        1.0,
+        1.0,
+    )
+
+
+def test_secondary_position_malformed_snpid_raises(tmp_path: Path) -> None:
+    # A SNPID whose position field is not an integer must fail fast rather than
+    # silently produce a null (mislabelled) secondary position.
+    uni_dir, pf_dir, weights_dir, annot_path = _make_contrast_fixture(tmp_path)
+    corrupted = pl.read_parquet(pf_dir / FILTERED_GWAS_FILENAME).with_columns(
+        pl.lit("not_a_valid_snpid").alias(GWASLAB_SNPID_COL)
+    )
+    corrupted.write_parquet(pf_dir / FILTERED_GWAS_FILENAME)
+    with pytest.raises(ValueError):
+        _run_contrast_task(
+            tmp_path,
+            uni_dir,
+            pf_dir,
+            weights_dir,
+            annot_path,
+            secondary_position=SecondaryPositionFromSnpid(build_label="hg38"),
+        )

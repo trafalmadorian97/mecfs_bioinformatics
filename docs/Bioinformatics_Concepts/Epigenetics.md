@@ -58,7 +58,8 @@ Hi-C[^textbookref] is an assay that partially solves this problem. It works by u
 ## Links
 
 - For a popular science discussion of epigenetics, see Chapter 10 of [Herding Hemmingway's Cats](https://a.co/d/08XMYqfU).
-
+- For a history of the term "epigenetics" in molecular biology, see Chapter 26 of [The Black Box of Biology](https://a.co/d/0dKtXR9w)
+- [This Broad Institute talk by Heejin Roh](https://www.youtube.com/watch?v=h3aD2N6Zop8&t=2406s) on regulatory elements includes a discussion of many of the commonly used epigenetic assays, like ATAC-seq.
 
 [^histone_note]: See pg. 220 of Molecular Biology of the Cell[@alberts2022molecular].
 

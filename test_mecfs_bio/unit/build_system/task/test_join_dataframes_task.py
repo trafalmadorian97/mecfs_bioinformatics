@@ -15,7 +15,7 @@ from mecfs_bio.build_system.task.join_dataframes_task import JoinDataFramesTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_join_dataframes_task(tmp_path: Path):
+def test_join_dataframes_task(tmp_path: Path) -> None:
     df_1_loc = tmp_path / "df_1.csv"
     df_2_loc = tmp_path / "df_2.csv"
     df_1 = pd.DataFrame({"col1": [1, 2, 3], "col2": [4, 5, 6]})

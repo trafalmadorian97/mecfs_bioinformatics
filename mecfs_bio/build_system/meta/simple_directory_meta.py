@@ -8,7 +8,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import DirMeta
 
 
-@frozen
+@frozen(slots=True)
 class SimpleDirectoryMeta(DirMeta):
     id: AssetId = field(converter=AssetId)
 

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any, Self, Sequence
 
 import numpy as np
 import pandas as pd
@@ -40,7 +40,7 @@ RETAINED_CLUSTERS_COLUMN = "Retained_clusters"
 logger = structlog.get_logger()
 
 
-@frozen
+@frozen(slots=True)
 class MagmaForwardStepwiseSelectTask(Task):
     """
     - Since the gene expression patterns of many cell types are highly correlated, it can be difficult
@@ -140,8 +140,8 @@ class MagmaForwardStepwiseSelectTask(Task):
         magma_marginal_output_task: Task,
         magma_conditional_output_task: Task,
         min_prop_sig: float = 0.5,
-        significance_threshold=0.05,
-    ):
+        significance_threshold: float = 0.05,
+    ) -> Self:
         source_meta = magma_marginal_output_task.meta
         assert isinstance(source_meta, ProcessedGwasDataDirectoryMeta)
         meta = ResultTableMeta(

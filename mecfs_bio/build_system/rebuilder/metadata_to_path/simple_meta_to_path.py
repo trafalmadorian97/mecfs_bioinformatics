@@ -2,6 +2,10 @@ from pathlib import Path, PurePath
 
 from attrs import frozen
 
+from mecfs_bio.build_system.meta.diagram_file_meta import (
+    DIAGRAM_EXTENSION,
+    DiagramFileMeta,
+)
 from mecfs_bio.build_system.meta.executable_meta import ExecutableMeta
 from mecfs_bio.build_system.meta.filtered_gwas_data_meta import FilteredGWASDataMeta
 from mecfs_bio.build_system.meta.gwas_summary_file_meta import GWASSummaryDataFileMeta
@@ -24,6 +28,10 @@ from mecfs_bio.build_system.meta.plot_meta import GWASPlotDirectoryMeta
 from mecfs_bio.build_system.meta.processed_gwas_data_directory_meta import (
     ProcessedGwasDataDirectoryMeta,
 )
+from mecfs_bio.build_system.meta.reference_meta.fasta_meta import FASTAMeta
+from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_meta import (
+    HarmonizableReferenceTableMeta,
+)
 from mecfs_bio.build_system.meta.reference_meta.reference_data_directory_meta import (
     ReferenceDataDirectoryMeta,
 )
@@ -43,6 +51,7 @@ _GWAS = PurePath("gwas")
 _REFERENCE_DATA = PurePath("reference_data")
 _OTHER_FILES = PurePath("other_files")
 _EXECUTABLE = PurePath("executable")
+_DIAGRAMS = PurePath("diagrams")
 
 
 def simple_meta_to_relative_path(m: Meta) -> PurePath:
@@ -98,7 +107,20 @@ def simple_meta_to_relative_path(m: Meta) -> PurePath:
             pth = pth / str(m.id + m.extension)
         return pth
 
+    if isinstance(m, HarmonizableReferenceTableMeta):
+        pth = _REFERENCE_DATA / m.group / m.sub_group / m.sub_folder
+        if m.filename is not None:
+            pth = pth / (m.filename + m.extension)
+        else:
+            pth = pth / str(m.id + m.extension)
+        return pth
+
     if isinstance(m, ReferenceDataDirectoryMeta):
+        dirname = m.dirname if m.dirname is not None else m.id
+        pth = _REFERENCE_DATA / m.group / m.sub_group / m.sub_folder / dirname
+        return pth
+
+    if isinstance(m, FASTAMeta):
         dirname = m.dirname if m.dirname is not None else m.id
         pth = _REFERENCE_DATA / m.group / m.sub_group / m.sub_folder / dirname
         return pth
@@ -130,10 +152,12 @@ def simple_meta_to_relative_path(m: Meta) -> PurePath:
     if isinstance(m, ResultArchiveMeta):
         pth = _GWAS / m.trait / m.project / m.sub_dir / (m.id + m.extension)
         return pth
+    if isinstance(m, DiagramFileMeta):
+        return _DIAGRAMS / (m.asset_id + DIAGRAM_EXTENSION)
     raise ValueError(f"Unknown meta {m} of type {type(m)}.")
 
 
-@frozen
+@frozen(slots=True)
 class SimpleMetaToPath(MetaToPath):
     """
     Place every asset under a single store root, using the standard relative layout.

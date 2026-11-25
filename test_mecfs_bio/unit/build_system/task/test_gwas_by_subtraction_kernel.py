@@ -22,7 +22,7 @@ from mecfs_bio.build_system.task.r_tasks.genomic_sem._gwas_by_subtraction_kernel
 # ---- pure-numpy tests -------------------------------------------------------
 
 
-def test_solve_loadings_identity():
+def test_solve_loadings_identity() -> None:
     """When S_LD is diagonal, a_F = 0 and b and a_R match the trait SDs."""
     S_LD = np.diag([0.08, 0.06])
     loadings = _solve_loadings(S_LD)
@@ -31,7 +31,7 @@ def test_solve_loadings_identity():
     assert loadings.a_R == pytest.approx(np.sqrt(0.08))
 
 
-def test_solve_loadings_with_covariance():
+def test_solve_loadings_with_covariance() -> None:
     S_LD = np.array([[0.08, 0.03], [0.03, 0.06]])
     loadings = _solve_loadings(S_LD)
     assert loadings.b == pytest.approx(np.sqrt(0.06))
@@ -40,7 +40,7 @@ def test_solve_loadings_with_covariance():
     assert loadings.a_R == pytest.approx(np.sqrt(expected_a_R_sq))
 
 
-def test_solve_betas_simple():
+def test_solve_betas_simple() -> None:
     """beta_F = beta_SNP[:,1]/b; beta_R = subtraction formula."""
     loadings = SubtractionLoadings(b=0.3, a_F=0.2, a_R=0.15)
     beta_SNP = np.array([[0.01, 0.006], [-0.02, 0.003]])
@@ -52,7 +52,7 @@ def test_solve_betas_simple():
     np.testing.assert_allclose(betas.beta_R, expected_r)
 
 
-def test_round_trip_from_known_truth():
+def test_round_trip_from_known_truth() -> None:
     """
     Construct S_LD and beta_SNP from known (b, a_F, a_R, beta_F, beta_R),
     then recover the parameters exactly.
@@ -84,7 +84,7 @@ def test_round_trip_from_known_truth():
     np.testing.assert_allclose(betas.beta_R, beta_R_true, atol=1e-14)
 
 
-def test_fit_returns_finite_se():
+def test_fit_returns_finite_se() -> None:
     """Full fit on clean synthetic data produces finite, positive SEs."""
     rng = np.random.default_rng(0)
     N = 50
@@ -112,7 +112,7 @@ def test_fit_returns_finite_se():
     assert np.all(result.n_eff_F > 0)
 
 
-def test_n_eff_smaller_for_remainder_factor():
+def test_n_eff_smaller_for_remainder_factor() -> None:
     """
     The remainder factor (R) has larger SE than the common factor (F) for the
     same SNP, so N_eff(R) < N_eff(F) in general.
@@ -140,7 +140,7 @@ def test_n_eff_smaller_for_remainder_factor():
 # ---- analytic vs finite-difference Jacobian --------------------------------
 
 
-def test_analytic_jacobian_matches_finite_difference():
+def test_analytic_jacobian_matches_finite_difference() -> None:
     """Analytic d(beta)/d(s) agrees with centred finite differences at an
     ordinary interior point."""
     rng = np.random.default_rng(7)
@@ -156,7 +156,7 @@ def test_analytic_jacobian_matches_finite_difference():
     np.testing.assert_allclose(G, G_fd, rtol=1e-5, atol=1e-8)
 
 
-def test_analytic_jacobian_stays_correct_for_small_a_r():
+def test_analytic_jacobian_stays_correct_for_small_a_r() -> None:
     """
     When a_R is small (Var(T1) only slightly above Cov^2/Var(T2)), centred
     finite differences over s4/s5/s6 can straddle the `max(..., 1e-30)` clamp

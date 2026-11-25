@@ -32,7 +32,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
     """
     A rebuilder that calculates traces for the assets it manages, and uses these traces
@@ -99,7 +99,7 @@ class VerifyingTraceRebuilder(Rebuilder[VerifyingTraceInfo]):
         return new_value, info, True
 
     @classmethod
-    def save_info(cls, info: VerifyingTraceInfo, path: Path):
+    def save_info(cls, info: VerifyingTraceInfo, path: Path) -> None:
         info.serialize(path)
 
 

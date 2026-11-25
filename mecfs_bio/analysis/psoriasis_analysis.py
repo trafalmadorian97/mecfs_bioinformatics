@@ -8,7 +8,7 @@ from mecfs_bio.assets.gwas.psoriasis.million_veterans.processed_gwas_data.millio
 )
 
 
-def run_initial_psoriasis_analysis():
+def run_initial_psoriasis_analysis() -> None:
     DEFAULT_RUNNER.run(
         [MILLION_VETERANS_EUR_PSORIASIS_COMBINED_MAGMA_TASKS.inner.bar_plot_task],
         incremental_save=True,

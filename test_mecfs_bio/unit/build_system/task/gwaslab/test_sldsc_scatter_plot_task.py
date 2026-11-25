@@ -332,7 +332,7 @@ _dummy_data = {
 }
 
 
-def test_sldsc_scatter(tmp_path: Path):
+def test_sldsc_scatter(tmp_path: Path) -> None:
     df_loc = tmp_path / "df.csv"
     df = pd.DataFrame(_dummy_data)
     df.to_csv(df_loc, index=False)

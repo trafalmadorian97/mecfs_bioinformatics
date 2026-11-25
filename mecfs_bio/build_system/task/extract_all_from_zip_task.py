@@ -23,7 +23,7 @@ from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.wf.base_wf import WF
 
 
-@frozen
+@frozen(slots=True)
 class ExtractAllFromZipTask(Task):
     """
     Task to extract the entire contents of a zip archive

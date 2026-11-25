@@ -10,7 +10,7 @@ from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.meta.base_meta import FileMeta
 
 
-@frozen
+@frozen(slots=True)
 class GWASPlotFileMeta(FileMeta):
     """
     Metadata describing a single file plot
@@ -22,7 +22,7 @@ class GWASPlotFileMeta(FileMeta):
     id: AssetId = field(converter=AssetId)
     sub_dir: PurePath = PurePath("analysis/plots")
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         assert self.extension.startswith(".")
 
     @property

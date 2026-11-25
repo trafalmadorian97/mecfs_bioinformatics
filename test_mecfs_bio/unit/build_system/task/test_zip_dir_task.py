@@ -12,7 +12,7 @@ from mecfs_bio.build_system.task.zip_dir_task import ZipDirTask
 from mecfs_bio.build_system.wf.base_wf import make_wf
 
 
-def test_zip_dir_task(tmp_path: Path):
+def test_zip_dir_task(tmp_path: Path) -> None:
     to_zip = tmp_path / "to_Zip"
     to_zip.mkdir()
     file_1 = to_zip / "file_1.txt"

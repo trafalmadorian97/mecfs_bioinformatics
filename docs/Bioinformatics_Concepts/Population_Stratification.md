@@ -54,9 +54,9 @@ In contrast to traditional epidemiological research, genetic association studies
 - Most kinds of environmental effects do not affect a person's genotype, so environmental confounding can be ruled out.
 
 
-Thus a genotype-phenotype association is much more likely to be causal than a general epidemiological association.
+Thus a genotype-phenotype association is much more likely to be causal than a traditional epidemiological association.
 
-This causal privilege is a significant advantage, but it does not mean that genetic studies are immune to causal inference complications.  One such complication is population stratification[@dattani2022clarifying].
+This causal privilege is a significant advantage, but does not mean that genetic studies are immune to causal inference complications.  One such complication is population stratification[@dattani2022clarifying].
 
 
 ## Types of stratification
@@ -64,7 +64,7 @@ This causal privilege is a significant advantage, but it does not mean that gene
 
 ### Genetic population stratification
 
-Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating within subpopulations has historically been more common than mating across subpopulations.  Normally, [linkage disequilibrium](Linkage_Disequilibrium.md) in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  Genetic population stratification changes this.  For example, SNP P on chromosome 1 and SNP Q on chromosome 2 may both be more common in a subpopulation than in the general population due to historical non-random mating.  Thus having  P increases your odds of being a member of the subpopulation, which increases your odds of having Q. P and Q are therefore correlated, despite being on different chromosomes. The is illustrated in the causal diagram below.
+Genetic population stratification occurs when the population under study contains multiple subpopulations, and mating within subpopulations has historically been more common than mating across subpopulations.  Normally, [linkage disequilibrium](Linkage_Disequilibrium.md) in humans decays to zero at a distance of a few megabases, and does not cross chromosomal boundaries.  Genetic population stratification changes this.  For example, SNP P on chromosome 1 and SNP Q on chromosome 2 may both be more common in a subpopulation than in the general population due to historical mating patterns.  Thus having  P increases your odds of being a member of the subpopulation, which increases your odds of having Q. P and Q are therefore correlated, despite being on different chromosomes. The is illustrated in the causal diagram below.
 
 
 
@@ -81,7 +81,7 @@ class A,B,C normal;
 
 
 
-Suppose now that P has a true causal effect on the phenotype of interest but Q does not.  The long-range correlation between P and Q will produce a GWAS association of Q with the phenotype, creating the false impression of causal GWAS hit in the vicinity of Q.  See below.
+Suppose now that P has a true causal effect on the phenotype of interest but Q does not.  The long-range correlation between P and Q will produce a GWAS association of Q with the phenotype, creating the impression of causal GWAS hit in the vicinity of Q.  See below.
 
 
 ``` mermaid
@@ -108,7 +108,7 @@ $$
 It is common for different subpopulations to be exposed to different environments.  These different environments  may differentially affect the phenotype of interest.  This phenomenon is called environmental population stratification.  On its own, environmental population stratification does not confound GWAS.  
 
 
-However, if both genetic and environmental population stratification are present,  environmental stratification can combine with genetic stratification to induce non-causal GWAS associations.  Having both genetic and environmental stratification is common: genetically distinct people often inhabit distinct environments. An instance of combined environmental and genetic stratification is illustrated below:
+However, if both genetic and environmental population stratification occur, they can combine to induce non-causal GWAS associations.  Having both genetic and environmental stratification is common: genetically distinct people often inhabit distinct environments. An instance of combined environmental and genetic stratification is illustrated below.
 
 
 ``` mermaid
@@ -160,19 +160,21 @@ By conditioning on the subpopulation, we break the non-causal association betwee
 
 
 
-Unfortunately, human population structure is sufficiently complex that it is impossible to mathematical describe it in full detail.  Thus, we must use a proxy.  Population genetics research indicates a person's subpopulation membership can be well-approximated by the allocation of their genotype to genetic principal components[@price2006principal]. Thus, a strategy to approximately adjust for confounding due to population stratification is as follows[@hoffman2013correcting].
+Unfortunately, human population structure is sufficiently complex that it is impossible to mathematical describe it in full detail.  Thus, we must use a proxy.  Population genetics research indicates a person's subpopulation membership can be well-approximated by the allocation of their genotype to genetic principal components[@price2006principal]. Thus, we can approximately adjust for confounding due to population stratification by conditioning on genetic principal components.  In the following derivation, we follow Hoffman (2013)[@hoffman2013correcting].
 
 
-- Let  $X\in\mathbb{R}^{N\times M}$ denote the mean-centered genotype matrix.
-- Let $y\in\mathbb{R}^N$ be the mean-centered phenotype vector.
+- Let $N$ denote the number of study participants.
+- Let $M$ denote the number of genetic variants.
+- Let  $X\in\mathbb{R}^{N\times M}$ denote the genotype matrix, normalized to have column means of 0.
+- Let $y\in\mathbb{R}^N$ be the phenotype vector, normalized to have mean 0.
 - Let $x_j\in\mathbb{R}^N$ be the $j$th column of $X$.
-- Let $\hat\beta_j\in\mathbb{R}$ be the scalar marginal regression coefficient of the $j$th genetic variant.
-- Let $\epsilon\in\mathbb{R}^N$ be the random vector of residual environmental and  genetic effects.
-- Let $X=USV^T$ be the singular value decomposition of $X$.  Thus $U,V^T \in\mathbb{R}^{N\times N}$ are orthogonal matrices, and $S\in\mathbb{R}^{N\times N}$ is a diagonal matrix.
-- Let $q\in\mathbb{Z}_{++}$ be the number of principle components we retain.  Let $U_{1:q}\in\mathbb{R}^{n\times q}$ be the matrix formed from the first $q$ columns of $U$.
+- Let $\hat\beta_j\in\mathbb{R}$ be the scalar marginal regression coefficient of the $j$th genetic variant. This is the quantity we will report in our GWAS summary statistics file for variant $j$.
+- Let $\epsilon\in\mathbb{R}^N$ be the random vector of residual environmental and genetic effects.
+- Let $X=USV^T$ be the [singular value decomposition](https://en.wikipedia.org/wiki/Singular_value_decomposition) of $X$.  Thus $U,V^T \in\mathbb{R}^{N\times N}$ are orthogonal  and $S\in\mathbb{R}^{N\times N}$ is diagonal.
+- Let $q\in\mathbb{Z}_{++}$ be the number of singular values we retain.  Let $U_{1:q}\in\mathbb{R}^{n\times q}$ be the matrix formed from the first $q$ columns of $U$.
 - Let $\sigma^2_e>0$ denote the scale of the residual effects.
 
-The PC-controlled marginal GWAS regression for genetic variant $j$ is then described by the following model:
+The PC-controlled marginal GWAS regression model for genetic variant $j$ is:
 
 $$
 \begin{align}
@@ -197,7 +199,7 @@ $\hat\beta_j$ is retained as the marginal GWAS-effect estimate, while $\omega$ i
 
 ### LMMs
 
-Linear mixed models (LMMs) are another popular method to control for population stratification. Here, I will explain them following Hoffman's derivation[@hoffman2013correcting], which clarifies their connection to the PC-control approach. Using the same notation as above, consider the following model for the marginal gwas effect of variant $j$.
+Linear mixed models (LMMs) are another popular method to control for population stratification. My explanation of LMMs will be based Hoffman's derivation[@hoffman2013correcting], which clarifies their connection to the PC-control approach described above. Using the same notation as above, consider the following model for the marginal GWAS effect of variant $j$.
 
 $$
 \begin{align}
@@ -211,10 +213,10 @@ where
  
 
 - $R :=U_{1:q}S_{1:q,1:q} \in \mathbb{R}^{N \times q}$ and $S_{1:q,1:q} \in \mathbb{R}^{q\times q}$ is the first $q$ rows and columns of $S$.
-- $\gamma \in \mathbb{R}^q$ is the represents the population structure effect.  Note that in contrast to $\omega$ above, here we put a Bayesian prior on $\gamma$.
+- $\gamma \in \mathbb{R}^q$ is the represents the population structure effect.   In contrast to $\omega$ above,  $\gamma$ has a Bayesian prior.
 
 
-We fit this model via maximum likelihood, integrating out $\gamma$:
+We fit this model via maximum likelihood:
 
 $$
 \begin{align}
@@ -225,8 +227,8 @@ $$
 
 Comparing this model to the PC-control model of the previous section, the following points are salient:
 
-- In both cases, we us principal components to control for subpopulation membership.
-- With the direct PC-control model, we are limited in the number of principal components we can include.  Including too many may result in a model where the number fit parameters approaches or exceeds $N$, the number of study participants, resulting in  poor conditioning or non-uniqueness.  With the LMM, because of the Bayesian prior on $\gamma$, we face no such restriction.
+- In both cases, we use principal components to control for subpopulation membership.
+- With the direct PC-control model, we are limited in the number of principal components we can include.  Including too many may result in a model where the number fit parameters approaches or exceeds $N$, the number of study participants, resulting in poor conditioning or non-uniqueness.  With the LMM we face no such restriction.
 - With the LMM, more variable principal components can have a larger effect on the phenotype.  In contrast, in the direct PC-control model all components equal.
 
 
@@ -251,53 +253,50 @@ y &= \hat\beta_j x_j + \alpha + \epsilon\\
 \end{align}
 $$
 
-Where $K:=XX^T\in\mathbb{R}^{n\times n}$ is called the "genetic relatedness matrix" whose $(i,j)$ entry measures genetic similarity between study participants $i$ and $j$.  This standard is usually used in presentations of LMMs. 
+Where $K:=XX^T\in\mathbb{R}^{n\times n}$ is called the "genetic relatedness matrix" whose $(i,j)$ entry measures genetic similarity between study participants $i$ and $j$.  This standard form is usually used in presentations of LMMs. 
 
 
 
-### LOCO LMM
+### LOCO 
 
 While LMMs are effective at controlling for population stratification, if care is not taken they can unduly reduce GWAS statistical power.  This reduction in statistical power can occur for two separate reasons: proximal contamination and ascertainment bias.
 
-We begin with proximal contamination. See below:
+We begin with proximal contamination. Consider again the equation $(\ref{gamma_form})$. Note that for large values of $q$, we can easily have
 
 
+$$
+\begin{align}
+\mathrm{span}(x_j) \subset \mathrm{Range}(R)
+\end{align}
+$$
 
-``` mermaid
-graph LR
-C(Subpopulation) --> A(SNP P);
-C --> B(G₋ₚ);
-A --> D(Phenotype)
-
-
-classDef normal fill:transparent,stroke:transparent;
-classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
-class A,B,C,D normal;
-```
-
-Here, P is the causal SNP, while G₋ₚ represents the genome excluding P.   As discussed above, in plain regression population stratification will create false associations between SNPs in the rest of the genome and the phenotype.
-
-The LMM approach, especially when $q$ is large, can be understood as controlling for the whole genome as a proxy for controlling for subpopulation. We have:
+where $\mathrm{Range}(R)$ denotes the subspace spanned by the columns of $R$.  This causes a statistical problem resembling multicolinearity: the part of the phenotype vector $y$ that lies in $\mathrm{span}(x_j)$ can be predicted either using $\hat\beta_j$ or $\gamma$.  Simulations[@yang2014advantages] show that this ambiguity can significant reduce statistical power.
 
 
-
-``` mermaid
-graph LR
-C(Subpopulation) --> A(SNP P);
-C --> B(G₋ₚ);
-A --> D(Phenotype)
+The above-described problem is called "proximal contamination" because it results from the inclusion of variant $j$ and nearby variants in close LD with it in the matrix $X$ from which $R$ is constructed.
 
 
-classDef normal fill:transparent,stroke:transparent;
-classDef conditioned fill:transparent,stroke:#444,stroke-width:2px;
-class C,D normal;
-class A,B conditioned;
-```
+The standard solution to proximal contamination is the exclusion of these problematic proximal variants when $R$ is constructed.  One approach is called LOCO (leave one chromosome out) LMM. In this approach is $R$ is replaced by $R_{-\mathrm{chr}(j)}$, in which we construct $R$ without the chromosome including variant $j$.  Thus $(\ref{gamma_form})$ is replaced by
 
 
+$$
+\begin{align}
+y&= \hat\beta_j+ x_j R_{-\mathrm{chr}(j)}\gamma + \epsilon\\
+\epsilon  &\sim \mathcal{N}(0, \sigma^2_e I)\\
+\gamma & \sim \mathcal{N}(0, \sigma^2_\gamma I ),
+\end{align}
+$$
 
-### LMM Ascertainment Bias
+Thus the LMM term $R_{-\mathrm{chr}(j)}\gamma$ is different for variants on different chromosomes.  Simulations and theoretical analysis[@yang2014advantages] suggest that this approach recovers the power lost by the standard LMM method. 
 
+
+### Nonlinearly controlling for PCs
+
+todo
+
+### Ascertainment Bias
+
+todo
 
 ### REGENIE 
 
