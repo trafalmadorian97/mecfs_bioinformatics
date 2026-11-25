@@ -103,8 +103,9 @@ from mecfs_bio.util.download.parallel_ranges import (
 )
 from mecfs_bio.util.file_io.gzip_seek_index import SeekPoint, load_seek_index
 
-# Proteins fetched at once; Task 17 measures and sets it.
-DECODE_MAX_PARALLEL_FETCHES = 6
+# Proteins fetched at once. One 1 Mb window from each of 24 proteins: 4 at once 19-21 s, 6 13-17 s,
+# 8 12-13 s, 12 9-12 s, 16 11-13 s; peak RSS 1.7 GB.
+DECODE_MAX_PARALLEL_FETCHES = 8
 # indexed_gzip's compressed read buffer: decoding a span may read this far past its end point.
 _READBUF_BYTES = 1 * MIB
 _PRESIGN_EXPIRES_S = 3600

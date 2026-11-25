@@ -7,7 +7,7 @@ Tuning measurements for the deCODE defaults (plan Task 17, step 2):
       build the first 24 SMP proteins of the manifest (needed for the parallelism test);
   pixi r python experiments/claude/decode_proteomics_survey/tune_defaults.py parallel
       read one 1 Mb window from each of the 24 through ParallelWindowFetcher at
-      max_parallel 4, 6 and 8 (twice each).
+      max_parallel 4, 6, 8, 12 and 16 (twice each).
 """
 
 import sys
@@ -95,7 +95,7 @@ def parallel() -> None:
     ]
     wf = make_wf()
     for _ in range(2):
-        for max_parallel in (4, 6, 8):
+        for max_parallel in (4, 6, 8, 12, 16):
             fetcher = ParallelWindowFetcher(reader=reader, max_parallel=max_parallel)
             with tempfile.TemporaryDirectory() as scratch:
                 t0 = time.perf_counter()
