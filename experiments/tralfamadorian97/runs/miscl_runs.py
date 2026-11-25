@@ -1,4 +1,6 @@
 from mecfs_bio.analysis.runner.default_runner import DEFAULT_RUNNER
+from mecfs_bio.assets.gwas.ankylosing_spondylitis.multi_study.fixed_effects_meta_analysis.analysis.anky_spond_meta_ppp_rg import \
+    ANK_SPOND_META_PPP_RG_CIS_EXCLUDED
 from mecfs_bio.assets.gwas.height.yengo_2022.analysis.yengo_standard_analysis import YENGO_HEIGHT_STANDARD_ANALYSIS
 from mecfs_bio.assets.gwas.ldl.multistudy.genetic_correlation.ct_ldsc.ct_ldsc_ldl import CT_LDSC_LDL
 from mecfs_bio.assets.gwas.me_cfs.astra_zenica_phewas_gene_level.raw.get_mecfs_az_phewas import MECFS_AZ_PHEWAS
@@ -39,7 +41,8 @@ def run_miscl_analysis():
         # MILLION_VETERANS_CFS_STANDARD_ANALYSIS_TASK_GROUP.get_terminal_tasks()+
         # CFS_CT_LDSC_ASSET_GENERATOR.terminal_tasks()+
         # CT_LDSC_LDL.terminal_tasks()+
-        JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks.terminal_tasks()+
+        ANK_SPOND_META_PPP_RG_CIS_EXCLUDED.get_terminal_tasks()+
+        # JOHNSTON_ET_AL_PAIN_STANDARD_ANALYSIS.h_magma_tasks.terminal_tasks()+
         [
             # DECODE_ME_MAGMA_GENE_PLOT,
             # DECODE_ME_MAGMA_GENE_PLOT_WITH_WINDOW,
