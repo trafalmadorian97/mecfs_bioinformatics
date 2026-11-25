@@ -30,11 +30,14 @@ How to run and verify changes, manage dependencies, and where working files belo
 
 ## Where working files go
 
+- **Agent-generated working files go under `experiments/<agent>/`**, named for the coding agent
+  in lowercase (`experiments/claude/`, `experiments/codex/`, `experiments/gemini/`). Human
+  contributors use their own folder (e.g. `experiments/tralfamadorian97/`).
 - **Exploratory analysis that informs a decision goes in a committed script under
-  `experiments/claude/`**, not in throwaway one-liners. Use a subdirectory for a multi-step probe.
+  `experiments/<agent>/`**, not in throwaway one-liners. Use a subdirectory for a multi-step probe.
   Assert the expected conclusion so the script fails loudly if upstream data changes. Tee output
-  to `experiments/claude/logs/`.
-- **Design specs and plans go in `experiments/claude/design_specs/`**, named
+  to `experiments/<agent>/logs/`.
+- **Design specs and plans go in `experiments/<agent>/design_specs/`**, named
   `YYYY-MM-DD-<topic>-design.md`. Never put them in `docs/`.
 - **Write equation-heavy notes in Typst** (`.typ`, compiled with `pixi r typst compile <file>.typ`),
   not Markdown math. Render to PNG (`--format png`) and inspect the pages; the compiler misses
