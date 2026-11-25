@@ -137,6 +137,9 @@ def get_top_var_df(df: pd.DataFrame, plot_top: int | None) -> pd.DataFrame:
     )
 
 
+DEFAULT_REGION_PLOT_SKIP = 2
+
+
 def plot_region_around_variant(
     sumstats: gl.Sumstats,
     chrom: int,
@@ -144,7 +147,16 @@ def plot_region_around_variant(
     buffer: int,
     output_path: Path,
     vcf_name_for_ld: GWASLabVCFRefFile | None,
+    skip: int = DEFAULT_REGION_PLOT_SKIP,
+    title: str | None = None,
 ) -> None:
+    """
+    Plot the region pos +/- buffer on chromosome chrom.
+
+    skip: variants with -log10(P) below this value are not drawn.  Must be an int: gwaslab uses it as
+    the start of a range() when placing y-axis ticks.
+    title: figure title; None draws no title.
+    """
     output_path.parent.mkdir(parents=True, exist_ok=True)
     if vcf_name_for_ld is not None:
         gwaslab_download_ref_if_missing(vcf_name_for_ld)
@@ -154,7 +166,8 @@ def plot_region_around_variant(
     scaled = "MLOG10P" in sumstats.data.columns
     sumstats.plot_mqq(
         mode="r",
-        skip=2,
+        skip=skip,
+        title=title,
         cut=20,
         scaled=scaled,
         region_grid=True,
