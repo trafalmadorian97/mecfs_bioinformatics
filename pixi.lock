@@ -337,7 +337,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tbb-devel-2023.0.0-hfd44327_3.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tk-8.6.13-noxft_h1df4ec4_4.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/tktable-2.10-h0eb2ad0_11.conda
-      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.108-h39d0f39_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.109-h39d0f39_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.52.2-hf19af3b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/typst-0.15.1-h2d90d6e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/uriparser-0.9.8-hac33072_0.conda
@@ -366,7 +366,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/kernel-headers_linux-64-4.18.0-he073ed8_9.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/libgcc-devel_linux-64-16.2.0-he3ce08f_107.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/libstdcxx-devel_linux-64-16.2.0-h86e191b_107.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/pixi-pycharm-0.0.12-unix_hf108a03_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/pixi-pycharm-0.0.13-unix_hf108a03_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/python_abi-3.13-9_cp313.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-abind-1.4_8-r45hc72bb7e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/r-bh-1.90.0_1-r45hc72bb7e_0.conda
@@ -6974,21 +6974,20 @@ packages:
   run_exports: {}
   size: 103903
   timestamp: 1789042709956
-- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.108-h39d0f39_0.conda
-  sha256: 1940fc277bcad8dc804f463a33a32fad3bcd46d8eae5a31d0be6341aa1a1c7a5
-  md5: d48f80b97919a1464333c8c440ba4691
+- conda: https://conda.anaconda.org/conda-forge/linux-64/ty-0.0.109-h39d0f39_0.conda
+  sha256: f1910fb388892a51c18b1d355797b49f55a5d9f400df043fe46fb8823eabc39c
+  md5: d4c64349957118b5194e7dc494e1c3b7
   depends:
-  - __glibc >=2.17,<3.0.a0
   - libgcc >=15
+  - __glibc >=2.17,<3.0.a0
   constrains:
   - __glibc >=2.17
   license: MIT
-  license_family: MIT
   purls:
   - pkg:pypi/ty?source=compressed-mapping
   run_exports: {}
-  size: 13812591
-  timestamp: 1795393752799
+  size: 13940875
+  timestamp: 1795487994666
 - conda: https://conda.anaconda.org/conda-forge/linux-64/typos-1.52.2-hf19af3b_0.conda
   sha256: e7397a20b9c1faa495d84a0e083edd32923f91a1f82753ff2da174ce55fd0c20
   md5: 84ee442bb73a11eaad0ef91a61a2ddfd
@@ -7456,9 +7455,9 @@ packages:
   run_exports: {}
   size: 23329491
   timestamp: 1790303058123
-- conda: https://conda.anaconda.org/conda-forge/noarch/pixi-pycharm-0.0.12-unix_hf108a03_0.conda
-  sha256: 66cd439b83657c2728d0e45e4e40d140eb33dd22b61b045b23f922cae51bb503
-  md5: a92eadbeec2c489f209382433acf14a5
+- conda: https://conda.anaconda.org/conda-forge/noarch/pixi-pycharm-0.0.13-unix_hf108a03_0.conda
+  sha256: fbb9780269c6446f78c9bd85de71cf1404f55e6ce80b318bedcb79a943ac3f08
+  md5: b9b7d9e0258f29139bac5f4f8d175af7
   depends:
   - __unix
   - python >=3.8
@@ -7466,8 +7465,8 @@ packages:
   license_family: BSD
   purls: []
   run_exports: {}
-  size: 7177
-  timestamp: 1783850404460
+  size: 7283
+  timestamp: 1795510121106
 - conda: https://conda.anaconda.org/conda-forge/noarch/poppler-data-0.4.12-hd8ed1ab_0.conda
   sha256: 2f227e17b3c0346112815faa605502b66c1c4511a856127f2899abf15a98a2cf
   md5: d8d7293c5b37f39b2ac32940621c6592
