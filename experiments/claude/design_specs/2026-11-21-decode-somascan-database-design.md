@@ -24,7 +24,7 @@ Olink reanalyses (British/Irish, African, South Asian); those are out of scope.
 
 ## What the survey established
 
-Survey scripts and logs: `experiments/claude/decode_proteomics_survey/` (logs not committed).
+Later probe results: `experiments/claude/decode_proteomics_survey/findings.md`.
 
 **Access.** An S3-compatible bucket, not a temporary URL. deCODE emails a bucket name
 (`largescaleplasma-2023`), endpoint (`s3-ext.decode.is:443`, HTTPS) and an access key pair that
@@ -82,7 +82,7 @@ ceiling of ~25–30 MB/s:
 The ceiling is not this machine's link (≥ 46 MB/s to another host). One file downloaded with 128
 parallel range requests took 38–43 s (22–27 MB/s), and its md5 matched.
 
-**Mockup** (`mockup_single_protein.py`, template + protein modes): the full per-protein build
+**Mockup** (a throwaway script with template and protein modes): the full per-protein build
 takes **53.8 s** (43 s download, 2 s md5, 8 s processing), with peak memory 4.2 GB. Remote window
 reads take 1.4–1.7 s and fetch ~6 MB each, and both matched a brute-force scan of the file.
 
