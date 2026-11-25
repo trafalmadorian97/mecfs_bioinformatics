@@ -61,6 +61,5 @@ is the model:
    `ExtractTarGzipTask`.
 2. The asset store under `tmp_path` is outside `$PWD`, so a `-v $PWD:...` mount can't see it.
    Mount reference data explicitly with `extra_mounts`.
-3. If the Task's `__attrs_post_init__` calls Docker, define it inside the test function so test
    collection doesn't need Docker.
-4. Use the tool's fast or demo settings (e.g. a couple of chromosomes) to stay under about 30 s.
+3. Use the tool's fast or demo settings (e.g. a couple of chromosomes) to stay under about 30 s.
