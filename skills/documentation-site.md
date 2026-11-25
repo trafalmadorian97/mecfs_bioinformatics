@@ -7,7 +7,7 @@ a missing nav target, or a disallowed tag fails CI.
 ## Who edits `docs/`
 
 - **AI agents do not edit prose in `docs/`.** It is human-written. When a code change should
-  change what a page says (new expected values, new figures), propose the edit to a maintainer
+  change what a page says (new expected values, new figures), propose the edit in general terms to a human 
   instead of making it. Specs and plans never go in `docs/` (see [workflow.md](workflow.md)).
 
 ## Analysis pages carry a technique tag
