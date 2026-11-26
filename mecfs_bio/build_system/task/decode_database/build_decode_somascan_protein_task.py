@@ -9,7 +9,7 @@ The stored form of one deCODE SomaScan protein: a directory with
   significant_rows.parquet: every row with p <= 5e-8 on any chromosome (not read yet).
 
 The task downloads the file (about 970 MB) with parallel range requests, makes one rapidgzip
-pass over it, writes the four files and deletes the download.
+pass over it in a child process, writes the four files and deletes the download.
 """
 
 import resource
@@ -60,6 +60,7 @@ from mecfs_bio.constants.gwaslab_constants import (
     GWASLAB_SAMPLE_SIZE_COLUMN,
     GWASLAB_SE_COL,
 )
+from mecfs_bio.util.subproc.run_in_child_process import run_in_child_process
 
 logger = structlog.get_logger()
 
@@ -123,7 +124,13 @@ class BuildDecodeSomascanProteinTask(GeneratingTask):
         download = scratch_dir / "protein.txt.gz"
         download_protein_file(self.protein, download, wf, self.n_connections)
         timer.step("download")
-        result = one_pass(
+        # rapidgzip 0.16.2 leaks every exported seek index (about 15 MB per protein: its
+        # Python file wrapper never releases the written bytes objects or the file object), so
+        # the pass runs in a child process whose exit returns that memory. The fix is
+        # librapidarchive commit 74e0f22f06, not yet released; once rapidgzip ships it, the
+        # pass can run in-process again.
+        result = run_in_child_process(
+            one_pass,
             download,
             index,
             parallelization=self.parallelization,
