@@ -2,14 +2,16 @@
 Regenerate the deCODE SomaScan summary-statistics manifests, one per group (SMP-normalized and
 non-normalized).
 
-Each manifest row is one SomaScan assay of ST29 (see extract_st29.py): its seq id, the gene
+Each manifest row is one SomaScan assay of ST29 (see st29_soma_assays.py): its seq id, the gene
 symbol and target name from the file name, ST29's UniProt accession, the NCBI Entrez gene id(s)
 of that accession, and the S3 key, size and md5 of its summary statistics file.
 
 Steps:
   1. list both group prefixes of the deCODE bucket (AWS profile decode-download);
-  2. keep the files whose seq id is in st29_soma_assays.csv (the bucket also holds assays the
-     paper did not report), asserting one file per seq id and group;
+  2. download the Eldjarn et al. 2023 supplementary workbook into a temporary directory
+     (checking its md5) and read ST29 from it; keep the files whose seq id is in ST29 (the
+     bucket also holds assays the paper did not report), asserting one file per seq id and
+     group;
   3. HEAD each kept object for its size and md5 (x-amz-meta-md5chksum);
   4. parse file names, Proteomics_[SMP_]PC0_<seq>_<seq>_<gene>_<target>_<date>.txt.gz;
   5. resolve Entrez gene ids from the UniProt accession through the HGNC complete set (never
@@ -30,6 +32,8 @@ print(DEFAULT_RUNNER.run([T])[T.asset_id].path)"
 import base64
 import re
 import sys
+import tempfile
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -45,12 +49,16 @@ from mecfs_bio.assets.gwas.decode_somascan.raw.decode_s3 import (
 from mecfs_bio.assets.reference_data.csf_pqtl_sumstats.regenerate_csf_manifest import (
     MANIFEST_PATH as CSF_MANIFEST_PATH,
 )
-from mecfs_bio.assets.reference_data.decode_somascan_sumstats.extract_st29 import (
+from mecfs_bio.assets.reference_data.decode_somascan_sumstats.st29_soma_assays import (
     EXPECTED_SOMA_ASSAYS,
-    ST29_CSV_PATH,
     ST29_GENE_COL,
     ST29_SEQ_ID_COL,
     ST29_UNIPROT_COL,
+    st29_soma_assays,
+)
+from mecfs_bio.assets.reference_data.research_paper_supplementary_material.eldjarn_et_al_2023.raw.eldjarn_et_al_2023_supplementary_raw import (
+    ELDJARN_ET_AL_2023_SUPPLEMENTARY_MD5,
+    ELDJARN_ET_AL_2023_SUPPLEMENTARY_URL,
 )
 from mecfs_bio.constants.decode_somascan_constants import DecodeSomascanGroup
 from mecfs_bio.constants.hgnc_constants import (
@@ -59,6 +67,7 @@ from mecfs_bio.constants.hgnc_constants import (
     HGNC_READTHROUGH_LOCUS_TYPE,
     HGNC_UNIPROT_IDS_COL,
 )
+from mecfs_bio.util.download.verify import verify_hash
 
 _DIR = Path(__file__).parent
 
@@ -220,10 +229,19 @@ def report_disagreements(manifest: pl.DataFrame, st29: pl.DataFrame) -> None:
     print(csf_gene.select(MANIFEST_SEQ_ID_COL, MANIFEST_GENE_COL, "csf_gene").head(30))
 
 
+def download_st29() -> pl.DataFrame:
+    """ST29's SomaScan assays, from the supplementary workbook downloaded and then discarded."""
+    with tempfile.TemporaryDirectory() as tmp:
+        workbook = Path(tmp) / "eldjarn_et_al_2023_supplementary.xlsx"
+        urllib.request.urlretrieve(ELDJARN_ET_AL_2023_SUPPLEMENTARY_URL, workbook)
+        verify_hash(workbook, ELDJARN_ET_AL_2023_SUPPLEMENTARY_MD5)
+        return st29_soma_assays(workbook)
+
+
 def main() -> None:
     pl.Config.set_tbl_rows(40)
     entrez = entrez_by_uniprot(Path(sys.argv[1]))
-    st29 = pl.read_csv(ST29_CSV_PATH, infer_schema=False)
+    st29 = download_st29()
     client = _client()
     manifests: dict[DecodeSomascanGroup, pl.DataFrame] = {
         group: group_manifest(client, group, st29, entrez) for group in ("smp", "raw")

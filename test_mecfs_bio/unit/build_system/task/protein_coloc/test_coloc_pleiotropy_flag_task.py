@@ -4,6 +4,12 @@ import polars as pl
 
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
 from mecfs_bio.build_system.asset.file_asset import FileAsset
+from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
+    DataFrameParquetFormat,
+    DataFrameReadSpec,
+)
+from mecfs_bio.build_system.meta.simple_file_meta import SimpleFileMeta
+from mecfs_bio.build_system.task.fake_task import FakeTask
 from mecfs_bio.build_system.task.protein_coloc.coloc_pleiotropy_flag_task import (
     ColocPleiotropyFlagTask,
     near_st36_pleiotropic_smp_col,
@@ -54,23 +60,30 @@ def test_flag_marks_leads_near_st36_smp_rows(tmp_path: Path) -> None:
             PROTEIN_LEAD_POS_COL: pl.Int32,
         },
     ).write_parquet(coloc_dir / RAW_RESULTS_FILENAME)
-    st36 = tmp_path / "st36.csv"
+    st36 = tmp_path / "st36.parquet"
     pl.DataFrame(
         {
             ST36_CHROM_COL: [1, 1],
             ST36_SMP_POS_COL: [_ST36_POS, _OLINK_ONLY_POS],
             ST36_PLEIOTROPIC_SMP_COL: [True, False],
         }
-    ).write_csv(st36)
+    ).write_parquet(st36)
     upstream = coloc_task()
-    task = ColocPleiotropyFlagTask.create(
-        asset_id="flagged", coloc_task=upstream, pleiotropic_csv=st36
+    st36_task = FakeTask(
+        SimpleFileMeta("st36", read_spec=DataFrameReadSpec(DataFrameParquetFormat()))
     )
+    task = ColocPleiotropyFlagTask.create(
+        asset_id="flagged", coloc_task=upstream, pleiotropic_task=st36_task
+    )
+    assets = {
+        upstream.asset_id: DirectoryAsset(coloc_dir),
+        st36_task.asset_id: FileAsset(st36),
+    }
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     result = task.execute(
         scratch,
-        fetch=lambda asset_id: {upstream.asset_id: DirectoryAsset(coloc_dir)}[asset_id],
+        fetch=lambda asset_id: assets[asset_id],
         wf=make_wf(),
     )
     assert isinstance(result, FileAsset)

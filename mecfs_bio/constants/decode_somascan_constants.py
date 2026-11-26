@@ -68,8 +68,8 @@ DECODE_H2_PROTEIN_ID_COL = "protein_id"
 DECODE_H2_N_P05_COL = "n_p05"
 DECODE_H2_N_P95_COL = "n_p95"
 
-# Columns of st36_pleiotropic_pqtls.csv, extracted from Eldjarn et al. 2023 ST36 (highly
-# pleiotropic pQTLs): chromosome code, positions (hg38) and pleiotropy flags.
+# Columns of the typed Eldjarn et al. 2023 ST36 table (highly pleiotropic pQTLs; see
+# St36PleiotropicPqtlsPipe): chromosome code, positions (hg38) and pleiotropy flags.
 ST36_CHROM_COL = "chrom"
 ST36_OLINK_POS_COL = "olink_pos"
 ST36_PLEIOTROPIC_OLINK_COL = "highly_pleiotropic_olink"

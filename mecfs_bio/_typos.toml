@@ -2,12 +2,11 @@
 # Proteomics database manifests; not prose, and full of legitimate gene names and
 # protein descriptions (SORD, SPRED2, Collectin-12, Mucin-1, ...) that trip the
 # spellchecker. UKB-PPP has one manifest per cohort; CSF has a single aptamer manifest;
-# deCODE SomaScan has one manifest per group plus the ST29 extract.
+# deCODE SomaScan has one manifest per group.
 extend-exclude = [
     "**/*_ppp_manifest.csv",
     "**/csf_aptamer_manifest.csv",
     "**/decode_somascan_*_manifest.csv",
-    "**/st29_soma_assays.csv",
 ]
 
 [default.extend-words]

@@ -21,8 +21,8 @@ from mecfs_bio.assets.gwas.me_cfs.decode_me.auxiliary.prevalance_info import (
 from mecfs_bio.assets.gwas.me_cfs.decode_me.processed_gwas_data.decode_me_gwas_1_build_38_harmonized import (
     DECODE_ME_GWAS_1_BUILD_38_HARMONIZED,
 )
-from mecfs_bio.assets.reference_data.decode_somascan_sumstats.extract_st29 import (
-    ST36_CSV_PATH,
+from mecfs_bio.assets.reference_data.research_paper_supplementary_material.eldjarn_et_al_2023.processed.eldjarn_et_al_2023_st36_pleiotropic_pqtls import (
+    ELDJARN_ET_AL_2023_ST36_PLEIOTROPIC_PQTLS,
 )
 from mecfs_bio.build_system.task.protein_coloc.candidate_selection import (
     SelectionConfig,
@@ -53,6 +53,6 @@ DECODE_ME_DECODE_SOMASCAN_SMP_COLOC_LEAD_P_1E_5_PLEIOTROPY = (
     ColocPleiotropyFlagTask.create(
         asset_id="decode_me_gwas_1_lead_p_1e_5_decode_somascan_smp_coloc_pleiotropy",
         coloc_task=DECODE_ME_DECODE_SOMASCAN_SMP_COLOC_LEAD_P_1E_5.coloc_task,
-        pleiotropic_csv=ST36_CSV_PATH,
+        pleiotropic_task=ELDJARN_ET_AL_2023_ST36_PLEIOTROPIC_PQTLS,
     )
 )

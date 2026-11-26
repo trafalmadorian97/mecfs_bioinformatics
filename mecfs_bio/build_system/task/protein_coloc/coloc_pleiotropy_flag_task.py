@@ -21,6 +21,7 @@ from mecfs_bio.build_system.meta.read_spec.dataframe_read_spec import (
     DataFrameParquetFormat,
     DataFrameReadSpec,
 )
+from mecfs_bio.build_system.meta.read_spec.read_dataframe import scan_dataframe_asset
 from mecfs_bio.build_system.meta.result_directory_meta import ResultDirectoryMeta
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
 from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
@@ -88,26 +89,31 @@ def flag_near_pleiotropic(
 class ColocPleiotropyFlagTask(GeneratingTask):
     """
     coloc_task: a TraitProteinColocTask over deCODE SomaScan SMP assays.
-    pleiotropic_csv: st36_pleiotropic_pqtls.csv (the ST36 extract).
+    pleiotropic_task: the typed ST36 table (see St36PleiotropicPqtlsPipe).
     distance_bp: how far a protein lead may lie from an ST36 SMP lead and still be flagged.
     """
 
     meta: ResultTableMeta
     coloc_task: Task
-    pleiotropic_csv: Path
+    pleiotropic_task: Task
     distance_bp: int
 
     @property
     def deps(self) -> list[Task]:
-        return [self.coloc_task]
+        return [self.coloc_task, self.pleiotropic_task]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
         results = pl.read_parquet(
             coloc_result_dir(fetch, self.coloc_task) / RAW_RESULTS_FILENAME
         )
-        flagged = flag_near_pleiotropic(
-            results, pl.read_csv(self.pleiotropic_csv), self.distance_bp
+        st36 = (
+            scan_dataframe_asset(
+                fetch(self.pleiotropic_task.asset_id), self.pleiotropic_task.meta
+            )
+            .collect()
+            .to_polars()
         )
+        flagged = flag_near_pleiotropic(results, st36, self.distance_bp)
         out_path = scratch_dir / f"{self.meta.asset_id}.parquet"
         flagged.write_parquet(out_path)
         return FileAsset(out_path)
@@ -117,7 +123,7 @@ class ColocPleiotropyFlagTask(GeneratingTask):
         cls,
         asset_id: str,
         coloc_task: Task,
-        pleiotropic_csv: Path,
+        pleiotropic_task: Task,
         distance_bp: int = 250_000,
     ) -> "ColocPleiotropyFlagTask":
         near_st36_pleiotropic_smp_col(distance_bp)
@@ -135,6 +141,6 @@ class ColocPleiotropyFlagTask(GeneratingTask):
                 read_spec=DataFrameReadSpec(DataFrameParquetFormat()),
             ),
             coloc_task=coloc_task,
-            pleiotropic_csv=pleiotropic_csv,
+            pleiotropic_task=pleiotropic_task,
             distance_bp=distance_bp,
         )
