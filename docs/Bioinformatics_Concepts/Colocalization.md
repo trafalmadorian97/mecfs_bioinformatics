@@ -629,6 +629,18 @@ as desired
 
 
 
+### Interpretation of Bayesian Coloc
+
+The following key quantities are helpful in obtaining an intuitive understanding of Bayes factor colocalization.
+
+$$
+\begin{align}
+\pi_k(i)&:=\frac{B_k(i)}{L_k}\\
+a_k&:=\frac{\rho_kL_K}{1+\rho_kL_k}\\
+C&:=\sum_{i=1}^Q \pi_1(i) \pi_2(i)\\
+\kappa&:=\frac{\rho_{12}}{\rho_1\rho_2}
+\end{align}
+$$
 
 to be continued.
 
