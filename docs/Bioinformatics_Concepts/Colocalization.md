@@ -1,8 +1,8 @@
 # Colocalization
 
-Colocalization is a biostatistical technique to evaluate support for the hypothesis that two GWAS share a causal variant at a locus.  
+Colocalization is a biostatistical technique that tests whether two GWAS share a causal variant at a locus.  
 
-Because it evaluates commonality between GWAS signals, colocalization is somewhat similar in spirit to [genetic correlation](Genetic_Correlation.md) techniques like [CT-LDSC](Cross_Trait_LDSC.md).  However, whereas genetic correlation evaluates global overlap, colocalization focuses on a single locus.  Two GWAS may strongly colocalize at one locus, but not at another. Colocalization techniques facilitate nuanced understanding of where two traits share biological pathways and where they do not.
+Because it evaluates commonality between GWAS signals, colocalization is similar in spirit to [genetic correlation](Genetic_Correlation.md) techniques like [CT-LDSC](Cross_Trait_LDSC.md).  However, whereas genetic correlation evaluates global overlap, colocalization focuses on a single locus.  Two GWAS may strongly colocalize at one locus, but not at another. Colocalization techniques facilitate nuanced understanding of where two traits share biological pathways and where they do not.
 
 
 Colocalization is often paired with [Mendelian Randomization](Mendelian_Randomization.md), another local technique.
@@ -383,7 +383,7 @@ Notable points from the plot:
 - However,  $\log\mathrm{BF}$ is not monotonic in $-\log p$.  Initially, $BF$ actually declines as $p$ shrinks.  This effect can be understood as follows: when the data provides evidence against the alternative hypothesis, the alternative hypothesis is more likely at a small sample size (when the data may be unreliable) than at a moderate sample size.
 - $\mathrm{BF}$ is not monotonic in $\hat\beta$.  This can be understood as an effect of the prior.  Very large values of $\hat\beta$ are downweighted by the prior.
 
-### Posterior
+### Posterior main result
 
 Next, we are interested in how observing the data affects the probability of the hypotheses. 
 
@@ -401,7 +401,6 @@ Let $D:=(y_1,y_2)$ denote the observed phenotypic data.
 
 Our main result follows.
 
-**Main result**
 
 $$
 \begin{align}
@@ -422,7 +421,7 @@ w_4&:= \rho_{1,2}L_{1,2}
 $$
 
 
-**Proof of main result**
+### Proof of main result
 
 First, let $E$ denote any event whose intersection with $\mathcal{A}$ has nonzero probability. We have:
 
@@ -628,7 +627,6 @@ $$
 as desired
 
 
-**End of proof of main result**
 
 
 
