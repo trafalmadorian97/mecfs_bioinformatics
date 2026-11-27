@@ -52,10 +52,7 @@ store behave.
   per-protein manifests under `mecfs_bio/assets/reference_data/*_sumstats/`) must exist in the repo
   already; it is written by a script run outside the build. Any other table, even one only that
   script uses, is not committed. A table that Tasks consume is acquired and normalized by Tasks
-  (e.g. Eldjarn et al. ST36 as `ELDJARN_ET_AL_2023_ST36_PLEIOTROPIC_PQTLS`), so it is a tracked
-  dependency rather than a `Path` the cache can't see. A table that only feeds the manifest script
-  is downloaded by that script into a temporary directory and discarded (e.g. ST29 in
-  `regenerate_decode_manifest.py`), not fetched through the build system and then read outside it.
+  (e.g. `ELDJARN_ET_AL_2023_ST36_PLEIOTROPIC_PQTLS`).
 - **Run external CLI tools through pixi** (`pixi run bcftools ...`), not a binary assumed to be on
   `PATH`.
 - **Normalize external data once, as its own asset**, next to the download. This is usually a
