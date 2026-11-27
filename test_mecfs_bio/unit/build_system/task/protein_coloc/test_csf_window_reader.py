@@ -7,6 +7,8 @@ import pysam
 import pytest
 from attrs import frozen
 
+from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
     CsfAptamerFile,
 )
@@ -65,6 +67,10 @@ class _CopyThenRemoveIndex:
         return dest
 
 
+def _no_fetch(asset_id: AssetId) -> Asset:
+    raise AssertionError(f"unexpected fetch of {asset_id}")
+
+
 def _row(pos: int, beta: str = "0.1", eaf: str = "0.3", n: str = "3400") -> list[str]:
     values = {
         "chromosome": "19",
@@ -101,7 +107,7 @@ def _fetch(source: str, window: GenomicInterval, tmp_path: Path) -> pl.DataFrame
         resolver=_PathResolver(source),
         index_fetcher=_CopyThenRemoveIndex(),
     )
-    frames = csf.fetch_protein(_SEQ_ID, [window], tmp_path, make_wf())
+    frames = csf.fetch_protein(_SEQ_ID, [window], tmp_path, _no_fetch, make_wf())
     return frames[window]
 
 
@@ -157,6 +163,7 @@ def test_fetch_unknown_protein_id_asserts(tmp_path: Path) -> None:
             "9999-99",
             [GenomicInterval(chrom=19, start=1, end=10)],
             tmp_path,
+            _no_fetch,
             make_wf(),
         )
 

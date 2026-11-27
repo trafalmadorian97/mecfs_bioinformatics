@@ -5,6 +5,9 @@ from pathlib import Path
 import polars as pl
 import pytest
 
+from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.meta.asset_id import AssetId
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
     ParallelWindowFetcher,
     ProteinWindowReader,
@@ -55,6 +58,7 @@ class _FakeReader(ProteinWindowReader):
         protein_id: str,
         windows: Sequence[GenomicInterval],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> dict[GenomicInterval, pl.DataFrame]:
         with self._condition:
@@ -80,6 +84,10 @@ def _no_sleep(seconds: float) -> None:
     pass
 
 
+def _no_fetch(asset_id: AssetId) -> Asset:
+    raise AssertionError(f"unexpected fetch of {asset_id}")
+
+
 def _fetch_all(
     reader: _FakeReader, requests: list[ProteinWindowRequest], max_parallel: int
 ) -> list[str]:
@@ -87,6 +95,7 @@ def _fetch_all(
         reader,
         requests,
         Path("unused"),
+        _no_fetch,
         make_wf(),
         max_parallel=max_parallel,
         sleep=_no_sleep,
@@ -105,7 +114,7 @@ def test_results_come_in_request_order_when_fetches_finish_out_of_order() -> Non
     reader = _FakeReader(release_order=["P2", "P0", "P1"])
     results = list(
         fetch_proteins_in_parallel(
-            reader, requests, Path("unused"), make_wf(), max_parallel=3
+            reader, requests, Path("unused"), _no_fetch, make_wf(), max_parallel=3
         )
     )
     assert [r.request for r in results] == requests
@@ -131,6 +140,7 @@ class _GatedReader(ProteinWindowReader):
         protein_id: str,
         windows: Sequence[GenomicInterval],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> dict[GenomicInterval, pl.DataFrame]:
         self.calls.append(protein_id)
@@ -143,7 +153,7 @@ def test_closing_early_cancels_fetches_not_yet_started() -> None:
     # One worker: P1 runs (blocked on the gate) while P2-P4 wait in the queue.
     reader = _GatedReader(gated_protein="P1")
     results = fetch_proteins_in_parallel(
-        reader, _requests(5), Path("unused"), make_wf(), max_parallel=1
+        reader, _requests(5), Path("unused"), _no_fetch, make_wf(), max_parallel=1
     )
     assert next(results).request.protein_id == "P0"
     # Release P1 shortly after close() has cancelled the queue, so close() can finish.
@@ -163,5 +173,5 @@ def test_duplicate_proteins_are_rejected() -> None:
 def test_parallel_window_fetcher_fetches_through_its_reader() -> None:
     requests = _requests(3)
     fetcher = ParallelWindowFetcher(reader=_FakeReader(), max_parallel=2)
-    results = list(fetcher.fetch_all(requests, Path("unused"), make_wf()))
+    results = list(fetcher.fetch_all(requests, Path("unused"), _no_fetch, make_wf()))
     assert [r.frames[_WINDOW]["protein"].item() for r in results] == ["P0", "P1", "P2"]

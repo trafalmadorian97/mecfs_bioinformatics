@@ -94,6 +94,10 @@ r-cpp11 = ">=0.5,<1"
 ty = ">=0.0.111,<0.0.112"
 actionlint = ">=1.7.12,<2"
 shellcheck = ">=0.11.0,<0.12"
+boto3 = ">=1.44.9,<2"
+rapidgzip = "==0.16.2"
+indexed_gzip = "==1.10.3"
+zstandard = "==0.25.0"
 
 [tool.pixi.feature.analysis.pypi-dependencies]
 attrs = ">=25.3.0"
@@ -156,6 +160,10 @@ backports-zstd = ">=1.7.0, <2"
 
 [tool.ty.environment]
 python = ".pixi/envs/default"
+
+# rapidgzip ships as a bare compiled extension module with no stubs, which ty cannot resolve.
+[tool.ty.analysis]
+allowed-unresolved-imports = ["rapidgzip"]
 
 [tool.pixi.feature.download.dependencies]
 aria2 = { channel = "conda-forge" }

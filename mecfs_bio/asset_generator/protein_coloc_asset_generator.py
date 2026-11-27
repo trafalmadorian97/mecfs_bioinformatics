@@ -46,6 +46,9 @@ from mecfs_bio.build_system.task.protein_coloc.coloc_locus_stack_plot_task impor
 from mecfs_bio.build_system.task.protein_coloc.coloc_protein_info_task import (
     ColocProteinInfoTask,
 )
+from mecfs_bio.build_system.task.protein_coloc.decode_gene_coords_reader import (
+    DecodeGeneCoordsReader,
+)
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
     DenseWindowFetcher,
 )
@@ -54,6 +57,8 @@ from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     St3GeneCoordsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_accessions_reader import (
+    DecodeProteinAccessionsReader,
+    ProteinAccessionsReader,
     St3ProteinAccessionsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.protein_hit_table_task import (
@@ -64,7 +69,9 @@ from mecfs_bio.build_system.task.protein_coloc.trait_protein_coloc_task import (
     TraitProteinColocTask,
 )
 
-ProteomicsSourceInfix = Literal["ppp", "csf"]
+ProteomicsSourceInfix = Literal[
+    "ppp", "csf", "decode_somascan_smp", "decode_somascan_raw"
+]
 
 
 @frozen(slots=True)
@@ -74,6 +81,8 @@ class ProteomicsColocSource:
     hit_table_task: the source's protein hit-segment table.
     gene_coords_task, gene_coords_reader: the GRCh38 gene-coordinate table and its reader.
     fetcher: dense window source of the proteomics GWAS.
+    drop_multi_record_trait_positions: drop trait positions holding more than one record,
+        for a source whose rows are all two-allele tests (see orient_and_align).
     """
 
     asset_infix: ProteomicsSourceInfix
@@ -81,6 +90,7 @@ class ProteomicsColocSource:
     gene_coords_task: Task
     gene_coords_reader: GeneCoordsReader
     fetcher: DenseWindowFetcher
+    drop_multi_record_trait_positions: bool = False
 
 
 @frozen(slots=True)
@@ -118,6 +128,7 @@ def generate_protein_coloc_tasks(
         panel_ancestry="nfe",
         fetcher=source.fetcher,
         config=config,
+        drop_multi_record_trait_positions=source.drop_multi_record_trait_positions,
     )
     display_task = ColocDisplayTableTask.create(
         asset_id=f"{prefix}_coloc_display",
@@ -194,20 +205,31 @@ def generate_coloc_protein_info_task(
 ) -> ColocProteinInfoTask:
     """UniProt and Ensembl annotations of the colocalizing proteins at the top display-table loci.
 
-    Only UKB-PPP runs are supported: the UniProt accessions of each protein are read from the
-    Sun et al. 2023 ST3 sheet, the run's gene-coordinate table.
+    UKB-PPP and deCODE SomaScan runs are supported. PPP accessions are read from the Sun et al.
+    2023 ST3 sheet (the run's gene-coordinate table); deCODE accessions from the manifest rows
+    of the run's gene-coordinate reader.
     """
     coloc_task = group.coloc_task
-    assert isinstance(coloc_task.gene_coords_reader, St3GeneCoordsReader), (
-        "generate_coloc_protein_info_task supports UKB-PPP runs only, got gene coords reader "
-        f"{type(coloc_task.gene_coords_reader).__name__}"
-    )
     return ColocProteinInfoTask.create(
         asset_id=asset_id,
         display_task=group.display_task,
         protein_table_task=coloc_task.gene_coords_task,
-        protein_accessions_reader=St3ProteinAccessionsReader(),
+        protein_accessions_reader=_protein_accessions_reader(coloc_task),
         uniprot_task=UNIPROT_LOOKUP,
         uniprot_genes_task=HGNC_UNIPROT_GENES,
         max_loci=max_loci,
+    )
+
+
+def _protein_accessions_reader(
+    coloc_task: TraitProteinColocTask,
+) -> ProteinAccessionsReader:
+    reader = coloc_task.gene_coords_reader
+    if isinstance(reader, St3GeneCoordsReader):
+        return St3ProteinAccessionsReader()
+    if isinstance(reader, DecodeGeneCoordsReader):
+        return DecodeProteinAccessionsReader(proteins=reader.proteins)
+    raise AssertionError(
+        "generate_coloc_protein_info_task supports UKB-PPP and deCODE runs only, got gene "
+        f"coords reader {type(reader).__name__}"
     )

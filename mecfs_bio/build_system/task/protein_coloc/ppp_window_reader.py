@@ -21,6 +21,7 @@ from pathlib import Path, PurePosixPath
 import polars as pl
 from attrs import frozen
 
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
@@ -136,6 +137,7 @@ class PppWindowReader(ProteinWindowReader):
         protein_id: str,
         windows: Sequence[GenomicInterval],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> dict[GenomicInterval, pl.DataFrame]:
         """One protein's windows, keyed by window."""

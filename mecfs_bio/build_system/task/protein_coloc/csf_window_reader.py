@@ -28,6 +28,7 @@ import polars as pl
 import pysam
 from attrs import frozen
 
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
     CsfAptamerFile,
 )
@@ -203,6 +204,7 @@ class CsfWindowReader(ProteinWindowReader):
         protein_id: str,
         windows: Sequence[GenomicInterval],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> dict[GenomicInterval, pl.DataFrame]:
         """One aptamer's windows, keyed by window."""

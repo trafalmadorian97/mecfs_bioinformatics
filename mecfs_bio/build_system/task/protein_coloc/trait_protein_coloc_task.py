@@ -89,6 +89,7 @@ from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
     GeneCoordsReader,
 )
 from mecfs_bio.build_system.task.protein_coloc.orient_and_align import (
+    DEFAULT_MAX_EAF_DIFFERENCE,
     OrientedWindow,
     align_windows,
     orient_window,
@@ -123,9 +124,11 @@ from mecfs_bio.constants.protein_coloc_constants import (
     N_ALIGNED_COL,
     N_DROPPED_PREFIX,
     N_DUPLICATE_KEYS_DROPPED_COL,
+    N_EAF_DISCORDANT_DROPPED_COL,
     N_PROTEIN_COL,
     N_PROTEIN_VARIANTS_COL,
     N_TRAIT_COL,
+    N_TRAIT_MULTI_RECORD_DROPPED_COL,
     N_TRAIT_VARIANTS_COL,
     PP_H0_COL,
     PP_H1_COL,
@@ -146,6 +149,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     STATUS_EXCLUDED_MHC,
     STATUS_FAILED,
     STATUS_NO_CANDIDATES,
+    STATUS_NOT_SELECTED_BUDGET,
     STATUS_SELECTED,
     STATUS_TESTED,
     WINDOW_SCHEMA,
@@ -176,6 +180,10 @@ class ColocRunConfig:
     selection: the pair budget and scoring.
     min_aligned_variants: a pair with fewer usable aligned variants fails instead of being tested.
     harmonization: options of the untrusted orientation of protein windows.
+    require_no_budget_drop: fail if the selection budget leaves any candidate untested, for
+        runs whose budgets are meant never to bind.
+    max_eaf_difference: aligned variants whose trait and protein EAFs differ by more than this
+        are dropped (see orient_and_align); None disables the check.
     """
 
     lead_p_threshold: float = 5e-8
@@ -186,11 +194,14 @@ class ColocRunConfig:
     harmonization: GenomeReferenceHarmonizationOptions = (
         GenomeReferenceHarmonizationOptions()
     )
+    require_no_budget_drop: bool = False
+    max_eaf_difference: float | None = DEFAULT_MAX_EAF_DIFFERENCE
 
     def __attrs_post_init__(self) -> None:
         assert 0 < self.lead_p_threshold < 1
         assert self.half_window_bp > 0
         assert self.min_aligned_variants >= 1
+        assert self.max_eaf_difference is None or 0 < self.max_eaf_difference < 1
 
 
 @frozen(slots=True)
@@ -211,6 +222,8 @@ class _PairOutcome:
     n_trait: int
     n_aligned: int
     n_duplicate_keys_dropped: int
+    n_eaf_discordant_dropped: int
+    n_trait_multi_record_dropped: int
     posteriors: ColocPosteriors | None
     failure_reason: str | None
     protein_lead_pos: int | None
@@ -357,11 +370,18 @@ def _test_pair(
     trait_model: TraitModel,
     method: ColocMethod,
     reference: _OrientationReference,
-    min_aligned_variants: int,
+    config: ColocRunConfig,
+    drop_multi_record_trait_positions: bool,
     windows_dir: Path,
 ) -> _PairOutcome:
     oriented = _orient(protein_rows, window, reference)
-    aligned = align_windows(trait=trait_rows, protein=oriented.frame)
+    aligned = align_windows(
+        trait=trait_rows,
+        protein=oriented.frame,
+        max_eaf_difference=config.max_eaf_difference,
+        drop_multi_record_trait_positions=drop_multi_record_trait_positions,
+    )
+    min_aligned_variants = config.min_aligned_variants
     usable = _usable_variants(aligned.frame)
     lead = _protein_lead(usable)
     enough = usable.height >= min_aligned_variants
@@ -377,6 +397,8 @@ def _test_pair(
         n_trait=aligned.n_trait,
         n_aligned=usable.height,
         n_duplicate_keys_dropped=aligned.n_duplicate_keys_dropped,
+        n_eaf_discordant_dropped=aligned.n_eaf_discordant_dropped,
+        n_trait_multi_record_dropped=aligned.n_trait_multi_record_dropped,
         posteriors=method.run(_coloc_input(usable, trait_model)) if enough else None,
         failure_reason=(
             None
@@ -405,7 +427,8 @@ def _test_protein(
             trait_model=task.trait_model,
             method=task.method,
             reference=reference,
-            min_aligned_variants=task.config.min_aligned_variants,
+            config=task.config,
+            drop_multi_record_trait_positions=task.drop_multi_record_trait_positions,
             windows_dir=windows_dir,
         )
         for window in fetched.request.windows
@@ -434,6 +457,7 @@ def _test_selected_pairs(
     reference: _OrientationReference,
     scratch_dir: Path,
     windows_dir: Path,
+    fetch: Fetch,
     wf: WF,
 ) -> list[_PairOutcome]:
     """
@@ -441,7 +465,7 @@ def _test_selected_pairs(
     proteins whose pairs have all been tested.
     """
     requests = _fetch_requests(ranked, loci)
-    with closing(task.fetcher.fetch_all(requests, scratch_dir, wf)) as fetched:
+    with closing(task.fetcher.fetch_all(requests, scratch_dir, fetch, wf)) as fetched:
         return [
             outcome
             for protein in tqdm(
@@ -466,6 +490,8 @@ def _outcome_row(outcome: _PairOutcome, method: ColocMethod) -> dict[str, object
         N_PROTEIN_VARIANTS_COL: outcome.oriented.n_input,
         N_ALIGNED_COL: outcome.n_aligned,
         N_DUPLICATE_KEYS_DROPPED_COL: outcome.n_duplicate_keys_dropped,
+        N_EAF_DISCORDANT_DROPPED_COL: outcome.n_eaf_discordant_dropped,
+        N_TRAIT_MULTI_RECORD_DROPPED_COL: outcome.n_trait_multi_record_dropped,
         PROTEIN_LEAD_POS_COL: outcome.protein_lead_pos,
         PROTEIN_LEAD_MLOG10P_COL: outcome.protein_lead_mlog10p,
         PP_H0_COL: post.pp_h0 if post is not None else None,
@@ -493,6 +519,8 @@ _OUTCOME_SCHEMA = pl.Schema(
         N_PROTEIN_VARIANTS_COL: pl.Int32,
         N_ALIGNED_COL: pl.Int32,
         N_DUPLICATE_KEYS_DROPPED_COL: pl.Int32,
+        N_EAF_DISCORDANT_DROPPED_COL: pl.Int32,
+        N_TRAIT_MULTI_RECORD_DROPPED_COL: pl.Int32,
         PROTEIN_LEAD_POS_COL: pl.Int32,
         PROTEIN_LEAD_MLOG10P_COL: pl.Float64,
         PP_H0_COL: pl.Float64,
@@ -559,6 +587,8 @@ class TraitProteinColocTask(Task):
         used to orient protein windows.
     fetcher: the dense window source of the proteomics GWAS.
     method: the colocalization method.
+    drop_multi_record_trait_positions: drop trait positions holding more than one record before
+        alignment (see orient_and_align); for sources whose rows are all two-allele tests.
     """
 
     meta: ResultDirectoryMeta
@@ -573,6 +603,7 @@ class TraitProteinColocTask(Task):
     fetcher: DenseWindowFetcher
     method: ColocMethod
     config: ColocRunConfig
+    drop_multi_record_trait_positions: bool = False
 
     @property
     def deps(self) -> list[Task]:
@@ -582,6 +613,7 @@ class TraitProteinColocTask(Task):
             self.gene_coords_task,
             self.fasta_task,
             self.panel_task,
+            *self.fetcher.deps,
         ]
 
     def execute(self, scratch_dir: Path, fetch: Fetch, wf: WF) -> Asset:
@@ -602,6 +634,7 @@ class TraitProteinColocTask(Task):
             cis_window_bp=self.config.selection.cis_window_bp,
         )
         ranked = select_candidates(candidates, loci, self.config.selection)
+        _check_budget(ranked, self.config)
         reference = _OrientationReference(
             fasta=load_fasta(fetch, self.fasta_task),
             panel_path=load_panel_path(fetch, self.panel_task),
@@ -614,7 +647,7 @@ class TraitProteinColocTask(Task):
         fetch_dir = scratch_dir / "dense"
         fetch_dir.mkdir()
         outcomes = _test_selected_pairs(
-            ranked, loci, trait, self, reference, fetch_dir, windows_dir, wf
+            ranked, loci, trait, self, reference, fetch_dir, windows_dir, fetch, wf
         )
         results = _assemble_results(loci, ranked, outcomes, self.method)
         _log_summary(loci, results)
@@ -636,6 +669,7 @@ class TraitProteinColocTask(Task):
         fetcher: DenseWindowFetcher,
         method: ColocMethod = ColocAbf(),
         config: ColocRunConfig = ColocRunConfig(),
+        drop_multi_record_trait_positions: bool = False,
     ) -> "TraitProteinColocTask":
         trait_meta = trait_task.meta
         assert isinstance(trait_meta, FilteredGWASDataMeta), (
@@ -665,7 +699,25 @@ class TraitProteinColocTask(Task):
             fetcher=fetcher,
             method=method,
             config=config,
+            drop_multi_record_trait_positions=drop_multi_record_trait_positions,
         )
+
+
+def _check_budget(ranked: pl.DataFrame, config: ColocRunConfig) -> None:
+    """Log the candidates per locus; with require_no_budget_drop, assert none was dropped."""
+    logger.info(
+        "coloc candidates per locus",
+        n_candidates_by_locus=dict(
+            ranked.group_by(LOCUS_ID_COL).len().sort(LOCUS_ID_COL).rows()
+        ),
+    )
+    if not config.require_no_budget_drop:
+        return
+    dropped = int((ranked[STATUS_COL] == STATUS_NOT_SELECTED_BUDGET).sum())
+    assert dropped == 0, (
+        f"{dropped} candidates were not selected for budget (max_pairs "
+        f"{config.selection.max_pairs}, max_per_locus {config.selection.max_per_locus})"
+    )
 
 
 def _log_summary(loci: pl.DataFrame, results: pl.DataFrame) -> None:

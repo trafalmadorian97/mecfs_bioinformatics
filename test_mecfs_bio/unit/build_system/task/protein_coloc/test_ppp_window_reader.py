@@ -6,6 +6,8 @@ from pathlib import Path
 import polars as pl
 from attrs import frozen
 
+from mecfs_bio.build_system.asset.base_asset import Asset
+from mecfs_bio.build_system.meta.asset_id import AssetId
 from mecfs_bio.build_system.task.ppp_database.build_slim_protein_parquet_task import (
     PppProteinFile,
 )
@@ -47,6 +49,10 @@ class _ByteRange:
 
     def overlap_length(self, other: "_ByteRange") -> int:
         return max(0, min(self.end, other.end) - max(self.start, other.start))
+
+
+def _no_fetch(asset_id: AssetId) -> Asset:
+    raise AssertionError(f"unexpected fetch of {asset_id}")
 
 
 class _RecordingRangeReader:
@@ -136,7 +142,7 @@ _WINDOWS = [
 def test_fetch_returns_only_window_rows_in_common_schema(tmp_path: Path) -> None:
     _, wf, scratch = _setup(tmp_path)
     frames = PppWindowReader(proteins=(_PROTEIN,)).fetch_protein(
-        "OID1", _WINDOWS, scratch, wf
+        "OID1", _WINDOWS, scratch, _no_fetch, wf
     )
     assert set(frames) == set(_WINDOWS)
     l1 = frames[_WINDOWS[0]]
@@ -154,7 +160,7 @@ def test_fetch_reads_chromosome_x_as_23(tmp_path: Path) -> None:
     _, wf, scratch = _setup(tmp_path)
     window = GenomicInterval(chrom=23, start=0, end=1000)
     frames = PppWindowReader(proteins=(_PROTEIN,)).fetch_protein(
-        "OID1", [window], scratch, wf
+        "OID1", [window], scratch, _no_fetch, wf
     )
     assert frames[window][GWASLAB_POS_COL].to_list() == [400]
 
@@ -168,7 +174,7 @@ def _member_data_range(tar_path: Path, chrom_tag: str) -> _ByteRange:
 def test_fetch_does_not_read_an_unneeded_chromosome_file(tmp_path: Path) -> None:
     downloader, wf, scratch = _setup(tmp_path)
     PppWindowReader(proteins=(_PROTEIN,)).fetch_protein(
-        "OID1", [GenomicInterval(chrom=1, start=50, end=250)], scratch, wf
+        "OID1", [GenomicInterval(chrom=1, start=50, end=250)], scratch, _no_fetch, wf
     )
     unneeded = _member_data_range(downloader.tar_path, "_chr2_")
     bytes_read = sum(read.overlap_length(unneeded) for read in downloader.reads)
@@ -180,7 +186,7 @@ def test_window_with_no_rows_returns_empty_frame_with_schema(tmp_path: Path) -> 
     _, wf, scratch = _setup(tmp_path)
     window = GenomicInterval(chrom=1, start=1000, end=2000)
     frames = PppWindowReader(proteins=(_PROTEIN,)).fetch_protein(
-        "OID1", [window], scratch, wf
+        "OID1", [window], scratch, _no_fetch, wf
     )
     assert frames[window].height == 0
     assert frames[window].schema == WINDOW_SCHEMA

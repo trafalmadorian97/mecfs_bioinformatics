@@ -47,6 +47,12 @@ store behave.
 - **Acquire every input through a Task.** Builds must work on a fresh machine. Don't read from
   ad-hoc local caches such as `~/.gwaslab/`; wrap the download as a Task. Exception: a file bundled
   inside a pinned Python dependency may be resolved from the installed package path.
+- **Commit a data file to the repo only when it decides which Tasks exist.** The build graph is
+  fixed before any Task runs, so a table that an asset generator reads to create Tasks (e.g. the
+  per-protein manifests under `mecfs_bio/assets/reference_data/*_sumstats/`) must exist in the repo
+  already; it is written by a script run outside the build. Any other table, even one only that
+  script uses, is not committed. A table that Tasks consume is acquired and normalized by Tasks
+  (e.g. `ELDJARN_ET_AL_2023_ST36_PLEIOTROPIC_PQTLS`).
 - **Run external CLI tools through pixi** (`pixi run bcftools ...`), not a binary assumed to be on
   `PATH`.
 - **Normalize external data once, as its own asset**, next to the download. This is usually a

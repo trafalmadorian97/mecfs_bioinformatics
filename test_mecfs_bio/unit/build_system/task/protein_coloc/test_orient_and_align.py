@@ -152,3 +152,57 @@ def test_alignment_is_exact_on_ordered_alleles() -> None:
     assert aligned.frame[BETA_TRAIT_COL].to_list() == [0.1]
     assert aligned.frame[BETA_PROTEIN_COL].to_list() == [0.5]
     assert aligned.n_trait == 2 and aligned.n_protein == 2
+
+
+def test_null_eaf_rows_survive_orientation(tmp_path: Path) -> None:
+    # Position 1 is A: A/T is a palindrome, unresolvable without a frequency. Position 2 is C:
+    # C/T (stored flipped) is oriented by the reference allele alone.
+    rows = _window([(1, "T", "A", 0.2, 0.0), (2, "C", "T", 0.1, 0.0)]).with_columns(
+        pl.lit(None, dtype=pl.Float64).alias(GWASLAB_EFFECT_ALLELE_FREQ_COL)
+    )
+    oriented = _orient(tmp_path, rows)
+    assert oriented.frame.select(
+        GWASLAB_POS_COL, GWASLAB_EFFECT_ALLELE_COL, GWASLAB_NON_EFFECT_ALLELE_COL
+    ).rows() == [(2, "T", "C")]
+    assert oriented.frame[GWASLAB_BETA_COL].item() == pytest.approx(-0.1)
+    assert oriented.frame[GWASLAB_EFFECT_ALLELE_FREQ_COL].is_null().all()
+    assert sum(oriented.drop_counts.values()) == 1
+
+
+def test_eaf_discordant_variants_are_dropped_and_counted() -> None:
+    # Position 2 differs by 0.3 (dropped), 5 by 0.15 (kept); 7 has no protein EAF (kept).
+    trait = _window(
+        [(2, "T", "C", 0.1, 0.3), (5, "G", "T", 0.2, 0.3), (7, "A", "G", 0.3, 0.3)]
+    )
+    protein = _window(
+        [(2, "T", "C", 0.5, 0.6), (5, "G", "T", 0.6, 0.45), (7, "A", "G", 0.7, 0.3)]
+    ).with_columns(
+        pl.when(pl.col(GWASLAB_POS_COL) == 7)
+        .then(None)
+        .otherwise(pl.col(GWASLAB_EFFECT_ALLELE_FREQ_COL))
+        .alias(GWASLAB_EFFECT_ALLELE_FREQ_COL)
+    )
+    aligned = align_windows(trait=trait, protein=protein, max_eaf_difference=0.2)
+    assert aligned.frame[GWASLAB_POS_COL].to_list() == [5, 7]
+    assert aligned.n_eaf_discordant_dropped == 1
+
+    unchecked = align_windows(trait=trait, protein=protein, max_eaf_difference=None)
+    assert unchecked.frame.height == 3
+    assert unchecked.n_eaf_discordant_dropped == 0
+
+
+def test_multi_record_trait_positions_are_dropped_only_when_asked() -> None:
+    # Position 2 has two trait records (a split multi-allelic site); 5 has one.
+    trait = _window(
+        [(2, "T", "C", 0.1, 0.3), (2, "G", "C", 0.2, 0.1), (5, "G", "T", 0.3, 0.3)]
+    )
+    protein = _window([(2, "T", "C", 0.5, 0.3), (5, "G", "T", 0.6, 0.3)])
+    strict = align_windows(
+        trait=trait, protein=protein, drop_multi_record_trait_positions=True
+    )
+    assert strict.frame[GWASLAB_POS_COL].to_list() == [5]
+    assert strict.n_trait_multi_record_dropped == 2
+
+    default = align_windows(trait=trait, protein=protein)
+    assert default.frame[GWASLAB_POS_COL].to_list() == [2, 5]
+    assert default.n_trait_multi_record_dropped == 0

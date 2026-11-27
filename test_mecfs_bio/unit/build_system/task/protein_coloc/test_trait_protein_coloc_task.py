@@ -14,6 +14,7 @@ from pathlib import Path, PurePath
 import numpy as np
 import polars as pl
 import pytest
+from attrs import evolve
 
 from mecfs_bio.build_system.asset.base_asset import Asset
 from mecfs_bio.build_system.asset.directory_asset import DirectoryAsset
@@ -30,6 +31,8 @@ from mecfs_bio.build_system.meta.reference_meta.harmonizable_reference_table_met
     HarmonizableReferenceTableMeta,
 )
 from mecfs_bio.build_system.meta.result_table_meta import ResultTableMeta
+from mecfs_bio.build_system.rebuilder.fetch.base_fetch import Fetch
+from mecfs_bio.build_system.task.base_task import Task
 from mecfs_bio.build_system.task.csf_database.build_slim_aptamer_parquet_task import (
     CsfAptamerFile,
 )
@@ -56,7 +59,9 @@ from mecfs_bio.build_system.task.protein_coloc.csf_gene_coords_reader import (
 )
 from mecfs_bio.build_system.task.protein_coloc.dense_window_fetch import (
     DenseWindowFetcher,
+    ParallelWindowFetcher,
     ProteinWindowFrames,
+    ProteinWindowReader,
     ProteinWindowRequest,
 )
 from mecfs_bio.build_system.task.protein_coloc.gene_coords_reader import (
@@ -122,6 +127,7 @@ from mecfs_bio.constants.protein_coloc_constants import (
     WINDOWS_DIRNAME,
     pair_file_stem,
 )
+from mecfs_bio.constants.vocabulary_classes.genomic_interval import GenomicInterval
 from test_mecfs_bio.unit.build_system.task.genome_reference_harmonization.genome_reference_fixtures import (
     EUR_PANEL_COLUMNS,
     write_fasta,
@@ -185,8 +191,9 @@ def _with_stats(
     return variants.with_columns(
         pl.Series(GWASLAB_BETA_COL, z * _SE),
         pl.lit(_SE).alias(GWASLAB_SE_COL),
-        pl.Series(
-            GWASLAB_EFFECT_ALLELE_FREQ_COL, rng.uniform(0.1, 0.4, variants.height)
+        # A function of the position, so a variant has one EAF on both sides.
+        (0.1 + 0.3 * ((pl.col(GWASLAB_POS_COL) * 7919) % 1000) / 1000).alias(
+            GWASLAB_EFFECT_ALLELE_FREQ_COL
         ),
         pl.lit(n).alias(GWASLAB_SAMPLE_SIZE_COLUMN),
     ).cast(WINDOW_SCHEMA)
@@ -226,6 +233,7 @@ class _FakeFetcher(DenseWindowFetcher):
         self,
         requests: Sequence[ProteinWindowRequest],
         scratch_dir: Path,
+        fetch: Fetch,
         wf: WF,
     ) -> Generator[ProteinWindowFrames]:
         for request in requests:
@@ -350,9 +358,10 @@ def _hit_table_task() -> ProteinHitTableTask:
 
 
 def _create(
-    fetcher: _FakeFetcher,
+    fetcher: DenseWindowFetcher,
     trait_task: FakeTask,
     gene_coords_reader: GeneCoordsReader = St3GeneCoordsReader(),
+    config: ColocRunConfig = _CONFIG,
 ) -> TraitProteinColocTask:
     return TraitProteinColocTask.create(
         asset_id="coloc",
@@ -365,7 +374,7 @@ def _create(
         panel_task=_panel_task(),
         panel_ancestry="eur",
         fetcher=fetcher,
-        config=_CONFIG,
+        config=config,
     )
 
 
@@ -378,6 +387,7 @@ def _run(
     tmp_path: Path,
     gene_coords: pl.DataFrame | None = None,
     gene_coords_reader: GeneCoordsReader = St3GeneCoordsReader(),
+    config: ColocRunConfig = _CONFIG,
 ) -> tuple[_FakeFetcher, Path]:
     """gene_coords, gene_coords_reader: the gene-coordinate table and its reader; the ST3
     table placing OID1 at chr1:900-1100 by default."""
@@ -431,7 +441,9 @@ def _run(
         AssetId("fasta"): DirectoryAsset(fasta_dir),
         AssetId("panel"): _write(tmp_path / "panel.parquet", panel),
     }
-    task = _create(fetcher, FakeTask(_trait_meta(harmonized=True)), gene_coords_reader)
+    task = _create(
+        fetcher, FakeTask(_trait_meta(harmonized=True)), gene_coords_reader, config
+    )
     scratch = tmp_path / "scratch"
     scratch.mkdir()
     result = task.execute(
@@ -548,3 +560,41 @@ def test_csf_unmapped_aptamer_is_cis_unknown(tmp_path: Path) -> None:
     )
     assert rows.height > 0
     assert (rows[CIS_STATUS_COL] == CIS_STATUS_UNKNOWN).all()
+
+
+class _ReaderWithDeps(ProteinWindowReader):
+    def __init__(self, dep: Task) -> None:
+        self.dep = dep
+
+    @property
+    def deps(self) -> list[Task]:
+        return [self.dep]
+
+    def fetch_protein(
+        self,
+        protein_id: str,
+        windows: Sequence[GenomicInterval],
+        scratch_dir: Path,
+        fetch: Fetch,
+        wf: WF,
+    ) -> dict[GenomicInterval, pl.DataFrame]:
+        raise NotImplementedError
+
+
+def test_coloc_task_deps_include_fetcher_deps() -> None:
+    sentinel = FakeTask(_table_meta("reader_dependency"))
+    fetcher = ParallelWindowFetcher(_ReaderWithDeps(sentinel), max_parallel=1)
+    coloc_task = _create(fetcher, FakeTask(_trait_meta(harmonized=True)))
+    assert sentinel in coloc_task.deps
+
+
+def test_require_no_budget_drop_fails_when_budget_binds(tmp_path: Path) -> None:
+    # _CONFIG's budget of 3 pairs leaves OID3 not selected.
+    strict = evolve(_CONFIG, require_no_budget_drop=True)
+    for name in ("binding", "roomy"):
+        (tmp_path / name).mkdir()
+    with pytest.raises(AssertionError):
+        _run(tmp_path / "binding", config=strict)
+    roomy = evolve(strict, selection=SelectionConfig(max_pairs=100, max_per_locus=100))
+    _, out_dir = _run(tmp_path / "roomy", config=roomy)
+    assert STATUS_NOT_SELECTED_BUDGET not in _results(out_dir)[STATUS_COL].to_list()
