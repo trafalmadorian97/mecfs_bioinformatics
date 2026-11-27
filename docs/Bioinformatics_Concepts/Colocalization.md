@@ -642,6 +642,88 @@ C&:=\sum_{i=1}^Q \pi_1(i) \pi_2(i)\\
 \end{align}
 $$
 
+Let us discuss these quantities one by one.
+
+
+First is $\pi_1,\pi_2 $.  These can be understood as fine-mapping posteriors under the single causal variant assumption. That is, $\pi_1(i)$ is the probability given the data and under the assumption that trait 1 has exactly 1 causal variant, that variant $i$ is causal. We have
+
+
+$$
+\begin{align}
+&P(S_k=i|\mathcal{A},S_k>0,y_k)\\
+&=\frac{P(S_k=i|\mathcal{A},y_k)}{P(S_k>0|\mathcal{A},y_k)}\\
+&=\frac{P(S_k=i|\mathcal{A},y_k)}{P(S_k>0|\mathcal{A},y_k)}\\
+&=\frac{P(S_k=i|\mathcal{A},y_k)}{\sum_{j=1}^Q P(S_k=j|\mathcal{A},y_k)}\\
+&=\frac{p(y_k|S_k=i,\mathcal{A})\frac{P(S_k=i|\mathcal{A})}{p(y_k|\mathcal{A})} }{\sum_{j=1}^Qp(y_k|S_k=j,\mathcal{A})\frac{P(S_k=j|\mathcal{A})}{p(y_k|\mathcal{A})} }& \text{Bayes}\\
+&=\frac{p(y_k|S_k=i,\mathcal{A}){P(S_k=i|\mathcal{A})}}{\sum_{j=1}^Qp(y_k|S_k=j,\mathcal{A}){P(S_k=j|\mathcal{A})} }\\
+&=\frac{p(y_k|S_k=i,\mathcal{A})}{\sum_{j=1}^Qp(y_k|S_k=j,\mathcal{A}) }& \text{Constant prior}\\
+&=\frac{p(y_k|S_k=i,\mathcal{A})/p(y_k|S_k=0,\mathcal{A})}{\sum_{j=1}^Qp(y_k|S_k=j,\mathcal{A})/p(y_k|S_k=0,\mathcal{A}) }\\
+&=\frac{B_k(i)}{L_k}\\
+&=\pi_k(i).
+\end{align}
+$$
+
+
+Next is $a_k$, which is the probability that trait $k$ has a causal variant, based only on data from trait $k$. We have
+
+
+$$
+\begin{align}
+&P(S_k>0|\mathcal{A}, y_k)\\
+&=P(S_k>0 |\mathcal{A}_k, y_k)\\
+&=\frac{P(S_k>0|y_k)}{P(\mathcal{A}_k| y_k)}\\
+&=\frac{\sum_{j=1}^Q P(S_k=j|y_k)  }{\sum_{j=0}^QP(S_k=j|y_k)}\\
+&=\frac{\sum_{j=1}^Qp(y_k|S_k=j)\frac{P(S_k=j)}{p(y_k)}}{\sum_{j=0}^Qp(y_k|S_k=j)\frac{P(S_k=j)}{p(y_k)}}& \text{Bayes}\\
+&=\frac{\sum_{j=1}^Qp(y_k|S_k=j){P(S_k=j)}}{\sum_{j=0}^Qp(y_k|S_k=j){P(S_k=j)}}\\
+&=\frac{\frac{\sum_{j=1}^Qp(y_k|S_k=j){P(S_k=j)}}{p(y_k|S_k=0)P(S_k=0)}}{\frac{\sum_{j=0}^Qp(y_k|S_k=j){P(S_k=j)}}{p(y_k|S_k=0)P(S_k=0)}}\\
+&=\frac{\sum_{j=1}^Q B_k(j)\rho_k}{1+\sum_{j=1}^Q B_k(j)\rho_k}\\
+&=\frac{\rho_kL_k}{1+\rho_kL_k}\\
+&=a_k.
+\end{align}
+$$
+
+
+Next is $C$, which is the probability that independent draws from the fine mapping posteriors coincide.  We have
+
+
+$$
+\begin{align}
+&\sum_{j=1}^QP(S_1=j|\mathcal{A},y_1,S_1>0)P(S_2=j|\mathcal{A},y_2,S_2>0)\\
+&=\sum_{j=1}^Q \pi_1(j)\pi_2(j)\\
+&=C.
+\end{align}
+$$
+
+Moreover, $C$ has the alternative representation
+
+$$
+\begin{align}
+C&=\sum_{j=1}^Q \pi_1(j)\pi_2(j)\\
+&=\sum_{j=1}^Q\frac{B_1(j)B_2(j)}{L_1L_2}\\
+&=\frac{L_{12}}{L_1L_2}.
+\end{align}
+$$
+
+
+
+Lastly, to understand $\kappa$, let $q_1$ denote the event that a given variant is causal for trait 1, let $q_2$ denote the event that the same  variant is causal for trait 2, and consider the odds ratio
+
+
+$$
+\begin{align}
+&\frac{P(q_2|q_1)/P(\lnot q_2|q_1)}{P(q_2|\lnot q_1)/P(\lnot q_2| \lnot q_1)}\\
+&=\frac{  \frac{p_{12}/(p_{12}+p_1)}{p_1/(p_{12}+p_1)}  }{\frac{p_2/(p_2+p_0)}{p_0/(p_{2+p_0})}}\\
+&=\frac{p_{12}/p_1}{p_2/p_0}\\
+&=\frac{p_{12}p_0}{p_2p_1}\\
+&=\frac{\rho_{12}}{\rho_1\rho_2}\\
+&=\kappa
+\end{align}
+$$
+
+Thus $\kappa$ can be understood as the enrichment in the odds of a variant being causal for trait 2 when comparing the variant being causal for trait 1 versus it not being causal for trait 1[^reverse]
+
+
+
 to be continued.
 
 ## SUSIE colocalization
@@ -653,3 +735,7 @@ todo
 
 
 [Talk on colocalization at International Statistical Genetics Workshop](https://youtu.be/QNUdAFn1Vas?si=dW0v2QJF0kzZIIea)
+
+
+
+[^reverse]: Or the reverse, since odds ratios are symmetric
