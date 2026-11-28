@@ -1465,7 +1465,6 @@ packages:
   - r-base
   - yq
   license: MIT
-  purls: []
   run_exports:
     weak:
     - bioconductor-data-packages >=20260207
